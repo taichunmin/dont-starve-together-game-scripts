@@ -1,0 +1,113 @@
+local EMOTES =
+{
+    ["wave"] = {
+        aliases = { "waves", "hi", "bye", "goodbye" },
+        data = { anim = { "emoteXL_waving1", "emoteXL_waving2", "emoteXL_waving3" }, randomanim = true, mounted = true },
+    },
+
+    ["rude"] = {
+        aliases = { "goaway", "threaten" },
+        data = { anim = { "emoteXL_waving4" }, randomanim = true, mounted = true, mountsound = "angry" },
+    },
+
+    ["happy"] = {
+        data = { anim = "emoteXL_happycheer", mounted = true, mountsound = "yell" },
+    },
+
+    ["angry"] = {
+        aliases = { "anger", "grimace", "grimaces", "frustrate", "frustrated", "frustration" },
+        data = { anim = "emoteXL_angry", mounted = true, mountsound = "angry", mountsounddelay = 7 * FRAMES },
+    },
+
+    ["cry"] = {
+        aliases = { "sad", "cries" },
+        data = { anim = "emoteXL_sad", fx = "tears", fxdelay = 17 * FRAMES, mounted = true, mountsound = "grunt" },
+    },
+
+    ["no"] = {
+        aliases = { "annoyed", "annoy", "shakehead", "shake", "confuse", "confused" },
+        data = { anim = "emoteXL_annoyed", mounted = true, mountsound = "grunt", mountsounddelay = 12 * FRAMES },
+    },
+
+    ["joy"] = {
+        aliases = { "click", "heelclick", "heels", "celebrate", "celebration" },
+        data = { anim = "research", fx = false, mounted = true, mountsound = "curious" },
+    },
+
+    ["dance"] = {
+        data = { anim = { "emoteXL_pre_dance0", "emoteXL_loop_dance0" }, loop = true, fx = false, beaver = true, mounted = true, mountsound = "curious", tags = { "dancing" } },
+    },
+
+    ["sit"] = {
+        data = { anim = { { "emote_pre_sit2", "emote_loop_sit2" }, { "emote_pre_sit4", "emote_loop_sit4" } }, randomanim = true, loop = true, fx = false, mounted = true, mountsound = "walk", mountsounddelay = 6 * FRAMES },
+    },
+
+    ["squat"] = {
+        data = { anim = { { "emote_pre_sit1", "emote_loop_sit1" }, { "emote_pre_sit3", "emote_loop_sit3" } }, randomanim = true, loop = true, fx = false, mounted = true, mountsound = "walk", mountsounddelay = 10 * FRAMES },
+    },
+
+    ["bonesaw"] = {
+        aliases = { "ready", "goingnowhere", "playtime", "threeminutes" },
+        data = { anim = "emoteXL_bonesaw", mounted = true, mountsound = "angry" },
+    },
+
+    ["facepalm"] = {
+        aliases = { "doh", "slapintheface" },
+        data = { anim = "emoteXL_facepalm", mounted = true, mountsound = "grunt" },
+    },
+
+    ["kiss"] = {
+        aliases = { "blowkiss", "smooch", "mwa", "mwah" },
+        data = { anim = "emoteXL_kiss", mounted = true, mountsound = "curious" },
+    },
+
+    ["pose"] = {
+        aliases = { "strut", "strikepose" },
+        data = { anim = "emote_strikepose", zoom = true, soundoverride = "pose", mounted = true },
+    },
+}
+
+local function CreateEmoteCommand(emotedef)
+    return {
+        aliases = emotedef.aliases,
+        prettyname = function(command) return string.format(STRINGS.UI.BUILTINCOMMANDS.EMOTES.PRETTYNAMEFMT, FirstToUpper(command.name)) end,
+        desc = function() return STRINGS.UI.BUILTINCOMMANDS.EMOTES.DESC end,
+        permission = COMMAND_PERMISSION.USER,
+        params = {},
+        emote = true,
+        slash = true,
+        usermenu = false,
+        servermenu = false,
+        vote = false,
+        serverfn = function(params, caller)
+            local player = UserToPlayer(caller.userid)
+            if player ~= nil then
+                player:PushEvent("emote", emotedef.data)
+            end
+        end,
+        displayname = emotedef.displayname
+    }
+end
+
+for k, v in pairs(EMOTES) do
+    AddUserCommand(k, CreateEmoteCommand(v))
+end
+
+--------------------------------------------------------------------------
+for item_type, v in pairs(EMOTE_ITEMS) do
+    local cmd_data = CreateEmoteCommand(v)
+    cmd_data.requires_item_type = item_type
+    cmd_data.hasaccessfn = function(command, caller)
+        if caller == nil or TheWorld == nil then
+            return false
+        elseif TheWorld.ismastersim then
+            return TheInventory:CheckClientOwnership(caller.userid, item_type)
+        else
+            return caller.userid == TheNet:GetUserID() and TheInventory:CheckOwnership(item_type)
+        end
+    end
+    AddUserCommand(v.cmd_name, cmd_data)
+end
+
+--------------------------------------------------------------------------
+CreateEmoteCommand = nil
