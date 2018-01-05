@@ -38,8 +38,8 @@ local ProfileFlairExplorerPanel = Class(Widget, function(self, owner, user_profi
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 140)
 
-    self.filterBar = FilterBar(self.picker)
-    self.picker.header:AddChild( self.filterBar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.filter_bar = FilterBar(self.picker, "collectionscreen")
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
    
     self:_DoFocusHookups()
     self.focus_forward = self.heroselector
@@ -48,9 +48,9 @@ local ProfileFlairExplorerPanel = Class(Widget, function(self, owner, user_profi
 end)
 
 function ProfileFlairExplorerPanel:_DoFocusHookups()
-    self.heroselector:SetFocusChangeDir(MOVE_RIGHT, self.picker)
+    self.heroselector:SetFocusChangeDir(MOVE_RIGHT, self.filter_bar:BuildFocusFinder())
     self.picker:SetFocusChangeDir(MOVE_LEFT, self.heroselector)
-    self.picker.header.focus_forward = self.filterBar
+    self.picker.header.focus_forward = self.filter_bar
 end
 
 function ProfileFlairExplorerPanel:_GetCurrentCharacter()
@@ -69,7 +69,7 @@ end
 function ProfileFlairExplorerPanel:OnShow()
     ProfileFlairExplorerPanel._base.OnShow(self)
     self.heroselector:LoadLastSelectedFromProfile()
-    self.picker:RefreshItems()
+    self.filter_bar:RefreshFilterState()
     self:_RefreshPreview()
 end
 

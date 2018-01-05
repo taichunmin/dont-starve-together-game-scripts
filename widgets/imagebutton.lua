@@ -1,5 +1,3 @@
-local Widget = require "widgets/widget"
-local Text = require "widgets/text"
 local Button = require "widgets/button"
 local Image = require "widgets/image"
 
@@ -61,6 +59,10 @@ function ImageButton:SetTextures(atlas, normal, focus, disabled, down, selected,
     self.image:SetPosition(self.image_offset[1], self.image_offset[2])
     self.image:SetScale(self.image_scale[1], self.image_scale[2] or self.image_scale[1])
 
+    self:_RefreshImageState()
+end
+
+function ImageButton:_RefreshImageState()
     if self:IsSelected() then
         self:OnSelect()
     elseif self:IsEnabled() then
@@ -74,8 +76,29 @@ function ImageButton:SetTextures(atlas, normal, focus, disabled, down, selected,
     end
 end
 
+-- Apply a focus overlay to all image states.
+--
+-- Instead (or in addition to) having a focus image state, add a focus overlay
+-- that's drawn on top of our image state when focus. This overlay is drawn
+-- even when button is selected or disabled. Prevents focus from disappearing
+-- when passing over selected items (essential on gamepad).
+--
+-- Common bug: you probably want scale_on_focus = false or customize scaling.
+function ImageButton:UseFocusOverlay(focus_selected_texture)
+    if not self.hover_overlay then
+        self.hover_overlay = self.image:AddChild(Image())
+    end
+    self.hover_overlay:SetTexture(self.atlas, focus_selected_texture)
+    self.hover_overlay:Hide()
+    self:_RefreshImageState()
+end
+
 function ImageButton:OnGainFocus()
 	ImageButton._base.OnGainFocus(self)
+
+    if self.hover_overlay then
+        self.hover_overlay:Show()
+    end
 
     if self:IsSelected() then return end
 
@@ -90,10 +113,10 @@ function ImageButton:OnGainFocus()
 
     if self.image_focus == self.image_normal and self.scale_on_focus and self.focus_scale then
         self.image:SetScale(self.focus_scale[1], self.focus_scale[2], self.focus_scale[3])
+    end
 
-        if self.imagefocuscolour then
-            self.image:SetTint(self.imagefocuscolour[1], self.imagefocuscolour[2], self.imagefocuscolour[3], self.imagefocuscolour[4])
-        end
+    if self.imagefocuscolour then
+        self.image:SetTint(unpack(self.imagefocuscolour))
     end
 
     if self.focus_sound then
@@ -103,6 +126,10 @@ end
 
 function ImageButton:OnLoseFocus()
 	ImageButton._base.OnLoseFocus(self)
+
+    if self.hover_overlay then
+        self.hover_overlay:Hide()
+    end
 
     if self:IsSelected() then return end
 
@@ -182,8 +209,9 @@ function ImageButton:OnDisable()
 	self.image:SetTexture(self.atlas, self.image_disabled)
 
     if self.imagedisabledcolour then
-        self.image:SetTint(self.imagedisabledcolour[1], self.imagedisabledcolour[2], self.imagedisabledcolour[3], self.imagedisabledcolour[4])
+        self.image:SetTint(unpack(self.imagedisabledcolour))
     end
+
 	if self.size_x and self.size_y then 
 		self.image:ScaleToSize(self.size_x, self.size_y)
 	end
@@ -200,7 +228,7 @@ function ImageButton:OnSelect()
     ImageButton._base.OnSelect(self)
     self.image:SetTexture(self.atlas, self.image_selected)
     if self.imageselectedcolour then
-        self.image:SetTint(self.imageselectedcolour[1], self.imageselectedcolour[2], self.imageselectedcolour[3], self.imageselectedcolour[4])
+        self.image:SetTint(unpack(self.imageselectedcolour))
     end
 end
 
@@ -262,7 +290,7 @@ function ImageButton:SetImageFocusColour(r,g,b,a)
     end
     
     if self.focus and not self.selected then
-        self.image:SetTint(self.imagefocuscolour[1], self.imagefocuscolour[2], self.imagefocuscolour[3], self.imagefocuscolour[4])
+        self.image:SetTint(unpack(self.imagefocuscolour))
     end
 end
 
@@ -274,7 +302,7 @@ function ImageButton:SetImageDisabledColour(r,g,b,a)
     end
     
     if not self:IsEnabled() then
-        self.image:SetTint(self.imagedisabledcolour[1], self.imagedisabledcolour[2], self.imagedisabledcolour[3], self.imagedisabledcolour[4])
+        self.image:SetTint(unpack(self.imagedisabledcolour))
     end
 end
 
@@ -286,7 +314,7 @@ function ImageButton:SetImageSelectedColour(r,g,b,a)
     end
     
     if self.selected then
-        self.image:SetTint(self.imageselectedcolour[1], self.imageselectedcolour[2], self.imageselectedcolour[3], self.imageselectedcolour[4])
+        self.image:SetTint(unpack(self.imageselectedcolour))
     end
 end
 

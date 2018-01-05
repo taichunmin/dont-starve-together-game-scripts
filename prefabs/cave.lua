@@ -2,6 +2,7 @@ require("prefabs/world")
 
 local prefabs =
 {
+    "forest",
     "cave_network",
     "cave_exit",
     "slurtle",

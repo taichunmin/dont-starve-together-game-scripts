@@ -194,6 +194,38 @@ MISC_ITEMS =
 		rarity_modifier = "EventModifier",
 		release_group = 32,
 	},
+	loading_bearger_yule =
+	{
+		type = "loading",
+		skin_tags = { "ICE", "LOADING", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	loading_deerclops_yule =
+	{
+		type = "loading",
+		skin_tags = { "ICE", "LOADING", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	loading_dragonfly_yule =
+	{
+		type = "loading",
+		skin_tags = { "ICE", "LOADING", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	loading_goosemoose_yule =
+	{
+		type = "loading",
+		skin_tags = { "ICE", "LOADING", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
 	loading_maxwell =
 	{
 		type = "loading",
@@ -266,10 +298,27 @@ MISC_ITEMS =
 		rarity_modifier = "EventModifier",
 		release_group = 32,
 	},
+	mysterybox_classic_4 =
+	{
+		type = "mysterybox",
+		skin_tags = { "MYSTERYBOX", },
+		box_build = "skinevent_popup_classic",
+		rarity = "Common",
+		release_group = 38,
+	},
+	mysterybox_ice_4 =
+	{
+		type = "mysterybox",
+		skin_tags = { "MYSTERYBOX", },
+		box_build = "skinevent_popup_ice",
+		rarity = "Classy",
+		release_group = 38,
+	},
 	mysterybox_lava_4 =
 	{
 		type = "mysterybox",
 		skin_tags = { "MYSTERYBOX", },
+		box_build = "skinevent_popup",
 		rarity = "Common",
 		rarity_modifier = "EventModifier",
 		release_group = 33,
@@ -278,7 +327,11 @@ MISC_ITEMS =
 	{
 		type = "purchase",
 		skin_tags = { },
+		featured_pack = true,
 		display_order = 1,
+		display_atlas = "images/frontend_redux.xml",
+		display_tex = "all_gladiator_oval.tex",
+		box_build = "skinevent_all_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wathgrithr =
@@ -286,6 +339,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 11,
+		display_atlas = "bigportraits/wathgrithr_gladiator.xml",
+		display_tex = "wathgrithr_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_waxwell =
@@ -293,6 +349,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 10,
+		display_atlas = "bigportraits/waxwell_gladiator.xml",
+		display_tex = "waxwell_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_webber =
@@ -300,6 +359,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 12,
+		display_atlas = "bigportraits/webber_gladiator.xml",
+		display_tex = "webber_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wendy =
@@ -307,6 +369,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 5,
+		display_atlas = "bigportraits/wendy_gladiator.xml",
+		display_tex = "wendy_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wes =
@@ -314,6 +379,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 9,
+		display_atlas = "bigportraits/wes_gladiator.xml",
+		display_tex = "wes_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wickerbottom =
@@ -321,6 +389,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 7,
+		display_atlas = "bigportraits/wickerbottom_gladiator.xml",
+		display_tex = "wickerbottom_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_willow =
@@ -328,6 +399,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 3,
+		display_atlas = "bigportraits/willow_gladiator.xml",
+		display_tex = "willow_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wilson =
@@ -335,6 +409,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 2,
+		display_atlas = "bigportraits/wilson_gladiator.xml",
+		display_tex = "wilson_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_winona =
@@ -342,6 +419,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 13,
+		display_atlas = "bigportraits/winona_gladiator.xml",
+		display_tex = "winona_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wolfgang =
@@ -349,6 +429,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 4,
+		display_atlas = "bigportraits/wolfgang_gladiator.xml",
+		display_tex = "wolfgang_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_woodie =
@@ -356,6 +439,9 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 8,
+		display_atlas = "bigportraits/woodie_gladiator.xml",
+		display_tex = "woodie_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
 	},
 	pack_gladiator_wx78 =
@@ -363,7 +449,81 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		display_order = 6,
+		display_atlas = "bigportraits/wx78_gladiator.xml",
+		display_tex = "wx78_gladiator_oval.tex",
+		box_build = "skinevent_set_popup",
 		release_group = 34,
+	},
+	pack_ice_all =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 1,
+		display_atlas = "images/frontend_redux.xml",
+		display_tex = "all_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_webber =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 6,
+		display_atlas = "bigportraits/webber_ice.xml",
+		display_tex = "webber_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_wendy =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 5,
+		display_atlas = "bigportraits/wendy_ice.xml",
+		display_tex = "wendy_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_wickerbottom =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 6,
+		display_atlas = "bigportraits/wickerbottom_ice.xml",
+		display_tex = "wickerbottom_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_willow =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 3,
+		display_atlas = "bigportraits/willow_ice.xml",
+		display_tex = "willow_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_wilson =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 2,
+		display_atlas = "bigportraits/wilson_ice.xml",
+		display_tex = "wilson_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
+	},
+	pack_ice_wolfgang =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 4,
+		display_atlas = "bigportraits/wolfgang_ice.xml",
+		display_tex = "wolfgang_ice_oval.tex",
+		box_build = "skinevent_ice_all_popup",
+		release_group = 37,
 	},
 	playerportrait_bg_beefalo =
 	{
@@ -539,6 +699,54 @@ MISC_ITEMS =
 		rarity = "Classy",
 		rarity_modifier = "EventModifier",
 		release_group = 32,
+	},
+	playerportrait_bg_winter =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	playerportrait_bg_winterfire =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	playerportrait_bg_wintertrees =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	playerportrait_bg_yule1 =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	playerportrait_bg_yule2 =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	playerportrait_bg_yule3 =
+	{
+		type = "playerportrait",
+		skin_tags = { "ICE", "PLAYERPORTRAIT", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
 	},
 	profileflair_abigail_flower =
 	{
@@ -740,6 +948,110 @@ MISC_ITEMS =
 		rarity_modifier = "EventModifier",
 		release_group = 32,
 	},
+	profileflair_ornaments_1 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_10 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_11 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_12 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_13 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_2 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_3 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_4 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_5 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_6 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_7 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_8 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_ornaments_9 =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Classy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
 	profileflair_pengull =
 	{
 		type = "profileflair",
@@ -899,6 +1211,62 @@ MISC_ITEMS =
 		rarity = "Common",
 		rarity_modifier = "EventModifier",
 		release_group = 32,
+	},
+	profileflair_yule_bearger =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_claus =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_deer =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Spiffy",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_deerclops =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_dragonfly =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_dragonflyfire =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
+	},
+	profileflair_yule_goosemoose =
+	{
+		type = "profileflair",
+		skin_tags = { "ICE", "PROFILEFLAIR", },
+		rarity = "Distinguished",
+		rarity_modifier = "Seasonal",
+		release_group = 36,
 	},
 }
 

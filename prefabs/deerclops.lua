@@ -5,7 +5,7 @@ local assets =
     Asset("ANIM", "anim/deerclops_basic.zip"),
     Asset("ANIM", "anim/deerclops_actions.zip"),
     Asset("ANIM", "anim/deerclops_build.zip"),
-    Asset("ANIM", "anim/deerclops_neutral_build.zip"),
+    Asset("ANIM", "anim/deerclops_yule.zip"),
     Asset("SOUND", "sound/deerclops.fsb"),
 }
 
@@ -18,6 +18,9 @@ local prefabs =
     "icespike_fx_2",
     "icespike_fx_3",
     "icespike_fx_4",
+    "deerclops_laser",
+    "deerclops_laserempty",
+    "winter_ornament_light1",
 }
 
 local TARGET_DIST = 16
@@ -72,7 +75,7 @@ local function AfterWorking(inst, data)
             inst.structuresDestroyed = inst.structuresDestroyed + 1
             if inst:IsSated() then
                 inst.components.knownlocations:ForgetLocation("targetbase")
-                inst.AnimState:OverrideSymbol("deerclops_head", "deerclops_neutral_build", "deerclops_head")
+                inst.AnimState:OverrideSymbol("deerclops_head", IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "deerclops_yule" or "deerclops_build", "deerclops_head_neutral")
             end
         end
     end
@@ -104,7 +107,7 @@ end
 local function OnSave(inst, data)
     data.structuresDestroyed = inst.structuresDestroyed
 end
-        
+
 local function OnLoad(inst, data)
     if data then
         inst.structuresDestroyed = data.structuresDestroyed or inst.structuresDestroyed
@@ -120,9 +123,22 @@ end
 
 local function OnHitOther(inst, data)
     local other = data.target
-    if other and other.components.freezable then
-        other.components.freezable:AddColdness(2)
-        other.components.freezable:SpawnShatterFX()
+    if other ~= nil then
+        if not (other.components.health ~= nil and other.components.health:IsDead()) then
+            if other.components.freezable ~= nil then
+                other.components.freezable:AddColdness(2)
+            end
+            if other.components.temperature ~= nil then
+                local mintemp = math.max(other.components.temperature.mintemp, 0)
+                local curtemp = other.components.temperature:GetCurrent()
+                if mintemp < curtemp then
+                    other.components.temperature:DoDelta(math.max(-5, mintemp - curtemp))
+                end
+            end
+        end
+        if other.components.freezable ~= nil then
+            other.components.freezable:SpawnShatterFX()
+        end
     end
 end
 
@@ -157,6 +173,15 @@ local function OnNewTarget(inst, data)
     end
 end
 
+local function OnNewState(inst, data)
+    if not (inst.sg:HasStateTag("sleeping") or inst.sg:HasStateTag("waking")) then
+        inst.Light:SetIntensity(.6)
+        inst.Light:SetRadius(8)
+        inst.Light:SetFalloff(3)
+        inst.Light:SetColour(1, 0, 0)
+    end
+end
+
 local loot = {"meat", "meat", "meat", "meat", "meat", "meat", "meat", "meat", "deerclops_eyeball", "chesspiece_deerclops_sketch"}
 
 local function fn()
@@ -183,7 +208,19 @@ local function fn()
     inst:AddTag("largecreature")
 
     inst.AnimState:SetBank("deerclops")
-    inst.AnimState:SetBuild("deerclops_build")
+
+    if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
+        inst.AnimState:SetBuild("deerclops_yule")
+
+        inst.entity:AddLight()
+        inst.Light:SetIntensity(.6)
+        inst.Light:SetRadius(8)
+        inst.Light:SetFalloff(3)
+        inst.Light:SetColour(1, 0, 0)
+    else
+        inst.AnimState:SetBuild("deerclops_build")
+    end
+
     inst.AnimState:PlayAnimation("idle_loop", true)
 
     inst.entity:SetPristine()
@@ -265,6 +302,12 @@ local function fn()
     inst.OnLoad = OnLoad
     inst.IsSated = IsSated
     inst.WantsToLeave = WantsToLeave
+
+    if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
+        inst:AddComponent("timer")
+
+        inst:ListenForEvent("newstate", OnNewState)
+    end
 
     return inst
 end

@@ -25,6 +25,7 @@ local function onplanted(inst, data)
     local tree = SpawnPrefab(data.seed.components.winter_treeseed.winter_tree)
     tree.Transform:SetPosition(x, y, z)
     tree.components.growable:StartGrowing()
+    data.seed:Remove()
 end
 
 local function onbuilt(inst)

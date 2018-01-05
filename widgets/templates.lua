@@ -1328,7 +1328,7 @@ TEMPLATES = {
         local max_snowflake_size = 20
         local max_snowball_size = 5
         local padding = max_snowflake_size * .5
-        local fade_y_threshold = -2 / 3 * RESOLUTION_Y
+        local fade_y_threshold = -.75 * RESOLUTION_Y
         local remove_y_threshold = -RESOLUTION_Y - padding
         local superprettycounter = math.random(20, 30)
         local snowflake_pool = {}
@@ -1345,7 +1345,11 @@ TEMPLATES = {
                     snowflake:SetTint(1, 1, 1, snowflake.alpha)
                 end
                 snowflake.xt = snowflake.xt + dt
-                snowflake:UpdatePosition(snowflake.x0 + math.sin(snowflake.xt * snowflake.xtspeed) * snowflake.xdist, pos.y - snowflake.speed)
+                pos.x = snowflake.x0 + math.sin(snowflake.xt * snowflake.xtspeed) * snowflake.xdist + snowflake.xwindspeed * snowflake.xt
+                if pos.x < -.5 * (RESOLUTION_X + max_snowflake_size) then
+                    pos.x = pos.x + RESOLUTION_X + max_snowflake_size
+                end
+                snowflake:UpdatePosition(pos.x, pos.y - snowflake.speed)
                 if snowflake.rotspeed ~= 0 then
                     snowflake.rot = snowflake.rot + snowflake.rotspeed
                     snowflake:SetRotation(snowflake.rot)
@@ -1388,6 +1392,7 @@ TEMPLATES = {
             snowflake.xt = math.random() * snowflake.xtspeed
             snowflake.xdist = math.random()
             snowflake.xdist = snowflake.xdist * snowflake.xdist * 50
+            snowflake.xwindspeed = -50 - 20 * math.random()
             snowflake.x0 = x
 
             if snowflake.recycled then

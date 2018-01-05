@@ -72,14 +72,14 @@ local function DisarmTarget(inst, target)
 end
 
 local function ShakeIfClose(inst)
-    ShakeAllCameras(CAMERASHAKE.FULL, .35, .02, 1.25, inst, 40)
+    ShakeAllCameras(CAMERASHAKE.FULL, .35, .02, 1, inst, 40)
 end
 
 local function DeathCollapseShake(inst)
-    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, 3., inst, 40)
+    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, 2, inst, 40)
 end
 
-local states=
+local states =
 {
 	State{
 		name = "idle",
@@ -356,7 +356,7 @@ local states=
 			TimeEvent(12*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/moose/honk")
 				if inst.components.combat.target and inst.components.combat.target.ShakeCamera then
-					inst.components.combat.target:ShakeCamera(CAMERASHAKE.FULL, 0.75, 0.01, 2, 40)
+					inst.components.combat.target:ShakeCamera(CAMERASHAKE.FULL, 0.75, 0.01, 1.5, 40)
 				end
 			end),
 			TimeEvent(15*FRAMES, function(inst) DisarmTarget(inst, inst.components.combat.target) end),
@@ -518,9 +518,7 @@ CommonStates.AddCombatStates(states,
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/moose/death")
 		end),
 
-		TimeEvent(22*FRAMES, function(inst)
-			DeathCollapseShake(inst)
-		end)
+		TimeEvent(20*FRAMES, DeathCollapseShake),
 	},
 })
 

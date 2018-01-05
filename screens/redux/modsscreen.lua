@@ -1071,7 +1071,7 @@ function ModsScreen:ShowModDetails(idx, client_mod)
     self.detaildesc:SetPosition(w * .5 - 183, 84 - .5 * h)
 
 	-- if self.modlinkbutton then 
-	-- 	if (modinfo.forumthread and modinfo.forumthread ~= "") or string.sub(modname, 1, 9) == "workshop-" then
+	-- 	if (modinfo.forumthread and modinfo.forumthread ~= "") or IsWorkshopMod(modname) then
 	-- 		self.modlinkbutton:SetText(STRINGS.UI.MODSSCREEN.MODLINK)
 	-- 	else
 	-- 		self.modlinkbutton:SetText(STRINGS.UI.MODSSCREEN.MODLINKGENERIC)
@@ -1210,24 +1210,8 @@ function ModsScreen:EnableCurrent(idx)
 end
 
 function ModsScreen:ModLinkCurrent()
-	if KnownModIndex:GetModInfo(self.currentmodname) ~= nil then
-		local thread = KnownModIndex:GetModInfo(self.currentmodname).forumthread
-		
-		local url = ""
-		if thread and thread ~= "" then
-			url = "http://forums.kleientertainment.com/index.php?%s"
-			url = string.format(url, thread)
-		else
-			if string.sub(self.currentmodname, 1, 9) == "workshop-" then
-				url = "http://steamcommunity.com/sharedfiles/filedetails/?id="..string.sub(self.currentmodname, 10)
-			else
-				url = "http://forums.kleientertainment.com/forum/79-dont-starve-together-beta-mods-and-tools/"
-			end
-		end
-		VisitURL(url)
-	else
-		VisitURL("http://steamcommunity.com/app/322330/workshop/")
-	end
+    local link_fn = ModManager:GetLinkForMod(self.currentmodname)
+    link_fn()
 end
 
 function ModsScreen:MoreMods()

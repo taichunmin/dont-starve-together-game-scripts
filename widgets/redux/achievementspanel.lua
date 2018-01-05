@@ -17,13 +17,13 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
     self.achievements_root = self:AddChild(Widget("achievements_root"))
 
     self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(736, 406))
-    self.dialog:SetBackgroundTint(1,1,1,.8)
+    self.dialog:SetBackgroundTint(0,0,0,.8)
     self.dialog:SetPosition(0, -5)
     self.dialog.top:Hide() -- top crown would be behind our title.
-
-    self.grid = self.achievements_root:AddChild(self:_BuildAchievementsExplorer(festival_key))
-    self.grid:SetPosition(-10,-5)
-
+    
+    self.grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key) )
+    self.grid:SetPosition(-10,0)
+    
     local title = self.achievements_root:AddChild(Text(HEADERFONT, 28, STRINGS.UI.ACHIEVEMENTS.SCREENTITLE, UICOLOURS.HIGHLIGHT_GOLD))
 	title:SetPosition(0, 222)
 

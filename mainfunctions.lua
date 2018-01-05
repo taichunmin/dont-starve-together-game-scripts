@@ -92,29 +92,46 @@ end
 
 
 local modprefabinitfns = {}
+
+function RegisterPrefabsImpl(prefab, resolve_fn)
+    --print ("Register " .. tostring(prefab))
+    -- allow mod-relative asset paths
+	
+    for i,asset in ipairs(prefab.assets) do
+        if not ShouldIgnoreResolve(asset.file, asset.type) then 
+       		resolve_fn(prefab, asset)
+        end
+    end
+
+    modprefabinitfns[prefab.name] = ModManager:GetPostInitFns("PrefabPostInit", prefab.name)
+    Prefabs[prefab.name] = prefab
+    
+    TheSim:RegisterPrefab(prefab.name, prefab.assets, prefab.deps)
+end
+
+local function RegisterPrefabsResolveAssets(prefab, asset)
+	--print(" - - RegisterPrefabsResolveAssets: " .. asset.file, debugstack())
+    local resolvedpath = resolvefilepath(asset.file, prefab.force_path_search)
+    assert(resolvedpath, "Could not find "..asset.file.." required by "..prefab.name)
+    TheSim:OnAssetPathResolve(asset.file, resolvedpath)
+    asset.file = resolvedpath
+end
+
+local function VerifyPrefabAssetExistsAsync(prefab, asset)
+	-- this is being done to prime the HDD's file cache and ensure all the assets exist before going into game
+	--TheSim:VerifyFileExistsAsync(asset.file) 
+	TheSim:AddBatchVerifyFileExists(asset.file) 
+end
+
 function RegisterPrefabs(...)
     for i, prefab in ipairs({...}) do
-        --print ("Register " .. tostring(prefab))
-        -- allow mod-relative asset paths
-
-        for i,asset in ipairs(prefab.assets) do
-            if not ShouldIgnoreResolve(asset.file, asset.type) then 
-                local resolvedpath = resolvefilepath(asset.file, prefab.force_path_search)
-                assert(resolvedpath, "Could not find "..asset.file.." required by "..prefab.name)
-                TheSim:OnAssetPathResolve(asset.file, resolvedpath)
-                asset.file = resolvedpath
-            end
-        end
-        modprefabinitfns[prefab.name] = ModManager:GetPostInitFns("PrefabPostInit", prefab.name)
-        Prefabs[prefab.name] = prefab
-        
-        TheSim:RegisterPrefab(prefab.name, prefab.assets, prefab.deps)
-    end
+		RegisterPrefabsImpl(prefab, RegisterPrefabsResolveAssets)
+	end
 end
 
 PREFABDEFINITIONS = {}
 
-function LoadPrefabFile( filename )
+function LoadPrefabFile( filename, async_batch_validation )
     --print("Loading prefab file "..filename)
     local fn, r = loadfile(filename)
     assert(fn, "Could not load file ".. filename)
@@ -134,7 +151,11 @@ function LoadPrefabFile( filename )
     if ret then
         for i,val in ipairs(ret) do
             if type(val)=="table" and val.is_a and val:is_a(Prefab) then
-                RegisterPrefabs(val)
+				if async_batch_validation then
+					RegisterPrefabsImpl(val, VerifyPrefabAssetExistsAsync)
+				else
+	                RegisterPrefabs(val)
+	            end
                 PREFABDEFINITIONS[val.name] = val
             end
         end
@@ -872,7 +893,9 @@ exiting_game = false
 
 -- Gets called ONCE when the sim first gets created. Does not get called on subsequent sim recreations!
 function GlobalInit()
-    TheSim:LoadPrefabs({"global"})
+    TheSim:LoadPrefabs({ "global" })
+    TheSim:LoadPrefabs(SPECIAL_EVENT_GLOBAL_PREFABS)
+    TheSim:LoadPrefabs(FESTIVAL_EVENT_GLOBAL_PREFABS)
     LoadFonts()
     if PLATFORM == "PS4" then
         PreloadSounds()
@@ -942,6 +965,7 @@ end
 
 function ForceAssetReset()
     Settings.current_asset_set = "FORCERESET"
+    Settings.current_world_asset = nil
 end
 
 function SimReset(instanceparameters)
@@ -953,6 +977,7 @@ function SimReset(instanceparameters)
         instanceparameters = {}
     end
     instanceparameters.last_asset_set = Settings.current_asset_set
+    instanceparameters.last_world_asset = Settings.current_world_asset
     local params = json.encode(instanceparameters)
     TheSim:SetInstanceParameters(params)
     TheSim:Reset()
@@ -1020,7 +1045,7 @@ function DisplayError(error)
                                                                 SimReset()
                                                             end)
                                                         end},
-                {text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = function() VisitURL("http://forums.kleientertainment.com/index.php?/forum/26-dont-starve-mods-and-tools/") end }
+                {text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = function() VisitURL("http://forums.kleientertainment.com/forum/79-dont-starve-together-beta-mods-and-tools/") end }
             }
         end
         SetGlobalErrorWidget(

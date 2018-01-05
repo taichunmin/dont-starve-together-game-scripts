@@ -111,19 +111,20 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 							--skip this symbol because one of the clothing requested it fall to the default (hand_willow_gladiator)
 							--print("skip symbol and leave it at base:",sym)
 						else
-							if sym == "torso" then torso_build = CLOTHING[name].override_build end
-							if sym == "torso_pelvis" then pelvis_build = CLOTHING[name].override_build end
-							if sym == "skirt" then skirt_build = CLOTHING[name].override_build end
-							if sym == "leg" then leg_build = CLOTHING[name].override_build end
-							if sym == "foot" then foot_build = CLOTHING[name].override_build end
+							--Slight cheat here, we know that name is the item name and the build for clothing, quicker than calling GetBuildForItem(name)
+							if sym == "torso" then torso_build = name end
+							if sym == "torso_pelvis" then pelvis_build = name end
+							if sym == "skirt" then skirt_build = name end
+							if sym == "leg" then leg_build = name end
+							if sym == "foot" then foot_build = name end
 							
 							local src_sym = sym
 							if src_symbols then
 								src_sym = src_symbols[sym] or sym
 							end
 							anim_state:ShowSymbol(sym)
-							anim_state:OverrideSkinSymbol(sym, CLOTHING[name].override_build, src_sym )
-							--print("setting skin", sym, CLOTHING[name].override_build )
+							anim_state:OverrideSkinSymbol(sym, name, src_sym )
+							--print("setting skin", sym, name )
 							
 							if sym == "leg" then
 								if CLOTHING[name].legs_cuff_size ~= nil then

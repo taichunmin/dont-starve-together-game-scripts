@@ -38,7 +38,7 @@ function Menu:RestoreFocusTo(last_focus_widget)
     end
 
     if not found then
-	   self:SetFocus(#self.items)
+	   self:SetFocus()
     end
 end
 
@@ -200,6 +200,25 @@ function Menu:AddItem(text, cb, offset, style, size, control)
         button = self:AddChild(ImageButton("images/global_redux.xml", "button_carny_xlong_normal.tex", "button_carny_xlong_hover.tex", "button_carny_xlong_disabled.tex", "button_carny_xlong_down.tex"))
         button.image:SetScale(.7)
         button:SetFont(CHATFONT)
+    elseif style == "tabs" then
+        button = self:AddChild(ImageButton(
+                "images/frontend_redux.xml",
+                "list_tabs_normal.tex",
+                nil,
+                nil, -- "list_tabs_disabled.tex",
+                nil, -- "list_tabs_down.tex",
+                "list_tabs_selected.tex",
+                {.7},
+                {0,4}
+            ))
+        button.scale_on_focus = false
+        button:UseFocusOverlay("list_tabs_hover.tex")
+        button:SetFont(CHATFONT)
+        button:SetDisabledFont(CHATFONT)
+        button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+        button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+        button:SetTextDisabledColour(UICOLOURS.GOLD_UNIMPORTANT)
+        button:SetTextSelectedColour(UICOLOURS.BLACK)
     elseif style == "none" then
         button = self:AddChild(Button())
         button:SetFont(BUTTONFONT)

@@ -6,6 +6,8 @@ local assets =
     Asset("ANIM", "anim/dragonfly_fire_build.zip"),
     Asset("ANIM", "anim/dragonfly_basic.zip"),
     Asset("ANIM", "anim/dragonfly_actions.zip"),
+    Asset("ANIM", "anim/dragonfly_yule_build.zip"),
+    Asset("ANIM", "anim/dragonfly_fire_yule_build.zip"),
     Asset("SOUND", "sound/dragonfly.fsb"),
 }
 
@@ -134,7 +136,7 @@ end
 --------------------------------------------------------------------------
 
 local function TransformNormal(inst)
-    inst.AnimState:SetBuild("dragonfly_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "dragonfly_yule_build" or "dragonfly_build")
     inst.enraged = false
     --Set normal stats
     inst.components.locomotor.walkspeed = TUNING.DRAGONFLY_SPEED
@@ -156,7 +158,7 @@ local function _OnRevert(inst)
 end
 
 local function TransformFire(inst)
-    inst.AnimState:SetBuild("dragonfly_fire_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "dragonfly_fire_yule_build" or "dragonfly_fire_build")
     inst.enraged = true
     inst.can_ground_pound = true
     --Set fire stats
@@ -457,7 +459,7 @@ local function fn()
     MakeFlyingGiantCharacterPhysics(inst, 500, 1.4)
 
     inst.AnimState:SetBank("dragonfly")
-    inst.AnimState:SetBuild("dragonfly_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "dragonfly_yule_build" or "dragonfly_build")
     inst.AnimState:PlayAnimation("idle", true)
 
     inst:AddTag("epic")

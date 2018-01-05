@@ -34,6 +34,7 @@ local assets =
 
 local prefabs =
 {
+    "cave",
     "forest_network",
     "adventure_portal",
     "resurrectionstone",

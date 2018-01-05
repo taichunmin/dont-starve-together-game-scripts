@@ -4,7 +4,6 @@ local Text = require "widgets/text"
 local UIAnim = require "widgets/uianim"
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
-local Spinner = require "widgets/spinner"
 local MagicSkinCollector = require "widgets/magicskincollector"
 local OnlineStatus = require "widgets/onlinestatus"
 local PopupDialogScreen = require "screens/popupdialog"
@@ -102,7 +101,7 @@ function MysteryBoxScreen:_BuildBoxesPanel()
     self.frame:SetScale(0.9)
     self.frame:SetPosition(0,10)
     
-    boxes_ss.spinner = boxes_ss:AddChild(Spinner({}, 450, 40, {font=HEADERFONT, size=30}, nil, nil, nil, true, nil, nil))
+    boxes_ss.spinner = boxes_ss:AddChild(TEMPLATES.StandardSpinner({}, 450, 40, HEADERFONT, 30))
 	boxes_ss.spinner.background:Hide()
     boxes_ss.spinner:SetPosition( 0, 140, 0 )
     boxes_ss.spinner:SetTextColour( UICOLOURS.GOLD_SELECTED )
@@ -132,9 +131,11 @@ function MysteryBoxScreen:_BuildBoxesPanel()
     boxes_ss.open_btn:SetText(STRINGS.UI.MYSTERYBOXSCREEN.OPEN_BOX)
     boxes_ss.open_btn:SetPosition( 100, -120 )
     boxes_ss.open_btn:SetOnClick(function()
-        local box_item_id = GetMysteryBoxItemID( boxes_ss.spinner:GetSelectedData() )
+		local box_item_type = boxes_ss.spinner:GetSelectedData()
+        local box_item_id = GetMysteryBoxItemID( box_item_type )
         local options = {
             allow_cancel = true,
+            box_build = GetBoxBuildForItem( box_item_type ),
         }
         local box_popup = ItemBoxOpenerPopup(self, options, function(success_cb)
             TheItems:OpenBox(box_item_id, function(success, item_types)

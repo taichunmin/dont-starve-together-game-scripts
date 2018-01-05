@@ -19,15 +19,15 @@ local EmojiExplorerPanel = Class(Widget, function(self, owner, user_profile)
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(130, 140)
 
-    self.filterBar = FilterBar(self.picker)
-    self.picker.header:AddChild( self.filterBar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.filter_bar = FilterBar(self.picker, "collectionscreen")
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
 
     self:_DoFocusHookups()
-    self.focus_forward = self.picker
+    self.focus_forward = self.filter_bar:BuildFocusFinder()
 end)
 
 function EmojiExplorerPanel:_DoFocusHookups()
-    self.picker.header.focus_forward = self.filterBar
+    self.picker.header.focus_forward = self.filter_bar
 end
 
 function EmojiExplorerPanel:_GetCurrentCharacter()
@@ -46,7 +46,7 @@ end
 
 function EmojiExplorerPanel:OnShow()
     EmojiExplorerPanel._base.OnShow(self)
-    self.picker:RefreshItems()
+    self.filter_bar:RefreshFilterState()
 end
 
 function EmojiExplorerPanel:_BuildItemExplorer()

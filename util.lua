@@ -565,7 +565,7 @@ function softresolvefilepath(filepath, force_path_search)
 
 	local searchpaths = package.path
     for path in string.gmatch(searchpaths, "([^;]+)") do
-        local filename = string.gsub(path, "scripts\\%?%.lua", filepath)
+        local filename = string.gsub(path, "scripts\\%?%.lua", filepath) -- why is this not string.gsub(path, "%?", modulepath) like in worldgen_main.lua?!?
         filename = string.gsub(filename, "\\", "/")
 		--print("looking for: "..filename.." ("..filepath..")")
 		if not kleifileexists or kleifileexists(filename) then

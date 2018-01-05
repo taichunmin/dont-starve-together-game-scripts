@@ -6,7 +6,7 @@ local assets =
 	Asset("ANIM", "anim/ghost_werebeaver_build.zip"),
 	Asset("DYNAMIC_ANIM", "anim/dynamic/woodie_gladiator.zip"),
 	Asset("ANIM", "anim/werebeaver_build.zip"),
-	Asset("ATLAS_BUILD", "bigportraits/woodie_gladiator.xml", 128),
+	Asset("ATLAS_BUILD", "bigportraits/woodie_gladiator.xml", 192),
 }
 
 return CreatePrefabSkin("woodie_gladiator",

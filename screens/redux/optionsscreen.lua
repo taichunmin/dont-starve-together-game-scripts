@@ -1300,27 +1300,13 @@ function OptionsScreen:InitializeSpinners(first)
 		-- Add the bg change when non-init value for all spinners
         local function SetupOnChange(i,spinner)
 			if spinner then
-			    spinner.changed_image = spinner:AddChild(Image("images/global_redux.xml", "wardrobe_spinner_bg.tex"))
-				spinner.changed_image:SetPosition(2, 0)
-				spinner.changed_image:ScaleToSize(spinner.width-45, spinner.height)
-				spinner.changed_image:MoveToBack()
-				spinner.changed_image:SetClickable(false)
-				spinner.changed_image:Hide()
-				spinner.changed_image:SetTint(1,1,1,0.3)
-				spinner.background:SetPosition(0,-1)
-
 				spinner.default_index = spinner:GetSelectedIndex()
+                spinner:EnablePendingModificationBackground()
 
 				local spinOnChanged = spinner.OnChanged
-
 				spinner.OnChanged = function(_, data)
 					spinOnChanged(_, data)
-
-					if spinner:GetSelectedIndex() ~= spinner.default_index then
-                        spinner.changed_image:Show()
-                    else
-                        spinner.changed_image:Hide()
-                    end
+					spinner:SetHasModification(spinner:GetSelectedIndex() ~= spinner.default_index)
 				end
 			end
         end

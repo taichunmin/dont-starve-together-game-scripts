@@ -1,15 +1,11 @@
 -- Partially rebuilt DressupPanel.
 --
--- Currently only updated to look good with SeparateAvatar!
---
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
 local Puppet = require "widgets/skinspuppet"
 local AnimSpinner = require "widgets/animspinner"
-
-
-local TEMPLATES = require "widgets/templates"
+local TEMPLATES = require "widgets/redux/templates"
 
 local testNewTag = false
 
@@ -71,24 +67,16 @@ local DressupPanel = Class(Widget, function(self, owner_screen, profile, playerd
 		text2:SetHAlign(ANCHOR_MIDDLE)
 		text2:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
 	else
-		self.bg_group = self.root:AddChild(TEMPLATES.CurlyWindow(10, 520, .6, .6, 39, -25))
-	    --self.dressup.bg_group:SetPosition(RESOLUTION_X - 250, window_y_pos, 0)
-
-		self.dressup_bg = self.bg_group:AddChild(Image("images/serverbrowser.xml", "side_panel.tex"))
-		self.dressup_bg:SetScale(-.66, -.82)
-		self.dressup_bg:SetPosition(5, 6)
+		self.bg_group = self.root:AddChild(TEMPLATES.RectangleWindow(180, 550))
+        local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+        self.bg_group:SetBackgroundTint(r,g,b,0.6)
 
 		self.spinners = self.root:AddChild(Widget("spinners"))
-		self.spinners:SetPosition(-5, 0)
 		self.dressup_frame = self.root:AddChild(Widget("frame"))
-		self.outline = self.dressup_frame:AddChild(Widget("outline"))
-		self.outline:SetPosition(-5, 0)
 
 		local title_height = 190
-
 		
 		self.puppet_group = self.root:AddChild(Widget("puppet"))
-		self.puppet_group:SetPosition(-5, 0)
 
 		self.glow = self.puppet_group:AddChild(Image("images/lobbyscreen.xml", "glow.tex"))
 		self.glow:SetPosition( 10, title_height-20)
@@ -112,39 +100,10 @@ local DressupPanel = Class(Widget, function(self, owner_screen, profile, playerd
 		self.random_avatar:Hide()
 		
 		local body_offset = 35
-		local vert_scale = .56
 		local option_height = 75
 		local spinner_offset = -10
 		local arrow_scale = .3
 			
-		self.upper_horizontal_line = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-		self.upper_horizontal_line:SetScale(.19, .4)
-		self.upper_horizontal_line:SetPosition(10, body_offset+option_height, 0)
-
-	    self.mid_horizontal_line1 = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-	    self.mid_horizontal_line1:SetScale(.19, .4)
-	    self.mid_horizontal_line1:SetPosition(10, body_offset, 0)
-
-	    self.mid_horizontal_line2 = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-	    self.mid_horizontal_line2:SetScale(.19, .4)
-	    self.mid_horizontal_line2:SetPosition(10, body_offset-option_height, 0)
-
-	    self.mid_horizontal_line3 = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-	    self.mid_horizontal_line3:SetScale(.19, .4)
-	    self.mid_horizontal_line3:SetPosition(10, body_offset-2*option_height, 0)
-
-	    self.mid_horizontal_line4 = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-	    self.mid_horizontal_line4:SetScale(.19, .4)
-	    self.mid_horizontal_line4:SetPosition(10, body_offset-3*option_height, 0)
-
-	    self.left_vertical_line = self.outline:AddChild(Image("images/ui.xml", "line_vertical_5.tex"))
-	    self.left_vertical_line:SetScale(.45, vert_scale)
-	    self.left_vertical_line:SetPosition(-100, -75, 0)
-
-	    self.right_vertical_line = self.outline:AddChild(Image("images/ui.xml", "line_vertical_5.tex"))
-	    self.right_vertical_line:SetScale(.45, vert_scale)
-	    self.right_vertical_line:SetPosition(120, -75, 0)
-
 		self.base_spinner = self.spinners:AddChild(self:MakeSpinner("base"))
 		self.base_spinner:SetPosition(0, body_offset + spinner_offset)
 		self.base_spinner.spinner:SetArrowScale(arrow_scale)
@@ -167,10 +126,6 @@ local DressupPanel = Class(Widget, function(self, owner_screen, profile, playerd
 		
 		self.all_spinners = { self.base_spinner, self.body_spinner, self.hand_spinner, self.legs_spinner, self.feet_spinner }
 		
-		self.lower_horizontal_line = self.outline:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-    	self.lower_horizontal_line:SetScale(.19, .4)
-    	self.lower_horizontal_line:SetPosition(10, body_offset-4*option_height, 0)
-
 		self.default_focus = self.body_spinner.spinner
 		self.focus_forward = self.body_spinner.spinner
 	end
@@ -192,7 +147,6 @@ end
 function DressupPanel:SeparateAvatar()
 	if CanPlayDressup() then 
 		self.bg_group:Hide()
-		self.outline:Hide()
 
 		local body_offset = 35
 		local option_height = 55
@@ -273,26 +227,7 @@ end
 function DressupPanel:MakeSpinner(slot)
 
 	local spinner_group = Widget("spinner group")
-
     local atlas = "images/global_redux.xml"
-
-	local textures = {
-		arrow_left_normal = "arrow2_left.tex",
-		arrow_left_over = "arrow2_left_over.tex",
-		arrow_left_disabled = "arrow_left_disabled.tex",
-		arrow_left_down = "arrow2_left_down.tex",
-		arrow_right_normal = "arrow2_right.tex",
-		arrow_right_over = "arrow2_right_over.tex",
-		arrow_right_disabled = "arrow_right_disabled.tex",
-		arrow_right_down = "arrow2_right_down.tex",
-		bg_middle = "blank.tex",
-		bg_middle_focus = "spinner_focus.tex", --"box_2.tex",
-		bg_middle_changing = "blank.tex",
-		bg_end = "blank.tex",
-		bg_end_focus = "blank.tex",
-		bg_end_changing = "blank.tex",
-	}
-
 
 	local spinner_width = 226
 	local spinner_height = 86
@@ -324,7 +259,7 @@ function DressupPanel:MakeSpinner(slot)
 	spinner_group.glow:SetClickable(false)
 	spinner_group.glow:Hide()
 
-	spinner_group.spinner = spinner_group:AddChild(AnimSpinner( self:GetSkinOptionsForSlot(slot), spinner_width, nil, {font=NEWFONT_OUTLINE, size=20}, nil, atlas, textures, true, 104, 80 ))
+	spinner_group.spinner = spinner_group:AddChild(AnimSpinner( self:GetSkinOptionsForSlot(slot), spinner_width, nil, {font=NEWFONT_OUTLINE, size=20}, nil, atlas, nil, true, 104, 80 ))
 	spinner_group.spinner:SetAnim("frames_comp", "fr", "icon", "SWAP_ICON", true)
 	spinner_group.spinner.fganim:GetAnimState():Hide("frame")
 	spinner_group.spinner.fganim:GetAnimState():Hide("NEW")
@@ -506,26 +441,12 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 					if new_indicator and key then 
 						skin_options_items[key].new_indicator = true
 						
-					elseif new_indicator or not key then 
-
-						local buildfile = item
-						if slot == "base" then 
-							local skinsData = Prefabs[item]
-							if skinsData and skinsData.build_name then 
-								buildfile = skinsData.build_name
-							end
-						else
-							local clothing_data = CLOTHING[item]
-							if clothing_data and clothing_data.override_build then
-								buildfile = clothing_data.override_build
-							end
-						end
-		
-						table.insert(skin_options_items,  
+					elseif new_indicator or not key then
+						table.insert(skin_options_items,
 						{
 							text = text_name, 
 							data = nil,
-							build = buildfile,
+							build = GetBuildForItem(item),
 							item = item,
 							symbol = "SWAP_ICON",
 							colour = colour,
@@ -676,7 +597,7 @@ function DressupPanel:Reset(set_spinner_to_new_item)
 		else
 			--check if the player has an event skin (that they probably don't know about) and then set it.
 			local event_skin_index = 1
-			local current_tag = GetGameModeProperty("skin_tag") or SPECIAL_EVENTS_SKIN_TAGS[WORLD_FESTIVAL_EVENT] or SPECIAL_EVENTS_SKIN_TAGS[WORLD_SPECIAL_EVENT] 
+			local current_tag = GetGameModeProperty("skin_tag") or GetFestivalEventSkinTag() or GetSpecialEventSkinTag()
 			for i,option_data in pairs(base_options) do
 				if current_tag ~= nil then
 					if DoesItemHaveTag(option_data.item, current_tag) then

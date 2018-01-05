@@ -46,7 +46,7 @@ local TrueScrollList = Class(Widget, function(self, context, create_widgets_fn, 
 	self.list_root = self.scissored_root:AddChild(Widget("list_root")) --this is the container that we'll be scrolling, and then it'll be scissored by the list itself.
     
 	
-    self.widgets_to_update, self.widgets_per_row, self.row_height, self.visible_rows, self.end_offset = create_widgets_fn( context, self.list_root, self )
+    self.widgets_to_update, self.widgets_per_row, self.row_height, self.visible_rows, self.end_offset = create_widgets_fn( self.context, self.list_root, self )
 	self.update_fn = update_fn
 		
 	self.items_per_view = #self.widgets_to_update
@@ -80,7 +80,7 @@ function TrueScrollList:DebugDraw_AddSection(dbui, panel)
 
     local force_reposition = false
     if self.scissor_preview.image == nil then
-        self.scissor_preview.image = self.scissored_root:AddChild(Image("images/ui.xml", "black.tex"))
+        self.scissor_preview.image = self.scissored_root:AddChild(Image("images/ui.xml", "white.tex"))
         self.scissor_preview.image:SetSize(self.scissor_preview.width, self.scissor_preview.height)
         self.scissor_preview.image:Hide()
         force_reposition = true
@@ -89,7 +89,7 @@ function TrueScrollList:DebugDraw_AddSection(dbui, panel)
     dbui.Spacing()
     dbui.Text("TrueScrollList")
     dbui.Indent() do
-        local changed, show = dbui.Checkbox("black out scissor region", self.scissor_preview.image:IsVisible())
+        local changed, show = dbui.Checkbox("white out scissor region", self.scissor_preview.image:IsVisible())
         if changed then
             if show then
                 self.scissor_preview.image:Show()
@@ -154,7 +154,7 @@ function TrueScrollList:BuildScrollBar()
     end)
     
     self.down_button = self.scroll_bar_container:AddChild(ImageButton("images/global_redux.xml", "scrollbar_arrow_down.tex"))
-    self.down_button:SetPosition(0, -self.scrollbar_height/2 - nudge_y)
+    self.down_button:SetPosition(0, -self.scrollbar_height/2 - nudge_y/2)
     self.down_button:SetScale(0.3)
     self.down_button:SetWhileDown( function()
         if not self.last_down_button_time or GetTime() - self.last_down_button_time > button_repeat_time then
@@ -285,6 +285,17 @@ function TrueScrollList:Scroll(scroll_step)
 	self.target_scroll_pos = self.target_scroll_pos + scroll_step
 end
 
+-- Scrolls so the input widget is at the top of the list (if possible).
+-- Maintains the current amount of offset (so if the top widget is half
+-- visible, it will remain half visible).
+function TrueScrollList:ScrollToWidgetIndex(index)
+	local row_num, row_offset = math.modf(self.current_scroll_pos)
+    local target = index + row_offset
+    self.current_scroll_pos = target
+	self.target_scroll_pos = target
+    self:RefreshView()
+end
+
 function TrueScrollList:OnWidgetFocus(focused_widget)
     -- OnWidgetFocus is not called when scrolling with CONTROL_SCROLLFWD/BACK,
     -- so you can't capture item indexes here! (see displayed_start_index instead)
@@ -318,10 +329,16 @@ function TrueScrollList:_GetScrollAmountPerRow()
     return (self.end_pos-1) / self.total_rows * 2
 end
 
+-- Get the index in GetListWidgets for the first visible widget.
+-- Also returns an offset for how much of the widget is displayed (no promises).
+function TrueScrollList:GetIndexOfFirstVisibleWidget()
+	local row_num, row_offset = math.modf( self.current_scroll_pos )
+	return ((row_num - 1) * self.widgets_per_row), row_offset
+end
+
 function TrueScrollList:RefreshView()
 	-- figure out which set of data we're using
-	local row_num, row_offset = math.modf( self.current_scroll_pos )
-	local start_index = ((row_num - 1) * self.widgets_per_row)
+	local start_index, row_offset = self:GetIndexOfFirstVisibleWidget()
     -- Track the start of data so we can determine widget:item map elsewhere.
     self.displayed_start_index = start_index
 

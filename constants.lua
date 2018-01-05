@@ -271,9 +271,16 @@ GESTURE_ROTATE_RIGHT = 903
 GESTURE_MAX = 904
 
 
-BACKEND_PREFABS = {"hud", "forest", "cave", "lavaarena", "fire", "character_fire", "shatter"}
-FRONTEND_PREFABS = {"frontend"}
+BACKEND_PREFABS = { "forest", "cave", "lavaarena" }
+FRONTEND_PREFABS = { "frontend" }
 RECIPE_PREFABS = {}
+--Defined below:
+-- SPECIAL_EVENT_GLOBAL_PREFABS
+-- SPECIAL_EVENT_BACKEND_PREFABS
+-- SPECIAL_EVENT_FRONTEND_PREFABS
+-- FESTIVAL_EVENT_GLOBAL_PREFABS
+-- FESTIVAL_EVENT_BACKEND_PREFABS
+-- FESTIVAL_EVENT_FRONTEND_PREFABS
 
 FADE_OUT = false
 FADE_IN = true
@@ -455,6 +462,8 @@ GROUND =
 --	SALT_WATER_DEEP = 135,
 }
 
+
+---------------------------------------------------------
 SPECIAL_EVENTS =
 {
     NONE = "none",
@@ -462,21 +471,29 @@ SPECIAL_EVENTS =
     WINTERS_FEAST = "winters_feast",
     YOTG = "year_of_the_gobbler",
 }
-WORLD_SPECIAL_EVENT = SPECIAL_EVENTS.HALLOWED_NIGHTS
+WORLD_SPECIAL_EVENT = SPECIAL_EVENTS.WINTERS_FEAST
 
 FESTIVAL_EVENTS =
 {
     NONE = "none",
     LAVAARENA = "lavaarena",
 }
-WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.LAVAARENA
+WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.NONE
 PREVIOUS_FESTIVAL_EVENT = FESTIVAL_EVENTS.LAVAARENA
 
-SPECIAL_EVENTS_SKIN_TAGS =
-{
-    hallowed_nights = "COSTUME",
-}
 
+---------------------------------------------------------
+-- Reminder: update event_deps.lua
+SPECIAL_EVENT_GLOBAL_PREFABS = { WORLD_SPECIAL_EVENT.."_event_global" }
+SPECIAL_EVENT_BACKEND_PREFABS = { WORLD_SPECIAL_EVENT.."_event_backend" }
+SPECIAL_EVENT_FRONTEND_PREFABS = { WORLD_SPECIAL_EVENT.."_event_frontend" }
+
+FESTIVAL_EVENT_GLOBAL_PREFABS = { WORLD_FESTIVAL_EVENT.."_fest_global" }
+FESTIVAL_EVENT_BACKEND_PREFABS = { WORLD_FESTIVAL_EVENT.."_fest_backend" }
+FESTIVAL_EVENT_FRONTEND_PREFABS = { WORLD_FESTIVAL_EVENT.."_fest_frontend" }
+
+
+---------------------------------------------------------
 --Used in preloadsounds.lua
 ---------------------------------------------------------
 -- Reminder: update asset dependencies in frontend.lua --
@@ -508,6 +525,17 @@ FESTIVAL_EVENT_MUSIC =
     },
 }
 
+
+---------------------------------------------------------
+local SPECIAL_EVENT_SKIN_TAGS =
+{
+    [SPECIAL_EVENTS.HALLOWED_NIGHTS] = "COSTUME",
+}
+
+local FESTIVAL_EVENT_SKIN_TAGS =
+{
+}
+
 local FESTIVAL_EVENT_INFO =
 {
     --the forge
@@ -519,6 +547,8 @@ local FESTIVAL_EVENT_INFO =
     },
 }
 
+
+---------------------------------------------------------
 -- Refers to holiday-specific events.
 function IsSpecialEventActive(event)
     return WORLD_SPECIAL_EVENT == event
@@ -528,6 +558,12 @@ function IsAnySpecialEventActive()
     return WORLD_SPECIAL_EVENT ~= SPECIAL_EVENTS.NONE
 end
 
+function GetSpecialEventSkinTag()
+    return SPECIAL_EVENT_SKIN_TAGS[WORLD_SPECIAL_EVENT]
+end
+
+
+---------------------------------------------------------
 -- Refers to intermittent scheduled events.
 function IsFestivalEventActive(event)
     return WORLD_FESTIVAL_EVENT == event
@@ -537,21 +573,23 @@ function IsAnyFestivalEventActive()
     return WORLD_FESTIVAL_EVENT ~= FESTIVAL_EVENTS.NONE
 end
 
--- Refers to intermittent scheduled events.
+function GetFestivalEventSkinTag()
+    return FESTIVAL_EVENT_SKIN_TAGS[WORLD_FESTIVAL_EVENT]
+end
+
 function GetFestivalEventInfo()
     return FESTIVAL_EVENT_INFO[WORLD_FESTIVAL_EVENT]
 end
 
 -- Used by C side. Do NOT rename without editing simulation.cpp
 function GetMostRecentFestivalEventServerName()
-    local festival = PREVIOUS_FESTIVAL_EVENT
-    if IsAnyFestivalEventActive() then
-        festival = WORLD_FESTIVAL_EVENT
-    end
+    local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT or PREVIOUS_FESTIVAL_EVENT
     assert(festival ~= FESTIVAL_EVENTS.NONE, "We must have had an event at some point.")
     return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
 end
 
+
+---------------------------------------------------------
 --If changing this logic, remember to update preloadsounds.lua
 --default:
 --  bank = "music_frontend.fsb"
@@ -561,6 +599,8 @@ FE_MUSIC =
     (SPECIAL_EVENT_MUSIC[WORLD_SPECIAL_EVENT] ~= nil and SPECIAL_EVENT_MUSIC[WORLD_SPECIAL_EVENT].sound) or
     "dontstarve/music/music_FE"
 
+
+---------------------------------------------------------
 NUM_HALLOWEENCANDY = 14
 NUM_WINTERFOOD = 9
 
@@ -1295,10 +1335,18 @@ UICOLOURS = {
     GOLD_UNIMPORTANT = RGB(213, 213, 203, 255), -- non-interactive non-important text
     HIGHLIGHT_GOLD = RGB(243, 217, 161, 255),
     GOLD = GOLD,
+    BROWN_MEDIUM = RGB(107, 84, 58),
+    BROWN_DARK = RGB(80, 61, 39),
+    BLUE = RGB(80, 143, 244, 255),
     GREY = GREY,
     BLACK = BLACK,
     WHITE = WHITE,
+    BRONZE = RGB(180, 116, 36, 1),
     EGGSHELL = RGB(252, 230, 201),
+    IVORY = RGB(236, 232, 223, 1),
+    PURPLE = RGB(152, 86, 232, 1),
+    RED = RGB(207, 61, 61, 1),
+    SLATE = RGB(155, 170, 177, 1),
 }
 
 

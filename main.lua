@@ -263,8 +263,11 @@ local function ModSafeStartup()
 
 	-- Register every standard prefab with the engine
 
-	-- This one needs to be active from the get-go.
-	LoadPrefabFile("prefabs/global")
+    -- This one needs to be active from the get-go.
+    -- event_deps is also needed for event specific globals.
+    local async_batch_validation = RUN_GLOBAL_INIT
+    LoadPrefabFile("prefabs/global", async_batch_validation)
+    LoadPrefabFile("prefabs/event_deps", async_batch_validation)
     LoadAchievements("achievements.lua")
     EventAchievements = require("eventachievements")()
     EventAchievements:LoadAchievementsForEvent(require("lavaarena_achievements"))

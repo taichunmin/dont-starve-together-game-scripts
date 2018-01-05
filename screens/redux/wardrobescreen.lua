@@ -182,8 +182,11 @@ function WardrobeScreen:_CheckDirty()
     end
     local saved_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter, saved_base)
 
+    -- Either table may have missing entries for defaults (except
+    -- base), so check all keys.
+    local all_keys = ArrayUnion(table.getkeys(saved_skins), table.getkeys(self.selected_skins))
     local dirty = false
-    for key,item_key in pairs(self.selected_skins) do
+    for i,key in ipairs(all_keys) do
         if saved_skins[key] ~= self.selected_skins[key] then
             dirty = true
         end

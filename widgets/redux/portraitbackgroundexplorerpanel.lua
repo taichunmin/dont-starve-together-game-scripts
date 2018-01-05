@@ -37,8 +37,8 @@ local PortraitBackgroundExplorerPanel = Class(Widget, function(self, owner, user
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 140)
 
-    self.filterBar = FilterBar(self.picker)
-    self.picker.header:AddChild( self.filterBar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.filter_bar = FilterBar(self.picker, "collectionscreen")
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
    
     self:_DoFocusHookups()
     self.focus_forward = self.heroselector
@@ -47,9 +47,9 @@ local PortraitBackgroundExplorerPanel = Class(Widget, function(self, owner, user
 end)
 
 function PortraitBackgroundExplorerPanel:_DoFocusHookups()
-    self.heroselector:SetFocusChangeDir(MOVE_RIGHT, self.picker)
+    self.heroselector:SetFocusChangeDir(MOVE_RIGHT, self.filter_bar:BuildFocusFinder())
     self.picker:SetFocusChangeDir(MOVE_LEFT, self.heroselector)
-    self.picker.header.focus_forward = self.filterBar
+    self.picker.header.focus_forward = self.filter_bar
 end
 
 function PortraitBackgroundExplorerPanel:_GetCurrentCharacter()
@@ -68,7 +68,7 @@ end
 function PortraitBackgroundExplorerPanel:OnShow()
     PortraitBackgroundExplorerPanel._base.OnShow(self)
     self.heroselector:LoadLastSelectedFromProfile()
-    self.picker:RefreshItems()
+    self.filter_bar:RefreshFilterState()
     self:_RefreshPreview()
 end
 

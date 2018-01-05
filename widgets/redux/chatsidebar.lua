@@ -63,9 +63,10 @@ end]]
 function ChatSidebar:MakeTextEntryBox(parent)
     local chatbox = parent:AddChild(Widget("chatbox"))
     local box_size = 240
+    local box_height = 40
     local nudgex = 60
     local nudgey = -37
-    chatbox.textbox_root = chatbox:AddChild(TEMPLATES.StandardSingleLineTextEntry(nil, box_size - 5))
+    chatbox.textbox_root = chatbox:AddChild(TEMPLATES.StandardSingleLineTextEntry(nil, box_size - 5, box_height))
     chatbox.textbox_root:SetPosition((box_size * .5) - 100 + 26 + nudgex, nudgey, 0)
 
     chatbox.textbox = chatbox.textbox_root.textbox
@@ -84,13 +85,15 @@ function ChatSidebar:MakeTextEntryBox(parent)
         self.chatbox.textbox:SetString("")
         self.chatbox.textbox:SetEditing(true)
     end
-    chatbox.textbox:EnableWordPrediction({width = 1100}, Emoji.GetWordPredictionDictionary())
+    chatbox.textbox:EnableWordPrediction({width = 1100, mode=Profile:GetChatAutocompleteMode()}, Emoji.GetWordPredictionDictionary())
 
-    chatbox.gobutton = chatbox:AddChild(ImageButton("images/lobbyscreen.xml", "button_send.tex", "button_send_over.tex", "button_send_down.tex", "button_send_down.tex", "button_send_down.tex", {1,1}, {0,0}))
+    chatbox.gobutton = chatbox:AddChild(TEMPLATES.StandardButton(
+            function() self.chatbox.textbox:OnTextEntered() end,
+            nil,
+            {box_height, box_height},
+            {"images/button_icons.xml", "submit.tex"}
+        ))
     chatbox.gobutton:SetPosition(box_size - 59 + nudgex, nudgey)
-    chatbox.gobutton:SetScale(.13)
-    chatbox.gobutton.image:SetTint(.6,.6,.6,1)
-    chatbox.gobutton:SetOnClick( function() self.chatbox.textbox:OnTextEntered() end )
 
      -- If chatbox ends up focused, highlight the textbox so we can tell something is focused.
     chatbox:SetOnGainFocus( function() chatbox.textbox:OnGainFocus() end )

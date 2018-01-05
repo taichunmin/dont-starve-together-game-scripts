@@ -358,7 +358,7 @@ function MainScreen:OnUpdate(dt)
     if not self.music_playing then
         TheFrontEnd:GetSound():PlaySound(FE_MUSIC, "FEMusic")
         TheFrontEnd:GetSound():SetParameter("FEMusic", "fade", 1)
-        TheFrontEnd:GetSound():PlaySound("dontstarve/together_FE/portal_idle_vines", "FEPortalSFX")
+        --TheFrontEnd:GetSound():PlaySound("dontstarve/together_FE/portal_idle_vines", "FEPortalSFX")
         self.music_playing = true
     end
 

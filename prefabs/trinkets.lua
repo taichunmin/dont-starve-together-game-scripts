@@ -8,7 +8,7 @@ function PickRandomTrinket()
 	local unlocked_trinkets = {}
 	for i = 1,NUM_TRINKETS do
 		if (not has_locked_chess or not chessunlocks:IsLocked("trinket_"..i))
-			and (is_hallowednights or not(i >= HALLOWEDNIGHTS_TINKET_START and i <= HALLOWEDNIGHTS_TINKET_START)) then
+			and (is_hallowednights or not(i >= HALLOWEDNIGHTS_TINKET_START and i <= HALLOWEDNIGHTS_TINKET_END)) then
 
 			table.insert(unlocked_trinkets, i)
 		end
@@ -67,7 +67,7 @@ local function MakeTrinket(num)
         inst.components.tradable.goldvalue = TUNING.GOLD_VALUES.TRINKETS[num] or 3
         inst.components.tradable.tradefor = TRADEFOR[num]
         
-		if num >= HALLOWEDNIGHTS_TINKET_START and num <= HALLOWEDNIGHTS_TINKET_START then
+		if num >= HALLOWEDNIGHTS_TINKET_START and num <= HALLOWEDNIGHTS_TINKET_END then
 	        if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 				inst.components.tradable.halloweencandyvalue = 5
 			end

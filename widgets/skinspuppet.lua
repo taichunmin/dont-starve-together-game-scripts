@@ -25,10 +25,12 @@ local SkinsPuppet = Class(Widget, function(self)
     self.animstate = self.anim:GetAnimState()
     self.animstate:SetBank("corner_dude")
     self.animstate:SetBuild("wilson")
+    self.animstate:AddOverrideBuild("player_emote_extra")
     self.animstate:PlayAnimation("idle", true)
 
     self.animstate:Hide("ARM_carry")
     self.animstate:Hide("head_hat")
+    self.animstate:Hide("HAIR_HAT")
 
     self.anim:SetScale(.25)
     

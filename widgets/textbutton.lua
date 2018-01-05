@@ -1,108 +1,39 @@
-local Widget = require "widgets/widget"
 local Button = require "widgets/button"
-local Text = require "widgets/text"
 local Image = require "widgets/image"
 
+-- Clickable text. You should probably use ImageButton or just Button instead.
 local TextButton = Class(Button, function(self, name)
 	Button._ctor(self, name or "TEXTBUTTON")
 
     self.image = self:AddChild(Image("images/ui.xml", "blank.tex"))
-    self.text = self:AddChild(Text(DEFAULTFONT, 30))
+    self:SetFont(DEFAULTFONT)
+    self:SetTextSize(30)
 
-	self.colour = {0.9,0.8,0.6,1}
-	self.overcolour = {1,1,1,1}
+    self:SetTextColour({0.9,0.8,0.6,1})
+    self:SetTextFocusColour({1,1,1,1})
 end)
 
 	
-function TextButton:OnGainFocus()
-	TextButton._base.OnGainFocus(self)
-    if self:IsEnabled() then
-    	self.text:SetColour(self.overcolour)
-	end
-
-    if self.image_focus == self.image_normal then
-        self.image:SetScale(1.2,1.2,1.2)
-    end
-
-end
-
-function TextButton:OnLoseFocus()
-	TextButton._base.OnLoseFocus(self)
-    if self:IsEnabled() then
-    	self.text:SetColour(self.colour)
-	end
-
-    if self.image_focus == self.image_normal then
-        self.image:SetScale(1,1,1)
-    end
-end
-
-
-function TextButton:Enable()
-	TextButton._base.Enable(self)
-
-    if self.atlas and (self.focus and self.image_focus or self.image_normal) then
-        self.image:SetTexture(self.atlas, self.focus and self.image_focus or self.image_normal)
-    end
-
-    if self.image_focus == self.image_normal then
-        if self.focus then
-            self.image:SetScale(1.2,1.2,1.2)
-        else
-            self.image:SetScale(1,1,1)
-        end
-    end
-
-end
-
-function TextButton:Disable()
-	TextButton._base.Disable(self)
-    if self.atlas and self.image_disabled then
-        self.image:SetTexture(self.atlas, self.image_disabled)
-    end
-end
-
 function TextButton:GetSize()
     return self.image:GetSize()
 end
 
-function TextButton:SetTextSize(sz)
-	self.text:SetSize(sz)
-end
-
 function TextButton:SetText(msg)
-    if msg then
-        self.text:SetString(msg)
-        self.text:Show()
-    else
-        self.text:Hide()
-    end
+    TextButton._base.SetText(self, msg)
+
+    -- This is the only reason to use TextButton: it automatically sizes a
+    -- clickable transparent image to the size of your text.
 	self.image:SetSize(self.text:GetRegionSize())
 end
 
-function TextButton:SetFont(font)
-	self.text:SetFont(font)
-end
-
+-- Deprecated. Use SetTextColour instead.
 function TextButton:SetColour(r,g,b,a)
-	if type(r) == "number" then
-		self.colour = {r,g,b,a}
-	else
-		self.colour = r
-	end
-	self.text:SetColour(self.colour)
+	self:SetTextColour(r,g,b,a)
 end
 
+-- Deprecated. Use SetTextFocusColour instead.
 function TextButton:SetOverColour(r,g,b,a)
-	if type(r) == "number" then
-		self.overcolour = {r,g,b,a}
-	else
-		self.overcolour = r
-	end
-end
-
-function TextButton:SetOnClick( fn )
-    self.onclick = fn
+    self:SetTextFocusColour(r,g,b,a)
 end
 
 return TextButton

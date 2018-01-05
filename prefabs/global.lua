@@ -49,10 +49,6 @@ local assets =
 	Asset("ATLAS", "images/frontend.xml"),
 	Asset("IMAGE", "images/frontend.tex"),
 
-	--Note(Peter):try moving this to the frontend prefab
-    Asset("ATLAS", "images/fg_trees.xml"),
-    Asset("IMAGE", "images/fg_trees.tex"),
-
     Asset("ATLAS", "images/bg_spiral.xml"),
     Asset("IMAGE", "images/bg_spiral.tex"),
     Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill1.xml"),
@@ -71,29 +67,8 @@ local assets =
     Asset("PKGREF", "images/bg_spiral_fill7.tex"),
     Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill8.xml"),
     Asset("PKGREF", "images/bg_spiral_fill8.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_halloween1.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_halloween1.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_halloween2.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_halloween2.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_halloween3.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_halloween3.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_halloween4.xml"),
-    Asset("ASSET_PKGREF", "images/bg_spiral_fill_halloween4.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_halloween5.xml"),
-    Asset("ASSET_PKGREF", "images/bg_spiral_fill_halloween5.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_christmas1.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_christmas1.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_christmas2.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_christmas2.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_yotg1.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_yotg1.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill_yotg2.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill_yotg2.tex"),
     Asset("ATLAS", "images/bg_vignette.xml"),
     Asset("IMAGE", "images/bg_vignette.tex"),
-
-    Asset("ATLAS", "images/lobbyscreen.xml"),
-    Asset("Image", "images/lobbyscreen.tex"),
 
     Asset("ATLAS", "images/fepanel_fills.xml"),
     Asset("IMAGE", "images/fepanel_fills.tex"),
@@ -103,11 +78,16 @@ local assets =
     Asset("ATLAS", "images/bg_redux_dark_sidebar.xml"),
     Asset("IMAGE", "images/bg_redux_dark_sidebar.tex"),
 
-    Asset("ATLAS", "images/bg_animated_portal.xml"),
-    Asset("IMAGE", "images/bg_animated_portal.tex"),
-
-    Asset("ATLAS", "images/fg_animated_portal.xml"),
-    Asset("IMAGE", "images/fg_animated_portal.tex"),
+    -- Old portal frontend background from before The Forge UI update. Still
+    -- used on tradescreen.
+	--Note(Peter):try moving this to the frontend prefab
+    Asset("DYNAMIC_ATLAS", "images/bg_animated_portal.xml"),
+    Asset("PKGREF", "images/bg_animated_portal.tex"),
+    Asset("DYNAMIC_ATLAS", "images/fg_animated_portal.xml"),
+    Asset("PKGREF", "images/fg_animated_portal.tex"),
+    Asset("DYNAMIC_ATLAS", "images/fg_trees.xml"),
+    Asset("PKGREF", "images/fg_trees.tex"),
+    --
 
     Asset("ANIM", "anim/portal_scene2.zip"),
     Asset("ANIM", "anim/portal_scene_steamfxbg.zip"),
@@ -187,8 +167,6 @@ local assets =
     Asset("IMAGE", "images/global_redux.tex"),
     Asset("ATLAS", "images/textboxes.xml"),
     Asset("IMAGE", "images/textboxes.tex"),
-    Asset("ATLAS", "images/serverbrowser.xml"),
-    Asset("IMAGE", "images/serverbrowser.tex"),
     Asset("ATLAS", "images/scoreboard.xml"),
     Asset("IMAGE", "images/scoreboard.tex"),
     Asset("ANIM", "anim/generating_world.zip"),

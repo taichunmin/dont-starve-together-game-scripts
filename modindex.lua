@@ -279,6 +279,10 @@ function IsWorkshopMod(modname)
 	return modname:sub( 1, workshop_prefix:len() ) == workshop_prefix
 end
 
+function GetWorkshopIdNumber(modname)
+	return string.sub(modname, workshop_prefix:len() + 1)
+end
+
 function ModIndex:ApplyEnabledOverrides(mod_overrides) --Note(Peter): This function is now coupled with the format written by SaveIndex:SetServerEnabledMods
 	if mod_overrides == nil then
 		print("Warning: modoverrides.lua is empty, or is failing to return a table.")
@@ -425,7 +429,7 @@ function ModIndex:InitializeModInfo(modname)
 			print("Error loading mod: "..ModInfoname(modname).."!\n "..old.."\n")
 			env.failed = true
 		else
-			local checkinfo = { "name", "description", "author", "version", "forumthread", "api_version", "dont_starve_compatible", "reign_of_giants_compatible", "configuration_options", "dst_compatible" }
+			local checkinfo = { "name", "description", "author", "version", "api_version", "dont_starve_compatible", "reign_of_giants_compatible", "configuration_options", "dst_compatible" }
 			local missing = {}
 
 			for i,v in ipairs(checkinfo) do

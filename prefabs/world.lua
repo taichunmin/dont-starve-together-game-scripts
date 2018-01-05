@@ -166,6 +166,13 @@ local prefabs =
     "spawn_fx_tiny",
     "spawn_fx_small_high",
 
+    -- used to be in BACKEND_PREFABS constant
+    "hud",
+    "fire",
+    "character_fire",
+    "shatter",
+    --
+
     "migration_portal",
     "shard_network",
 

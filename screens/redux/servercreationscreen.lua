@@ -31,6 +31,8 @@ local DEFAULT_AVATAR = "unknown.tex"
 local ServerCreationScreen = Class(Screen, function(self, prev_screen)
     Widget._ctor(self, "ServerCreationScreen")
 
+    TheSim:PauseFileExistsAsync(true)
+
     local left_col = -RESOLUTION_X*.05 - 285
     local right_col = RESOLUTION_X*.30 - 230
 

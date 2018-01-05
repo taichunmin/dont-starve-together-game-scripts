@@ -121,10 +121,12 @@ PREFAB_SKINS = {
 	critter_perdling = 
 	{
 		"perdling_rooster",
+		"perdling_winter",
 	},
 	critter_perdling_builder = 
 	{
 		"perdling_rooster_builder",
+		"perdling_winter_builder",
 	},
 	critter_puppy = 
 	{
@@ -150,6 +152,7 @@ PREFAB_SKINS = {
 	{
 		"firestaff_bee",
 		"firestaff_meteor",
+		"firestaff_rose",
 	},
 	flowerhat = 
 	{
@@ -170,6 +173,7 @@ PREFAB_SKINS = {
 	icestaff = 
 	{
 		"icestaff_bee",
+		"icestaff_rose",
 	},
 	minerhat = 
 	{
@@ -204,6 +208,7 @@ PREFAB_SKINS = {
 	spear = 
 	{
 		"spear_bee",
+		"spear_rose",
 	},
 	strawhat = 
 	{
@@ -244,6 +249,7 @@ PREFAB_SKINS = {
 		"wathgrithr_deerclops_d",
 		"wathgrithr_formal",
 		"wathgrithr_gladiator",
+		"wathgrithr_rose",
 		"wathgrithr_shadow",
 		"wathgrithr_survivor",
 	},
@@ -255,6 +261,7 @@ PREFAB_SKINS = {
 		"waxwell_gladiator",
 		"waxwell_krampus",
 		"waxwell_krampus_d",
+		"waxwell_rose",
 		"waxwell_survivor",
 		"waxwell_unshadow",
 	},
@@ -266,6 +273,8 @@ PREFAB_SKINS = {
 		"webber_combatant",
 		"webber_formal",
 		"webber_gladiator",
+		"webber_ice",
+		"webber_rose",
 		"webber_shadow",
 		"webber_survivor",
 	},
@@ -275,8 +284,10 @@ PREFAB_SKINS = {
 		"wendy_combatant",
 		"wendy_formal",
 		"wendy_gladiator",
+		"wendy_ice",
 		"wendy_lureplant",
 		"wendy_lureplant_d",
+		"wendy_rose",
 		"wendy_shadow",
 		"wendy_survivor",
 	},
@@ -288,6 +299,7 @@ PREFAB_SKINS = {
 		"wes_gladiator",
 		"wes_mandrake",
 		"wes_mandrake_d",
+		"wes_rose",
 		"wes_shadow",
 		"wes_survivor",
 	},
@@ -297,8 +309,10 @@ PREFAB_SKINS = {
 		"wickerbottom_combatant",
 		"wickerbottom_formal",
 		"wickerbottom_gladiator",
+		"wickerbottom_ice",
 		"wickerbottom_lightninggoat",
 		"wickerbottom_lightninggoat_d",
+		"wickerbottom_rose",
 		"wickerbottom_shadow",
 		"wickerbottom_survivor",
 	},
@@ -310,6 +324,8 @@ PREFAB_SKINS = {
 		"willow_dragonfly_d",
 		"willow_formal",
 		"willow_gladiator",
+		"willow_ice",
+		"willow_rose",
 		"willow_shadow",
 		"willow_survivor",
 	},
@@ -319,8 +335,10 @@ PREFAB_SKINS = {
 		"wilson_combatant",
 		"wilson_formal",
 		"wilson_gladiator",
+		"wilson_ice",
 		"wilson_pigguard",
 		"wilson_pigguard_d",
+		"wilson_rose",
 		"wilson_shadow",
 		"wilson_survivor",
 	},
@@ -332,6 +350,7 @@ PREFAB_SKINS = {
 		"winona_gladiator",
 		"winona_grassgecko",
 		"winona_grassgecko_d",
+		"winona_rose",
 		"winona_shadow",
 		"winona_survivor",
 	},
@@ -349,6 +368,8 @@ PREFAB_SKINS = {
 		"wolfgang_combatant",
 		"wolfgang_formal",
 		"wolfgang_gladiator",
+		"wolfgang_ice",
+		"wolfgang_rose",
 		"wolfgang_shadow",
 		"wolfgang_survivor",
 		"wolfgang_walrus",
@@ -360,6 +381,7 @@ PREFAB_SKINS = {
 		"woodie_combatant",
 		"woodie_formal",
 		"woodie_gladiator",
+		"woodie_rose",
 		"woodie_shadow",
 		"woodie_survivor",
 		"woodie_treeguard",
@@ -373,6 +395,7 @@ PREFAB_SKINS = {
 		"wx78_gladiator",
 		"wx78_rhinorook",
 		"wx78_rhinorook_d",
+		"wx78_rose",
 		"wx78_shadow",
 		"wx78_survivor",
 	},

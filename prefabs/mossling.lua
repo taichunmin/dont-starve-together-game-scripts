@@ -3,7 +3,9 @@ local assets =
     Asset("ANIM", "anim/mossling_build.zip"),
     Asset("ANIM", "anim/mossling_basic.zip"),
     Asset("ANIM", "anim/mossling_actions.zip"),
-    Asset("ANIM", "anim/mossling_angry_build.zip")
+    Asset("ANIM", "anim/mossling_angry_build.zip"),
+    Asset("ANIM", "anim/mossling_yule_build.zip"),
+    Asset("ANIM", "anim/mossling_yule_angry_build.zip"),
     -- Asset("SOUND", "sound/mossling.fsb"),
 }
 
@@ -105,7 +107,7 @@ local function fn()
     MakeCharacterPhysics(inst, 50, .5)
 
     inst.AnimState:SetBank("mossling")
-    inst.AnimState:SetBuild("mossling_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "mossling_yule_build" or "mossling_build")
     inst.AnimState:PlayAnimation("idle", true)
 
     ------------------------------------------

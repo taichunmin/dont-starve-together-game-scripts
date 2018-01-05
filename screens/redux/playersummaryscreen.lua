@@ -22,6 +22,8 @@ local PlayerSummaryScreen = Class(Screen, function(self, prev_screen, user_profi
     self.prev_screen = prev_screen
     self.user_profile = user_profile
 
+    TheSim:PauseFileExistsAsync(true)
+
 	self:DoInit()
 
     self:_DoFocusHookups()
@@ -142,16 +144,17 @@ function PlayerSummaryScreen:_DoFocusHookups()
 end
 
 function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
+    local function onclick()
+        local screen = AchievementsPopup(self.prev_screen, self.user_profile, festival_key)
+        TheFrontEnd:PushScreen(screen)
+    end
     -- Using ImageButton to get scaling on focus on image children.
     local w = ImageButton("images/ui.xml", "blank.tex")
     w:SetFont(UIFONT)
     w:SetTextSize(30)
     w:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
     w:SetTextFocusColour(UICOLOURS.GOLD_SELECTED)
-    w:SetOnClick(function()
-        local screen = AchievementsPopup(self.prev_screen, self.user_profile, festival_key)
-        TheFrontEnd:PushScreen(screen)
-    end)
+    w:SetOnClick(onclick)
 
     w.badge = w.image:AddChild(TEMPLATES.FestivalNumberBadge(festival_key))
     -- TODO(event2): Retrieve level for past event by name instead of relying on the old data.
@@ -165,15 +168,25 @@ function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
 
     local textwidth = 300
     local text_offset = 50
-    w.text:SetRegionSize(textwidth, 40)
-    w.text:SetPosition(text_offset + .5*textwidth, 0)
+    local text_x = text_offset + .5*textwidth
+    local text_y = 15
+    local text_height = 40
+    w.text:SetRegionSize(textwidth, text_height)
+    w.text:SetPosition(text_x, text_y)
     w.text:SetHAlign(ANCHOR_LEFT)
     w.text:SetVAlign(ANCHOR_TOP)
 
     -- Make text clickable too
     w.bg = w.image:AddChild(Image("images/ui.xml", "blank.tex"))
-    w.bg:ScaleToSize(textwidth, 40)
-    w.bg:SetPosition(text_offset + .5*textwidth, 0)
+    w.bg:ScaleToSize(textwidth + 20, text_height)
+    w.bg:SetPosition(text_x - 20, text_y + 10)
+
+    -- Button to make interaction obvious.
+    w.btn = w.text:AddChild(TEMPLATES.StandardButton(onclick, STRINGS.UI.ACHIEVEMENTS.SCREENTITLE, {160,40}))
+    w.btn:SetPosition(-80, -25)
+
+    -- Ensure button is highlighted if text/badge are hovered.
+    w.focus_forward = w.btn
 
     return w
 end
@@ -400,9 +413,15 @@ function PlayerSummaryScreen:_RefreshTitles()
     if IsAnyItemNew(self.user_profile) then
         skinsStr = string.format("%s (%s)", skinsStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
     end
-
+    
+    local shopStr = STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE
+    if IsShopNew(self.user_profile) then
+        shopStr = string.format("%s (%s)", shopStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
+    end
+    
     self.menu:EditItem(5,skinsStr)
     self.menu:EditItem(4,mysteryboxStr)
+    self.menu:EditItem(1,shopStr)
 end
 
 function PlayerSummaryScreen:_RefreshClientData()
@@ -482,7 +501,7 @@ function PlayerSummaryScreen:StopMusic()
     if not self.musicstopped then
         self.musicstopped = true
         TheFrontEnd:GetSound():KillSound("FEMusic")
-        TheFrontEnd:GetSound():KillSound("FEPortalSFX")
+        --TheFrontEnd:GetSound():KillSound("FEPortalSFX")
     elseif self.musictask ~= nil then
         self.musictask:Cancel()
         self.musictask = nil

@@ -927,6 +927,10 @@ local function AtriumLootFn(lootdropper)
         lootdropper:AddChanceLoot("nightmarefuel", 1)
         lootdropper:AddChanceLoot("nightmarefuel", .5)
         lootdropper:AddChanceLoot("nightmarefuel", .5)
+        lootdropper:AddChanceLoot("winter_ornament_boss_fuelweaver", 1)
+        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
     end
 end
 

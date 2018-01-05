@@ -1,6 +1,4 @@
 local Screen = require "widgets/screen"
-local AnimButton = require "widgets/animbutton"
-local ImageButton = require "widgets/imagebutton"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
 local Widget = require "widgets/widget"
@@ -16,58 +14,23 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
     self.players = players or {}
     self.max_players = maxPlayers or "?"
 
-    self.black = self:AddChild(Image("images/global.xml", "square.tex"))
-    self.black:SetVRegPoint(ANCHOR_MIDDLE)
-    self.black:SetHRegPoint(ANCHOR_MIDDLE)
-    self.black:SetVAnchor(ANCHOR_MIDDLE)
-    self.black:SetHAnchor(ANCHOR_MIDDLE)
-    self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
-    self.black:SetTint(0,0,0,.75)
+    self.black = self:AddChild(TEMPLATES.BackgroundTint())
+    self.root = self:AddChild(TEMPLATES.ScreenRoot())
 
-    self.root = self:AddChild(Widget("root"))
-    self.root:SetVAnchor(ANCHOR_MIDDLE)
-    self.root:SetHAnchor(ANCHOR_MIDDLE)
-    self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
+    local buttons = {
+        {
+            text=STRINGS.UI.SERVERLISTINGSCREEN.OK,
+            cb = function()
+                self:Cancel()
+            end
+        },
+    }
+    self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(325, 400, STRINGS.UI.SERVERLISTINGSCREEN.PLAYERS, buttons, nil, "x/y"))
 
-    self.clickroot = self:AddChild(Widget("clickroot"))
-    self.clickroot:SetVAnchor(ANCHOR_MIDDLE)
-    self.clickroot:SetHAnchor(ANCHOR_MIDDLE)
-    self.clickroot:SetPosition(0,0,0)
-    self.clickroot:SetScaleMode(SCALEMODE_PROPORTIONAL)
-    
-    local left_col =-RESOLUTION_X*.25 - 50
-    local right_col = RESOLUTION_X*.25 - 75
-
-    --menu buttons
-    self.panel_root = self.clickroot:AddChild(Widget("panel_root"))
-    self.panel_root:SetPosition(0,20,0)
-
-    self.bg = self.root:AddChild(TEMPLATES.old.CurlyWindow(1, 325, .85, .8, 53, -32))
-    self.bg.fill = self.root:AddChild(Image("images/fepanel_fills.xml", "panel_fill_tall.tex"))
-    self.bg.fill:SetScale(.5, -.5)
-    self.bg.fill:SetPosition(8, 10)
-    self.bg:SetPosition(0,0,0)
-
-    if not TheInput:ControllerAttached() then
-        self.button = self.panel_root:AddChild(ImageButton())
-        self.button:SetText(STRINGS.UI.SERVERLISTINGSCREEN.OK)
-        self.button:SetOnClick(function() self:Cancel() end)
-        self.button:SetPosition(0,-225)
-        self.button:SetScale(.8)
-    end
-
-    self.title = self.panel_root:AddChild(Text(BUTTONFONT, 45, STRINGS.UI.SERVERLISTINGSCREEN.PLAYERS, {0,0,0,1}))
-    self.title:SetPosition(5,150)
-
-    self.upper_horizontal_line = self.panel_root:AddChild(Image("images/ui.xml", "line_horizontal_6.tex"))
-    self.upper_horizontal_line:SetScale(1)
-    self.upper_horizontal_line:SetPosition(7,129)
-
-    self.players_number = self.panel_root:AddChild(Text(NEWFONT, 25, "x/y"))
-    self.players_number:SetPosition(90,145) 
-    self.players_number:SetRegionSize(100,30)
+    self.players_number = self.dialog.body
     self.players_number:SetHAlign(ANCHOR_RIGHT)
-    self.players_number:SetColour(0, 0, 0, 1)
+    self.players_number:SetVAlign(ANCHOR_TOP)
+    self.players_number:SetPosition(0,50)
 
     self.numPlayers = #self.players
     self.players_number:SetString(self.numPlayers.."/"..self.max_players)
@@ -76,11 +39,6 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
         local playerListing =  Widget("playerListing")
 
         local displayName = v.name or ""
-
-        playerListing.bg = playerListing:AddChild(Image("images/scoreboard.xml", "row_short.tex"))
-        playerListing.bg:SetPosition(27, 0)
-        playerListing.bg:ScaleToSize(305,51)
-        playerListing.bg:SetTint(1, 1, 1, (i % 2) == 0 and .85 or .5)
 
         playerListing.highlight = playerListing:AddChild(Image("images/scoreboard.xml", "row_short_goldoutline.tex"))
         playerListing.highlight:SetPosition(27, 0)
@@ -94,7 +52,7 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
 
         --[[playerListing.adminBadge = playerListing:AddChild(ImageButton("images/avatars.xml", "avatar_admin.tex", "avatar_admin.tex", "avatar_admin.tex", nil, nil, {1,1}, {0,0}))
         playerListing.adminBadge:Disable()
-        playerListing.adminBadge:SetPosition(badge_x-13,-10,0) 
+        playerListing.adminBadge:SetPosition(badge_x-13,-10,0)
         playerListing.adminBadge.image:SetScale(.175)
         playerListing.adminBadge.scale_on_focus = false
         playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
@@ -104,7 +62,7 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
 
         if IsAnyFestivalEventActive() then
             playerListing.rank = playerListing:AddChild(TEMPLATES.FestivalNumberBadge())
-            playerListing.rank:SetPosition(badge_x-13- 20, -4)  
+            playerListing.rank:SetPosition(badge_x-13- 20, -4)
             playerListing.rank:SetScale(.5)
             playerListing.rank:SetRank(v.eventlevel or 0)
         end
@@ -158,24 +116,43 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
         return playerListing
     end
 
-    self.list_root = self.panel_root:AddChild(Widget("list_root"))
-    self.list_root:SetPosition(90, -27)
+    self.list_root = self.dialog:AddChild(Widget("list_root"))
+    self.list_root:SetPosition(70, 30)
 
     self.player_widgets = {}
     for i,v in ipairs(self.players) do
         table.insert(self.player_widgets, listingConstructor(v, i))
     end
 
-    self.scroll_list = self.list_root:AddChild(ScrollableList(self.player_widgets, 180, 300, 30, 10, nil, nil, nil, nil, nil, 10))
-    self.scroll_list:SetPosition(-10,-10)
+    self.scroll_list = self.list_root:AddChild(ScrollableList(
+            self.player_widgets, -- items
+            180,                 -- listwidth
+            300,                 -- listheight
+            30,                  -- itemheight
+            10,                  -- itempadding
+            nil,                 -- updatefn
+            nil,                 -- widgetstoupdate
+            nil,                 -- widgetXOffset
+            nil,                 -- always_show_static
+            nil,                 -- starting_offset
+            10,                  -- yInit
+            nil,                 -- bar_width_scale_factor
+            nil,                 -- bar_height_scale_factor
+            "GOLD"               -- scrollbar_style
+        ))
+
+    self.scroll_list:SetFocusChangeDir(MOVE_DOWN, self.dialog.actions)
+    self.scroll_list:SetFocusChangeDir(MOVE_RIGHT, self.dialog.actions)
+    self.dialog.actions:SetFocusChangeDir(MOVE_UP, self.scroll_list)
+
+    self.default_focus = self.scroll_list
 
     if #self.players == 0 then
         self.scroll_list:Hide()
-        self.empty_server_text = self.panel_root:AddChild(Text(NEWFONT, 30, STRINGS.UI.PLAYERSTATUSSCREEN.EMPTY_SERVER))     
-        self.empty_server_text:SetColour(0,0,0,1)
+        self.empty_server_text = self.dialog:AddChild(Text(CHATFONT, 30, STRINGS.UI.PLAYERSTATUSSCREEN.EMPTY_SERVER))
+        self.empty_server_text:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
+        self.default_focus = self.dialog.actions
     end
-
-    self.default_focus = self.scroll_list
 end)
 
 function ViewPlayersModalScreen:Cancel()

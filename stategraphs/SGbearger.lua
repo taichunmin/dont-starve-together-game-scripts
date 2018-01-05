@@ -114,7 +114,7 @@ local actionhandlers =
 
 	ActionHandler(ACTIONS.ATTACK, "attack")
 }
-local events=
+local events =
 {
 	CommonHandlers.OnLocomote(true,true),
 	CommonHandlers.OnSleep(),
@@ -125,11 +125,15 @@ local events=
 }
 
 local function ShakeIfClose(inst)
-    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, .3, inst, 40)
+    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, 1, inst, 40)
+end
+
+local function ShakeIfClose_Pound(inst)
+    ShakeAllCameras(CAMERASHAKE.VERTICAL, .7, .025, 1.25, inst, 40)
 end
 
 local function ShakeIfClose_Footstep(inst)
-    ShakeAllCameras(CAMERASHAKE.FULL, .35, .02, 1.25, inst, 40)
+    ShakeAllCameras(CAMERASHAKE.FULL, .35, .02, 1, inst, 40)
 end
 
 local function DoFootstep(inst)
@@ -363,7 +367,7 @@ local states=
 		{
 			TimeEvent(17*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/bearger/swhoosh") end),
 			TimeEvent(20*FRAMES, function(inst)
-				ShakeIfClose(inst)
+				ShakeIfClose_Pound(inst)
 				inst.components.groundpounder:GroundPound()
 				inst.cangroundpound = false
 				if not inst.components.timer:TimerExists("GroundPound") then

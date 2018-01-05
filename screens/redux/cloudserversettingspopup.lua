@@ -1,8 +1,7 @@
 -- A dialog to spin up cloud servers.
 --
 -- Cloud servers must be nonpvp, dedicated, nonlocal, online, and multiplayer.
-local Image = require "widgets/image"
-local IntentionPicker = require "widgets/intentionpicker"
+local IntentionPicker = require "widgets/redux/intentionpicker"
 local NewHostPicker = require "widgets/newhostpicker"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local RadioButtons = require "widgets/radiobuttons"
@@ -117,15 +116,12 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
         self.dirty_cb(self)
     end)
     self.intentions_overlay:SetPosition(0, 190)
-    -- TODO(dbriscoe): If we use intention picker, make a nicer dialog for it
-    -- than this shabby background.
-    self.intentions_overlay.bg = self.intentions_overlay:AddChild(Image("images/options_bg.xml", "options_panel_bg.tex"))
+    self.intentions_overlay.bg = self.intentions_overlay:AddChild(TEMPLATES.RectangleWindow(650,450))
     self.intentions_overlay.bg:MoveToBack()
     self.intentions_overlay.bg:SetPosition(0,-170)
-    self.intentions_overlay.bg:SetScale(.54, .49)
 
     if self.forced_settings.server_intention == nil then
-        self.server_intention = TEMPLATES.LabelButton(STRINGS.UI.SERVERCREATIONSCREEN.INTENTION_LABEL, "", narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
+        self.server_intention = TEMPLATES.LabelButton(nil, STRINGS.UI.SERVERCREATIONSCREEN.INTENTION_LABEL, "", narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
         self.server_intention.button._onclickfn = function(data)
             self:SetServerIntention(nil)
             self.dirty_cb(self)
@@ -292,13 +288,8 @@ end
 
 function CloudServerSettingsPopup:RefreshIntentionsButton()
     self.server_intention.button:SetText(self.server_intention.button.data ~= nil and STRINGS.UI.INTENTION[string.upper(self.server_intention.button.data)] or "")
+    -- Why do we set this repeatedly?
     self.server_intention.button:SetOnClick(self.server_intention.button._onclickfn)
-    self.server_intention.button.scale_on_focus = true
-    self.server_intention.button.move_on_click = true
-    self.server_intention.button:SetTextures("images/ui.xml", "in-window_button_sm_idle.tex", "in-window_button_sm_hl.tex", "in-window_button_sm_disabled.tex", "in-window_button_sm_hl_noshadow.tex", "in-window_button_sm_disabled.tex", { 1, 1 }, { 0, 0 })
-    self.server_intention.button:ForceImageSize(narrow_input_width, label_height)
-    self.server_intention.button:SetTextColour(0, 0, 0, 1)
-    self.server_intention.button:SetTextFocusColour(0, 0, 0, 1)
 end
 
 function CloudServerSettingsPopup:DisplayClanControls(show)

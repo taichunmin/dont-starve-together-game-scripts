@@ -8,8 +8,8 @@ local foodinfo =
     {food=FOODTYPE.GOODIES, health=0,     hunger=3,  sanity=1, treeornament=true}, -- Gingerbread Cookies
     {food=FOODTYPE.GOODIES, health=0,     hunger=2,  sanity=2, treeornament=true}, -- Sugar Cookies
     {food=FOODTYPE.GOODIES, health=2,     hunger=0,  sanity=2, treeornament=true}, -- Candy Cane
-    {food=FOODTYPE.VEGGIE,  health=-2,    hunger=6,  sanity=-2, treeornament=false}, -- Fruitcake
-    {food=FOODTYPE.GOODIES, health=1,     hunger=2,  sanity=1, treeornament=false}, -- chocolate log cake
+    {food=FOODTYPE.VEGGIE,  health=-2,    hunger=6,  sanity=-2, treeornament=true}, -- Fruitcake
+    {food=FOODTYPE.GOODIES, health=1,     hunger=2,  sanity=1, treeornament=true}, -- chocolate log cake
     {food=FOODTYPE.VEGGIE,  health=0,     hunger=4,  sanity=0, treeornament=false}, -- plum pudding
     {food=FOODTYPE.VEGGIE,  health=2,     hunger=0,  sanity=1, treeornament=false, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot apple cider
     {food=FOODTYPE.GOODIES, health=1,     hunger=0,  sanity=2, treeornament=false, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot coco

@@ -175,7 +175,7 @@ function ChatInputScreen:DoInit()
 	self.chat_edit:SetForceEdit(true)
     self.chat_edit.OnStopForceEdit = function() self:Close() end
     
-    self.chat_edit:EnableWordPrediction({width = 800})
+    self.chat_edit:EnableWordPrediction({width = 800, mode=Profile:GetChatAutocompleteMode()})
     self.chat_edit:AddWordPredictionDictionary(Emoji.GetWordPredictionDictionary())
     self.chat_edit:AddWordPredictionDictionary(UserCommands.GetEmotesWordPredictionDictionary())
 	

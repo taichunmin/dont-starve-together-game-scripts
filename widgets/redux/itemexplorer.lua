@@ -6,6 +6,7 @@
 local BarterScreen = require "screens/redux/barterscreen"
 local PurchasePackScreen = require "screens/redux/purchasepackscreen"
 local ItemImage = require "widgets/redux/itemimage"
+local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
 local SetPopupDialog = require "screens/redux/setpopupdialog"
 local Text = require "widgets/text"
@@ -145,6 +146,9 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
     -- clipping.
     list_options.scissor_pad = list_options.scissor_pad or list_options.widget_width * 0.15
 
+    -- Ensure full and empty screens look the same by always applying peek.
+    list_options.peek_percent = 0.25
+
     self.scroll_list = self:AddChild(TEMPLATES.ScrollingGrid(contained_items, list_options))
 
     local width,height = self.scroll_list:GetScrollRegionSize()
@@ -231,14 +235,15 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
         self.commerce:SetPosition(-width/2+COMMERCE_WIDTH/2,0)
 
 		if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
-			self.market_button = self.interact_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "steam.tex", nil, false, false, 
+			self.market_button = self.interact_root:AddChild(TEMPLATES.StandardButton(
 					function()
 						self:_ShowMarketplaceForInteractTarget()
-					end  
+					end,
+                    nil,
+                    {COMMERCE_WIDTH, COMMERCE_HEIGHT},
+                    {"images/button_icons.xml", "steam.tex"}
 				))
 			self.market_button:SetPosition(width/2-COMMERCE_WIDTH/2,0)
-            self.market_button.highlight:SetScale(0)
-            self.market_button.icon:SetPosition(0,1)
 		end
 
         self.set_info_btn = self.interact_root:AddChild(TEMPLATES.StandardButton(
@@ -308,7 +313,18 @@ function ItemExplorer:_ApplyDataToDescription(item_data)
         self.focus_label:SetString(GetSkinName(item_key))
         self.focus_rarity:SetString(GetModifiedRarityStringForItem(item_key))
         self.focus_rarity:SetColour(GetColorForItem(item_key))
-        self.description:SetString(GetSkinDescription(item_key))
+        
+        local sd = GetSkinDescription(item_key)
+        self.description:SetString(sd)
+        local _, line_count = sd:gsub('\n', '\n')
+        if line_count < 5 then
+			self.description:SetSize(20)
+        elseif line_count == 5 then
+			self.description:SetSize(18)
+		else
+			print("Whoa! Why so much text?")
+			self.description:SetSize(14)
+		end
         self.action_info:SetString(self:_GetActionInfoText(item_data))
         self.divider_top:Show()
         self.divider_bottom:Show()
@@ -457,10 +473,13 @@ function ItemExplorer:RefreshItems(new_item_filter_fn)
         return
     end
 
-    -- Forget old selections.
+    -- Clear old selections.
+    --
+    local prev_target_key = nil
+    if self.last_interaction_target then
+        prev_target_key = self.last_interaction_target.item_key
+    end
     self.last_interaction_target = nil
-    -- TODO(dbriscoe): Can we maintain the last_interaction_target if it's
-    -- still in contained_items?
     self.selected_items = {}
     self:_UpdateItemSetInfo(nil)
     self:_ApplyDataToDescription()
@@ -486,6 +505,39 @@ function ItemExplorer:RefreshItems(new_item_filter_fn)
     end
     self.progress:SetString(string.format("%d/%d", CountOwnedItems(contained_items), #contained_items))
     self.scroll_list:SetItemsData(contained_items)
+
+
+    -- Restore previous selection (good to show nice text when first loading
+    -- the screen). We don't scroll to the item and only select items that are
+    -- currently in a widget (visible-ish), so it's quite possible we click
+    -- nothing.
+
+    -- Be conservative: avoid clearing unowned preview side effect when
+    -- changing filters. Not strictly necessary, but avoids user surprises.
+    local can_click_without_side_effects = self.scroll_list.context.selection_type == nil
+
+    if prev_target_key then
+        prev_target_key = {[prev_target_key] = true}
+
+    elseif can_click_without_side_effects and GetTableSize(self.selected_items) > 0 then
+        prev_target_key = self.selected_items
+
+    elseif can_click_without_side_effects and #contained_items > 0 then
+        prev_target_key = {[contained_items[1].item_key] = true}
+
+    end
+    if prev_target_key then
+        for i,w in ipairs(self.scroll_list:GetListWidgets()) do
+            if w.data.item_key then
+                if prev_target_key[w.data.item_key] then
+                    -- Double click to preserve selection state.
+                    w:onclick()
+                    w:onclick()
+                    break
+                end
+            end
+        end
+    end
 end
 
 function ItemExplorer:_OnClickWidget(item_widget)

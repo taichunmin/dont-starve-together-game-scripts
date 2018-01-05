@@ -299,8 +299,8 @@ function LootDropper:DropLoot(pt)
             for i = 1, num_decor_loot.basic do
                 self:SpawnLootPrefab(GetRandomBasicWinterOrnament(), pt)
             end
-            if num_decor_loot.special then
-                self:SpawnLootPrefab("winter_ornament_boss_"..prefabname, pt)
+            if num_decor_loot.special ~= nil then
+                self:SpawnLootPrefab(num_decor_loot.special, pt)
             end
         elseif not TUNING.WINTERS_FEAST_LOOT_EXCLUSION[prefabname] and (self.inst:HasTag("monster") or self.inst:HasTag("animal")) then
             local loot = math.random()

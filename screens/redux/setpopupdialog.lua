@@ -40,7 +40,7 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 
 	--info
     self.info_txt = self.content_root:AddChild(Text(CHATFONT, 26, nil, UICOLOURS.WHITE))
-    self.info_txt:SetPosition(8, 150)
+    self.info_txt:SetPosition(0, 150)
     self.info_txt:SetRegionSize(width, 85)
     self.info_txt:SetHAlign(ANCHOR_MIDDLE)
     self.info_txt:SetVAlign(ANCHOR_MIDDLE)

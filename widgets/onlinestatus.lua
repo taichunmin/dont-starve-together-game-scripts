@@ -15,12 +15,12 @@ local OnlineStatus = Class(Widget, function(self, show_borrowed_info )
     self.fixed_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
     self.text = self.fixed_root:AddChild(Text(NEWFONT_OUTLINE, 20))
-    self.text:SetPosition(378, 315)
+    self.text:SetPosition(378, 345)
     self.text:SetHAlign(ANCHOR_RIGHT)
     self.text:SetRegionSize(300,40)
 
     self.debug_connections = self.fixed_root:AddChild(Text(NEWFONT_OUTLINE, 20, nil, UICOLOURS.GREY))
-    self.debug_connections:SetPosition(90, 315)
+    self.debug_connections:SetPosition(90, 345)
 
     self:StartUpdating()
 end)

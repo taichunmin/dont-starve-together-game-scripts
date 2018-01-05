@@ -1,3 +1,5 @@
+require "prefabs/winter_ornaments"
+
 local function OnStartBundling(inst)--, doer)
     inst.components.stackable:Get():Remove()
 end
@@ -325,7 +327,23 @@ local wetpouch =
         --print ("TOTOAL:", total)
         --for k,v in pairs(inst.setupdata.loottable) do print(" - ", tostring(v/total), k) end
 
-        return {weighted_random_choice(inst.setupdata.loottable)}
+        local item = weighted_random_choice(inst.setupdata.loottable)
+
+        if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and
+            string.sub(item, 1, 7) == "trinket" and
+            item ~= "trinket_26" then
+            --chance to replace trinkets (but not potatocup)
+            local rnd = math.random(6)
+            if rnd == 1 then
+                item = GetRandomBasicWinterOrnament()
+            elseif rnd == 2 then
+                item = GetRandomFancyWinterOrnament()
+            elseif rnd == 3 then
+                item = GetRandomLightWinterOrnament()
+            end
+        end
+
+        return { item }
     end,
 
     master_postinit = function(inst, setupdata)
@@ -345,4 +363,4 @@ return MakeContainer("bundle_container", "ui_bundle_2x2"),
     MakeWrap("gift", "bundle_container", nil, true),
     --"redpouch"
     MakeBundle("redpouch", true, nil, { "lucky_goldnugget" }, true, redpouch),
-    MakeBundle("wetpouch", true, nil, table.invert(wetpouch.loottable), false, wetpouch)
+    MakeBundle("wetpouch", true, nil, JoinArrays(table.invert(wetpouch.loottable), GetAllWinterOrnamentPrefabs()), false, wetpouch)

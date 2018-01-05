@@ -1,3 +1,5 @@
+require("prefabs/mushtree_spores")
+
 local easing = require("easing")
 
 local assets =

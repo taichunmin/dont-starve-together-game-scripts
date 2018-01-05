@@ -322,7 +322,7 @@ local states=
 		onenter = function(inst)
 			inst.DynamicShadow:SetSize(2.5,1.25)
 			inst.components.sizetweener:StartTween(1.55, 2)
-			inst.AnimState:SetBuild("mossling_angry_build")
+			inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "mossling_yule_angry_build" or "mossling_angry_build")
 
 			inst.AnimState:PlayAnimation("spin_loop")
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/mossling/spin", "spinLoop")

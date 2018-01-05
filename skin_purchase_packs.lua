@@ -111,6 +111,59 @@ return
 			"hand_wx78_gladiator",
 			"legs_wx78_gladiator",
 		},
+		pack_ice_all =
+		{
+			"wilson_ice",
+			"willow_ice",
+			"wickerbottom_ice",
+			"wendy_ice",
+			"webber_ice",
+			"wolfgang_ice",
+		},
+		pack_ice_webber =
+		{
+			"webber_ice",
+			"body_webber_ice",
+			"feet_webber_ice",
+			"legs_webber_ice",
+		},
+		pack_ice_wendy =
+		{
+			"wendy_ice",
+			"body_wendy_ice",
+			"feet_wendy_ice",
+			"hand_wendy_ice",
+		},
+		pack_ice_wickerbottom =
+		{
+			"wickerbottom_ice",
+			"body_wickerbottom_ice",
+			"feet_wickerbottom_ice1",
+			"hand_wickerbottom_ice",
+		},
+		pack_ice_willow =
+		{
+			"willow_ice",
+			"body_willow_ice",
+			"feet_willow_ice",
+			"hand_willow_ice",
+		},
+		pack_ice_wilson =
+		{
+			"wilson_ice",
+			"body_wilson_ice",
+			"feet_wilson_ice",
+			"hand_wilson_ice",
+			"legs_wilson_ice",
+		},
+		pack_ice_wolfgang =
+		{
+			"wolfgang_ice",
+			"body_wolfgang_ice",
+			"feet_wolfgang_ice",
+			"hand_wolfgang_ice",
+			"legs_wolfgang_ice",
+		},
 	},
 
 	CONTENTS =
@@ -171,6 +224,32 @@ return
 		feet_wx78_gladiator = "pack_gladiator_wx78",
 		hand_wx78_gladiator = "pack_gladiator_wx78",
 		legs_wx78_gladiator = "pack_gladiator_wx78",
+		webber_ice = "pack_ice_webber",
+		body_webber_ice = "pack_ice_webber",
+		feet_webber_ice = "pack_ice_webber",
+		legs_webber_ice = "pack_ice_webber",
+		wendy_ice = "pack_ice_wendy",
+		body_wendy_ice = "pack_ice_wendy",
+		feet_wendy_ice = "pack_ice_wendy",
+		hand_wendy_ice = "pack_ice_wendy",
+		wickerbottom_ice = "pack_ice_wickerbottom",
+		body_wickerbottom_ice = "pack_ice_wickerbottom",
+		feet_wickerbottom_ice1 = "pack_ice_wickerbottom",
+		hand_wickerbottom_ice = "pack_ice_wickerbottom",
+		willow_ice = "pack_ice_willow",
+		body_willow_ice = "pack_ice_willow",
+		feet_willow_ice = "pack_ice_willow",
+		hand_willow_ice = "pack_ice_willow",
+		wilson_ice = "pack_ice_wilson",
+		body_wilson_ice = "pack_ice_wilson",
+		feet_wilson_ice = "pack_ice_wilson",
+		hand_wilson_ice = "pack_ice_wilson",
+		legs_wilson_ice = "pack_ice_wilson",
+		wolfgang_ice = "pack_ice_wolfgang",
+		body_wolfgang_ice = "pack_ice_wolfgang",
+		feet_wolfgang_ice = "pack_ice_wolfgang",
+		hand_wolfgang_ice = "pack_ice_wolfgang",
+		legs_wolfgang_ice = "pack_ice_wolfgang",
 	}
 
 }

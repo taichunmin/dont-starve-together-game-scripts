@@ -23,6 +23,10 @@ AddModReleaseID( "R07_ANR_HEARTOFTHERUINS" )
 MOD_AVATAR_LOCATIONS = { Default = "images/avatars/" }
 --Add your avatar atlas locations for each prefab if you don't want to use the default mod avatar location
 
+local function VisitModForums()
+    VisitURL("http://forums.kleientertainment.com/forum/79-dont-starve-together-beta-mods-and-tools/")
+end
+
 function AreServerModsEnabled()
 	if ModManager == nil then
 		print("AreServerModsEnabled returning false because ModManager hasn't been created yet.")
@@ -561,7 +565,7 @@ function ModWrangler:DisplayBadMods()
 																		SimReset()
 																	end)
 																end},
-						{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = function() VisitURL("http://forums.kleientertainment.com/index.php?/forum/26-dont-starve-mods-and-tools/") end }
+						{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = VisitModForums }
 					},
 					ANCHOR_LEFT,
 					STRINGS.UI.MAINSCREEN.MODFAILDETAIL2,
@@ -709,7 +713,7 @@ function ModWrangler:SetPostEnv()
 																			SimReset()
 																		end)
 																	end},
-						{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = function() VisitURL("http://forums.kleientertainment.com/forum/79-dont-starve-together-beta-mods-and-tools/") end }
+						{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = VisitModForums }
 					}))
 		end
 	elseif KnownModIndex:WasLoadBad() then
@@ -719,7 +723,7 @@ function ModWrangler:SetPostEnv()
 				STRINGS.UI.MAINSCREEN.MODSBADLOAD,
 				{
 					{text=STRINGS.UI.MAINSCREEN.TESTINGYES, cb = function() TheFrontEnd:PopScreen() end},
-					{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = function() VisitURL("http://forums.kleientertainment.com/index.php?/forum/26-dont-starve-mods-and-tools/") end }
+					{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = VisitModForums }
 				}))
 	end
 
@@ -833,6 +837,31 @@ function ModWrangler:StartVersionChecking()
             TheWorld:DoPeriodicTask(120, DoVerifyModVersions, 60, mods_to_verify)
         end
     end
+end
+
+function ModWrangler:GetLinkForMod(mod_name)
+    local url = nil
+    local is_generic_url = false
+
+    local is_known = KnownModIndex:GetModInfo(mod_name)
+    local thread = is_known and KnownModIndex:GetModInfo(mod_name).forumthread or nil
+
+    if thread and thread ~= "" then
+        url = "http://forums.kleientertainment.com/index.php?%s"
+        url = string.format(url, thread)
+    elseif IsWorkshopMod(mod_name) then
+        url = "http://steamcommunity.com/sharedfiles/filedetails/?id="..GetWorkshopIdNumber(mod_name)
+    else
+        -- Presumably if known and not workshop, it was downloaded
+        -- from the forum?
+        if is_known then
+            url = "http://forums.kleientertainment.com/forum/79-dont-starve-together-beta-mods-and-tools/"
+        else
+            url = "http://steamcommunity.com/app/322330/workshop/"
+        end
+        is_generic_url = true
+    end
+    return function() VisitURL(url) end, is_generic_url
 end
 
 ModManager = ModWrangler()

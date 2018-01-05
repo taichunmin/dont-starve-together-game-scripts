@@ -13,10 +13,11 @@ local PURCHASE_INFO = require("skin_purchase_packs")
 require("misc_items")
 
 
-local PurchasePackScreen = Class(Screen, function(self, prev_screen, user_profile)
+local PurchasePackScreen = Class(Screen, function(self)
 	Screen._ctor(self, "PurchasePackScreen")
-    self.user_profile = user_profile
 	self:DoInit()
+
+	Profile:SetShopHash( CalculateShopHash() )
 
 	self.default_focus = self.purchase_root
 end)
@@ -38,10 +39,6 @@ function PurchasePackScreen:DoInit()
                 end
             ))
     end
-end
-
-local function IsEverythingPack(item_key)
-    return item_key == "pack_gladiator_all"
 end
 
 local build_price = function( currency_code, cents )
@@ -76,6 +73,7 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
     self.text_root = self.root:AddChild(Widget("text_root"))
 	self.text_root:SetPosition(60, 50)
 	self.title = self.text_root:AddChild(Text(HEADERFONT, 25, nil, UICOLOURS.GOLD_SELECTED))
+	self.title:SetPosition(0, 3)
 	self.text = self.text_root:AddChild(Text(CHATFONT, 22, nil, UICOLOURS.GREY))
 	self.text:SetPosition(0, -55)
 	self.text:SetRegionSize(245, 60)
@@ -94,12 +92,10 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
                     local display_items = PURCHASE_INFO.PACKS[self.item_type]
                     local options = {
                         allow_cancel = false,
-                        box_build = "skinevent_set_popup",
-                        use_bigportraits = IsEverythingPack(self.item_type),
+                        box_build = GetBoxBuildForItem(self.item_type),
+                        use_bigportraits = IsPackFeatured(self.item_type),
                     }
-                    if options.use_bigportraits then
-                        options.box_build = "skinevent_all_popup"
-                    end
+                    
                     -- Only show open celebration if we have items to show.
                     if display_items and #display_items > 1 then
                         local box_popup = ItemBoxOpenerPopup(screen_self, options, function(success_cb)
@@ -160,7 +156,7 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
 
     self.OnGainFocus = function()
         PurchasePackScreen._base.OnGainFocus(self)
-        screen_self.purchase_root.scroll_list:OnWidgetFocus(self)
+        screen_self.purchase_root.scroll_window.grid:OnWidgetFocus(self)
     end
     
     self.focus_forward = self.button
@@ -180,26 +176,9 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
         end
         self.button:SetText(subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN, {price = price}))
 
-        -- TODO(dbriscoe): Pull this data from PURCHASE_INFO?
-        local pack_images = {
-            pack_gladiator_all          = { "images/frontend_redux.xml",               "all_gladiator_oval.tex" },
-            pack_gladiator_wathgrithr   = { "bigportraits/wathgrithr_gladiator.xml",   "wathgrithr_gladiator_oval.tex" },
-            pack_gladiator_waxwell      = { "bigportraits/waxwell_gladiator.xml",      "waxwell_gladiator_oval.tex" },
-            pack_gladiator_webber       = { "bigportraits/webber_gladiator.xml",       "webber_gladiator_oval.tex" },
-            pack_gladiator_wendy        = { "bigportraits/wendy_gladiator.xml",        "wendy_gladiator_oval.tex" },
-            pack_gladiator_wes          = { "bigportraits/wes_gladiator.xml",          "wes_gladiator_oval.tex" },
-            pack_gladiator_wickerbottom = { "bigportraits/wickerbottom_gladiator.xml", "wickerbottom_gladiator_oval.tex" },
-            pack_gladiator_willow       = { "bigportraits/willow_gladiator.xml",       "willow_gladiator_oval.tex" },
-            pack_gladiator_wilson       = { "bigportraits/wilson_gladiator.xml",       "wilson_gladiator_oval.tex" },
-            pack_gladiator_winona       = { "bigportraits/winona_gladiator.xml",       "winona_gladiator_oval.tex" },
-            pack_gladiator_wolfgang     = { "bigportraits/wolfgang_gladiator.xml",     "wolfgang_gladiator_oval.tex" },
-            pack_gladiator_woodie       = { "bigportraits/woodie_gladiator.xml",       "woodie_gladiator_oval.tex" },
-            pack_gladiator_wx78         = { "bigportraits/wx78_gladiator.xml",         "wx78_gladiator_oval.tex" },
-        }
-
         self.icon_image:Hide()
         self.icon_anim:Hide()
-        local image = pack_images[self.item_type]
+        local image = GetPurchaseDisplayForItem(self.item_type)
         if image then
             self.icon_image:SetTexture(unpack(image))
             self.icon_image:Show()
@@ -212,7 +191,7 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
         self.title:SetString(title)
         self.text:SetString(text)
 
-        if IsEverythingPack(self.item_type) then
+        if IsPackFeatured(self.item_type) then
             self.frame:SetTexture("images/fepanels_redux_shop_panel_wide.xml", "shop_panel_wide.tex")
             self.frame:SetScale(0.542)
             self.frame:SetPosition(235, -7)
@@ -250,7 +229,7 @@ end
 
 function PurchasePackScreen:_BuildPurchasePanel()
     local purchase_ss = self.root:AddChild(Widget("purchase_ss"))
-
+  
     -- Overlay is how we display purchasing.
     if PLATFORM == "WIN32_RAIL" or TheNet:IsNetOverlayEnabled() then
         local unvalidated_iap_defs = TheItems:GetIAPDefs()
@@ -274,8 +253,8 @@ function PurchasePackScreen:_BuildPurchasePanel()
             end
             table.sort(iap_defs, DisplayOrderSort)
 
-            if IsEverythingPack(iap_defs[1].item_type) then
-                -- Make space for the everything pack's double-wide widget.
+            if IsPackFeatured(iap_defs[1].item_type) then
+                -- Make space for the featured pack's double-wide widget.
                 table.insert(iap_defs, 2, { is_blank = true })
             end
 
@@ -284,23 +263,30 @@ function PurchasePackScreen:_BuildPurchasePanel()
             end
             local function ScrollWidgetApply(context, widget, data, index)
                 widget:ApplyDataToWidget(data)
-            end 
-            purchase_ss.scroll_list = purchase_ss:AddChild(TEMPLATES.ScrollingGrid(
+            end
+            
+            purchase_ss.scroll_window = purchase_ss:AddChild(TEMPLATES.RectangleWindow(915, 620))
+			purchase_ss.scroll_window:SetBackgroundTint(0,0,0,.8)
+    
+			purchase_ss.scroll_window.grid = purchase_ss.scroll_window:InsertWidget(
+				TEMPLATES.ScrollingGrid(
                     iap_defs,
                     {
                         context = {},
                         widget_width  = 440,
-                        widget_height = 250,
-                        num_visible_rows = 2.05,
+                        widget_height = 260,
+                        num_visible_rows = 2.15,
                         num_columns      = 2,
                         item_ctor_fn = ScrollWidgetsCtor,
                         apply_fn     = ScrollWidgetApply,
                         scrollbar_offset = 20,
+						scrollbar_height_offset = -60,
                     }
-                ))
-
-            purchase_ss.scroll_list:SetPosition(50,0)
-            purchase_ss.focus_forward = purchase_ss.scroll_list
+                )
+			)
+    
+            purchase_ss.scroll_window:SetPosition(60,-3)
+            purchase_ss.focus_forward = purchase_ss.scroll_window.grid
         end
     else
         local buttons = {

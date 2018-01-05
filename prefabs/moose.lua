@@ -3,6 +3,7 @@ local assets =
     Asset("ANIM", "anim/goosemoose_build.zip"),
     Asset("ANIM", "anim/goosemoose_basic.zip"),
     Asset("ANIM", "anim/goosemoose_actions.zip"),
+    Asset("ANIM", "anim/goosemoose_yule_build.zip"),
     Asset("SOUND", "sound/goosemoose.fsb"),              -- Why was that commented ?
 }
 
@@ -155,7 +156,7 @@ local function fn()
     inst.Physics:SetCollisionCallback(OnCollide)
 
     inst.AnimState:SetBank("goosemoose")
-    inst.AnimState:SetBuild("goosemoose_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "goosemoose_yule_build" or "goosemoose_build")
     inst.AnimState:PlayAnimation("idle", true)
 
     ------------------------------------------

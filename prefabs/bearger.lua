@@ -3,6 +3,7 @@ local assets =
     Asset("ANIM", "anim/bearger_build.zip"),
     Asset("ANIM", "anim/bearger_basic.zip"),
     Asset("ANIM", "anim/bearger_actions.zip"),
+    Asset("ANIM", "anim/bearger_yule.zip"),
     Asset("SOUND", "sound/bearger.fsb"),
 }
 
@@ -208,7 +209,7 @@ local function ShouldSleep(inst)
         inst.components.shedder:StopShedding()
         inst:AddTag("hibernation")
         inst:AddTag("asleep")
-        inst.AnimState:OverrideSymbol("bearger_head", "bearger_build", "bearger_head_groggy")
+        inst.AnimState:OverrideSymbol("bearger_head", IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "bearger_yule" or "bearger_build", "bearger_head_groggy")
         return true
     end
     return false
@@ -342,7 +343,7 @@ local function fn()
     MakeGiantCharacterPhysics(inst, 1000, 1.5)
 
     inst.AnimState:SetBank("bearger")
-    inst.AnimState:SetBuild("bearger_build")
+    inst.AnimState:SetBuild(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "bearger_yule" or "bearger_build")
     inst.AnimState:PlayAnimation("idle_loop", true)
 
     ------------------------------------------

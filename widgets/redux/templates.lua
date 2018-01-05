@@ -1,5 +1,4 @@
 local AccountItemFrame = require "widgets/redux/accountitemframe"
-local Button = require "widgets/button"
 local Grid = require "widgets/grid"
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
@@ -197,6 +196,8 @@ end
 function TEMPLATES.StandardMenu(menuitems, offset, horizontal, style, wrap)
     local menu = Menu(menuitems, offset, horizontal, style, wrap)
     menu:SetPosition(menuX, menuY)
+    -- Menus should start from the top as far as users are concerned.
+    menu.reverse = true
     return menu
 end
 
@@ -222,11 +223,24 @@ end
 -- Assumes the button's parent is a Menu.
 -- Put a bunch of these into a StandardMenu.
 function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
-    local btn = Button()
+    local btn = ImageButton(
+        "images/global_redux.xml",
+        "blank.tex", -- never used, hidden
+        nil,
+        nil,
+        nil,
+        "menu_selected.tex",
+        {0.6},
+        {-10,1})
+    btn.scale_on_focus = false
+    btn:UseFocusOverlay("menu_focus.tex")
+    btn:SetImageNormalColour(1,1,1,0) -- we don't want anything shown for normal.
+    btn:SetImageFocusColour(1,1,1,0) -- use focus overlay instead.
+    btn:SetImageSelectedColour(1,1,1,1)
     btn:SetFont(HEADERFONT)
     btn:SetDisabledFont(HEADERFONT)
     btn:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-    btn:SetTextFocusColour(1, 1, 1, 1)
+    btn:SetTextFocusColour(UICOLOURS.WHITE)
     btn:SetTextSelectedColour(UICOLOURS.GOLD_FOCUS)
     btn:SetText(text, true)
     btn.text:SetRegionSize(250,40)
@@ -235,26 +249,17 @@ function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
     btn.text_shadow:SetHAlign(ANCHOR_LEFT)
     btn:SetTextSize(25)
 
-    btn.image = btn:AddChild(Image("images/frontend_redux.xml", "menu_selection.tex"))
-    btn.image:MoveToBack()
-    btn.image:SetScale(.6)
-    btn.image:SetPosition(-10,1)
-    btn.image:SetClickable(false)
-    btn.image:Hide()
-
     btn.bg = btn:AddChild(Image("images/ui.xml", "blank.tex"))
     local w,h = btn.text:GetRegionSize()
     btn.bg:ScaleToSize(250, h+15)
     btn.bg:SetPosition(-10,1)
 
     btn.ongainfocus = function(is_enabled)
-        btn.image:Show()
         tooltip_widget:SetString(tooltip_text)
     end
 
     btn.onlosefocus = function()
-        btn.image:Hide()
-        if not btn.parent.focus then
+        if btn.parent and not btn.parent.focus then
             tooltip_widget:SetString("")
         end
     end
@@ -265,12 +270,22 @@ end
 
 function TEMPLATES.WardrobeButton(text, onclick, tooltip_text, tooltip_widget)
     local btn = TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
-        
-    btn.image:SetTexture("images/frontend_redux.xml", "menu_wardrobe_selection.tex")
+    btn:SetTextures(
+        "images/frontend_redux.xml",
+        "menu_wardrobe_selection.tex", -- never used, hidden
+        nil,
+        nil,
+        nil,
+        "menu_wardrobe_selection.tex",
+        {0.6},
+        {-10,1})
     
+    btn:UseFocusOverlay("menu_wardrobe_focus.tex")
     btn:SetTextSize(22)
     btn.text:SetPosition(20,10)
     btn.text:SetRegionSize(205,24)
+    -- We're messing with the shadow and not maintaining it, so kill it.
+    btn.text_shadow:Kill()
     
     btn.icon = btn:AddChild( AccountItemFrame() )
     btn.icon:SetStyle_Normal()
@@ -367,11 +382,20 @@ function TEMPLATES.BackButton_BesideLeftSidebar(onclick, txt, shadow_offset, sca
     return btn
 end
 
-function TEMPLATES.StandardButton(onclick, txt, size)
+-- Common button.
+-- icon_data allows a square button that's sized relative to label. Doesn't
+-- behave well with changing button labels.
+function TEMPLATES.StandardButton(onclick, txt, size, icon_data)
     local prefix = "button_carny_long"
-    if size and #size == 2 and size[1] / size[2] > 4 then
-        -- Longer texture will look better at this aspect ratio.
-        prefix = "button_carny_xlong"
+    if size and #size == 2 then
+        local ratio = size[1] / size[2]
+        if ratio > 4 then
+            -- Longer texture will look better at this aspect ratio.
+            prefix = "button_carny_xlong"
+        elseif ratio < 1.1 then
+            -- The closest we have to a tall button.
+            prefix = "button_carny_square"
+        end
     end
     local btn = ImageButton("images/global_redux.xml",
         prefix.."_normal.tex",
@@ -386,60 +410,97 @@ function TEMPLATES.StandardButton(onclick, txt, size)
         btn:ForceImageSize(unpack(size))
         btn:SetTextSize(math.ceil(size[2]*.45))
     end
+    if icon_data then
+        local width = btn.text.size
+        btn.icon = btn.text:AddChild(Image(unpack(icon_data)))
+        btn.icon:ScaleToSize(width, width)
+        local icon_x = 1
+        if btn.text:GetString():len() > 0 then
+            local offset = width/2
+            local padding = 5
+            icon_x = -btn.text:GetRegionSize()/2 - offset - padding
+            btn.text:SetPosition(offset,0)
+        else
+            -- If there's no text, btn.text is probably hidden. Parent to button
+            -- instead. Placing icon relative to text is much easier as a child
+            -- of text, so only parent to button if there's no text to align
+            -- against.
+            btn.icon = btn:AddChild(btn.icon)
+        end
+        btn.icon:SetPosition(icon_x,0)
+    end
     return btn
 end
 
-
--- Standard-style button with a custom icon and a text label on the button.
+-- Standard-style square button with a custom icon on the button.
+-- Text label is not intended to be on the button! (It's beside, below, or hovertext.)
 -- Text label offset can be specified, as well as whether or not it always shows.
+-- For buttons containing both icon and text, see StandardButton's icon_data.
 function TEMPLATES.IconButton(iconAtlas, iconTexture, labelText, sideLabel, alwaysShowLabel, onclick, textinfo, defaultTexture)
-    local btn = TEMPLATES.StandardButton(onclick)
-    btn:ForceImageSize(100,50)
-
-    btn.icon = btn:AddChild(Image(iconAtlas, iconTexture, defaultTexture))
-    btn.icon:SetPosition(0,2)
-    btn.icon:SetScale(0.13)
-    btn.icon:SetClickable(false)
-
-    btn.highlight = btn:AddChild(Image("images/frontend.xml", "button_square_highlight.tex"))
-    btn.highlight:SetScale(.7)
-    btn.highlight:SetClickable(false)
-    btn.highlight:Hide()
+    local btn = TEMPLATES.StandardButton(onclick, nil, {70,70}, {iconAtlas, iconTexture})
 
     if not textinfo then
         textinfo = {}
     end
 
     if sideLabel then
-        btn.label = btn:AddChild(Text(textinfo.font or NEWFONT, textinfo.size or 25, labelText, textinfo.colour or {0,0,0,1}))
+        -- A label to the left of the button.
+        btn.label = btn:AddChild(Text(textinfo.font or NEWFONT, textinfo.size or 25, labelText, textinfo.colour or UICOLOURS.GOLD_CLICKABLE))
         btn.label:SetRegionSize(150,70)
         btn.label:EnableWordWrap(true)
         btn.label:SetHAlign(ANCHOR_RIGHT)
-        btn.label:SetPosition(-115, 7)
+        btn.label:SetPosition(-115, 2)
+
     elseif alwaysShowLabel then
+        -- A label below the button.
         btn:SetTextSize(25)
         btn:SetText(labelText, true)
-        btn.text:SetPosition(-3, -34)
-        btn.text_shadow:SetPosition(-5, -36)
+        btn.text:SetPosition(1, -38)
+        btn.text_shadow:SetPosition(-1, -40)
         btn:SetFont(textinfo.font or NEWFONT)
-        btn:SetTextColour(textinfo.colour or { unpack(GOLD) })
-        btn:SetTextFocusColour(textinfo.focus_colour or { unpack(GOLD) })
+        btn:SetTextColour(textinfo.colour or UICOLOURS.GOLD_CLICKABLE)
+        btn:SetTextFocusColour(textinfo.focus_colour or UICOLOURS.GOLD_FOCUS)
+
     else
-        btn:SetHoverText(labelText, { font = textinfo.font or NEWFONT_OUTLINE, size = textinfo.size or 22, offset_x = textinfo.offset_x or -4, offset_y = textinfo.offset_y or 45, colour = textinfo.colour or {1,1,1,1}, bg = textinfo.bg })
+        -- Only show hovertext.
+        btn:SetHoverText(labelText, {
+                font = textinfo.font or NEWFONT_OUTLINE,
+                size = textinfo.size or 22,
+                offset_x = textinfo.offset_x or 2,
+                offset_y = textinfo.offset_y or -45,
+                colour = textinfo.colour or UICOLOURS.WHITE,
+                bg = textinfo.bg
+            })
     end
 
-    btn:SetOnClick(onclick)
-
-    btn:SetOnGainFocus(function()
-        if btn:IsEnabled() and not btn:IsSelected() and TheFrontEnd:GetFadeLevel() <= 0 then
-            btn.highlight:Show()
-        end
-    end)
-    btn:SetOnLoseFocus(function()
-        btn.highlight:Hide()
-    end)
-
     return btn
+end
+
+function TEMPLATES.ServerDetailIcon(iconAtlas, iconTexture, bgColor, hoverText, textinfo, imgOffset, scaleX, scaleY)
+    imgOffset = imgOffset or {0,0}
+
+    local icon = Widget("detail_icon")
+    icon.bg = icon:AddChild(Image("images/servericons.xml", bgColor and "bg_"..bgColor..".tex" or "bg_burnt.tex"))
+    icon.bg:SetScale(.09)
+    icon.img = icon:AddChild(Image(iconAtlas, iconTexture))
+    icon.img:SetScale(scaleX or .075, scaleY or .075)
+    icon.img:SetPosition(unpack(imgOffset))
+
+    if hoverText and hoverText ~= "" then
+        textinfo = textinfo or {}
+        icon:SetHoverText(
+            hoverText,
+            {
+                font = textinfo.font or NEWFONT_OUTLINE,
+                size = textinfo.size or 22,
+                offset_x = 2, -- for some reason, this looks more centred
+                offset_y = -28,
+                colour = textinfo.colour or {1,1,1,1},
+                bg = textinfo.bg
+            })
+    end
+
+    return icon
 end
 
 function TEMPLATES.DoodadCounter(number_of_doodads)
@@ -497,7 +558,7 @@ end
 -- Unlabelled text entry box
 --
 -- height and following arguments are optional.
-function TEMPLATES.StandardSingleLineTextEntry(fieldtext, width_field, height, font, font_size)
+function TEMPLATES.StandardSingleLineTextEntry(fieldtext, width_field, height, font, font_size, prompt_text)
     height = height or 40
     local textbox_font_ratio = 0.8
     local wdg = Widget("singleline textentry")
@@ -508,6 +569,10 @@ function TEMPLATES.StandardSingleLineTextEntry(fieldtext, width_field, height, f
     wdg.textbox:SetRegionSize(width_field-30, height) -- this needs to be slightly narrower than the BG because we don't have margins
     wdg.textbox:SetHAlign(ANCHOR_LEFT)
     wdg.textbox:SetFocusedImage( wdg.textbox_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
+
+    if prompt_text then
+        wdg.textbox:SetTextPrompt(prompt_text, UICOLOURS.GREY)
+    end
 
     wdg.OnGainFocus = function(self)
         Widget.OnGainFocus(self)
@@ -552,7 +617,7 @@ function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinn
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
-    spacing = spacing or -50
+    spacing = spacing or -50 -- why negative?
     font = font or CHATFONT
     font_size = font_size or 25
 
@@ -577,7 +642,7 @@ function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_s
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
-    spacing = spacing or -50
+    spacing = spacing or -50 -- why negative?
     font = font or CHATFONT
     font_size = font_size or 25
 
@@ -589,9 +654,7 @@ function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_s
     wdg.label:SetRegionSize( width_label, height )
     wdg.label:SetHAlign( ANCHOR_RIGHT )
     wdg.label:SetColour(UICOLOURS.GOLD)
-    local atlas = "images/global_redux.xml"
-    local lean = true
-    wdg.spinner = wdg:AddChild(NumericSpinner(min, max, width_spinner, height, {font = font, size = font_size}, atlas, nil, nil, lean))
+    wdg.spinner = wdg:AddChild(TEMPLATES.StandardNumericSpinner(min, max, width_spinner, height, font, font_size))
     wdg.spinner:SetPosition((total_width/2)-(width_spinner/2) + offset, 0)
     wdg.spinner:SetTextColour(UICOLOURS.GOLD)
 
@@ -601,10 +664,21 @@ function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_s
 end
 
 -- Text button with a label beside it
-function TEMPLATES.LabelButton(labeltext, buttontext, width_label, width_button, height, spacing, font, font_size, horiz_offset)
-    local wdg = TEMPLATES.old.LabelButton(labeltext, buttontext, width_label, width_button, height, spacing, font, font_size, horiz_offset)
+function TEMPLATES.LabelButton(onclick, labeltext, buttontext, width_label, width_button, height, spacing, font, font_size, horiz_offset)
+    local offset = horiz_offset or 0
+    local total_width = width_label + width_button + spacing
+    local wdg = Widget("labelbutton")
+    wdg.label = wdg:AddChild( Text(font or NEWFONT, font_size or 25, labeltext) )
+    wdg.label:SetPosition( (-total_width/2)+(width_label/2) + offset, 0 )
+    wdg.label:SetRegionSize( width_label, height )
+    wdg.label:SetHAlign( ANCHOR_RIGHT )
     wdg.label:SetColour(UICOLOURS.GOLD)
-    wdg.button.text:SetColour(UICOLOURS.GOLD)
+    wdg.button = wdg:AddChild(TEMPLATES.StandardButton(nil, buttontext, {width_button, height}))
+    wdg.button:SetPosition((total_width/2)-(width_button/2) + offset, 0)
+    wdg.button:SetOnClick(onclick)
+
+    wdg.focus_forward = wdg.button
+
     return wdg
 end
 
@@ -614,6 +688,15 @@ function TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, fon
     local atlas = "images/global_redux.xml"
     local lean = true
     local wdg = Spinner(spinnerdata, width_spinner, height, {font = font or CHATFONT, size = font_size or 25}, nil, atlas, nil, lean)
+    wdg:SetTextColour(UICOLOURS.GOLD)
+    return wdg
+end
+
+-- Spinner
+function TEMPLATES.StandardNumericSpinner(min, max, width_spinner, height, font, font_size)
+    local atlas = "images/global_redux.xml"
+    local lean = true
+    local wdg = NumericSpinner(min, max, width_spinner, height, {font = font or CHATFONT, size = font_size or 25}, atlas, nil, nil, lean)
     wdg:SetTextColour(UICOLOURS.GOLD)
     return wdg
 end
@@ -949,8 +1032,8 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
     w.bottom:MoveToFront()
 
     -- Ensure we're within the bounds of looking good and fitting on screen.
-    sizeX = math.clamp(sizeX or 200, 90, 1000)
-    sizeY = math.clamp(sizeY or 200, 50, 500)
+    sizeX = math.clamp(sizeX or 200, 90, 1190)
+    sizeY = math.clamp(sizeY or 200, 50, 620)
     w:SetSize(sizeX, sizeY)
     w:SetScale(0.7, 0.7)
 
@@ -1013,8 +1096,87 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
         end
         self.mid_center:SetTint(r,g,b,a)
     end
+    
+    w.InsertWidget = function(self, widget)
+		w:AddChild(widget)
+		for i=1,3 do
+            self.elements[i]:MoveToFront()
+        end
+        for i=6,8 do
+            self.elements[i]:MoveToFront()
+        end
+		return widget
+    end
+
+    -- Default to black.
+    w:SetBackgroundTint(0,0,0,1)
 
     return w
+end
+
+-- Build controller input functions from buttons passed to Menu (or
+-- CurlyWindow, etc). Screens can call these functions to support the button
+-- inputs from anywhere.
+-- Each element in buttons should contain:
+-- {
+--      text = string,
+--      cb = function,
+--      controller_control = number,
+-- }
+-- Avoid CONTROL_ACCEPT unless you're hiding the buttons (since the focused
+-- button takes that input).
+function TEMPLATES.ControllerFunctionsFromButtons(buttons)
+    if not buttons or IsTableEmpty(buttons) then
+        return function() return false end, function() return "" end
+    end
+
+    local has_controls_specified = false
+    for i,v in ipairs(buttons) do
+        if v.controller_control then
+            has_controls_specified = true
+            break
+        end
+    end
+    if not has_controls_specified then
+        -- If there are multiple options, assume the far right one is cancel.
+        -- If there's only one option, it's likely to have the focus so don't
+        -- create two inputs for the same option.
+        local last_button = buttons[#buttons]
+        if #buttons > 1 and last_button then
+            last_button.controller_control = CONTROL_CANCEL
+        end
+    end
+
+    local function OnControl(control, down)
+        if down then
+            return false
+        -- Hitting Esc fires both Pause and Cancel, so we can only handle pause
+        -- when coming from gamepads.
+        elseif control ~= CONTROL_PAUSE or TheInput:ControllerAttached() then 
+            for i,v in ipairs(buttons) do
+                if control == v.controller_control then
+                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+                    v.cb()
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
+    local function GetHelpText()
+        local controller_id = TheInput:GetControllerID()
+        local t = {}
+
+        for i,v in ipairs(buttons) do
+            if v.controller_control then
+                table.insert(t, TheInput:GetLocalizedControl(controller_id, v.controller_control) .. " " .. v.text)
+            end
+        end
+        return table.concat(t, "  ")
+    end
+
+    return OnControl, GetHelpText
 end
 
 function TEMPLATES.ScrollingGrid(items, opts)
@@ -1023,6 +1185,12 @@ function TEMPLATES.ScrollingGrid(items, opts)
         -- Caller can force a peek height if they will add items to the list or
         -- have hidden empty widgets.
         peek_height = opts.widget_height * opts.peek_percent
+    elseif #items < opts.num_visible_rows * opts.num_columns then
+        -- No peek if we won't scroll.
+        -- This won't work if we later update the items in the grid. Would be
+        -- nice if TrueScrollList could handle this but I think we'd need to
+        -- update the scissor region or change the show widget threshold?
+        peek_height = 0
     end
     local function ScrollWidgetsCtor(context, parent, scroll_list)
         local NUM_ROWS = opts.num_visible_rows + 2
@@ -1044,6 +1212,12 @@ function TEMPLATES.ScrollingGrid(items, opts)
         -- focus movement directions.
         parent.focus_forward = parent.grid
 
+        -- Higher up widgets are further to front so their hover text can
+        -- appear over the widget beneath them.
+        for i,w in ipairs(widgets) do
+            w:MoveToBack()
+        end
+
         -- end_offset helps ensure last item can scroll into view. It's a
         -- percent of a row height. 0.75 seems to prevent the next (empty) row
         -- from being visible.
@@ -1052,8 +1226,8 @@ function TEMPLATES.ScrollingGrid(items, opts)
     end
 
     local scissor_pad = opts.scissor_pad or 0
-    local scissor_width  = opts.scissor_width or opts.widget_width  * opts.num_columns      + scissor_pad
-    local scissor_height = opts.scissor_height or opts.widget_height * opts.num_visible_rows + scissor_pad + peek_height
+    local scissor_width  = opts.widget_width  * opts.num_columns      + scissor_pad
+    local scissor_height = opts.widget_height * opts.num_visible_rows + scissor_pad + peek_height
     local scissor_x = -scissor_width/2
     local scissor_y = -scissor_height/2
     local scroller = TrueScrollList(

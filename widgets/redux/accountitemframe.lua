@@ -72,7 +72,9 @@ function AccountItemFrame:_HideExtraLayers()
     self:GetAnimState():Hide("SELECT")
     self:GetAnimState():Hide("FOCUS")
     self:GetAnimState():Hide("IC_WEAVE")
-    self:GetAnimState():Hide("event_forge")
+    for k,_ in pairs(EVENT_ICONS) do
+		self:GetAnimState():Hide(k)
+	end
 end
 
 function AccountItemFrame:SetLocked()

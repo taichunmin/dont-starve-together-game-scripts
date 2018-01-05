@@ -1,6 +1,5 @@
 local ItemExplorer = require "widgets/redux/itemexplorer"
 local FilterBar = require "widgets/redux/filterbar"
-local TEMPLATES = require "widgets/redux/templates"
 local Widget = require "widgets/widget"
 
 require("clothing")
@@ -21,30 +20,19 @@ local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, 
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 130)
 
-    self.filterBar = FilterBar(self.picker)
-    self.filter_btn = self.picker.header:AddChild( self.filterBar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_HERO_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_ALL_CLOTHING, "heroFilter", GetAffinityFilterForHero(self.owner.currentcharacter)) )
-    self.picker.header:AddChild( self.filterBar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.filter_bar = FilterBar(self.picker, "wardrobescreen")
+    self.filter_btn = self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_HERO_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_ALL_CLOTHING, "heroFilter", GetAffinityFilterForHero(self.owner.currentcharacter)) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
     if self.item_type == "base" then
-        self.filterBar:HideFilter("heroFilter")
-    else
-        --default it to filtering
-        self.filter_btn:onclick()
+        self.filter_bar:HideFilter("heroFilter")
     end
 
     self:_DoFocusHookups()
-    self.focus_forward = function()
-        -- If we have no items to display, then we can't push focus to the
-        -- picker since it will contain nothing to focus.
-        if self.picker.scroll_list and #self.picker.scroll_list.items > 0 then
-            return self.picker 
-        else
-            return self.filterBar
-        end
-    end
+    self.focus_forward = self.filter_bar:BuildFocusFinder()
 end)
 
 function ClothingExplorerPanel:_DoFocusHookups()
-    self.picker.header.focus_forward = self.filterBar
+    self.picker.header.focus_forward = self.filter_bar
 end
 
 function ClothingExplorerPanel:_GetCurrentClothing()
@@ -61,7 +49,7 @@ end
 
 function ClothingExplorerPanel:OnShow()
     ClothingExplorerPanel._base.OnShow(self)
-    self.picker:RefreshItems()
+    self.filter_bar:RefreshFilterState()
 end
 
 function ClothingExplorerPanel:_BuildItemExplorer()
@@ -89,11 +77,10 @@ function ClothingExplorerPanel:_BuildItemExplorer()
 end
 
 function ClothingExplorerPanel:RefreshInventory()
-    -- Click twice to bring us back to the current filter state. We could use
+    -- Ensure we apply the current filter state to new data. We could use
     -- picker:RefreshItems() but we'd lose our current filter state and the
     -- button might not match the current state.
-    self.filter_btn:onclick()
-    self.filter_btn:onclick()
+    self.filter_bar:RefreshFilterState()
 end
 
 return ClothingExplorerPanel

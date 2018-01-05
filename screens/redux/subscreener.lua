@@ -10,6 +10,7 @@ end)
 
 function Subscreener:MenuButton(text, key, tooltip_text, tooltip_widget)
 	local btn = TEMPLATES.MenuButton(text, function() self:OnMenuButtonSelected(key) end, tooltip_text, tooltip_widget)
+
     self.buttons[key] = btn
     self.titles[key] = text
     return btn
@@ -17,6 +18,7 @@ end
 
 function Subscreener:WardrobeButton(text, key, tooltip_text, tooltip_widget)
 	local btn = TEMPLATES.WardrobeButton(text, function() self:OnMenuButtonSelected(key) end, tooltip_text, tooltip_widget)
+
     self.buttons[key] = btn
     self.titles[key] = text
     return btn

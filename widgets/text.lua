@@ -106,6 +106,7 @@ end
 
 --WARNING: This is not optimized!
 -- Recommend to use only in FE menu screens.
+-- Causes infinite loop when used with SetRegionSize!
 --
 -- maxwidth [optional]: max region width, only works when autosizing
 -- maxchars [optional]: max chars from original string

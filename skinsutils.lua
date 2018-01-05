@@ -20,7 +20,8 @@ DEFAULT_SKIN_COLOR = SKIN_RARITY_COLORS["Common"]
 
 EVENT_ICONS = 
 {
-	event_forge = 32
+	event_forge = "LAVA",
+	event_ice = "ICE",
 }
 
 -- Also update GetBuildForItem!
@@ -77,7 +78,7 @@ function CompareRarities(a, b)
 	local rarity1 = type(a) == "string" and a or a.rarity
 	local rarity2 = type(b) == "string" and b or b.rarity
 
-	return rarity_order[rarity1] < rarity_order[rarity2]
+	return rarity_order[rarity1 or "Common"] < rarity_order[rarity2 or "Common"] --look into removing this by always populating the rarity field for item data
 end
 
 function GetNextRarity(rarity)
@@ -119,6 +120,28 @@ function GetBigPortraitForItem(item_key)
 	end
 
 	return nil
+end
+
+function IsPackFeatured(item_key)
+    local pack_data = GetSkinData(item_key)
+    return pack_data.featured_pack
+end
+
+function GetPurchaseDisplayForItem(item_key)
+	local pack_data = GetSkinData(item_key)
+	if pack_data.display_atlas ~= nil and pack_data.display_tex ~= nil then
+		return { pack_data.display_atlas, pack_data.display_tex }
+	end
+	
+	return nil
+end
+
+function GetBoxBuildForItem(item_key)
+	local pack_data = GetSkinData(item_key)
+	if pack_data.box_build ~= nil and pack_data.box_build ~= nil then
+		return pack_data.box_build
+	end
+	return "box_build undefined"
 end
 
 function IsClothingItem(name)
@@ -166,7 +189,10 @@ end
 
 function GetModifiedRarityStringForItem( item )
 	if GetRarityModifierForItem(item) ~= nil then
-		return STRINGS.UI.RARITY[GetRarityModifierForItem(item)] .. STRINGS.UI.RARITY[GetRarityForItem(item)]
+		if STRINGS.UI.RARITY[GetRarityModifierForItem(item)] == nil then
+			print("Error! Unknown rarity modifier. Needs to be defined in strings.lua.", GetRarityModifierForItem(item) )
+		end
+		return (STRINGS.UI.RARITY[GetRarityModifierForItem(item)] or "") .. STRINGS.UI.RARITY[GetRarityForItem(item)]
 	else
 		return STRINGS.UI.RARITY[GetRarityForItem(item)]
 	end
@@ -192,7 +218,7 @@ end
 function GetEventIconForItem(item)
 	local skin_data = GetSkinData(item)
 	for k,v in pairs(EVENT_ICONS) do
-		if skin_data.release_group == v then
+		if DoesItemHaveTag( item, v ) then
 			return k
 		end
 	end
@@ -480,10 +506,14 @@ end
 function CompareItemDataForSort(item_key_a, item_key_b, item_table)
     if item_key_a == item_key_b then 
         return false
-    elseif item_table[item_key_a].release_group == item_table[item_key_b].release_group then 
-        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
-    else 
+    elseif item_table[item_key_a].release_group ~= item_table[item_key_b].release_group then 
+    
         return CompareReleaseGroup(item_table[item_key_a], item_table[item_key_b])
+    elseif item_table[item_key_a].rarity ~= item_table[item_key_b].rarity then
+	
+		return CompareRarities(item_table[item_key_a], item_table[item_key_b])
+	else
+        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b) 
     end
 end
 
@@ -696,7 +726,7 @@ function OwnsSkinPack(item_key)
 	return true
 end
 
-function GetTotalItemCollectionCompletion()
+--[[function GetTotalItemCollectionCompletion()
     local num_owned = 0
     local num_need = 0
     for i,item_category in ipairs(GetAllItemCategories()) do
@@ -709,7 +739,7 @@ function GetTotalItemCollectionCompletion()
         end
     end
     return num_owned, num_need
-end
+end]]
 
 local SKIN_AFFINITY_INFO = require("skin_affinity_info")
 function GetSkinCollectionCompletionForHero(herocharacter)
@@ -717,11 +747,13 @@ function GetSkinCollectionCompletionForHero(herocharacter)
     local num_owned = 0
     local num_need = 0
     for i,item_key in ipairs(SKIN_AFFINITY_INFO[herocharacter] or {}) do
-        if TheInventory:CheckOwnership(item_key) then
-            num_owned = num_owned + 1
-        else
-            num_need = num_need + 1
-        end
+		if ShouldDisplayItemInCollection(item_key) then
+			if TheInventory:CheckOwnership(item_key) then
+				num_owned = num_owned + 1
+			else
+				num_need = num_need + 1
+			end
+		end
     end
     return num_owned, num_need
 end
@@ -782,6 +814,24 @@ function GetMysteryBoxItemID(item_type)
 	end
 	
 	return 0
+end
+
+
+function CalculateShopHash()
+	local shop_str = ""
+	local unvalidated_iap_defs = TheItems:GetIAPDefs()
+    local iap_defs = {}
+    for _,iap in pairs(unvalidated_iap_defs) do
+        -- Don't add items unless we have data/strings to describe them.
+        if MISC_ITEMS[iap.item_type] then
+            shop_str = shop_str .. iap.item_type
+        end
+    end
+	return smallhash(shop_str)
+end
+
+function IsShopNew(user_profile)
+	return user_profile:GetShopHash() ~= CalculateShopHash() and #(TheItems:GetIAPDefs()) > 0
 end
 
 function IsAnyItemNew(user_profile)

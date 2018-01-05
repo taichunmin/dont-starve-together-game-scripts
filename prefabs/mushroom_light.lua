@@ -1,4 +1,5 @@
-require "prefabutil"
+require("prefabutil")
+require("prefabs/mushtree_spores")
 
 local prefabs =
 {
@@ -51,9 +52,33 @@ local function QueueSound(inst, delay, soundname)
     inst._soundtask = inst:DoTaskInTime(delay, OnQueuedSound, soundname)
 end
 
-local function IsRedSpore(item) return item.prefab == MUSHTREE_SPORE_RED or item.prefab == "winter_ornament_light1" end
-local function IsGreenSpore(item) return item.prefab == MUSHTREE_SPORE_GREEN or item.prefab == "winter_ornament_light2" end
-local function IsBlueSpore(item) return item.prefab == MUSHTREE_SPORE_BLUE or item.prefab == "winter_ornament_light3" end
+local COLOURED_LIGHTS =
+{
+    red =
+    {
+        [MUSHTREE_SPORE_RED] = true,
+        ["winter_ornament_light1"] = true,
+        ["winter_ornament_light5"] = true,
+    },
+
+    green =
+    {
+        [MUSHTREE_SPORE_GREEN] = true,
+        ["winter_ornament_light2"] = true,
+        ["winter_ornament_light6"] = true,
+    },
+
+    blue =
+    {
+        [MUSHTREE_SPORE_BLUE] = true,
+        ["winter_ornament_light3"] = true,
+        ["winter_ornament_light7"] = true,
+    },
+}
+
+local function IsRedSpore(item) return COLOURED_LIGHTS.red[item.prefab] end
+local function IsGreenSpore(item) return COLOURED_LIGHTS.green[item.prefab] end
+local function IsBlueSpore(item) return COLOURED_LIGHTS.blue[item.prefab] end
 
 local function UpdateLightState(inst)
     if inst:HasTag("burnt") then

@@ -234,10 +234,10 @@ function ConsoleScreen:DoInit()
 		table.insert(prefab_names, name)
 	end
 
-	self.console_edit:EnableWordPrediction({width = 1000})
+	self.console_edit:EnableWordPrediction({width = 1000, mode=Profile:GetConsoleAutocompleteMode()})
 	self.console_edit:AddWordPredictionDictionary({words = prefab_names, delim = '"', postfix='"', skip_pre_delim_check=true})
 	self.console_edit:AddWordPredictionDictionary({words = prefab_names, delim = "'", postfix='"', skip_pre_delim_check=true})
-	local prediction_command = {"spawn", "save()", "gonext", "give", "mat", "list", "findnext", "countprefabs", "selectnear", "removeall", "shutdown(true)", "regenerateworld()", "reset()", "despawn()", "godmode()", "supergodmode()", "armor()" }
+	local prediction_command = {"spawn", "save", "gonext", "give", "mat", "list", "findnext", "countprefabs", "selectnear", "removeall", "shutdown", "regenerateworld", "reset", "despawn", "godmode", "supergodmode", "armor" }
 	self.console_edit:AddWordPredictionDictionary({words = prediction_command, delim = "c_", num_chars = 0})
 
 	self.console_edit:SetForceEdit(true)

@@ -12,11 +12,14 @@ local DEBUG_SHOW_MAX_WITH = false
 local FONT_SIZE = 22
 local PADDING = 10
 
-local WordPredictionWidget = Class(Widget, function(self, text_edit, max_width)
+local WordPredictionWidget = Class(Widget, function(self, text_edit, max_width, mode)
     Widget._ctor(self, "WordPredictionWidget")
     
     self.word_predictor = WordPredictor()
 	self.text_edit = text_edit
+
+	self.enter_complete = string.match(mode, "enter", 1, true) ~= nil
+	self.tab_complete = string.match(mode, "tab", 1, true) ~= nil
 	
 	self.sizey = FONT_SIZE + 4
 	self.max_width = max_width or 300
@@ -46,6 +49,10 @@ local WordPredictionWidget = Class(Widget, function(self, text_edit, max_width)
 	self:Hide()
 end)
 
+function WordPredictionWidget:IsMouseOnly()
+	return self.enter_complete == false and self.tab_complete == false
+end
+
 function WordPredictionWidget:OnRawKey(key, down)
 	if key == KEY_BACKSPACE or key == KEY_DELETE then
 		self.active_prediction_btn = nil
@@ -53,14 +60,16 @@ function WordPredictionWidget:OnRawKey(key, down)
 		return false  -- do not consume the key press
 
 	elseif self.word_predictor.prediction ~= nil then
-		if key == KEY_TAB or key == KEY_ENTER then
-			return true
-		elseif key == KEY_LEFT then
+		if key == KEY_TAB then
+			return self.tab_complete
+		elseif key == KEY_ENTER then
+			return self.enter_complete
+		elseif key == KEY_LEFT and not self:IsMouseOnly() then
 			if down and self.active_prediction_btn > 1 then
 				self.prediction_btns[self.active_prediction_btn - 1]:Select()
 			end
 			return true
-		elseif key == KEY_RIGHT then
+		elseif key == KEY_RIGHT and not self:IsMouseOnly() then
 			if down and self.active_prediction_btn < #self.prediction_btns then
 				self.prediction_btns[self.active_prediction_btn + 1]:Select()
 			end
@@ -83,10 +92,12 @@ function WordPredictionWidget:OnControl(control, down)
 			end
 			return true
 		elseif control == CONTROL_ACCEPT then
-			if not down then
-				self.text_edit:ApplyWordPrediction(self.active_prediction_btn)
+			if self.enter_complete then
+				if not down then
+					self.text_edit:ApplyWordPrediction(self.active_prediction_btn)
+				end
+				return true
 			end
-			return true
 		end
 	end
 		
@@ -94,7 +105,7 @@ function WordPredictionWidget:OnControl(control, down)
 end
 
 function WordPredictionWidget:OnTextInput(text)
-	if self.word_predictor.prediction ~= nil and text == "\t" then
+	if self.word_predictor.prediction ~= nil and text == "\t" and self.tab_complete then
 		self.text_edit:ApplyWordPrediction(self.active_prediction_btn)
 		return true -- consume the tab key
 	end
@@ -106,7 +117,7 @@ function WordPredictionWidget:ResolvePrediction(prediction_index)
 end
 
 function WordPredictionWidget:Dismiss()
-	self.word_predictor.prediction = nil
+	self.word_predictor:Clear()
 
 	self.prediction_btns = {}
 	self.active_prediction_btn = nil
@@ -139,8 +150,8 @@ function WordPredictionWidget:RefreshPredictions()
 			btn:SetFont(CHATFONT)
 			btn:SetDisabledFont(CHATFONT)
 			btn:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+			btn:SetTextFocusColour(UICOLOURS.GOLD_CLICKABLE)
 			btn:SetTextSelectedColour(UICOLOURS.GOLD_FOCUS)
-			btn:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 			btn:SetText(str)
 			btn:SetTextSize(FONT_SIZE)
 			btn.clickoffset = Vector3(0,0,0)
@@ -152,10 +163,14 @@ function WordPredictionWidget:RefreshPredictions()
 			btn.bg:SetPosition(0,0)
 			btn.bg:MoveToBack()
 
-			btn:SetOnClick(function() self.text_edit:ApplyWordPrediction(i) end)
+			btn:SetOnClick(function() if self.active_prediction_btn ~= nil then self.text_edit:ApplyWordPrediction(self.active_prediction_btn) end end)
 			btn:SetOnSelect(function() if self.active_prediction_btn ~= nil and self.active_prediction_btn ~= i then self.prediction_btns[self.active_prediction_btn]:Unselect() end self.active_prediction_btn = i end)
 			btn.ongainfocus = function() btn:Select() end
 			btn.AllowOnControlWhenSelected = true
+			
+			if self:IsMouseOnly() then
+				btn.onlosefocus = function() if btn.selected then btn:Unselect() self.active_prediction_btn = nil end end
+			end
 
 			local sx, sy = btn.text:GetRegionSize()
 			btn:SetPosition(sx * 0.5 + offset, 0)
@@ -176,8 +191,13 @@ function WordPredictionWidget:RefreshPredictions()
 			end
 		end
 		
+		if self:IsMouseOnly() then
+			self.active_prediction_btn = nil
+		else
+			self.prediction_btns[self.active_prediction_btn or 1]:Select()
+		end
+
 		self.backing:SetSize(offset, self.sizey + 4)
-		self.prediction_btns[self.active_prediction_btn or 1]:Select()
 	else
 		self:Hide()
 		self:Disable()

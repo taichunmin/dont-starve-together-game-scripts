@@ -146,12 +146,17 @@ end
 -- Store the player's last selection so we can preselecting the right character
 -- for the player.
 function PlayerProfile:GetLastSelectedCharacter()
-    return self.persistdata.last_selected_character or DST_CHARACTERLIST[1]
+    local character = self.persistdata.last_selected_character
+    if not table.contains(DST_CHARACTERLIST, character) then
+        character = DST_CHARACTERLIST[1]
+    end
+    return character
 end
 
 function PlayerProfile:SetLastSelectedCharacter(character)
-    -- Only track official characters.
-    if character and STRINGS.CHARACTER_NAMES[character] then
+    -- Only track official characters since we show this character a
+    -- lot in the frontend.
+    if table.contains(DST_CHARACTERLIST, character) then
         self.persistdata.last_selected_character = character
     end
 end
@@ -307,6 +312,32 @@ function PlayerProfile:GetStoredCustomizationItemTypes()
 	return table.getkeys(self.persistdata.customization_items)
 end
 
+-- Filters that determine which customization items are displayed in the collection.
+function PlayerProfile:SetCustomizationFilterState(customize_screen, customize_filter, filter_state)
+	if not self.persistdata.customization_filters then
+        self.persistdata.customization_filters = {}
+    end
+
+	if not self.persistdata.customization_filters[customize_screen] then
+        self.persistdata.customization_filters[customize_screen] = {}
+    end
+
+	self.persistdata.customization_filters[customize_screen][customize_filter] = filter_state
+end
+
+function PlayerProfile:GetCustomizationFilterState(customize_screen, customize_filter)
+	if not self.persistdata.customization_filters then
+		return
+	end
+
+	if not self.persistdata.customization_filters[customize_screen] then
+		return
+	end
+
+	return self.persistdata.customization_filters[customize_screen][customize_filter]
+end
+
+
 function PlayerProfile:SetCollectionTimestamp(time)
 	self.persistdata.collection_timestamp = time
 
@@ -315,6 +346,16 @@ end
 
 function PlayerProfile:GetCollectionTimestamp()
 	return self.persistdata.collection_timestamp or -10000
+end
+
+function PlayerProfile:SetShopHash(_hash)
+	self.persistdata.purchase_screen_hash = _hash
+	
+	self:Save()
+end
+
+function PlayerProfile:GetShopHash()
+	return self.persistdata.purchase_screen_hash or 0
 end
 
 function PlayerProfile:SetDressupTimestamp(time)
@@ -597,6 +638,25 @@ function PlayerProfile:GetAutoSubscribeModsEnabled()
 	end
 end
 
+-- "enter_tab", "disabled", "tab", "enter", "mouseonly"
+function PlayerProfile:GetConsoleAutocompleteMode()
+ 	if USE_SETTINGS_FILE then
+		return TheSim:GetSetting("misc", "console_autocomplete") or "enter_tab"
+	else
+		return "enter_tab"
+	end
+end
+
+-- "enter_tab", "disabled", "tab", "enter", "mouseonly"
+function PlayerProfile:GetChatAutocompleteMode()
+ 	if USE_SETTINGS_FILE then
+		return TheSim:GetSetting("misc", "chat_autocomplete") or "enter_tab"
+	else
+		return "enter_tab"
+	end
+end
+
+
 -- gjans: Added this upgrade path 28/03/2016
 local function UpgradeProfilePresets(presets_string)
     local didupgrade = false
@@ -682,17 +742,11 @@ end
 function PlayerProfile:GetVolume()
  	if USE_SETTINGS_FILE then
 		local amb = TheSim:GetSetting("audio", "volume_ambient")
-		if amb == nil then
-			amb = 10
-		end
+        amb = tonumber(amb) or 10
 		local sfx = TheSim:GetSetting("audio", "volume_sfx")
-		if sfx == nil then
-			sfx = 10
-		end
+        sfx = tonumber(sfx) or 10
 		local music = TheSim:GetSetting("audio", "volume_music")
-		if music == nil then
-			music = 10
-		end
+        music = tonumber(music) or 10
 
 		return amb, sfx, music
 	else

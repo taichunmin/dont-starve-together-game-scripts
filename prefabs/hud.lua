@@ -45,6 +45,14 @@ local assets =
     Asset("ATLAS", "images/avatars.xml"),
     Asset("IMAGE", "images/avatars.tex"),
 
+    -- Used by old and new DressupPanel (in-game wardrobes).
+    Asset("ATLAS", "images/lobbyscreen.xml"),
+    Asset("Image", "images/lobbyscreen.tex"),
+    -- Used by old DressupPanel (in-game wardrobes).
+    Asset("ATLAS", "images/serverbrowser.xml"),
+    Asset("IMAGE", "images/serverbrowser.tex"),
+    --
+
     Asset("ATLAS", "images/inventoryimages.xml"),
     Asset("IMAGE", "images/inventoryimages.tex"),
 

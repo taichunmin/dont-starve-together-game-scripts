@@ -56,20 +56,15 @@ local PopupDialogScreen = Class(Screen, function(self, title, text, buttons, spa
     end
   
 	self.buttons = buttons or {}
+    self.oncontrol_fn, self.gethelptext_fn = TEMPLATES.ControllerFunctionsFromButtons(self.buttons)
 
 	self.default_focus = self.dialog
 end)
 
 function PopupDialogScreen:OnControl(control, down)
     if PopupDialogScreen._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
-        if #self.buttons > 1 and self.buttons[#self.buttons] then
-            self.buttons[#self.buttons].cb()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-            return true
-        end
-    end
+
+    return self.oncontrol_fn(control, down)
 end
 
 
@@ -78,12 +73,7 @@ function PopupDialogScreen:Close()
 end
 
 function PopupDialogScreen:GetHelpText()
-	local controller_id = TheInput:GetControllerID()
-	local t = {}
-	if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
-    end
-	return table.concat(t, "  ")
+    return self.gethelptext_fn()
 end
 
 return PopupDialogScreen

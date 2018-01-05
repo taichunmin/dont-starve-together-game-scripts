@@ -152,7 +152,7 @@ function HideCancelTip()
 	end
 end
 
-local function LoadAssets(asset_set)
+local function LoadAssets(asset_set, savedata)
 	if LOAD_UPFRONT_MODE then
         ModManager:RegisterPrefabs()
         return
@@ -162,6 +162,7 @@ local function LoadAssets(asset_set)
 
 	assert(asset_set)
 	Settings.current_asset_set = asset_set
+    Settings.current_world_asset = savedata ~= nil and savedata.map.prefab or nil
 
 	RECIPE_PREFABS = {}
 	for k,v in pairs(AllRecipes) do
@@ -187,7 +188,13 @@ local function LoadAssets(asset_set)
 			if Settings.last_asset_set ~= nil then
 				print("\tUnload BE")
 				TheSim:UnloadPrefabs(RECIPE_PREFABS)
-				TheSim:UnloadPrefabs(BACKEND_PREFABS)
+                --V2C: Replaced by Settings.last_world_asset
+                --TheSim:UnloadPrefabs(BACKEND_PREFABS)
+                TheSim:UnloadPrefabs(SPECIAL_EVENT_BACKEND_PREFABS)
+                TheSim:UnloadPrefabs(FESTIVAL_EVENT_BACKEND_PREFABS)
+                if Settings.last_world_asset ~= nil then
+                    TheSim:UnloadPrefabs({ Settings.last_world_asset })
+                end
                 if DEBUG_MODE and CONFIGURATION ~= "PRODUCTION" and PLATFORM == "WIN32_STEAM" then
                     TheSim:UnloadPrefabs({ "audio_test_prefab" })
                 end
@@ -200,17 +207,27 @@ local function LoadAssets(asset_set)
 			TheSim:UnregisterAllPrefabs()
 
 			RegisterAllDLC()
+			
+			local async_batch_validation = Settings.last_asset_set == nil
 			for i,file in ipairs(PREFABFILES) do -- required from prefablist.lua
-				LoadPrefabFile("prefabs/"..file)
+				LoadPrefabFile("prefabs/"..file, async_batch_validation)
 			end
+
 			ModManager:RegisterPrefabs()
 			TheSystemService:SetStalling(false)
 			KeepAlive()
+
 			print("\tLoad FE")
 			TheSystemService:SetStalling(true)
 			TheSim:LoadPrefabs(FRONTEND_PREFABS)
+            TheSim:LoadPrefabs(SPECIAL_EVENT_FRONTEND_PREFABS)
+            TheSim:LoadPrefabs(FESTIVAL_EVENT_FRONTEND_PREFABS)
 
 			TheSystemService:SetStalling(false)
+
+			if async_batch_validation then
+				TheSim:StartFileExistsAsync()
+			end
 			print("\tLoad FE: done")
 		end
 	else
@@ -228,6 +245,8 @@ local function LoadAssets(asset_set)
 		else
 			print("\tUnload FE")
 			TheSim:UnloadPrefabs(FRONTEND_PREFABS)
+            TheSim:UnloadPrefabs(SPECIAL_EVENT_FRONTEND_PREFABS)
+            TheSim:UnloadPrefabs(FESTIVAL_EVENT_FRONTEND_PREFABS)
 			print("\tUnload FE done")
 			KeepAlive()
 
@@ -247,7 +266,13 @@ local function LoadAssets(asset_set)
 
 			print("\tLOAD BE")
 			TheSystemService:SetStalling(true)
-			TheSim:LoadPrefabs(BACKEND_PREFABS)
+            --V2C: Replaced by Settings.current_world_asset
+            --TheSim:LoadPrefabs(BACKEND_PREFABS)
+            TheSim:LoadPrefabs(SPECIAL_EVENT_BACKEND_PREFABS)
+            TheSim:LoadPrefabs(FESTIVAL_EVENT_BACKEND_PREFABS)
+            if Settings.current_world_asset ~= nil then
+                TheSim:LoadPrefabs({ Settings.current_world_asset })
+            end
             if DEBUG_MODE and CONFIGURATION ~= "PRODUCTION" and PLATFORM == "WIN32_STEAM" then
                 TheSim:LoadPrefabs({ "audio_test_prefab" })
             end
@@ -262,6 +287,7 @@ local function LoadAssets(asset_set)
 	end
 
 	Settings.last_asset_set = Settings.current_asset_set
+    Settings.last_world_asset = Settings.current_world_asset
 end
 
 function GetTimePlaying()
@@ -806,6 +832,7 @@ local function DoLoadWorldFile(file)
 		assert(GetTableSize(savedata)>0, "DoLoadWorld: Savedata is empty on load")
 
         UpgradeSaveFile(savedata)
+        LoadAssets("BACKEND", savedata)
 		DoInitGame(savedata, Profile)
 	end
 	SaveGameIndex:GetSaveDataFile(file, onload)
@@ -817,6 +844,7 @@ local function DoLoadWorld(saveslot)
 		assert(GetTableSize(savedata)>0, "DoLoadWorld: Savedata is empty on load")
 
         UpgradeSaveFile(savedata)
+        LoadAssets("BACKEND", savedata)
 		DoInitGame(savedata, Profile)
 	end
 	SaveGameIndex:GetSaveData(saveslot, onload)
@@ -830,7 +858,7 @@ local function DoGenerateWorld(saveslot)
 		local function onsaved()
 			local success, world_table = RunInSandbox(savedata)
 			if success then
-				LoadAssets("BACKEND")
+				LoadAssets("BACKEND", world_table)
 				DoInitGame(world_table, Profile)
 			end
 		end
@@ -860,9 +888,10 @@ local function LoadSlot(slot)
     TheFrontEnd:ClearScreens()
     if SaveGameIndex:CheckWorldFile(slot) then
         --print("Load Slot: Has World")
-        LoadAssets("BACKEND")
+        --LoadAssets("BACKEND")
+        --V2C: Loading backend moved to after we know what world prefab we want
         DoLoadWorld(slot)
-    else			
+    else
         --print("Load Slot: Has no World")
         print("Load Slot: ... generating new world")
         DoGenerateWorld(slot)
@@ -872,7 +901,6 @@ end
 ----------------LOAD THE PROFILE AND THE SAVE INDEX, AND START THE FRONTEND
 
 local function DoResetAction()
-
 	if LOAD_UPFRONT_MODE then
 		print ("load recipes")
 
@@ -886,9 +914,14 @@ local function DoResetAction()
 			
 		TheSim:LoadPrefabs(RECIPE_PREFABS)
 		print ("load backend")
+        --V2C: load ALL the BACKEND_PREFABS for all types of worlds
 		TheSim:LoadPrefabs(BACKEND_PREFABS)
+        TheSim:LoadPrefabs(SPECIAL_EVENT_BACKEND_PREFABS)
+        TheSim:LoadPrefabs(FESTIVAL_EVENT_BACKEND_PREFABS)
 		print ("load frontend")
 		TheSim:LoadPrefabs(FRONTEND_PREFABS)
+        TheSim:LoadPrefabs(SPECIAL_EVENT_FRONTEND_PREFABS)
+        TheSim:LoadPrefabs(FESTIVAL_EVENT_FRONTEND_PREFABS)
 		print ("load characters")
 		local chars = GetActiveCharacterList()
 		TheSim:LoadPrefabs(chars)
@@ -919,13 +952,14 @@ local function DoResetAction()
 				LoadSlot(Settings.save_slot)
 			end
 		elseif Settings.reset_action == RESET_ACTION.LOAD_FILE then
-			LoadAssets("BACKEND")
+			--LoadAssets("BACKEND")
+            --V2C: Loading backend moved to after we know what world prefab we want
 			DoLoadWorldFile(Settings.save_name)
 		elseif Settings.reset_action == "printtextureinfo" then
 			--print("Reset Action: printtextureinfo")
 			DoGenerateWorld(1)
 		elseif Settings.reset_action == RESET_ACTION.LOAD_FRONTEND then
-			--print("Reset Action: none")
+			print("Reset Action: none, loading front end")
 			LoadAssets("FRONTEND")
 			if MainScreen then
 				TheFrontEnd:ShowScreen(MainScreen(Profile))

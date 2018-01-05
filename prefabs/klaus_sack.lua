@@ -103,9 +103,16 @@ local function onuseklauskey(inst, key, doer)
 
         if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
             local rnd = math.random(3)
+            local boss_ornaments =
+            {
+                "winter_ornament_boss_klaus",
+                "winter_ornament_boss_noeyeblue",
+                "winter_ornament_boss_noeyered",
+                "winter_ornament_boss_krampus",
+            }
             local items =
             {
-                SpawnPrefab(GetRandomBasicWinterOrnament()),
+                SpawnPrefab(boss_ornaments[math.random(#boss_ornaments)]),
                 SpawnPrefab(GetRandomFancyWinterOrnament()),
                 SpawnPrefab(GetRandomLightWinterOrnament()),
                 SpawnPrefab(

@@ -38,6 +38,7 @@ local spinner_lean_images = {
 	bg_end = "blank.tex",
 	bg_end_focus = "blank.tex",
 	bg_end_changing = "blank.tex",
+	bg_modified = "option_highlight.tex",
 }
 
 local spinner_atlas = "images/ui.xml"
@@ -151,6 +152,26 @@ function Spinner:DebugDraw_AddSection(dbui, panel)
         panel:AppendTable(dbui, self.textures, "textures")
     end
     dbui.Unindent()
+end
+
+-- Setup a "dirty" background for spinners that hold a state that can be
+-- applied & reverted or represent a change from normal state.
+-- Use SetHasModification to toggle the background.
+function Spinner:EnablePendingModificationBackground()
+    self.changed_image = self:AddChild(Image(self.atlas, self.textures.bg_modified, "blank.tex"))
+    self.changed_image:SetPosition(1, 0)
+    self.changed_image:ScaleToSize(self.width-45, self.height)
+    self.changed_image:MoveToBack()
+    self.changed_image:SetClickable(false)
+    self.changed_image:SetTint(1,1,1,0.3)
+    self.changed_image:Hide()
+    self.SetHasModification = function(_, is_modified)
+        if is_modified then
+            self.changed_image:Show()
+        else
+            self.changed_image:Hide()
+        end
+    end
 end
 
 function Spinner:OnFocusMove(dir, down)

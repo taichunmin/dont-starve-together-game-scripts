@@ -32,7 +32,7 @@ local function _find_prediction_start(dictionaries, text, cursor_pos)
 			if pos_char == dic.delim then
 				if cursor_pos - pos >= num_chars_for_prediction then
 					local pre_pos_char = (dic.skip_pre_delim_check or pos == 1) and HARD_DELIM or text:sub(pos-#dic.delim, pos-#dic.delim)
-					if pre_pos_char == HARD_DELIM or pre_pos_char == dic.delim or not string.match(pre_pos_char, "[a-z,A-Z]") then -- Note: the character range checking is here so I don't have to write crazy pairing of ':' to determin if the current one is the end of another word
+					if pre_pos_char == HARD_DELIM or pre_pos_char == dic.delim or not string.match(pre_pos_char, "[a-zA-Z0-9]") then -- Note: the character range checking is here so I don't have to write crazy pairing of ':' to determin if the current one is the end of another word
 						local search_text = text:sub(pos + 1, cursor_pos)
 						local matches = {}
 						for _, word in ipairs(dic.words) do
@@ -93,14 +93,26 @@ function WordPredictor:Apply(prediction_index)
 	if self.prediction ~= nil then
 		local new_word = self.prediction.matches[math.clamp(prediction_index or 1, 1, #self.prediction.matches)]
 
-		local post_space = (self.text:sub(self.cursor_pos + 1, self.cursor_pos + 1) ~= " ") and " " or ""
+		new_text = self.text:sub(1, self.prediction.start_pos) .. new_word .. self.prediction.dictionary.postfix
+		new_cursor_pos = #new_text 
 		
-		new_text = self.text:sub(1, self.prediction.start_pos) .. new_word .. self.prediction.dictionary.postfix .. post_space
-		new_cursor_pos = #new_text
-		new_text = new_text .. (self.text:sub(self.cursor_pos + 1, #self.text) or "")
+		local remainder_text = self.text:sub(self.cursor_pos + 1, #self.text) or ""
+		local remainder_strip_pos = remainder_text:find("[^a-zA-Z0-9]") or (#remainder_text + 1)
+		if self.prediction.dictionary.postfix ~= "" and remainder_text:sub(remainder_strip_pos, remainder_strip_pos + (#self.prediction.dictionary.postfix-1)) == self.prediction.dictionary.postfix then
+			remainder_strip_pos = remainder_strip_pos + #self.prediction.dictionary.postfix
+		end
+
+		new_text = new_text .. remainder_text:sub(remainder_strip_pos)
 	end
-	self.prediction = nil
+	
+	self:Clear()
 	return new_text, new_cursor_pos
+end
+
+function WordPredictor:Clear()
+	self.prediction = nil
+	self.cursor_pos = nil
+	self.text = nil
 end
 
 function WordPredictor:GetDisplayInfo(prediction_index)

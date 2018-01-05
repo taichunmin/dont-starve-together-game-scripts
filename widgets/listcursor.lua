@@ -3,6 +3,8 @@ local Text = require "widgets/text"
 local Button = require "widgets/button"
 local Image = require "widgets/image"
 
+-- Deprecated (especially for TrueScrollList). Use an ImageButton for each
+-- element instead.
 local ListCursor = Class(Button, function(self, atlas, normal, focus, disabled)
     Button._ctor(self, "ListCursor")
 

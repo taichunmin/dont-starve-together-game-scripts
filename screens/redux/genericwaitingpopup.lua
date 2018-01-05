@@ -9,8 +9,10 @@ local GenericWaitingPopup = Class(Screen, function(self, name, title_text, addit
     self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
 
+	self.forbid_cancel = forbid_cancel
+
     local buttons = additional_buttons or {}
-    if not forbid_cancel then
+    if not self.forbid_cancel then
         table.insert(buttons, {
                 text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON,
                 cb = function() 
@@ -46,7 +48,7 @@ function GenericWaitingPopup:OnControl(control, down)
         return true 
     end
     
-    if control == CONTROL_CANCEL and not down then    
+    if not self.forbid_cancel and control == CONTROL_CANCEL and not down then    
         self:OnCancel()
     end
 end

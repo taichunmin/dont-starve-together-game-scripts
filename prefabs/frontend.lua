@@ -17,9 +17,6 @@ local assets =
     Asset("DYNAMIC_ATLAS", "images/anr_silhouettes.xml"),
     Asset("PKGREF", "images/anr_silhouettes.tex"),
 
-    --Events
-    Asset("DYNAMIC_ANIM", "anim/dynamic/frontend_perd.zip"),
-
     Asset("ATLAS", "images/frontscreen.xml"),
     Asset("IMAGE", "images/frontscreen.tex"),
 
@@ -31,7 +28,9 @@ local assets =
     Asset("ANIM", "anim/build_status.zip"),
 
     -- normal menu background
-    Asset("ANIM", "anim/dst_menu.zip"),
+    --Asset("ANIM", "anim/dst_menu.zip"),
+    Asset("ANIM", "anim/dst_menu_feast.zip"),
+    Asset("ANIM", "anim/dst_menu_feast_bg.zip"),
 
     -- lavaarena festival event
     Asset("ANIM", "anim/main_menu1.zip"),
@@ -90,21 +89,28 @@ local assets =
     -- Wardrobe
     Asset("ANIM", "anim/player_emotesxl.zip"), -- idle emote animations
 
-    Asset("ATLAS", "images/skinsscreen.xml"),
-    Asset("IMAGE", "images/skinsscreen.tex"),
+    -- Unused and deprecated. Keeping for mods.
+    Asset("DYNAMIC_ATLAS", "images/skinsscreen.xml"),
+    Asset("PKGREF", "images/skinsscreen.tex"),
+    Asset("DYNAMIC_ATLAS", "images/serverbrowser.xml"),
+    Asset("PKGREF", "images/serverbrowser.tex"),
+    --
 
     Asset("ANIM", "anim/skinevent_popup_spiral.zip"),
-    Asset("ANIM", "anim/skinevent_popup.zip"),
-    Asset("ANIM", "anim/skinevent_all_popup.zip"),
-    Asset("ANIM", "anim/skinevent_set_popup.zip"),
-    Asset("ANIM", "anim/skinparcel_popup.zip"),
-
+    Asset("DYNAMIC_ANIM", "anim/dynamic/skinevent_popup.zip"), --needed for the mystery and purchase box opening animation (happens to contain the forge box build too)
+    
     Asset("ATLAS", "images/tradescreen.xml"),
     Asset("IMAGE", "images/tradescreen.tex"),
     Asset("ATLAS", "images/tradescreen_overflow.xml"),
     Asset("IMAGE", "images/tradescreen_overflow.tex"),
-    Asset("ATLAS", "images/tradescreen_redux.xml"),
-    Asset("IMAGE", "images/tradescreen_redux.tex"),
+
+    -- Only used when tradescreen is closed
+    Asset("DYNAMIC_ATLAS", "images/tradescreen_redux.xml"),
+    Asset("PKGREF", "images/tradescreen_redux.tex"),
+
+    -- Used by the infrequent ThankYouPopup.
+    Asset("DYNAMIC_ATLAS", "images/lobbyscreen.xml"),
+    Asset("PKGREF", "images/lobbyscreen.tex"),
 
     --testing 
     Asset("ATLAS", "images/inventoryimages.xml"),
@@ -150,9 +156,6 @@ local assets =
 
     --FE Music
     Asset("PKGREF", "sound/music_frontend.fsb"),
-    Asset("PKGREF", "sound/music_frontend_winters_feast.fsb"),
-    Asset("PKGREF", "sound/music_frontend_yotg.fsb"),
-    Asset("PKGREF", "sound/lava_arena.fsb"),
 
     Asset("PKGREF", "movies/intro.ogv"),
 }
@@ -188,6 +191,13 @@ local prefabs = {}
 for _, clothing_asset in pairs(require("clothing_assets")) do
     table.insert(assets, clothing_asset)
 end
+
+for item,data in pairs(MISC_ITEMS) do
+	if data.box_build ~= nil then
+		table.insert(assets, Asset("DYNAMIC_ANIM", "anim/dynamic/" .. data.box_build .. ".zip"))
+	end
+end
+
 for _, skins_prefabs in pairs(PREFAB_SKINS) do
     for _, skin_prefab in pairs(skins_prefabs) do
         table.insert(prefabs, skin_prefab)

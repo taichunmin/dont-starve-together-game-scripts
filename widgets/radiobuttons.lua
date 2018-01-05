@@ -41,8 +41,8 @@ function RadioButtons:MakeRadioButton()
     if self.buttonsettings.font_size then
         wdg.button:SetTextSize(self.buttonsettings.font_size)
     end
-    wdg.button:SetColour(self.buttonsettings.normal_colour or {0,0,0,1})
-    wdg.button:SetOverColour(self.buttonsettings.hover_colour or {0,0,0,1})
+    wdg.button:SetTextColour(self.buttonsettings.normal_colour or {0,0,0,1})
+    wdg.button:SetTextFocusColour(self.buttonsettings.hover_colour or {0,0,0,1})
     wdg.button:SetTextDisabledColour(self.buttonsettings.disabled_colour or {0.5, 0.5, 0.5, 1})
     wdg.button:SetTextSelectedColour(self.buttonsettings.selected_colour or {0,0,0,1})
     wdg.button.text:SetRegionSize(self.buttonsettings.width-radiosz_x, self.buttonsettings.height)

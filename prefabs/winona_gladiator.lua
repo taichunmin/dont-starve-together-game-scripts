@@ -4,7 +4,7 @@ local assets =
 {
 	Asset("ANIM", "anim/ghost_winona_build.zip"),
 	Asset("DYNAMIC_ANIM", "anim/dynamic/winona_gladiator.zip"),
-	Asset("ATLAS_BUILD", "bigportraits/winona_gladiator.xml", 128),
+	Asset("ATLAS_BUILD", "bigportraits/winona_gladiator.xml", 192),
 }
 
 return CreatePrefabSkin("winona_gladiator",

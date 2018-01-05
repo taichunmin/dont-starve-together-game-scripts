@@ -43,7 +43,7 @@ local function onstunfinishedfn(inst)
 end
 
 local function ShakeIfClose(inst)
-    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, .3, inst, 40)
+    ShakeAllCameras(CAMERASHAKE.FULL, .7, .02, .8, inst, 40)
 end
 
 local function onspawnlavae(inst)

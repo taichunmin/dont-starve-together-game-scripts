@@ -71,6 +71,7 @@ function TextEdit:SetString(str)
     if self.inst and self.inst.TextEditWidget then
         self.inst.TextEditWidget:SetString(str or "")
     end
+    self:_TryUpdateTextPrompt()
 end
 
 function TextEdit:SetAllowNewline(allow_newline)
@@ -135,6 +136,7 @@ function TextEdit:SetEditing(editing)
 	self:SetAllowNewline(self.allow_newline)
 
     self.inst.TextWidget:ShowEditCursor(self.editing)
+    self:_TryUpdateTextPrompt()
 end
 
 function TextEdit:OnMouseButton(button, down, x, y)
@@ -543,15 +545,16 @@ function TextEdit:GetHelpText()
 end
 
 function TextEdit:EnableWordPrediction(layout, dictionary)
-	if self.prediction_widget == nil then
-		
-	    self.prediction_widget = self:AddChild(WordPredictionWidget(self, layout.width))
-	    local sx, sy = self:GetRegionSize()
-	    local pad_y = layout.pad_y or 5
-	    self.prediction_widget:SetPosition(-sx*0.5, sy*0.5 + pad_y)
-	end
-	if dictionary ~= nil then
-		self:AddWordPredictionDictionary(dictionary)
+	if layout.mode ~= "disabled" then 
+		if self.prediction_widget == nil then
+			self.prediction_widget = self:AddChild(WordPredictionWidget(self, layout.width, layout.mode))
+			local sx, sy = self:GetRegionSize()
+			local pad_y = layout.pad_y or 5
+			self.prediction_widget:SetPosition(-sx*0.5, sy*0.5 + pad_y)
+		end
+		if dictionary ~= nil then
+			self:AddWordPredictionDictionary(dictionary)
+		end
 	end
 end
 
@@ -567,12 +570,33 @@ function TextEdit:ApplyWordPrediction(prediction_index)
 		if new_str ~= nil then
 			self:SetString(new_str)
 			self.inst.TextEditWidget:SetEditCursorPos(cursor_pos)
-			self.prediction_widget:RefreshPredictions()
+			self.prediction_widget:Dismiss()
 			return true
 		end
 	end
 	
 	return false
+end
+
+-- Ghostly text in the text field that indicates what content goes in the text
+-- field. Something to prompt the user for what to write.
+--
+-- Set this after doing SetRegionSize!
+function TextEdit:SetTextPrompt(prompt_text, colour)
+    assert(prompt_text)
+    self.prompt = self:AddChild(Text(self.font, self.size, prompt_text, colour or self.colour))
+    self.prompt:SetRegionSize(self:GetRegionSize())
+    self.prompt:SetHAlign(ANCHOR_LEFT)
+end
+
+function TextEdit:_TryUpdateTextPrompt()
+    if self.prompt then
+        if self:GetString():len() > 0 or self.editing then
+            self.prompt:Hide()
+        else
+            self.prompt:Show()
+        end
+    end
 end
 
 return TextEdit

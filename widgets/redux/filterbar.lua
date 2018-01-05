@@ -1,29 +1,49 @@
 -- Display a filter bar for the item explorer
 --
 -- We should probably replace this with Menu.
-local Text = require "widgets/text"
 local Widget = require "widgets/widget"
 
 local TEMPLATES = require "widgets/redux/templates"
 
 require("skinsutils")
 
-local FilterBar = Class(Widget, function(self, picker)
+local FilterBar = Class(Widget, function(self, picker, filter_category)
     Widget._ctor(self, "FilterBar")
 
     self.picker = picker
+    self.filter_category = filter_category
 
     self.filters = {}
     self.filter_btns = {}
 end)
+
+-- Instead of giving focus to picker or FilterBar, give it to this function.
+function FilterBar:BuildFocusFinder()
+    return function()
+        -- If we have no items to display, then we can't push focus to the
+        -- picker since it will contain nothing to focus.
+        if self.picker.scroll_list and #self.picker.scroll_list.items > 0 then
+            return self.picker 
+        else
+            return self
+        end
+    end
+end
+
+function FilterBar:RefreshFilterState()
+    for i,filter in ipairs(self.filter_btns) do
+        local state = Profile:GetCustomizationFilterState(self.filter_category, filter.btnid)   
+        filter.widget:SetFilterState(state)
+    end
+end
 
 function FilterBar:AddFilter(ontext, offtext, id, filterfn)
     local btn = TEMPLATES.StandardButton(nil,
         "",
         {180, 45})
 
-    local function onclick()
-        if self.filters[id] == nil then
+    btn.SetFilterState = function(_, should_enable)
+        if should_enable then
             self.filters[id] = filterfn
             btn:SetText(ontext)
         else
@@ -31,8 +51,13 @@ function FilterBar:AddFilter(ontext, offtext, id, filterfn)
             btn:SetText(offtext)
         end
         self.picker:RefreshItems(self:_ConstructFilter())
-
     end
+    local function onclick()
+        local was_off = self.filters[id] == nil
+        btn:SetFilterState(was_off)
+        Profile:SetCustomizationFilterState(self.filter_category, id, was_off)
+    end
+
     btn:SetOnClick(onclick)
     btn:SetText(offtext)
 

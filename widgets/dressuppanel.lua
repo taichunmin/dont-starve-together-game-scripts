@@ -523,26 +523,12 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 					if new_indicator and key then 
 						skin_options_items[key].new_indicator = true
 						
-					elseif new_indicator or not key then 
-
-						local buildfile = item
-						if slot == "base" then 
-							local skinsData = Prefabs[item]
-							if skinsData and skinsData.build_name then 
-								buildfile = skinsData.build_name
-							end
-						else
-							local clothing_data = CLOTHING[item]
-							if clothing_data and clothing_data.override_build then
-								buildfile = clothing_data.override_build
-							end
-						end
-		
-						table.insert(skin_options_items,  
+					elseif new_indicator or not key then
+						table.insert(skin_options_items,
 						{
 							text = text_name, 
 							data = nil,
-							build = buildfile,
+							build = GetBuildForItem(item),
 							item = item,
 							symbol = "SWAP_ICON",
 							colour = colour,
