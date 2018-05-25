@@ -51,7 +51,7 @@ function ConsoleScreen:OnControl(control, down)
 end
 
 function ConsoleScreen:ToggleRemoteExecute(force)
-    local is_valid_time_to_use_remote = TheNet:GetIsClient() and TheNet:GetIsServerAdmin()
+    local is_valid_time_to_use_remote = TheNet:GetIsClient() and (TheNet:GetIsServerAdmin() or IsConsole())
     if is_valid_time_to_use_remote then
         self.console_remote_execute:Show()
         if force == nil then
@@ -221,6 +221,7 @@ function ConsoleScreen:DoInit()
 	self.console_edit:SetRegionSize( edit_width, label_height )
 	self.console_edit:SetHAlign(ANCHOR_LEFT)
 	self.console_edit:SetHelpTextEdit("")
+    self.console_edit.ignoreVirtualKeyboard = true
 
 	self.console_edit.OnTextEntered = function() self:OnTextEntered() end
 	self.console_edit:SetInvalidCharacterFilter( [[`	]] )

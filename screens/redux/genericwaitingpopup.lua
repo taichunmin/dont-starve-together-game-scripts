@@ -55,7 +55,11 @@ end
 
 function GenericWaitingPopup:OnCancel()
     self:Disable()
-	TheFrontEnd:PopScreen()
+    TheFrontEnd:PopScreen()
+end
+
+function GenericWaitingPopup:Close()
+    self:OnCancel()
 end
 
 return GenericWaitingPopup

@@ -3,32 +3,8 @@ local Widget = require "widgets/widget"
 local ShadowedText = require "widgets/redux/shadowedtext"
 local TEMPLATES = require "widgets/redux/templates"
 
-local legacy_images =
-    IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) and {
---        {atlas="images/bg_spiral_fill_halloween1.xml", tex="bg_image1.tex"},
---        {atlas="images/bg_spiral_fill_halloween2.xml", tex="bg_image2.tex"},
---        {atlas="images/bg_spiral_fill_halloween3.xml", tex="bg_image3.tex"},
-        {atlas="images/bg_spiral_fill_halloween4.xml", tex="bg_image4.tex"},
-        {atlas="images/bg_spiral_fill_halloween5.xml", tex="bg_image5.tex"},
-    }
-    or IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and {
-        {atlas="images/bg_spiral_fill_christmas1.xml", tex="bg_image1.tex"},
-        {atlas="images/bg_spiral_fill_christmas2.xml", tex="bg_image2.tex"},
-    }
-    or IsSpecialEventActive(SPECIAL_EVENTS.YOTG) and {
-        {atlas="images/bg_spiral_fill_yotg1.xml", tex="bg_image1.tex"},
-        {atlas="images/bg_spiral_fill_yotg2.xml", tex="bg_image2.tex"},
-    }
-    or {
-        {atlas="images/bg_spiral_fill1.xml", tex="bg_image1.tex"},
-        {atlas="images/bg_spiral_fill2.xml", tex="bg_image2.tex"},
-        {atlas="images/bg_spiral_fill3.xml", tex="bg_image3.tex"},
-        {atlas="images/bg_spiral_fill4.xml", tex="bg_image4.tex"},
-        {atlas="images/bg_spiral_fill5.xml", tex="bg_image5.tex"},
-        {atlas="images/bg_spiral_fill6.xml", tex="bg_image6.tex"},
-        {atlas="images/bg_spiral_fill7.xml", tex="bg_image7.tex"},
-        {atlas="images/bg_spiral_fill8.xml", tex="bg_image8.tex"},
-    }
+require("prefabs/event_deps")
+local legacy_images = LOADING_IMAGES[WORLD_SPECIAL_EVENT] or LOADING_IMAGES[SPECIAL_EVENTS.NONE]
 
 local function GetRandomIndex(session_random_index, maxval)
     if session_random_index and 0 < session_random_index and session_random_index <= maxval then
@@ -66,8 +42,6 @@ local LoadingWidget = Class(Widget, function(self, session_random_index)
     else
         -- Initial startup or user didn't select any backgrounds. Use the
         -- legacy style.
-        self.bg = self:AddChild(TEMPLATES.old.BackgroundSpiral())
-
         local random_idx = -(self.image_random or 0)
         selected_key = legacy_images[random_idx]
         if selected_key == nil then
@@ -75,27 +49,31 @@ local LoadingWidget = Class(Widget, function(self, session_random_index)
             selected_key = legacy_images[random_idx]
             self.image_random = -random_idx
         end
+        if selected_key.spiral then
+            self.bg = self:AddChild(TEMPLATES.old.BackgroundSpiral())
+        end
         self.legacy_fg = self.root_classic:AddChild(Image(selected_key.atlas, selected_key.tex))
         self.legacy_fg:SetScaleMode(SCALEMODE_FILLSCREEN)
         self.legacy_fg:SetVAnchor(ANCHOR_MIDDLE)
         self.legacy_fg:SetHAnchor(ANCHOR_MIDDLE)
     end
     -- Ensure bg is behind our roots.
-    self.bg:MoveToBack()
+    if self.bg ~= nil then
+        self.bg:MoveToBack()
+    end
 
     -- common
 
-    local local_loading_widget = self:AddChild(ShadowedText(HEADERFONT, 35))
-    local_loading_widget:SetPosition(115, 60)
-    local_loading_widget:SetRegionSize(130, 44)
-    local_loading_widget:SetHAlign(ANCHOR_LEFT)
-    local_loading_widget:SetVAlign(ANCHOR_BOTTOM)
-    local_loading_widget:SetString(STRINGS.UI.NOTIFICATION.LOADING)
+    self.loading_widget = self:AddChild(ShadowedText(HEADERFONT, 35))
+    self.loading_widget:SetPosition(115, 60)
+    self.loading_widget:SetRegionSize(130, 44)
+    self.loading_widget:SetHAlign(ANCHOR_LEFT)
+    self.loading_widget:SetVAlign(ANCHOR_BOTTOM)
+    self.loading_widget:SetString(STRINGS.UI.NOTIFICATION.LOADING)
 
-    self.loading_widget = local_loading_widget
     self.cached_string  = ""
     self.elipse_state = 0
-    self.cached_fade_level = 0.0
+    self.cached_fade_level = 0
     self.step_time = GetTime()
 end)
 
@@ -147,8 +125,10 @@ function LoadingWidget:KeepAlive(auto_increment)
         local fade_sq = self.cached_fade_level * self.cached_fade_level
         self.loading_widget:SetColour(243/255, 244/255, 243/255, fade_sq)
 
-        self.bg:SetTint(FRONTEND_PORTAL_COLOUR[1], FRONTEND_PORTAL_COLOUR[2], FRONTEND_PORTAL_COLOUR[3], fade_sq)
-        if self.legacy_fg then
+        if self.bg ~= nil then
+            self.bg:SetTint(FRONTEND_PORTAL_COLOUR[1], FRONTEND_PORTAL_COLOUR[2], FRONTEND_PORTAL_COLOUR[3], fade_sq)
+        end
+        if self.legacy_fg ~= nil then
             self.legacy_fg:SetTint(1, 1, 1, fade_sq)
         end
         self.vig:SetTint(1, 1, 1, fade_sq)

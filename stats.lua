@@ -244,7 +244,7 @@ local function RecordGameStartStats()
 	--print("_________________++++++ Sending game start stats...\n")
 	--dumptable(sendstats)
 	local jsonstats = json.encode( sendstats )
-	TheSim:SendProfileStats( jsonstats )
+	TheSim:SendProfileStats( jsonstats, "is_only_local_users_data" )
 end
 
 --[[local function SendAccumulatedProfileStats()

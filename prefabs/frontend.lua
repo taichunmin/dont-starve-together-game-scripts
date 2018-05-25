@@ -19,25 +19,11 @@ local assets =
 
     Asset("ATLAS", "images/frontscreen.xml"),
     Asset("IMAGE", "images/frontscreen.tex"),
-
-    Asset("ATLAS", "images/frontend_redux.xml"),
-    Asset("IMAGE", "images/frontend_redux.tex"),
-
+        
     -- Asset("ANIM", "anim/portrait_frame.zip"), -- Not currently used, but likely to come back
 
     Asset("ANIM", "anim/build_status.zip"),
 
-    -- normal menu background
-    --Asset("ANIM", "anim/dst_menu.zip"),
-    Asset("ANIM", "anim/dst_menu_feast.zip"),
-    Asset("ANIM", "anim/dst_menu_feast_bg.zip"),
-
-    -- lavaarena festival event
-    Asset("ANIM", "anim/main_menu1.zip"),
-    Asset("ATLAS", "images/bg_redux_labg.xml"),
-    Asset("IMAGE", "images/bg_redux_labg.tex"),
-    Asset("ATLAS", "images/fepanels_redux_event_goals_panel.xml"),
-    Asset("IMAGE", "images/fepanels_redux_event_goals_panel.tex"),
     Asset("ATLAS", "images/fepanels_redux_shop_panel.xml"),
     Asset("IMAGE", "images/fepanels_redux_shop_panel.tex"),
     Asset("ATLAS", "images/fepanels_redux_shop_panel_wide.xml"),
@@ -58,8 +44,8 @@ local assets =
     Asset("ATLAS", "images/server_intentions.xml"),
     Asset("IMAGE", "images/server_intentions.tex"),
 
-    Asset("ATLAS", "images/new_host_picker.xml"),
-    Asset("IMAGE", "images/new_host_picker.tex"),
+    Asset("DYNAMIC_ATLAS", "images/new_host_picker.xml"),
+    Asset("PKGREF", "images/new_host_picker.tex"),
 
     Asset("FILE", "images/motd.xml"),
 
@@ -71,8 +57,8 @@ local assets =
     Asset("IMAGE", "bigportraits/unknownmod.tex"),
 
     --V2C: originally in global, for old options and controls screens
-    Asset("ATLAS", "images/bg_plain.xml"),
-    Asset("IMAGE", "images/bg_plain.tex"),
+    Asset("DYNAMIC_ATLAS", "images/bg_plain.xml"),
+    Asset("PKGREF", "images/bg_plain.tex"),
 
     -- Collections screen
     Asset("ANIM", "anim/spool.zip"), -- doodads
@@ -96,8 +82,8 @@ local assets =
     Asset("PKGREF", "images/serverbrowser.tex"),
     --
 
-    Asset("ANIM", "anim/skinevent_popup_spiral.zip"),
-    Asset("DYNAMIC_ANIM", "anim/dynamic/skinevent_popup.zip"), --needed for the mystery and purchase box opening animation (happens to contain the forge box build too)
+    Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared_spiral.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared.zip"), --needed for the mystery and purchase box opening animation (happens to contain the forge box build too)
     
     Asset("ATLAS", "images/tradescreen.xml"),
     Asset("IMAGE", "images/tradescreen.tex"),
@@ -119,7 +105,7 @@ local assets =
     Asset("ANIM", "anim/mod_player_build.zip"),
 
     Asset("ANIM", "anim/accountitem_frame.zip"),
-    -- TODO(dbriscoe): Finish replacing frames_comp with accountitem_frame and remove.
+    -- If we replace frames_comp with accountitem_frame, we can remove.
     Asset("ANIM", "anim/frames_comp.zip"),
     Asset("ANIM", "anim/frame_bg.zip"),
 
@@ -160,11 +146,28 @@ local assets =
     Asset("PKGREF", "movies/intro.ogv"),
 }
 
-if PLATFORM == "PS4" then
+if IsConsole() then
+	if TRUE_DEDICATED_SERVER == false then
+	    table.insert(assets, Asset("ATLAS", "images/ui_ps4.xml"))
+	    table.insert(assets, Asset("IMAGE", "images/ui_ps4.tex"))
+	end
+end
+
+if IsPS4() then
     table.insert(assets, Asset("ATLAS", "images/ps4.xml"))
     table.insert(assets, Asset("IMAGE", "images/ps4.tex"))
     table.insert(assets, Asset("ATLAS", "images/ps4_controllers.xml"))
     table.insert(assets, Asset("IMAGE", "images/ps4_controllers.tex"))
+elseif IsXB1() then
+    table.insert(assets, Asset("ATLAS", "images/xb1_controllers.xml"))
+    table.insert(assets, Asset("IMAGE", "images/xb1_controllers.tex"))
+    table.insert(assets, Asset("ATLAS", "images/blit.xml"))
+    table.insert(assets, Asset("IMAGE", "images/blit.tex"))
+end
+
+if PLATFORM == "WIN32_RAIL" then
+    table.insert(assets, Asset("DYNAMIC_ATLAS", "images/rail.xml") )
+    table.insert(assets, Asset("ASSET_PKGREF", "images/rail.tex") )
 end
 
 for i, v in pairs(MAINSCREEN_TOOL_LIST) do
@@ -195,6 +198,15 @@ end
 for item,data in pairs(MISC_ITEMS) do
 	if data.box_build ~= nil then
 		table.insert(assets, Asset("DYNAMIC_ANIM", "anim/dynamic/" .. data.box_build .. ".zip"))
+	end
+	
+	if data.featured_pack then
+		if data.display_atlas == nil or data.display_tex == nil then
+			print( "Invalid pack data:", item, data.display_atlas, data.display_tex )
+		end
+		
+		table.insert(assets, Asset("DYNAMIC_ATLAS", data.display_atlas ))
+		table.insert(assets, Asset("PKGREF", "images/iap_images_"..data.display_tex ))
 	end
 end
 

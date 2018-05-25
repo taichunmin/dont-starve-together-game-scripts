@@ -184,8 +184,32 @@ inst:ListenForEvent("precipitationchanged", OnPrecipitationChanged)
 
 self:SetReverbPreset("default")
 
-inst.SoundEmitter:PlaySound(SANITY_SOUND, "SANITY")
-inst.SoundEmitter:SetParameter("SANITY", "sanity", _sanityparam)
+--------------------------------------------------------------------------
+--[[ Wrapper function for calls into actual sound system ]]
+--------------------------------------------------------------------------
+
+local function StartSanitySound()
+	inst.SoundEmitter:PlaySound(SANITY_SOUND, "SANITY")
+end
+
+local function SetSanity(sanity)
+	inst.SoundEmitter:SetParameter("SANITY", "sanity", sanity)
+end
+
+local function StartWavesSound()
+	inst.SoundEmitter:PlaySound(_wavessound, "waves")
+end
+
+local function StopWavesSound()
+	inst.SoundEmitter:KillSound("waves")
+end
+
+local function SetWavesVolume(volume)
+	inst.SoundEmitter:SetVolume("waves", volume)
+end
+
+StartSanitySound()
+SetSanity(_sanityparam)
 
 inst:StartUpdatingComponent(self)
 
@@ -279,22 +303,22 @@ function self:OnUpdate(dt)
 
     if _wavessound ~= WAVE_SOUNDS[_seasonmix] then
         if _wavesvolume > 0 then
-            inst.SoundEmitter:KillSound("waves")
+			StopWavesSound()
         end
         _wavessound = WAVE_SOUNDS[_seasonmix]
         _wavesvolume = wavesvolume
         if wavesvolume > 0 then
-            inst.SoundEmitter:PlaySound(_wavessound, "waves")
-            inst.SoundEmitter:SetVolume("waves", wavesvolume)
+			StartWavesSound()
+			SetWavesVolume(wavesvolume)
         end
     elseif _wavesvolume ~= wavesvolume then
         if wavesvolume <= 0 then
-            inst.SoundEmitter:KillSound("waves")
+			StopWavesSound()
         else
             if _wavesvolume <= 0 then
-                inst.SoundEmitter:PlaySound(_wavessound, "waves")
+				StartWavesSound()
             end
-            inst.SoundEmitter:SetVolume("waves", wavesvolume)
+			SetWavesVolume(wavesvolume)
         end
         _wavesvolume = wavesvolume
     end
@@ -332,7 +356,7 @@ function self:OnUpdate(dt)
         sanityparam = sanityparam * sanityparam
     end
     if _sanityparam ~= sanityparam then
-        inst.SoundEmitter:SetParameter("SANITY", "sanity", sanityparam)
+		SetSanity(sanityparam)
         _sanityparam = sanityparam
     end
 end

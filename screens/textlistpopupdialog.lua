@@ -8,6 +8,7 @@ local Widget = require "widgets/widget"
 local ScrollableList = require "widgets/scrollablelist"
 local TEMPLATES = require "widgets/templates"
 
+-- Deprecated. Replaced with TextListPopup.
 local TextListPopupDialogScreen = Class(Screen, function(self, title, str, body, buttons, spacing, strfont)
     Screen._ctor(self, "PopupDialogScreen")
 

@@ -55,7 +55,7 @@ local function StartFuse(inst)
     inst.AnimState:PlayAnimation("burn")
     inst.SoundEmitter:PlaySound("dontstarve/common/blackpowder_fuse_LP", "hiss")
 
-    inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength(), StartExploding, 7 + inst.components.stackable:StackSize())
+    inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength(), StartExploding, math.floor(33.4 * math.sqrt(inst.components.stackable:StackSize() + 3) - 58.8 + .5))
 
     inst:RemoveComponent("stackable")
     inst.persists = false

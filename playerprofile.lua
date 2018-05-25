@@ -1082,6 +1082,7 @@ end
 function PlayerProfile:SetEntitlementReceived(entitlement)
 	self:SetValue("entitlement_"..entitlement, true)
 	self.dirty = true
+    self:Save()
 end
 
 function PlayerProfile:SawNewUserPopup()
@@ -1105,5 +1106,38 @@ function PlayerProfile:ShowedNewHostPicker()
         self.dirty = true
     end
 end
+
+
+
+function PlayerProfile:SaveKlumpCipher(file, cipher)
+	if not self.persistdata.klump_ciphers then
+		self.persistdata.klump_ciphers = {}
+	end
+
+    if self.persistdata.klump_ciphers[file] == cipher then
+        --we've already saved the cipher for this klump, no need to save it again
+        return
+    end
+    
+    if self.persistdata.klump_ciphers[file] ~= nil then
+        print("ERROR: New klump cipher detected for file:", file)
+        print("old cipher", self.persistdata.klump_ciphers[file])
+        print("new cipher", cipher)
+    end
+
+	self.dirty = true
+	self.persistdata.klump_ciphers[file] = cipher
+
+	self:Save()
+end
+
+function PlayerProfile:GetKlumpCipher(file)
+	if not self.persistdata.klump_ciphers then
+		return nil
+	end
+
+	return self.persistdata.klump_ciphers[file]
+end
+
 
 return PlayerProfile

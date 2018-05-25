@@ -10,6 +10,8 @@ local TEMPLATES = require "widgets/templates"
 
 local WorldGenScreen = require "screens/worldgenscreen"
 
+local ENABLE_CANCEL_BUTTON = InNotConsole()
+
 local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCallback, errorCallback)
     Screen._ctor(self, "LaunchingServerPopup")
 
@@ -52,26 +54,29 @@ local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCal
     self.text:SetPosition(0, 5, 0)
     self.text:SetSize(35)
     self.text:SetString(text)
-    -- self.text:SetRegionSize(140, 100)
-    self.text:SetHAlign(ANCHOR_LEFT)
+	self.text:EnableWordWrap(true)
+    self.text:SetRegionSize(260, 100)
+    self.text:SetHAlign(ANCHOR_MIDDLE)
     self.text:SetColour(0,0,0,1)
 
-    local spacing = 165
-    local buttons =
-    {
-        {text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function()
-            self:OnCancel()
-        end},
-    }
-    self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-    self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -92, 0)
-    for i,v in pairs(self.menu.items) do
-        v:SetScale(.7)
-        v.image:SetScale(.6, .8)
-    end
-    self.buttons = buttons
-    self.default_focus = self.menu
-
+	if ENABLE_CANCEL_BUTTON then
+		local spacing = 165
+		local buttons =
+		{
+			{text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function()
+				self:OnCancel()
+			end},
+		}
+		self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
+		self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -92, 0)
+		for i,v in pairs(self.menu.items) do
+			v:SetScale(.7)
+			v.image:SetScale(.6, .8)
+		end
+		self.buttons = buttons
+		self.default_focus = self.menu
+	end
+	
     self.time = 0
     self.progress = 0
 end)
@@ -131,7 +136,7 @@ function LaunchingServerPopup:OnControl(control, down)
         return true
     end
 
-    if control == CONTROL_CANCEL and not down then
+    if ENABLE_CANCEL_BUTTON and control == CONTROL_CANCEL and not down then
         self:OnCancel()
     end
 end

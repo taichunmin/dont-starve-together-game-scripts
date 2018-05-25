@@ -97,5 +97,7 @@ function GetConsoleOutputList()
 end
 
 -- add our print loggers
-AddPrintLogger(consolelog)
+if IsNotConsole() then
+	AddPrintLogger(consolelog)
+end
 

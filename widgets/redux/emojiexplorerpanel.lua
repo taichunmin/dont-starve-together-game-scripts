@@ -19,7 +19,7 @@ local EmojiExplorerPanel = Class(Widget, function(self, owner, user_profile)
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(130, 140)
 
-    self.filter_bar = FilterBar(self.picker, "collectionscreen")
+    self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
 
     self:_DoFocusHookups()

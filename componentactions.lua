@@ -1,3 +1,5 @@
+require 'util'
+
 local COMPONENT_ACTIONS =
 {
     SCENE = --args: inst, doer, actions, right
@@ -1065,8 +1067,8 @@ local ACTION_COMPONENT_NAMES = {}
 local ACTION_COMPONENT_IDS = {}
 
 local function RemapComponentActions()
-    for k, v in pairs(COMPONENT_ACTIONS) do
-        for cmp, fn in pairs(v) do
+    for k, v in orderedPairs(COMPONENT_ACTIONS) do
+        for cmp, fn in orderedPairs(v) do
             if ACTION_COMPONENT_IDS[cmp] == nil then
                 table.insert(ACTION_COMPONENT_NAMES, cmp)
                 ACTION_COMPONENT_IDS[cmp] = #ACTION_COMPONENT_NAMES

@@ -28,6 +28,8 @@ local PIECES =
         end,
     },
     {name="dragonfly",  moonevent=false},
+    {name="clayhound",  moonevent=false},
+    {name="claywarg",   moonevent=false},
 } 
 
 local MOON_EVENT_RADIUS = 12

@@ -192,8 +192,8 @@ local function common_fn(build, tag)
 
     inst:DoTaskInTime(0, RememberKnownLocation)
 
-    MakeMediumBurnableCharacter(inst, "spring")
-    MakeMediumFreezableCharacter(inst, "spring")
+    MakeMediumBurnableCharacter(inst, "swap_fire")
+    MakeMediumFreezableCharacter(inst, "innerds")
 
     inst:ListenForEvent("attacked", OnAttacked)
 

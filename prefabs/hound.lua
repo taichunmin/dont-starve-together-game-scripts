@@ -7,6 +7,11 @@ local assets =
     Asset("SOUND", "sound/hound.fsb"),
 }
 
+local assets_clay =
+{
+    Asset("ANIM", "anim/clayhound.zip"),
+}
+
 local prefabs =
 {
     "houndstooth",
@@ -15,29 +20,60 @@ local prefabs =
     "bluegem",
 }
 
+local prefabs_clay =
+{
+    "houndstooth",
+    "redpouch",
+    "eyeflame",
+}
+
 local gargoyles = 
 {
     "gargoyle_houndatk",
     "gargoyle_hounddeath",
 }
-local moonprefabs = {}
+local prefabs_moon = {}
 for i, v in ipairs(gargoyles) do
-    table.insert(moonprefabs, v)
+    table.insert(prefabs_moon, v)
 end
 for i, v in ipairs(prefabs) do
-    table.insert(moonprefabs, v)
+    table.insert(prefabs_moon, v)
 end
 
 local brain = require("brains/houndbrain")
 local moonbrain = require("brains/moonbeastbrain")
 
-SetSharedLootTable( 'hound',
+local sounds =
+{
+    pant = "dontstarve/creatures/hound/pant",
+    attack = "dontstarve/creatures/hound/attack",
+    bite = "dontstarve/creatures/hound/bite",
+    bark = "dontstarve/creatures/hound/bark",
+    death = "dontstarve/creatures/hound/death",
+    sleep = "dontstarve/creatures/hound/sleep",
+    growl = "dontstarve/creatures/hound/growl",
+    howl = "dontstarve/creatures/together/clayhound/howl",
+}
+
+local sounds_clay =
+{
+    pant = "dontstarve/creatures/together/clayhound/pant",
+    attack = "dontstarve/creatures/together/clayhound/attack",
+    bite = "dontstarve/creatures/together/clayhound/bite",
+    bark = "dontstarve/creatures/together/clayhound/bark",
+    death = "dontstarve/creatures/together/clayhound/death",
+    sleep = "dontstarve/creatures/together/clayhound/sleep",
+    growl = "dontstarve/creatures/together/clayhound/growl",
+    howl = "dontstarve/creatures/together/clayhound/howl",
+}
+
+SetSharedLootTable('hound',
 {
     {'monstermeat', 1.000},
-    {'houndstooth',  0.125},
+    {'houndstooth', 0.125},
 })
 
-SetSharedLootTable( 'hound_fire',
+SetSharedLootTable('hound_fire',
 {
     {'monstermeat', 1.0},
     {'houndstooth', 1.0},
@@ -47,12 +83,18 @@ SetSharedLootTable( 'hound_fire',
     {'redgem',      0.2},
 })
 
-SetSharedLootTable( 'hound_cold',
+SetSharedLootTable('hound_cold',
 {
     {'monstermeat', 1.0},
     {'houndstooth', 1.0},
     {'houndstooth', 1.0},
     {'bluegem',     0.2},
+})
+
+SetSharedLootTable('clayhound',
+{
+    {'redpouch',    0.2},
+    {'houndstooth', 0.1},
 })
 
 local WAKE_TO_FOLLOW_DISTANCE = 8
@@ -81,19 +123,43 @@ local function OnNewTarget(inst, data)
 end
 
 local function retargetfn(inst)
-    return FindEntity(
-            inst,
-            inst:HasTag("pet_hound") and TUNING.HOUND_FOLLOWER_TARGET_DIST or TUNING.HOUND_TARGET_DIST,
-            function(guy)
-                return inst.components.combat:CanTarget(guy)
-            end,
-            nil,
-            { "wall", "houndmound", "hound", "houndfriend" }
-        )
+    if inst.sg:HasStateTag("statue") then
+        return
+    end
+    local leader = inst.components.follower.leader
+    if leader ~= nil and leader.sg ~= nil and leader.sg:HasStateTag("statue") then
+        return
+    end
+    local playerleader = leader ~= nil and leader:HasTag("player")
+    local ispet = inst:HasTag("pet_hound")
+    return (leader == nil or
+            (ispet and not playerleader) or
+            inst:IsNear(leader, TUNING.HOUND_FOLLOWER_AGGRO_DIST))
+        and FindEntity(
+                inst,
+                (ispet or leader ~= nil) and TUNING.HOUND_FOLLOWER_TARGET_DIST or TUNING.HOUND_TARGET_DIST,
+                function(guy)
+                    return guy ~= leader and inst.components.combat:CanTarget(guy)
+                end,
+                nil,
+                { "wall", "houndmound", "hound", "houndfriend" }
+            )
+        or nil
 end
 
 local function KeepTarget(inst, target)
-    return inst.components.combat:CanTarget(target) and (not inst:HasTag("pet_hound") or inst:IsNear(target, TUNING.HOUND_FOLLOWER_TARGET_KEEP))
+    if inst.sg:HasStateTag("statue") then
+        return false
+    end
+    local leader = inst.components.follower.leader
+    local playerleader = leader ~= nil and leader:HasTag("player")
+    local ispet = inst:HasTag("pet_hound")
+    return (leader == nil or
+            (ispet and not playerleader) or
+            inst:IsNear(leader, TUNING.HOUND_FOLLOWER_RETURN_DIST))
+        and inst.components.combat:CanTarget(target)
+        and (not (ispet or leader ~= nil) or
+            inst:IsNear(target, TUNING.HOUND_FOLLOWER_TARGET_KEEP))
 end
 
 local function IsNearMoonBase(inst, dist)
@@ -123,11 +189,21 @@ end
 
 local function OnAttacked(inst, data)
     inst.components.combat:SetTarget(data.attacker)
-    inst.components.combat:ShareTarget(data.attacker, SHARE_TARGET_DIST, function(dude) return dude:HasTag("hound") or dude:HasTag("houndfriend") and not dude.components.health:IsDead() end, 5)
+    inst.components.combat:ShareTarget(data.attacker, SHARE_TARGET_DIST,
+        function(dude)
+            return not (dude.components.health ~= nil and dude.components.health:IsDead())
+                and (dude:HasTag("hound") or dude:HasTag("houndfriend"))
+                and data.attacker ~= (dude.components.follower ~= nil and dude.components.follower.leader or nil)
+        end, 5)
 end
 
 local function OnAttackOther(inst, data)
-    inst.components.combat:ShareTarget(data.target, SHARE_TARGET_DIST, function(dude) return dude:HasTag("hound") or dude:HasTag("houndfriend") and not dude.components.health:IsDead() end, 5)
+    inst.components.combat:ShareTarget(data.target, SHARE_TARGET_DIST,
+        function(dude)
+            return not (dude.components.health ~= nil and dude.components.health:IsDead())
+                and (dude:HasTag("hound") or dude:HasTag("houndfriend"))
+                and data.target ~= (dude.components.follower ~= nil and dude.components.follower.leader or nil)
+        end, 5)
 end
 
 local function GetReturnPos(inst)
@@ -185,7 +261,99 @@ local function OnLoad(inst, data)
     end
 end
 
-local function fncommon(build, morphlist, custombrain, tag)
+local function OnClayRemoveEntity(inst)
+    if inst.eyefxl ~= nil then
+        inst.eyefxl:Remove()
+        inst.eyefxl = nil
+    end
+    if inst.eyefxr ~= nil then
+        inst.eyefxr:Remove()
+        inst.eyefxr = nil
+    end
+end
+
+local function GetStatus(inst)
+    return (inst.sg:HasStateTag("statue") and "STATUE")
+        or nil
+end
+
+local function OnEyeFlamesDirty(inst)
+    if TheWorld.ismastersim then
+        if not inst._eyeflames:value() then
+            inst.AnimState:SetLightOverride(0)
+            inst.SoundEmitter:KillSound("eyeflames")
+        else
+            inst.AnimState:SetLightOverride(.07)
+            if not inst.SoundEmitter:PlayingSound("eyeflames") then
+                inst.SoundEmitter:PlaySound("dontstarve/wilson/torch_LP", "eyeflames")
+                inst.SoundEmitter:SetParameter("eyeflames", "intensity", 1)
+            end
+        end
+        if TheNet:IsDedicated() then
+            return
+        end
+    end
+
+    if inst._eyeflames:value() then
+        if inst.eyefxl == nil then
+            inst.eyefxl = SpawnPrefab("eyeflame")
+            inst.eyefxl.entity:AddFollower()
+            inst.eyefxl.Follower:FollowSymbol(inst.GUID, "hound_eye_left", 0, 0, 0)
+        end
+        if inst.eyefxr == nil then
+            inst.eyefxr = SpawnPrefab("eyeflame")
+            inst.eyefxr.entity:AddFollower()
+            inst.eyefxr.Follower:FollowSymbol(inst.GUID, "hound_eye_right", 0, 0, 0)
+        end
+    else
+        if inst.eyefxl ~= nil then
+            inst.eyefxl:Remove()
+            inst.eyefxl = nil
+        end
+        if inst.eyefxr ~= nil then
+            inst.eyefxr:Remove()
+            inst.eyefxr = nil
+        end
+    end
+end
+
+local function OnStartFollowing(inst, data)
+    if inst.leadertask ~= nil then
+        inst.leadertask:Cancel()
+        inst.leadertask = nil
+    end
+    if data == nil or data.leader == nil then
+        inst.components.follower.maxfollowtime = nil
+    elseif data.leader:HasTag("player") then
+        inst.components.follower.maxfollowtime = TUNING.HOUNDWHISTLE_EFFECTIVE_TIME * 1.5
+    else
+        inst.components.follower.maxfollowtime = nil
+        if inst.components.entitytracker:GetEntity("leader") == nil then
+            inst.components.entitytracker:TrackEntity("leader", data.leader)
+        end
+    end
+end
+
+local function RestoreLeader(inst)
+    inst.leadertask = nil
+    local leader = inst.components.entitytracker:GetEntity("leader")
+    if leader ~= nil and not leader.components.health:IsDead() then
+        inst.components.follower:SetLeader(leader)
+        leader:PushEvent("restoredfollower", { follower = inst })
+    end
+end
+
+local function OnStopFollowing(inst)
+    inst.leader_offset = nil
+    if not inst.components.health:IsDead() then
+        local leader = inst.components.entitytracker:GetEntity("leader")
+        if leader ~= nil and not leader.components.health:IsDead() then
+            inst.leadertask = inst:DoTaskInTime(.2, RestoreLeader)
+        end
+    end
+end
+
+local function fncommon(bank, build, morphlist, custombrain, tag)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -207,9 +375,17 @@ local function fncommon(build, morphlist, custombrain, tag)
 
     if tag ~= nil then
         inst:AddTag(tag)
+
+        if tag == "clay" then
+            inst._eyeflames = net_bool(inst.GUID, "clayhound._eyeflames", "eyeflamesdirty")
+            inst:ListenForEvent("eyeflamesdirty", OnEyeFlamesDirty)
+            if not TheNet:IsDedicated() then
+                inst.OnRemoveEntity = OnClayRemoveEntity
+            end
+        end
     end
 
-    inst.AnimState:SetBank("hound")
+    inst.AnimState:SetBank(bank)
     inst.AnimState:SetBuild(build)
     inst.AnimState:PlayAnimation("idle")
 
@@ -221,19 +397,16 @@ local function fncommon(build, morphlist, custombrain, tag)
         return inst
     end
 
+    inst.sounds = tag == "clay" and sounds_clay or sounds
+
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
-    inst.components.locomotor.runspeed = TUNING.HOUND_SPEED
+    inst.components.locomotor.runspeed = tag == "clay" and TUNING.CLAYHOUND_SPEED or TUNING.HOUND_SPEED
     inst:SetStateGraph("SGhound")
 
     inst:SetBrain(custombrain or brain)
 
     inst:AddComponent("follower")
-
-    inst:AddComponent("eater")
-    inst.components.eater:SetDiet({ FOODTYPE.MEAT }, { FOODTYPE.MEAT })
-    inst.components.eater:SetCanEatHorrible()
-
-    inst.components.eater.strongstomach = true -- can eat monster meat!
+    inst:AddComponent("entitytracker")
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(TUNING.HOUND_HEALTH)
@@ -252,19 +425,32 @@ local function fncommon(build, morphlist, custombrain, tag)
     inst.components.lootdropper:SetChanceLootTable('hound')
 
     inst:AddComponent("inspectable")
+    inst.components.inspectable.getstatus = GetStatus
 
-    inst:AddComponent("sleeper")
-    inst.components.sleeper:SetResistance(3)
-    inst.components.sleeper.testperiod = GetRandomWithVariance(6, 2)
-    inst.components.sleeper:SetSleepTest(ShouldSleep)
-    inst.components.sleeper:SetWakeTest(ShouldWakeUp)
-    inst:ListenForEvent("newcombattarget", OnNewTarget)
+    if tag == "clay" then
+        inst.sg:GoToState("statue")
 
-    if morphlist ~= nil then
-        MakeHauntableChangePrefab(inst, morphlist)
-        inst:ListenForEvent("spawnedfromhaunt", OnSpawnedFromHaunt)
+        inst:AddComponent("hauntable")
+        inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
     else
-        MakeHauntablePanic(inst)
+        inst:AddComponent("eater")
+        inst.components.eater:SetDiet({ FOODTYPE.MEAT }, { FOODTYPE.MEAT })
+        inst.components.eater:SetCanEatHorrible()
+        inst.components.eater.strongstomach = true -- can eat monster meat!
+
+        inst:AddComponent("sleeper")
+        inst.components.sleeper:SetResistance(3)
+        inst.components.sleeper.testperiod = GetRandomWithVariance(6, 2)
+        inst.components.sleeper:SetSleepTest(ShouldSleep)
+        inst.components.sleeper:SetWakeTest(ShouldWakeUp)
+        inst:ListenForEvent("newcombattarget", OnNewTarget)
+
+        if morphlist ~= nil then
+            MakeHauntableChangePrefab(inst, morphlist)
+            inst:ListenForEvent("spawnedfromhaunt", OnSpawnedFromHaunt)
+        else
+            MakeHauntablePanic(inst)
+        end
     end
 
     inst:WatchWorldState("stopday", OnStopDay)
@@ -275,12 +461,14 @@ local function fncommon(build, morphlist, custombrain, tag)
 
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("onattackother", OnAttackOther)
+    inst:ListenForEvent("startfollowing", OnStartFollowing)
+    inst:ListenForEvent("stopfollowing", OnStopFollowing)
 
     return inst
 end
 
 local function fndefault()
-    local inst = fncommon("hound", { "firehound", "icehound" })
+    local inst = fncommon("hound", "hound", { "firehound", "icehound" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -288,6 +476,7 @@ local function fndefault()
 
     MakeMediumFreezableCharacter(inst, "hound_body")
     MakeMediumBurnableCharacter(inst, "hound_body")
+
     return inst
 end
 
@@ -296,7 +485,7 @@ local function PlayFireExplosionSound(inst)
 end
 
 local function fnfire()
-    local inst = fncommon("hound_red", { "hound", "icehound" })
+    local inst = fncommon("hound", "hound_red", { "hound", "icehound" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -334,7 +523,7 @@ local function DoIceExplosion(inst)
 end
 
 local function fncold()
-    local inst = fncommon("hound_ice", { "firehound", "hound" })
+    local inst = fncommon("hound", "hound_ice", { "firehound", "hound" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -373,7 +562,7 @@ local function OnMoonTransformed(inst, data)
 end
 
 local function fnmoon()
-    local inst = fncommon("hound", nil, moonbrain, "moonbeast")
+    local inst = fncommon("hound", "hound", nil, moonbrain, "moonbeast")
 
     inst:SetPrefabNameOverride("hound")
 
@@ -397,6 +586,39 @@ local function fnmoon()
 
     inst:ListenForEvent("moonpetrify", OnMoonPetrify)
     inst:ListenForEvent("moontransformed", OnMoonTransformed)
+
+    return inst
+end
+
+local function OnClaySave(inst, data)
+    data.reanimated = not inst.sg:HasStateTag("statue") or nil
+end
+
+local function OnClayPreLoad(inst, data)--, newents)
+    if data ~= nil and data.reanimated then
+        inst.sg:GoToState("idle")
+    end
+end
+
+local function OnClayUpdateOffset(inst, offset)
+    inst.leader_offset = offset
+end
+
+local function fnclay()
+    local inst = fncommon("clayhound", "clayhound", nil, nil, "clay")
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    MakeMediumFreezableCharacter(inst, "hound_body")
+
+    inst.components.lootdropper:SetChanceLootTable('clayhound')
+
+    inst.OnSave = OnClaySave
+    inst.OnLoad = nil
+    inst.OnPreLoad = OnClayPreLoad
+    inst.OnUpdateOffset = OnClayUpdateOffset
 
     return inst
 end
@@ -429,6 +651,7 @@ end
 return Prefab("hound", fndefault, assets, prefabs),
         Prefab("firehound", fnfire, assets, prefabs),
         Prefab("icehound", fncold, assets, prefabs),
-        Prefab("moonhound", fnmoon, assets, moonprefabs),
+        Prefab("moonhound", fnmoon, assets, prefabs_moon),
+        Prefab("clayhound", fnclay, assets_clay, prefabs_clay),
         --fx
         Prefab("houndfire", fnfiredrop, assets, prefabs)

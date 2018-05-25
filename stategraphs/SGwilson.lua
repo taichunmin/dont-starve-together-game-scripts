@@ -463,6 +463,7 @@ local actionhandlers =
                 return (action.invobject:HasTag("flute") and "play_flute")
                     or (action.invobject:HasTag("horn") and "play_horn")
                     or (action.invobject:HasTag("bell") and "play_bell")
+                    or (action.invobject:HasTag("whistle") and "play_whistle")
                     or nil
             end
         end),
@@ -3973,7 +3974,7 @@ local states =
             inst.AnimState:PlayAnimation("action_uniqueitem_pre")
             inst.AnimState:PushAnimation("flute", false)
             inst.AnimState:OverrideSymbol("pan_flute01", "pan_flute", "pan_flute01")
-            inst.AnimState:Hide("ARM_carry") 
+            inst.AnimState:Hide("ARM_carry")
             inst.AnimState:Show("ARM_normal")
             inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and inst.bufferedaction.invobject or nil)
         end,
@@ -4079,6 +4080,48 @@ local states =
         events =
         {
             EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) then
+                inst.AnimState:Show("ARM_carry")
+                inst.AnimState:Hide("ARM_normal")
+            end
+        end,
+    },
+
+    State{
+        name = "play_whistle",
+        tags = { "doing", "playing" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("action_uniqueitem_pre")
+            inst.AnimState:PushAnimation("whistle", false)
+            inst.AnimState:OverrideSymbol("hound_whistle01", "houndwhistle", "hound_whistle01")
+            --inst.AnimState:Hide("ARM_carry")
+            inst.AnimState:Show("ARM_normal")
+            inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and inst.bufferedaction.invobject or nil)
+        end,
+
+        timeline =
+        {
+            TimeEvent(20 * FRAMES, function(inst)
+                if inst:PerformBufferedAction() then
+                    inst.SoundEmitter:PlaySound("dontstarve/common/together/houndwhistle")
+                else
+                    inst.AnimState:SetTime(34 * FRAMES)
+                end
+            end),
+        },
+
+        events =
+        {
+            EventHandler("animqueueover", function(inst)
                 if inst.AnimState:AnimDone() then
                     inst.sg:GoToState("idle")
                 end

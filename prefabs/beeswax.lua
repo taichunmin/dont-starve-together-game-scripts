@@ -16,7 +16,7 @@ local function _OnFireMelt(inst, StartFireMelt, StopFireMelt)
             inst.components.inventoryitem.canbepickedup = false
             inst:AddTag("NOCLICK")
             inst.AnimState:PlayAnimation("melt")
-            inst:ListenForEvent("onanimover", inst.Remove)
+            inst:ListenForEvent("animover", inst.Remove)
             inst:ListenForEvent("entitysleep", inst.Remove)
         end
     end

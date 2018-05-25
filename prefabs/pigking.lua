@@ -22,6 +22,8 @@ end
 local function ontradeforgold(inst, item, giver)
     inst.SoundEmitter:PlaySound("dontstarve/pig/PigKingThrowGold")
 
+    AwardPlayerAchievement("pigking_trader", giver)
+
     local x, y, z = inst.Transform:GetWorldPosition()
     y = 4.5
 

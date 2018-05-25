@@ -16,13 +16,32 @@ local events =
 
     EventHandler("startle", function(inst)
         if not (inst.sg:HasStateTag("startled") or
+                inst.sg:HasStateTag("statue") or
                 inst.components.health:IsDead() or
                 (inst.components.freezable ~= nil and inst.components.freezable:IsFrozen())) then
-            if inst.components.sleeper:IsAsleep() then
+            if inst.components.sleeper ~= nil and inst.components.sleeper:IsAsleep() then
                 inst.components.sleeper:WakeUp()
             end
             inst.components.combat:SetTarget(nil)
             inst.sg:GoToState("startle")
+        end
+    end),
+
+    EventHandler("heardwhistle", function(inst, data)
+        if not (inst.sg:HasStateTag("statue") or
+                inst.components.health:IsDead() or
+                (inst.components.freezable ~= nil and inst.components.freezable:IsFrozen())) then
+            if inst.components.sleeper ~= nil and inst.components.sleeper:IsAsleep() then
+                inst.components.sleeper:WakeUp()
+                inst.components.combat:SetTarget(nil)
+            else
+                if inst.components.combat:TargetIs(data.musician) then
+                    inst.components.combat:SetTarget(nil)
+                end
+                if not inst.sg:HasStateTag("howling") then
+                    inst.sg:GoToState("howl", 2)
+                end
+            end
         end
     end),
 
@@ -32,16 +51,77 @@ local events =
             inst.sg:GoToState("workmoonbase", data.moonbase)
         end
     end),
+
+    --Clay hounds
+    EventHandler("becomestatue", function(inst)
+        if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
+            inst.sg:GoToState("transformstatue")
+        end
+    end),
 }
+
+local function PlayClayShakeSound(inst)
+    inst.SoundEmitter:PlaySound("dontstarve/creatures/together/clayhound/stone_shake", nil, .6)
+end
+
+local function PlayClayFootstep(inst)
+    inst.SoundEmitter:PlaySound("dontstarve/creatures/together/clayhound/footstep_hound")
+end
+
+local function StartAura(inst)
+    inst.components.sanityaura.aura = -TUNING.SANITYAURA_MED
+end
+
+local function StopAura(inst)
+    inst.components.sanityaura.aura = 0
+end
+
+local function ShowEyeFX(inst)
+    if inst._eyeflames ~= nil then
+        inst._eyeflames:set(true)
+    end
+end
+
+local function HideEyeFX(inst)
+    if inst._eyeflames ~= nil then
+        inst._eyeflames:set(false)
+    end
+end
+
+local function MakeStatue(inst)
+    if not inst.sg.mem.statue then
+        inst.sg.mem.statue = true
+        local x, y, z = inst.Transform:GetWorldPosition()
+        inst.Physics:Stop()
+        ChangeToObstaclePhysics(inst)
+        inst.Physics:Teleport(x, 0, z)
+        inst:AddTag("notarget")
+        inst.components.health:SetInvincible(true)
+
+        --Snap to nearest 45 degrees + 15 degree offset for better facing update during camera rotation
+        inst.Transform:SetRotation(math.floor(inst.Transform:GetRotation() / 45 + .5) * 45 + 15)
+    end
+end
+
+local function MakeReanimated(inst)
+    if inst.sg.mem.statue then
+        inst.sg.mem.statue = nil
+        local x, y, z = inst.Transform:GetWorldPosition()
+        inst.Physics:SetMass(10)
+        ChangeToCharacterPhysics(inst)
+        inst.Physics:Teleport(x, 0, z)
+        inst:RemoveTag("notarget")
+        inst.components.health:SetInvincible(false)
+    end
+end
 
 local states =
 {
-
     State{
         name = "idle",
         tags = { "idle", "canrotate" },
         onenter = function(inst, playanim)
-            inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/pant")
+            inst.SoundEmitter:PlaySound(inst.sounds.pant)
             inst.Physics:Stop()
             if playanim then
                 inst.AnimState:PlayAnimation(playanim)
@@ -68,7 +148,7 @@ local states =
         timeline =
         {
 
-            TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/attack") end),
+            TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack) end),
             TimeEvent(16*FRAMES, function(inst) inst.components.combat:DoAttack(inst.sg.statemem.target) end),
         },
 
@@ -91,7 +171,7 @@ local states =
 
         timeline =
         {
-            TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/bite") end),
+            TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.bite) end),
         },
 
         events =
@@ -136,20 +216,63 @@ local states =
         name = "taunt",
         tags = { "busy" },
 
-        onenter = function(inst)
-            inst.Physics:Stop()
-            inst.AnimState:PlayAnimation("taunt")
+        onenter = function(inst, norepeat)
+            if inst:HasTag("clay") then
+                inst.sg:GoToState("howl", norepeat and -1 or 0)
+            else
+                inst.Physics:Stop()
+                inst.AnimState:PlayAnimation("taunt")
+                inst.sg.statemem.norepeat = norepeat
+            end
         end,
 
         timeline =
         {
-            TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/bark") end),
-            TimeEvent(24*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/bark") end),
+            TimeEvent(13 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.bark) end),
+            TimeEvent(24 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.bark) end),
         },
 
         events =
         {
-            EventHandler("animover", function(inst) if math.random() < .333 then inst.sg:GoToState("taunt") else inst.sg:GoToState("idle") end end),
+            EventHandler("animover", function(inst)
+                if not inst.sg.statemem.norepeat and math.random() < .333 then
+                    inst.sg:GoToState("taunt", inst.components.follower.leader ~= nil and inst.components.follower.leader:HasTag("player"))
+                else
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+    },
+
+    State{
+        name = "howl",
+        tags = { "busy", "howling" },
+
+        onenter = function(inst, count)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("howl")
+            inst.sg.statemem.count = count or 0
+        end,
+
+        timeline =
+        {
+            TimeEvent(0, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.howl) end),
+        },
+
+        events =
+        {
+            EventHandler("heardwhistle", function(inst)
+                inst.sg.statemem.count = 2
+            end),
+            EventHandler("animover", function(inst)
+                if inst.sg.statemem.count > 0 then
+                    inst.sg:GoToState("howl", inst.sg.statemem.count > 1 and inst.sg.statemem.count - 1 or -1)
+                elseif inst.sg.statemem.count == 0 and math.random() < .333 then
+                    inst.sg:GoToState("howl", inst.components.follower.leader ~= nil and inst.components.follower.leader:HasTag("player") and -1 or 0)
+                else
+                    inst.sg:GoToState("idle")
+                end
+            end),
         },
     },
 
@@ -158,7 +281,6 @@ local states =
         tags = { "busy" },
 
         onenter = function(inst, reanimating)
-            inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/death")
             if reanimating then
                 inst.AnimState:Pause()
             else
@@ -166,6 +288,12 @@ local states =
             end
             inst.Physics:Stop()
             RemovePhysicsColliders(inst)
+            if inst:HasTag("clay") then
+                inst.sg.statemem.clay = true
+                HideEyeFX(inst)
+                inst.SoundEmitter:PlaySound("dontstarve/common/destroy_pot")
+            end
+            inst.SoundEmitter:PlaySound(inst.sounds.death)
             inst.components.lootdropper:DropLoot(inst:GetPosition())
         end,
 
@@ -176,11 +304,19 @@ local states =
                     inst.AnimState:Resume()
                 end
             end),
+            TimeEvent(11 * FRAMES, function(inst)
+                if inst.sg.statemem.clay then
+                    PlayClayFootstep(inst)
+                end
+            end),
         },
 
         onexit = function(inst)
             if not inst:IsInLimbo() then
                 inst.AnimState:Resume()
+            end
+            if inst.sg.statemem.clay then
+                ShowEyeFX(inst)
             end
         end,
     },
@@ -211,7 +347,7 @@ local states =
         timeline =
         {
             --TimeEvent(14 * FRAMES, function(inst)
-            --    inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/attack")
+            --    inst.SoundEmitter:PlaySound(inst.sounds.attack)
             --end),
             TimeEvent(16 * FRAMES, function(inst)
                 local moonbase = inst.sg.statemem.moonbase
@@ -275,25 +411,167 @@ local states =
             end
         end,
     },
+
+    --Clay hound
+    State{
+        name = "statue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst)
+            MakeStatue(inst)
+            HideEyeFX(inst)
+            StopAura(inst)
+            inst.Transform:SetSixFaced()
+            inst.AnimState:PlayAnimation("idle_statue")
+        end,
+
+        events =
+        {
+            EventHandler("reanimate", function(inst, data)
+                inst.sg.statemem.statue = true
+                inst.sg:GoToState("reanimatestatue", data ~= nil and data.target or nil)
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.statue then
+                MakeReanimated(inst)
+                ShowEyeFX(inst)
+                StartAura(inst)
+                inst.Transform:SetFourFaced()
+            end
+        end,
+    },
+
+    State
+    {
+        name = "reanimatestatue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst, target)
+            MakeStatue(inst)
+            ShowEyeFX(inst)
+            StartAura(inst)
+            inst.Transform:SetSixFaced()
+            inst.AnimState:PlayAnimation("statue_pst")
+            inst.sg.statemem.target = target
+        end,
+
+        timeline =
+        {
+            TimeEvent(2 * FRAMES, PlayClayShakeSound),
+            TimeEvent(4 * FRAMES, PlayClayShakeSound),
+            TimeEvent(6 * FRAMES, PlayClayShakeSound),
+            TimeEvent(8 * FRAMES, PlayClayShakeSound),
+            TimeEvent(10 * FRAMES, PlayClayShakeSound),
+            TimeEvent(12 * FRAMES, PlayClayShakeSound),
+            TimeEvent(14 * FRAMES, function(inst)
+                PlayClayShakeSound(inst)
+                PlayClayFootstep(inst)
+            end),
+            TimeEvent(16 * FRAMES, PlayClayShakeSound),
+            TimeEvent(41 * FRAMES, PlayClayFootstep),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            MakeReanimated(inst)
+            if inst.sg.statemem.target ~= nil then
+                inst.components.combat:SetTarget(inst.sg.statemem.target)
+            end
+            inst.Transform:SetFourFaced()
+        end,
+    },
+
+    State
+    {
+        name = "transformstatue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst)
+            MakeStatue(inst)
+            inst.Transform:SetSixFaced()
+            inst.AnimState:PlayAnimation("statue_pre")
+            local leader = inst.components.follower.leader
+            if leader ~= nil then
+                inst.Transform:SetRotation(leader.Transform:GetRotation())
+            end
+        end,
+
+        timeline =
+        {
+            TimeEvent(2 * FRAMES, PlayClayShakeSound),
+            TimeEvent(4 * FRAMES, PlayClayShakeSound),
+            TimeEvent(6 * FRAMES, PlayClayShakeSound),
+            TimeEvent(8 * FRAMES, PlayClayShakeSound),
+            TimeEvent(9 * FRAMES, PlayClayFootstep),
+            TimeEvent(10 * FRAMES, function(inst)
+                PlayClayShakeSound(inst)
+                HideEyeFX(inst)
+            end),
+            TimeEvent(12 * FRAMES, PlayClayShakeSound),
+            TimeEvent(14 * FRAMES, PlayClayShakeSound),
+            TimeEvent(16 * FRAMES, PlayClayShakeSound),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg.statemem.statue = true
+                    inst.sg:GoToState("statue")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.statue then
+                MakeReanimated(inst)
+                ShowEyeFX(inst)
+                StartAura(inst)
+                inst.Transform:SetFourFaced()
+            end
+        end,
+    },
 }
 
 CommonStates.AddSleepStates(states,
 {
-    sleeptimeline = {
-        TimeEvent(30*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/sleep") end),
+    sleeptimeline =
+    {
+        TimeEvent(30 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.sleep) end),
     },
 })
 
 CommonStates.AddRunStates(states,
 {
-    runtimeline = {
+    runtimeline =
+    {
         TimeEvent(0, function(inst)
-            inst.SoundEmitter:PlaySound("dontstarve/creatures/hound/growl")
-            PlayFootstep(inst)
+            inst.SoundEmitter:PlaySound(inst.sounds.growl)
+            if inst:HasTag("clay") then
+                PlayClayFootstep(inst)
+            else
+                PlayFootstep(inst)
+            end
         end),
-        TimeEvent(4*FRAMES, PlayFootstep),
+        TimeEvent(4 * FRAMES, function(inst)
+            if inst:HasTag("clay") then
+                PlayClayFootstep(inst)
+            else
+                PlayFootstep(inst)
+            end
+        end),
     },
 })
-CommonStates.AddFrozenStates(states)
+CommonStates.AddFrozenStates(states, HideEyeFX, ShowEyeFX)
 
 return StateGraph("hound", states, events, "taunt", actionhandlers)

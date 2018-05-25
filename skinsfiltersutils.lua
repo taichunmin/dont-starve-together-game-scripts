@@ -68,8 +68,8 @@ function ApplyFilters(full_skins_list, filters)
 	--dumptable(filters)
 	local filtered_list = {}
 
-	for _,skin_item in ipairs(full_skins_list) do 
-		for _, filters_list in pairs(filters) do 
+	for _,skin_item in ipairs(full_skins_list) do
+		for _, filters_list in pairs(filters) do
 
 			local matches_filters = true
 			
@@ -93,7 +93,6 @@ function ApplyFilters(full_skins_list, filters)
 						filter_type = "colour"
 						filter_value = filter_name
 					end
-
 					
 					-- Each item must match all the values in this filter
 					if filter_type == "type" and skin_item.type ~= filter_value then
@@ -112,7 +111,7 @@ function ApplyFilters(full_skins_list, filters)
 				end
 			end
 
-			if matches_filters and IsItemMarketable(skin_item.item) then 
+			if matches_filters and IsItemMarketable(skin_item.item) and skin_item.item_id ~= TEMP_ITEM_ID then 
 				table.insert(filtered_list, skin_item)
 				break -- stop checking filters if we matched one
 			end

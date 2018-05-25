@@ -41,23 +41,23 @@ SetSharedLootTable('minotaur',
     {"minotaurhorn",1.00},
 })
 
-local chest_loot =
+local chest_loot = 
 {
-    {item = {"armorruins", "ruinshat"}, count = 1},
-    {item = {"ruins_bat", "orangestaff", "yellowstaff"}, count = 1},
-    {item = {"firestaff", "icestaff", "telestaff", "multitool_axe_pickaxe"}, count = 1},
-    {item = {"thulecite"}, count = {5, 12}},
-    {item = {"thulecite_pieces"}, count = {12, 36}},
-    {item = {"redgem", "bluegem", "purplegem"}, count = {3, 5}},
-    {item = {"yellowgem", "orangegem", "greengem"}, count = {1, 3}},
-    {item = {"nightmarefuel"}, count = {5, 8}},
-    {item = {"gears"}, count = {3, 6}},
+	{item = {"armorruins", "ruinshat"}, count = 1},
+	{item = {"ruins_bat", "orangestaff", "yellowstaff"}, count = 1},
+	{item = {"firestaff", "icestaff", "telestaff", "multitool_axe_pickaxe"}, count = 1},
+	{item = {"thulecite"}, count = {5, 12}},
+	{item = {"thulecite_pieces"}, count = {12, 36}},
+	{item = {"redgem", "bluegem", "purplegem"}, count = {3, 5}},
+	{item = {"yellowgem", "orangegem", "greengem"}, count = {1, 3}},
+	{item = {"nightmarefuel"}, count = {5, 8}},
+	{item = {"gears"}, count = {3, 6}},
 }
 
-for _, v in ipairs(chest_loot) do
-    for _, item in ipairs(v.item) do
+for _,v in ipairs(chest_loot) do
+	for _,item in ipairs(v.item) do
         table.insert(prefabs_chest, item)
-    end
+	end
 end
 
 local SLEEP_DIST_FROMHOME_SQ = 20 * 20
@@ -124,6 +124,10 @@ local function OnAttacked(inst, data)
     end
     inst.components.combat:SetTarget(attacker)
     inst.components.combat:ShareTarget(attacker, SHARE_TARGET_DIST, IsChess, MAX_TARGET_SHARES)
+end
+
+local function OnDeath(inst)
+    AwardRadialAchievement("minotaur_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
 end
 
 local function ClearRecentlyCharged(inst, other)
@@ -250,6 +254,7 @@ local function fn()
     MakeMediumFreezableCharacter(inst, "spring")
 
     inst:ListenForEvent("attacked", OnAttacked)
+    inst:ListenForEvent("death", OnDeath)
 
     return inst
 end

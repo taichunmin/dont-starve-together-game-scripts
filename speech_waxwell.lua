@@ -1899,7 +1899,26 @@ return {
         LUCKY_GOLDNUGGET = "Gold's gold as far as I'm concerned.",
         FIRECRACKERS = "Great for magic tricks.",
         PERDFAN = "Now I'll have no problem keeping my cool.",
-        REDPOUCH = "Why did that bird have this?",
+        REDPOUCH = "A spot of luck.",
+        WARGSHRINE = 
+        {
+            GENERIC = "The preparations have been made.",
+            EMPTY = "It requires a torch.",
+            BURNT = "Burnt to cinders.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "This earthen beast's all fired up.",
+        	STATUE = "How delightfully disconcerting.",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "I was wise to be suspicious.",
+        	STATUE = "I don't trust it.",
+        },
+        HOUNDWHISTLE = "Howl I ever find a use for this?",
+        CHESSPIECE_CLAYHOUND = "It's quite fetching.",
+        CHESSPIECE_CLAYWARG = "What a gruesome maw.",
 
 		TRUNKVEST_SUMMER = "It's more of a fall vest.",
 		TRUNKVEST_WINTER = "It's so hard to look fashionable in the winter.",

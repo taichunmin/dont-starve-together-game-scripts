@@ -4,7 +4,6 @@ local ANIM_HAND_TEXTURE = "fx/animhand.tex"
 local ANIM_SMOKE_TEXTURE = "fx/animsmoke.tex"
 
 local SHADER = "shaders/vfx_particle.ksh"
-local ADD_SHADER = "shaders/vfx_particle_add.ksh"
 local REVEAL_SHADER = "shaders/vfx_particle_reveal.ksh"
 
 local COLOUR_ENVELOPE_NAME_SMOKE = "torch_shadow_colourenvelope_smoke"
@@ -19,7 +18,6 @@ local assets =
     Asset("IMAGE", ANIM_HAND_TEXTURE),
     Asset("IMAGE", ANIM_SMOKE_TEXTURE),
     Asset("SHADER", SHADER),
-    Asset("SHADER", ADD_SHADER),
     Asset("SHADER", REVEAL_SHADER),
 }
 

@@ -63,10 +63,7 @@ function ItemSelector:UpdateData( selections, filters_list )
     self.skins_list = ApplyFilters( self.full_skins_list, filters_list )
 	
 	--Remove selected items from the list so we can't select them twice
-	--Note(Peter): this maintaining of the page focus will only work for mono-rarity recipes, otherwise the more complex filtering will produce weird results
-	--The complex looping is so that we can track where the page should be for the last added item, while ignoring selections from earlier in skins_list
-	--We need to do this to avoid the removal of selected items from shifting the last item's index in the paged list by however many items in the list were removed ahead of it
-    local k = 1
+	local k = 1
 	while k <= #self.skins_list do
 		local v = self.skins_list[k]
 		local removed = false

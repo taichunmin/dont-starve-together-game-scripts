@@ -117,7 +117,7 @@ function TradeScreen:DoInit()
     	self.exit_button:SetPosition(-RESOLUTION_X*.415, -RESOLUTION_Y*.505 + BACK_BUTTON_Y )
   	end
 
-	if PLATFORM ~= "WIN32_RAIL" then
+	if IsNotConsole() and PLATFORM ~= "WIN32_RAIL" then
   		self.market_button = self.fixed_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "steam.tex", "", false, false,
     												function() VisitURL("https://steamcommunity.com/market/search?appid=322330") end
     											))
@@ -247,16 +247,25 @@ function TradeScreen:DoInitInventoryAndMachine()
     self.item_name:SetColour(1, 1, 1, 1)
 	self.item_name:Hide()    
 
+	
+	-- the buttons aren't used on console but don't hide them since they're part of the decor and they add the 
+	-- button prompts to the help bar; hide the text only so players don't try to navigate to them
+	local reset_button_text = STRINGS.UI.TRADESCREEN.RESET
+	local trade_button_text = STRINGS.UI.TRADESCREEN.TRADE
+	if TheInput:ControllerAttached() then
+		reset_button_text = ""
+		trade_button_text = ""
+	end
 
     -- reset button bg
     self.resetbtn = self.claw_machine:AddChild(TEMPLATES.AnimTextButton("button", 
     											{idle = "idle_red", over = "up_red", disabled = "down_red"},
-    											1, 
+    											IsConsole() and 1 or {x=1.5, y=1, z=1}, 
     											function() 
     												self:Reset()
     											end,
-    											STRINGS.UI.TRADESCREEN.RESET, 
-    											45))
+    											reset_button_text, 
+    											30))
     self.resetbtn:SetPosition(-200, -540)
 
     -- trade button bg
@@ -266,10 +275,9 @@ function TradeScreen:DoInitInventoryAndMachine()
     											function() 
     												self:Trade()
     											end,
-    											STRINGS.UI.TRADESCREEN.TRADE, 
-    											45))
+    											trade_button_text, 
+    											30))
     self.tradebtn:SetPosition(208, -540)
-
 
     self.selected_items = {}
 	self.last_added_item_index = nil
@@ -731,6 +739,7 @@ function TradeScreen:GiveItem(item)
 		function()
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/swapshoppe/skin_idle", "idle_sound")
 			self:DisplayItemName(self.gift_name)
+			AwardFrontendAchievement("trade_inn")
 		end
 	)
 	
@@ -1108,7 +1117,7 @@ function TradeScreen:RefreshMachineTilesState()
 				y_offset = 60
 			end
 			self.frames_single[i]:Mark(item.last_item_warning)
-			self.frames_single[i]:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, size = 20, offset_x = 0, offset_y = y_offset, colour = {1,1,1,1}})
+			self.frames_single[i]:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = y_offset, colour = {1,1,1,1}})
 		else
 			self.frames_single[i]:ClearHoverText()
 			self.frames_single[i]:Mark(false)
@@ -1238,6 +1247,13 @@ end
 
 function TradeScreen:OnUpdate(dt)
 
+	if TheFrontEnd:GetIsOfflineMode() then
+		if not self.quitting and TheFrontEnd:GetActiveScreen() == self then
+			self:Quit()
+		end
+		return
+	end
+
 	if self.reset_started and self.claw_machine:GetAnimState():IsCurrentAnimation("skin_off") and self.claw_machine:GetAnimState():AnimDone() then
 		-- Wait for the skin out anim to finish and then animate the item over to the inventory
 		if self.moving_gift_item and not self.moving_gift_item.moving then
@@ -1274,6 +1290,10 @@ end
 local SCROLL_REPEAT_TIME = .15
 local MOUSE_SCROLL_REPEAT_TIME = 0
 local STICK_SCROLL_REPEAT_TIME = .25
+local reset_control = CONTROL_MAP
+if IsConsole() then
+	reset_control = CONTROL_MENU_MISC_2
+end
 
 function TradeScreen:OnControl(control, down)
     if TradeScreen._base.OnControl(self, control, down) then return true end
@@ -1287,7 +1307,7 @@ function TradeScreen:OnControl(control, down)
 
     if  TheInput:ControllerAttached() then 
 	    if not down then 
-	    	if control == CONTROL_MAP then -- view button / back button / select button
+	    	if control == reset_control then
 				if self.resetbtn:IsEnabled() then
 					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 					self:Reset()
@@ -1303,7 +1323,7 @@ function TradeScreen:OnControl(control, down)
 				end
 				return true
 			elseif control == CONTROL_INSPECT then -- Y button
-				if PLATFORM ~= "WIN32_RAIL" then
+				if IsNotConsole() and PLATFORM ~= "WIN32_RAIL" then
 					VisitURL("https://steamcommunity.com/market/search?appid=322330")
 					return true
 				end
@@ -1392,7 +1412,7 @@ function TradeScreen:GetHelpText()
 	    end]]
 
 		if self.resetbtn:IsEnabled() then
-			table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.TRADESCREEN.RESET)
+			table.insert(t,  TheInput:GetLocalizedControl(controller_id, reset_control) .. " " .. STRINGS.UI.TRADESCREEN.RESET)
 		end
 
 	    if self.tradebtn:IsEnabled() then
@@ -1422,7 +1442,7 @@ function TradeScreen:GetHelpText()
     	local str = self.specials_list:GetHelpText()
     	table.insert(t, str)
     end]]
-	if PLATFORM ~= "WIN32_RAIL" then
+	if PLATFORM ~= "WIN32_RAIL" and IsNotConsole() then
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_INSPECT) .. " " .. STRINGS.UI.TRADESCREEN.MARKET)
 	end
 

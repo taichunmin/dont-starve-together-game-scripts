@@ -97,6 +97,10 @@ local function AdditionalBabies(inst)
     return RoundBiasedUp(#ents * .5)
 end
 
+local function OnDead(inst)
+    AwardRadialAchievement("spiderqueen_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -198,6 +202,7 @@ local function fn()
     inst:SetBrain(brain)
 
     inst:ListenForEvent("attacked", OnAttacked)
+    inst:ListenForEvent("death", OnDead)
 
     return inst
 end

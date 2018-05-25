@@ -163,7 +163,11 @@ function Widget:TintTo(from, to, time, fn)
     self.inst.components.uianim:TintTo(from, to, time, fn)
 end
 
+
 function Widget:ForceStartWallUpdating()
+    if IsConsole() then
+        return --disabled for console
+    end
     if not self.inst.components.uianim then
         self.inst:AddComponent("uianim")
     end
@@ -171,11 +175,15 @@ function Widget:ForceStartWallUpdating()
 end
 
 function Widget:ForceStopWallUpdating()
+    if IsConsole() then
+        return --disabled for console
+    end
     if not self.inst.components.uianim then
         self.inst:AddComponent("uianim")
     end
     self.inst.components.uianim:ForceStopWallUpdating(self)
 end
+
 
 function Widget:IsEnabled()
     if not self.enabled then return false end
@@ -225,6 +233,8 @@ function Widget:KillAllChildren()
         self:RemoveChild(k)
         k:Kill()
     end
+    
+    self:ClearHoverText()
 end
 
 function Widget:AddChild(child)
@@ -267,6 +277,10 @@ end
 
 function Widget:GetPosition()
     return Vector3(self.inst.UITransform:GetLocalPosition())
+end
+
+function Widget:GetWorldScale()
+    return Vector3(self.inst.UITransform:GetWorldScale())
 end
 
 function Widget:Nudge(offset)
@@ -654,9 +668,21 @@ function Widget:SetHoverText(text, params)
                 params = {}
             end
 
+            self.hovertext_root = Widget("hovertext_root")
+            self.hovertext_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
+            
+            if params.bg == nil or params.bg == true then
+                self.hovertext_bg = self.hovertext_root:AddChild(Image(params.bg_atlas or "images/frontend.xml", params.bg_texture or "scribble_black.tex"))
+                self.hovertext_bg:SetTint(1,1,1,.8)
+                self.hovertext_bg:Hide()
+                self.hovertext_bg:SetClickable(false)
+            end
+
+            
             if not self.hovertext then
-                self.hovertext = self:AddChild(Text(params.font or NEWFONT_OUTLINE, params.size or 28, text))
+                self.hovertext = self.hovertext_root:AddChild(Text(params.font or NEWFONT_OUTLINE, 22, text))
                 self.hovertext:SetClickable(false)
+                self.hovertext:SetScale(1.1,1.1)
 
                 if params.region_h ~= nil or params.region_w ~= nil then 
                     self.hovertext:SetRegionSize(params.region_w or 1000, params.region_h or 40)
@@ -669,23 +695,15 @@ function Widget:SetHoverText(text, params)
             else
                 self.hovertext:SetString(text)
             end
-
-            self.hovertext:SetPosition(params.offset_x or 0, params.offset_y or 26)
             if params.colour then self.hovertext:SetColour(params.colour) end
-            self.hovertext:MoveToFront()
             self.hovertext:Hide()
 
+            
             if params.bg == nil or params.bg == true then
-                self.hovertext_bg = self:AddChild(Image(params.bg_atlas or "images/frontend.xml", params.bg_texture or "scribble_black.tex"))
-                self.hovertext_bg:SetPosition(params.offset_x or 0, params.offset_y or 26)
                 local w, h = self.hovertext:GetRegionSize()
-                self.hovertext_bg:SetTint(1,1,1,.8)
-                self.hovertext_bg:SetSize(w*1.3, h*1.8)
-                self.hovertext_bg:MoveToFront()
-                self.hovertext:MoveToFront() --this is so that the bg and text are both infront of the item it was added to
-                self.hovertext_bg:Hide()
-                self.hovertext_bg:SetClickable(false)
+                self.hovertext_bg:SetSize(w*1.5, h*2.0)
             end
+
 
             local hover_parent = self.text or self
             if hover_parent.GetString ~= nil and hover_parent:GetString() ~= "" then
@@ -694,8 +712,14 @@ function Widget:SetHoverText(text, params)
                 self.hover.image:ScaleToSize(hover_parent:GetRegionSize())
 
                 self.hover.OnGainFocus = function()
+                    local world_pos = self:GetWorldPosition()
                     self.hovertext:Show()
-                    if self.hovertext_bg then self.hovertext_bg:Show() end
+                    local x_pos = world_pos.x + (params.offset_x or 0)
+                    local y_pos = world_pos.y + (params.offset_y or 26)
+                    self.hovertext_root:SetPosition(x_pos, y_pos)
+                    if self.hovertext_bg then
+                        self.hovertext_bg:Show()
+                    end
                 end
                 self.hover.OnLoseFocus = function()
                     self.hovertext:Hide()
@@ -706,8 +730,14 @@ function Widget:SetHoverText(text, params)
                 self._OnLoseFocus = self.OnLoseFocus
 
                 self.OnGainFocus = function()
+                    local world_pos = self:GetWorldPosition()
                     self.hovertext:Show()
-                    if self.hovertext_bg then self.hovertext_bg:Show() end
+                    local x_pos = world_pos.x + (params.offset_x or 0)
+                    local y_pos = world_pos.y + (params.offset_y or 26)
+                    self.hovertext_root:SetPosition(x_pos, y_pos)
+                    if self.hovertext_bg then
+                        self.hovertext_bg:Show()
+                    end
                     self._OnGainFocus( self )
                 end
                 self.OnLoseFocus = function()
@@ -720,7 +750,7 @@ function Widget:SetHoverText(text, params)
             self.hovertext:SetString(text)
             if self.hovertext_bg then
                 local w, h = self.hovertext:GetRegionSize()
-                self.hovertext_bg:SetSize(w*1.3, h*1.8)
+                self.hovertext_bg:SetSize(w*1.5, h*2.0)
             end
         end
     end
@@ -728,6 +758,10 @@ end
 
 
 function Widget:ClearHoverText()
+    if self.hovertext_root ~= nil then
+        self.hovertext_root:Kill()
+        self.hovertext_root = nil
+    end
     if self.hover ~= nil then
         self.hover:Kill()
         self.hover = nil

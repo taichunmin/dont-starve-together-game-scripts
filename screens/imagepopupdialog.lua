@@ -30,7 +30,7 @@ local ImagePopupDialogScreen = Class(PopupDialogScreen, function(self, title, wi
     self.text:SetPosition(5, 25, 0)
 
     local pos = self.menu:GetPosition()
-    self.menu:SetPosition(pos.x, pos.y - 10, pos.z)
+    self.menu:SetPosition(pos.x, pos.y - 20, pos.z)
     self.menu.reverse = true
 
     local widget_container = self.proot:AddChild(Widget("container"))
@@ -47,7 +47,7 @@ local ImagePopupDialogScreen = Class(PopupDialogScreen, function(self, title, wi
     end
 
     
-    widget_container:SetPosition(-.5*(#widgets) * widget_width + .5*widget_width, -60)
+    widget_container:SetPosition(-.5*(#widgets) * widget_width + .5*widget_width, -40)
 
     --print("Width is ", width, -.5*width)
 

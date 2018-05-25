@@ -49,6 +49,7 @@ Recipe("turf_dragonfly", {Ingredient("dragon_scales", 1), Ingredient("cutstone",
 
 Recipe("winter_treestand", {Ingredient("poop", 2), Ingredient("boards", 1)}, RECIPETABS.TOWN, TECH.WINTERS_FEAST, "winter_treestand_placer")
 Recipe("perdshrine", {Ingredient("goldnugget", 8), Ingredient("boards", 2)}, RECIPETABS.TOWN, TECH.YOTG, "perdshrine_placer")
+Recipe("wargshrine", {Ingredient("goldnugget", 8), Ingredient("boards", 2)}, RECIPETABS.TOWN, TECH.YOTV, "wargshrine_placer")
 Recipe("pottedfern", {Ingredient("foliage", 5), Ingredient("slurtle_shellpieces", 1)}, RECIPETABS.TOWN, TECH.SCIENCE_TWO, "pottedfern_placer", 0.9)
 Recipe("succulent_potted", {Ingredient("succulent_picked", 5), Ingredient("cutstone", 1)}, RECIPETABS.TOWN, TECH.LOST, "succulent_potted_placer", 0.9)
 Recipe("endtable", {Ingredient("marble", 2), Ingredient("boards", 2), Ingredient("turf_carpetfloor", 2)}, RECIPETABS.TOWN, TECH.LOST, "endtable_placer", 1.5)
@@ -303,6 +304,8 @@ Recipe("chesspiece_deerclops_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2)
 Recipe("chesspiece_bearger_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2), Ingredient("rocks", 2), Ingredient("bearger_fur", 1)}, RECIPETABS.SCULPTING, TECH.LOST, nil, nil, true, nil, nil, nil, "chesspiece_bearger.tex")
 Recipe("chesspiece_moosegoose_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2), Ingredient("rocks", 2), Ingredient("goose_feather", 5)}, RECIPETABS.SCULPTING, TECH.LOST, nil, nil, true, nil, nil, nil, "chesspiece_moosegoose.tex")
 Recipe("chesspiece_dragonfly_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2), Ingredient("rocks", 2), Ingredient("dragon_scales", 1)}, RECIPETABS.SCULPTING, TECH.LOST, nil, nil, true, nil, nil, nil, "chesspiece_dragonfly.tex")
+Recipe("chesspiece_clayhound_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2), Ingredient("rocks", 2), Ingredient("houndstooth", 1)}, RECIPETABS.SCULPTING, TECH.LOST, nil, nil, true, nil, nil, nil, "chesspiece_clayhound.tex")
+Recipe("chesspiece_claywarg_builder", {Ingredient(TECH_INGREDIENT.SCULPTING, 2), Ingredient("rocks", 2), Ingredient("houndstooth", 2)}, RECIPETABS.SCULPTING, TECH.LOST, nil, nil, true, nil, nil, nil, "chesspiece_claywarg.tex")
 
 ----CRITTERS----
 Recipe("critter_kitten_builder", {Ingredient("coontail", 1), Ingredient("fishsticks", 1)}, RECIPETABS.ORPHANAGE, TECH.ORPHANAGE_ONE, nil, nil, true)
@@ -315,7 +318,10 @@ Recipe("critter_glomling_builder", {Ingredient("glommerfuel", 1), Ingredient("ta
 ----PERDSHRINE-----
 Recipe("firecrackers", {Ingredient("lucky_goldnugget", 1)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true, 3)
 Recipe("redlantern", {Ingredient("lucky_goldnugget", 3)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true)
-Recipe("perdfan", {Ingredient("lucky_goldnugget", 3)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true)
+Recipe("perdfan", {Ingredient("lucky_goldnugget", 3)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_THREE, nil, nil, true)
+Recipe("houndwhistle", {Ingredient("lucky_goldnugget", 3)}, RECIPETABS.PERDOFFERING, TECH.WARGOFFERING_THREE, nil, nil, true)
+Recipe("chesspiece_clayhound_sketch", {Ingredient("lucky_goldnugget", 8)}, RECIPETABS.PERDOFFERING, TECH.WARGOFFERING_THREE, nil, nil, true)
+Recipe("chesspiece_claywarg_sketch", {Ingredient("lucky_goldnugget", 16)}, RECIPETABS.PERDOFFERING, TECH.WARGOFFERING_THREE, nil, nil, true)
 Recipe("dragonheadhat", {Ingredient("lucky_goldnugget", 8)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true)
 Recipe("dragonbodyhat", {Ingredient("lucky_goldnugget", 8)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true)
 Recipe("dragontailhat", {Ingredient("lucky_goldnugget", 8)}, RECIPETABS.PERDOFFERING, TECH.PERDOFFERING_ONE, nil, nil, true)

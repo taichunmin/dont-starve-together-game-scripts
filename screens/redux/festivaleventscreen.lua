@@ -177,7 +177,9 @@ function FestivalEventScreen:OnBecomeActive()
         self:Show()
     end
 
-	self.menu:RestoreFocusTo(self.last_focus_widget)
+	if self.last_focus_widget then
+		self.menu:RestoreFocusTo(self.last_focus_widget)
+	end
 
     self:StartMusic()
 

@@ -311,6 +311,13 @@ function Health:SetVal(val, cause, afflicter)
         TheWorld:PushEvent("entity_death", { inst = self.inst, cause = cause, afflicter = afflicter })
         self.inst:PushEvent("death", { cause = cause, afflicter = afflicter })
 
+		--Here, check if killing player or monster
+		if(self.inst:HasTag("player")) then
+			NotifyPlayerProgress("TotalPlayersKilled", 1, afflicter);
+		else
+			NotifyPlayerProgress("TotalEnemiesKilled", 1, afflicter);
+		end
+
         --V2C: If "death" handler removes ourself, then the prefab should explicitly set nofadeout = true.
         --     Intentionally NOT using IsValid() here to hide those bugs.
         if not self.nofadeout then

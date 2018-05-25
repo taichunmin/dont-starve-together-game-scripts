@@ -5,7 +5,7 @@ local UIAnim = require "widgets/uianim"
 local Image = require "widgets/image"
 local OnlineStatus = require "widgets/onlinestatus"
 local PopupDialogScreen = require "screens/redux/popupdialog"
-local ItemServerContactPopup = require "screens/redux/itemservercontactpopup"
+local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
 
 local TEMPLATES = require("widgets/redux/templates")
@@ -73,9 +73,9 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
     self.text_root = self.root:AddChild(Widget("text_root"))
 	self.text_root:SetPosition(60, 50)
 	self.title = self.text_root:AddChild(Text(HEADERFONT, 25, nil, UICOLOURS.GOLD_SELECTED))
-	self.title:SetPosition(0, 3)
+	self.title:SetPosition(0, 6)
 	self.text = self.text_root:AddChild(Text(CHATFONT, 22, nil, UICOLOURS.GREY))
-	self.text:SetPosition(0, -55)
+	self.text:SetPosition(0, -58)
 	self.text:SetRegionSize(245, 60)
 	self.text:EnableWordWrap(true)
 
@@ -83,48 +83,47 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
         function()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/purchase")
 
-            local popup = ItemServerContactPopup()
-            TheFrontEnd:PushScreen(popup)
+            local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
+            TheFrontEnd:PushScreen(commerce_popup)
 
             TheItems:StartPurchase(self.item_type, function(success, message)
-                popup:Close()
-                if success then
-                    local display_items = PURCHASE_INFO.PACKS[self.item_type]
-                    local options = {
-                        allow_cancel = false,
-                        box_build = GetBoxBuildForItem(self.item_type),
-                        use_bigportraits = IsPackFeatured(self.item_type),
-                    }
-                    
-                    -- Only show open celebration if we have items to show.
-                    if display_items and #display_items > 1 then
+                self.inst:DoTaskInTime(0, function()  --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
+                    commerce_popup:Close()
+                    if success then
+                        local display_items = PURCHASE_INFO.PACKS[self.item_type]
+                        local options = {
+                            allow_cancel = false,
+                            box_build = GetBoxBuildForItem(self.item_type),
+                            use_bigportraits = IsPackFeatured(self.item_type),
+                        }
+                        
                         local box_popup = ItemBoxOpenerPopup(screen_self, options, function(success_cb)
                             success_cb(display_items)
                         end)
                         TheFrontEnd:PushScreen(box_popup)
-                    end
 
-                elseif message == "CANCELLED" then
-                    -- If the user just cancelled, then everything's fine.
+                    elseif message == "CANCELLED" then
+                        -- If the user just cancelled, then everything's fine.
 
-                else
-					local body_text = STRINGS.UI.ITEM_SERVER[message] or STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT
-                    local server_error = PopupDialogScreen(STRINGS.UI.ITEM_SERVER.FAILED_TITLE, body_text,
-                        {
+                    else
+                        local body_text = STRINGS.UI.ITEM_SERVER[message] or STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT
+                        local server_error = PopupDialogScreen(STRINGS.UI.ITEM_SERVER.FAILED_TITLE, body_text,
                             {
-                                text=STRINGS.UI.TRADESCREEN.OK,
-                                cb = function()
-                                    print("ERROR: Failed to contact the item server.", message )
-                                    TheFrontEnd:PopScreen()
-                                    if message == "FAILED_DEFAULT" then
-										SimReset()
-									end
-                                end
+                                {
+                                    text=STRINGS.UI.TRADESCREEN.OK,
+                                    cb = function()
+                                        print("ERROR: Failed to contact the item server.", message )
+                                        TheFrontEnd:PopScreen()
+                                        if message == "FAILED_DEFAULT" then
+                                            SimReset()
+                                        end
+                                    end
+                                }
                             }
-                        }
-                        )
-                    TheFrontEnd:PushScreen( server_error )
-                end
+                            )
+                        TheFrontEnd:PushScreen( server_error )
+                    end
+                end, self)
             end)
         end
 
@@ -148,11 +147,34 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
         end
 
     self.button = self.text_root:AddChild(TEMPLATES.StandardButton(
-            onPurchaseClickFn,
-            nil,
-            {250, 50}
-        ))
-    self.button:SetPosition(0, -120)
+			onPurchaseClickFn,
+			nil,
+			{230, 50}
+		)
+	)
+    
+    --second button for dlcid
+	local onDLCGiftClickFn = 
+        function()
+			local body_text = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_GIFT_INFO_BODY, {pack_name=GetSkinName(self.button_dlc.item_type) })
+			local instructions = PopupDialogScreen(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_GIFT_INFO_TITLE, body_text, 
+				{
+					{text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function() 
+							TheFrontEnd:PopScreen()
+							VisitURL("http://store.steampowered.com/app/"..tostring(self.button_dlc.steam_dlc_id))
+						end
+					},
+				}
+			)
+			TheFrontEnd:PushScreen( instructions )
+		end
+    self.button_dlc = self.text_root:AddChild(TEMPLATES.StandardButton(
+			onDLCGiftClickFn,
+			STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_GIFT,
+			{230, 50}
+		)
+	)
+    
 
     self.OnGainFocus = function()
         PurchasePackScreen._base.OnGainFocus(self)
@@ -195,7 +217,7 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
             self.frame:SetTexture("images/fepanels_redux_shop_panel_wide.xml", "shop_panel_wide.tex")
             self.frame:SetScale(0.542)
             self.frame:SetPosition(235, -7)
-            self.icon_root:SetPosition(-35, 0)
+            self.icon_root:SetPosition(-75, 0)
             self.icon_image:SetScale(0.30)
             self.text_root:SetScale(1.2)
             self.text_root:SetPosition(390, 60)
@@ -203,12 +225,29 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
             self.title:SetRegionSize(500,25)
             self.text:SetHAlign(ANCHOR_LEFT)
             self.text:SetRegionSize(500,75)
-            self.button:SetPosition(-128,-115)
-        else
+            self.button:SetPosition(-130,-115)
+            
+            if (PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM") and IsPackGiftable(self.item_type) then
+				self.button_dlc:Show()
+				self.button_dlc:SetPosition(110,-115)
+				self.button_dlc.item_type = self.item_type
+				self.button_dlc.steam_dlc_id = GetPackGiftDLCID(self.item_type)
+			else
+				self.button_dlc:Hide()
+				self.button_dlc.item_type = nil
+				self.button_dlc.steam_dlc_id = nil
+			end
+			
+			--Deal with focus hacks for featured widget with multiple buttons
+			self.button:SetFocusChangeDir(MOVE_RIGHT, self.button_dlc)
+			self.button_dlc:SetFocusChangeDir(MOVE_LEFT, self.button)
+			self:SetFocusChangeDir(MOVE_RIGHT, nil)
+			
+		else
             self.frame:SetTexture("images/fepanels_redux_shop_panel.xml", "shop_panel.tex")
             self.frame:SetScale(0.55)
             self.frame:SetPosition(-10,-7)
-            self.icon_root:SetPosition(-150, 0)
+            self.icon_root:SetPosition(-140, 0)
             self.icon_image:SetScale(0.35)
             self.text_root:SetScale(1)
             self.text_root:SetPosition(60, 50)
@@ -217,13 +256,24 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
             self.text:SetHAlign(ANCHOR_MIDDLE)
             self.text:SetRegionSize(245, 60)
             self.button:SetPosition(0,-120)
+            self.button_dlc:Hide()
+            self.button_dlc.item_type = nil
+			self.button_dlc.steam_dlc_id = nil
         end
 
         self.root:Show()
+        
+        self.ongainfocusfn = nil
     else
-        -- Important that we hide a subelement and not self because
-        -- TrueScrollList manages our visiblity!
+        -- Important that we hide a sub-element and not self because TrueScrollList manages our visiblity!
         self.root:Hide()
+        
+        if iap_def and iap_def.is_blank then
+			--rather than focus forward, we don't know the widget from here, so manually do a FocusMove next frame.
+			self.ongainfocusfn = function()
+				self.inst:DoTaskInTime(0, function() TheFrontEnd:OnFocusMove(MOVE_LEFT, true) end )
+			end
+		end
     end
 end
 
@@ -253,10 +303,14 @@ function PurchasePackScreen:_BuildPurchasePanel()
             end
             table.sort(iap_defs, DisplayOrderSort)
 
-            if IsPackFeatured(iap_defs[1].item_type) then
-                -- Make space for the featured pack's double-wide widget.
-                table.insert(iap_defs, 2, { is_blank = true })
-            end
+			local padded_defs = {}
+			for _,def in pairs(iap_defs) do
+				table.insert(padded_defs, def)
+				if IsPackFeatured(def.item_type) then
+					-- Make space for the featured pack's double-wide widget.
+					table.insert(padded_defs, { is_blank = true })
+				end
+			end
 
             local function ScrollWidgetsCtor(context, index)
                 return PurchaseWidget( self )
@@ -266,11 +320,11 @@ function PurchasePackScreen:_BuildPurchasePanel()
             end
             
             purchase_ss.scroll_window = purchase_ss:AddChild(TEMPLATES.RectangleWindow(915, 620))
-			purchase_ss.scroll_window:SetBackgroundTint(0,0,0,.8)
+			purchase_ss.scroll_window:SetBackgroundTint(0,0,0,.8) -- black to contrast brown in shop widgets
     
 			purchase_ss.scroll_window.grid = purchase_ss.scroll_window:InsertWidget(
 				TEMPLATES.ScrollingGrid(
-                    iap_defs,
+                    padded_defs,
                     {
                         context = {},
                         widget_width  = 440,
@@ -284,9 +338,15 @@ function PurchasePackScreen:_BuildPurchasePanel()
                     }
                 )
 			)
-    
             purchase_ss.scroll_window:SetPosition(60,-3)
             purchase_ss.focus_forward = purchase_ss.scroll_window.grid
+            
+            --We need to inject this call to DoFocusHookups because the widgets are going to muck with the SetFocusChangedDir
+            local oldRefreshView = purchase_ss.scroll_window.grid.RefreshView
+            purchase_ss.scroll_window.grid.RefreshView = function(self)
+				purchase_ss.scroll_window.grid.list_root.grid:DoFocusHookups()
+				oldRefreshView(self)
+            end
         end
     else
         local buttons = {

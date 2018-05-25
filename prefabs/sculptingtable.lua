@@ -14,8 +14,8 @@ local prefabs =
 
 local sculptable_materials =
 {
-    marble          = {swapfile="marble",           sysmbol="marble01",     material = "marble"},
-    cutstone        = {swapfile="cutstone",         sysmbol="cutstone01",   material = "stone"},
+    marble          = {swapfile="marble",           symbol="marble01",     material = "marble"},
+    cutstone        = {swapfile="cutstone",         symbol="cutstone01",   material = "stone"},
 }
 
 local function AddSketch(inst, sketch)
@@ -35,7 +35,7 @@ local function CalcSymbolFile(itemname)
 end
 
 local function CalcItemSymbol(itemname)
-    return sculptable_materials[itemname] ~= nil and sculptable_materials[itemname].sysmbol or "swap_body"
+    return sculptable_materials[itemname] ~= nil and sculptable_materials[itemname].symbol or "swap_body"
 end
 
 local function CalcSculptingSymbol(itemname)

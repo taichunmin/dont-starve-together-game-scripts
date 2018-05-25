@@ -65,6 +65,7 @@ local _debris =
 
 local _activeplayers = {}
 local _scheduleddrops = {}
+local _originalplayers = {}
 
 -- Network Variables
 local _quakesoundintensity = net_tinybyte(inst.GUID, "quaker._quakesoundintensity", "quakesoundintensitydirty")
@@ -406,6 +407,15 @@ EndQuake = _ismastersim and function(inst, continue)
     if continue then
         SetNextQuake(_quakedata)
     end
+    
+    for i, op in ipairs(_originalplayers) do
+	    for j, ap in ipairs(_activeplayers) do
+			if op == ap and not op:HasTag("playerghost") then
+				AwardPlayerAchievement("survive_earthquake", op)
+				break
+			end
+		end
+	end
 end or nil
 
 local StartQuake = _ismastersim and function(inst, data, overridetime)
@@ -414,8 +424,11 @@ local StartQuake = _ismastersim and function(inst, data, overridetime)
     _debrispersecond = type(data.debrispersecond) == "function" and data.debrispersecond() or data.debrispersecond
     _mammalsremaining = type(data.mammals) == "function" and data.mammals() or data.mammals
 
+	_originalplayers = {}
     for i, v in ipairs(_activeplayers) do
         ScheduleDrop(v)
+        
+        table.insert(_originalplayers, v)
     end
 
     inst:PushEvent("startquake")

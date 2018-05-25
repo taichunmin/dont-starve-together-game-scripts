@@ -55,7 +55,15 @@ end
 local function onequip(inst, owner) 
     owner.AnimState:OverrideSymbol("swap_body_tall", "armor_slurtleshell", "swap_body_tall")
     inst:ListenForEvent("blocked", OnBlocked, owner)
-    inst:ListenForEvent("newstate", ProtectionLevels, owner) 
+    inst:ListenForEvent("newstate", ProtectionLevels, owner)
+    
+    -- check for slurtlehat pairing achievement
+    if owner:HasTag("player") then
+		local equipped_head = owner.components.inventory ~= nil and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.HEAD) or nil
+		if equipped_head ~= nil and equipped_head.prefab == "slurtlehat" then
+			AwardPlayerAchievement("snail_armour_set", owner)
+		end
+    end
 end
 
 local function onunequip(inst, owner)

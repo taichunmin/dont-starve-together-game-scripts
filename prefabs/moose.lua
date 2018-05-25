@@ -136,6 +136,10 @@ local function OnPreLoad(inst, data)
 	end
 end
 
+local function OnDead(inst)
+    AwardRadialAchievement("moosegoose_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -255,7 +259,7 @@ local function fn()
 
     inst.WantsToLayEgg = false
     inst.CanDisarm = false
-    
+
     inst.OnPreLoad = OnPreLoad
 
     ------------------------------------------
@@ -263,6 +267,8 @@ local function fn()
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = TUNING.MOOSE_WALK_SPEED
     inst.components.locomotor.runspeed = TUNING.MOOSE_RUN_SPEED
+
+	inst:ListenForEvent("death", OnDead)
 
     inst:SetStateGraph("SGmoose")
     inst:SetBrain(brain)

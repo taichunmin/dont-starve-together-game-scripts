@@ -2,15 +2,20 @@ local Screen = require "widgets/screen"
 local Text = require "widgets/text"
 local HeaderTabs = require "widgets/redux/headertabs"
 local Widget = require "widgets/widget"
-local CustomizationList = require "widgets/customizationlist"
+local WorldCustomizationList = require "widgets/redux/worldcustomizationlist"
 local TEMPLATES = require "widgets/redux/templates"
+
 
 local Customise = require "map/customise"
 local Levels = require "map/levels"
 
+local dialog_size_x = 830
+local dialog_size_y = 424 -- ServerCreationScreen uses 555 but has other widgets
+
+
 local function OnClickTab(self, level)
     self.multileveltabs:SelectButton(level)
-    self:SelectMultilevel(level)
+    self:SelectMultilevel(self.multileveltabs.selected_index)
     if TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
         self:OnFocusMove(MOVE_DOWN, true)
     end
@@ -40,13 +45,12 @@ local ViewCustomizationModalScreen = Class(Screen, function(self, leveldata)
             },
         }
     end
-    self.dialog = self.root:AddChild(TEMPLATES.RectangleWindow(450, 350, nil, buttons))
+    self.dialog = self.root:AddChild(TEMPLATES.RectangleWindow(dialog_size_x, dialog_size_y, nil, buttons))
     self.dialog.top:Hide() -- top crown would be behind our tabs.
-    self.dialog.actions:SetPosition(0,-30) -- cover bottom crown
-    self.dialog:SetBackgroundTint(unpack(UICOLOURS.EGGSHELL))
+    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+    self.dialog:SetBackgroundTint(r,g,b,0.9) -- need high opacity because there's lots of text behind
 
     self.optionspanel = self.dialog:InsertWidget(Widget("optionspanel"))
-    self.optionspanel:SetPosition(0,36)
 
     self.leveldata = deepcopy(leveldata)
 
@@ -64,7 +68,7 @@ local ViewCustomizationModalScreen = Class(Screen, function(self, leveldata)
             end
         end
         self.multileveltabs = self.dialog:AddChild(HeaderTabs(tabs))
-        self.multileveltabs:SetPosition(0,198)
+        self.multileveltabs:SetPosition(0,dialog_size_y/2+25)
         self.multileveltabs:MoveToBack()
         self.multileveltabs.tabs = self.multileveltabs.menu.items
 
@@ -100,8 +104,7 @@ function ViewCustomizationModalScreen:Refresh()
         self.customizationlist:Kill()
     end
 
-    self.customizationlist = self.optionspanel:AddChild(CustomizationList(location, options, nil))
-    self.customizationlist:SetPosition(-6, -40)
+    self.customizationlist = self.optionspanel:AddChild(WorldCustomizationList(location, options, nil))
     self.customizationlist:SetScale(.85)
     self.customizationlist:SetEditable(false)
 
@@ -143,9 +146,19 @@ end
 
 function ViewCustomizationModalScreen:OnControl(control, down)
     if ViewCustomizationModalScreen._base.OnControl(self, control, down) then return true end
-    if not down and control == CONTROL_CANCEL then
+    if down then return end
+
+    if control == CONTROL_CANCEL then
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         self:Cancel()
+        return true
+    elseif control == CONTROL_OPEN_CRAFTING then
+        OnClickTab(self, self.multileveltabs.selected_index + 1)
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        return true
+    elseif control == CONTROL_OPEN_INVENTORY then
+        OnClickTab(self, self.multileveltabs.selected_index - 1)
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
     end
 end

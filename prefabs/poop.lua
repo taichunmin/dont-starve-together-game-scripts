@@ -18,7 +18,14 @@ local function OnBurn(inst)
 end
 
 local function FuelTaken(inst, taker)
-    SpawnPrefab("poopcloud").Transform:SetPosition(taker.Transform:GetWorldPosition())
+    local fx = taker.components.burnable ~= nil and taker.components.burnable.fxchildren[1] or nil
+    local x, y, z
+    if fx ~= nil and fx:IsValid() then
+        x, y, z = fx.Transform:GetWorldPosition()
+    else
+        x, y, z = taker.Transform:GetWorldPosition()
+    end
+    SpawnPrefab("poopcloud").Transform:SetPosition(x, y + 1, z)
 end
 
 local function OnDropped(inst)

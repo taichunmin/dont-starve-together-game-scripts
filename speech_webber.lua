@@ -1897,7 +1897,26 @@ return {
         LUCKY_GOLDNUGGET = "So shiny!",
         FIRECRACKERS = "Don't worry Ms. Wicker, we'll be careful.",
         PERDFAN = "It's so big!!",
-        REDPOUCH = "Thanks birds!",
+        REDPOUCH = "We're so lucky!",
+        WARGSHRINE = 
+        {
+            GENERIC = "It wants to give us presents!",
+            EMPTY = "Let's put the torch in!",
+            BURNT = "The fire destroyed it.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "N-nice puppy!",
+        	STATUE = "It's got no eyes. Creepy!",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "Sit! Stay?",
+        	STATUE = "It looks like a big puppy.",
+        },
+        HOUNDWHISTLE = "Our head buzzes when we blow it.",
+        CHESSPIECE_CLAYHOUND = "Puppy!",
+        CHESSPIECE_CLAYWARG = "That's a big, bad dog.",
 
 		TRUNKVEST_SUMMER = "It's so puffy!",
 		TRUNKVEST_WINTER = "You're always supposed to wear a jacket!",

@@ -47,13 +47,14 @@ OUTRO
 local PP_ON_TINT = {r=.6,g=.6,b=.6,a=1}
 local PP_OFF_TINT = {r=1,g=1,b=1,a=0}
 
-local ItemBoxOpenerPopup = Class(Screen, function(self, parent_screen, options, open_box_fn)
+local ItemBoxOpenerPopup = Class(Screen, function(self, parent_screen, options, open_box_fn, completed_cb)
     Screen._ctor(self, "ItemBoxOpenerPopup")
 
     self.parent_screen = parent_screen
     self.allow_cancel = options.allow_cancel
     self.use_bigportraits = options.use_bigportraits
     self.open_box_fn = open_box_fn
+	self.completed_cb = completed_cb
 
     self.center_root = self:AddChild(TEMPLATES.ScreenRoot())
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
@@ -93,15 +94,15 @@ local ItemBoxOpenerPopup = Class(Screen, function(self, parent_screen, options, 
     self.bundle_bg = self.bundle_root:AddChild(UIAnim())
     self.bundle_bg:SetScale(.7)
     self.bundle_bg:SetPosition(0, 83)
-    self.bundle_bg:GetAnimState():SetBuild("skinevent_popup_spiral")
-    self.bundle_bg:GetAnimState():SetBank("skinevent_popup_spiral")
+    self.bundle_bg:GetAnimState():SetBuild("box_shared_spiral")
+    self.bundle_bg:GetAnimState():SetBank("box_shared_spiral")
     --
     self.bundle = self.bundle_root:AddChild(UIAnim())
     self.bundle:SetScale(.7)
     self.bundle:SetPosition(0, 83)
-    self.bundle:GetAnimState():SetBuild("skinevent_popup")
-    self.bundle:GetAnimState():SetBank("skinevent_popup")
-    if options.box_build ~= nil and options.box_build ~= "skinevent_popup" then
+    self.bundle:GetAnimState():SetBuild("box_shared")
+    self.bundle:GetAnimState():SetBank("box_shared")
+    if options.box_build ~= nil and options.box_build ~= "box_shared" then
         self.bundle:GetAnimState():AddOverrideBuild(options.box_build)
     end
 
@@ -201,7 +202,8 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
 
         local item_key = self.items[self.active_item_idx]
         self.current_item_summary:UpdateSummary(item_key)
-        TheFrontEnd:GetSound():PlaySound( RARITY_SOUND[GetRarityForItem(item_key)] or RARITY_SOUND["spiffy"] )
+
+        TheFrontEnd:GetSound():PlaySound( RARITY_SOUND[GetRarityForItem(item_key)] or RARITY_SOUND["Elegant"] )
 
     -- WAIT_ON_NEXT state is progressed by OnControl
     elseif self.ui_state == "BUNDLE_CLOSING" and self.bundle:GetAnimState():AnimDone() then
@@ -279,7 +281,9 @@ function ItemBoxOpenerPopup:_OpenItemBox()
         end
 
         -- Decide how many columns there should be
-        if #item_types == 2 or #item_types == 4 then
+        if #item_types == 1 then
+            columns = 1
+        elseif #item_types == 2 or #item_types == 4 then
             columns = 2
         elseif #item_types == 3 or #item_types == 6 or #item_types == 9 then
             columns = 3
@@ -329,6 +333,9 @@ function ItemBoxOpenerPopup:_Close()
 
     self.bg.bgplate.image:TintTo(PP_ON_TINT, PP_OFF_TINT, TRANSITION_DURATION, function()
         TheFrontEnd:PopScreen(self)
+		if self.completed_cb ~= nil then
+			self.completed_cb()
+		end
     end)
 
     TheFrontEnd:GetSound():KillSound("mysteryboxactive")

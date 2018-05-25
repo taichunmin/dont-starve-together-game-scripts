@@ -24,6 +24,12 @@ local STYLES =
         end,
         text = {font=CHATFONT, size=28, colour=WHITE},
     },
+    dark_wide = {
+        bgconstructor = function(root, title, buttons, button_spacing, longness, body_text)
+            return root:AddChild(TEMPLATES.CurlyWindow(750, longness.height, title, buttons, button_spacing, body_text))
+        end,
+        text = {font=CHATFONT, size=28, colour=WHITE},
+    },
 }
 
 local LENGTHS =
@@ -34,6 +40,9 @@ local LENGTHS =
     big = {
         height = 250,
     },
+	bigger = {
+        height = 300,
+	},
 }
 
 -- buttons and all following arguments are optional.

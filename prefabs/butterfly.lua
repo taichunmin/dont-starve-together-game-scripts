@@ -55,12 +55,13 @@ local function CanDeploy(inst)
     return true
 end
 
-local function OnDeploy(inst, pt) 
+local function OnDeploy(inst, pt, deployer) 
     local flower = SpawnPrefab("planted_flower")
     if flower then
         flower:PushEvent("growfrombutterfly")
         flower.Transform:SetPosition(pt:Get())
         inst.components.stackable:Get():Remove()
+        AwardPlayerAchievement("growfrombutterfly", deployer)
     end
 end
 

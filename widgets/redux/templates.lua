@@ -15,6 +15,7 @@ local xputil = require "wxputils"
 
 require("constants")
 require("skinsutils")
+require("stringutil")
 
 local TEMPLATES = {}
 
@@ -123,7 +124,7 @@ function TEMPLATES.BackgroundTint(a, rgb)
     return TEMPLATES.old.BackgroundTint(a, rgb)
 end
 
-function TEMPLATES.BoarriorAnim(args)
+function TEMPLATES.BoarriorAnim()
     local anim = UIAnim()
     anim:GetAnimState():SetBuild("main_menu1")
     anim:GetAnimState():SetBank("main_menu1")
@@ -133,6 +134,36 @@ function TEMPLATES.BoarriorAnim(args)
         anim:GetAnimState():PlayAnimation("idle", true)
     end
     anim:PlayOnLoop()
+    return anim
+end
+
+function TEMPLATES.ClayWargBackground()
+    local anim_bg = UIAnim()
+    anim_bg:GetAnimState():SetBuild("dst_menu_yotv")
+    anim_bg:GetAnimState():SetBank("dst_menu")
+    anim_bg:SetScale(0.7)
+    anim_bg:SetPosition(-20, 0)
+    anim_bg:GetAnimState():PlayAnimation("ground")
+    anim_bg.fadet = 0
+    anim_bg.OnUpdate = function(self, dt)
+        self.fadet = self.fadet + dt
+        if self.fadet > 96 * FRAMES then
+            self.fadet = self.fadet - 96 * FRAMES
+        end
+        local a = (math.cos(self.fadet * PI / (48 * FRAMES) - PI * .3) + 3) / 4
+        self:GetAnimState():SetMultColour(a, a, a, 1)
+    end
+    anim_bg:StartUpdating()
+    return anim_bg
+end
+
+function TEMPLATES.ClayWargAnim()
+    local anim = UIAnim()
+    anim:GetAnimState():SetBuild("dst_menu_yotv")
+    anim:GetAnimState():SetBank("dst_menu")
+    anim:SetScale(0.7)
+    anim:SetPosition(-20, 0)
+    anim:GetAnimState():PlayAnimation("loop", true)
     return anim
 end
 
@@ -268,7 +299,7 @@ function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
     return btn
 end
 
-function TEMPLATES.WardrobeButton(text, onclick, tooltip_text, tooltip_widget)
+function TEMPLATES.TwoLineMenuButton(text, onclick, tooltip_text, tooltip_widget)
     local btn = TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
     btn:SetTextures(
         "images/frontend_redux.xml",
@@ -287,33 +318,65 @@ function TEMPLATES.WardrobeButton(text, onclick, tooltip_text, tooltip_widget)
     -- We're messing with the shadow and not maintaining it, so kill it.
     btn.text_shadow:Kill()
     
-    btn.icon = btn:AddChild( AccountItemFrame() )
-    btn.icon:SetStyle_Normal()
-    btn.icon:SetScale(0.4)
-    btn.icon:SetPosition(-114,2)
-    
-    btn.item_name = btn:AddChild( Text(NEWFONT, 20) )
-    btn.item_name:SetHAlign(ANCHOR_LEFT)
-    btn.item_name:SetRegionSize(205,24)
-    btn.item_name:SetPosition(20,-10)
-    
-    btn.SetItem = function(self,item_id)
-        self.icon:SetItem(item_id)
-        self.item_name:SetString(item_id and GetSkinName(item_id) or "")
-        self.item_name:SetColour(UICOLOURS.GREY)
-        self.item_name:SetColour(GetColorForItem(item_id))
-    end
+    btn.secondary_text = btn:AddChild( Text(NEWFONT, 20) )
+    btn.secondary_text:SetHAlign(ANCHOR_LEFT)
+    btn.secondary_text:SetRegionSize(205,24)
+    btn.secondary_text:SetPosition(20,-10)
     
     btn.onselect = function()
-        btn.item_name:Show()
+        btn.secondary_text:Show()
         btn.text:SetPosition(20,10)
     end
     
     btn.onunselect = function()
-        btn.item_name:Hide()
+        btn.secondary_text:Hide()
         btn.text:SetPosition(20,0)
     end
     
+    btn.SetSecondaryText = function(self, second_text)
+        self.secondary_text:SetString(second_text or "")
+    end
+
+    return btn
+end
+
+function TEMPLATES.WardrobeButton(text, onclick, tooltip_text, tooltip_widget)
+    local btn = TEMPLATES.TwoLineMenuButton(text, onclick, tooltip_text, tooltip_widget)
+    btn.icon = btn:AddChild( AccountItemFrame() )
+    btn.icon:SetStyle_Normal()
+    btn.icon:SetScale(0.4)
+    btn.icon:SetPosition(-114,2)
+
+    btn.SetItem = function(self,item_id)
+        self.icon:SetItem(item_id)
+        self:SetSecondaryText(item_id and GetSkinName(item_id) or "")
+        self.secondary_text:SetColour(UICOLOURS.GREY)
+        self.secondary_text:SetColour(GetColorForItem(item_id))
+    end
+
+    return btn
+end
+
+function TEMPLATES.PortraitIconMenuButton(text, onclick, tooltip_text, tooltip_widget)
+    local btn = TEMPLATES.TwoLineMenuButton(text, onclick, tooltip_text, tooltip_widget)
+
+    btn.title_portrait_bg = btn:AddChild(Image("images/saveslot_portraits.xml", "background.tex"))
+    btn.title_portrait_bg:SetScale(.45)
+    btn.title_portrait_bg:SetPosition(-112,1)
+
+    btn.title_portrait = btn.title_portrait_bg:AddChild(Image())
+
+    local DEFAULT_ATLAS = "images/saveslot_portraits.xml"
+    local DEFAULT_AVATAR = "unknown.tex"
+
+    btn.SetCharacter = function(self, character_atlas, character)
+        if character_atlas and character then
+            self.title_portrait:SetTexture(character_atlas, character..".tex")
+        else
+            self.title_portrait:SetTexture(DEFAULT_ATLAS, DEFAULT_AVATAR)
+        end
+    end
+
     return btn
 end
 
@@ -367,8 +430,7 @@ function TEMPLATES.BackButton(onclick, txt, shadow_offset, scale)
 
     btn:SetScale(btn.scale)
 
-    -- TODO(dbriscoe): Once new ui is rolled out everywhere, update BACK_BUTTON_X/Y.
-    btn:SetPosition(-RESOLUTION_X*.4 - 60, -RESOLUTION_Y*.5 + BACK_BUTTON_Y - 10)
+    btn:SetPosition(-572, -310)
     return btn
 end
 
@@ -465,7 +527,6 @@ function TEMPLATES.IconButton(iconAtlas, iconTexture, labelText, sideLabel, alwa
         -- Only show hovertext.
         btn:SetHoverText(labelText, {
                 font = textinfo.font or NEWFONT_OUTLINE,
-                size = textinfo.size or 22,
                 offset_x = textinfo.offset_x or 2,
                 offset_y = textinfo.offset_y or -45,
                 colour = textinfo.colour or UICOLOURS.WHITE,
@@ -474,6 +535,44 @@ function TEMPLATES.IconButton(iconAtlas, iconTexture, labelText, sideLabel, alwa
     end
 
     return btn
+end
+
+function TEMPLATES.StandardCheckbox(onclick, size, init_checked, helptext, hovertext_info)
+	local checkbox = ImageButton()
+    checkbox:ForceImageSize(size, size)
+	checkbox.scale_on_focus = false
+    checkbox.move_on_click = false
+
+	local function SetChecked(checked)
+        if checked then
+            checkbox:SetTextures("images/global_redux.xml", "checkbox_normal_check.tex", "checkbox_focus_check.tex", "checkbox_normal.tex", nil, nil, {1,1}, {0,0})
+        else
+            checkbox:SetTextures("images/global_redux.xml", "checkbox_normal.tex", "checkbox_focus.tex", "checkbox_normal_check.tex", nil, nil, {1,1}, {0,0})
+        end
+	end
+	SetChecked(init_checked)
+
+	checkbox:SetOnClick(function()
+		local checked = onclick()
+		SetChecked(checked)
+	end)
+
+	if helptext ~= nil then
+		checkbox:SetHelpTextMessage(helptext)
+	end
+
+        -- Only show hovertext.
+	if hovertext_info ~= nil then
+        checkbox:SetHoverText(hovertext_info.text, {
+                font = hovertext_info.font or NEWFONT_OUTLINE,
+                offset_x = hovertext_info.offset_x or 2,
+                offset_y = hovertext_info.offset_y or -45,
+                colour = hovertext_info.colour or UICOLOURS.WHITE,
+                bg = hovertext_info.bg
+            })
+    end
+
+    return checkbox
 end
 
 function TEMPLATES.ServerDetailIcon(iconAtlas, iconTexture, bgColor, hoverText, textinfo, imgOffset, scaleX, scaleY)
@@ -492,7 +591,6 @@ function TEMPLATES.ServerDetailIcon(iconAtlas, iconTexture, bgColor, hoverText, 
             hoverText,
             {
                 font = textinfo.font or NEWFONT_OUTLINE,
-                size = textinfo.size or 22,
                 offset_x = 2, -- for some reason, this looks more centred
                 offset_y = -28,
                 colour = textinfo.colour or {1,1,1,1},
@@ -501,6 +599,220 @@ function TEMPLATES.ServerDetailIcon(iconAtlas, iconTexture, bgColor, hoverText, 
     end
 
     return icon
+end
+
+local normal_list_item_bg_tint = { 1,1,1,0.5 }
+local function GetListItemPrefix(row_width, row_height)
+    local prefix = "listitem_thick" -- 320 / 90 = 3.6
+    local ratio = row_width / row_height
+    if ratio > 6 then
+        -- Longer texture will look better at this aspect ratio.
+        prefix = "serverlist_listitem" -- 1220.0 / 50 = 24.4
+    end
+    return prefix
+end
+
+-- A list item backing that shows focus.
+--
+-- May want to call OnWidgetFocus if using with TrueScrollList or
+-- ScrollingGrid:
+--   row:SetOnGainFocus(function() self.scroll_list:OnWidgetFocus(row) end)
+function TEMPLATES.ListItemBackground(row_width, row_height, onclick_fn)
+    local prefix = GetListItemPrefix(row_width, row_height)
+    local focus_list_item_bg_tint  = { 1,1,1,0.7 }
+
+    local row = ImageButton("images/frontend_redux.xml",
+        prefix .."_normal.tex", -- normal
+        nil, -- focus
+        nil,
+        nil,
+        prefix .."_selected.tex" -- selected
+        )
+    row:ForceImageSize(row_width,row_height)
+    row:SetImageNormalColour(  unpack(normal_list_item_bg_tint))
+    row:SetImageFocusColour(   unpack(focus_list_item_bg_tint))
+    row:SetImageSelectedColour(unpack(normal_list_item_bg_tint))
+    row:SetImageDisabledColour(unpack(normal_list_item_bg_tint))
+    row.scale_on_focus = false
+    row.move_on_click = false
+
+    if onclick_fn then
+        row:SetOnClick(onclick_fn)
+        -- FocusOverlay caused incorrect scaling on morgue screen, but it
+        -- wasn't clickable. Related?
+        row:UseFocusOverlay(prefix .."_hover.tex")
+    else
+        row:SetHelpTextMessage("") -- doesn't respond to clicks
+    end
+    return row
+end
+
+-- For list items that contain a single focusable widget.
+--
+-- Instead of a button that changes colour (or has a hover border) when the
+-- list item is focused, just set a similar-looking background.
+function TEMPLATES.ListItemBackground_Static(row_width, row_height)
+    local prefix = GetListItemPrefix(row_width, row_height)
+    local row = Image("images/frontend_redux.xml",
+        prefix .."_normal.tex"
+        )
+    row:SetSize(row_width,row_height)
+    row:SetTint(unpack(normal_list_item_bg_tint))
+    return row
+end
+
+-- A widget that displays info about a mod. To be used in scroll lists etc.
+function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
+    local opt = Widget("option")
+
+    local item_width,item_height = 340, 90
+    opt.backing = opt:AddChild(TEMPLATES.ListItemBackground(item_width,item_height,onclick_btn))
+    opt.backing.move_on_click = true
+
+    opt.Select = function(_)
+        opt.name:SetColour(UICOLOURS.GOLD_SELECTED)
+        opt.backing:Select()
+    end
+
+    opt.Unselect = function(_)
+        opt.name:SetColour(UICOLOURS.GOLD_CLICKABLE)
+        opt.backing:Unselect()
+    end
+
+    opt.checkbox = opt.backing:AddChild(ImageButton())
+    opt.checkbox:SetPosition(140, -22, 0)
+    opt.checkbox:SetOnClick(onclick_checkbox)
+    opt.checkbox:SetHelpTextMessage("") -- button nested in a button doesn't need extra helptext
+
+    opt.image = opt.backing:AddChild(Image())
+    opt.image:SetPosition(-120,0,0)
+    opt.image:SetClickable(false)
+
+    opt.out_of_date_image = opt.backing:AddChild(Image("images/frontend.xml", "circle_red.tex"))
+    opt.out_of_date_image:SetScale(.65)
+    opt.out_of_date_image:SetPosition(65, -22)
+    opt.out_of_date_image:SetClickable(false)
+    opt.out_of_date_image.icon = opt.out_of_date_image:AddChild(Image("images/button_icons.xml", "update.tex"))
+    opt.out_of_date_image.icon:SetPosition(-1,0)
+    opt.out_of_date_image.icon:SetScale(.15)
+    opt.out_of_date_image:Hide()
+
+    opt.configurable_image = opt.backing:AddChild(Image("images/button_icons.xml", "configure_mod.tex"))
+    opt.configurable_image:SetScale(.1)
+    opt.configurable_image:SetPosition(100, -20)
+    opt.configurable_image:SetClickable(false)
+    opt.configurable_image:Hide()
+
+    opt.name = opt.backing:AddChild(Text(CHATFONT, 26))
+    opt.name:SetVAlign(ANCHOR_MIDDLE)
+
+    opt.status = opt.backing:AddChild(Text(BODYTEXTFONT, 23))
+    opt.status:SetVAlign(ANCHOR_MIDDLE)
+    opt.status:SetHAlign(ANCHOR_LEFT)
+
+    opt.SetModStatus = function(_, modstatus)
+        if modstatus == "WORKING_NORMALLY" then
+            opt.status:SetColour(59/255, 222/255, 99/255, 1)
+            opt.status:SetString(STRINGS.UI.MODSSCREEN.STATUS.WORKING_NORMALLY)
+        elseif modstatus == "DISABLED_ERROR" then
+            opt.status:SetColour(242/255, 99/255, 99/255, 1)--0.9,0.3,0.3,1)
+            opt.status:SetString(STRINGS.UI.MODSSCREEN.STATUS.DISABLED_ERROR)
+        elseif modstatus == "DISABLED_MANUAL" then
+            opt.status:SetColour(.6,.6,.6,1)
+            opt.status:SetString(STRINGS.UI.MODSSCREEN.STATUS.DISABLED_MANUAL)
+        else
+            -- We should probably never hit this line.
+            opt.status:SetString(modname)
+        end
+    end
+
+    opt.status:SetPosition(25, -20, 0)
+    opt.status:SetRegionSize( 200, 50 )
+
+    opt.SetModReadOnly = function(_, should_be_readonly)
+        if should_be_readonly then
+            -- We still allow configuration! We just don't want to show
+            -- enable/disable options or state.
+            opt.image_disabled_tint = UICOLOURS.WHITE
+            opt.checkbox:Hide()
+            opt.status:Hide()
+        else
+            opt.image_disabled_tint = {1.0,0.5,0.5,1} -- reddish
+            opt.checkbox:Show()
+            opt.status:Show()
+        end
+    end
+
+    opt.SetModConfigurable = function(_, should_enable)
+        if should_enable then
+            opt.configurable_image:Show()
+        else
+            opt.configurable_image:Hide()
+        end
+    end
+
+    opt.SetModEnabled = function(_, should_enable)
+        if should_enable then
+            opt.image:SetTint(unpack(UICOLOURS.WHITE))
+            opt.checkbox:SetTextures("images/global_redux.xml", "checkbox_normal_check.tex", "checkbox_focus_check.tex", "checkbox_normal.tex", nil, nil, {1,1}, {0,0})
+        else
+            opt.image:SetTint(unpack(opt.image_disabled_tint))
+            opt.checkbox:SetTextures("images/global_redux.xml", "checkbox_normal.tex", "checkbox_focus.tex", "checkbox_normal_check.tex", nil, nil, {1,1}, {0,0})
+        end
+    end
+
+    opt.SetMod = function(_, modname, modinfo, modstatus, isenabled)
+        if modinfo and modinfo.icon_atlas and modinfo.icon then
+            opt.image:SetTexture(modinfo.icon_atlas, modinfo.icon)
+        else
+            opt.image:SetTexture("images/ui.xml", "portrait_bg.tex")
+        end
+        -- SetTexture clobbers our previously set size.
+        opt.image:SetSize(70,70)
+
+        local nameStr = (modinfo and modinfo.name) and modinfo.name or modname
+        opt.name:SetTruncatedString(nameStr, 235, 51, true)
+        -- I think this is manually left-aligning (since SetRegionSize doesn't
+        -- work with SetTruncatedString).
+        local w, h = opt.name:GetRegionSize()
+        opt.name:SetPosition(w * .5 - 75, 17, 0)
+
+        opt:SetModStatus(modstatus)
+        opt:SetModEnabled(isenabled)
+    end
+
+    opt:SetModReadOnly(false) -- sets up some initial values
+    opt:Unselect()
+
+    opt.focus_forward = opt.backing
+
+    return opt
+end
+
+-- A widget that displays a mod that is currently being downloaded.
+function TEMPLATES.ModListItem_Downloading()
+    local opt = Widget("option")
+
+    local item_width,item_height = 340, 90
+    opt.backing = opt:AddChild(TEMPLATES.ListItemBackground(item_width,item_height))
+
+    opt.name = opt:AddChild(Text(CHATFONT, 30))
+    opt.name:SetVAlign(ANCHOR_MIDDLE)
+    opt.name:SetHAlign(ANCHOR_MIDDLE)
+    opt.name:SetColour(UICOLOURS.GOLD)
+    opt.name:SetRegionSize(item_width,item_height)
+
+    opt.SetMod = function(_, mod)
+        opt.name:SetString(subfmt(STRINGS.UI.MODSSCREEN.DOWNLOADINGMOD, {name = mod.fancy_name}))
+    end
+
+    opt.Select = function(_)
+    end
+
+    opt.Unselect = function(_)
+    end
+
+    return opt
 end
 
 function TEMPLATES.DoodadCounter(number_of_doodads)
@@ -617,7 +929,7 @@ function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinn
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
-    spacing = spacing or -50 -- why negative?
+    spacing = spacing or 5
     font = font or CHATFONT
     font_size = font_size or 25
 
@@ -682,6 +994,23 @@ function TEMPLATES.LabelButton(onclick, labeltext, buttontext, width_label, widt
     return wdg
 end
 
+-- checkbox button with a label beside it
+function TEMPLATES.LabelCheckbox(onclick, labeltext, checked, width_label, width_button, height, checkbox_size, spacing, font, font_size, horiz_offset)
+    local offset = horiz_offset or 0
+    local total_width = width_label + width_button + spacing
+    local wdg = Widget("labelbutton")
+    wdg.label = wdg:AddChild( Text(font or NEWFONT, font_size or 25, labeltext) )
+    wdg.label:SetPosition( (-total_width/2)+(width_label/2) + offset, 0 )
+    wdg.label:SetRegionSize( width_label, height )
+    wdg.label:SetHAlign( ANCHOR_RIGHT )
+    wdg.label:SetColour(UICOLOURS.GOLD)
+    wdg.button = wdg:AddChild(TEMPLATES.StandardCheckbox(onclick, checkbox_size, checked))
+    wdg.button:SetPosition((total_width/2)-(width_button/2) + offset, 0)
+
+    wdg.focus_forward = wdg.button
+
+    return wdg
+end
 
 -- Spinner
 function TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, font_size)
@@ -1064,12 +1393,7 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
                 button_spacing = 230
             end
         end
-        local button_height = 50
-        local button_area_width = button_spacing / 2 * #bottom_buttons
-        local is_tight_bottom_fit = button_area_width > sizeX * 2/3
-        if is_tight_bottom_fit then
-            button_height = 60
-        end
+        local button_height = -30 -- cover bottom crown
 
         -- Does text need to be smaller than 30 for JapaneseOnPS4()?
         w.actions = w.bottom:AddChild(Menu(bottom_buttons, button_spacing, true, style, nil, 30))
@@ -1096,7 +1420,7 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
         end
         self.mid_center:SetTint(r,g,b,a)
     end
-    
+
     w.InsertWidget = function(self, widget)
 		w:AddChild(widget)
 		for i=1,3 do
@@ -1105,11 +1429,13 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
         for i=6,8 do
             self.elements[i]:MoveToFront()
         end
+        w.bottom:MoveToFront()
 		return widget
     end
 
-    -- Default to black.
-    w:SetBackgroundTint(0,0,0,1)
+    -- Default to our standard brown.
+    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+    w:SetBackgroundTint(r,g,b,0.6)
 
     return w
 end
@@ -1219,9 +1545,13 @@ function TEMPLATES.ScrollingGrid(items, opts)
         end
 
         -- end_offset helps ensure last item can scroll into view. It's a
-        -- percent of a row height. 0.75 seems to prevent the next (empty) row
-        -- from being visible.
+        -- percent of a row height. 1 ensures that scrolling to the bottom puts
+        -- a fully-displayed widget at the top. 0.75 prevents the next (empty)
+        -- row from being visible.
         local end_offset = 0.75
+        if opts.allow_bottom_empty_row then
+            end_offset = 1
+        end
         return widgets, opts.num_columns, opts.widget_height, opts.num_visible_rows, end_offset
     end
 

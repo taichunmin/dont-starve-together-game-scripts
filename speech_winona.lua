@@ -148,7 +148,7 @@ return {
 	{
 		GENERIC = "That hits the spot.",
 		PAINFUL = "Yeow! That one bit back!",
-		SPOILED = "I regret everything.",
+		SPOILED = "I am full of regret.",
 		STALE = "I've had worse.",
 		INVALID = "Pretty sure that's not food.",
 		YUCKY = "Blech! Even I got limits!",
@@ -169,7 +169,7 @@ return {
 	ANNOUNCE_ENTER_LIGHT = "Whew! I can see!",
 	ANNOUNCE_FREEDOM = "Ha! Outsmarted!",
 	ANNOUNCE_HIGHRESEARCH = "Cutting edge!",
-	ANNOUNCE_HOUNDS = "Those dogs I hear?",
+	ANNOUNCE_HOUNDS = "Are those dogs I hear?",
 	ANNOUNCE_WORMS = "Was that a tremor?",
 	ANNOUNCE_HUNGRY = "When's lunch?",
 	ANNOUNCE_HUNT_BEAST_NEARBY = "I didn't order lunch to go. Get'em!",
@@ -1900,6 +1900,25 @@ return {
         FIRECRACKERS = "Lucky firecrackers!",
         PERDFAN = "It's a big fan made of tailfeathers.",
         REDPOUCH = "Seems my fortune's changin'.",
+        WARGSHRINE = 
+        {
+            GENERIC = "I should build something with it!",
+            EMPTY = "Needs a little something extra.",
+            BURNT = "Burned right up.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "You lookin' to scrap, big guy?",
+        	STATUE = "I'm glad it ain't movin'.",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "I'll send you runnin', mutt!",
+        	STATUE = "How earthy.",
+        },
+        HOUNDWHISTLE = "This oughta give them paws pause.",
+        CHESSPIECE_CLAYHOUND = "A good boy if ever I saw one.",
+        CHESSPIECE_CLAYWARG = "It's a sculpture of that mean mutt.",
 		
 		BISHOP_CHARGE_HIT = "Yeow!",
 		TRUNKVEST_SUMMER = "They weren't kidding about the breeze.",

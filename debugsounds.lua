@@ -97,7 +97,7 @@ SoundEmitter.KillSound = function(emitter, name, ...)
     end
 
     if loopingUISounds[name] then
-        loopingSounds[name] = nil
+        loopingUISounds[name] = nil
     end
 
     killsound(emitter, name, ...)
@@ -115,13 +115,11 @@ SoundEmitter.KillAllSounds = function(emitter, ...)
         sounds = nil
     end
 
-    sounds = loopingUISounds[name]
-    if sounds then
-        for k,v in pairs(sounds) do
-            sounds[v] = nil
-        end
-        sounds = nil
-    end
+    local ent = emitter:GetEntity()
+    if ent == nil or ent.Transform == nil then
+		loopingUISounds = {}
+	end
+	
     killallsounds(emitter, ...)
 end
 

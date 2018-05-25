@@ -146,6 +146,10 @@ end
 
 function DoReload()
 	print("before hotswap")
+	if IsConsole() then
+		TheSim:PurgeLuaFileCache()
+	end
+
 	local index = 1
 	print("before check:")
 	local modifiedFiles = {}

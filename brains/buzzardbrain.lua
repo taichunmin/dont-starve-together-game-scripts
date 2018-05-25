@@ -32,7 +32,17 @@ for i, v in ipairs(FOODGROUP.OMNI.types) do
 end
 
 local function FindThreat(inst, radius)
-    return FindEntity(inst, radius, nil, nil, { "notarget" }, { "player", "monster", "scarytoprey" })
+    return FindEntity(
+            inst,
+            radius,
+            function(guy)
+                return not guy:HasTag("buzzard")
+                    or inst:IsNear(guy, inst.components.combat:GetAttackRange() + guy:GetPhysicsRadius(0))
+            end,
+            nil,
+            { "notarget" },
+            { "player", "monster", "scarytoprey" }
+        )
 end
 
 local function CanEat(food)

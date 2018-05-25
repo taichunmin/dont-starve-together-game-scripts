@@ -111,6 +111,14 @@ return
 			"hand_wx78_gladiator",
 			"legs_wx78_gladiator",
 		},
+		pack_heart_you =
+		{
+			"amulet_red_heart",
+			"firepit_firebird",
+			"birdcage_romantic",
+			"playerportrait_bg_heart1",
+			"playerportrait_bg_heart2",
+		},
 		pack_ice_all =
 		{
 			"wilson_ice",
@@ -163,6 +171,61 @@ return
 			"feet_wolfgang_ice",
 			"hand_wolfgang_ice",
 			"legs_wolfgang_ice",
+		},
+		pack_nature_all =
+		{
+			"wathgrithr_nature",
+			"waxwell_nature",
+			"wes_nature",
+			"winona_nature",
+			"woodie_nature",
+			"wx78_nature",
+		},
+		pack_nature_wathgrithr =
+		{
+			"wathgrithr_nature",
+			"body_wathgrithr_nature",
+			"feet_wathgrithr_nature",
+			"hand_wathgrithr_nature",
+			"legs_wathgrithr_nature",
+		},
+		pack_nature_waxwell =
+		{
+			"waxwell_nature",
+			"body_waxwell_nature",
+			"feet_waxwell_nature",
+			"hand_waxwell_nature",
+			"legs_waxwell_nature",
+		},
+		pack_nature_wes =
+		{
+			"wes_nature",
+			"body_wes_nature",
+			"feet_wes_nature",
+			"hand_wes_nature",
+		},
+		pack_nature_winona =
+		{
+			"winona_nature",
+			"body_winona_nature",
+			"feet_winona_nature",
+			"hand_winona_nature",
+			"legs_winona_nature",
+		},
+		pack_nature_woodie =
+		{
+			"woodie_nature",
+			"body_woodie_nature",
+			"feet_woodie_nature",
+			"hand_woodie_nature",
+			"legs_woodie_nature",
+		},
+		pack_nature_wx78 =
+		{
+			"wx78_nature",
+			"body_wx78_nature",
+			"feet_wx78_nature",
+			"hand_wx78_nature",
 		},
 	},
 
@@ -224,6 +287,11 @@ return
 		feet_wx78_gladiator = "pack_gladiator_wx78",
 		hand_wx78_gladiator = "pack_gladiator_wx78",
 		legs_wx78_gladiator = "pack_gladiator_wx78",
+		amulet_red_heart = "pack_heart_you",
+		firepit_firebird = "pack_heart_you",
+		birdcage_romantic = "pack_heart_you",
+		playerportrait_bg_heart1 = "pack_heart_you",
+		playerportrait_bg_heart2 = "pack_heart_you",
 		webber_ice = "pack_ice_webber",
 		body_webber_ice = "pack_ice_webber",
 		feet_webber_ice = "pack_ice_webber",
@@ -250,6 +318,34 @@ return
 		feet_wolfgang_ice = "pack_ice_wolfgang",
 		hand_wolfgang_ice = "pack_ice_wolfgang",
 		legs_wolfgang_ice = "pack_ice_wolfgang",
+		wathgrithr_nature = "pack_nature_wathgrithr",
+		body_wathgrithr_nature = "pack_nature_wathgrithr",
+		feet_wathgrithr_nature = "pack_nature_wathgrithr",
+		hand_wathgrithr_nature = "pack_nature_wathgrithr",
+		legs_wathgrithr_nature = "pack_nature_wathgrithr",
+		waxwell_nature = "pack_nature_waxwell",
+		body_waxwell_nature = "pack_nature_waxwell",
+		feet_waxwell_nature = "pack_nature_waxwell",
+		hand_waxwell_nature = "pack_nature_waxwell",
+		legs_waxwell_nature = "pack_nature_waxwell",
+		wes_nature = "pack_nature_wes",
+		body_wes_nature = "pack_nature_wes",
+		feet_wes_nature = "pack_nature_wes",
+		hand_wes_nature = "pack_nature_wes",
+		winona_nature = "pack_nature_winona",
+		body_winona_nature = "pack_nature_winona",
+		feet_winona_nature = "pack_nature_winona",
+		hand_winona_nature = "pack_nature_winona",
+		legs_winona_nature = "pack_nature_winona",
+		woodie_nature = "pack_nature_woodie",
+		body_woodie_nature = "pack_nature_woodie",
+		feet_woodie_nature = "pack_nature_woodie",
+		hand_woodie_nature = "pack_nature_woodie",
+		legs_woodie_nature = "pack_nature_woodie",
+		wx78_nature = "pack_nature_wx78",
+		body_wx78_nature = "pack_nature_wx78",
+		feet_wx78_nature = "pack_nature_wx78",
+		hand_wx78_nature = "pack_nature_wx78",
 	}
 
 }

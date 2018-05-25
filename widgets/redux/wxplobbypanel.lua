@@ -111,7 +111,7 @@ function WxpLobbyPanel:ShowAchievement(achievement_id, animate)
 	local img = self.achievement_root:AddChild(Image("images/"..self.current_eventid.."_achievements.xml", achievement_id..".tex"))
 	img:SetPosition(achievement_start + (achievement_spacing)*(num_shown%max_num_wide), (achievement_spacing*math.floor(1 + num_shown/max_num_wide)) + 3)
 	img:SetSize(img_width, img_width)
-	img:SetHoverText(STRINGS.UI.ACHIEVEMENTS.LAVAARENA.ACHIEVEMENT[achievement_id].TITLE, {offset_y = 32, size = 25, colour = UICOLOURS.EGGSHELL})
+	img:SetHoverText(STRINGS.UI.ACHIEVEMENTS.LAVAARENA.ACHIEVEMENT[achievement_id].TITLE, {offset_y = 32, colour = UICOLOURS.EGGSHELL})
 	img:MoveToBack()
 	
 	if animate then

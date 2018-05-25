@@ -1,4 +1,4 @@
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 
 local assets =
 {

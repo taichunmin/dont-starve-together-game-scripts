@@ -34,8 +34,8 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 		local torso_build = nil
 		local pelvis_build = nil
 		local skirt_build = nil
-		local leg_build = base_skin --for boot switching, default to the base skin
-		local foot_build = base_skin --for boot switching, default to the base skin
+		local leg_build = nil --for boot switching
+		local foot_build = nil --for boot switching
 		
 		local tuck_torso = BASE_TORSO_TUCK[base_skin] or "skirt" --tucked into the skirt is the default
 		--print( "tuck_torso is ", tuck_torso, base_skin )
@@ -102,6 +102,20 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 					allow_torso = true
 				end
 
+
+                if type == "body" then
+                    --the last iterationw was the legs type, so check if the leg symbol was using the a boot, then we can assume it also set the foot
+                    local use_leg_boot = leg_build and CLOTHING[leg_build] and CLOTHING[leg_build].has_leg_boot
+	                if leg_build == foot_build and use_leg_boot then
+		                if table.contains(CLOTHING[name].symbol_overrides, "leg") then
+                            --the body uses the leg symbol, so we need to take the rest of the boot off otherwise it could get split
+                            anim_state:ClearOverrideSymbol("foot")
+                            foot_build = nil
+                            feet_cuff_size = 1
+                        end
+	                end
+                end
+
 				for _,sym in pairs(CLOTHING[name].symbol_overrides) do
 					if not ModManager:IsModCharacterClothingSymbolExcluded( prefab, sym ) then
 						if (not allow_torso and sym == "torso") or (not allow_arms and (sym == "arm_upper" or sym == "arm_upper_skin" or sym == "arm_lower")) then
@@ -109,7 +123,7 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 						
 						elseif table.contains(symbols_to_use_base, sym) then
 							--skip this symbol because one of the clothing requested it fall to the default (hand_willow_gladiator)
-							--print("skip symbol and leave it at base:",sym)
+							--print("skip symbol and leave it at base:", sym)
 						else
 							--Slight cheat here, we know that name is the item name and the build for clothing, quicker than calling GetBuildForItem(name)
 							if sym == "torso" then torso_build = name end
@@ -199,7 +213,7 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 			anim_state:OverrideSkinSymbol("skirt", base_skin, "skirt_wide")
 		end
 		
-		local use_leg_boot = (CLOTHING[leg_build] and CLOTHING[leg_build].has_leg_boot) or HAS_LEG_BOOT[leg_build]
+		local use_leg_boot = leg_build and CLOTHING[leg_build] and CLOTHING[leg_build].has_leg_boot
 		if leg_build == foot_build and use_leg_boot then
 			anim_state:OverrideSkinSymbol("leg", leg_build, "leg_boot" )
 		end
@@ -294,6 +308,7 @@ local function _InternalSetClothing(self, type, name, set_skin_mode)
 	
 	if name and name ~= "" then
 		self.inst:PushEvent("equipskinneditem", name)
+		AwardPlayerAchievement("equip_skin_clothing", self.inst)
 	end
 	
 	if set_skin_mode then

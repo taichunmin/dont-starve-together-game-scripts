@@ -2,6 +2,14 @@ local WORLDOVERSEER_HEARTBEAT = 5 * 60
 
 local Stats = require("stats")
 
+local function GetOverseerTime()
+    if IsConsole() then
+        return GetTime() -- Don't use real time as PS4 can't FF time but can be suspended
+    else
+        return GetTimeReal() / 1000
+    end
+end
+
 local WorldOverseer = Class(function(self, inst)
 	self.inst = inst
     self.data = {}
@@ -30,7 +38,7 @@ end
 
 function WorldOverseer:RecordPlayerJoined(player)
 	local playerstats = self._seenplayers[player]
-	local time = GetTimeReal() / 1000
+	local time = GetOverseerTime()
 
 	local current_skins = player.components.skinner:GetClothing()
 	local items = {}
@@ -62,7 +70,7 @@ end
 
 function WorldOverseer:RecordPlayerLeft(player)
 	local playerstats = self._seenplayers[player]
-	local time = GetTimeReal() / 1000
+	local time = GetOverseerTime()
 	if playerstats then
 		playerstats.endtime = time
 
@@ -87,7 +95,7 @@ function WorldOverseer:CalcIndividualPlayerStats(player)
 
     local toremove = false
 
-    local time = GetTimeReal() / 1000
+    local time = GetOverseerTime()
     local secondsplayed = 0
     if playerstats.endtime then
         -- player left
@@ -205,7 +213,7 @@ function WorldOverseer:OnPlayerChangedSkin(player, data)
 	if data.new_skin == data.old_skin then return end
 
 	local playerstats = self._seenplayers[player]
-	local time = GetTimeReal() / 1000
+	local time = GetOverseerTime()
 
 	for k,v in pairs(playerstats.worn_items) do
 		if v.item_name == data.old_skin and v.endtime == nil then
@@ -233,7 +241,7 @@ function WorldOverseer:OnEquipSkinnedItem(player, data)
 	if not data then return end
 
 	local playerstats = self._seenplayers[player]
-	local time = GetTimeReal() / 1000
+	local time = GetOverseerTime()
 
 	local item ={}
 	item.item_name = data
@@ -247,7 +255,7 @@ function WorldOverseer:OnUnequipSkinnedItem(player, data)
 	if not data then return end
 
 	local playerstats = self._seenplayers[player]
-	local time = GetTimeReal() / 1000
+	local time = GetOverseerTime()
 
 	for k,v in pairs(playerstats.worn_items) do
 		if v.item_name == data and v.endtime == nil then

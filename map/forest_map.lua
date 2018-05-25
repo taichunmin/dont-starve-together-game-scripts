@@ -162,7 +162,7 @@ local function TranslateWorldGenChoices(gen_params)
 
     return translated_prefabs, runtime_overrides
 end
-
+	
 local function UpdatePercentage(distributeprefabs, gen_params)
 	for selected, v in pairs(gen_params) do
 		if v ~= "default" then		

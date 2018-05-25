@@ -5,6 +5,7 @@ local TextEdit = require "widgets/textedit"
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local ImageButton = require "widgets/imagebutton"
+--local VirtualKeyboard = require "screens/virtualkeyboard"
 
 
 local Emoji = require("util/emoji")
@@ -22,6 +23,10 @@ function ChatInputScreen:OnBecomeActive()
 
     self.chat_edit:SetFocus()
     self.chat_edit:SetEditing(true)
+	
+	if IsConsole() then
+		TheFrontEnd:LockFocus(true)
+	end
 end
 
 function ChatInputScreen:OnBecomeInactive()
@@ -64,17 +69,34 @@ function ChatInputScreen:OnControl(control, down)
 	end
 
     -- For controllers, the misc_2 button will whisper if in say mode or say if in whisper mode. This is to allow the player to only bind one key to initiate chat mode.
-	if TheInput:ControllerAttached() then
-		if not down and control == CONTROL_MENU_MISC_2 then
-			self.whisper = not self.whisper
-			self:OnTextEntered()
-			return true
-		end
+	if not TheInput:PlatformUsesVirtualKeyboard() then
+		if TheInput:ControllerAttached() then
+			if not down and control == CONTROL_MENU_MISC_2 then
+				self.whisper = not self.whisper
+				self:OnTextEntered()
+				return true
+			end
 
-	    if not down and (control == CONTROL_TOGGLE_SAY or control == CONTROL_TOGGLE_WHISPER) then 
+			if not down and (control == CONTROL_TOGGLE_SAY or control == CONTROL_TOGGLE_WHISPER) then 
+				self:Close()
+				return true
+			end
+		end
+	else -- has virtual keyboard
+		if not down then
+			if control == CONTROL_MENU_MISC_2 then
+				self.whisper = true
+				self.chat_edit:SetEditing(true)
+				return true
+			elseif control == CONTROL_ACCEPT then
+				self.whisper = false
+				self.chat_edit:SetEditing(true)
+				return true
+			elseif control == CONTROL_CANCEL then 
 		      self:Close()
 			  return true
 		end
+	end
 	end
 end
 
@@ -138,16 +160,18 @@ function ChatInputScreen:DoInit()
 
     self.root:SetPosition(10, 100, 0)
 
-    self.chat_type = self.root:AddChild(Text(TALKINGFONT, fontsize))
-    self.chat_type:SetPosition(-505, 0, 0)
-    self.chat_type:SetRegionSize(chat_type_width, label_height)
-    self.chat_type:SetHAlign(ANCHOR_RIGHT)
-    if self.whisper then
-        self.chat_type:SetString(STRINGS.UI.CHATINPUTSCREEN.WHISPER)
-    else
-        self.chat_type:SetString(STRINGS.UI.CHATINPUTSCREEN.SAY)
-    end
-    self.chat_type:SetColour(.6, .6, .6, 1)
+	if not TheInput:PlatformUsesVirtualKeyboard() then
+	    self.chat_type = self.root:AddChild(Text(TALKINGFONT, fontsize))
+	    self.chat_type:SetPosition(-505, 0, 0)
+	    self.chat_type:SetRegionSize(chat_type_width, label_height)
+	    self.chat_type:SetHAlign(ANCHOR_RIGHT)
+	    if self.whisper then
+	        self.chat_type:SetString(STRINGS.UI.CHATINPUTSCREEN.WHISPER)
+	    else
+	        self.chat_type:SetString(STRINGS.UI.CHATINPUTSCREEN.SAY)
+	    end
+	    self.chat_type:SetColour(.6, .6, .6, 1)
+	end
 
     self.chat_edit = self.root:AddChild(TextEdit(TALKINGFONT, fontsize, ""))
     self.chat_edit.edit_text_color = WHITE

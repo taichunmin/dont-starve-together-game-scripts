@@ -1,7 +1,6 @@
 local Screen = require "widgets/screen"
 local Grid = require "widgets/grid"
 local HeaderTabs = require "widgets/redux/headertabs"
-local ImageButton = require "widgets/imagebutton"
 local InputDialogScreen = require "screens/inputdialog"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TextListPopup = require "screens/redux/textlistpopup"
@@ -35,7 +34,6 @@ local beta_color = WEBCOLOURS.SANDYBROWN
 local offline_color = UICOLOURS.SLATE
 local normal_color = UICOLOURS.IVORY
 local normal_list_item_bg_tint = { 1,1,1,0.5 }
-local focus_list_item_bg_tint = { 1,1,1,0.7 }
 
 local FONT_SIZE = 35
 if JapaneseOnPS4() then
@@ -111,6 +109,12 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
 
     self.content_root = self.root:AddChild(Widget("content_root"))
     self.content_root:SetPosition(0,7)
+
+    local details_height = 555
+    self:MakeDetailPanel(right_col, details_height)
+
+    self:MakeMenuButtons(left_col, right_col, nav_col) --put in this before self.server_list is added so that hover text is on top of the buttons.
+    
     self.server_list = self.content_root:AddChild(Widget("server_list"))
     self.server_list:SetPosition(left_col,0)
 
@@ -152,9 +156,6 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
     self.grid_root.server_list_rows = self.grid_root:AddChild(Widget("server_list_rows"))
     self:MakeServerListWidgets()
 
-    local details_height = 555
-    self:MakeDetailPanel(right_col, details_height)
-
     local function GetCentreFocus()
         return self:CurrentCenterFocus()
     end
@@ -167,7 +168,6 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
         return self.sorting_spinner
     end
 
-    self:MakeMenuButtons(left_col, right_col, nav_col)
 
     self:MakeFiltersPanel(filters, details_height)
 
@@ -210,7 +210,7 @@ function ServerListingScreen:_SetTab(tab)
         self.view_online = false
         self:SearchForServers()
         self.server_intention.button:Select()
-        self.server_intention.button:SetText("")
+        self.server_intention.button:SetText(STRINGS.UI.INTENTION.ANY)
     elseif tab == "online" then
         self.view_online = true
         self:SearchForServers()
@@ -271,7 +271,11 @@ function ServerListingScreen:ShowServerIntention()
         self.title:SetString(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE)
     end
 
-    self:CurrentRightFocus():SetFocus()
+    if self:CurrentRightFocus() ~= nil then
+        self:CurrentRightFocus():SetFocus()
+    elseif self:CurrentCenterFocus() ~= nil then
+        self:CurrentCenterFocus():SetFocus()
+    end
 end
 
 
@@ -787,7 +791,7 @@ end
 function ServerListingScreen:OnStartClickServerInList(unfiltered_index)
     if self.servers
         and self.servers[unfiltered_index]
-        and self.selected_index_actual ~= self.servers[unfiltered_index].actualindex
+        and self.selected_index_actual ~= unfiltered_index
         then
         self.last_server_click_time = nil
     end
@@ -797,13 +801,14 @@ end
 function ServerListingScreen:OnFinishClickServerInList(unfiltered_index)
     if self.servers
         and self.servers[unfiltered_index] ~= nil
-        and self.servers[unfiltered_index].actualindex == self.selected_index_actual
+        and unfiltered_index == self.selected_index_actual
+		and self.last_server_click_time ~= nil
         then
         -- If we're clicking on the same server as the last click, check for double-click Join
-        if self.last_server_click_time and GetTime() - self.last_server_click_time <= DOUBLE_CLICK_TIMEOUT then
-            self:Join(false)
-            return
-        end
+		if GetTime() - self.last_server_click_time <= DOUBLE_CLICK_TIMEOUT then
+			self:Join(false)
+			return
+		end
     end
     self.last_server_click_time = GetTime()
 end
@@ -872,34 +877,24 @@ function ServerListingScreen:MakeServerListWidgets()
 
         row:SetOnGainFocus(function() self.servers_scroll_list:OnWidgetFocus(row) end)
 
-        row.cursor = row:AddChild(ImageButton("images/frontend_redux.xml",
-                "serverlist_listitem_normal.tex", -- normal
-                nil, -- focus
-                nil,
-                nil,
-                "serverlist_listitem_selected.tex" -- selected
+        local onclickdown = function() self:OnStartClickServerInList(row.unfiltered_index)  end
+        local onclickup   = function() self:OnFinishClickServerInList(row.unfiltered_index) end
+        row.cursor = row:AddChild(TEMPLATES.ListItemBackground(
+                row_width,
+                row_height,
+                onclickup
             ))
-        -- Positioning within a row is unfortunate. This one should probably be
-        -- centred or offset by its width, but fixing that doesn't seem worth
-        -- it.
+        -- Positioning within a row is unfortunate. This one should probably be centred or offset by its width, but fixing that doesn't seem worth it.
         row.cursor:SetPosition( row_width/2-90, y_offset, 0)
-        row.cursor:SetOnDown(  function() self:OnStartClickServerInList(row.unfiltered_index)  end)
-        row.cursor:SetOnClick( function() self:OnFinishClickServerInList(row.unfiltered_index) end)
-        row.cursor:ForceImageSize(row_width,row_height)
-        row.cursor:SetImageNormalColour(unpack(normal_list_item_bg_tint))
-        row.cursor:SetImageFocusColour(unpack(focus_list_item_bg_tint))
-        row.cursor:SetImageSelectedColour(unpack(normal_list_item_bg_tint))
-        row.cursor:SetImageDisabledColour(unpack(normal_list_item_bg_tint))
-        row.cursor:UseFocusOverlay("serverlist_listitem_hover.tex")
-        row.cursor.scale_on_focus = false
-        row.cursor.move_on_click = false
+        row.cursor:SetOnDown(onclickdown)
         row.cursor:Hide()
+		row.cursor.AllowOnControlWhenSelected = true
 
         local intent = row:AddChild(Widget("intention_image"))
         intent:SetPosition(column_offsets.INTENTION, y_offset)
         intent.img = intent:AddChild(Image("images/servericons.xml", "playstyle_social.tex"))
         intent.img:ScaleToSize(row_height-5,row_height-5)
-        intent:SetHoverText("INTENTION", {font = NEWFONT_OUTLINE, size = 22, offset_x = 2, offset_y = -28, colour = {1,1,1,1}})
+        intent:SetHoverText("INTENTION", {font = NEWFONT_OUTLINE, offset_x = 2, offset_y = -28, colour = {1,1,1,1}})
         row.INTENTION = intent
         
         row.NAME = row:AddChild(Text(CHATFONT, font_size))
@@ -977,7 +972,6 @@ function ServerListingScreen:MakeServerListWidgets()
                 hovertext,
                 {
                     font = NEWFONT_OUTLINE,
-                    size = 22,
                     offset_x = 10,
                     offset_y = -28
                 })
@@ -1158,7 +1152,7 @@ function ServerListingScreen:MakeServerListWidgets()
             {},
             {
                 context = {},
-                widget_width  = dialog_width * 1.6, -- this arugment is weird. Would expect nineslice's width, but nope!
+                widget_width  = dialog_width * 1.6, -- bigger than width because the widgets are accidentally offset to the left.
                 widget_height = row_height,
                 num_visible_rows = listings_per_view,
                 num_columns      = 1,
@@ -1505,7 +1499,7 @@ function ServerListingScreen:DoFiltering(doneSearching, keepScrollFocusPos)
     if self.view_online and self.server_intention.data ~= nil then
         if #self.queryTokens > 0 then
             self.server_intention.button:Select()
-            self.server_intention.button:SetText("")
+            self.server_intention.button:SetText(STRINGS.UI.INTENTION.ANY)
             self.title:SetTruncatedString(STRINGS.UI.SERVERLISTINGSCREEN.SEARCH..": "..self.searchbox.textbox:GetString(), 350, 25, true)
         else
             self.server_intention.button:Unselect()
@@ -1615,36 +1609,17 @@ local spacing = 3
 local total_width = label_width + widget_width + spacing
 local bg_width = spacing + total_width + spacing + 10
 local bg_height = height + 2
-local filter_font_face = CHATFONT
-local filter_font_size = 20
 
-local function AddListItemBg(owner, focusable_widget)
-    local bg = owner:AddChild(Image("images/frontend_redux.xml", "serverlist_listitem_normal.tex"))
-    bg:SetSize(bg_width, bg_height)
-    bg:SetTint(unpack(normal_list_item_bg_tint))
-    -- Need the owner as argument because MoveToBack must be done
-    -- after AddChild.
-    bg:MoveToBack()
-
-    focusable_widget:SetOnGainFocus(function(...)
-        bg:SetTint(unpack(focus_list_item_bg_tint))
-    end)
-
-    focusable_widget:SetOnLoseFocus(function(...)
-        bg:SetTint(unpack(normal_list_item_bg_tint))
-    end)
-
-    return bg
-end
 
 local function CreateButtonFilter( self, name, text, buttontext, onclick)
 
-    local group = self.side_panel:AddChild(TEMPLATES.LabelButton(onclick, text, buttontext, label_width, widget_width, height*1.4, spacing, filter_font_face, filter_font_size))
+    local group = self.side_panel:AddChild(TEMPLATES.LabelButton(onclick, text, buttontext, label_width, widget_width, height*1.4, spacing, CHATFONT, 20))
+    group.bg = group:AddChild(TEMPLATES.ListItemBackground(bg_width, bg_height))
+    group.bg:MoveToBack()
+
     group.label:SetHAlign(ANCHOR_LEFT)
 
     group.name = name
-
-    AddListItemBg(group, group.button)
 
     return group
 end
@@ -1653,11 +1628,13 @@ local function CreateSpinnerFilter( self, name, text, spinnerOptions, numeric, o
 
     local group = nil
     if numeric then
-        group = TEMPLATES.LabelNumericSpinner(text, spinnerOptions.min, spinnerOptions.max, label_width, widget_width, height, spacing, filter_font_face, filter_font_size)
+        group = TEMPLATES.LabelNumericSpinner(text, spinnerOptions.min, spinnerOptions.max, label_width, widget_width, height, spacing, CHATFONT, 20)
     else
-        group = TEMPLATES.LabelSpinner(text, spinnerOptions, label_width, widget_width, height, spacing, filter_font_face, filter_font_size)
+        group = TEMPLATES.LabelSpinner(text, spinnerOptions, label_width, widget_width, height, spacing, CHATFONT, 20)
     end
     self.side_panel:AddChild(group)
+    group.bg = group:AddChild(TEMPLATES.ListItemBackground(bg_width, bg_height))
+    group.bg:MoveToBack()
 
     group.label:SetHAlign(ANCHOR_LEFT)
     group.spinner:EnablePendingModificationBackground()
@@ -1671,8 +1648,6 @@ local function CreateSpinnerFilter( self, name, text, spinnerOptions, numeric, o
         end)
 
     group.name = name
-
-    AddListItemBg(group, group.spinner)
 
     return group
 end
@@ -1716,7 +1691,7 @@ function ServerListingScreen:MakeFiltersPanel(filter_data, details_height)
     local search_width = 260
     local search_button_width = height + 5
     local searchparent = self.side_panel:AddChild(Widget("searchbox"))
-    local searchbox = searchparent:AddChild(TEMPLATES.StandardSingleLineTextEntry("", search_width, height, filter_font_face, filter_font_size, STRINGS.UI.SERVERLISTINGSCREEN.SEARCH))
+    local searchbox = searchparent:AddChild(TEMPLATES.StandardSingleLineTextEntry("", search_width, height, CHATFONT, 20, STRINGS.UI.SERVERLISTINGSCREEN.SEARCH))
     -- Search box isn't like other filters. It's not aligned on the colon and
     -- should span the full column width. ScrollableList sets positions so we
     -- need this parent.
@@ -1835,8 +1810,7 @@ function ServerListingScreen:_MakeConnectionSpinner()
         { text = STRINGS.UI.SERVERLISTINGSCREEN.LAN,    data = "LAN" },
     }
     local group = CreateSpinnerFilter(self, "CONNECTION", STRINGS.UI.SERVERLISTINGSCREEN.CONNECTION, connection)
-    -- Clobber standard onchangedfn: we're not just modifying filtering, but
-    -- changing the data source.
+    -- Clobber standard onchangedfn: we're not just modifying filtering, but changing the data source.
     group.spinner:SetOnChangedFn(function(selected, old)
         if self.offlinemode and selected == "online" then
             TheFrontEnd:PushScreen(PopupDialogScreen(
@@ -1870,7 +1844,7 @@ function ServerListingScreen:MakeMenuButtons(left_col, right_col, nav_col)
                 data = sort_key, -- This data is what we'll receive in our callbacks.
             })
     end
-    self.sorting_spinner = self.server_list_footer:AddChild(
+    self.sorting_spinner = self.content_root:AddChild(
         TEMPLATES.LabelSpinner(
             STRINGS.UI.SERVERLISTINGSCREEN.SORT_BY,
             sorting_data,
@@ -1879,16 +1853,15 @@ function ServerListingScreen:MakeMenuButtons(left_col, right_col, nav_col)
             nil,
             0
         ))
-    self.sorting_spinner:SetPosition(-20,-2)
+    self.sorting_spinner:SetPosition(-185, -315)
     self.sorting_spinner.spinner:SetOnChangedFn(
         function(selected_name, old)
             self.sort_column = selected_name
             self:DoSorting()
         end)
 
-    -- Need to init refresh to longer string to ensure proper placement of
-    -- icon!
-    self.refresh_button = MakeImgButton(self.server_list_footer, server_list_width/2 - 50, -3, STRINGS.UI.SERVERLISTINGSCREEN.REFRESHING, function() self:SearchForServers() end, "icontext", "refresh")
+    -- Need to init refresh to longer string to ensure proper placement of icon!
+    self.refresh_button = MakeImgButton(self.content_root, 185, -315, STRINGS.UI.SERVERLISTINGSCREEN.REFRESHING, function() self:SearchForServers() end, "icontext", "refresh")
     self.join_button = MakeImgButton(self.side_panel, 0, -RESOLUTION_Y*.5 + BACK_BUTTON_Y - 15, STRINGS.UI.SERVERLISTINGSCREEN.JOIN, function() self:Join(false) end, "large")
 
     local function toggle_filter_fn() self:ToggleShowFilters() end
@@ -1918,8 +1891,7 @@ function ServerListingScreen:MakeMenuButtons(left_col, right_col, nav_col)
     self.cancel_button = self.root:AddChild(TEMPLATES.BackButton(function() self:Cancel() end))
 
     if TheInput:ControllerAttached() then
-        -- Refresh button is visible for controllers so they can tell if we're
-        -- currently refreshing.
+        -- Refresh button is visible for controllers so they can tell if we're currently refreshing.
         -- self.refresh_button:Hide()
         self.join_button:Hide()
         self.cancel_button:Hide()

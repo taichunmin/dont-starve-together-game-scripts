@@ -6,6 +6,16 @@ return Class(function(self, inst)
 
 assert(TheWorld.ismastersim, "Hunter should not exist on client")
 
+--------------------------------------------------------------------------
+--[[ Dependencies ]]
+--------------------------------------------------------------------------
+
+local SourceModifierList = require("util/sourcemodifierlist")
+
+--------------------------------------------------------------------------
+--[[ Constants ]]
+--------------------------------------------------------------------------
+
 local HUNT_UPDATE = 2
 
 local MIN_TRACKS = 6
@@ -27,6 +37,7 @@ self.inst = inst
 -- Private
 local _activeplayers = {}
 local _activehunts = {}
+local _wargshrines
 
 --------------------------------------------------------------------------
 --[[ Private member functions ]]
@@ -331,12 +342,10 @@ local function SpawnHuntedBeast(hunt, pt)
     local spawn_pt = GetSpawnPoint(pt, TUNING.HUNT_SPAWN_DIST, hunt)
     if spawn_pt ~= nil then
         hunt.huntedbeast = SpawnPrefab(
-            math.random() <= GetAlternateBeastChance() and
-            GetRandomItem(_alternate_beasts) or
-            (   TheWorld.state.iswinter and
-                _beast_prefab_winter or
-                _beast_prefab_summer
-            )
+            (self:IsWargShrineActive() and "claywarg") or
+            (math.random() <= GetAlternateBeastChance() and GetRandomItem(_alternate_beasts)) or
+            (TheWorld.state.iswinter and _beast_prefab_winter) or
+            _beast_prefab_summer
         )
 
         if hunt.huntedbeast ~= nil then
@@ -352,6 +361,8 @@ local function SpawnHuntedBeast(hunt, pt)
 
             inst:ListenForEvent("death", OnBeastDeath, hunt.huntedbeast)
             inst:ListenForEvent("onremove", OnBeastDeath, hunt.huntedbeast)
+
+            hunt.huntedbeast:PushEvent("spawnedforhunt")
             return true
         end
     end
@@ -426,6 +437,13 @@ end
 inst:ListenForEvent("ms_playerjoined", OnPlayerJoined, TheWorld)
 inst:ListenForEvent("ms_playerleft", OnPlayerLeft, TheWorld)
 
+if IsSpecialEventActive(SPECIAL_EVENTS.YOTV) then
+    _wargshrines = SourceModifierList(inst, false, SourceModifierList.boolean)
+
+    inst:ListenForEvent("wargshrineactivated", function(src, shrine) _wargshrines:SetModifier(shrine, true) end, TheWorld)
+    inst:ListenForEvent("wargshrinedeactivated", function(src, shrine) _wargshrines:RemoveModifier(shrine) end, TheWorld)
+end
+
 --------------------------------------------------------------------------
 --[[ Public member functions ]]
 --------------------------------------------------------------------------
@@ -483,6 +501,10 @@ function self:OnDirtInvestigated(pt, doer)
     end
 end
 
+function self:IsWargShrineActive()
+    return _wargshrines ~= nil and _wargshrines:Get()
+end
+
 --------------------------------------------------------------------------
 --[[ Update ]]
 --------------------------------------------------------------------------
@@ -504,16 +526,16 @@ end
 
 function self:GetDebugString()
     local str = ""
-    for i,playerdata in pairs(_activeplayers) do
-        str = str.." Cooldown: ".. (self.cooldowntime and string.format("%2.2f", math.max(1, self.cooldowntime - GetTime())) or "-")
-        if not self.lastdirt then
+    for i, hunt in ipairs(_activehunts) do
+        str = str.." Cooldown: ".. (hunt.cooldowntime and string.format("%2.2f", math.max(1, hunt.cooldowntime - GetTime())) or "-")
+        if not hunt.lastdirt then
             str = str.." No last dirt."
-            str = str.." Distance: ".. (playerdata.distance and string.format("%2.2f", playerdata.distance) or "-")
-            str = str.."/"..tostring(TUNING.MIN_HUNT_DISTANCE)
+            --str = str.." Distance: ".. (playerdata.distance and string.format("%2.2f", playerdata.distance) or "-")
+            --str = str.."/"..tostring(TUNING.MIN_HUNT_DISTANCE)
         else
             str = str.." Dirt"
-            str = str.." Distance: ".. (playerdata.distance and string.format("%2.2f", playerdata.distance) or "-")
-            str = str.."/"..tostring(TUNING.MAX_DIRT_DISTANCE)
+            --str = str.." Distance: ".. (playerdata.distance and string.format("%2.2f", playerdata.distance) or "-")
+            --str = str.."/"..tostring(TUNING.MAX_DIRT_DISTANCE)
         end
     end
     return str

@@ -1,6 +1,6 @@
 local AccountItemFrame = require "widgets/redux/accountitemframe"
 local Image = require "widgets/image"
-local ItemServerContactPopup = require "screens/redux/itemservercontactpopup"
+local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local Screen = require "widgets/screen"
 local Text = require "widgets/text"
@@ -34,7 +34,7 @@ function BarterScreen:DoInit()
 end
 
 local function PushWaitingPopup()
-    local commerce_popup = ItemServerContactPopup()
+    local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, false)
     TheFrontEnd:PushScreen(commerce_popup)
     return commerce_popup
 end
@@ -55,11 +55,13 @@ function BarterScreen:_BuildDialog()
             })
         go_btn = {
             text = STRINGS.UI.BARTERSCREEN.COMMERCE_BUY,
-            cb = function() 
+            cb = function()
                 local commerce_popup = PushWaitingPopup()
                 TheItems:BarterGainItem(self.item_key, self.doodad_value, function(success, status, item_type)
-                    commerce_popup:Close()
-                    self:_BarterComplete(success, status,{"dontstarve/HUD/Together_HUD/collectionscreen/weave","dontstarve/HUD/Together_HUD/collectionscreen/unlock"})
+                    self.inst:DoTaskInTime(0, function() --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
+                        commerce_popup:Close()
+                        self:_BarterComplete(success, status,{"dontstarve/HUD/Together_HUD/collectionscreen/weave","dontstarve/HUD/Together_HUD/collectionscreen/unlock"})
+                    end, self)
                 end)
             end
         }
@@ -74,29 +76,31 @@ function BarterScreen:_BuildDialog()
             })
         go_btn = {
             text = STRINGS.UI.BARTERSCREEN.COMMERCE_GRIND,
-            cb = function() 
+            cb = function()
                 local item_id = GetFirstOwnedItemId(self.item_key)
                 if item_id then
                     local commerce_popup = PushWaitingPopup()
                     TheItems:BarterLoseItem(item_id, self.doodad_value, function(success, status)
-                        commerce_popup:Close()
-                        self:_BarterComplete(success, status, {"dontstarve/HUD/Together_HUD/collectionscreen/unweave"})
+                        self.inst:DoTaskInTime(0, function() --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
+                            commerce_popup:Close()
+                            self:_BarterComplete(success, status, {"dontstarve/HUD/Together_HUD/collectionscreen/unweave"})
+                        end, self)
                     end)
                 else
-					local server_error = PopupDialogScreen(
+                    local server_error = PopupDialogScreen(
                         STRINGS.UI.TRADESCREEN.SERVER_ERROR_TITLE,
                         STRINGS.UI.TRADESCREEN.SERVER_ERROR_BODY,
-						{
-							{
+                        {
+                            {
                                 text = STRINGS.UI.TRADESCREEN.OK,
                                 cb = function()
-									print("ERROR: Bartering away unowned item.")
-									SimReset()
-								end
+                                    print("ERROR: Bartering away unowned item.")
+                                    SimReset()
+                                end
                             }
-						}
-					)
-					TheFrontEnd:PushScreen(server_error)
+                        }
+                    )
+                    TheFrontEnd:PushScreen(server_error)
                 end
             end
         }
@@ -107,7 +111,7 @@ function BarterScreen:_BuildDialog()
         {
             text=STRINGS.UI.BARTERSCREEN.CANCEL,
             cb = function() 
-                self:_OnCancel()            
+                self:_OnCancel()
             end
         },
     }
@@ -179,6 +183,27 @@ function BarterScreen:_BarterComplete(success, status, sounds)
             })
         TheFrontEnd:PushScreen( server_error )
     end
+end
+
+function BarterScreen:OnControl(control, down)
+    if BarterScreen._base.OnControl(self,control, down) then 
+        return true 
+    end
+    
+    if TheInput:ControllerAttached() and control == CONTROL_CANCEL and not down then    
+        self:_OnCancel()
+    end
+end
+
+function BarterScreen:GetHelpText()
+    local controller_id = TheInput:GetControllerID()
+    local t = {}
+
+    if TheInput:ControllerAttached() then
+        table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
+    end
+
+    return table.concat(t, "  ")
 end
 
 return BarterScreen

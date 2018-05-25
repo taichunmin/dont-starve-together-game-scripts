@@ -26,6 +26,13 @@ local MovieDialog = Class(Screen, function(self, movie_path, callback)
     self.video:Play()
 
     self.end_delay = 2
+
+	--if AUTOPLAY_SOAK then
+	--	self.soaktask = self.inst:DoTaskInTime(5, 
+	--	function()
+	--        self:Cancel()
+	--	end)
+	--end
 end)
 
 function MovieDialog:OnUpdate(dt)
@@ -51,11 +58,15 @@ function MovieDialog:OnControl(control, down)
     if MovieDialog._base.OnControl(self, control, down) then
         return true
     elseif down and control == CONTROL_PAUSE then
-        self.cancelled = true
-        if self.video ~= nil and not self.video:IsDone() then
-            self.video:Stop()
-        end
+        self:Cancel()
         return true
+    end
+end
+
+function MovieDialog:Cancel()
+    self.cancelled = true
+    if self.video ~= nil and not self.video:IsDone() then
+        self.video:Stop()
     end
 end
 

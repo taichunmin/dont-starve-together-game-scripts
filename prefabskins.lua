@@ -3,6 +3,7 @@
 PREFAB_SKINS = {
 	amulet = 
 	{
+		"amulet_red_heart",
 		"amulet_red_occulteye",
 	},
 	armordragonfly = 
@@ -61,6 +62,7 @@ PREFAB_SKINS = {
 		"birdcage_gothic",
 		"birdcage_ornamental",
 		"birdcage_pirate",
+		"birdcage_romantic",
 	},
 	book_brimstone = 
 	{
@@ -74,6 +76,7 @@ PREFAB_SKINS = {
 	{
 		"catcoonhat_trapper_rooster",
 		"catcoonhat_trapperup_rooster",
+		"hat_puppy_cap",
 	},
 	cookpot = 
 	{
@@ -130,10 +133,14 @@ PREFAB_SKINS = {
 	},
 	critter_puppy = 
 	{
+		"puppy_chow",
+		"puppy_tzu",
 		"puppy_winter",
 	},
 	critter_puppy_builder = 
 	{
+		"puppy_chow_builder",
+		"puppy_tzu_builder",
 		"puppy_winter_builder",
 	},
 	endtable = 
@@ -145,6 +152,7 @@ PREFAB_SKINS = {
 	firepit = 
 	{
 		"firepit_fanged",
+		"firepit_firebird",
 		"firepit_hole",
 		"firepit_stonehenge",
 	},
@@ -165,6 +173,7 @@ PREFAB_SKINS = {
 	footballhat = 
 	{
 		"footballhat_combathelm",
+		"hat_dog_helm",
 	},
 	hambat = 
 	{
@@ -204,6 +213,7 @@ PREFAB_SKINS = {
 	reviver = 
 	{
 		"reviver_cupid",
+		"reviver_cupid_2",
 	},
 	spear = 
 	{
@@ -249,6 +259,7 @@ PREFAB_SKINS = {
 		"wathgrithr_deerclops_d",
 		"wathgrithr_formal",
 		"wathgrithr_gladiator",
+		"wathgrithr_nature",
 		"wathgrithr_rose",
 		"wathgrithr_shadow",
 		"wathgrithr_survivor",
@@ -261,6 +272,7 @@ PREFAB_SKINS = {
 		"waxwell_gladiator",
 		"waxwell_krampus",
 		"waxwell_krampus_d",
+		"waxwell_nature",
 		"waxwell_rose",
 		"waxwell_survivor",
 		"waxwell_unshadow",
@@ -299,6 +311,7 @@ PREFAB_SKINS = {
 		"wes_gladiator",
 		"wes_mandrake",
 		"wes_mandrake_d",
+		"wes_nature",
 		"wes_rose",
 		"wes_shadow",
 		"wes_survivor",
@@ -350,6 +363,7 @@ PREFAB_SKINS = {
 		"winona_gladiator",
 		"winona_grassgecko",
 		"winona_grassgecko_d",
+		"winona_nature",
 		"winona_rose",
 		"winona_shadow",
 		"winona_survivor",
@@ -357,6 +371,7 @@ PREFAB_SKINS = {
 	winterhat = 
 	{
 		"winterhat_black_davys",
+		"winterhat_fancy_puppy",
 		"winterhat_pink_hibiscus",
 		"winterhat_plum_pudding",
 		"winterhat_rooster",
@@ -381,6 +396,7 @@ PREFAB_SKINS = {
 		"woodie_combatant",
 		"woodie_formal",
 		"woodie_gladiator",
+		"woodie_nature",
 		"woodie_rose",
 		"woodie_shadow",
 		"woodie_survivor",
@@ -393,6 +409,7 @@ PREFAB_SKINS = {
 		"wx78_combatant",
 		"wx78_formal",
 		"wx78_gladiator",
+		"wx78_nature",
 		"wx78_rhinorook",
 		"wx78_rhinorook_d",
 		"wx78_rose",

@@ -1,6 +1,20 @@
 local SYNC_PERIOD = 10
 
 local function syncage(inst, self)
+	local cur_age = self:GetDisplayAgeInDays()
+	if inst.Network:GetPlayerAge() ~= cur_age then
+		if cur_age == 20 then
+			AwardPlayerAchievement( "survive_20", inst)
+		elseif cur_age == 35 then
+			AwardPlayerAchievement( "survive_35", inst)
+		elseif cur_age == 55 then
+			AwardPlayerAchievement( "survive_55", inst)
+		elseif cur_age == 70 then
+			AwardPlayerAchievement( "survive_70", inst)
+		end
+		NotifyPlayerProgress("days", cur_age,  inst)
+		NotifyPlayerPresence(SaveGameIndex:GetGameMode(SaveGameIndex:GetCurrentSaveSlot()), 1, cur_age, inst)
+	end
     inst.Network:SetPlayerAge(self:GetDisplayAgeInDays())
 end
 

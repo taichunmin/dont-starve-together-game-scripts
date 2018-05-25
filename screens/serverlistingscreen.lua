@@ -889,7 +889,7 @@ function ServerListingScreen:MakeServerListWidgets()
         intent:SetPosition(column_offsets.NAME-18, y_offset)
         intent.img = intent:AddChild(Image("images/servericons.xml", "playstyle_social.tex"))
         intent.img:SetScale(0.08, 0.08)
-        intent:SetHoverText("INTENTION", {font = NEWFONT_OUTLINE, size = 22, offset_x = 1, offset_y = 28, colour = {1,1,1,1}})
+        intent:SetHoverText("INTENTION", {font = NEWFONT_OUTLINE, offset_x = 1, offset_y = 28, colour = {1,1,1,1}})
         row.INTENTION = intent
         
         row.NAME = row:AddChild(Text(NEWFONT, font_size))
@@ -935,7 +935,7 @@ function ServerListingScreen:MakeServerListWidgets()
         row.CHAR_ICON_BG:SetScale(.09)
         row.CHAR_ICON = row.CHAR:AddChild(Image("images/saveslot_portraits.xml", "unknown.tex"))
         row.CHAR_ICON:SetScale(.21, .22, 1)
-        row.CHAR:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.CHAR_AGE_1.."0"..STRINGS.UI.SERVERLISTINGSCREEN.CHAR_AGE_3, { font = NEWFONT_OUTLINE, size = 22, offset_x = 1, offset_y = 28, colour = {1,1,1,1} })
+        row.CHAR:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.CHAR_AGE_1.."0"..STRINGS.UI.SERVERLISTINGSCREEN.CHAR_AGE_3, { font = NEWFONT_OUTLINE, offset_x = 1, offset_y = 28, colour = {1,1,1,1} })
         row.CHAR:SetPosition(details_x,1)
         row.CHAR:Hide()
         details_x = details_x + 27

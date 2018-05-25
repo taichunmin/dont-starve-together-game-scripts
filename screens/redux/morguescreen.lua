@@ -74,26 +74,7 @@ local column_widths = {
 
 
 local function CreateListItemBackground()
-    local normal_list_item_bg_tint = { 1,1,1,0.4 }
-    local focus_list_item_bg_tint  = { 1,1,1,0.6 }
-    local row = ImageButton("images/frontend_redux.xml",
-        "serverlist_listitem_normal.tex", -- normal
-        nil, -- focus
-        nil,
-        nil,
-        "serverlist_listitem_selected.tex" -- selected
-        )
-    row:ForceImageSize(row_width,row_height)
-    row:SetImageNormalColour(  unpack(normal_list_item_bg_tint))
-    row:SetImageFocusColour(   unpack(focus_list_item_bg_tint))
-    row:SetImageSelectedColour(unpack(normal_list_item_bg_tint))
-    row:SetImageDisabledColour(unpack(normal_list_item_bg_tint))
-    -- This is causing incorrect scaling?
-    --~ row:UseFocusOverlay("serverlist_listitem_hover.tex")
-    row.scale_on_focus = false
-    row.move_on_click = false
-    row:SetHelpTextMessage("") -- doesn't respond to clicks
-    return row
+    return TEMPLATES.ListItemBackground(row_width,row_height)
 end
 
 local function get_character_icon(character)
@@ -377,8 +358,6 @@ local MorgueScreen = Class(Screen, function(self, prev_screen, user_profile)
 
     self.dialog = self.root:AddChild(TEMPLATES.RectangleWindow(dialog_size_x, dialog_size_y))
     self.dialog:SetPosition(140, 10)
-    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
-    self.dialog:SetBackgroundTint(r,g,b,0.6)
     self.panel_root = self.dialog:InsertWidget(Widget("panel_root"))
     self.panel_root:SetPosition(-120, -41)
 
@@ -487,7 +466,6 @@ local function EncounterWidgetConstructor(context, i)
             end
         end,
         {
-            size = 50,
             offset_x = -150,
             offset_y = 0,
     }))
@@ -501,7 +479,6 @@ local function EncounterWidgetConstructor(context, i)
             context.screen:UpdatePlayerHistory()
         end,
         {
-            size = 50,
             offset_x = -180,
             offset_y = 0,
     }))

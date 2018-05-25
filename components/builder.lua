@@ -458,6 +458,8 @@ function Builder:DoBuild(recname, pt, rotation, skin)
                         end
                     end
 
+					NotifyPlayerProgress("TotalItemsCrafted", 1, self.inst);
+
                     if self.onBuild ~= nil then
                         self.onBuild(self.inst, prod)
                     end
@@ -473,6 +475,7 @@ function Builder:DoBuild(recname, pt, rotation, skin)
                 self.inst:PushEvent("buildstructure", { item = prod, recipe = recipe, skin = skin })
                 prod:PushEvent("onbuilt", { builder = self.inst })
                 ProfileStatsAdd("build_"..prod.prefab)
+				NotifyPlayerProgress("TotalItemsCrafted", 1, self.inst);
 
                 if self.onBuild ~= nil then
                     self.onBuild(self.inst, prod)

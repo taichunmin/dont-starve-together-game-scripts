@@ -485,17 +485,12 @@ function RecipePopup:GetSkinOptions()
     --print(self.recipe.name, "Recipe timestamp is ", recipe_timestamp)
     if self.skins_list and TheNet:IsOnlineMode() then
         for which = 1, #self.skins_list do
-            local image_name = self.skins_list[which].item
+            local item = self.skins_list[which].item
 
-            local colour = GetColorForItem(image_name)
-            local text_name = GetSkinName(image_name)
+            local colour = GetColorForItem(item)
+            local text_name = GetSkinName(item)
+            local image_name = GetSkinInvIconName(item)
             local new_indicator = not self.skins_list[which].timestamp or (self.skins_list[which].timestamp > recipe_timestamp)
-
-            if image_name == "" then
-                image_name = "default"
-            else
-                image_name = string.gsub(image_name, "_none", "")
-            end
 
             table.insert(skin_options,
             {

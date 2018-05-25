@@ -970,11 +970,16 @@ function Tune(overrides)
             }),
 
             PERDSHRINE = TechTree.Create({
+                PERDOFFERING = 3,
+            }),
+
+            WARGSHRINE = TechTree.Create({
+                WARGOFFERING = 3,
                 PERDOFFERING = 1,
             }),
         },
 
-        RABBIT_HEALTH = 25*multiplayer_attack_modifier,
+        RABBIT_HEALTH = 25 * multiplayer_attack_modifier,
         MOLE_HEALTH = 30,
 
         FROG_HEALTH = 100,
@@ -996,9 +1001,12 @@ function Tune(overrides)
         HOUND_ATTACK_PERIOD = 2,
         HOUND_TARGET_DIST = 20,
         HOUND_SPEED = 10,
+        CLAYHOUND_SPEED = 8.5,
 
         HOUND_FOLLOWER_TARGET_DIST = 10,
         HOUND_FOLLOWER_TARGET_KEEP = 20,
+        HOUND_FOLLOWER_AGGRO_DIST = 8,
+        HOUND_FOLLOWER_RETURN_DIST = 12,
 
         FIREHOUND_HEALTH = 100,
         FIREHOUND_DAMAGE = 30,
@@ -1170,6 +1178,7 @@ function Tune(overrides)
 
         TORCH_RAIN_RATE = 1.5,
         TORCH_FUEL = night_time*1.25,
+        TORCH_SHRINE_FUEL_RATE_MULT = .2,
 
         MINIFAN_FUEL = day_time * 0.3,
 
@@ -1313,10 +1322,17 @@ function Tune(overrides)
         PANFLUTE_SLEEPTIME = 20,
         PANFLUTE_SLEEPRANGE = 15,
         PANFLUTE_USES = 10,
+
         HORN_RANGE = 25,
         HORN_USES = 10,
         HORN_EFFECTIVE_TIME = 20,
         HORN_MAX_FOLLOWERS = 5,
+
+        HOUNDWHISTLE_USES = 10,
+        HOUNDWHISTLE_RANGE = 25,
+        HOUNDWHISTLE_EFFECTIVE_TIME = 40,
+        HOUNDWHISTLE_MAX_FOLLOWERS = 5,
+
         MANDRAKE_SLEEP_TIME = 10,
         MANDRAKE_SLEEP_RANGE = 15,
         MANDRAKE_SLEEP_RANGE_COOKED = 25,
@@ -2172,6 +2188,7 @@ function Tune(overrides)
 
         GLOMMERBELL_USES = 3,
 
+        CLAYWARG_RUNSPEED = 5.5,
         WARG_RUNSPEED = 5.5,
         WARG_HEALTH = 600 * 3, --harder for multiplayer
         WARG_DAMAGE = 50,
@@ -2375,6 +2392,13 @@ function Tune(overrides)
         HUTCH_PRICKLY_DAMAGE = 30,
 
         NUM_PREFAB_SWAPS = 0,
+        
+        ACHIEVEMENT_RADIUS_FOR_GIANT_KILL = 30,
+        ACHIEVEMENT_PIG_POSSE_SIZE = 6,
+        ACHIEVEMENT_ROCKY_POSSE_SIZE = 4,
+        ACHIEVEMENT_HOST_FOR_DAYS = 40,
+        ACHIEVEMENT_HELPOUT_GIVER_MIN_AGE = 20,
+        ACHIEVEMENT_HELPOUT_RECEIVER_MAX_AGE = 2,
 
         PETRIFICATION_CYCLE =
         {

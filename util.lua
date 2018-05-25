@@ -358,6 +358,7 @@ end
 
 -- return only values found in all arrays
 function ArrayIntersection(...)
+    local arg = {n=select('#',...),...}
 	local ret = {}
 	for i,val in ipairs(arg[1]) do
 		local good = true
@@ -553,7 +554,7 @@ end
 
 function softresolvefilepath(filepath, force_path_search)
     force_path_search = force_path_search or false
-	if PLATFORM == "PS4" and not force_path_search then
+	if IsConsole() and not force_path_search then
 		return filepath -- it's already absolute, so just send it back
 	end
 
@@ -731,7 +732,7 @@ function RunInSandboxSafe(untrusted_code, error_handler)
 	local untrusted_function, message = loadstring(untrusted_code)
 	if not untrusted_function then return nil, message end
 	setfenv(untrusted_function, {} )
-	return xpcall(untrusted_function, error_handler )
+	return xpcall(untrusted_function, error_handler or function() end)
 end
 
 function GetTickForTime(target_time) 
@@ -886,6 +887,24 @@ function fastdump(value)
 	end
 	printtable(value)
 	return table.concat(items)
+end
+
+-- Get a table index as if the table were circular.
+--
+-- You probably want circular_index instead.
+-- Due to Lua's 1-based arrays, this is more complex than usual.
+function circular_index_number(count, index)
+    local zb_current = index - 1
+    local zb_result = zb_current
+    zb_result = zb_result % count
+    return zb_result + 1
+end
+
+-- Index a table as if it were circular.
+-- Use like this:
+--      next_item = circular_index(item_list, index + 1)
+function circular_index(t, index)
+    return t[circular_index_number(#t, index)]
 end
 
 --[[ Data Structures --]]
@@ -1320,4 +1339,51 @@ function DistPointToSegmentXYSq(p, v1, v2)
 		return Dist2dSq(p, v2)
 	end
 	return Dist2dSq(p, {x = v1.x + t * (v2.x - v1.x), y =v1.y + t * (v2.y - v1.y)});
+end
+
+
+-- helpers for orderedPairs
+function __genOrderedIndex( t )
+    local orderedIndex = {}
+    for key in pairs(t) do
+        table.insert( orderedIndex, key )
+    end
+    table.sort( orderedIndex )
+    return orderedIndex
+end
+
+function orderedNext(t, state)
+    -- Equivalent of the next function, but returns the keys in the alphabetic
+    -- order. We use a temporary ordered key table that is stored in the
+    -- table being iterated.
+
+    local key = nil
+    --print("orderedNext: state = "..tostring(state) )
+    if state == nil then
+        -- the first time, generate the index
+        t.__orderedIndex = __genOrderedIndex( t )
+        key = t.__orderedIndex[1]
+    else
+        -- fetch the next value
+        for i = 1,table.getn(t.__orderedIndex) do
+            if t.__orderedIndex[i] == state then
+                key = t.__orderedIndex[i+1]
+            end
+        end
+    end
+
+    if key then
+        return key, t[key]
+    end
+
+    -- no more value to return, cleanup
+    t.__orderedIndex = nil
+    return
+end
+
+-- iterate over a list in sorted order
+function orderedPairs(t)
+    -- Equivalent of the pairs() function on tables. Allows to iterate
+    -- in order
+    return orderedNext, t, nil
 end

@@ -10,7 +10,6 @@ require "os"
 
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local RedeemDialog = require "screens/redeemdialog"
-local EmailSignupScreen = require "screens/emailsignupscreen"
 local FestivalEventScreen = require "screens/redux/festivaleventscreen"
 local MovieDialog = require "screens/moviedialog"
 local CreditsScreen = require "screens/creditsscreen"
@@ -67,37 +66,58 @@ function MultiplayerMainScreen:DoInit()
 
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
 
-    if IsAnyFestivalEventActive() then
+    if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
         self.bg = self.fixed_root:AddChild(TEMPLATES.BoarriorBackground())
         self.bg_anim = self.fixed_root:AddChild(TEMPLATES.BoarriorAnim())
+	elseif IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
+		local anim_bg = UIAnim()
+		anim_bg:GetAnimState():SetBuild("dst_menu_feast_bg")
+		anim_bg:GetAnimState():SetBank("dst_menu_bg")
+		anim_bg:SetScale(0.7)
+		anim_bg:SetPosition(300, -10)
+		anim_bg:GetAnimState():SetDeltaTimeMultiplier(1.6)
+		anim_bg:GetAnimState():PlayAnimation("loop", true)
+        
+		local anim = UIAnim()
+		anim:GetAnimState():SetBuild("dst_menu_feast")
+		anim:GetAnimState():SetBank("dst_menu")
+		anim:SetScale(0.7)
+		anim:SetPosition(300, -10)
+		anim:GetAnimState():PlayAnimation("loop", true)
+
+		self.bg_anim_bg = self.fixed_root:AddChild(anim_bg)
+		self.bg_anim = self.fixed_root:AddChild(anim)
+    elseif IsSpecialEventActive(SPECIAL_EVENTS.YOTV) then
+        self.bg_anim_bg = self.fixed_root:AddChild(TEMPLATES.ClayWargBackground())
+        self.bg_anim = self.fixed_root:AddChild(TEMPLATES.ClayWargAnim())
+        
+        --darken the bg slightly with a gradient so that the menu doesn't get too lost.
+		local grad = self.fixed_root:AddChild(Image("images/frontend.xml", "sidemenu_bg.tex"))
+		grad:SetVRegPoint(ANCHOR_MIDDLE)
+		grad:SetHRegPoint(ANCHOR_LEFT)
+		grad:SetScale(1.5)
+		grad:SetPosition(-.5 * RESOLUTION_X, 0)
+		grad:SetTint(0,0,0,1)
+	else
+		local anim = UIAnim()
+		anim:GetAnimState():SetBuild("dst_menu")
+		anim:GetAnimState():SetBank("dst_menu")
+		anim:SetScale(0.7)
+		anim:SetPosition(300, -10)
+		anim:GetAnimState():PlayAnimation("loop", true)
+
+		self.bg_anim = self.fixed_root:AddChild(anim)
+    end
+    
+    self.motd = self.fixed_root:AddChild(Widget("motd"))
+    if IsAnyFestivalEventActive() then
+        self.motd:SetPosition(-240, 230)
+        
         if not TheFrontEnd:GetIsOfflineMode() then
 			self.userprogress = self.fixed_root:AddChild(TEMPLATES.UserProgress(function()
 				self:OnPlayerSummaryButton()
 			end))
 		end
-    else
-        local anim_bg = UIAnim()
-        anim_bg:GetAnimState():SetBuild("dst_menu_feast_bg")
-        anim_bg:GetAnimState():SetBank("dst_menu_bg")
-        anim_bg:SetScale(0.7)
-        anim_bg:SetPosition(300, -10)
-        anim_bg:GetAnimState():SetDeltaTimeMultiplier(1.6)
-        anim_bg:GetAnimState():PlayAnimation("loop", true)
-        
-        local anim = UIAnim()
-        anim:GetAnimState():SetBuild("dst_menu_feast")
-        anim:GetAnimState():SetBank("dst_menu")
-        anim:SetScale(0.7)
-        anim:SetPosition(300, -10)
-        anim:GetAnimState():PlayAnimation("loop", true)
-
-        self.bg_anim_bg = self.fixed_root:AddChild(anim_bg)
-        self.bg_anim = self.fixed_root:AddChild(anim)
-    end
-
-    self.motd = self.fixed_root:AddChild(Widget("motd"))
-    if IsAnyFestivalEventActive() then
-        self.motd:SetPosition(-240, 230)
     else
         -- onlinestatus is above motd
         self.motd:SetPosition(510, 215)
@@ -109,7 +129,7 @@ function MultiplayerMainScreen:DoInit()
         nil,
         STRINGS.UI.MAINSCREEN.MOTD
     ))
-    self.motdbg:SetBackgroundTint(0,0,0,.85)
+    self.motdbg:SetBackgroundTint(0,0,0,.85) -- black to match image border
     self.motd.motdtitle = self.motdbg.title
     self.motd.motdtext = self.motdbg.body
     -- smaller font is more subtle
@@ -134,7 +154,7 @@ function MultiplayerMainScreen:DoInit()
     self.motd.button:SetPosition(0,-103)
     self.motd.button:SetScale(.45)
     self.motd.button:SetText(STRINGS.UI.MAINSCREEN.MOTDBUTTON)
-    self.motd.button:SetOnClick( function() VisitURL("http://store.kleientertainment.com/") end )
+    self.motd.button:SetOnClick( function() if PLATFORM ~= "WIN32_RAIL" then VisitURL("http://store.kleientertainment.com/") end end )
 
     self.motd.focus_forward = self.motd.button
 
@@ -439,11 +459,6 @@ end
 
 
 -- SUBSCREENS
-function MultiplayerMainScreen:EmailSignup()
-    self.last_focus_widget = TheFrontEnd:GetFocusWidget()
-	TheFrontEnd:PushScreen(EmailSignupScreen())
-end
-
 function MultiplayerMainScreen:Forums()
 	VisitURL("http://forums.kleientertainment.com/forum/73-dont-starve-together-beta/")
 end
@@ -610,65 +625,40 @@ function MultiplayerMainScreen:MakeSubMenu()
         return btn
     end
 
-    local credits_button = TEMPLATES.IconButton("images/button_icons.xml", "credits.tex", STRINGS.UI.MAINSCREEN.CREDITS, false, true, function() self:OnCreditsButton() end, {font=NEWFONT_OUTLINE})
-    local movie_button = TEMPLATES.IconButton("images/button_icons.xml", "movie.tex", STRINGS.UI.MAINSCREEN.MOVIE, false, true, function() self:OnMovieButton() end, {font=NEWFONT_OUTLINE})
-    local forums_button = TEMPLATES.IconButton("images/button_icons.xml", "forums.tex", STRINGS.UI.MAINSCREEN.FORUM, false, true, function() self:Forums() end, {font=NEWFONT_OUTLINE})
-    local newsletter_button = TEMPLATES.IconButton("images/button_icons.xml", "newsletter.tex", STRINGS.UI.MAINSCREEN.NOTIFY, false, true, function() self:EmailSignup() end, {font=NEWFONT_OUTLINE})
-
-    if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
-
-        local more_games_button = TEMPLATES.IconButton("images/button_icons.xml", "more_games.tex", STRINGS.UI.MAINSCREEN.MOREGAMES, false, true, function() VisitURL("http://store.steampowered.com/search/?developer=Klei%20Entertainment") end, {font=NEWFONT_OUTLINE})
-
+	local credits_button = TEMPLATES.IconButton("images/button_icons.xml", "credits.tex", STRINGS.UI.MAINSCREEN.CREDITS, false, true, function() self:OnCreditsButton() end, {font=NEWFONT_OUTLINE})
+	local movie_button = TEMPLATES.IconButton("images/button_icons.xml", "movie.tex", STRINGS.UI.MAINSCREEN.MOVIE, false, true, function() self:OnMovieButton() end, {font=NEWFONT_OUTLINE})
+	local forums_button = nil
+	local more_games_button = nil
+	local manage_account_button = nil
+	local redeem_button = nil
+	local documents_button = nil
+	
+	
+    if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" or PLATFORM == "WIN32_RAIL" then
+		if PLATFORM ~= "WIN32_RAIL" then
+	        more_games_button = TEMPLATES.IconButton("images/button_icons.xml", "more_games.tex", STRINGS.UI.MAINSCREEN.MOREGAMES, false, true, function() VisitURL("http://store.steampowered.com/search/?developer=Klei%20Entertainment") end, {font=NEWFONT_OUTLINE})
+			forums_button = TEMPLATES.IconButton("images/button_icons.xml", "forums.tex", STRINGS.UI.MAINSCREEN.FORUM, false, true, function() self:Forums() end, {font=NEWFONT_OUTLINE})
+		else
+			documents_button = TEMPLATES.IconButton("images/button_icons.xml", "folder.tex", STRINGS.UI.MAINSCREEN.SAVE_LOCATION, false, true, function() TheSim:OpenDocumentsFolder() end, {font=NEWFONT_OUTLINE})
+		end
+		
         if TheFrontEnd:GetAccountManager():HasSteamTicket() then
-
-            local manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() VisitURL(TheFrontEnd:GetAccountManager():GetViewAccountURL(), true ) end, {font=NEWFONT_OUTLINE})
+            manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() print(TheFrontEnd:GetAccountManager():GetViewAccountURL()) VisitURL( TheFrontEnd:GetAccountManager():GetViewAccountURL(), true ) end, {font=NEWFONT_OUTLINE})
 
 			local online = TheNet:IsOnlineMode() and not TheFrontEnd:GetIsOfflineMode()
 			if online then
-				local redeem_button = TEMPLATES.IconButton("images/button_icons.xml", "redeem.tex", STRINGS.UI.MAINSCREEN.REDEEM, false, true, function() self:OnRedeemButton() end, {font=NEWFONT_OUTLINE})
-	            submenuitems =
-				{
-            		{widget = redeem_button},
-					{widget = manage_account_button},
-                    {widget = movie_button},
-					{widget = credits_button},
-					{widget = forums_button},
-					{widget = more_games_button},
-					{widget = newsletter_button},
-				}
-			else
-				--have steam ticket, but offline
-				submenuitems =
-				{
-					{widget = manage_account_button},
-                    {widget = movie_button},
-					{widget = credits_button},
-					{widget = forums_button},
-					{widget = more_games_button},
-					{widget = newsletter_button},
-				}
+				redeem_button = TEMPLATES.IconButton("images/button_icons.xml", "redeem.tex", STRINGS.UI.MAINSCREEN.REDEEM, false, true, function() self:OnRedeemButton() end, {font=NEWFONT_OUTLINE})
 			end
-        else
-			--no valid steam ticket
-            submenuitems =
-            {
-                {widget = movie_button},
-                {widget = credits_button},
-                {widget = forums_button},
-                {widget = more_games_button},
-                {widget = newsletter_button},
-            }
         end
-    else
-        submenuitems =
-            {
-                {widget = movie_button},
-                {widget = credits_button},
-                {widget = forums_button},
-                {widget = newsletter_button},
-            }
     end
-
+    
+	local widgets = { documents_button, redeem_button, manage_account_button, movie_button, credits_button, forums_button, more_games_button }
+	for i = 1, #widgets do
+		if widgets[i] ~= nil then
+			table.insert(submenuitems, {widget = widgets[i]} )
+		end
+	end
+	
     self.submenu = self.fixed_root:AddChild(Menu(submenuitems, 75, true))
     if TheInput:ControllerAttached() then
         self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+80, 0)
@@ -684,8 +674,7 @@ function MultiplayerMainScreen:OnBecomeActive()
     ValidateItemsInProfile(Profile)
 
     if self.leaving and self.userprogress then
-        -- Maybe have returned from collection with new icon or from game with
-        -- more xp.
+        -- Maybe have returned from collection with new icon or from game with  more xp.
         self.userprogress:UpdateProgress()
     end
 
@@ -693,7 +682,9 @@ function MultiplayerMainScreen:OnBecomeActive()
         self:Show()
     end
 
-	self.menu:RestoreFocusTo(self.last_focus_widget)
+	if self.last_focus_widget then
+		self.menu:RestoreFocusTo(self.last_focus_widget)
+	end
 
     if self.debug_menu then self.debug_menu:Enable() end
 
@@ -706,46 +697,71 @@ function MultiplayerMainScreen:OnBecomeActive()
 		TheSim:StartWorkshopQuery()
 	end
 
+    --delay for a frame to allow the screen to finish building, then check the entity count for leaks
+    self.inst:DoTaskInTime(0, function()
+        if self.cached_entity_count ~= nil and self.cached_entity_count ~= TheSim:GetNumberOfEntities() then
+            print("### Error: Leaked entities in the frontend.", self.cached_entity_count)
+            for k, v in pairs(Ents) do if v.widget and (not v:IsValid() or v.widget.parent == nil) then
+                print(k, v.widget.name, v:IsValid(), v.widget.parent ~= nil, v) end
+            end
+        end
+        self.cached_entity_count = TheSim:GetNumberOfEntities()
+    end)
 end
 
 function MultiplayerMainScreen:FinishedFadeIn()
-	--Do new entitlement items
-	local items = {} -- early access thank you gifts
-    local entitlement_items = TheInventory:GetUnopenedEntitlementItems()
-	for _,item in pairs(entitlement_items) do
-		table.insert(items, { item = item.item_type, item_id = item.item_id, gifttype = SkinGifts.types[item.item_type] or "DEFAULT" })
-	end
 	
-    if #items > 0 then
-        local thankyou_popup = ThankYouPopup(items)
-        TheFrontEnd:PushScreen(thankyou_popup)
-    else
-		--Make sure we only do one mainscreen popup at a time
-		--Do language mods assistance popup
-		local interface_lang = TheNet:GetLanguageCode()
-		if interface_lang ~= "english" then
-			if Profile:GetValue("language_mod_asked_"..interface_lang) ~= true then
-				TheSim:QueryServer( "https://s3.amazonaws.com/ds-mod-language/dst_mod_languages.json",
-				function( result, isSuccessful, resultCode )
- 					if isSuccessful and string.len(result) > 1 and resultCode == 200 then
- 						local status, language_mods = pcall( function() return json.decode(result) end )
-						local lang_popup = language_mods[interface_lang]
-						if status and lang_popup ~= nil then
-							if lang_popup.collection ~= "" then
-								local popup_screen = PopupDialogScreen( lang_popup.title, lang_popup.body,
-										{
-											{text=lang_popup.yes, cb = function() VisitURL("http://steamcommunity.com/workshop/filedetails/?id="..lang_popup.collection) TheFrontEnd:PopScreen() self:OnModsButton() end },
-											{text=lang_popup.no, cb = function() TheFrontEnd:PopScreen() end}
-										}
-									)
+    if HasNewSkinDLCEntitlements() then
+        if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
+            local popup_screen = PopupDialogScreen( STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_BODY,
+                    {
+                        {text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function() TheFrontEnd:PopScreen() MakeSkinDLCPopup() end },
+                    }
+                )
 
-								TheFrontEnd:PushScreen( popup_screen )
-								Profile:SetValue("language_mod_asked_"..interface_lang, true)
-								Profile:Save()
+            TheFrontEnd:PushScreen( popup_screen )
+        else
+            MakeSkinDLCPopup()
+        end
+	else
+		--Do new entitlement items
+		local items = {}
+		local entitlement_items = TheInventory:GetUnopenedEntitlementItems()
+		for _,item in pairs(entitlement_items) do
+			table.insert(items, { item = item.item_type, item_id = item.item_id, gifttype = SkinGifts.types[item.item_type] or "DEFAULT" })
+		end
+	
+		if #items > 0 then
+			local thankyou_popup = ThankYouPopup(items)
+			TheFrontEnd:PushScreen(thankyou_popup)
+		else
+			--Make sure we only do one mainscreen popup at a time
+			--Do language mods assistance popup
+			local interface_lang = TheNet:GetLanguageCode()
+			if interface_lang ~= "english" then
+				if Profile:GetValue("language_mod_asked_"..interface_lang) ~= true then
+					TheSim:QueryServer( "https://s3.amazonaws.com/ds-mod-language/dst_mod_languages.json",
+					function( result, isSuccessful, resultCode )
+ 						if isSuccessful and string.len(result) > 1 and resultCode == 200 then
+ 							local status, language_mods = pcall( function() return json.decode(result) end )
+							local lang_popup = language_mods[interface_lang]
+							if status and lang_popup ~= nil then
+								if lang_popup.collection ~= "" then
+									local popup_screen = PopupDialogScreen( lang_popup.title, lang_popup.body,
+											{
+												{text=lang_popup.yes, cb = function() VisitURL("http://steamcommunity.com/workshop/filedetails/?id="..lang_popup.collection) TheFrontEnd:PopScreen() self:OnModsButton() end },
+												{text=lang_popup.no, cb = function() TheFrontEnd:PopScreen() end}
+											}
+										)
+
+									TheFrontEnd:PushScreen( popup_screen )
+									Profile:SetValue("language_mod_asked_"..interface_lang, true)
+									Profile:Save()
+								end
 							end
 						end
-					end
-				end, "GET" )
+					end, "GET" )
+				end
 			end
 		end
 	end
@@ -777,8 +793,13 @@ function MultiplayerMainScreen:SetMOTD(str, cache)
 	    if cache then
 	 		SavePersistentString("motd_image", str)
 	    end
-
-        local platform_motd = motd.dststeam
+	    
+		local platform_motd
+		if PLATFORM == "WIN32_RAIL" then
+			platform_motd = motd.dstrail
+		else
+			platform_motd = motd.dststeam
+		end
 
 		if platform_motd then
 			--make sure we have an actual valid URL
@@ -859,13 +880,19 @@ function MultiplayerMainScreen:OnCachedMOTDLoad(load_success, str)
 	if load_success and string.len(str) > 1 then
 		self:SetMOTD(str, false)
 	end
-	TheSim:QueryServer( "https://d21wmy1ql1e52r.cloudfront.net/ds_image_motd.json", function(...) self:OnMOTDQueryComplete(...) end, "GET" )
-	--TheSim:QueryServer( "https://s3-us-west-2.amazonaws.com/kleifiles/external/ds_image_motd.json", function(...) self:OnMOTDQueryComplete(...) end, "GET" )
+	
+	if PLATFORM == "WIN32_RAIL" then
+		TheSim:QueryServer( "https://d21wmy1ql1e52r.cloudfront.net/ds_image_motd_intl.json", function(...) self:OnMOTDQueryComplete(...) end, "GET" )
+	else
+		TheSim:QueryServer( "https://d21wmy1ql1e52r.cloudfront.net/ds_image_motd.json", function(...) self:OnMOTDQueryComplete(...) end, "GET" )
+	end
 end
 
 function MultiplayerMainScreen:UpdateMOTD()
 	if SHOW_MOTD then
-		TheSim:GetPersistentString("motd_image", function(...) self:OnCachedMOTDLoad(...) end)
+		if self.motd then
+			TheSim:GetPersistentString("motd_image", function(...) self:OnCachedMOTDLoad(...) end)
+		end
 	else
 		self.motd:Hide()
 	end

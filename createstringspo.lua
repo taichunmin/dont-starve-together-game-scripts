@@ -9,6 +9,18 @@
 -- CreateStringsPOT along with the actual global strings table for use as a lookup table.
 --
 
+
+--Convert our cmd line platform to the PLATFORM expected in the strings table file.
+if arg[1] == "RAIL" then
+	PLATFORM = "WIN32_RAIL"
+elseif arg[1] == "PS4" then
+	PLATFORM = "PS4"
+elseif arg[1] == "XBL" then
+	PLATFORM = "XBL"
+else
+	PLATFORM = "WIN32_STEAM"
+end
+
 require "strings"
 require "io"
 

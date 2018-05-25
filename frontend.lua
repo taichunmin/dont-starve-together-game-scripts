@@ -940,6 +940,7 @@ function FrontEnd:PopScreen(screen)
 		self.screenstack[#self.screenstack]:SetFocus()
 		self.screenstack[#self.screenstack]:OnBecomeActive()
 
+        TheInput:UpdateEntitiesUnderMouse()
 		self:Update(0)
 
 		--print ("POP!", self.screenstack[#self.screenstack]:GetDeepestFocus(), self.tracking_mouse)

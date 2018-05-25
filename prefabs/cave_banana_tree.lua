@@ -67,7 +67,7 @@ local function tree_chopped(inst, worker)
         inst.components.lootdropper:SpawnLootPrefab("cave_banana")
     end
     inst.components.pickable.caninteractwith = false
-    inst.components.workable.workable = false
+    inst.components.workable:SetWorkable(false)
     inst.AnimState:PlayAnimation("fall")
     inst:ListenForEvent("animover", setupstump)
 end
@@ -239,7 +239,7 @@ local function stump_fn()
 end
 
 local function burnt_chopped(inst)
-    inst.components.workable.workable = false
+    inst.components.workable:SetWorkable(false)
     inst.SoundEmitter:PlaySound("dontstarve/forest/treeCrumble")
     inst.AnimState:PlayAnimation("chop_burnt")
     inst.components.lootdropper:SpawnLootPrefab("charcoal")

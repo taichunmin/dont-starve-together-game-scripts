@@ -1,3 +1,5 @@
+require 'util'
+
 --Global so Mods can use them too
 function checkbool(val) return val == nil or type(val) == "boolean" end
 function checknumber(val) return type(val) == "number" end
@@ -769,14 +771,14 @@ RPC = {}
 
 --Generate RPC codes from table of handlers
 local i = 1
-for k, v in pairs(RPC_HANDLERS) do
+for k, v in orderedPairs(RPC_HANDLERS) do
     RPC[k] = i
     i = i + 1
 end
 i = nil
 
 --Switch handler keys from code name to code value
-for k, v in pairs(RPC) do
+for k, v in orderedPairs(RPC) do
     RPC_HANDLERS[v] = RPC_HANDLERS[k]
     RPC_HANDLERS[k] = nil
 end

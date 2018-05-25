@@ -1715,6 +1715,25 @@ return
         FIRECRACKERS = "A little too noisy for my liking.",
         PERDFAN = "It's quite lovely.",
         REDPOUCH = "The vibrant red hue is a sign of good luck.",
+        WARGSHRINE = 
+        {
+            GENERIC = "Let the festivities begin!",
+            EMPTY = "Tribute by fire, hm?",
+            BURNT = "A shame.",
+        },
+        CLAYWARG = 
+        {
+            GENERIC ="Ah, how charmingly fearsome.",
+            STATUE = "An intricately crafted terra cotta statue.",
+        },
+        CLAYHOUND = 
+        {
+            GENERIC = "The earthenware has been magically animated.",
+            STATUE = "Terra cotta earthenware.",
+        },
+        HOUNDWHISTLE = "It emits a frequency undetectable to the human ear.",
+        CHESSPIECE_CLAYHOUND = "A replica of Canis lupis.",
+        CHESSPIECE_CLAYWARG = "The sculptor clearly studied the creature closely.",
 
         SKULLCHEST = "A container resembling a cranium.",
         PANDORASCHEST = "An artifact which may contain other artifacts.",

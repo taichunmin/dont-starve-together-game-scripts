@@ -124,14 +124,13 @@ end
 --[[ Private event handlers ]]
 --------------------------------------------------------------------------
 
-
-local function OnAutumn()
+local function OnSeasonTick(src, data)
 	-- If bearger gets killed and bearger isn't set to lots, _lastBeargerKillDay will be set
 	-- In this case, we need to not respawn until the following autumn, so let's make sure that 
 	-- a fairly large number of days has passed since the kill. 
 	--print("BeargerSpawner got isautumn event", _lastBeargerKillDay or "nil", TheWorld.state.cycles)
 
-	if (TheWorld.state.isautumn == true) and (not _lastBeargerKillDay or ((TheWorld.state.cycles - _lastBeargerKillDay) > TUNING.NO_BOSS_TIME)) then   
+	if data.season == "autumn" and (not _lastBeargerKillDay or ((TheWorld.state.cycles - _lastBeargerKillDay) > TUNING.NO_BOSS_TIME)) then
 		_targetNum = 0
 		local chance = math.random()
 		--print("Spawning first bearger?", chance, _firstBeargerSpawnChance)
@@ -147,7 +146,7 @@ local function OnAutumn()
 
 		--print("OnAutumn chose target number ", _targetNum )
 		local numActive = 0
-		for i,v in pairs(_activehasslers) do 
+		for i,v in pairs(_activehasslers) do
 			if v ~= nil then 
 				numActive = numActive + 1
 			end
@@ -166,7 +165,6 @@ local function OnAutumn()
 		--print("BeargerSpawner got end autumn")
 	end
 end
-
 
 local function OnPlayerJoined(src,player)
     for i, v in ipairs(_activeplayers) do
@@ -409,9 +407,8 @@ end
 
 self.inst:ListenForEvent("ms_playerjoined", OnPlayerJoined, TheWorld)
 self.inst:ListenForEvent("ms_playerleft", OnPlayerLeft, TheWorld)
-self:WatchWorldState("isautumn", OnAutumn)
+self.inst:ListenForEvent("seasontick", OnSeasonTick, TheWorld)
 self.inst:ListenForEvent("beargerremoved", OnHasslerRemoved, TheWorld)
 self.inst:ListenForEvent("beargerkilled", OnHasslerKilled, TheWorld)
 
 end)
-

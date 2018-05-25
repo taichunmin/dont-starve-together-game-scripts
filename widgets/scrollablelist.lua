@@ -33,9 +33,9 @@ local SCROLLBAR_STYLE = {
 
 -- ScrollableList expects a table of pre-constructed items to be handed in as the "items" param OR
 -- for the "items" table to be a normalized table of data where each table entry is the data that will be handed as the parameters to the supplied function for "updatefn"
--- TODO(dbriscoe): Remove bar_width_scale_factor, bar_height_scale_factor. Nothing active uses them.
 local ScrollableList = Class(Widget, function(self, items, listwidth, listheight, itemheight, itempadding, updatefn, widgetstoupdate, widgetXOffset, always_show_static, starting_offset, yInit, bar_width_scale_factor, bar_height_scale_factor, scrollbar_style)
     Widget._ctor(self, "ScrollBar")
+    -- Can remove bar_width_scale_factor, bar_height_scale_factor. Nothing active uses them.
     bar_width_scale_factor = bar_width_scale_factor or 1
     bar_height_scale_factor = bar_height_scale_factor or 1
 

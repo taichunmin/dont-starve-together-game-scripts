@@ -75,8 +75,8 @@ local assets =
 
     Asset("INV_IMAGE", "sculpting_material"),
 
-    Asset("ATLAS", "images/lavaarena_hud.xml"),
-    Asset("IMAGE", "images/lavaarena_hud.tex"),
+    Asset("DYNAMIC_ATLAS", "images/lavaarena_hud.xml"),
+    Asset("PKGREF", "images/lavaarena_hud.tex"),
 
     Asset("ANIM", "anim/lavaarena_health.zip"),
     Asset("ANIM", "anim/lavaarena_pethealth.zip"),

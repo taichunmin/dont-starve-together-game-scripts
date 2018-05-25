@@ -1964,6 +1964,26 @@ return {
         FIRECRACKERS = "Light'em up!",
         PERDFAN = "It's a big ol' fan.",
         REDPOUCH = "What a great color!",
+        WARGSHRINE = 
+        {
+            GENERIC = "That looks WAY better!",
+            EMPTY = "It's missing something. Like fire.",
+            BURNING = "That's what we were supposed to do, right?",
+            BURNT = "I may've misunderstood.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "How'd you get your eyes to do that?!",
+        	STATUE = "Did someone carve this thing?",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "This dog is stone cold!",
+        	STATUE = "Welp, that's a weird shape for a rock.",
+        },
+        HOUNDWHISTLE = "Heh heh. STAY.",
+        CHESSPIECE_CLAYHOUND = "It almost looks friendly.",
+        CHESSPIECE_CLAYWARG = "It doesn't look so tough now.",
 
         LAVA_POND_ROCK = "Oh great, another stinkin' rock!",
 

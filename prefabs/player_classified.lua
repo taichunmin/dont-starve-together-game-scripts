@@ -714,6 +714,7 @@ local function OnMorgueDirty(inst)
             location = "unknown",
             world = TheWorld.meta ~= nil and TheWorld.meta.level_id or "unknown",
             server = TheNet:GetServerName(),
+			date = os.date("%b %d, %y"),
         })
     end
 end

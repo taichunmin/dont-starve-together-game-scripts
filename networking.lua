@@ -1,5 +1,5 @@
 local InputDialogScreen = require "screens/inputdialog"
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 local Widget = require "widgets/widget"
 local ImageButton = require "widgets/imagebutton"
 local Text = require "widgets/text"
@@ -501,7 +501,7 @@ function JoinServer(server_listing, optional_password_override)
 
 			local checkbox_parent = Widget("checkbox_parent")
 			local checkbox = checkbox_parent:AddChild(ImageButton("images/ui.xml", "checkbox_off.tex", "checkbox_off_highlight.tex", "checkbox_off_disabled.tex", nil, nil, {1,1}, {0,0}))
-			local text = checkbox_parent:AddChild(Text(NEWFONT, 40, STRINGS.UI.SERVERLISTINGSCREEN.SHOW_MOD_WARNING))
+			local text = checkbox_parent:AddChild(Text(CHATFONT, 30, STRINGS.UI.SERVERLISTINGSCREEN.SHOW_MOD_WARNING))
 			local textW, textH = text:GetRegionSize()
 			local imageW, imageH = checkbox:GetSize()
 			text:SetVAlign(ANCHOR_LEFT)
@@ -510,7 +510,7 @@ function JoinServer(server_listing, optional_password_override)
 			local region = 600
 			checkbox:SetPosition(checkbox_x, 0)
 			text:SetRegionSize(region,50)
-			text:SetPosition(checkbox_x + textW/2 + imageW/1.5, 0)
+			text:SetPosition(checkbox_x + textW/2 + imageW/1.5, -10)
 			local bg = checkbox_parent:AddChild(Image("images/ui.xml", "single_option_bg.tex"))
 			bg:MoveToBack()
 			bg:SetClickable(false)
@@ -543,19 +543,21 @@ function JoinServer(server_listing, optional_password_override)
 			}
 
 			--let the user know the warning about mods
-			local mod_warning = PopupDialogScreen(STRINGS.UI.SERVERLISTINGSCREEN.MOD_WARNING_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.MOD_WARNING_BODY, menuitems)
-			mod_warning.menu.items[1]:SetFocusChangeDir(MOVE_DOWN, mod_warning.menu.items[2])
-			mod_warning.menu.items[1]:SetFocusChangeDir(MOVE_RIGHT, nil)
-			mod_warning.menu.items[2]:SetFocusChangeDir(MOVE_LEFT, nil)
-			mod_warning.menu.items[2]:SetFocusChangeDir(MOVE_RIGHT, mod_warning.menu.items[3])
-			mod_warning.menu.items[2]:SetFocusChangeDir(MOVE_UP, mod_warning.menu.items[1])
-			mod_warning.menu.items[3]:SetFocusChangeDir(MOVE_LEFT, mod_warning.menu.items[2])
-			mod_warning.menu.items[3]:SetFocusChangeDir(MOVE_UP, mod_warning.menu.items[1])
-
-			mod_warning.menu.items[2]:SetScale(.7)
-			mod_warning.menu.items[3]:SetScale(.7)
-			mod_warning.text:SetPosition(5, 10, 0)
-
+            local mod_warning = PopupDialogScreen(STRINGS.UI.SERVERLISTINGSCREEN.MOD_WARNING_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.MOD_WARNING_BODY, menuitems)
+            mod_warning.dialog.actions.items[1]:SetScale(1)
+            mod_warning.dialog.body:SetScale(0.8)
+            mod_warning.dialog.body:SetPosition(0, 40, 0)
+			mod_warning.dialog.actions.items[1]:SetFocusChangeDir(MOVE_DOWN, mod_warning.dialog.actions.items[2])
+			mod_warning.dialog.actions.items[1]:SetFocusChangeDir(MOVE_RIGHT, nil)
+			mod_warning.dialog.actions.items[2]:SetFocusChangeDir(MOVE_LEFT, nil)
+			mod_warning.dialog.actions.items[2]:SetFocusChangeDir(MOVE_RIGHT, mod_warning.dialog.actions.items[3])
+			mod_warning.dialog.actions.items[2]:SetFocusChangeDir(MOVE_UP, mod_warning.dialog.actions.items[1])
+			mod_warning.dialog.actions.items[3]:SetFocusChangeDir(MOVE_LEFT, mod_warning.dialog.actions.items[2])
+            mod_warning.dialog.actions.items[3]:SetFocusChangeDir(MOVE_UP, mod_warning.dialog.actions.items[1])
+			mod_warning.dialog.actions.items[1]:SetPosition(305,55,0)
+			mod_warning.dialog.actions.items[2]:SetPosition(105,-10,0)
+            mod_warning.dialog.actions.items[3]:SetPosition(355,-10,0)
+            
 			TheFrontEnd:PushScreen( mod_warning )
 		else
 			after_mod_warning()
@@ -572,7 +574,6 @@ function JoinServer(server_listing, optional_password_override)
 						TheFrontEnd:PopScreen()
 						after_client_mod_message()
 			end }})
-		client_mod_msg.title:SetPosition(0, 75, 0)
 
 		TheFrontEnd:PushScreen( client_mod_msg )
 	else

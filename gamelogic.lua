@@ -16,6 +16,10 @@ local EquipSlot = require("equipslotutil")
 local GroundTiles = require("worldtiledefs")
 local Stats = require("stats")
 
+if PLATFORM == "WIN32_RAIL" then
+	TheSim:SetMemInfoTrackingInterval(5*60)
+end
+
 -- globals
 chestfunctions = require("scenarios/chestfunctions")
 
@@ -54,7 +58,7 @@ if not TheNet:IsDedicated() then
 end
 
 local WorldGenScreen = require "screens/worldgenscreen"
-local PauseScreen = require "screens/pausescreen"
+local PauseScreen = require "screens/redux/pausescreen"
 
 Print (VERBOSITY.DEBUG, "[Loading frontend assets]")
 
@@ -153,6 +157,8 @@ function HideCancelTip()
 end
 
 local function LoadAssets(asset_set, savedata)
+    LoadAccessibleKlumpFiles()
+
 	if LOAD_UPFRONT_MODE then
         ModManager:RegisterPrefabs()
         return
@@ -176,7 +182,7 @@ local function LoadAssets(asset_set, savedata)
 	local in_frontend = not in_backend
 
 	KeepAlive()
-
+    
 	if Settings.current_asset_set == "FRONTEND" then
 		if Settings.last_asset_set == "FRONTEND" then
 			print("\tFE assets already loaded")
@@ -796,14 +802,7 @@ local function DoInitGame(savedata, profile)
 	end
 
 	inGamePlay = true
-
 	TheFrontEnd:SetFadeLevel(1)
-	
-	if PLATFORM == "PS4" then
-	    if not TheSystemService:HasFocus() or not TheInputProxy:IsAnyInputDeviceConnected() then
-	        TheFrontEnd:PushScreen(PauseScreen())
-	    end
-	end
 	
 	TheNet:DoneLoadingMap( )
 	    
@@ -898,6 +897,13 @@ local function LoadSlot(slot)
     end
 end
 
+function ShowDemoExpiredDialog()
+	local DemoOverPopupDialogScreen = require "screens/demooverpopup"
+
+	local popup = DemoOverPopupDialogScreen(RequestShutdown)
+	TheFrontEnd:PushScreen(popup)
+end
+
 ----------------LOAD THE PROFILE AND THE SAVE INDEX, AND START THE FRONTEND
 
 local function DoResetAction()
@@ -983,6 +989,9 @@ local function DoResetAction()
 			LoadAssets("FRONTEND")
 			if MainScreen then
 				TheFrontEnd:ShowScreen(MainScreen(Profile))
+				if PLATFORM == "WIN32_RAIL" and TheSim:IsDemoExpired() then
+					ShowDemoExpiredDialog()
+				end
 			end
 		end
 	end
@@ -1038,6 +1047,8 @@ Print(VERBOSITY.DEBUG, "[Loading profile and save index]")
 Profile:Load( function() 
 	SaveGameIndex:Load( OnFilesLoaded )
 end )
+
+require "platformpostload" --Note(Peter): The location of this require is currently only dependent on being after the built in usercommands being loaded
 
 --Online servers will call StartDedicatedServer after authentication
 if TheNet:IsDedicated() and not TheNet:GetIsServer() and TheNet:IsDedicatedOfflineCluster() then

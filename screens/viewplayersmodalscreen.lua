@@ -16,15 +16,19 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
 
     self.black = self:AddChild(TEMPLATES.BackgroundTint())
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-
-    local buttons = {
-        {
-            text=STRINGS.UI.SERVERLISTINGSCREEN.OK,
-            cb = function()
-                self:Cancel()
-            end
-        },
-    }
+	
+    local buttons = nil
+    if TheInput:ControllerAttached() then 
+        -- Button is awkward to navigate to, so rely on CONTROL_CANCEL instead.
+        buttons = {}
+    else
+        buttons = {
+            {
+                text = STRINGS.UI.SERVERLISTINGSCREEN.OK,
+                cb = function() self:Cancel() end,
+            },
+        }
+    end
     self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(325, 400, STRINGS.UI.SERVERLISTINGSCREEN.PLAYERS, buttons, nil, "x/y"))
 
     self.players_number = self.dialog.body
@@ -55,7 +59,7 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
         playerListing.adminBadge:SetPosition(badge_x-13,-10,0)
         playerListing.adminBadge.image:SetScale(.175)
         playerListing.adminBadge.scale_on_focus = false
-        playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         if not v.admin then
             playerListing.adminBadge:Hide()
         end]]
@@ -80,13 +84,13 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
 
         local scale = .5
 
-        playerListing.viewprofile = playerListing:AddChild(TEMPLATES.old.IconButton("images/button_icons.xml", "steam.tex" ))
+        playerListing.viewprofile = playerListing:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "steam.tex" ))
         playerListing.viewprofile:SetPosition(137,-2,0)
         playerListing.viewprofile:SetScale(scale)
         --playerListing.viewprofile:SetNormalScale(scale)
         --playerListing.viewprofile:SetFocusScale(scale+.1)
         --playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
-        --playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        --playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.viewprofile:SetOnClick(
             function()
                 --TheFrontEnd:PushScreen(PlayerAvatarPopupScreen(v.name, v))
@@ -103,6 +107,22 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
         else
             playerListing.viewprofile:Hide()
         end
+
+        if IsPS4() then
+            playerListing.viewprofile:Hide()
+        end
+
+		if IsXB1() then
+	        playerListing.OnControl = function(self, control, down)
+	            if Widget.OnControl(playerListing, control, down) then return true end
+	
+	            if not down then
+	                if control == CONTROL_MAP then
+	                    TheNet:ViewNetProfile(v.netid)
+	                end
+	            end
+	        end
+		end
 
         playerListing.OnGainFocus = function()
             -- playerListing.name:SetSize(43)
@@ -145,7 +165,12 @@ local ViewPlayersModalScreen = Class(Screen, function(self, players, maxPlayers)
     self.scroll_list:SetFocusChangeDir(MOVE_RIGHT, self.dialog.actions)
     self.dialog.actions:SetFocusChangeDir(MOVE_UP, self.scroll_list)
 
-    self.default_focus = self.scroll_list
+	if IsPS4() then
+		-- ps4 can't do anything with the players/list (no view profile) so there's no point in focusing on it
+		self.default_focus = nil
+	else
+		self.default_focus = self.scroll_list
+	end
 
     if #self.players == 0 then
         self.scroll_list:Hide()
@@ -172,6 +197,9 @@ function ViewPlayersModalScreen:GetHelpText()
     local controller_id = TheInput:GetControllerID()
     local t = {}
     table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
+	if IsXB1() then
+    	table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.VIEWGAMERCARD)
+	end
     return table.concat(t, "  ")
 end
 

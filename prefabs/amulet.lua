@@ -23,7 +23,7 @@ local function onequip_red(inst, owner)
         owner:PushEvent("equipskinneditem", inst:GetSkinName())
         owner.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "torso_amulets")
     else
-		owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "redamulet")
+        owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "redamulet")
     end
     
     inst.task = inst:DoPeriodicTask(30, healowner, nil, owner)

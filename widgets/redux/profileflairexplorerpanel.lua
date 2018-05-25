@@ -38,7 +38,7 @@ local ProfileFlairExplorerPanel = Class(Widget, function(self, owner, user_profi
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 140)
 
-    self.filter_bar = FilterBar(self.picker, "collectionscreen")
+    self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
    
     self:_DoFocusHookups()

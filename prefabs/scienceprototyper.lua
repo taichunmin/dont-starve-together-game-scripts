@@ -157,10 +157,17 @@ local function createmachine(level, name, soundprefix, techtree, giftsound)
         end
     end
 
-    local function onbuilt(inst)
+    local function onbuilt(inst, data)
         inst:_PlayAnimation("place")
         inst:_PushAnimation("idle", false)
         inst.SoundEmitter:PlaySound("dontstarve/common/researchmachine_"..soundprefix.."_place")
+        
+		if name == "researchlab" then
+	        AwardPlayerAchievement("build_researchlab", data.builder)
+	    elseif name == "researchlab2" then
+	        AwardPlayerAchievement("build_researchlab2", data.builder)
+	    end
+        
     end
 
     local function fn()

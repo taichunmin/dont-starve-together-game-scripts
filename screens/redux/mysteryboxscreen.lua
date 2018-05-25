@@ -6,7 +6,7 @@ local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
 local MagicSkinCollector = require "widgets/magicskincollector"
 local OnlineStatus = require "widgets/onlinestatus"
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
 
 local TEMPLATES = require("widgets/redux/templates")
@@ -65,13 +65,13 @@ function MysteryBoxScreen:UpdateMysteryBoxInfo()
 	self.box_counts = GetMysteryBoxCounts()
 
 	--always have one option in the list to display
-	if self.box_counts["mysterybox_lava_4"] == nil then
-		self.box_counts["mysterybox_lava_4"] = 0
+	if next(self.box_counts) == nil then
+		self.box_counts["mysterybox_classic_4"] = 0
 	end
 	
     local has_boxes = false
 	local box_options = {}
-    for item_type,count in pairs(self.box_counts) do
+    for item_type,count in orderedPairs(self.box_counts) do
 		table.insert(box_options, { text = GetSkinName(item_type), data = item_type } )
         has_boxes = has_boxes or count > 0
     end
@@ -124,7 +124,6 @@ function MysteryBoxScreen:_BuildBoxesPanel()
 	boxes_ss.count_text = boxes_ss.image:AddChild(Text(HEADERFONT, 20, nil, UICOLOURS.WHITE))
     boxes_ss.count_text:SetPosition(0, -70)
     boxes_ss.count_text:SetRegionSize(90, 20)
-    --boxes_ss.count_text:SetHAlign(ANCHOR_LEFT)
 
     boxes_ss.open_btn = boxes_ss:AddChild(TEMPLATES.StandardButton())
     boxes_ss.open_btn:SetScale(0.7)

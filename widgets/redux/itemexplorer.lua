@@ -11,6 +11,7 @@ local ImageButton = require "widgets/imagebutton"
 local SetPopupDialog = require "screens/redux/setpopupdialog"
 local Text = require "widgets/text"
 local Widget = require "widgets/widget"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 
 local TEMPLATES = require "widgets/redux/templates"
 
@@ -307,7 +308,7 @@ end
 function ItemExplorer:_ApplyDataToDescription(item_data)
     if item_data and item_data.item_key then
         local item_key = item_data.item_key
-        -- TODO(dbriscoe): Should these use SetTruncatedString? SkinsScreen used:
+        -- Could use SetTruncatedString. SkinsScreen used:
         --~     self.details_panel.name:SetTruncatedString(nameStr, 220, 50, true)
         --~     self.details_panel.description:SetMultilineTruncatedString(GetSkinDescription(item_type), 7, 180, 60, true)
         self.focus_label:SetString(GetSkinName(item_key))
@@ -419,7 +420,23 @@ end
 
 function ItemExplorer:_LaunchCommerce()
     local item_key = self.last_interaction_target.item_key
-    local is_buying = not self.last_interaction_target.is_owned
+	if WillUnravelBreakEnsemble( item_key ) then
+        local _, reward_item = IsItemInCollection(item_key)
+        local body = subfmt(STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_BODY, {ensemble_name=STRINGS.SET_NAMES[reward_item], reward_name=GetSkinName(reward_item)})
+        
+		TheFrontEnd:PushScreen(PopupDialogScreen(
+			STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_TITLE,
+			body,
+			{{ text = STRINGS.UI.BARTERSCREEN.OK, cb = function() TheFrontEnd:PopScreen() self:_DoCommerce(item_key) end },
+			 { text = STRINGS.UI.BARTERSCREEN.CANCEL, cb = function() TheFrontEnd:PopScreen() end }}))
+		return
+	else
+		self:_DoCommerce(item_key)
+	end
+end
+
+function ItemExplorer:_DoCommerce(item_key)
+	local is_buying = not self.last_interaction_target.is_owned
     local barter_screen = BarterScreen(self.scroll_list.context.user_profile, self, item_key, is_buying, function()
         -- We completed a barter and now our screens contain old inventory data.
 
@@ -710,7 +727,7 @@ function ItemExplorer:_CreateScrollingGridItem(context, scroll_index, width, hei
     local y = height - spacing
 
     w:ScaleToSize(x,y)
-    w.ongainfocusfn = function(is_btn_enabled)
+    w.ongainfocusfn = function()
         self.scroll_list:OnWidgetFocus(w)
         for i,receiver in ipairs(context.input_receivers) do
             if receiver.OnGainGridItemFocus then
@@ -718,7 +735,7 @@ function ItemExplorer:_CreateScrollingGridItem(context, scroll_index, width, hei
             end
         end
     end
-    w.onlosefocusfn = function(is_btn_enabled)
+    w.onlosefocusfn = function()
         for i,receiver in ipairs(context.input_receivers) do
             if receiver.OnLoseGridItemFocus then
                 receiver:OnLoseGridItemFocus(w.data)
@@ -745,7 +762,7 @@ function ItemExplorer:_CreateScrollingGridItem(context, scroll_index, width, hei
 
     w.UpdateSelectionState = function(w_self)
         local item_data = w_self.data
-        w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key))
+        w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key), item_data.is_perm_owned)
     end
 
     return w
@@ -775,7 +792,6 @@ function ItemExplorer._ApplyDataToWidget(context, widget, data, index)
 end
 
 function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activity_checker_fn)
-    local item_counts = GetOwnedItemCounts()
     local contained_items = {}
     for item_key,item_blob in pairs(item_table) do
         if item_blob.type == item_type and ShouldDisplayItemInCollection(item_key) then
@@ -785,8 +801,9 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
                 is_active = is_owned and activity_checker_fn(item_key) or false,
                 acquire_timestamp = timestamp,
                 is_owned = is_owned,
-                owned_count = item_counts[item_key] or 0,
+                owned_count = TheInventory:GetOwnedItemCount(item_key),
                 item_blob = item_blob,
+                is_perm_owned = GetIsPermOwned(item_key),
             }
             table.insert(contained_items, data)
         end

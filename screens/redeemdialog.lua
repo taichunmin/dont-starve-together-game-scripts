@@ -8,6 +8,13 @@ local ThankYouPopup = require "screens/thankyoupopup"
 
 local NUM_CODE_GROUPS = 5
 local DIGITS_PER_GROUP = 4
+local DIGIT_WIDTH = 19
+local CODE_LENGTH = 24
+-- Codes are 5 groups of 4 characters (letters and numbers) separated by hyphens
+-- i and o are not allowed
+local VALID_CHARS = [[abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ1234567890]]
+
+
 
 local RedeemDialog = Class(Screen, function(self)
 	Screen._ctor(self, "RedeemDialog")
@@ -17,6 +24,12 @@ local RedeemDialog = Class(Screen, function(self)
         {text=STRINGS.UI.REDEEMDIALOG.SUBMIT, cb = function() self:DoSubmitCode() end },
         {text=STRINGS.UI.REDEEMDIALOG.CANCEL, cb = function() self:Close() end }  
     }
+	if IsConsole() then
+        VALID_CHARS = [[abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ1234567890-]]
+		buttons = nil
+		NUM_CODE_GROUPS = 1
+		DIGITS_PER_GROUP = CODE_LENGTH --allow the users to include the hyphens or spaces when they enter text
+	end
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
     self.black = self.root:AddChild(TEMPLATES.BackgroundTint())
@@ -31,7 +44,11 @@ local RedeemDialog = Class(Screen, function(self)
 
 	-- server response text
     self.text = self.dialog.body
-    self.text:SetPosition(0, 60)
+	if IsConsole() then
+        self.text:SetPosition(0, 45)
+    else
+        self.text:SetPosition(0, 60)
+    end
     self.text:SetVAlign(ANCHOR_TOP)
     self.text:SetHAlign(ANCHOR_MIDDLE)
     self.text:Hide()
@@ -46,32 +63,34 @@ local RedeemDialog = Class(Screen, function(self)
 
 	self.redeem_in_progress = false
 
-	self.buttons = buttons
-    self.submit_btn = self.dialog.actions.items[1]
-    self.submit_btn:Select()
+	if IsNotConsole() then
+		self.buttons = buttons
+	    self.submit_btn = self.dialog.actions.items[1]
+	    self.submit_btn:Select()
 
-    local function SequenceFocusVertical(up, down)
-        up:SetFocusChangeDir(MOVE_DOWN, down)
-        down:SetFocusChangeDir(MOVE_UP, up)
-    end
-    SequenceFocusVertical(self.entrybox, self.dialog.actions)
+	    local function SequenceFocusVertical(up, down)
+	        up:SetFocusChangeDir(MOVE_DOWN, down)
+	        down:SetFocusChangeDir(MOVE_UP, up)
+	    end
+	    SequenceFocusVertical(self.entrybox, self.dialog.actions)
+	end
 
-	self.default_focus = self.dialog    
+	self.default_focus = self.dialog
+	self.firsttime = true
 end)
 
 function RedeemDialog:OnBecomeActive()
     self._base.OnBecomeActive(self)
     self.entrybox.textboxes[1]:SetFocus()
-    self.entrybox.textboxes[1]:SetEditing(true)
+    if IsNotConsole() or self.firsttime then
+    	self.entrybox.textboxes[1]:SetEditing(true)
+    	self.firsttime = false
+    end
 end
-
--- Codes are 5 groups of 4 characters (letters and numbers) separated by hyphens
--- i and o are not allowed
-local VALID_CHARS = [[abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ1234567890]]
 
 function RedeemDialog:MakeTextEntryBox(parent)
     local entrybox = parent:AddChild(Widget("entrybox"))
-    local box_size = 75
+    local box_size = DIGIT_WIDTH * DIGITS_PER_GROUP
     local box_y = 40
 
    	entrybox.bgs = {}
@@ -94,37 +113,62 @@ function RedeemDialog:MakeTextEntryBox(parent)
 		entrybox.textboxes[i]:SetForceUpperCase(true)
 		entrybox.textboxes[i]:SetPosition(i*95 - (NUM_CODE_GROUPS/2+0.5)*95, 2, 0)
 
-		entrybox.textboxes[i].bg = entrybox.textboxes[i]:AddChild( Image("images/global_redux.xml", "textbox3_gold_tiny_normal.tex") )
+		if IsConsole() then
+			entrybox.textboxes[i].bg = entrybox.textboxes[i]:AddChild( Image("images/global_redux.xml", "textbox3_gold_normal.tex") )
+		else
+			entrybox.textboxes[i].bg = entrybox.textboxes[i]:AddChild( Image("images/global_redux.xml", "textbox3_gold_tiny_normal.tex") )
+		end
 		entrybox.textboxes[i].bg:ScaleToSize( box_size + 23, box_y + 10 )
 		entrybox.textboxes[i].bg:SetPosition(-1, 2)
 		entrybox.textboxes[i].bg:MoveToBack()
 
-		entrybox.textboxes[i]:SetFocusedImage( entrybox.textboxes[i].bg, "images/global_redux.xml", "textbox3_gold_tiny_normal.tex", "textbox3_gold_tiny_hover.tex", "textbox3_gold_tiny_focus.tex" )
+		if IsConsole() then
+			entrybox.textboxes[i]:SetFocusedImage( entrybox.textboxes[i].bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
+		else
+			entrybox.textboxes[i]:SetFocusedImage( entrybox.textboxes[i].bg, "images/global_redux.xml", "textbox3_gold_tiny_normal.tex", "textbox3_gold_tiny_hover.tex", "textbox3_gold_tiny_focus.tex" )
+		end
 
 		entrybox.textboxes[i].OnTextInputted = function()
 			for i = 1, NUM_CODE_GROUPS do
 				if string.len(entrybox.textboxes[i]:GetString()) ~= entrybox.textboxes[i].limit then
 					-- if any box is full, we're not ready yet
-					self.submit_btn:Select()
+					if IsConsole() then
+						self.entrybox.textboxes[1]:SetFocus()
+					else
+						self.submit_btn:Select()
+					end
 					return
 				end
 			end
-			self.submit_btn:Unselect()
+			if IsNotConsole() then
+				self.submit_btn:Unselect()
+			end
 		end
 
 		entrybox.textboxes[i].OnTextEntered = function()
 			if not self.redeem_in_progress then
 				local redeem_code = ""
-				for i = 1, NUM_CODE_GROUPS do
-					if i ~= 1 then
-						redeem_code	= redeem_code .. "-"
-					end
-					redeem_code	= redeem_code .. entrybox.textboxes[i]:GetString() 
-				end
+                if IsConsole() then
+                    redeem_code = entrybox.textboxes[1]:GetString()
+                    redeem_code = redeem_code:gsub("-", "")
+                    redeem_code = redeem_code:sub(1,4) .. "-" .. redeem_code:sub(5,8) .. "-" .. redeem_code:sub(9,12) .. "-" .. redeem_code:sub(13,16) .. "-" .. redeem_code:sub(17,20)
+                    entrybox.textboxes[1]:SetString(redeem_code)
+                else
+                    for i = 1, NUM_CODE_GROUPS do
+					    if i ~= 1 then
+						    redeem_code	= redeem_code .. "-"
+					    end
+					    redeem_code	= redeem_code .. entrybox.textboxes[i]:GetString() 
+				    end
+                end
 
-				if string.len(redeem_code) == NUM_CODE_GROUPS * DIGITS_PER_GROUP + (NUM_CODE_GROUPS-1) then --(NUM_CODE_GROUPS-1) is for dashes
+				if string.len(redeem_code) == CODE_LENGTH then
 					self.text:SetString("")
-					self.submit_btn:Select()
+					if IsConsole() then
+						self.entrybox.textboxes[1]:SetFocus()
+					else
+						self.submit_btn:Select()
+					end
 					self.redeem_in_progress = true
 					TheItems:RedeemCode(redeem_code, function(success, status, item_type, category, message)
 						self:DisplayResult(success, status, item_type, category, message)
@@ -174,7 +218,9 @@ function RedeemDialog:DisplayResult(success, status, item_type, category, messag
 	--success=false, status="ALREADY_REDEEMED"
 	--success=false, status="FAILED_TO_CONTACT"	
 
-    self.submit_btn:Unselect()
+	if IsNotConsole() then
+    	self.submit_btn:Unselect()
+    end
     self.redeem_in_progress = false
 
 	--DO WE DEAL WITH item_type = FROMNUM???
@@ -225,11 +271,15 @@ function RedeemDialog:OnControl(control, down)
     if RedeemDialog._base.OnControl(self,control, down) then return true end
 
     if control == CONTROL_CANCEL and not down then    
-        if #self.buttons > 1 and self.buttons[#self.buttons] then
+        if self.buttons and #self.buttons > 1 and self.buttons[#self.buttons] then
             self.buttons[#self.buttons].cb()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
         end
+    end
+
+    if IsConsole() and control == CONTROL_CANCEL and not down then
+    	self:Close()
     end
 end
 
@@ -244,7 +294,11 @@ end
 function RedeemDialog:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
-	if #self.buttons > 1 and self.buttons[#self.buttons] then
+	if self.buttons and #self.buttons > 1 and self.buttons[#self.buttons] then
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+    end
+
+    if IsConsole() then
         table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
     end
 	return table.concat(t, "  ")

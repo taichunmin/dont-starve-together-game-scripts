@@ -510,6 +510,10 @@ local states=
                 inst.sg:GoToState("idle")
             end),
         },
+
+		onexit = function(inst)
+            AwardPlayerAchievement("domesticated_beefalo", inst.components.beefalometrics.lastdomesticator)
+		end,
     },
 
     State{

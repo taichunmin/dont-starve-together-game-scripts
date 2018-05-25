@@ -20,6 +20,20 @@ local ImageButton = Class(Button, function(self, atlas, normal, focus, disabled,
     -- self.image:SetTexture(self.atlas, self.image_normal)
 end)
 
+function ImageButton:DebugDraw_AddSection(dbui, panel)
+    ImageButton._base.DebugDraw_AddSection(self, dbui, panel)
+
+    dbui.Spacing()
+    dbui.Text("ImageButton")
+    dbui.Indent() do
+        dbui.ColorEdit4("imagenormalcolour  ", unpack(self.imagenormalcolour   or {0,0,0,0}))
+        dbui.ColorEdit4("imagefocuscolour   ", unpack(self.imagefocuscolour    or {0,0,0,0}))
+        dbui.ColorEdit4("imagedisabledcolour", unpack(self.imagedisabledcolour or {0,0,0,0}))
+        dbui.ColorEdit4("imageselectedcolour", unpack(self.imageselectedcolour or {0,0,0,0}))
+    end
+    dbui.Unindent()
+end
+
 function ImageButton:ForceImageSize(x, y)
 	self.size_x = x
 	self.size_y = y
@@ -103,13 +117,12 @@ function ImageButton:OnGainFocus()
     if self:IsSelected() then return end
 
     if self:IsEnabled() then
-    	self.image:SetTexture(self.atlas, self.image_focus)
+        self.image:SetTexture(self.atlas, self.image_focus)
 
-    	if self.size_x and self.size_y then 
-    		self.image:ScaleToSize(self.size_x, self.size_y)
-    	end
-
-	end
+        if self.size_x and self.size_y then 
+            self.image:ScaleToSize(self.size_x, self.size_y)
+        end
+    end
 
     if self.image_focus == self.image_normal and self.scale_on_focus and self.focus_scale then
         self.image:SetScale(self.focus_scale[1], self.focus_scale[2], self.focus_scale[3])
@@ -134,24 +147,26 @@ function ImageButton:OnLoseFocus()
     if self:IsSelected() then return end
 
     if self:IsEnabled() then
-    	self.image:SetTexture(self.atlas, self.image_normal)
+        self.image:SetTexture(self.atlas, self.image_normal)
 
-    	if self.size_x and self.size_y then 
-    		self.image:ScaleToSize(self.size_x, self.size_y)
-    	end
-
-        if self.imagenormalcolour then
-            self.image:SetTint(self.imagenormalcolour[1], self.imagenormalcolour[2], self.imagenormalcolour[3], self.imagenormalcolour[4])
+        if self.size_x and self.size_y then 
+            self.image:ScaleToSize(self.size_x, self.size_y)
         end
-	end
+    end
 
     if self.image_focus == self.image_normal and self.scale_on_focus and self.normal_scale then
         self.image:SetScale(self.normal_scale[1], self.normal_scale[2], self.normal_scale[3])
     end
+
+    if self.imagenormalcolour then
+        self.image:SetTint(self.imagenormalcolour[1], self.imagenormalcolour[2], self.imagenormalcolour[3], self.imagenormalcolour[4])
+    end
 end
 
 function ImageButton:OnControl(control, down)
-    if not self:IsEnabled() or not self.focus or self:IsSelected() then return end
+    if not self:IsEnabled() or not self.focus then return end
+
+	if self:IsSelected() and not self.AllowOnControlWhenSelected then return false end
 
     if control == self.control then
         if down then

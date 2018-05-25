@@ -1,7 +1,7 @@
 local assets =
 {
     Asset("PKGREF", "sound/dontstarve.fev"),
-	Asset("SOUNDPACKAGE", "sound/dontstarve_DLC001.fev"),
+    Asset("SOUNDPACKAGE", "sound/dontstarve_DLC001.fev"),
     Asset("FILE", "sound/DLC_music.fsb"),
 
     Asset("FILE", "sound/wilton.fsb"),         -- Legacy sound that can be used in mods
@@ -17,61 +17,47 @@ local assets =
 
     Asset("ANIM", "anim/corner_dude.zip"),
 
-	Asset("SHADER", "shaders/anim_bloom.ksh"),
+    Asset("SHADER", "shaders/anim_bloom.ksh"),
     Asset("SHADER", "shaders/anim_bloom_ghost.ksh"),
-	Asset("SHADER", "shaders/road.ksh"),
+    Asset("SHADER", "shaders/road.ksh"),
 
-	Asset("IMAGE", "images/shadow.tex"),
-	Asset("IMAGE", "images/erosion.tex"),
-	Asset("IMAGE", "images/circle.tex"),
-	Asset("IMAGE", "images/square.tex"),
-	Asset("IMAGE", "images/trans.tex"),
+    Asset("IMAGE", "images/shadow.tex"),
+    Asset("IMAGE", "images/erosion.tex"),
+    Asset("IMAGE", "images/circle.tex"),
+    Asset("IMAGE", "images/square.tex"),
+    Asset("IMAGE", "images/trans.tex"),
 
-    Asset("ATLAS", "images/fepanels.xml"),
-    Asset("IMAGE", "images/fepanels.tex"),
+    Asset("DYNAMIC_ATLAS", "images/fepanels.xml"),
+    Asset("PKGREF", "images/fepanels.tex"),
 
-	-- Used in event join flow and in-game victory.
+    -- Used in event join flow and in-game victory.
     Asset("ATLAS", "images/dialogcurly_9slice.xml"),
     Asset("IMAGE", "images/dialogcurly_9slice.tex"),
 
     -- Used for motd and options
     Asset("ATLAS", "images/dialogrect_9slice.xml"),
     Asset("IMAGE", "images/dialogrect_9slice.tex"),
-    
-    Asset("ATLAS", "images/lavaarena_achievements.xml"),
-    Asset("IMAGE", "images/lavaarena_achievements.tex"),
 
-    Asset("ATLAS", "images/options.xml"),
-    Asset("IMAGE", "images/options.tex"),
-    Asset("ATLAS", "images/options_bg.xml"),
-    Asset("IMAGE", "images/options_bg.tex"),
+    Asset("DYNAMIC_ATLAS", "images/lavaarena_achievements.xml"),
+    Asset("PKGREF", "images/lavaarena_achievements.tex"),
 
-	Asset("ATLAS", "images/frontend.xml"),
-	Asset("IMAGE", "images/frontend.tex"),
+    Asset("DYNAMIC_ATLAS", "images/options.xml"),
+    Asset("PKGREF", "images/options.tex"),
+    Asset("DYNAMIC_ATLAS", "images/options_bg.xml"),
+    Asset("PKGREF", "images/options_bg.tex"),
+
+    Asset("ATLAS", "images/frontend.xml"),
+    Asset("IMAGE", "images/frontend.tex"),
+    Asset("ATLAS", "images/frontend_redux.xml"),
+    Asset("IMAGE", "images/frontend_redux.tex"),
 
     Asset("ATLAS", "images/bg_spiral.xml"),
     Asset("IMAGE", "images/bg_spiral.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill1.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill1.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill2.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill2.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill3.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill3.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill4.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill4.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill5.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill5.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill6.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill6.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill7.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill7.tex"),
-    Asset("DYNAMIC_ATLAS", "images/bg_spiral_fill8.xml"),
-    Asset("PKGREF", "images/bg_spiral_fill8.tex"),
     Asset("ATLAS", "images/bg_vignette.xml"),
     Asset("IMAGE", "images/bg_vignette.tex"),
 
-    Asset("ATLAS", "images/fepanel_fills.xml"),
-    Asset("IMAGE", "images/fepanel_fills.tex"),
+    Asset("DYNAMIC_ATLAS", "images/fepanel_fills.xml"),
+    Asset("PKGREF", "images/fepanel_fills.tex"),
 
     Asset("ATLAS", "images/bg_redux_dark_right.xml"),
     Asset("IMAGE", "images/bg_redux_dark_right.tex"),
@@ -80,7 +66,7 @@ local assets =
 
     -- Old portal frontend background from before The Forge UI update. Still
     -- used on tradescreen.
-	--Note(Peter):try moving this to the frontend prefab
+    --Note(Peter):try moving this to the frontend prefab
     Asset("DYNAMIC_ATLAS", "images/bg_animated_portal.xml"),
     Asset("PKGREF", "images/bg_animated_portal.tex"),
     Asset("DYNAMIC_ATLAS", "images/fg_animated_portal.xml"),
@@ -97,60 +83,60 @@ local assets =
     Asset("ANIM", "anim/portal_scene_steamfxsouth.zip"),
     Asset("ANIM", "anim/cloud_build.zip"),
 
-	--Asset("IMAGE", "images/river_bed.tex"),
-	--Asset("IMAGE", "images/water_river.tex"),
-	Asset("IMAGE", "images/pathnoise.tex"),
-	Asset("IMAGE", "images/mini_pathnoise.tex"),
-	Asset("IMAGE", "images/roadnoise.tex"),
-	Asset("IMAGE", "images/roadedge.tex"),
-	Asset("IMAGE", "images/roadcorner.tex"),
-	Asset("IMAGE", "images/roadendcap.tex"),
+    --Asset("IMAGE", "images/river_bed.tex"),
+    --Asset("IMAGE", "images/water_river.tex"),
+    Asset("IMAGE", "images/pathnoise.tex"),
+    Asset("IMAGE", "images/mini_pathnoise.tex"),
+    Asset("IMAGE", "images/roadnoise.tex"),
+    Asset("IMAGE", "images/roadedge.tex"),
+    Asset("IMAGE", "images/roadcorner.tex"),
+    Asset("IMAGE", "images/roadendcap.tex"),
 
-	Asset("IMAGE", "images/colour_cubes/identity_colourcube.tex"),
+    Asset("IMAGE", "images/colour_cubes/identity_colourcube.tex"),
 
-	Asset("SHADER", "shaders/anim.ksh"),
+    Asset("SHADER", "shaders/anim.ksh"),
     Asset("SHADER", "shaders/anim_fade.ksh"),
-	Asset("SHADER", "shaders/anim_bloom.ksh"),
-	Asset("SHADER", "shaders/blurh.ksh"),
-	Asset("SHADER", "shaders/blurv.ksh"),
-	Asset("SHADER", "shaders/creep.ksh"),
-	Asset("SHADER", "shaders/debug_line.ksh"),
-	Asset("SHADER", "shaders/debug_tri.ksh"),
-	Asset("SHADER", "shaders/render_depth.ksh"),
-	Asset("SHADER", "shaders/font.ksh"),
-	Asset("SHADER", "shaders/font_packed.ksh"),
-	Asset("SHADER", "shaders/font_packed_outline.ksh"),
-	Asset("SHADER", "shaders/ground.ksh"),
+    Asset("SHADER", "shaders/anim_bloom.ksh"),
+    Asset("SHADER", "shaders/blurh.ksh"),
+    Asset("SHADER", "shaders/blurv.ksh"),
+    Asset("SHADER", "shaders/creep.ksh"),
+    Asset("SHADER", "shaders/debug_line.ksh"),
+    Asset("SHADER", "shaders/debug_tri.ksh"),
+    Asset("SHADER", "shaders/render_depth.ksh"),
+    Asset("SHADER", "shaders/font.ksh"),
+    Asset("SHADER", "shaders/font_packed.ksh"),
+    Asset("SHADER", "shaders/font_packed_outline.ksh"),
+    Asset("SHADER", "shaders/ground.ksh"),
     Asset("SHADER", "shaders/ground_overlay.ksh"),
-	Asset("SHADER", "shaders/ground_lights.ksh"),
+    Asset("SHADER", "shaders/ground_lights.ksh"),
     Asset("SHADER", "shaders/ceiling.ksh"),
     -- Asset("SHADER", "shaders/triplanar.ksh"),
     Asset("SHADER", "shaders/triplanar_bg.ksh"),
     Asset("SHADER", "shaders/triplanar_alpha_wall.ksh"),
     Asset("SHADER", "shaders/triplanar_alpha_ceiling.ksh"),
-	Asset("SHADER", "shaders/lighting.ksh"),
-	Asset("SHADER", "shaders/minimap.ksh"),
-	Asset("SHADER", "shaders/minimapfs.ksh"),
-	Asset("SHADER", "shaders/particle.ksh"),
-	Asset("SHADER", "shaders/vfx_particle.ksh"),
-	Asset("SHADER", "shaders/vfx_particle_add.ksh"),
-	Asset("SHADER", "shaders/vfx_particle_reveal.ksh"),
-	Asset("SHADER", "shaders/road.ksh"),
-	Asset("SHADER", "shaders/river.ksh"),
-	Asset("SHADER", "shaders/splat.ksh"),
-	Asset("SHADER", "shaders/texture.ksh"),
-	Asset("SHADER", "shaders/ui.ksh"),
-	Asset("SHADER", "shaders/ui_yuv.ksh"),
-	Asset("SHADER", "shaders/swipe_fade.ksh"),
-	Asset("SHADER", "shaders/ui_anim.ksh"),
+    Asset("SHADER", "shaders/lighting.ksh"),
+    Asset("SHADER", "shaders/minimap.ksh"),
+    Asset("SHADER", "shaders/minimapfs.ksh"),
+    Asset("SHADER", "shaders/particle.ksh"),
+    Asset("SHADER", "shaders/vfx_particle.ksh"),
+    Asset("SHADER", "shaders/vfx_particle_add.ksh"),
+    Asset("SHADER", "shaders/vfx_particle_reveal.ksh"),
+    Asset("SHADER", "shaders/road.ksh"),
+    Asset("SHADER", "shaders/river.ksh"),
+    Asset("SHADER", "shaders/splat.ksh"),
+    Asset("SHADER", "shaders/texture.ksh"),
+    Asset("SHADER", "shaders/ui.ksh"),
+    Asset("SHADER", "shaders/ui_yuv.ksh"),
+    Asset("SHADER", "shaders/swipe_fade.ksh"),
+    Asset("SHADER", "shaders/ui_anim.ksh"),
     Asset("SHADER", "shaders/combine_colour_cubes.ksh"),
-	Asset("SHADER", "shaders/postprocess.ksh"),
-	Asset("SHADER", "shaders/postprocessbloom.ksh"),
-	Asset("SHADER", "shaders/postprocessdistort.ksh"),
-	Asset("SHADER", "shaders/postprocessbloomdistort.ksh"),
+    Asset("SHADER", "shaders/postprocess.ksh"),
+    Asset("SHADER", "shaders/postprocessbloom.ksh"),
+    Asset("SHADER", "shaders/postprocessdistort.ksh"),
+    Asset("SHADER", "shaders/postprocessbloomdistort.ksh"),
 
-	Asset("SHADER", "shaders/waves.ksh"),
-	Asset("SHADER", "shaders/overheat.ksh"),
+    Asset("SHADER", "shaders/waves.ksh"),
+    Asset("SHADER", "shaders/overheat.ksh"),
 
     Asset("SHADER", "shaders/anim.ksh"),
     Asset("SHADER", "shaders/anim_bloom.ksh"),
@@ -159,7 +145,7 @@ local assets =
     Asset("SHADER", "shaders/anim_fade_haunted.ksh"),
     Asset("SHADER", "shaders/anim_bloom_haunted.ksh"),
     Asset("SHADER", "shaders/minimapblend.ksh"),
-
+    
     --common UI elements that we will always need
     Asset("ATLAS", "images/ui.xml"),
     Asset("IMAGE", "images/ui.tex"),
@@ -179,8 +165,8 @@ local assets =
     Asset("IMAGE", "images/giftpopup.tex"),
 
     --oft-used panel bgs
-    Asset("ATLAS", "images/globalpanels2.xml"),
-    Asset("IMAGE", "images/globalpanels2.tex"),
+    Asset("DYNAMIC_ATLAS", "images/globalpanels2.xml"),
+    Asset("PKGREF", "images/globalpanels2.tex"),
 
     Asset("ATLAS", "images/button_icons.xml"),
     Asset("IMAGE", "images/button_icons.tex"),
@@ -217,10 +203,9 @@ for item_key,item_blob in pairs(playerportraits) do
     table.insert(assets, Asset("PKGREF", tex))
 end
 
-
 require "fonts"
 for i, font in ipairs( FONTS ) do
-	table.insert( assets, Asset( "FONT", font.filename ) )
+    table.insert( assets, Asset( "FONT", font.filename ) )
 end
 
 -- Add all the characters by name
@@ -256,19 +241,18 @@ end
 for _, clothing_asset in pairs(require("clothing_assets")) do
     table.insert(assets, clothing_asset)
 end
-for _, skins_prefabs in pairs(PREFAB_SKINS) do
-    for _, skin_prefab in pairs(skins_prefabs) do
-        if string.sub(skin_prefab, -5) ~= "_none" then
-            local prefab = require("prefabs/"..skin_prefab)
-            if type(prefab) == "table" then
-                for k, v in pairs(prefab.assets) do
-                    table.insert(assets, v)
-                end
-            else
-                print("ERROR: The contents of prefabs/"..skin_prefab..".lua are corrupt. Try verifying your game's install.")
-            end
+local skinprefabs = {require("prefabs/skinprefabs")}
+for _,skin_prefab in pairs(skinprefabs) do
+    if string.sub(skin_prefab.name, -5) ~= "_none" then
+        for k, v in pairs(skin_prefab.assets) do
+            table.insert(assets, v)
         end
     end
+end
+
+--klump files for package refs
+for _,klump_asset in pairs(require("klump_assets")) do
+    table.insert(assets, klump_asset)
 end
 
 return Prefab("global", function() end, assets)

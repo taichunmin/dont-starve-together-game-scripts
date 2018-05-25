@@ -154,9 +154,9 @@ function CustomizationList:MakeOptionSpinners()
         local imscale = .5
         image:SetScale(imscale,imscale,imscale)
         if TheInput:ControllerAttached() then
-            opt:SetHoverText(STRINGS.UI.CUSTOMIZATIONSCREEN[string.upper(v.name)], { font = NEWFONT_OUTLINE, size = 22, offset_x = -85, offset_y = 47, colour = {1,1,1,1}})
+            opt:SetHoverText(STRINGS.UI.CUSTOMIZATIONSCREEN[string.upper(v.name)], { font = NEWFONT_OUTLINE, offset_x = -85, offset_y = 47, colour = {1,1,1,1}})
         else
-            image_parent:SetHoverText(STRINGS.UI.CUSTOMIZATIONSCREEN[string.upper(v.name)], { font = NEWFONT_OUTLINE, size = 22, offset_x = 0, offset_y = 47, colour = {1,1,1,1}})
+            image_parent:SetHoverText(STRINGS.UI.CUSTOMIZATIONSCREEN[string.upper(v.name)], { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 47, colour = {1,1,1,1}})
         end
 
         local spinner_width = 170

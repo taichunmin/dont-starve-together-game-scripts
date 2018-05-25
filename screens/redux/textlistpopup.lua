@@ -24,7 +24,8 @@ local TextListPopup = Class(Screen, function(self, list_items, title_text, body_
             text=STRINGS.UI.HELP.BACK,
             cb = function()
                 self:_Cancel()
-            end
+            end,
+            controller_control = CONTROL_CANCEL,
         })
     self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(470,
             scroll_height + body_height,
@@ -34,6 +35,11 @@ local TextListPopup = Class(Screen, function(self, list_items, title_text, body_
             body_text or "" -- force creation of body to re-use sizing data
         ))
     local _,content_width = self.dialog.body:GetRegionSize()
+
+    self.oncontrol_fn, self.gethelptext_fn = TEMPLATES.ControllerFunctionsFromButtons(self.buttons)
+    if TheInput:ControllerAttached() then
+        self.dialog.actions:Hide()
+    end
 
     local item_height = 30
     local do_items_have_buttons = false
@@ -125,17 +131,11 @@ function TextListPopup:OnControl(control, down)
         return true
     end
 
-    if control == CONTROL_CANCEL and not down then
-        self:_Cancel()
-    end
+    return self.oncontrol_fn(control, down)
 end
 
 function TextListPopup:GetHelpText()
-    local controller_id = TheInput:GetControllerID()
-    local t = {}
-
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
-    return table.concat(t, "  ")
+    return self.gethelptext_fn()
 end
 
 function TextListPopup:_Cancel()

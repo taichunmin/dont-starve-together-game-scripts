@@ -50,26 +50,24 @@ local GiftItemPopUp = Class(Screen, function(self, owner, item_types, item_ids)
     self.spawn_portal:SetScale(spawn_portal_scale)
 
     local title_height = 152
-   
-    --title 
-    
+
+    --title
     self.title = self.proot:AddChild(Text(UIFONT, 42))
     self.title:SetPosition(0, title_height - 15, 0)
     self.title:SetString(STRINGS.UI.ITEM_SCREEN.OPENING)
     self.title:SetColour(1,1,1,1)
     self.inst:DoTaskInTime(0.5, function() AnimateOpeningText(self) end)
 
-  
     -- banner
     self.banner = self.proot:AddChild(Image("images/giftpopup.xml", "banner.tex"))
     self.banner:SetPosition(0, -200, 0)
     self.banner:SetScale(0.8)
-    self.name = self.banner:AddChild(Text(UIFONT, 55))
-    self.name:SetHAlign(ANCHOR_MIDDLE)
-    self.name:SetPosition(0, -10, 0)
-    self.name:SetColour(1, 1, 1, 1)
+    self.name_text = self.banner:AddChild(Text(UIFONT, 55))
+    self.name_text:SetHAlign(ANCHOR_MIDDLE)
+    self.name_text:SetPosition(0, -10, 0)
+    self.name_text:SetColour(1, 1, 1, 1)
 
-    self.banner:Hide()    
+    self.banner:Hide()
 
     self.anims = self.openanims
     self.item_types = item_types
@@ -84,7 +82,7 @@ local GiftItemPopUp = Class(Screen, function(self, owner, item_types, item_ids)
 end)
 
 function GiftItemPopUp:OnDestroy()
-	TheCamera:PopScreenHOffset(self)
+    TheCamera:PopScreenHOffset(self)
     TheFrontEnd:GetSound():KillSound("gift_idle")
     self._base.OnDestroy(self)
 end
@@ -103,28 +101,28 @@ function GiftItemPopUp:ApplySkin()
 end
 
 function GiftItemPopUp:ShowMenu()
-	self.show_menu = true
-	
-	if not TheInput:ControllerAttached() then
-		--creates the buttons
-		local button_w = 200
-		local space_between = 40
-		local spacing = button_w + space_between
-		local buttons = {{text = STRINGS.UI.ITEM_SCREEN.USE_LATER, cb = function() self:OnClose() end}, 
-						 {text = STRINGS.UI.ITEM_SCREEN.USE_NOW, cb = function() self:ApplySkin() end}
-						}
-		self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-		self.menu:SetPosition(25-(spacing*(#buttons-1))/2, -290, 0)
-		self.menu:SetScale(0.8)
-		self.menu:Show()
-		self.menu:SetFocus()
+    self.show_menu = true
 
-		if self.disable_use_now then
-    		self.menu:DisableItem(2)
-		end
+    if not TheInput:ControllerAttached() then
+        --creates the buttons
+        local button_w = 200
+        local space_between = 40
+        local spacing = button_w + space_between
+        local buttons = {{text = STRINGS.UI.ITEM_SCREEN.USE_LATER, cb = function() self:OnClose() end}, 
+                         {text = STRINGS.UI.ITEM_SCREEN.USE_NOW, cb = function() self:ApplySkin() end}
+                        }
+        self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
+        self.menu:SetPosition(25-(spacing*(#buttons-1))/2, -290, 0)
+        self.menu:SetScale(0.8)
+        self.menu:Show()
+        self.menu:SetFocus()
 
-		self.default_focus = self.menu
-	end
+        if self.disable_use_now then
+            self.menu:DisableItem(2)
+        end
+
+        self.default_focus = self.menu
+    end
 end
 
 function GiftItemPopUp:OnControl(control, down)
@@ -139,9 +137,9 @@ function GiftItemPopUp:OnClose()
     --self.spawn_portal:GetAnimState():PlayAnimation("put_away")
     self.spawn_portal:GetAnimState():PlayAnimation("skin_out")
     if self.menu then
-		self.menu:Kill()
-	end
-	self.show_menu = false
+        self.menu:Kill()
+    end
+    self.show_menu = false
 end
 
 function GiftItemPopUp:OnUpdate(dt)
@@ -180,10 +178,10 @@ function GiftItemPopUp:RevealItem(idx)
 
     item_name = string.gsub(item_name, "swap_", "")
 
-    local skin_data = GetSkinData(item_name)    
+    local skin_data = GetSkinData(item_name)
     self.disable_use_now = true
     if IsClothingItem( item_name ) or (skin_data and skin_data.type == "base" and string.find( item_name, self.owner.prefab ) ~= nil ) then
-		self.disable_use_now = false
+        self.disable_use_now = false
     end
     self.spawn_portal:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(item_name), "SWAP_ICON")
 
@@ -206,9 +204,9 @@ function GiftItemPopUp:RevealItem(idx)
     end)
 
     local name_string = GetSkinName(item_name)
-    self.name:SetTruncatedString(name_string, 500, 35, true)
+    self.name_text:SetTruncatedString(name_string, 500, 35, true)
 
-    self.name:SetColour(GetColorForItem(item_name))
+    self.name_text:SetColour(GetColorForItem(item_name))
     self.item_name = item_name
 end
 
@@ -216,30 +214,29 @@ function GiftItemPopUp:OnControl(control, down)
     if GiftItemPopUp._base.OnControl(self, control, down) then return true end
 
     if TheInput:ControllerAttached() and self.show_menu then 
-    	if not down and control == CONTROL_CANCEL then
-    		self:OnClose()
-			return true
-		elseif not down and not self.disable_use_now and control == CONTROL_PAUSE then 
-			self:ApplySkin()
-			return true
-		end
+        if not down and control == CONTROL_CANCEL then
+            self:OnClose()
+            return true
+        elseif not down and not self.disable_use_now and control == CONTROL_PAUSE then 
+            self:ApplySkin()
+            return true
+        end
     end
 end
 
-
 function GiftItemPopUp:GetHelpText()
-	if self.show_menu then
-		local controller_id = TheInput:GetControllerID()
-		local t = {}
-	    
-		table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.ITEM_SCREEN.USE_LATER)
-   		
-		if not self.disable_use_now then
-			table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.ITEM_SCREEN.USE_NOW)
-		end
-		
-		return table.concat(t, "  ")
-	end
+    if self.show_menu then
+        local controller_id = TheInput:GetControllerID()
+        local t = {}
+
+        table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.ITEM_SCREEN.USE_LATER)
+
+        if not self.disable_use_now then
+            table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.ITEM_SCREEN.USE_NOW)
+        end
+
+        return table.concat(t, "  ")
+    end
 end
 
 return GiftItemPopUp

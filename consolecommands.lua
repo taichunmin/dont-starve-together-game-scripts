@@ -276,6 +276,13 @@ end
 
 
 -- Some helper shortcut functions
+function c_freecrafting()
+    local player = ConsoleCommandPlayer()
+	player.components.builder:GiveAllRecipes() 
+	player:PushEvent("techlevelchange")
+end
+
+
 function c_sel_health()
     if c_sel() then
         local health = c_sel().components.health
@@ -1142,13 +1149,4 @@ end
 
 function c_stopvote()
     TheNet:StopVote()
-end
-
-function c_stopbroadcastingserver()
-    TheNet:StopBroadcastingServer()
-end
-
-function c_notifypendingshutdown(timeleft)
-	TheNet:SetDeferredServerShutdownRequested()
-	c_announce("Shutting down server in " .. timeleft .. " minutes")
 end

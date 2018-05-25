@@ -113,7 +113,7 @@ AddUserCommand("rescue", {
     permission = COMMAND_PERMISSION.USER,
     slash = true,
     usermenu = false,
-    servermenu = false,
+    servermenu = IsConsole(),
     params = {},
     vote = false,
     serverfn = function(params, caller)
@@ -152,7 +152,8 @@ AddUserCommand("kick", {
     end,
 })
 
-AddUserCommand("ban", {
+local ban_info = 
+{
     prettyname = nil, --default to STRINGS.UI.BUILTINCOMMANDS.BAN.PRETTYNAME
     desc = nil, --default to STRINGS.UI.BUILTINCOMMANDS.BAN.DESC
     permission = COMMAND_PERMISSION.ADMIN,
@@ -176,7 +177,11 @@ AddUserCommand("ban", {
             end
         end
     end,
-})
+}
+if IsConsole() then
+    ban_info.desc = STRINGS.UI.BUILTINCOMMANDS.BAN.DESC_CONSOLE
+end
+AddUserCommand("ban", ban_info)
 
 AddUserCommand("stopvote", {
     aliases = {"veto"},

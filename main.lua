@@ -4,16 +4,41 @@ package.path = "scripts\\?.lua;scriptlibs\\?.lua"
 math.randomseed(tonumber(tostring(os.time()):reverse():sub(1,6)))
 math.random()
 
+function IsConsole()
+	return (PLATFORM == "PS4") or (PLATFORM == "XBONE")
+end
+
+function IsNotConsole()
+	return not IsConsole()
+end
+
+function IsPS4()
+	return (PLATFORM == "PS4")
+end
+
+function IsXB1()
+	return (PLATFORM == "XBONE")
+end
+
+function IsSteam()
+	return PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM"
+end
+
+function IsRail()
+	return PLATFORM == "WIN32_RAIL"
+end
+
+
 --defines
 MAIN = 1
 ENCODE_SAVES = BRANCH ~= "dev"
-CHEATS_ENABLED = BRANCH == "dev" or (PLATFORM == "PS4" and CONFIGURATION ~= "PRODUCTION")
+CHEATS_ENABLED = BRANCH == "dev" or (IsConsole() and CONFIGURATION ~= "PRODUCTION")
 SOUNDDEBUG_ENABLED = false
 SOUNDDEBUGUI_ENABLED = false
 WORLDSTATEDEBUG_ENABLED = false
 --DEBUG_MENU_ENABLED = true
-DEBUG_MENU_ENABLED = BRANCH == "dev" or (PLATFORM == "PS4" and CONFIGURATION ~= "PRODUCTION")
-METRICS_ENABLED = PLATFORM ~= "PS4"
+DEBUG_MENU_ENABLED = BRANCH == "dev" or (IsConsole() and CONFIGURATION ~= "PRODUCTION")
+METRICS_ENABLED = true
 TESTING_NETWORK = 1
 AUTOSPAWN_MASTER_SLAVE = false
 DEBUGRENDER_ENABLED = true
@@ -115,6 +140,14 @@ require("json")
 require("tuning")
 require("languages/language")
 require("strings")
+
+if IsConsole() or PLATFORM == "WIN32_RAIL" then
+	--Apply a baseline set of translations so that lua in the boot flow can access the correct strings, after the mods are loaded, main.lua will run this again
+	--Ideally we wouldn't need to do this, but stuff like maps/levels/forest loads in the boot flow and it caches strings before they've been translated.
+	--Doing an early translate here is less risky than changing all the cases of early string access. Downside is that it doesn't address the issue for mod transations.
+	TranslateStringTable( STRINGS )
+end
+
 require("languages/server_language_strings")
 require("stringutil")
 require("dlcsupport_strings")
@@ -158,6 +191,7 @@ require("worldtiledefs")
 require("gamemodes")
 require("skinsutils")
 require("wxputils")
+require("klump")
 
 if TheConfig:IsEnabled("force_netbookmode") then
 	TheSim:SetNetbookMode(true)
@@ -301,9 +335,11 @@ local function ModSafeStartup()
 	MapLayerManager = TheGlobalInstance.entity:AddMapLayerManager()
 
     -- I think we've got everything we need by now...
-    if TheSim:GetNumLaunches() == 1 then
-        Stats.RecordGameStartStats()
-    end
+   	if IsNotConsole() then
+		if TheSim:GetNumLaunches() == 1 then
+			Stats.RecordGameStartStats()
+		end
+	end
 
 end
 

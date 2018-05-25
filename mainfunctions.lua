@@ -1,5 +1,6 @@
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local WorldGenScreen = require "screens/worldgenscreen"
+local HealthWarningPopup = require "screens/healthwarningpopup"
 local Stats = require("stats")
 
 require "scheduler"
@@ -191,6 +192,54 @@ function LoadAchievements( filename )
 
     return ret
 end
+
+function AwardFrontendAchievement( name )
+    if IsConsole() then
+	    TheGameService:AwardAchievement(name, nil)
+    end
+end
+
+function AwardPlayerAchievement( name, player )
+	if IsConsole() then
+        if player ~= nil and player:HasTag("player") then
+		    TheGameService:AwardAchievement(name, tostring(player.userid))
+	    else
+		    print( "AwardPlayerAchievement Error:", name, "to", tostring(player) )
+	    end
+    end
+end
+
+function NotifyPlayerProgress( name, value, player )
+	if IsConsole() then
+        if player ~= nil and player:HasTag("player") then
+		    TheGameService:NotifyProgress(name, value, tostring(player.userid))
+	    else
+		    print( "NotifyPlayerProgress Error:", name, "to", tostring(player) )
+	    end
+    end
+end
+
+function NotifyPlayerPresence( name, level, days, player )
+	if IsConsole() then
+        if player ~= nil and player:HasTag("player") then
+		    TheGameService:NotifyPresence(name, level, days, tostring(player.userid))
+	    else
+		    TheGameService:NotifyPresence(name, level, days, nil)
+	    end
+    end
+end
+
+
+function AwardRadialAchievement( name, pos, radius )
+	if IsConsole() then
+        local players = FindPlayersInRange( pos.x, pos.y, pos.z, radius, true )
+        for k,player in pairs(players) do
+		    AwardPlayerAchievement(name, player)
+	    end
+    end
+end
+
+
 
 function SpawnPrefabFromSim(name)
     name = string.sub(name, string.find(name, "[^/]*$"))
@@ -885,6 +934,11 @@ function Start()
         end)
 
     CheckControllers()
+
+	if PLATFORM == "WIN32_RAIL" and RUN_GLOBAL_INIT then
+		TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
+		TheFrontEnd:PushScreen( HealthWarningPopup() )
+	end
 end
 
 --------------------------
@@ -1035,7 +1089,7 @@ function DisplayError(error)
         end
 
         local buttons = nil
-        if PLATFORM ~= "PS4" then
+        if IsNotConsole() then
             buttons = {
                 {text=STRINGS.UI.MAINSCREEN.SCRIPTERRORQUIT, cb = function() TheSim:ForceAbort() end},
                 {text=STRINGS.UI.MAINSCREEN.MODQUIT, cb = function()
@@ -1065,7 +1119,7 @@ function DisplayError(error)
             error = known_error.message
         end
 
-        if PLATFORM ~= "PS4" then
+        if IsNotConsole() then
             buttons = {
                 {text=STRINGS.UI.MAINSCREEN.SCRIPTERRORQUIT, cb = function() TheSim:ForceAbort() end},
             }
@@ -1186,6 +1240,20 @@ function OnPushPopupDialog( message )
     if screen then
         screen:Enable()
     end
+end
+
+function OnDemoTimeout()
+	print("Demo timed out")
+	if not IsMigrating() then
+		TheSystemService:StopDedicatedServers()
+	end
+	if ThePlayer ~= nil then
+		SerializeUserSession(ThePlayer)
+	end
+	local should_reset = true
+	should_reset = should_reset and (InGamePlay() or IsMigrating())
+
+	DoRestart(should_reset)
 end
 
 -- Receive a disconnect notification

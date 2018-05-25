@@ -795,6 +795,19 @@ local function MakeHat(name)
         inst:AddTag("waterproofer")
     end
 
+    local function slurtle_equip(inst, owner)
+        onequip(inst, owner)
+
+        -- check for the armor_snurtleshell pairing achievement
+        if owner:HasTag("player") then
+			local equipped_body = owner.components.inventory ~= nil and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY) or nil
+			if equipped_body ~= nil and equipped_body.prefab == "armorsnurtleshell" then
+				AwardPlayerAchievement("snail_armour_set", owner)
+			end
+		end
+
+    end
+
     local function slurtle()
         local inst = simple(slurtle_custom_init)
 
@@ -807,6 +820,8 @@ local function MakeHat(name)
 
         inst:AddComponent("waterproofer")
         inst.components.waterproofer:SetEffectiveness(TUNING.WATERPROOFNESS_SMALL)
+
+        inst.components.equippable:SetOnEquip( slurtle_equip )
 
         return inst
     end

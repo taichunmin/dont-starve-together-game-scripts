@@ -618,12 +618,11 @@ CommonStates.AddCombatStates = function(states, timelines, anims)
                 inst.components.locomotor:StopMoving()
             end
 
-            local hitanim =
+            inst.AnimState:PlayAnimation(
                 ((anims == nil or anims.hit == nil) and "hit") or
                 (type(anims.hit) ~= "function" and anims.hit) or
                 anims.hit(inst)
-
-            inst.AnimState:PlayAnimation(hitanim)
+            )
 
             if inst.SoundEmitter ~= nil and inst.sounds ~= nil and inst.sounds.hit ~= nil then
                 inst.SoundEmitter:PlaySound(inst.sounds.hit)

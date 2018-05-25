@@ -1915,6 +1915,25 @@ return {
         FIRECRACKERS = "To strike fear into the hearts of mine enemies!",
         PERDFAN = "Tis a fan for mine hand.",
         REDPOUCH = "A blessing of good fortune!",
+        WARGSHRINE = 
+        {
+            GENERIC = "The gods are pleased!",
+            EMPTY = "What doth thou need?",
+            BURNT = "Laid to waste.",
+        },
+        CLAYWARG = 
+        {
+            GENERIC = "Lo! What terrible beast!",
+            STATUE = "T'would be a glorious battle, were it alive.",
+        },
+        CLAYHOUND = 
+        {
+            GENERIC = "I shall fell you swiftly!",
+            STATUE = "Tis a terrible wolf, turned to stone.",
+        },
+        HOUNDWHISTLE = "It casts a spell upon the dogged beasts.",
+        CHESSPIECE_CLAYHOUND = "A hound of the hunt!",
+        CHESSPIECE_CLAYWARG = "A testament to a worthy foe.",
 
         TRUNKVEST_SUMMER = "It will not suffice in the frozen wastes.",
         TRUNKVEST_WINTER = "The warm pelt of a bested creature. A fine garment.",

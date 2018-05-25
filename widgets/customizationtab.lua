@@ -604,12 +604,23 @@ end
 
 function CustomizationTab:CollectOptions()
     -- Everything outside of this screen only ever sees a flattened final list of settings.
+    local specialevent = nil
     local ret = {}
     for level_index,level in ipairs(self.current_option_settings) do
         ret[level_index] = Levels.GetDataForLevelID(level.preset)
         local options = Customise.GetOptionsWithLocationDefaults(Levels.GetLocationForLevelID(level.preset), level_index == 1)
         for i,option in ipairs(options) do
             ret[level_index].overrides[option.name] = self:GetValueForOption(level_index, option.name)
+            if option.name ==  "specialevent" then
+                specialevent = ret[level_index].overrides["specialevent"]
+            end
+        end
+    end
+
+    --Duplicate special event setting to all shards
+    if specialevent ~= nil then
+        for level_index, level in ipairs(ret) do
+            level.overrides["specialevent"] = level.overrides["specialevent"] or specialevent
         end
     end
 

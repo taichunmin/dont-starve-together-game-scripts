@@ -39,6 +39,7 @@ end
 local function OnActivate(inst, doer)
     if doer:HasTag("player") then
         ProfileStatsSet("wormhole_used", true)
+        AwardPlayerAchievement("tentacle_pillar_hole_used", doer)
 
         if doer.components.talker ~= nil then
             doer.components.talker:ShutUp()

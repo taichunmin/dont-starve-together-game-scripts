@@ -392,7 +392,9 @@ end
 function PlayerSummaryScreen:OnBecomeActive()
     PlayerSummaryScreen._base.OnBecomeActive(self)
 
-	self.menu:RestoreFocusTo(self.last_focus_widget)
+	if self.last_focus_widget then
+		self.menu:RestoreFocusTo(self.last_focus_widget)
+	end
     self.leaving = nil
 
     self:_RefreshMostCommonFriend()

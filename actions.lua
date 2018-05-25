@@ -1,6 +1,7 @@
 require "class"
 require "bufferedaction"
 require "debugtools"
+require 'util'
 
 local function DefaultRangeCheck(doer, target)
     if target == nil then
@@ -161,7 +162,7 @@ ACTIONS =
 }
 
 ACTION_IDS = {}
-for k, v in pairs(ACTIONS) do
+for k, v in orderedPairs(ACTIONS) do
     v.str = STRINGS.ACTIONS[k] or "ACTION"
     v.id = k
     table.insert(ACTION_IDS, k)

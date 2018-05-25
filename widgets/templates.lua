@@ -843,7 +843,7 @@ TEMPLATES = {
 
         if hoverText and hoverText ~= "" then
             if not textinfo then textinfo = {} end
-            icon:SetHoverText(hoverText, { font = textinfo.font or NEWFONT_OUTLINE, size = textinfo.size or 22, offset_x = 1, offset_y = 28, colour = textinfo.colour or {1,1,1,1}, bg = textinfo.bg })
+            icon:SetHoverText(hoverText, { font = textinfo.font or NEWFONT_OUTLINE, offset_x = 1, offset_y = 28, colour = textinfo.colour or {1,1,1,1}, bg = textinfo.bg })
         end
 
         return icon
@@ -906,7 +906,7 @@ TEMPLATES = {
             btn:SetTextColour(textinfo.colour or { unpack(GOLD) })
             btn:SetTextFocusColour(textinfo.focus_colour or { unpack(GOLD) })
         else
-            btn:SetHoverText(labelText, { font = textinfo.font or NEWFONT_OUTLINE, size = textinfo.size or 22, offset_x = textinfo.offset_x or -4, offset_y = textinfo.offset_y or 45, colour = textinfo.colour or {1,1,1,1}, bg = textinfo.bg })
+            btn:SetHoverText(labelText, { font = textinfo.font or NEWFONT_OUTLINE, offset_x = textinfo.offset_x or -4, offset_y = textinfo.offset_y or 45, colour = textinfo.colour or {1,1,1,1}, bg = textinfo.bg })
         end
 
         btn:SetOnClick(onclick)

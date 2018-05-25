@@ -199,6 +199,8 @@ end
 local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
 	Screen._ctor(self, "OptionsScreen")
 
+	self.show_datacollection = IsSteam() and not InGamePlay()
+
 	local graphicsOptions = TheFrontEnd:GetGraphicsOptions()
 
 	self.options = {
@@ -222,6 +224,10 @@ local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
 	--[[if PLATFORM == "WIN32_STEAM" and not self.in_game then
 		self.options.steamcloud = TheSim:GetSetting("STEAM", "DISABLECLOUD") ~= "true"
 	end--]]
+
+	if self.show_datacollection then
+		self.options.datacollection = TheSim:GetDataCollectionSetting()
+	end
 
 	if show_graphics then
 
@@ -266,12 +272,10 @@ local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
             settings = self.panel_root:AddChild(self:_BuildSettings()),
             controls = self.panel_root:AddChild(self:_BuildControls()),
         })
-    local old_OnMenuButtonSelected = self.subscreener.OnMenuButtonSelected
-    self.subscreener.OnMenuButtonSelected = function(this, selection)
+    self.subscreener:SetPostMenuSelectionAction(function(selection)
         self.selected_tab = selection
-        old_OnMenuButtonSelected(this, selection)
         self:UpdateMenu()
-    end
+    end)
 
 	self:InitializeSpinners(true)
 
@@ -837,14 +841,29 @@ function OptionsScreen:_BuildSettings()
     local narrow_field_nudge = -50
     local space_between = 5
 	
+    local function AddListItemBackground(w)
+        local total_width = label_width + spinner_width + space_between
+        w.bg = w:AddChild(TEMPLATES.ListItemBackground(total_width + 15, spinner_height + 5))
+        w.bg:SetPosition(-40,0)
+        w.bg:MoveToBack()
+    end
+
     local function CreateTextSpinner(labeltext, spinnerdata)
         local w = TEMPLATES.LabelSpinner(labeltext, spinnerdata, label_width, spinner_width, spinner_height, space_between, nil, nil, narrow_field_nudge)
+        AddListItemBackground(w)
         return w.spinner
     end
 
     local function CreateNumericSpinner(labeltext, min, max)
         local w = TEMPLATES.LabelNumericSpinner(labeltext, min, max, label_width, spinner_width, spinner_height, space_between, nil, nil, narrow_field_nudge)
+        AddListItemBackground(w)
         return w.spinner
+    end
+
+    local function CreateCheckBox(labeltext, onclicked, checked )
+        local w = TEMPLATES.LabelCheckbox(onclicked, labeltext, checked, label_width, spinner_width, spinner_height, spinner_height + 15, space_between, CHATFONT, nil, narrow_field_nudge)
+        AddListItemBackground(w)
+        return w.button
     end
 
 	if show_graphics then
@@ -988,6 +1007,41 @@ function OptionsScreen:_BuildSettings()
 			self:UpdateMenu()
 		end
 
+	if self.show_datacollection then
+		self.datacollectionCheckbox = CreateCheckBox(STRINGS.UI.OPTIONS.DATACOLLECTION,
+			function()
+				local opt_in = not TheSim:GetDataCollectionSetting()
+				local str = STRINGS.UI.DATACOLLECTION_POPUP[opt_in and "OPT_IN" or "OPT_OUT"]
+				TheFrontEnd:PushScreen(PopupDialogScreen( str.TITLE, STRINGS.UI.DATACOLLECTION_POPUP.BODY,
+				{ 
+					{ 
+						text = str.CONTINUE,
+						cb = function()
+							local saved = TheSim:SetDataCollectionSetting( opt_in )
+						    known_assert(saved, "AGREEMENTS_WRITE_PERMISSION")
+							SimReset()
+						end
+					},
+					{ 
+						text = STRINGS.UI.DATACOLLECTION_POPUP.PRIVACY_PORTAL,
+						cb = function()
+							VisitURL("https://www.klei.com/privacy-policy")
+						end
+					},
+					{ 
+						text = STRINGS.UI.DATACOLLECTION_POPUP.CANCEL,
+						cb = function()
+							TheFrontEnd:PopScreen()
+						end
+					}
+				},
+				nil, "big", "dark_wide"))
+
+				return not opt_in -- bit of a hack to keep the check box looking the same as it was. This works because toggling the value will reset the sim.
+			end,
+			TheSim:GetDataCollectionSetting())
+	end
+
     self.movementpredictionSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.MOVEMENTPREDICTION,
         {
             { text = STRINGS.UI.OPTIONS.MOVEMENTPREDICTION_DISABLED, data = false },
@@ -1048,6 +1102,10 @@ function OptionsScreen:_BuildSettings()
     table.insert( self.left_spinners, self.wathgrithrfontSpinner)
     table.insert( self.left_spinners, self.hudSize)
 
+	if self.show_datacollection then
+		table.insert( self.left_spinners, self.datacollectionCheckbox)
+	end
+
     table.insert( self.right_spinners, self.screenshakeSpinner )
     table.insert( self.right_spinners, self.distortionSpinner )
     table.insert( self.right_spinners, self.bloomSpinner )
@@ -1104,6 +1162,8 @@ function OptionsScreen:_BuildControls()
         if control and control[device_type] then
 
             local group = Widget("control"..index)
+            group.bg = group:AddChild(TEMPLATES.ListItemBackground(700, button_height))
+            group.bg:SetPosition(-60,0)
             group:SetScale(1,1,0.75)
 
             group.device_type = device_type
@@ -1120,7 +1180,7 @@ function OptionsScreen:_BuildControls()
             group.label:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
             group.label:SetRegionSize(controls_ui.action_label_width, 50)
             x = x + controls_ui.action_label_width/2
-            group.label:SetPosition(x,5)
+            group.label:SetPosition(x,0)
             x = x + controls_ui.action_label_width/2 + spacing
             group.label:SetClickable(false)
 
@@ -1128,7 +1188,7 @@ function OptionsScreen:_BuildControls()
             group.changed_image = group:AddChild(Image("images/global_redux.xml", "wardrobe_spinner_bg.tex"))
             group.changed_image:SetTint(1,1,1,0.3)
             group.changed_image:ScaleToSize(button_width, button_height)
-            group.changed_image:SetPosition(x,2)
+            group.changed_image:SetPosition(x,0)
             group.changed_image:Hide()
 
             group.binding_btn = group:AddChild(ImageButton("images/global_redux.xml", "blank.tex", "spinner_focus.tex"))
@@ -1137,7 +1197,7 @@ function OptionsScreen:_BuildControls()
             group.binding_btn:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
             group.binding_btn:SetFont(CHATFONT)
             group.binding_btn:SetTextSize(30)
-            group.binding_btn:SetPosition(x,2)
+            group.binding_btn:SetPosition(x,0)
             group.binding_btn.idx = index
             group.binding_btn:SetOnClick(
                 function()
@@ -1230,6 +1290,7 @@ function OptionsScreen:_BuildControls()
     self.controls_vertical_line:SetScale(.7, .43)
     self.controls_vertical_line:SetRotation(90)
     self.controls_vertical_line:SetPosition(x, -200)
+    self.controls_vertical_line:SetTint(1,1,1,.1)
     x = x + spacing
 
     x = x + button_width/2
@@ -1294,12 +1355,16 @@ function OptionsScreen:InitializeSpinners(first)
     self.movementpredictionSpinner:SetSelectedIndex(EnabledOptionsIndex(self.working.movementprediction))
 	self.wathgrithrfontSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.wathgrithrfont ) )
 	
+	if self.show_datacollection then
+		--self.datacollectionCheckbox: -- the current behaviour does not reuqire this to be (re)initialized at any point after construction
+	end
+
 	self.automodsSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.automods ) )
 
 	if first then
 		-- Add the bg change when non-init value for all spinners
         local function SetupOnChange(i,spinner)
-			if spinner then
+			if spinner and spinner.GetSelectedIndex ~= nil then
 				spinner.default_index = spinner:GetSelectedIndex()
                 spinner:EnablePendingModificationBackground()
 

@@ -122,10 +122,17 @@ local function createmachine(level, name, soundprefix, sounddelay, techtree, mer
         end
     end
 
-    local function onbuilt(inst)
+    local function onbuilt(inst, data)
         inst.AnimState:PlayAnimation("place")
         inst.AnimState:PushAnimation("idle", false)
         inst:DoTaskInTime(sounddelay, onbuiltsound, soundprefix)
+        
+  		if name == "researchlab3" then
+	        AwardPlayerAchievement("build_researchlab3", data.builder)
+	    elseif name == "researchlab4" then
+	        AwardPlayerAchievement("build_researchlab4", data.builder)
+	    end
+
     end
 
     local assets =

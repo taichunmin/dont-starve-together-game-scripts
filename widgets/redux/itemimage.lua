@@ -148,8 +148,8 @@ function ItemImage:ScaleToSize(side)
     self.image_scale = scale
 end
 
-function ItemImage:SetInteractionState(is_active, is_owned, is_interaction_target, is_unlockable)
-    self.frame:SetActivityState(is_active, is_owned, is_unlockable)
+function ItemImage:SetInteractionState(is_active, is_owned, is_interaction_target, is_unlockable, is_perm_owned)
+    self.frame:SetActivityState(is_active, is_owned, is_unlockable, is_perm_owned)
     if is_interaction_target then
         self.frame:SetStyle_Highlight()
     else
@@ -184,8 +184,7 @@ function ItemImage:ApplyDataToWidget(context, widget_data, data_index)
 		if screen and screen.show_hover_text then
 			local rarity_str = GetModifiedRarityStringForItem(item_blob.item)
 			local hover_text = rarity_str .. "\n" .. GetSkinName(item_blob.item)
-			list_widget:ClearHoverText() --Hack fix: clearing the text fixes the hover text so that it doesn't get scissored in the scrolllist.
-			list_widget:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, size = 20, offset_x = 0, offset_y = 60, colour = {1,1,1,1}})
+			list_widget:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 60, colour = {1,1,1,1}})
 			if list_widget.focus then --make sure we force the hover text to appear on the default focused item
 				list_widget:_GainFocus_Internal()
 			end

@@ -27,6 +27,7 @@ local function ondeploy(inst, pt, deployer)
         if math.random() < chill_chance then
             if v.components.sleeper ~= nil then
                 v.components.sleeper:GoToSleep(1000)
+                AwardPlayerAchievement( "pacify_forest", deployer )
             end
         elseif not played_sound then
             v.SoundEmitter:PlaySound("dontstarve/creatures/leif/taunt_VO")

@@ -257,6 +257,7 @@ local function IsStandState(inst, state)
 end
 
 local function OnDead(inst)
+    AwardRadialAchievement("bearger_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
     inst.components.shedder:StopShedding()
     TheWorld:PushEvent("beargerkilled", inst)
 end

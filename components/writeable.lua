@@ -57,6 +57,9 @@ function Writeable:OnSave()
     local data = {}
 
     data.text = self.text
+	if IsXB1() then
+		data.netid = self.netid
+	end
 
     return data
 
@@ -66,11 +69,19 @@ function Writeable:OnLoad(data)
 	if PLATFORM == "WIN32_RAIL" then
     	self.text = TheSim:ApplyWordFilter(data.text)
 	else
-		self.text = data.text
+    	self.text = data.text
+	end
+	if IsXB1() then
+		self.netid = data.netid
 	end
 end
 
-function Writeable:GetText()
+function Writeable:GetText(viewer)
+	if IsXB1() then
+		if self.text and self.netid then
+			return "\1"..self.text.."\1"..self.netid
+		end
+	end
     return self.text
 end
 
@@ -124,6 +135,21 @@ function Writeable:EndWriting()
 
         self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
         self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
+
+		if IsXB1() then
+			if self.writer:HasTag("player") and self.writer:GetDisplayName() then
+				local ClientObjs = TheNet:GetClientTable()
+				if ClientObjs ~= nil and #ClientObjs > 0 then
+					for i, v in ipairs(ClientObjs) do
+						if self.writer:GetDisplayName() == v.name then
+							self.netid = v.netid
+							break
+						end
+					end
+				end
+			end
+		end
+
         self.writer = nil
     elseif self.screen ~= nil then
         --Should not have screen and no writer, but just in case...

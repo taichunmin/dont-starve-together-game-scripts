@@ -107,13 +107,12 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self.adminBadge:SetPosition(x + 4, -10)  
     self.adminBadge.image:SetScale(.18)
     self.adminBadge.scale_on_focus = false
-    self.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 10, colour = {1,1,1,1}})
+    self.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 10, colour = {1,1,1,1}})
     if empty or not v.admin then
         self.adminBadge:Hide()
     end
 	x = x + 16*2 + nudge_x
 
-    -- TODO(dbriscoe): Need new outline/background
     self.highlight = self:AddChild(Image("images/scoreboard.xml", "row_short_goldoutline.tex"))
     self.highlight:SetPosition(x + 85, 0)
     self.highlight:ScaleToSize(215,50)
@@ -166,7 +165,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self.viewprofile:SetNormalScale(scale)
     self.viewprofile:SetFocusScale(scale * 1.1)
     self.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
-    self.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, size = 18, offset_x = -35, offset_y = 0, colour = {1,1,1,1}})
+    self.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = -35, offset_y = 0, colour = {1,1,1,1}})
     self.viewprofile:SetOnClick(
         function()
             -- Can't do this here because HUD doesn't exist yet. TODO: add the playeravatarpopup to frontend, or wrap it in a screen.
@@ -187,7 +186,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self.mute:SetNormalScale(scale)
     self.mute:SetFocusScale(scale * 1.1)
     self.mute:SetFocusSound("dontstarve/HUD/click_mouseover")
-    self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, size = 18, offset_x = -30, offset_y = 0, colour = {1,1,1,1}})
+    self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, offset_x = -30, offset_y = 0, colour = {1,1,1,1}})
     self.mute.image.inst.OnUpdateVoice = function(inst)
         inst.widget:SetTint(unpack(self.userid ~= nil and TheNet:IsVoiceActive(self.userid) and VOICE_ACTIVE_COLOUR or VOICE_IDLE_COLOUR))
     end
@@ -339,7 +338,7 @@ local function UpdatePlayerListing(context, widget, data, index)
 		widget.netscore:Show()
 		local score = math.clamp(data.netscore, 0, 2)
 		widget.netscore:SetTexture("images/scoreboard.xml", "performance_indicator"..tostring(3-score)..".tex")
-		widget.netscore:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.LOBBY_PERF_LEVELS[score+1], {size = 35, offset_y = 0, offset_x = -120})
+		widget.netscore:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.LOBBY_PERF_LEVELS[score+1], {offset_y = 0, offset_x = -120})
 	else
 		widget.netscore:Hide()
 	end

@@ -57,6 +57,9 @@ local function OnWork(inst, worker, workleft)
         SpawnPrefab("rock_break_fx").Transform:SetPosition(pt:Get())
         inst.components.lootdropper:DropLoot(pt)
         ProfileStatsSet("cave_entrance_opened", true)
+        if worker ~= nil then
+	        AwardPlayerAchievement("cave_entrance_opened", worker)
+	    end
         local openinst = SpawnPrefab("cave_entrance_open")
         openinst.Transform:SetPosition(pt:Get())
         openinst.components.worldmigrator.id = inst.components.worldmigrator.id

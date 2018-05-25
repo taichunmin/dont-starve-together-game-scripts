@@ -28,6 +28,7 @@ end
 local function OnActivate(inst, doer)
     if doer:HasTag("player") then
         ProfileStatsSet("wormhole_used", true)
+        AwardPlayerAchievement("wormhole_used", doer)
 
         local other = inst.components.teleporter.targetTeleporter
         if other ~= nil then

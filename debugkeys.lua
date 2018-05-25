@@ -514,7 +514,7 @@ end)
 
 AddGameDebugKey(KEY_F11, function()
     for k,v in pairs(Ents) do
-        if v.prefab == "carrot_planted" then
+        if v.prefab == "carrot_planted" and v.components.pickable then
             v.components.pickable:Pick()
         end
     end

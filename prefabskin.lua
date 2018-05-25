@@ -11,7 +11,6 @@ BASE_TORSO_TUCK = {}
 BASE_ALTERNATE_FOR_BODY = {}
 BASE_ALTERNATE_FOR_SKIRT = {}
 
-HAS_LEG_BOOT = {}
 BASE_LEGS_SIZE = {}
 BASE_FEET_SIZE = {}
 
@@ -262,6 +261,22 @@ function firepit_init_fn(inst, build_name, fxoffset)
 
     inst.AnimState:SetSkin(build_name, "firepit")
     inst.components.burnable:SetFXOffset(fxoffset)
+
+    local skin_fx = SKIN_FX_PREFAB[build_name]
+    if skin_fx ~= nil and skin_fx[1] ~= nil then
+        inst:ListenForEvent("takefuel", function(inst, data)
+            local fuelvalue = data ~= nil and data.fuelvalue or 0
+            if fuelvalue > 0 then
+                local fx = SpawnPrefab(skin_fx[1])
+                fx.entity:SetParent(inst.entity)
+                fx.level:set(
+                    (fuelvalue >= TUNING.LARGE_FUEL and 3) or
+                    (fuelvalue >= TUNING.MED_FUEL and 2) or
+                    1
+                )
+            end
+        end)
+    end
 end
 
 --------------------------------------------------------------------------
@@ -394,16 +409,33 @@ local function cane_do_trail(inst)
     end
 end
 
-local function cane_equipped(inst)
-    if inst._trailtask == nil then
-        inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, cane_do_trail, 2 * FRAMES)
+local function cane_equipped(inst, data)
+    if inst.vfx_fx then
+        local fx = SpawnPrefab(inst.vfx_fx)
+        local owner = data.owner
+        fx.entity:SetParent(owner.entity)
+        fx.entity:AddFollower()
+        if inst.base_prefab == "cane" then
+            fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, -60, 0)
+        else
+            fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, -110, 0)
+        end
+        inst.vfx_fx_insts = fx
+    else
+        if inst._trailtask == nil then
+            inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, cane_do_trail, 2 * FRAMES)
+        end
     end
 end
 
-local function cane_unequipped(inst)
-    if inst._trailtask ~= nil then
-        inst._trailtask:Cancel()
-        inst._trailtask = nil
+local function cane_unequipped(inst, owner)
+    if inst.vfx_fx then
+        inst.vfx_fx_insts:Remove()
+    else
+        if inst._trailtask ~= nil then
+            inst._trailtask:Cancel()
+            inst._trailtask = nil
+        end
     end
 end
 
@@ -416,13 +448,16 @@ function cane_init_fn(inst, build_name)
     inst.AnimState:OverrideSymbol("grass", "swap_cane", "grass")
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 
-    local skin_fx = SKIN_FX_PREFAB[build_name]
-    if skin_fx ~= nil then
-        inst.trail_fx = skin_fx[1]
-        if inst.trail_fx ~= nil then
-            inst:ListenForEvent("equipped", cane_equipped)
-            inst:ListenForEvent("unequipped", cane_unequipped)
+    local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for canes
+    if skin_fx ~= nil and skin_fx[1] ~= nil then
+        if Prefabs[skin_fx[1]].vfx_fx then
+            inst.vfx_fx = skin_fx[1]
+        else
+            inst.trail_fx = skin_fx[1]
         end
+        
+        inst:ListenForEvent("equipped", cane_equipped)
+        inst:ListenForEvent("unequipped", cane_unequipped)
     end
 end
 
@@ -446,13 +481,16 @@ function orangestaff_init_fn(inst, build_name)
         return
     end
 
-    local skin_fx = SKIN_FX_PREFAB[build_name]
-    if skin_fx ~= nil then
-        inst.trail_fx = skin_fx[1]
-        if inst.trail_fx ~= nil then
-            inst:ListenForEvent("equipped", cane_equipped)
-            inst:ListenForEvent("unequipped", cane_unequipped)
+    local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for canes
+    if skin_fx ~= nil and skin_fx[1] ~= nil then
+        if Prefabs[skin_fx[1]].vfx_fx then
+            inst.vfx_fx = skin_fx[1]
+        else
+            inst.trail_fx = skin_fx[1]
         end
+
+        inst:ListenForEvent("equipped", cane_equipped)
+        inst:ListenForEvent("unequipped", cane_unequipped)
 
         if skin_fx[2] ~= nil then
             inst.components.blinkstaff:SetFX(skin_fx[2], skin_fx[3])
@@ -586,6 +624,46 @@ function researchlab4_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Icebox skin functions ]]
+--------------------------------------------------------------------------
+local function icebox_opened(inst)
+    if inst._frostfx == nil then
+        inst._frostfx = SpawnPrefab(inst.frost_fx)
+        inst._frostfx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+        inst._frostfx.AnimState:OverrideItemSkinSymbol("cold_air", "icebox_victorian", "cold_air", inst.GUID, "ice_box")
+    end
+end
+
+local function icebox_closed(inst)
+    if inst._frostfx ~= nil then
+        inst._frostfx:Kill()
+        inst._frostfx = nil
+    end
+end
+
+function icebox_init_fn(inst, build_name)
+    if inst.components.placer ~= nil then
+        --Placers can run this on clients as well as servers
+        inst.AnimState:SetSkin(build_name, "ice_box")
+        return
+    elseif not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "ice_box")
+
+    local skin_fx = SKIN_FX_PREFAB[build_name]
+    if skin_fx ~= nil then
+        inst.frost_fx = skin_fx[1]
+        if inst.frost_fx ~= nil then
+            inst:ListenForEvent("onopen", icebox_opened)
+            inst:ListenForEvent("onclose", icebox_closed)
+            inst:ListenForEvent("onremove", icebox_closed)
+        end
+    end
+end
+
+--------------------------------------------------------------------------
 
 function CreatePrefabSkin(name, info)
     local prefab_skin = Prefab(name, nil, info.assets, info.prefabs)
@@ -644,13 +722,6 @@ function CreatePrefabSkin(name, info)
     if info.feet_cuff_size ~= nil then
         for base_skin,size in pairs(info.feet_cuff_size) do
             BASE_FEET_SIZE[base_skin] = size
-        end
-    end
-
-	--HAS_LEG_BOOT not yet tested
-    if info.has_leg_boot_builds ~= nil then
-        for _,base_skin in pairs(info.has_leg_boot_builds) do
-            HAS_LEG_BOOT[base_skin] = true
         end
     end
 

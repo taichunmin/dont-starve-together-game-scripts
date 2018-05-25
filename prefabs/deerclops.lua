@@ -147,6 +147,7 @@ local function OnRemove(inst)
 end
 
 local function OnDead(inst)
+    AwardRadialAchievement("deerclops_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
     TheWorld:PushEvent("hasslerkilled", inst)
 end
 

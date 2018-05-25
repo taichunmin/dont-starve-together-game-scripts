@@ -9,7 +9,7 @@ local Text = require "widgets/text"
 local Image = require "widgets/image"
 local UIAnim = require "widgets/uianim"
 local Widget = require "widgets/widget"
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 
 local LEFT_SIDE = -415
 local RIGHT_SIDE = 415
@@ -40,7 +40,7 @@ local LABELS = {
         { x = LEFT_SIDE, y = -25,  anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.DPAD_BOTTOM },
         { x = LEFT_SIDE, y = -65, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.DPAD_RIGHT },
 
-        { x = LEFT_SIDE, y = -200, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.L3 },
+        { x = LEFT_SIDE, y = -200, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.LSTICK },
 
         { x = RIGHT_SIDE, y = 255,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R2 },
         { x = RIGHT_SIDE, y = 155,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R1 },
@@ -50,7 +50,7 @@ local LABELS = {
         { x = RIGHT_SIDE, y = -25,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.CROSS },
         { x = RIGHT_SIDE, y = -65, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.SQUARE },
 
-        { x = RIGHT_SIDE, y = -200, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R3 },
+        { x = RIGHT_SIDE, y = -200, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.RSTICK },
     },
     [DEVICE_VITA] = {
         { x = 20,         y = 290,  anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.TOUCHPAD },
@@ -64,7 +64,7 @@ local LABELS = {
         { x = LEFT_SIDE, y = 75,  anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.DPAD_BOTTOM },
         { x = LEFT_SIDE, y = 210, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.DPAD_RIGHT },
 
-        { x = LEFT_SIDE, y = 25, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.L3 },
+        { x = LEFT_SIDE, y = 25, anchor = ANCHOR_RIGHT, text = STRINGS.UI.CONTROLSSCREEN.PS4.LSTICK },
 
         { x = RIGHT_SIDE, y = -175,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R1 },
         { x = RIGHT_SIDE, y = 290,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R2 },
@@ -74,7 +74,7 @@ local LABELS = {
         { x = RIGHT_SIDE, y = 75,  anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.CROSS },
         { x = RIGHT_SIDE, y = 205, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.SQUARE },
 
-        { x = RIGHT_SIDE, y = 25, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.R3 },
+        { x = RIGHT_SIDE, y = 25, anchor = ANCHOR_LEFT, text = STRINGS.UI.CONTROLSSCREEN.PS4.RSTICK },
     }
 }
 

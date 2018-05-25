@@ -19,6 +19,8 @@ function Sewing:DoSewing(target, doer)
 			self.onsewn(self.inst, target, doer)
 		end
 
+		AwardPlayerAchievement("sewing_kit", doer)
+
 		return true
 	end
 

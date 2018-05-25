@@ -14,7 +14,7 @@ local PopupDialogScreen = require "screens/redux/popupdialog"
 local EmailSignupScreen = require "screens/emailsignupscreen"
 local MultiplayerMainScreen = require "screens/redux/multiplayermainscreen"
 
-local NoAuthenticationPopupDialogScreen = require "screens/noauthenticationpopupdialogscreen"
+local NoAuthenticationPopupDialogScreen = require "screens/redux/noauthenticationpopupdialogscreen"
 local NetworkLoginPopup = require "screens/redux/networkloginpopup"
 
 local OnlineStatus = require "widgets/onlinestatus"
@@ -258,10 +258,22 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
         end
     end
 	
-	if TheSim:IsLoggedOn() or account_manager:HasAuthToken() then
+	if TheSim:GetDataCollectionSetting() == false then
+		if RUN_GLOBAL_INIT then
+			local notice = PopupDialogScreen( STRINGS.UI.DATACOLLECTION_LOGIN.TITLE, STRINGS.UI.DATACOLLECTION_LOGIN.BODY, 
+							{
+							 {text=STRINGS.UI.DATACOLLECTION_LOGIN.CONTINUE, cb = function() TheFrontEnd:PopScreen() GoToMultiplayerMainMenu(true) end },
+							},
+							nil, "big", "dark_wide")
+			TheFrontEnd:PushScreen(notice)
+		else
+			TheFrontEnd:PopScreen() 
+			GoToMultiplayerMainMenu(true)
+		end
+	elseif TheSim:IsLoggedOn() or account_manager:HasAuthToken() then
 		if TheSim:GetUserHasLicenseForApp(DONT_STARVE_TOGETHER_APPID) then
 			account_manager:Login( "Client Login" )
-                TheFrontEnd:PushScreen(NetworkLoginPopup(onLogin, onCancel, hadPendingConnection)) 
+            TheFrontEnd:PushScreen(NetworkLoginPopup(onLogin, onCancel, hadPendingConnection)) 
 		else
 			TheNet:NotifyAuthenticationFailure()
 			OnNetworkDisconnect( "APP_OWNERSHIP_CHECK_FAILED", false, false )

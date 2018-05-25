@@ -430,7 +430,7 @@ function ChildSpawner:SpawnChild(target, prefab, radius)
     if child ~= nil then
         self:TakeOwnership(child)
         if self.childreninside == 1 and self.onvacate ~= nil then
-            self:onvacate(self.inst)
+            self.onvacate(self.inst)
         end
         self.childreninside = self.childreninside - 1
     end

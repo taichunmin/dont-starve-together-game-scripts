@@ -22,6 +22,8 @@ EVENT_ICONS =
 {
 	event_forge = "LAVA",
 	event_ice = "ICE",
+	event_yotv = "VARG",
+	event_quagmire = "VICTORIAN",
 }
 
 -- Also update GetBuildForItem!
@@ -126,6 +128,17 @@ function IsPackFeatured(item_key)
     local pack_data = GetSkinData(item_key)
     return pack_data.featured_pack
 end
+
+function IsPackGiftable(item_key)
+    local pack_data = GetSkinData(item_key)
+    return pack_data.steam_dlc_id ~= nil
+end
+
+function GetPackGiftDLCID(item_key)
+    local pack_data = GetSkinData(item_key)
+    return pack_data.steam_dlc_id
+end
+
 
 function GetPurchaseDisplayForItem(item_key)
 	local pack_data = GetSkinData(item_key)
@@ -269,18 +282,20 @@ function IsUserCommerceAllowedOnItem(item_key)
 	end
 end
 
-function IsUserCommerceSellAllowedOnItem(item_key)
-    local item_counts = GetOwnedItemCounts()
-    local num_owned = item_counts[item_key] or 0
-    return TheItems:GetBarterSellPrice(item_key) ~= 0
+function IsUserCommerceSellAllowedOnItem(item_type)
+	local num_owned = TheInventory:GetOwnedItemCountForCommerce(item_type)
+    return num_owned > 0 and TheItems:GetBarterSellPrice(item_type) ~= 0
 end
 
-function IsUserCommerceBuyAllowedOnItem(item_key)
-    local item_counts = GetOwnedItemCounts()
-    local num_owned = item_counts[item_key] or 0
-    return num_owned == 0 and TheItems:GetBarterBuyPrice(item_key) ~= 0
+function IsUserCommerceBuyAllowedOnItem(item_type)
+    local num_owned = TheInventory:GetOwnedItemCountForCommerce(item_type)
+	return num_owned == 0 and TheItems:GetBarterBuyPrice(item_type) ~= 0	
 end
 
+function GetIsPermOwned(item_type)
+	return TheInventory:GetIsPermOwned(item_type)
+end
+	
 function GetTypeForItem(item)
 
 	local itemName = string.lower(item) -- they come back from the server in caps
@@ -403,6 +418,21 @@ function GetSkinDescription(item)
 	return STRINGS.SKIN_DESCRIPTIONS[item] or STRINGS.SKIN_DESCRIPTIONS["missing"]
 end
 
+function GetSkinInvIconName(item)
+    local image_name = item
+
+    if image_name == "" then
+        image_name = "default"
+    else 
+        if string.sub( image_name, -8 ) == "_builder" then
+            image_name = string.sub( image_name, 1, -9 )
+        end
+        image_name = string.gsub(image_name, "_none", "")
+    end
+
+    return image_name
+end
+
 
 
 ----------------------------------------------------
@@ -429,7 +459,7 @@ function SkinGridListConstructor(context, parent, scroll_list)
 				screen:OnItemSelect(type, item, item_id, itemimage)
 			end
 
-            itemimage.ongainfocusfn = function(is_btn_enabled)
+			itemimage.ongainfocusfn = function()
                 scroll_list:OnWidgetFocus(itemimage)
             end
 		
@@ -477,7 +507,7 @@ function UpdateSkinGrid(context, list_widget, data, data_index)
 
 		if screen.show_hover_text then
 			local hover_text = GetModifiedRarityStringForItem(data.item) .. "\n" .. GetSkinName(data.item)
-			list_widget:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, size = 20, offset_x = 0, offset_y = 60, colour = {1,1,1,1}})
+			list_widget:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 60, colour = {1,1,1,1}})
 			if list_widget.focus then --make sure we force the hover text to appear on the default focused item
 				list_widget:OnGainFocus()
 			end
@@ -621,18 +651,19 @@ function GetSortedSkinsList()
 	return skins_list, timestamp
 end
 
+--This function is very expensive, don't use it more than once per frame!!!
 function GetOwnedItemCounts()
-    local item_counts = {}
-    local inventory_list = TheInventory:GetFullInventory()
-    for i,inv_item in ipairs(inventory_list) do
-        local key = inv_item.item_type
-        if item_counts[key] then
-            item_counts[key] = item_counts[key] + 1
-        else
-            item_counts[key] = 1
-        end
-    end
-    return item_counts
+	local item_counts = {}
+	local inventory_list = TheInventory:GetFullInventory()
+	for i,inv_item in ipairs(inventory_list) do
+		local key = inv_item.item_type
+		if item_counts[key] then
+			item_counts[key] = item_counts[key] + 1
+ 		else
+			item_counts[key] = 1
+		end
+	end
+	return item_counts
 end
 
 
@@ -640,8 +671,8 @@ end
 -- are fungible, so the first one is good enough.
 function GetFirstOwnedItemId(item_key)
     local inventory_list = TheInventory:GetFullInventory()
-    for k,v in ipairs(inventory_list) do
-        if item_key == v.item_type then
+	for k,v in ipairs(inventory_list) do
+        if item_key == v.item_type and v.item_id ~= TEMP_ITEM_ID then
             return v.item_id
         end
     end
@@ -696,6 +727,36 @@ function IsItemIsReward(item_type)
 		end
 	end
 	return false
+end
+
+function _BonusItemRewarded(bonus_item, item_counts)
+	for _,item_set in pairs(SKIN_SET_ITEMS[bonus_item]) do
+		local missing_item = false
+		for _,input_item in pairs(item_set) do
+			if (item_counts[input_item] or 0) == 0 then
+				missing_item = true
+			end
+		end
+		if not missing_item then
+			return true
+		end
+	end
+	return false
+end
+function WillUnravelBreakEnsemble(item_type)
+	local in_collection, bonus_item = IsItemInCollection(item_type)
+	
+	if not in_collection then
+		return false
+	end
+	
+	local item_counts = GetOwnedItemCounts()
+	if _BonusItemRewarded(bonus_item, item_counts) then
+		item_counts[item_type] = (item_counts[item_type] or 1) - 1 --subtract one if it exists, otherwise 0
+		return not _BonusItemRewarded(bonus_item, item_counts)
+	end
+	
+	return false --not rewarded already
 end
 
 
@@ -1012,3 +1073,75 @@ function GetPlayerPortraitAtlasAndTex(item_key)
     end
 end
 
+
+
+function IsSkinDLCEntitlementReceived(entitlement)
+	return Profile:IsEntitlementReceived(entitlement)
+end
+function SetSkinDLCEntitlementReceived(entitlement)
+	Profile:SetEntitlementReceived(entitlement)
+end
+
+function SetSkinDLCEntitlementOwned(entitlement)
+	if not Profile:IsEntitlementReceived(entitlement) then
+		AddNewSkinDLCEntitlement(entitlement)
+	end
+	Profile:SetEntitlementReceived(entitlement)
+end
+
+local newSkinDLCEntitlements = {}
+function AddNewSkinDLCEntitlement(entitlement)
+	table.insert( newSkinDLCEntitlements, entitlement)
+end
+function HasNewSkinDLCEntitlements()
+	return #newSkinDLCEntitlements > 0
+end
+function GetNewSkinDLCEntitlement()
+	local entitlement = newSkinDLCEntitlements[#newSkinDLCEntitlements]
+	table.remove( newSkinDLCEntitlements, #newSkinDLCEntitlements)
+	return entitlement
+end
+
+
+function MakeSkinDLCPopup(_cb)
+	local pack_type = GetNewSkinDLCEntitlement()
+
+	if pack_type ~= nil then
+		local PURCHASE_INFO = require("skin_purchase_packs")
+		local display_items = PURCHASE_INFO.PACKS[pack_type]
+        if display_items ~= nil then
+		    local options = {
+			    allow_cancel = false,
+			    box_build = GetBoxBuildForItem(pack_type),
+			    use_bigportraits = IsPackFeatured(pack_type),
+		    }
+
+		    if GetSkinData(pack_type).legacy_popup_category ~= nil then
+			    local items = {}
+			    for _,item in pairs(display_items) do
+				    table.insert(items, { item = item, item_id = 0, gifttype = GetSkinData(pack_type).legacy_popup_category })
+			    end
+
+			    local ThankYouPopup = require "screens/thankyoupopup"
+			    local thankyou_popup = ThankYouPopup(items, function() MakeSkinDLCPopup(_cb) end)
+			    TheFrontEnd:PushScreen(thankyou_popup)
+		    else
+			    local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
+			    local box_popup = ItemBoxOpenerPopup(nil, options, function(success_cb) success_cb(display_items) end, function() MakeSkinDLCPopup(_cb) end)
+			    TheFrontEnd:PushScreen(box_popup)
+		    end
+        else
+            --No items to display, likely bad data.
+            print("Error: Unable to display skin dlc contents for", pack_type)
+            MakeSkinDLCPopup(_cb)
+        end
+	else
+		if TheFrontEnd:GetActiveScreen().FinishedFadeIn ~= nil then
+			TheFrontEnd:GetActiveScreen():FinishedFadeIn()
+		end
+
+		if _cb ~= nil then
+			_cb()
+		end
+	end
+end

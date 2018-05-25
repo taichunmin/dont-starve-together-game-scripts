@@ -450,6 +450,10 @@ function SaveIndex:GetLastUsedSlot()
     return self.data.last_used_slot or -1
 end
 
+function SaveIndex:SetLastUsedSlot(slot)
+    self.data.last_used_slot = slot
+end
+
 function SaveIndex:GetSlotServerData(slot)
     return slot ~= nil and self.data.slots[slot] ~= nil and self.data.slots[slot].server or {}
 end
@@ -469,6 +473,68 @@ function SaveIndex:GetSlotSession(slot, caves_session)
         return session_id
     end
     return self.data.slots[slot or self.current_slot].session_id
+end
+
+function SaveIndex:BuildSlotDayAndSeasonText(slotnum)
+	local slot_day_and_season_str = ""
+	
+    if SaveGameIndex:IsSlotEmpty(slotnum) then
+        slot_day_and_season_str = STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_NEW
+    else
+        local session_id = SaveGameIndex:GetSlotSession(slotnum)
+        if session_id ~= nil then
+            local day = 1
+            local season = nil
+            local function onreadworldfile(success, str)
+                if success and str ~= nil and #str > 0 then
+                    local success, savedata = RunInSandbox(str)
+                    if success and savedata ~= nil and GetTableSize(savedata) > 0 then
+                        local worlddata = savedata.world_network ~= nil and savedata.world_network.persistdata or nil
+                        if worlddata ~= nil then
+                            if worlddata.clock ~= nil then
+                                day = (worlddata.clock.cycles or 0) + 1
+                            end
+
+                            if worlddata.seasons ~= nil and worlddata.seasons.season ~= nil then
+                                season = STRINGS.UI.SERVERLISTINGSCREEN.SEASONS[string.upper(worlddata.seasons.season)]
+                                if season ~= nil and
+                                    worlddata.seasons.elapseddaysinseason ~= nil and
+                                    worlddata.seasons.remainingdaysinseason ~= nil then
+                                    if worlddata.seasons.remainingdaysinseason * 3 <= worlddata.seasons.elapseddaysinseason then
+                                        season = STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_1..season..STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_2
+                                    elseif worlddata.seasons.elapseddaysinseason * 3 <= worlddata.seasons.remainingdaysinseason then
+                                        season = STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_1..season..STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_2
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if SaveGameIndex:IsSlotMultiLevel(slotnum) then
+                local file = TheNet:GetWorldSessionFileInClusterSlot(slotnum, "Master", session_id)
+                if file ~= nil then
+                    if USE_SESSION_METADATA then
+                        file = file..".meta"
+                    end
+                    TheSim:GetPersistentStringInClusterSlot(slotnum, "Master", file, onreadworldfile)
+                end
+            else
+                local file = TheNet:GetWorldSessionFile(session_id)
+                if file ~= nil then
+                    if USE_SESSION_METADATA then
+                        file = file..".meta"
+                    end
+                    TheSim:GetPersistentString(file, onreadworldfile)
+                end
+            end
+            slot_day_and_season_str = (season ~= nil and (season.." ") or "")..STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY.." "..day
+        else
+            slot_day_and_season_str = STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_NEW
+        end
+    end
+
+    return slot_day_and_season_str
 end
 
 function SaveIndex:CheckWorldFile(slot)

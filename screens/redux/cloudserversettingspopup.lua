@@ -36,8 +36,10 @@ local privacy_options = {
     -- Friends-only is tied to the host and isn't available for cloud servers.
     -- e.g. The user requesting the server is not guaranteed to even be on the server.
     --{text=STRINGS.UI.SERVERCREATIONSCREEN.PRIVACY.FRIENDS,   data=PRIVACY_TYPE.FRIENDS},
-    {text=STRINGS.UI.SERVERCREATIONSCREEN.PRIVACY.CLAN,      data=PRIVACY_TYPE.CLAN},
 }
+if PLATFORM ~= "WIN32_RAIL" then
+    table.insert( privacy_options, {text=STRINGS.UI.SERVERCREATIONSCREEN.PRIVACY.CLAN, data=PRIVACY_TYPE.CLAN} )
+end
 local privacy_buttons = {
     width = 140,
     height = label_height,
@@ -119,14 +121,16 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
     self.intentions_overlay.bg = self.intentions_overlay:AddChild(TEMPLATES.RectangleWindow(650,450))
     self.intentions_overlay.bg:MoveToBack()
     self.intentions_overlay.bg:SetPosition(0,-170)
+    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+    self.intentions_overlay.bg:SetBackgroundTint(r,g,b,1) -- Must be opaque because we look like a popup over text behind.
 
     if self.forced_settings.server_intention == nil then
-        self.server_intention = TEMPLATES.LabelButton(nil, STRINGS.UI.SERVERCREATIONSCREEN.INTENTION_LABEL, "", narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
-        self.server_intention.button._onclickfn = function(data)
-            self:SetServerIntention(nil)
-            self.dirty_cb(self)
-        end
-        self.server_intention.button:SetOnClick(self.server_intention.button._onclickfn)
+        self.server_intention = TEMPLATES.LabelButton(
+            function(data)
+                self:SetServerIntention(nil)
+                self.dirty_cb(self)
+            end,
+            STRINGS.UI.SERVERCREATIONSCREEN.INTENTION_LABEL, "", narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
     end
 
     self.server_name = TEMPLATES.LabelTextbox(STRINGS.UI.SERVERCREATIONSCREEN.SERVERNAME, "", wide_label_width, wide_input_width, label_height, space_between, NEWFONT, font_size, wide_field_nudge)
@@ -194,7 +198,7 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
             self.dirty_cb(self)
         end)
 
-        self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.old.IconButton("images/button_icons.xml", "info.tex", "", false, false, function() 
+        self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "info.tex", nil, false, false, function() 
             local mode_title = GetGameModeString( self.game_mode.spinner:GetSelectedData() )
             if mode_title == "" then
                 mode_title = STRINGS.UI.GAMEMODES.UNKNOWN
@@ -206,7 +210,10 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
             TheFrontEnd:PushScreen(PopupDialogScreen(
                     mode_title, 
                     mode_body, 
-                {{ text = STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end }}))
+                    {{ text = STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end }},
+                    nil,
+                    "big"
+            ))
         end))
         self.game_mode.info_button:SetPosition(160, -2)
         self.game_mode.info_button:SetScale(.4)
@@ -288,8 +295,6 @@ end
 
 function CloudServerSettingsPopup:RefreshIntentionsButton()
     self.server_intention.button:SetText(self.server_intention.button.data ~= nil and STRINGS.UI.INTENTION[string.upper(self.server_intention.button.data)] or "")
-    -- Why do we set this repeatedly?
-    self.server_intention.button:SetOnClick(self.server_intention.button._onclickfn)
 end
 
 function CloudServerSettingsPopup:DisplayClanControls(show)

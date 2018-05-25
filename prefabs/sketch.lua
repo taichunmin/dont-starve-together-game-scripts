@@ -6,22 +6,27 @@ local assets =
 -- Note: The index is saved, always add to the end of the list! and never reorder!
 local SKETCHES = 
 {
-    {item="chesspiece_pawn",        recipe="chesspiece_pawn_builder"},
-    {item="chesspiece_rook",        recipe="chesspiece_rook_builder"},
-    {item="chesspiece_knight",      recipe="chesspiece_knight_builder"},
-    {item="chesspiece_bishop",      recipe="chesspiece_bishop_builder"},
-    {item="chesspiece_muse",        recipe="chesspiece_muse_builder"},
-    {item="chesspiece_formal",      recipe="chesspiece_formal_builder"},
-    {item="chesspiece_deerclops",   recipe="chesspiece_deerclops_builder"},
-    {item="chesspiece_bearger",     recipe="chesspiece_bearger_builder"},
-    {item="chesspiece_moosegoose",  recipe="chesspiece_moosegoose_builder"},
-    {item="chesspiece_dragonfly",   recipe="chesspiece_dragonfly_builder"},
+    { item = "chesspiece_pawn",         recipe = "chesspiece_pawn_builder" },
+    { item = "chesspiece_rook",         recipe = "chesspiece_rook_builder" },
+    { item = "chesspiece_knight",       recipe = "chesspiece_knight_builder" },
+    { item = "chesspiece_bishop",       recipe = "chesspiece_bishop_builder" },
+    { item = "chesspiece_muse",         recipe = "chesspiece_muse_builder" },
+    { item = "chesspiece_formal",       recipe = "chesspiece_formal_builder" },
+    { item = "chesspiece_deerclops",    recipe = "chesspiece_deerclops_builder" },
+    { item = "chesspiece_bearger",      recipe = "chesspiece_bearger_builder" },
+    { item = "chesspiece_moosegoose",   recipe = "chesspiece_moosegoose_builder" },
+    { item = "chesspiece_dragonfly",    recipe = "chesspiece_dragonfly_builder" },
+    { item = "chesspiece_clayhound",    recipe = "chesspiece_clayhound_builder",    image = "chesspiece_clayhound_sketch" },
+    { item = "chesspiece_claywarg",     recipe = "chesspiece_claywarg_builder",     image = "chesspiece_claywarg_sketch" },
 }
 
 local function onload(inst, data)
     if data ~= nil and data.sketchid ~= nil then
         inst.sketchid = data.sketchid
-        inst.components.named:SetName(subfmt(STRINGS.NAMES.SKETCH, {item=STRINGS.NAMES[string.upper(SKETCHES[inst.sketchid].recipe)]}))
+        inst.components.named:SetName(subfmt(STRINGS.NAMES.SKETCH, { item = STRINGS.NAMES[string.upper(SKETCHES[inst.sketchid].recipe)] }))
+        if SKETCHES[inst.sketchid].image ~= nil then
+            inst.components.inventoryitem:ChangeImageName(SKETCHES[inst.sketchid].image)
+        end
     end
 end
 
@@ -96,15 +101,27 @@ local function MakeSketchPrefab(sketchid)
 
         inst.sketchid = sketchid
 
-        inst.components.named:SetName(subfmt(STRINGS.NAMES.SKETCH, {item=STRINGS.NAMES[string.upper(SKETCHES[sketchid].recipe)]}))
+        inst.components.named:SetName(subfmt(STRINGS.NAMES.SKETCH, { item = STRINGS.NAMES[string.upper(SKETCHES[sketchid].recipe)] }))
+
+        if SKETCHES[sketchid].image ~= nil then
+            inst.components.inventoryitem:ChangeImageName(SKETCHES[sketchid].image)
+        end
+
         return inst
     end
 end
 
-local prefabs = {}
-table.insert(prefabs, Prefab("sketch", fn, assets))
+local ret = {}
+table.insert(ret, Prefab("sketch", fn, assets))
 for i, v in ipairs(SKETCHES) do
-    table.insert(prefabs, Prefab(v.item.."_sketch", MakeSketchPrefab(i), assets))
+    local temp_assets = assets
+    if v.image ~= nil then
+        temp_assets = { Asset("INV_IMAGE", v.image) }
+        for _, asset in ipairs(assets) do
+            table.insert(temp_assets, asset)
+        end
+    end
+    table.insert(ret, Prefab(v.item.."_sketch", MakeSketchPrefab(i), temp_assets))
 end
 
-return unpack(prefabs)
+return unpack(ret)

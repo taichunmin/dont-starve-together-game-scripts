@@ -23,8 +23,8 @@ SetSharedLootTable('buzzard',
 })
 
 local function KeepTargetFn(inst, target)
-    return inst.components.combat:CanTarget(target) and 
-    inst:GetDistanceSqToInst(target) <= (7.5*7.5)
+    return inst.components.combat:CanTarget(target)
+        and inst:IsNear(target, target:HasTag("buzzard") and inst.components.combat:GetAttackRange() + target:GetPhysicsRadius(0) or 7.5)
 end
 
 local function OnAttacked(inst, data)
@@ -32,10 +32,14 @@ local function OnAttacked(inst, data)
 end
 
 local function OnPreLoad(inst, data)
-	local x, y, z = inst.Transform:GetWorldPosition()
-	if y > 0 then
-		inst.Transform:SetPosition(x, 0, z)
-	end
+    local x, y, z = inst.Transform:GetWorldPosition()
+    if y > 0 then
+        inst.Transform:SetPosition(x, 0, z)
+    end
+end
+
+local function OnEntitySleep(inst)
+    inst.components.combat:SetTarget(nil)
 end
 
 local function fn()
@@ -72,7 +76,7 @@ local function fn()
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(TUNING.BUZZARD_HEALTH)
-    
+
     ------------------
 
     inst:AddComponent("combat")
@@ -123,15 +127,16 @@ local function fn()
     inst:SetStateGraph("SGbuzzard")
     inst:SetBrain(brain)
 
-	inst:AddComponent("hauntable")
-	inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
-		local action = BufferedAction(inst, nil, ACTIONS.GOHOME)
-		inst.components.locomotor:PushAction(action)
-		inst.components.hauntable.hauntvalue = TUNING.HAUNT_MEDIUM
-		return true
-	end)
+    inst:AddComponent("hauntable")
+    inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
+        local action = BufferedAction(inst, nil, ACTIONS.GOHOME)
+        inst.components.locomotor:PushAction(action)
+        inst.components.hauntable.hauntvalue = TUNING.HAUNT_MEDIUM
+        return true
+    end)
 
-	inst.OnPreLoad = OnPreLoad
+    inst.OnPreLoad = OnPreLoad
+    inst.OnEntitySleep = OnEntitySleep
 
     return inst
 end

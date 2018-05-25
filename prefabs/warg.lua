@@ -1,11 +1,4 @@
-local assets =
-{
-    Asset("ANIM", "anim/warg_actions.zip"),
-    Asset("ANIM", "anim/warg_build.zip"),
-    Asset("SOUND", "sound/vargr.fsb"),
-}
-
-local prefabs =
+local prefabs_basic =
 {
     "hound",
     "icehound",
@@ -14,7 +7,35 @@ local prefabs =
     "houndstooth",
 }
 
+local prefabs_clay =
+{
+    "redpouch",
+    "eyeflame",
+    "clayhound",
+}
+
 local brain = require("brains/wargbrain")
+
+local sounds =
+{
+    idle = "dontstarve_DLC001/creatures/vargr/idle",
+    howl = "dontstarve_DLC001/creatures/vargr/howl",
+    hit = "dontstarve_DLC001/creatures/vargr/hit",
+    attack = "dontstarve_DLC001/creatures/vargr/attack",
+    death = "dontstarve_DLC001/creatures/vargr/death",
+    sleep = "dontstarve_DLC001/creatures/vargr/sleep",
+}
+
+local sounds_clay =
+{
+    idle = "dontstarve_DLC001/creatures/together/claywarg/idle",
+    howl = "dontstarve_DLC001/creatures/together/claywarg/howl",
+    hit = "dontstarve_DLC001/creatures/together/claywarg/hit",
+    attack = "dontstarve_DLC001/creatures/together/claywarg/attack",
+    death = "dontstarve_DLC001/creatures/together/claywarg/death",
+    sleep = "dontstarve_DLC001/creatures/together/claywarg/sleep",
+    alert = "dontstarve_DLC001/creatures/together/claywarg/alert",
+}
 
 SetSharedLootTable('warg',
 {
@@ -24,36 +45,55 @@ SetSharedLootTable('warg',
     {'monstermeat',             1.00},
     {'monstermeat',             0.50},
     {'monstermeat',             0.50},
-    
+
+    {'houndstooth',             1.00},
+    {'houndstooth',             0.66},
+    {'houndstooth',             0.33},
+})
+
+SetSharedLootTable('claywarg',
+{
+    {'redpouch',                1.00},
+    {'redpouch',                1.00},
+    {'redpouch',                1.00},
+    {'redpouch',                1.00},
+    {'redpouch',                0.50},
+    {'redpouch',                0.50},
+
     {'houndstooth',             1.00},
     {'houndstooth',             0.66},
     {'houndstooth',             0.33},
 })
 
 local function RetargetFn(inst)
-    if inst.sg:HasStateTag("hidden") then return end
-    return FindEntity(inst, TUNING.WARG_TARGETRANGE, function(guy)
-        return inst.components.combat:CanTarget(guy) 
-    end,
-    nil,
-    {"wall","warg","hound"}
-    )
+    return not (inst.sg:HasStateTag("hidden") or inst.sg:HasStateTag("statue"))
+        and FindEntity(
+                inst,
+                TUNING.WARG_TARGETRANGE,
+                function(guy)
+                    return inst.components.combat:CanTarget(guy)
+                end,
+                nil,
+                { "wall", "warg", "hound" }
+            )
+        or nil
 end
 
 local function KeepTargetFn(inst, target)
-    if inst.sg:HasStateTag("hidden") then return end
-    if target then
-        return distsq(inst:GetPosition(), target:GetPosition()) < 40*40
+    return target ~= nil
+        and not (inst.sg:HasStateTag("hidden") or inst.sg:HasStateTag("statue"))
+        and inst:IsNear(target, 40)
         and not target.components.health:IsDead()
         and inst.components.combat:CanTarget(target)
-    end
 end
 
 local function OnAttacked(inst, data)
     inst.components.combat:SetTarget(data.attacker)
-    inst.components.combat:ShareTarget(data.attacker, TUNING.WARG_MAXHELPERS, function(dude)
-            return dude:HasTag("warg") or dude:HasTag("hound") 
-            and not dude.components.health:IsDead()
+    inst.components.combat:ShareTarget(data.attacker, TUNING.WARG_MAXHELPERS,
+        function(dude)
+            return not (dude.components.health ~= nil and dude.components.health:IsDead())
+                and (dude:HasTag("hound") or dude:HasTag("warg"))
+                and data.attacker ~= (dude.components.follower ~= nil and dude.components.follower.leader or nil)
         end, TUNING.WARG_TARGETRANGE)
 end
 
@@ -76,76 +116,351 @@ local function NumHoundsToSpawn(inst)
     return num - numFollowers
 end
 
-local function fn()
-    local inst = CreateEntity()
+local function NoHoundsToSpawn(inst)
+    return 0
+end
 
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter()
-    inst.entity:AddDynamicShadow()
-    inst.entity:AddNetwork()
+local function TossItems(inst, x, z, minradius, maxradius)
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, maxradius + 3, { "_inventoryitem" }, { "locomotor", "INLIMBO" })) do
+        local x1, y1, z1 = v.Transform:GetWorldPosition()
+        local dx, dz = x1 - x, z1 - z
+        local dsq = dx * dx + dz * dz
+        local range = GetRandomMinMax(minradius, maxradius) + v:GetPhysicsRadius(.5)
+        if dsq < range * range and y1 < .2 then
+            if v.components.mine ~= nil then
+                v.components.mine:Deactivate()
+            end
+            if dsq > 0 then
+                range = range / math.sqrt(dsq)
+                x1 = x + dx * range
+                z1 = z + dz * range
+            else
+                local angle = 2 * PI * math.random()
+                x1 = x + math.cos(angle) * range
+                z1 = z + math.sin(angle) * range
+            end
+            if v.Physics ~= nil then
+                v.Physics:Teleport(x1, y1, z1)
+            else
+                v.Transform:SetPosition(x1, y1, z1)
+            end
+        end
+    end
+end
 
-    inst.DynamicShadow:SetSize(2.5, 1.5)
+local function DoSpawnClayHound(inst, x, z, rot)
+    if TheWorld.Map:IsPassableAtPoint(x, 0, z) then
+        for i, v in ipairs(TheSim:FindEntities(x, 0, z, 4, nil, { "_inventoryitem", "NOBLOCK", "FX", "INLIMBO", "DECOR" })) do
+            if v.components.locomotor == nil or (v.sg ~= nil and v.sg:HasStateTag("statue")) then
+                local range = .5 + v:GetPhysicsRadius(.5)
+                if v:GetDistanceSqToPoint(x, 0, z) < range * range then
+                    return
+                end
+            end
+        end
+        TossItems(inst, x, z, .5, 1)
+        local hound = SpawnPrefab("clayhound")
+        hound.Transform:SetRotation(rot)
+        hound.Transform:SetPosition(x, 0, z)
+        hound.components.follower:SetLeader(inst)
+    end
+end
 
-    local s = 1
-    inst.Transform:SetScale(s, s, s)
-    inst.Transform:SetSixFaced()
+local function GenerateClayFormation(rot, count)
+    local ret = {}
+    local xangle = rot * DEGREES
+    local zangle = (rot + 90) * DEGREES
+    local sin_xangle = math.sin(xangle)
+    local cos_xangle = math.cos(xangle)
+    local sin_zangle = math.sin(zangle)
+    local cos_zangle = math.cos(zangle)
+    local zoffsabs = (count < 3 and 0) or ((count < 5 or count == 7 or count == 8) and 2) or 3
 
-    MakeCharacterPhysics(inst, 1000, 1)
+    for zoffs = -zoffsabs, zoffsabs, 3 do
+        for xoffs = 4, count > 6 and 7 or 4, 3 do
+            table.insert(ret, Vector3(zoffs * sin_zangle + xoffs * sin_xangle, 0, zoffs * cos_zangle + xoffs * cos_xangle))
+            table.insert(ret, Vector3(zoffs * sin_zangle - xoffs * sin_xangle, 0, zoffs * cos_zangle - xoffs * cos_xangle))
+        end
+    end
+    return ret
+end
 
-    inst:AddTag("monster")
-    inst:AddTag("warg")
-    inst:AddTag("scarytoprey")
-    inst:AddTag("houndfriend")
-    inst:AddTag("largecreature")
+local function OnSpawnedForHunt(inst)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    --rot snaps to nearest 45 degrees
+    --rot_facing has 15 degree offset (for better facing update during camera rotation)
+    local rot = 45 * math.random(0, 7)
+    local rot_facing = rot + 15
+    inst.Transform:SetRotation(rot_facing)
 
-    inst.AnimState:SetBank("warg")
-    inst.AnimState:SetBuild("warg_build")
-    inst.AnimState:PlayAnimation("idle_loop", true)
+    for i, v in ipairs(GenerateClayFormation(rot, 12)) do
+        DoSpawnClayHound(inst, x + v.x, z + v.z, rot_facing)
+    end
 
-    inst.entity:SetPristine()
+    TossItems(inst, x, z, 1, 2)
+end
 
-    if not TheWorld.ismastersim then
+local function OnEyeFlamesDirty(inst)
+    if TheWorld.ismastersim then
+        if not inst._eyeflames:value() then
+            inst.AnimState:SetLightOverride(0)
+            inst.SoundEmitter:KillSound("eyeflames")
+        else
+            inst.AnimState:SetLightOverride(.07)
+            if not inst.SoundEmitter:PlayingSound("eyeflames") then
+                inst.SoundEmitter:PlaySound("dontstarve/wilson/torch_LP", "eyeflames")
+                inst.SoundEmitter:SetParameter("eyeflames", "intensity", 1)
+            end
+        end
+        if TheNet:IsDedicated() then
+            return
+        end
+    end
+
+    if inst._eyeflames:value() then
+        if inst.eyefxl == nil then
+            inst.eyefxl = SpawnPrefab("eyeflame")
+            inst.eyefxl.entity:AddFollower()
+            inst.eyefxl.Follower:FollowSymbol(inst.GUID, "warg_eye_left", 0, 0, 0)
+        end
+        if inst.eyefxr == nil then
+            inst.eyefxr = SpawnPrefab("eyeflame")
+            inst.eyefxr.entity:AddFollower()
+            inst.eyefxr.Follower:FollowSymbol(inst.GUID, "warg_eye_right", 0, 0, 0)
+        end
+    else
+        if inst.eyefxl ~= nil then
+            inst.eyefxl:Remove()
+            inst.eyefxl = nil
+        end
+        if inst.eyefxr ~= nil then
+            inst.eyefxr:Remove()
+            inst.eyefxr = nil
+        end
+    end
+end
+
+local function OnRemoveEntity(inst)
+    if inst.eyefxl ~= nil then
+        inst.eyefxl:Remove()
+        inst.eyefxl = nil
+    end
+    if inst.eyefxr ~= nil then
+        inst.eyefxr:Remove()
+        inst.eyefxr = nil
+    end
+end
+
+local function OnClaySave(inst, data)
+    data.reanimated = not inst.sg:HasStateTag("statue") or nil
+end
+
+local function OnClayPreLoad(inst, data)--, newents)
+    if data ~= nil and data.reanimated then
+        inst.sg:GoToState("idle")
+    end
+end
+
+local function FindClosestOffset(hound, x, z, offsets)
+    if #offsets > 0 then
+        local mindsq = math.huge
+        local mini = nil
+        for i, offset in ipairs(offsets) do
+            local dsq = hound:GetDistanceSqToPoint(x + offset.x, 0, z + offset.z)
+            if dsq < mindsq then
+                mindsq = dsq
+                mini = i
+            end
+        end
+        hound:OnUpdateOffset(table.remove(offsets, mini))
+    else
+        hound:OnUpdateOffset()
+    end
+end
+
+local function UpdateClayFormation(inst, count)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local offsets = GenerateClayFormation(inst.Transform:GetRotation(), count or inst.components.leader:CountFollowers())
+    local running = {}
+    for hound, _ in pairs(inst.components.leader.followers) do
+        if hound.OnUpdateOffset ~= nil then
+            if hound.sg:HasStateTag("statue") then
+                FindClosestOffset(hound, x, z, offsets)
+            else
+                table.insert(running, hound)
+            end
+        end
+    end
+    for i, hound in ipairs(running) do
+        FindClosestOffset(hound, x, z, offsets)
+    end
+end
+
+local function OnRestoredFollower(inst, data)
+    if inst.formationtask == nil then
+        UpdateClayFormation(inst, 12)
+    end
+end
+
+local function OnClayReanimated(inst)
+    if inst.formationtask == nil and not inst:IsAsleep() then
+        inst.formationtask = inst:DoPeriodicTask(.5, UpdateClayFormation)
+    end
+end
+
+local function OnClayBecameStatue(inst)
+    if inst.formationtask ~= nil then
+        inst.formationtask:Cancel()
+        inst.formationtask = nil
+        UpdateClayFormation(inst, 12)
+    end
+end
+
+local function OnClayEntityWake(inst)
+    if inst.formationtask == nil and not inst.sg:HasStateTag("statue") then
+        inst.formationtask = inst:DoPeriodicTask(.5, UpdateClayFormation)
+    end
+end
+
+local function OnClayEntitySleep(inst)
+    if inst.formationtask ~= nil then
+        inst.formationtask:Cancel()
+        inst.formationtask = nil
+    end
+end
+
+local function GetStatus(inst)
+    return (inst.sg:HasStateTag("statue") and "STATUE")
+        or nil
+end
+
+local function MakeWarg(name, bank, build, prefabs, tag)
+    local assets =
+    {
+        Asset("SOUND", "sound/vargr.fsb"),
+    }
+    if bank == "warg" then
+        table.insert(assets, Asset("ANIM", "anim/warg_actions.zip"))
+    elseif bank ~= build then
+        table.insert(assets, Asset("ANIM", "anim/"..bank..".zip"))
+    end
+    table.insert(assets, Asset("ANIM", "anim/"..build..".zip"))
+
+    local function fn()
+        local inst = CreateEntity()
+
+        inst.entity:AddTransform()
+        inst.entity:AddAnimState()
+        inst.entity:AddSoundEmitter()
+        inst.entity:AddDynamicShadow()
+        inst.entity:AddNetwork()
+
+        inst.DynamicShadow:SetSize(2.5, 1.5)
+
+        inst.Transform:SetSixFaced()
+
+        MakeCharacterPhysics(inst, 1000, 1)
+
+        inst:AddTag("monster")
+        inst:AddTag("warg")
+        inst:AddTag("scarytoprey")
+        inst:AddTag("houndfriend")
+        inst:AddTag("largecreature")
+
+        if tag ~= nil then
+            inst:AddTag(tag)
+
+            if tag == "clay" then
+                inst._eyeflames = net_bool(inst.GUID, "claywarg._eyeflames", "eyeflamesdirty")
+                inst:ListenForEvent("eyeflamesdirty", OnEyeFlamesDirty)
+                if not TheNet:IsDedicated() then
+                    inst.OnRemoveEntity = OnRemoveEntity
+                end
+            end
+        end
+
+        inst.AnimState:SetBank(bank)
+        inst.AnimState:SetBuild(build)
+        inst.AnimState:PlayAnimation("idle_loop", true)
+
+        inst.entity:SetPristine()
+
+        if not TheWorld.ismastersim then
+            return inst
+        end
+
+        inst:AddComponent("inspectable")
+        inst.components.inspectable.getstatus = GetStatus
+
+        inst:AddComponent("leader")
+
+        inst:AddComponent("locomotor")
+        inst.components.locomotor.runspeed = tag == "clay" and TUNING.CLAYWARG_RUNSPEED or TUNING.WARG_RUNSPEED
+        inst.components.locomotor:SetShouldRun(true)
+
+        inst:AddComponent("combat")
+        inst.components.combat:SetDefaultDamage(TUNING.WARG_DAMAGE)
+        inst.components.combat:SetRange(TUNING.WARG_ATTACKRANGE)
+        inst.components.combat:SetAttackPeriod(TUNING.WARG_ATTACKPERIOD)
+        inst.components.combat:SetRetargetFunction(1, RetargetFn)
+        inst.components.combat:SetKeepTargetFunction(KeepTargetFn)
+        inst:ListenForEvent("attacked", OnAttacked)
+
+        inst:AddComponent("health")
+        inst.components.health:SetMaxHealth(TUNING.WARG_HEALTH)
+
+        inst:AddComponent("lootdropper")
+        inst.components.lootdropper:SetChanceLootTable(name)
+
+        if tag == "clay" then
+            inst.NumHoundsToSpawn = NoHoundsToSpawn
+            inst.OnSave = OnClaySave
+            inst.OnPreLoad = OnClayPreLoad
+            inst.OnReanimated = OnClayReanimated
+            inst.OnBecameStatue = OnClayBecameStatue
+            inst.OnEntitySleep = OnClayEntitySleep
+            inst.OnEntityWake = OnClayEntityWake
+
+            inst.sounds = sounds_clay
+            inst.noidlesound = true
+
+            inst:ListenForEvent("spawnedforhunt", OnSpawnedForHunt)
+            inst:ListenForEvent("restoredfollower", OnRestoredFollower)
+        else
+            inst.components.combat:SetHurtSound("dontstarve_DLC001/creatures/vargr/hit")
+
+            inst:AddComponent("sleeper")
+
+            inst.NumHoundsToSpawn = NumHoundsToSpawn
+
+            inst.sounds = sounds
+
+            MakeLargeBurnableCharacter(inst, "swap_fire")
+        end
+
+        MakeLargeFreezableCharacter(inst)
+
+        inst:SetStateGraph("SGwarg")
+
+        if tag == "clay" then
+            inst:AddComponent("hauntable")
+            inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+        else
+            MakeHauntableGoToState(inst, "howl", TUNING.HAUNT_CHANCE_OCCASIONAL, TUNING.HAUNT_COOLDOWN_MEDIUM, TUNING.HAUNT_CHANCE_LARGE)
+        end
+
+        inst:SetBrain(brain)
+
+        if inst:HasTag("clay") then
+            inst.noidlesound = false
+            inst.sg:GoToState("statue")
+        end
+
         return inst
     end
 
-    inst:AddComponent("inspectable")
-
-    inst:AddComponent("leader")
-
-    inst:AddComponent("locomotor")
-    inst.components.locomotor.runspeed = TUNING.WARG_RUNSPEED
-    inst.components.locomotor:SetShouldRun(true)
-
-    inst:AddComponent("combat")
-    inst.components.combat:SetDefaultDamage(TUNING.WARG_DAMAGE)
-    inst.components.combat:SetRange(TUNING.WARG_ATTACKRANGE)
-    inst.components.combat:SetAttackPeriod(TUNING.WARG_ATTACKPERIOD)
-    inst.components.combat:SetRetargetFunction(1, RetargetFn)
-    inst.components.combat:SetKeepTargetFunction(KeepTargetFn)
-    inst.components.combat:SetHurtSound("dontstarve_DLC001/creatures/vargr/hit")
-    inst:ListenForEvent("attacked", OnAttacked)
-
-    inst:AddComponent("health")
-    inst.components.health:SetMaxHealth(TUNING.WARG_HEALTH)
-
-    inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetChanceLootTable('warg') 
-
-    inst:AddComponent("sleeper")
-
-    MakeLargeFreezableCharacter(inst)
-    MakeLargeBurnableCharacter(inst, "swap_fire")
-
-    inst:SetStateGraph("SGwarg")
-
-    MakeHauntableGoToState(inst, "howl", TUNING.HAUNT_CHANCE_OCCASIONAL, TUNING.HAUNT_COOLDOWN_MEDIUM, TUNING.HAUNT_CHANCE_LARGE)
-
-    inst.NumHoundsToSpawn = NumHoundsToSpawn
-
-    inst:SetBrain(brain)
-
-    return inst
+    return Prefab(name, fn, assets, prefabs)
 end
 
-return Prefab("warg", fn, assets, prefabs)
+return MakeWarg("warg", "warg", "warg_build", prefabs_basic, nil),
+    MakeWarg("claywarg", "claywarg", "claywarg", prefabs_clay, "clay")

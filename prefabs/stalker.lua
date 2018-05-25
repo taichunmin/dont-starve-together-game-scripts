@@ -55,6 +55,7 @@ local prefabs_atrium =
     "armorskeleton",
     "skeletonhat",
     "flower_rose",
+    "winter_ornament_boss_fuelweaver",
 }
 
 local brain = require("brains/stalkerbrain")
@@ -927,10 +928,12 @@ local function AtriumLootFn(lootdropper)
         lootdropper:AddChanceLoot("nightmarefuel", 1)
         lootdropper:AddChanceLoot("nightmarefuel", .5)
         lootdropper:AddChanceLoot("nightmarefuel", .5)
-        lootdropper:AddChanceLoot("winter_ornament_boss_fuelweaver", 1)
-        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
-        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
-        lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+        if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
+            lootdropper:AddChanceLoot("winter_ornament_boss_fuelweaver", 1)
+            lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+            lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+            lootdropper:AddChanceLoot(GetRandomBasicWinterOrnament(), 1)
+        end
     end
 end
 

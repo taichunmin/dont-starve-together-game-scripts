@@ -102,6 +102,11 @@ function debuglocals (level)
         return table.concat(t, "\n")
 end
 
+local function SortByTypeAndValue(a, b)
+    local typea, typeb = type(a), type(b)
+    return typea < typeb or (typea == typeb and a < b)
+end
+
 function dumptablequiet(obj, indent, recurse_levels, visit_table)
     return dumptable(obj, indent, recurse_levels, visit_table, true)
 end
@@ -111,14 +116,14 @@ function dumptable(obj, indent, recurse_levels, visit_table, is_terse)
         visit_table = {}
     end
 
-	indent = indent or 1
-	local i_recurse_levels = recurse_levels or 5
+    indent = indent or 1
+    local i_recurse_levels = recurse_levels or 5
     if obj then
-		local dent = string.rep("\t", indent)
-    	if type(obj)==type("") then
-    		print(obj)
-    		return
-    	end
+        local dent = string.rep("\t", indent)
+        if type(obj)==type("") then
+            print(obj)
+            return
+        end
         if type(obj) == "table" then
             if visit_table[obj] ~= nil then
                 print(dent.."(Already visited",obj,"-- skipping.)")
@@ -128,19 +133,10 @@ function dumptable(obj, indent, recurse_levels, visit_table, is_terse)
             end
         end
         local keys = {}
-        local table_keys = {}
         for k,v in pairs(obj) do
-            if type(k) == "table" then
-                table.insert(table_keys, k)
-            else
-                table.insert(keys, k)
-            end
-        end
-        table.sort(keys)
-        for i,k in ipairs(table_keys) do
-            -- sort breaks on keys that are tables, so just put them on the end
             table.insert(keys, k)
         end
+        table.sort(keys, SortByTypeAndValue)
         if not is_terse and is_top_level and #keys == 0 then
             print(dent.."(empty)")
         end

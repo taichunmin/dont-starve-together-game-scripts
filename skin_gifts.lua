@@ -6,9 +6,11 @@ local SKIN_GIFT_TYPES =
 	emote_swoon = "CUPID",
 	firepit_hole = "EARLY_ACCESS",
 	reviver_cupid = "CUPID",
+	reviver_cupid_2 = "CUPID",
 	torch_shadow = "ARG",
 	torch_shadow_alt = "ARG",
 	treasurechest_sacred = "ANRARG",
+	winterhat_fancy_puppy = "VARG",
 	winterhat_rooster = "LUNAR",
 }
 
@@ -41,6 +43,13 @@ local SKIN_GIFT_POPUPDATA =
 		image = {"thankyou_lunar.tex"},
 		title = STRINGS.THANKS_POPUP.LUNAR,
 		titleoffset = {0, -30, 0},
+	},
+	VARG =
+	{
+		atlas = "images/thankyou_item_event.xml",
+		image = {"thankyou_varg.tex"},
+		title = STRINGS.THANKS_POPUP.VARG,
+		titleoffset = {0, -20, 0},
 	},
 }
 

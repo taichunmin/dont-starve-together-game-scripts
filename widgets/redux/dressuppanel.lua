@@ -68,8 +68,6 @@ local DressupPanel = Class(Widget, function(self, owner_screen, profile, playerd
 		text2:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
 	else
 		self.bg_group = self.root:AddChild(TEMPLATES.RectangleWindow(180, 550))
-        local r,g,b = unpack(UICOLOURS.BROWN_DARK)
-        self.bg_group:SetBackgroundTint(r,g,b,0.6)
 
 		self.spinners = self.root:AddChild(Widget("spinners"))
 		self.dressup_frame = self.root:AddChild(Widget("frame"))

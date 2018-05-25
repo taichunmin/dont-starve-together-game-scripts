@@ -74,7 +74,8 @@ function AccountItemFrame:_HideExtraLayers()
     self:GetAnimState():Hide("IC_WEAVE")
     for k,_ in pairs(EVENT_ICONS) do
 		self:GetAnimState():Hide(k)
-	end
+    end
+    self:GetAnimState():Hide("DLC")
 end
 
 function AccountItemFrame:SetLocked()
@@ -98,7 +99,7 @@ function AccountItemFrame:PlayUnlock()
     self:GetAnimState():PushAnimation("icon", true)
 end
 
-function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable)
+function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable, is_perm_owned)
     if is_owned then
         if is_active then
             self:GetAnimState():Show("SELECT")
@@ -112,6 +113,13 @@ function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable)
             self:SetUnowned()
         end
     end
+
+    if is_perm_owned then
+        self:GetAnimState():Show("DLC")
+    else
+        self:GetAnimState():Hide("DLC")
+    end
+
 end
 
 function AccountItemFrame:SetAge(is_new)

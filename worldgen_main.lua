@@ -40,6 +40,23 @@ if TheSim then
 end
 
 
+function IsConsole()
+	return (PLATFORM == "PS4") or (PLATFORM == "XBONE")
+end
+
+function IsNotConsole()
+	return not IsConsole()
+end
+
+function IsPS4()
+	return (PLATFORM == "PS4")
+end
+
+function IsXB1()
+	return (PLATFORM == "XBONE")
+end
+
+
 require("stacktrace")
 
 require("simutil")

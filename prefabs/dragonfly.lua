@@ -228,6 +228,7 @@ local function ResetLavae(inst)
 end
 
 local function OnDeath(inst)
+    AwardRadialAchievement("dragonfly_killed", inst:GetPosition(), TUNING.ACHIEVEMENT_RADIUS_FOR_GIANT_KILL)
     ResetLavae(inst)
     SetEngaged(inst, false)
 end

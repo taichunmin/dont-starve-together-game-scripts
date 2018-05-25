@@ -19,7 +19,7 @@ Input = Class(function(self)
     self.hoverinst = nil
     self.enabledebugtoggle = true
 
-    self.mouse_enabled = PLATFORM ~= "PS4" and not TheNet:IsDedicated()
+    self.mouse_enabled = IsNotConsole() and not TheNet:IsDedicated()
 
     self.overridepos = nil
     self.controllerid_cached = nil
@@ -43,8 +43,31 @@ function Input:EnableAllControllers()
     end
 end
 
+function Input:IsControllerLoggedIn(controller)
+    if IsXB1() then
+        return TheInputProxy:IsControllerLoggedIn(controller)
+    end
+    return true
+end
+
+function Input:LogUserAsync(controller,cb)
+    if IsXB1() then
+        TheInputProxy:LogUserAsync(controller,cb)
+    else
+        cb(true)
+    end
+end
+
+function Input:LogSecondaryUserAsync(controller,cb)
+    if IsXB1() then
+        TheInputProxy:LogSecondaryUserAsync(controller,cb)
+    else
+        cb(true)
+    end
+end
+
 function Input:EnableMouse(enable)
-    self.mouse_enabled = enable and PLATFORM ~= "PS4" and not TheNet:IsDedicated()
+    self.mouse_enabled = enable and IsNotConsole() and not TheNet:IsDedicated()
 end
 
 function Input:ClearCachedController()
@@ -52,7 +75,7 @@ function Input:ClearCachedController()
 end
 
 function Input:CacheController()
-    self.controllerid_cached = PLATFORM ~= "PS4" and (TheInputProxy:GetLastActiveControllerIndex() or 0) or nil
+    self.controllerid_cached = IsNotConsole() and (TheInputProxy:GetLastActiveControllerIndex() or 0) or nil
     return self.controllerid_cached
 end
 
@@ -69,12 +92,12 @@ function Input:ControllerAttached()
         return self.controllerid_cached > 0
     end
     --Active means connected AND enabled
-    return PLATFORM == "PS4" or TheInputProxy:IsAnyControllerActive()
+    return IsConsole() or TheInputProxy:IsAnyControllerActive()
 end
 
 function Input:ControllerConnected()
     --V2C: didn't cache this one because it's not used regularly
-    return PLATFORM == "PS4" or TheInputProxy:IsAnyControllerConnected()
+    return IsConsole() or TheInputProxy:IsAnyControllerConnected()
 end
 
 -- Get a list of connected input devices and their ids
@@ -324,6 +347,15 @@ function Input:GetStringIsButtonImage(str)
         or table.contains(STRINGS.UI.CONTROLSSCREEN.INPUTS[7], str)
         or table.contains(STRINGS.UI.CONTROLSSCREEN.INPUTS[8], str)
 end
+
+function Input:PlatformUsesVirtualKeyboard()
+	if IsConsole() then
+		return true
+	end
+
+	return false
+end
+
 
 ---------------- Globals
 

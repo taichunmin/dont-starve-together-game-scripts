@@ -724,8 +724,9 @@ end
 
 function Combat:GetAttackRange()
     local weapon = self:GetWeapon()
-    return (weapon == nil and self.attackrange)
-        or (weapon.components.weapon.attackrange ~= nil and math.max(0, self.attackrange + weapon.components.weapon.attackrange))
+    return weapon ~= nil
+        and weapon.components.weapon.attackrange ~= nil
+        and math.max(0, self.attackrange + weapon.components.weapon.attackrange)
         or self.attackrange
 end
 

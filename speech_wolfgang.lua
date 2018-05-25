@@ -1900,6 +1900,25 @@ return {
         FIRECRACKERS = "Crackle bangs!",
         PERDFAN = "Wolfgang feel very lucky!",
         REDPOUCH = "Is good color!",
+        WARGSHRINE = 
+        {
+            GENERIC = "Stick made shiny puppy happy!",
+            EMPTY = "Shiny puppy is wanting to play fetch.",
+            BURNT = "Puppy box is burned.",
+        },
+        CLAYWARG = 
+        {
+            GENERIC = "Big clay puppy!",
+            STATUE = "Is scary statue.",
+        },
+        CLAYHOUND = 
+        {
+            GENERIC = "Ruff, ruff!",
+            STATUE = "Little dog does not bark!",
+        },
+        HOUNDWHISTLE = "Tiny whistle stick makes no noise!",
+        CHESSPIECE_CLAYHOUND = "Is nice little doggy.",
+        CHESSPIECE_CLAYWARG = "It looks like scary monster!",
 
         TRUNKVEST_SUMMER = "Is warm fuzzy nose.",
         TRUNKVEST_WINTER = "Cozy nosy!",

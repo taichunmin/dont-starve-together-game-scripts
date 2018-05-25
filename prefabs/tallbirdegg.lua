@@ -28,6 +28,8 @@ local function Hatch(inst)
     smallbird.Transform:SetPosition(inst.Transform:GetWorldPosition())
     smallbird.sg:GoToState("hatch")
 
+    AwardRadialAchievement("hatch_tallbirdegg", inst:GetPosition(), inst.components.playerprox.far)
+
     inst:Remove()
 end
 

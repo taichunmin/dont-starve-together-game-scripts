@@ -114,6 +114,7 @@ local function common(bank, build, anim, tags, dryable, cookable)
     if dryable ~= nil then
         --dryable (from dryable component) added to pristine state for optimization
         inst:AddTag("dryable")
+		inst:AddTag("lureplant_bait")
     end
 
     if cookable ~= nil then
@@ -147,9 +148,12 @@ local function common(bank, build, anim, tags, dryable, cookable)
     inst.components.perishable.onperishreplacement = "spoiled_food"
 
     if dryable ~= nil then
-        inst:AddComponent("dryable")
-        inst.components.dryable:SetProduct(dryable.product)
-        inst.components.dryable:SetDryTime(dryable.time)
+		inst:AddTag("lureplant_bait")
+		if dryable.product ~= nil then
+			inst:AddComponent("dryable")
+			inst.components.dryable:SetProduct(dryable.product)
+			inst.components.dryable:SetDryTime(dryable.time)
+		end
     end
 
     if cookable ~= nil then
@@ -259,7 +263,7 @@ local function cookedmonster()
 end
 
 local function driedmonster()
-    local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_monster", { "monstermeat" })
+    local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_monster", { "monstermeat" }, { isdried = true })
     if not TheWorld.ismastersim then
         return inst
     end
@@ -291,7 +295,7 @@ local function cooked()
 end
 
 local function driedmeat()
-    local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_large")
+    local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_large", nil, { isdried = true })
 
     if not TheWorld.ismastersim then
         return inst
@@ -364,7 +368,7 @@ local function cookedsmallmeat()
 end
    
 local function driedsmallmeat()
-	local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_small")
+	local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_small", nil, { isdried = true })
 
     if not TheWorld.ismastersim then
         return inst

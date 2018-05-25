@@ -6,4 +6,10 @@ require "translator"
 --Uncomment this for french!
 --LanguageTranslator:LoadPOFile("scripts/languages/french.po", "fr")
 
+if PLATFORM == "WIN32_RAIL" then
+	LanguageTranslator:LoadPOFile("scripts/languages/simplifiedchinese.po", "cn")
+end
 
+function GetLocaleCode()
+    return "en"
+end

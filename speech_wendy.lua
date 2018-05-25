@@ -1908,6 +1908,25 @@ return {
         FIRECRACKERS = "It needs only a light.",
         PERDFAN = "It's... surprisingly soft.",
         REDPOUCH = "What lies within?",
+        WARGSHRINE = 
+        {
+            GENERIC = "The hounds are baying.",
+            EMPTY = "We must light a fire to honor the hound.",
+            BURNT = "Dust to dust.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "To perish now would save me much sorrow.",
+        	STATUE = "There is no life in its eyes.",
+        },
+        CLAYHOUND =
+        { 
+        	GENERIC = "My, what big teeth you have.",
+        	STATUE = "Naught but a pithy imitation of life.",
+        },
+        HOUNDWHISTLE = "That I cannot hear it does not mean it is silent.",
+        CHESSPIECE_CLAYHOUND = "Happiness is a warm puppy... but this one is cold.",
+        CHESSPIECE_CLAYWARG = "It knows only fury.",
 
 		TRUNKVEST_SUMMER = "Skin to wear over your skin.",
 		TRUNKVEST_WINTER = "It may warm the body, but what of the spirit?",

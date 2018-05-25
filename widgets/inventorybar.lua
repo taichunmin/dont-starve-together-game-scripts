@@ -212,7 +212,7 @@ function Inv:Rebuild()
         self.bg:SetScale(1.22, 1, 1)
         self.bgcover:SetScale(1.22, 1, 1)
 
-        self.inspectcontrol = self.root:AddChild(TEMPLATES.IconButton(atlas_name, image_name, STRINGS.UI.HUD.INSPECT_SELF, false, false, function() self.owner.HUD:InspectSelf() end, {size = 40}, "self_inspect_mod.tex"))
+        self.inspectcontrol = self.root:AddChild(TEMPLATES.IconButton(atlas_name, image_name, STRINGS.UI.HUD.INSPECT_SELF, false, false, function() self.owner.HUD:InspectSelf() end, nil, "self_inspect_mod.tex"))
         self.inspectcontrol.icon:SetScale(.7)
         self.inspectcontrol.icon:SetPosition(-4, 6)
         self.inspectcontrol:SetScale(1.25)

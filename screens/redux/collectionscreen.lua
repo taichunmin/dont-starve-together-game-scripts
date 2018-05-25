@@ -160,7 +160,9 @@ function CollectionScreen:OnBecomeActive()
         self:Show()
     end
 
-	self.subscreener.menu:RestoreFocusTo(self.last_focus_widget)
+	if self.last_focus_widget then
+		self.subscreener.menu:RestoreFocusTo(self.last_focus_widget)
+	end
 
     self.leaving = nil
 end

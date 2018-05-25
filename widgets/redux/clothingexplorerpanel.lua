@@ -20,7 +20,7 @@ local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, 
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 130)
 
-    self.filter_bar = FilterBar(self.picker, "wardrobescreen")
+    self.filter_bar = self:AddChild(FilterBar(self.picker, "wardrobescreen"))
     self.filter_btn = self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_HERO_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_ALL_CLOTHING, "heroFilter", GetAffinityFilterForHero(self.owner.currentcharacter)) )
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
     if self.item_type == "base" then

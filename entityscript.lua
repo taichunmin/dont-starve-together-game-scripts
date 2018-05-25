@@ -1057,10 +1057,6 @@ function EntityScript:GetPhysicsRadius(default)
 end
 
 function EntityScript:GetPosition()
-    --#V2C #TODO remove this after we've fixed most of the bugs
-    --           since it's expensive to assert in something as
-    --           common as :GetPosition()
-    assert(self:IsValid())
     return Point(self.Transform:GetWorldPosition())
 end
 

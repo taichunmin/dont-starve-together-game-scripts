@@ -1,70 +1,52 @@
-local Screen = require "widgets/screen"
-local Widget = require "widgets/widget"
-
-local Text = require "widgets/text"
-local Image = require "widgets/image"
-local Button = require "widgets/button"
-local ImageButton = require "widgets/imagebutton"
-
-local ServerSettingsTab = require "widgets/serversettingstab"
-local CustomizationTab = require "widgets/customizationtab"
-local ModsTab = require "widgets/modstab"
-local TopModsPanel = require "widgets/topmodspanel"
-local SnapshotTab = require "widgets/snapshottab"
-local BanTab = require "widgets/bantab"
+local BanTab = require "widgets/redux/bantab"
+local WorldCustomizationTab = require "widgets/redux/worldcustomizationtab"
+local HeaderTabs = require "widgets/redux/headertabs"
+local LaunchingServerPopup = require "screens/redux/launchingserverpopup"
+local ModsTab = require "widgets/redux/modstab"
 local OnlineStatus = require "widgets/onlinestatus"
-local PopupDialogScreen = require "screens/popupdialog"
-local TextListPopupDialogScreen = require "screens/textlistpopupdialog"
-local LaunchingServerPopup = require "screens/launchingserverpopup"
-
-local TEMPLATES = require "widgets/templates"
-local redux = {
-    TEMPLATES = require "widgets/redux/templates"
-}
+local PopupDialogScreen = require "screens/redux/popupdialog"
+local Screen = require "widgets/screen"
+local ServerSettingsTab = require "widgets/redux/serversettingstab"
+local SnapshotTab = require "widgets/redux/snapshottab"
+local Subscreener = require "screens/redux/subscreener"
+local TEMPLATES = require "widgets/redux/templates"
+local TextListPopup = require "screens/redux/textlistpopup"
+local Widget = require "widgets/widget"
 
 require("constants")
 require("tuning")
 
-local DEFAULT_ATLAS = "images/saveslot_portraits.xml"
-local DEFAULT_AVATAR = "unknown.tex"
+
+local DEFAULT_WORLD_LOCATION = nil
+
+local num_rows = 9
+local row_height = 60
+local dialog_size_x = 830
+local dialog_size_y = row_height*(num_rows + 0.25)
+
+local bottom_button_y = -310
 
 local ServerCreationScreen = Class(Screen, function(self, prev_screen)
     Widget._ctor(self, "ServerCreationScreen")
 
+    -- Defer accessing this table until screen creation to give mods a chance.
+    -- Still not awesome, but mostly we require location indexes at this point
+    -- and these names are just for tab labels. We only support worlds with 2
+    -- locations through the UI.
+    DEFAULT_WORLD_LOCATION = SERVER_LEVEL_LOCATIONS[1]
+
     TheSim:PauseFileExistsAsync(true)
 
-    local left_col = -RESOLUTION_X*.05 - 285
-    local right_col = RESOLUTION_X*.30 - 230
-
-    --self.prev_screen = prev_screen
-    --prev_screen:TransferPortalOwnership(prev_screen, self)
-    --self.onlinestatus = self.fg:AddChild(OnlineStatus())
-
-    self.root = self:AddChild(Widget("root"))
-    self.root:SetVAnchor(ANCHOR_MIDDLE)
-    self.root:SetHAnchor(ANCHOR_MIDDLE)
-    self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
-    
-    self.bg = self.root:AddChild(redux.TEMPLATES.PlainBackground())
+    self.root = self:AddChild(TEMPLATES.ScreenRoot())
+    self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
+    self.onlinestatus = self.bg:AddChild(OnlineStatus())
 
     self.detail_panel_frame_parent = self.root:AddChild(Widget("detail_frame"))
-    self.detail_panel_frame_parent:SetPosition(5, -15)
-    self.detail_panel_frame = self.detail_panel_frame_parent:AddChild(TEMPLATES.CenterPanel(.65, .67, true, 610, 500, 46, -28))
-    self.detail_panel_frame.bg:SetScale(.67, .61)
-    self.detail_panel_frame.bg:SetPosition(5, -20)
-    self.detail_panel_frame.bg:SetRotation(180)
-
-    self.top_line = self.detail_panel_frame_parent:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-    self.top_line:SetScale(.705, 1)
-    self.top_line:SetPosition(0, 132, 0)
-
-    self.bottom_line = self.detail_panel_frame_parent:AddChild(Image("images/ui.xml", "line_horizontal_5.tex"))
-    self.bottom_line:SetScale(.705, 1)
-    self.bottom_line:SetPosition(0, -253, 0)
-
-    self.right_line = self.detail_panel_frame_parent:AddChild(Image("images/ui.xml", "line_vertical_5.tex"))
-    self.right_line:SetScale(1, .6)
-    self.right_line:SetPosition(420, -60, 0)
+    self.detail_panel_frame_parent:SetPosition(140, 0)
+    self.detail_panel_frame = self.detail_panel_frame_parent:AddChild(TEMPLATES.RectangleWindow(dialog_size_x, dialog_size_y))
+    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+    self.detail_panel_frame:SetBackgroundTint(r,g,b,0.6)
+    self.detail_panel_frame.top:Hide() -- top crown would cover our tabs.
 
     self.RoG = false
 
@@ -72,11 +54,14 @@ local ServerCreationScreen = Class(Screen, function(self, prev_screen)
 
     self.saveslot = -1
 
-    self.nav_bar = self.root:AddChild(TEMPLATES.NavBarWithScreenTitle(STRINGS.UI.SERVERCREATIONSCREEN.HOST_GAME, "tall"))
-    --self.load_panel was prev thing
+    self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.SERVERCREATIONSCREEN.HOST_GAME, ""))
+    -- Prevent clipping into dialog
+    self.title.small:SetPosition(-65, -35)
+    self.title.small:SetRegionSize(270, 50)
+    self.tooltip = self.root:AddChild(TEMPLATES.ScreenTooltip())
 
-    self.detail_panel = self.root:AddChild( Widget("detail_panel") )
-    self.detail_panel:SetPosition(right_col, 0)
+    self.detail_panel = self.detail_panel_frame:InsertWidget( Widget("detail_panel") )
+    self.server_buttons = self.detail_panel_frame:AddChild(Widget("server_buttons"))
 
     self.slot_character_cache = {}
     self.slot_day_cache = {}
@@ -85,43 +70,30 @@ local ServerCreationScreen = Class(Screen, function(self, prev_screen)
 
     self:MakeButtons()
 
-    -- This is for register focus change dir to return back to the current save slot
-    self.getfocussaveslot = function() return self.default_focus end
-    self.getfocuscancelorsaveslot = function() return self.cancel_button ~= nil and self.cancel_button:IsVisible() and self.cancel_button or self.default_focus end
-    self.getfocuscreate = function() return self.create_button ~= nil and self.create_button:IsVisible() and self.create_button or nil end
+    self:MakeBansPanel()
 
-    -- Set up all the tabs and the buttons to nav
-    self:MakeSettingsTab()
-    self:MakeWorldTab()
-    self:MakeModsTab()
-    self:MakeSnapshotTab()
-    self:MakeBansTab()
+    -- the top tabs are subscreens (not the left menu!)
+    local tabs = {
+        settings = self:MakeSettingsTab(),
+    }
+    for i,location in ipairs(SERVER_LEVEL_LOCATIONS) do
+        -- Avoid using location for worldgen so mods can modified
+        -- SERVER_LEVEL_LOCATIONS (which should be handled inside
+        -- WorldCustomizationTab).
+        tabs[location] = self:MakeWorldTab(i)
+    end
+    tabs.mods     = self:MakeModsTab()
+    tabs.snapshot = self:MakeSnapshotTab()
 
-    self:HideAllTabs()
+    self.tabscreener = Subscreener(self,
+        self._BuildTabMenu,
+        tabs
+        )
 
-    self.refresh_load_panel = false
 
-    self.title_portrait_bg = self.detail_panel_frame_parent:AddChild(Image("images/saveslot_portraits.xml", "background.tex"))
-    self.title_portrait_bg:SetScale(.65, .65, 1)
-    self.title_portrait_bg:SetPosition(-367, 175, 0)
-    self.title_portrait_bg:SetClickable(false)   
+    self.default_focus = self.menu
 
-    self.title_portrait = self.title_portrait_bg:AddChild(Image())
-    self.title_portrait:SetClickable(false)
-
-    self.title = self.detail_panel_frame_parent:AddChild(Text(BUTTONFONT, 50, "", {0,0,0,1}))
-    self.title:SetPosition(-20, 182)
-    self.title:SetRegionSize(600, 60)
-    self.title:SetHAlign(ANCHOR_LEFT)
-
-    self.day_title  = self.detail_panel_frame_parent:AddChild(Text(BUTTONFONT, 22, "", {0,0,0,1}))
-    self.day_title:SetPosition(-20, 148)
-    self.day_title:SetRegionSize(600, 60)
-    self.day_title:SetHAlign(ANCHOR_LEFT)
-
-    self.default_focus = self.save_slots[1]
-
-    self:DoFocusHookUps()
+    self:_DoFocusHookups()
 
     local startingsaveslot = SaveGameIndex:GetLastUsedSlot()
     if startingsaveslot < 1 or
@@ -140,6 +112,10 @@ local ServerCreationScreen = Class(Screen, function(self, prev_screen)
 
     self:OnClickSlot(startingsaveslot, true) --This also sets the tab to be server settings when "true" is passed
 end)
+
+function ServerCreationScreen:GetContentHeight()
+    return dialog_size_y
+end
 
 function ServerCreationScreen:OnBecomeActive()
     ServerCreationScreen._base.OnBecomeActive(self)
@@ -165,15 +141,26 @@ function ServerCreationScreen:ClearSlotCache(slotnum)
 end
 
 function ServerCreationScreen:UpdateTitle(slotnum, fromTextEntered)
+    assert(self.save_slots[slotnum])
+    -- Can't use maxwidth because SetRegionSize was called.
+    self.title.small:SetTruncatedString(self.server_settings_tab:GetServerName(), nil, 27, true)
+
     if not fromTextEntered then
-        if self.save_slots[slotnum] and self.save_slots[slotnum].character ~= nil and not self.save_slots[slotnum].isempty then
-            self.title_portrait:SetTexture(self.save_slots[slotnum].character_atlas, self.save_slots[slotnum].character..".tex")
-        else
-            self.title_portrait:SetTexture(DEFAULT_ATLAS, DEFAULT_AVATAR)
-        end
+        self:_UpdateMenuButton(slotnum)
     end
 
-    self.title:SetString(self.server_settings_tab:GetServerName())
+    -- may also want to update the string used on the nav button...
+end
+
+function ServerCreationScreen:_UpdateMenuButton(slotnum)
+    assert(self.save_slots[slotnum])
+    local character_atlas = nil
+    local character = nil
+    if self.save_slots[slotnum].character and not self.save_slots[slotnum].isempty then
+        character_atlas = self.save_slots[slotnum].character_atlas
+        character = self.save_slots[slotnum].character 
+    end
+    self.save_slots[slotnum]:SetCharacter(character_atlas, character)
 
     if SaveGameIndex:IsSlotEmpty(slotnum) then
         self.slot_day_cache[slotnum] = STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_NEW
@@ -220,7 +207,7 @@ function ServerCreationScreen:UpdateTitle(slotnum, fromTextEntered)
                 end
             end
             
-            --Todo(Peter):fixup the STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY string to properly use subfmt to work better with translations. 
+            --Todo(Peter):fixup the STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY string to properly use subfmt to work better with translations.
             if PLATFORM == "WIN32_RAIL" then
 	            self.slot_day_cache[slotnum] = (season ~= nil and (season.." ") or "")..day..STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY
 			else
@@ -231,9 +218,7 @@ function ServerCreationScreen:UpdateTitle(slotnum, fromTextEntered)
         end
     end
 
-    self.day_title:SetString(self.slot_day_cache[slotnum])
-
-    -- may also want to update the string used on the nav button...
+    self.save_slots[slotnum]:SetSecondaryText(self.slot_day_cache[slotnum])
 end
 
 function ServerCreationScreen:UpdateModeSpinner(slotnum)
@@ -251,7 +236,9 @@ function ServerCreationScreen:UpdateTabs(slotnum, prevslot, fromDelete)
     
     self.server_settings_tab:UpdateDetails(slotnum, prevslot, fromDelete)
 
-    self.world_tab:UpdateSlot(slotnum, prevslot, fromDelete)
+    for i,tab in ipairs(self.world_tabs) do
+        tab:UpdateSlot(slotnum, prevslot, fromDelete)
+    end
 
     self.snapshot_tab:SetSaveSlot(slotnum, prevslot, fromDelete)
 
@@ -267,7 +254,7 @@ function ServerCreationScreen:UpdateButtons(slotnum)
         if self.delete_button then self.delete_button:Enable() end
         if self.create_button then self.create_button.text:SetString(STRINGS.UI.SERVERCREATIONSCREEN.RESUME) end
     end
-    self.mods_button:SetText(STRINGS.UI.MAINSCREEN.MODS.." ("..self.mods_tab:GetNumberOfModsEnabled()..")")
+    self.tabscreener.buttons.mods:SetText(STRINGS.UI.MAINSCREEN.MODS.." ("..self.mods_tab:GetNumberOfModsEnabled()..")")
 end
 
 local function BuildTagsStringHosting(self, worldoptions)
@@ -317,13 +304,11 @@ function ServerCreationScreen:DeleteSlot(slot, cb)
                 TheFrontEnd:PopScreen()
 
                 SaveGameIndex:DeleteSlot(slot, function() 
-                    self.save_slots[slot]:Kill()
-                    self.save_slots[slot] = self.save_slots:AddChild(self:MakeSaveSlotButton(slot))
+                    self:RefreshNavButtons()
                     self:UpdateTabs(slot, nil, true)
                 end)
 
                 self:ClearSlotCache(slot)
-                self:RefreshNavButtons()
                 self:OnClickSlot(self.saveslot, true)
                 self:Enable()
             end
@@ -378,7 +363,10 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
             self.server_settings_tab:SetEditingTextboxes(false)
 
             local serverdata = self.server_settings_tab:GetServerData()
-            local worldoptions = self.world_tab:CollectOptions()
+            local worldoptions = {}
+            for i,tab in ipairs(self.world_tabs) do
+                worldoptions[i] = tab:CollectOptions()
+            end
 
             local world1datastring = ""
             if worldoptions[1] ~= nil then
@@ -488,6 +476,32 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
         end
     end
 
+    local function BuildOptionalModLink(mod_name)
+        if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
+            local link_fn, is_generic_url = ModManager:GetLinkForMod(mod_name)
+            if is_generic_url then
+                return nil
+            else
+                return link_fn
+            end
+        else
+            return nil
+        end
+    end
+    local function BuildModList(mod_ids)
+        local mods = {}
+        for i,v in ipairs(mod_ids) do
+            table.insert(mods, {
+                    text = KnownModIndex:GetModFancyName(v) or v,
+                    -- Adding onclick with the idea that if you have a ton of
+                    -- mods, you'd want to be able to jump to information about
+                    -- the problem ones.
+                    onclick = BuildOptionalModLink(v),
+                })
+        end
+        return mods
+    end
+
     if not self:ValidateSettings() then
         -- popups are handled inside validate
         return
@@ -524,7 +538,9 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                                 {text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL, cb = function()
                                     TheFrontEnd:PopScreen() 
                                 end}
-                            })
+                            },
+                            nil,
+                            "big")
         self.last_focus = TheFrontEnd:GetFocusWidget()
         TheFrontEnd:PushScreen(confirm_offline_popup)
 
@@ -541,14 +557,9 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
 
     -- Warn if starting a server with mods disabled that were previously enabled on that server
     elseif warnedDisabledMods ~= true and #disabledmods > 0 then
-        local modnames = {}
-        for i,v in ipairs(disabledmods) do
-            table.insert(modnames, KnownModIndex:GetModFancyName(v) or v)
-        end
-
         self.last_focus = TheFrontEnd:GetFocusWidget()
-        TheFrontEnd:PushScreen(TextListPopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGTITLE,
-                            modnames,
+        TheFrontEnd:PushScreen(TextListPopup(BuildModList(disabledmods),
+                            STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGTITLE,
                             STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGBODY, 
                             {
                                 {text=STRINGS.UI.SERVERCREATIONSCREEN.CONTINUE, 
@@ -556,24 +567,14 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                                     TheFrontEnd:PopScreen()
                                     self:Create(true, true)
                                 end,
-                                controller_control=CONTROL_ACCEPT},
-                                {text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL,
-                                cb = function()
-                                    TheFrontEnd:PopScreen()
-                                end,
-                                controller_control=CONTROL_CANCEL}
+                                controller_control=CONTROL_MENU_MISC_1},
                             }))
 
     -- Warn if starting a server with mods enabled that are currently out of date
     elseif warnedOutOfDateMods ~= true and #outofdatemods > 0 then
-        local modnames = {}
-        for i,v in ipairs(outofdatemods) do
-            table.insert(modnames, KnownModIndex:GetModFancyName(v) or v)
-        end
-
         self.last_focus = TheFrontEnd:GetFocusWidget()
-        local warning = TextListPopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.MODSOUTOFDATEWARNINGTITLE,
-                            modnames,
+        local warning = TextListPopup(BuildModList(outofdatemods),
+                            STRINGS.UI.SERVERCREATIONSCREEN.MODSOUTOFDATEWARNINGTITLE,
                             STRINGS.UI.SERVERCREATIONSCREEN.MODSOUTOFDATEWARNINGBODY,
                             {
                                 {text=STRINGS.UI.SERVERCREATIONSCREEN.CONTINUE,
@@ -581,7 +582,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                                     TheFrontEnd:PopScreen()
                                     self:Create(true, true, true)
                                 end,
-                                controller_control=CONTROL_ACCEPT},
+                                controller_control=CONTROL_MENU_MISC_1},
                                 {text=STRINGS.UI.MODSSCREEN.UPDATEALL,
                                 cb = function()
                                     TheFrontEnd:PopScreen()
@@ -589,19 +590,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                                     self:SetTab("mods")
                                 end,
                                 controller_control=CONTROL_MENU_MISC_2},
-                                {text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL,
-                                cb = function()
-                                    TheFrontEnd:PopScreen()
-                                end,
-                                controller_control=CONTROL_CANCEL}
-                            },
-                            165)
-        if warning.menu then
-            for i,v in ipairs(warning.menu.items) do
-                v.image:SetScale(.52, .7)
-            end
-            warning.menu:SetPosition(86 + -(200*(#warning.menu.items-1))/2, -203, 0) 
-        end
+                            })
         TheFrontEnd:PushScreen(warning)
 
     -- We passed all our checks, go ahead and create
@@ -629,12 +618,21 @@ function ServerCreationScreen:ValidateSettings()
                     {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab("settings") end}}))
         return false
     -- Check if our season settings are valid (i.e. at least one season has a duration)
-    elseif not self.world_tab:VerifyValidSeasonSettings() then
+    elseif not self:_VerifyValidSeasonSettings() then
         TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.CUSTOMIZATIONSCREEN.INVALIDSEASONCOMBO_TITLE, STRINGS.UI.CUSTOMIZATIONSCREEN.INVALIDSEASONCOMBO_BODY,
-                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab("world") end}}))
+                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab(DEFAULT_WORLD_LOCATION) end}}))
         return false
     end
 
+    return true
+end
+
+function ServerCreationScreen:_VerifyValidSeasonSettings()
+    for i,tab in ipairs(self.world_tabs) do
+        if not tab:VerifyValidSeasonSettings() then
+            return false
+        end
+    end
     return true
 end
 
@@ -663,6 +661,43 @@ function ServerCreationScreen:CheckForDisabledMods()
     return disabled
 end
 
+function ServerCreationScreen:OnChangeGameMode(selected_mode)
+    for i,tab in ipairs(self.world_tabs) do
+		tab:OnChangeGameMode(selected_mode)
+    end
+
+    self:MakeDirty()
+end
+
+function ServerCreationScreen:BuildModsMenu(menu_items, subscreener)
+    -- We don't have enough for the full menu outline, so shrink it down.
+    for i,item in ipairs(menu_items) do
+        item.widget.hover_overlay:SetSize(260,68)
+        item.widget.hover_overlay:SetPosition(-90,0)
+    end
+    -- Menu must share a parent with mods_tab (so menu is hidden along with
+    -- tab), but passing ModsTab here doesn't work (nothing responds to
+    -- clicks). Instead, we have mods_root that's only used for visibility and
+    -- this menu.
+    local menu = self.mods_root:AddChild(TEMPLATES.StandardMenu(menu_items, 38, nil, nil, true))
+    menu:SetPosition(-444, 170)
+    return menu
+end
+
+function ServerCreationScreen:RepositionModsButtonMenu(allmodsmenu, selectedmodmenu)
+    allmodsmenu:SetPosition(-570, -250)
+    selectedmodmenu:SetPosition(120, -250)
+end
+
+function ServerCreationScreen:DirtyFromMods(slotnum)
+    self:UpdateModeSpinner(slotnum)
+    self:UpdateButtons(slotnum)
+    self:MakeDirty()
+    for i,tab in ipairs(self.world_tabs) do
+        tab:Refresh()
+    end
+end
+
 function ServerCreationScreen:MakeDirty()
     self.dirty = true
 end
@@ -683,15 +718,9 @@ function ServerCreationScreen:Cancel()
                 { 
                     text = STRINGS.UI.SERVERCREATIONSCREEN.OK, 
                     cb = function()
+                        TheFrontEnd:PopScreen()
                         self:MakeClean()
-                        self:Disable()
-                        self.server_settings_tab:SetEditingTextboxes(false)
-                        TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
-                            self.mods_tab:Cancel()
-                            TheFrontEnd:PopScreen()
-                            TheFrontEnd:PopScreen()
-                            TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
-                        end)
+                        self:Cancel()
                     end
                 },
                 
@@ -754,37 +783,71 @@ function ServerCreationScreen:OnControl(control, down)
 end
 
 function ServerCreationScreen:RefreshNavButtons()
-    if self.save_slots ~= nil then
-        self.save_slots:Kill()
-    end
+    if self.save_slots == nil then
 
-    self.save_slots = self.nav_bar:AddChild(Widget("save_slots"))
+        self.save_slots = {}
+        local menu_items = {}
+
+        for i = 1, NUM_SAVE_SLOTS do
+            local btn = self:MakeSaveSlotButton(i)
+            table.insert(menu_items, { widget = btn })
+            table.insert(self.save_slots, btn)
+        end
+
+        table.insert(menu_items, { widget = TEMPLATES.MenuButton(
+                STRINGS.UI.SERVERCREATIONSCREEN.BANS,
+                function()
+                    self:_ShowContentPanel("bans")
+                    self.menu.items[1]:Select() -- bans is the bottom (aka first) item
+                end,
+                STRINGS.UI.SERVERCREATIONSCREEN.TOOLTIP_BANS, 
+                self.tooltip
+            )})
+        menu_items = table.reverse(menu_items)
+        self.menu = self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 65, nil, nil, true))
+    end
 
     for i = 1, NUM_SAVE_SLOTS do
-        local btn = self:MakeSaveSlotButton(i)
-        self.save_slots[i] = self.save_slots:AddChild(btn)
+        self:_RefreshSlot(i)
     end
-
-    self:DoFocusHookUps()
 end
 
 function ServerCreationScreen:MakeSaveSlotButton(slotnum)
-    local isempty = SaveGameIndex:IsSlotEmpty(slotnum)
-    local isnoname = false
-    local slotName
-    if isempty then
-        slotName = STRINGS.UI.SERVERCREATIONSCREEN.NEWGAME
-    else
-        slotName = SaveGameIndex:GetSlotServerData(slotnum).name or ""
-        if #slotName <= 0 then
-            slotName = STRINGS.UI.SERVERCREATIONSCREEN.NONAMEGAME
-            isnoname = true
-        end
-    end
-
-    local btn = TEMPLATES.NavBarButton((1 - slotnum) * 47 - 10, slotName, function() self:OnClickSlot(slotnum) end, not (isempty or isnoname))
+    local btn = TEMPLATES.PortraitIconMenuButton("", function() self:OnClickSlot(slotnum) end, "", self.tooltip)
     btn.slot = slotnum
 
+    btn.UpdateButtonName = function(_)
+        local isempty = SaveGameIndex:IsSlotEmpty(btn.slot)
+        local isnoname = false
+        local slotName
+        if isempty then
+            slotName = STRINGS.UI.SERVERCREATIONSCREEN.NEWGAME
+        else
+            slotName = SaveGameIndex:GetSlotServerData(btn.slot).name or ""
+            if #slotName <= 0 then
+                slotName = STRINGS.UI.SERVERCREATIONSCREEN.NONAMEGAME
+                isnoname = true
+            end
+        end
+        local truncate = not (isempty or isnoname)
+        -- MenuButton uses SetRegionSize, so we cannot use SetTruncatedString
+        -- (causes infinite loops).
+        local can_support_truncation = false
+        if truncate and can_support_truncation then
+            btn:SetText("")
+            btn.text:SetTruncatedString(slotName, 140, 28, true)
+        else
+            btn:SetText(slotName)
+        end
+    end
+    return btn
+end
+
+function ServerCreationScreen:_RefreshSlot(slotnum)
+    local btn = self.save_slots[slotnum]
+    btn:UpdateButtonName()
+
+    local isempty = SaveGameIndex:IsSlotEmpty(slotnum)
     if isempty then
         self.slot_character_cache[slotnum] = { character = "" }
     elseif self.slot_character_cache[slotnum] == nil then
@@ -810,22 +873,31 @@ function ServerCreationScreen:MakeSaveSlotButton(slotnum)
     btn.character = cache.character
     btn.isempty = isempty
 
+    self:_UpdateMenuButton(slotnum)
+
     return btn
 end
 
 function ServerCreationScreen:OnClickSlot(slotnum, goToSettings)
+    self:_ShowContentPanel("slots")
+
     local lastslot = self.saveslot
     self.saveslot = slotnum
-    self.default_focus = self.save_slots[slotnum] or self.save_slots[1]
-    for i,v in ipairs(self.save_slots) do
-        if v.slot == slotnum then
-            v:Select()
-        else
-            v:Unselect()
-        end
-    end
+    local selected_slot = self.save_slots[slotnum] or self.save_slots[1]
+
+    self.menu:UnselectAll()
+    selected_slot:Select()
+    self.default_focus = selected_slot
+
+    local dirty = self:IsDirty()
 
     self:UpdateTabs(slotnum, lastslot)
+
+    -- Don't allow changing tabs to dirty us. User couldn't possibly have
+    -- changed anything yet (but our init code has).
+    if not dirty and self:IsDirty() then
+        self:MakeClean()
+    end
 
     self:UpdateTitle(slotnum)
 
@@ -836,24 +908,31 @@ end
 
 function ServerCreationScreen:MakeSettingsTab()
     self.server_settings_tab = self.detail_panel:AddChild(ServerSettingsTab({}, self))
-    self.server_settings_tab:SetPosition(-30,-80)
+    self.server_settings_tab:SetPosition(170,5)
+    return self.server_settings_tab
 end
 
-function ServerCreationScreen:MakeWorldTab()
-    self.world_tab = self.detail_panel:AddChild(CustomizationTab(self))
-    self.world_tab:SetPosition(-30,-80)
+function ServerCreationScreen:MakeWorldTab(location_index)
+    self.world_tabs = self.world_tabs or {}
+    self.world_tabs[location_index] = self.detail_panel:AddChild(WorldCustomizationTab(location_index, self))
+    return self.world_tabs[location_index]
 end
 
 function ServerCreationScreen:MakeModsTab()
-    self.mods_tab = self.detail_panel:AddChild(ModsTab(self))
-    self.top_mods_panel = self.detail_panel_frame_parent:AddChild(TopModsPanel(self))
-    self.top_mods_panel:SetPosition(300,-30)
-    self.top_mods_panel:MoveToBack()
-    self.top_mods_panel:Hide()
-    self.top_mods_panel:SetModsTab(self.mods_tab)
-    self.mods_tab:SetTopModsPanel(self.top_mods_panel)
+    -- mods_root must exist before mods_tab! See BuildModsMenu.
+    self.mods_root = self.detail_panel:AddChild(Widget("mods_root"))
+    local settings = {
+        is_configuring_server = true,
+        details_width = 360,
+        are_servermods_readonly = false,
+    }
+    self.mods_tab = self.mods_root:AddChild(ModsTab(self, settings))
+    self.mods_tab:MoveToBack() -- behind mods menu
+    self.mods_tab:SetPosition(10,0)
 
-    self.mods_tab:SetPosition(-30,-80)
+    self.mods_root:SetPosition(140,0)
+    self.mods_root.focus_forward = self.mods_tab
+    return self.mods_root
 end
 
 function ServerCreationScreen:MakeSnapshotTab()
@@ -864,12 +943,29 @@ function ServerCreationScreen:MakeSnapshotTab()
     end
 
     self.snapshot_tab = self.detail_panel:AddChild(SnapshotTab(cb))
-    self.snapshot_tab:SetPosition(-30,-80)
+    return self.snapshot_tab
 end
 
-function ServerCreationScreen:MakeBansTab()
-    self.bans_tab = self.detail_panel:AddChild(BanTab(self))
-    self.bans_tab:SetPosition(-30,-80)
+function ServerCreationScreen:MakeBansPanel()
+    self.bans_tab = self.root:AddChild(BanTab(self))
+    self.bans_tab:SetPosition(260, 0)
+    return self.bans_tab
+end
+
+-- Similar to SetTab, but for swapping between slots tabs and bans.
+function ServerCreationScreen:_ShowContentPanel(destination)
+    self.menu:UnselectAll()
+    if destination == "slots" then
+        self.bans_tab:Hide()
+        self.detail_panel:Show()
+        self.world_config_tabs:Show()
+        self.server_buttons:Show()
+    else
+        self.bans_tab:Show()
+        self.detail_panel:Hide()
+        self.world_config_tabs:Hide()
+        self.server_buttons:Hide()
+    end
 end
 
 local function MakeImgButton(parent, xPos, yPos, text, onclick, style)
@@ -877,13 +973,11 @@ local function MakeImgButton(parent, xPos, yPos, text, onclick, style)
 
     local btn
     if style == "create" then
-        btn = parent:AddChild(ImageButton())
-        btn.image:SetScale(.7)
-        btn:SetText(text)
-        btn:SetFont(NEWFONT)
-        btn:SetDisabledFont(NEWFONT)
+        btn = parent:AddChild(TEMPLATES.StandardButton(onclick, text))
+        btn:SetScale(.6)
     elseif style == "delete" then
-        btn = parent:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "delete.tex", text, true, false, onclick))
+        btn = parent:AddChild(TEMPLATES.StandardButton(onclick, text, nil, {"images/button_icons.xml", "delete.tex"}))
+        btn:SetScale(.6)
     end
     
     btn:SetPosition(xPos, yPos)
@@ -892,37 +986,35 @@ local function MakeImgButton(parent, xPos, yPos, text, onclick, style)
     return btn
 end
 
+function ServerCreationScreen:_BuildTabMenu(subscreener)
+    local worldgen = {}
+    local tabs = {
+        { key = "settings", text = STRINGS.UI.SERVERCREATIONSCREEN.SERVERSETTINGS, },
+    }
+    for i,tab in ipairs(self.world_tabs) do
+        local entry = tab:BuildMenuEntry()
+        table.insert(tabs, entry)
+        table.insert(worldgen, entry)
+    end
+    table.insert(tabs, { key = "mods",     text = STRINGS.UI.MAINSCREEN.MODS,                     })
+    table.insert(tabs, { key = "snapshot", text = STRINGS.UI.SERVERCREATIONSCREEN.SNAPSHOTS,      })
+    self.world_config_tabs = self.detail_panel_frame:AddChild(subscreener:MenuContainer(HeaderTabs, tabs))
+    self.world_config_tabs:SetPosition(0, dialog_size_y/2 + 27)
+    self.world_config_tabs:MoveToBack()
+
+    subscreener.titles.settings = STRINGS.UI.SERVERCREATIONSCREEN.SERVERSETTINGS_LONG
+    for i,entry in ipairs(worldgen) do
+        subscreener.titles[entry.key] = subfmt(STRINGS.UI.SERVERCREATIONSCREEN.WORLD_LONG_FMT, {location = entry.text})
+    end
+
+    -- Subscreener wants a Menu
+    return self.world_config_tabs.menu
+end
+
 function ServerCreationScreen:MakeButtons()
-    --720 total space, divided by 4 for 180 btween each button (might want to turn into a calculation for fiddling/spacing)
-    local tab_height = 232
-    self.settings_button = self.detail_panel:AddChild(TEMPLATES.TabButton(-502, tab_height, STRINGS.UI.SERVERCREATIONSCREEN.SERVERSETTINGS, function() self:SetTab("settings") end, "small"))
-    self.configure_world_button = self.detail_panel:AddChild(TEMPLATES.TabButton(-323, tab_height, STRINGS.UI.SERVERCREATIONSCREEN.WORLD, function() self:SetTab("world") end, "small"))
-    self.mods_button = self.detail_panel:AddChild(TEMPLATES.TabButton(-144, tab_height, STRINGS.UI.MAINSCREEN.MODS, function() self:SetTab("mods") end, "small"))
-    self.snapshot_button = self.detail_panel:AddChild(TEMPLATES.TabButton(35, tab_height, STRINGS.UI.SERVERCREATIONSCREEN.SNAPSHOTS, function() self:SetTab("snapshot") end, "small"))
-    self.ban_admin_button = self.detail_panel:AddChild(TEMPLATES.TabButton(214, tab_height, STRINGS.UI.SERVERCREATIONSCREEN.BANS, function() self:SetTab("bans") end, "small"))
-
-    self.settings_button.image:SetPosition(0,-1)
-    self.configure_world_button.image:SetPosition(0,-1)
-    self.mods_button.image:SetPosition(0,-1)
-    self.snapshot_button.image:SetPosition(0,-1)
-    self.ban_admin_button.image:SetPosition(0,-1)
-
-    self.settings_button.image:SetScale(.83, .92)
-    self.configure_world_button.image:SetScale(.83, .92)
-    self.mods_button.image:SetScale(.83, .92)
-    self.snapshot_button.image:SetScale(.83, .92)
-    self.ban_admin_button.image:SetScale(.83, .92)
-
-    self.settings_button.text:SetPosition(2,8)
-    self.configure_world_button.text:SetPosition(2,8)
-    self.mods_button.text:SetPosition(2,8)
-    self.snapshot_button.text:SetPosition(2,8)
-    self.ban_admin_button.text:SetPosition(2,8)
-
     self.cancel_button = self.root:AddChild(TEMPLATES.BackButton(function() self:Cancel() end))
-    self.create_button = MakeImgButton(self.detail_panel, 170, -RESOLUTION_Y*.5 + BACK_BUTTON_Y - 7, STRINGS.UI.SERVERCREATIONSCREEN.CREATE, function() self:Create() end, "create")
-    self.create_button.text:SetPosition(-3,0)
-    self.delete_button = MakeImgButton(self.detail_panel, 240, 170, STRINGS.UI.SERVERCREATIONSCREEN.DELETE_SLOT_BUTTON, function() self:DeleteSlot(self.saveslot) end, "delete")
+    self.create_button = MakeImgButton(self.server_buttons, 325, bottom_button_y, STRINGS.UI.SERVERCREATIONSCREEN.CREATE, function() self:Create() end, "create")
+    self.delete_button = MakeImgButton(self.server_buttons, -325, bottom_button_y, STRINGS.UI.SERVERCREATIONSCREEN.DELETE_SLOT, function() self:DeleteSlot(self.saveslot) end, "delete")
     if TheInput:ControllerAttached() then
         self.cancel_button:Hide()
         self.create_button:Hide()
@@ -930,56 +1022,51 @@ function ServerCreationScreen:MakeButtons()
     end
 end
 
-function ServerCreationScreen:DoFocusHookUps()
-    if self.save_slots[1] then
-        if self.server_settings_tab then self.server_settings_tab:SetFocusChangeDir(MOVE_LEFT, self.getfocussaveslot) end
-        if self.world_tab then self.world_tab:SetFocusChangeDir(MOVE_LEFT, self.getfocussaveslot) end
-        if self.mods_tab then self.mods_tab:SetFocusChangeDir(MOVE_LEFT, self.getfocussaveslot) end
-        if self.snapshot_tab then self.snapshot_tab:SetFocusChangeDir(MOVE_LEFT, self.getfocussaveslot) end
-        if self.bans_tab then self.bans_tab:SetFocusChangeDir(MOVE_LEFT, self.getfocussaveslot) end
-    end
+function ServerCreationScreen:_DoFocusHookups()
+    -- This is for register focus change dir to return back to the current save slot
+    local getfocussaveslot = function() return self.default_focus end
+    local getfocuscancelorsaveslot = function() return self.cancel_button ~= nil and self.cancel_button:IsVisible() and self.cancel_button or self.default_focus end
 
-    local function toactivetab()
-        return (self.active_tab == "settings" and self.server_settings_tab)
-            or (self.active_tab == "world" and self.world_tab.presetspinner)
-            or (self.active_tab == "mods" and self.mods_tab.servermodsbutton)
-            or (self.active_tab == "snapshot" and self.snapshot_tab.snapshot_scroll_list)
-            or (self.active_tab == "bans" and self.bans_tab.player_scroll_list)
-            or nil
-    end
+    self.detail_panel:SetFocusChangeDir(MOVE_LEFT, getfocussaveslot)
+    self.detail_panel:SetFocusChangeDir(MOVE_DOWN, self.create_button)
+    self.bans_tab:SetFocusChangeDir(MOVE_LEFT, self.menu.items[1])
 
-    for i,v in ipairs(self.save_slots) do
-        if self.save_slots[i - 1] ~= nil then
-            self.save_slots[i]:SetFocusChangeDir(MOVE_UP, self.save_slots[i - 1])
+    local toactivetab = function()
+        if self.bans_tab:IsVisible() then
+            return self.bans_tab
+        else
+            local fn = self.tabscreener:GetActiveSubscreenFn()
+            return fn()
         end
-
-        if self.save_slots[i + 1] ~= nil then
-            self.save_slots[i]:SetFocusChangeDir(MOVE_DOWN, self.save_slots[i + 1])
-        end
-
-        self.save_slots[i]:SetFocusChangeDir(MOVE_RIGHT, toactivetab)
     end
+    self.menu:SetFocusChangeDir(MOVE_RIGHT, toactivetab)
 
     if self.cancel_button ~= nil then
-        self.save_slots[#self.save_slots]:SetFocusChangeDir(MOVE_DOWN, self.cancel_button)
-        self.cancel_button:SetFocusChangeDir(MOVE_UP, self.save_slots[#self.save_slots])
-        self.cancel_button:SetFocusChangeDir(MOVE_RIGHT, self.create_button or toactivetab)
+        self.cancel_button:SetFocusChangeDir(MOVE_RIGHT, self.delete_button or toactivetab)
+        self.cancel_button:SetFocusChangeDir(MOVE_UP, self.menu.items[1])
+	    self.menu:SetFocusChangeDir(MOVE_DOWN, self.cancel_button)
     end
 
     if self.create_button ~= nil then
         self.create_button:SetFocusChangeDir(MOVE_UP, function()
-            return (self.active_tab == "world" and self.world_tab.customizationlist)
-                or (self.active_tab == "mods" and self.mods_tab.modlinkbutton)
-                or (self.active_tab == "bans" and self.bans_tab.clear_button:IsVisible() and self.bans_tab.clear_button:IsEnabled() and self.bans_tab.clear_button)
+            return (self.mods_tab:IsVisible() and self.mods_tab.modlinkbutton)
+                or (self.bans_tab:IsVisible() and self.bans_tab.clear_button:IsVisible() and self.bans_tab.clear_button:IsEnabled() and self.bans_tab.clear_button)
                 or toactivetab()
         end)
         self.create_button:SetFocusChangeDir(MOVE_LEFT, function()
-            return (self.active_tab == "mods" and self.mods_tab.updateallbutton)
-                or self.getfocuscancelorsaveslot()
+            return self.delete_button
         end)
-        self.create_button:SetFocusChangeDir(MOVE_RIGHT, function()
-            return (self.active_tab == "mods" and self.mods_tab.top_mods_panel ~= nil and self.mods_tab.top_mods_panel.morebutton)
-                or nil
+        self.delete_button:SetFocusChangeDir(MOVE_LEFT, function()
+            return (self.mods_tab:IsVisible() and self.mods_tab.updateallbutton)
+                or getfocuscancelorsaveslot()
+        end)
+        self.delete_button:SetFocusChangeDir(MOVE_RIGHT, function()
+            return self.create_button
+        end)
+        self.delete_button:SetFocusChangeDir(MOVE_UP, function()
+            return (self.mods_tab:IsVisible() and self.mods_tab.modlinkbutton)
+                or (self.bans_tab:IsVisible() and self.bans_tab.clear_button:IsVisible() and self.bans_tab.clear_button:IsEnabled() and self.bans_tab.clear_button)
+                or toactivetab()
         end)
     end
 end
@@ -987,128 +1074,12 @@ end
 function ServerCreationScreen:SetTab(tabName, direction)
     if not tabName and not direction then return end
 
-    self:HideAllTabs(tabName)
-
-    if tabName then
-        if tabName == "settings" then
-            self:ShowServerSettingsTab()
-        elseif tabName == "world" then
-            self:ShowWorldTab()
-        elseif tabName == "mods" then
-            self:ShowModsTab()
-        elseif tabName == "snapshot" then
-            self:ShowSnapshotTab()
-        elseif tabName == "bans" then
-            self:ShowBanTab()
-        end
-    elseif direction then
-        if direction < 0 then --left
-            if self.active_tab == "settings" then
-                self:ShowBanTab()
-            elseif self.active_tab == "world" then
-                self:ShowServerSettingsTab()
-            elseif self.active_tab == "mods" then
-                self:ShowWorldTab()
-            elseif self.active_tab == "snapshot" then
-                self:ShowModsTab()
-            elseif self.active_tab == "bans" then
-                self:ShowSnapshotTab()                
-            end
-        elseif direction > 0 then --right
-            if self.active_tab == "settings" then
-                self:ShowWorldTab()
-            elseif self.active_tab == "world" then
-                self:ShowModsTab()
-            elseif self.active_tab == "mods" then
-                self:ShowSnapshotTab()
-            elseif self.active_tab == "snapshot" then
-                self:ShowBanTab()
-            elseif self.active_tab == "bans" then
-                self:ShowServerSettingsTab()
-            end
-        end
-    end
-end
-
-function ServerCreationScreen:HideAllTabs(tab)
-    --hide all the parent widgets and enable all tab buttons
-    self.server_settings_tab:Hide()
-    self.world_tab:Hide()
-    self.mods_tab:Hide()
-    self.snapshot_tab:Hide()
-    self.bans_tab:Hide()
-
-    if tab ~= "mods" then
-        self.top_mods_panel:HidePanel()
+    if direction then
+        tabName = self.tabscreener:GetKeyRelativeToCurrent(direction)
     end
 
-    self.settings_button:Enable()
-    self.configure_world_button:Enable()
-    self.mods_button:Enable()
-    self.snapshot_button:Enable()
-    self.ban_admin_button:Enable()
-end
-
-function ServerCreationScreen:IsTabPageFocused()
-    if not TheInput:ControllerAttached() or TheFrontEnd.tracking_mouse then
-        return false
-    end
-
-    local slotButtonHasFocus = false
-    for i,v in ipairs(self.save_slots) do
-        if v.focus then
-            slotButtonHasFocus = true
-            break
-        end
-    end
-
-    return not slotButtonHasFocus
-end
-
-function ServerCreationScreen:ShowServerSettingsTab(forceFocus)
-    self.settings_button:Disable()
-    self.active_tab = "settings"
-    self.server_settings_tab:Show()
-    if forceFocus or self:IsTabPageFocused() then
-        self.server_settings_tab:SetFocus()
-    end
-end
-
-function ServerCreationScreen:ShowWorldTab(forceFocus)
-    self.configure_world_button:Disable()
-    self.active_tab = "world"
-    self.world_tab:Show()
-    if forceFocus or self:IsTabPageFocused() then
-        self.world_tab:SetFocus()
-    end
-end
-
-function ServerCreationScreen:ShowModsTab(forceFocus)
-    self.mods_button:Disable()
-    self.active_tab = "mods"
-    self.mods_tab:Show()
-    self.top_mods_panel:ShowPanel()
-    if forceFocus or self:IsTabPageFocused() then
-        self.mods_tab:SetFocus()
-    end
-end
-
-function ServerCreationScreen:ShowSnapshotTab(forceFocus)
-    self.snapshot_button:Disable()
-    self.active_tab = "snapshot"
-    self.snapshot_tab:Show()
-    if forceFocus or self:IsTabPageFocused() then
-        self.snapshot_tab:SetFocus()
-    end
-end
-
-function ServerCreationScreen:ShowBanTab(forceFocus)
-    self.ban_admin_button:Disable()
-    self.active_tab = "bans"
-    self.bans_tab:Show()
-    if forceFocus or self:IsTabPageFocused() then
-        self.bans_tab:SetFocus()
-    end
+    assert(tabName)
+    self.tabscreener:OnMenuButtonSelected(tabName)
 end
 
 function ServerCreationScreen:GetHelpText()

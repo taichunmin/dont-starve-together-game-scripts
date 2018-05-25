@@ -17,7 +17,8 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
     self.achievements_root = self:AddChild(Widget("achievements_root"))
 
     self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(736, 406))
-    self.dialog:SetBackgroundTint(0,0,0,.8)
+    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+    self.dialog:SetBackgroundTint(r,g,b,0.8) -- need high opacity because of text behind
     self.dialog:SetPosition(0, -5)
     self.dialog.top:Hide() -- top crown would be behind our title.
     

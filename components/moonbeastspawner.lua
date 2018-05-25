@@ -73,7 +73,7 @@ local function DoSpawn(inst, self)
     end
 
     for i, v in ipairs(ents) do
-        if not (v:HasTag("moonbeast") or v:HasTag("gargoyle")) then
+        if not (v:HasTag("moonbeast") or v:HasTag("gargoyle") or v:HasTag("clay")) then
             --claim regular werepigs and hounds
             if not v.sg:HasStateTag("busy") then
                 MorphMoonBeast(v, inst)

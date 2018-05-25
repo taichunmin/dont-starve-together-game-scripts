@@ -62,8 +62,7 @@ function PlayerStatusScreen:OnBecomeInactive()
 end
 
 function PlayerStatusScreen:OnDestroy()
-    --Overridden so we do part of Widget:Kill()
-    --but keeps the screen around hidden
+    --Overridden so we do part of Widget:Kill() but keeps the screen around hidden
     self:ClearFocus()
     self:StopFollowMouse()
     self:Hide()
@@ -268,7 +267,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         if self.viewgroup_button == nil then
             self.viewgroup_button = self.root:AddChild(ImageButton("images/scoreboard.xml", "clan_normal.tex", "clan_hover.tex", "clan.tex", "clan.tex", nil, { .4, .4 }, { 0, 0 }))
             self.viewgroup_button:SetOnClick(function() TheNet:ViewNetProfile(self.server_group) end)
-            self.viewgroup_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.VIEWGROUP, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 48, colour = WHITE})
+            self.viewgroup_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.VIEWGROUP, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 48, colour = WHITE})
         end
         servermenunumbtns = servermenunumbtns + 1
     elseif self.viewgroup_button ~= nil then
@@ -283,7 +282,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
                 TheFrontEnd:PopScreen()
                 self:OpenUserCommandPickerScreen(nil)
             end)
-            self.serveractions_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.SERVERACTIONS, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 48, colour = WHITE})
+            self.serveractions_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.SERVERACTIONS, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 48, colour = WHITE})
         end
         servermenunumbtns = servermenunumbtns + 1
     elseif self.serveractions_button ~= nil then
@@ -419,7 +418,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.adminBadge:SetPosition(-359,-13,0)
         playerListing.adminBadge.image:SetScale(.3)
         playerListing.adminBadge.scale_on_focus = false
-        playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.adminBadge:Hide()
 
         playerListing.name = playerListing:AddChild(Text(UIFONT, 35, ""))
@@ -438,14 +437,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.viewprofile:SetNormalScale(0.39)
         playerListing.viewprofile:SetFocusScale(0.39*1.1)
         playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
-        playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
 
         playerListing.mute = playerListing:AddChild(ImageButton("images/scoreboard.xml", "chat.tex", "chat.tex", "chat.tex", "chat.tex", nil, {1,1}, {0,0}))
         playerListing.mute:SetPosition(170,3,0)
         playerListing.mute:SetNormalScale(0.39)
         playerListing.mute:SetFocusScale(0.39*1.1)
         playerListing.mute:SetFocusSound("dontstarve/HUD/click_mouseover")
-        playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.mute.image.inst.OnUpdateVoice = function(inst)
             inst.widget:SetTint(unpack(playerListing.userid ~= nil and TheNet:IsVoiceActive(playerListing.userid) and VOICE_ACTIVE_COLOUR or VOICE_IDLE_COLOUR))
         end
@@ -497,7 +496,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.kick:SetNormalScale(0.39)
         playerListing.kick:SetFocusScale(0.39*1.1)
         playerListing.kick:SetFocusSound("dontstarve/HUD/click_mouseover")
-        playerListing.kick:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.KICK, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.kick:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.KICK, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         local gainfocusfn = playerListing.kick.OnGainFocus
         playerListing.kick.OnGainFocus = function()
             gainfocusfn(playerListing.kick)
@@ -540,7 +539,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.ban:SetNormalScale(0.39)
         playerListing.ban:SetFocusScale(0.39*1.1)
         playerListing.ban:SetFocusSound("dontstarve/HUD/click_mouseover")
-        playerListing.ban:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.BAN, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.ban:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.BAN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.ban:SetOnClick( function()
             if playerListing.userid then
                 TheFrontEnd:PopScreen()
@@ -553,7 +552,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.useractions:SetNormalScale(0.39)
         playerListing.useractions:SetFocusScale(0.39*1.1)
         playerListing.useractions:SetFocusSound("dontstarve/HUD/click_mouseover")
-        playerListing.useractions:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.USERACTIONS, { font = NEWFONT_OUTLINE, size = 24, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
+        playerListing.useractions:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.USERACTIONS, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.useractions:SetOnClick(function()
             TheFrontEnd:PopScreen()
             self:OpenUserCommandPickerScreen(playerListing.userid)

@@ -79,6 +79,11 @@ local function HideResetDialog()
 end
 
 local DoDeleteAndReset = _ismastershard and function()
+    if IsXB1() and TheInputProxy:IsMainUserChanged() then
+        --print("We are restarting the game instead of resetting the world")
+        TheSim:SendCommandToInstance(Instances.Player1, "DoRestart")
+        return
+    end
     TheNet:SendWorldResetRequestToServer()
 end or nil
 

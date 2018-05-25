@@ -43,7 +43,7 @@ local WordPredictionWidget = Class(Widget, function(self, text_edit, max_width, 
 	dismiss_btn:SetImageNormalColour(UICOLOURS.GREY)
 	dismiss_btn:SetImageFocusColour(UICOLOURS.WHITE)
 	dismiss_btn:SetPosition(10, 0)
-	dismiss_btn:SetHoverText(STRINGS.UI.WORDPREDICTIONWIDET.DISMISS, {size = 20})
+	dismiss_btn:SetHoverText(STRINGS.UI.WORDPREDICTIONWIDET.DISMISS)
 	self.starting_offset = 20 + PADDING
 
 	self:Hide()

@@ -1,8 +1,14 @@
 local function DoTransform(inst, self, isfullmoon)
     self._task = nil
     if isfullmoon then
-        self:SetWere()
+        self:SetWere(math.max(self.weretime, TUNING.TOTAL_DAY_TIME * (1 - TheWorld.state.time) + math.max(0, GetRandomWithVariance(1, 2))))
     else
+        self:SetNormal()
+    end
+end
+
+local function OnRevert(inst, self)
+    if self:IsInWereState() and not inst.sg:HasStateTag("transform") then
         self:SetNormal()
     end
 end
@@ -10,12 +16,20 @@ end
 local function OnIsFullmoon(self, isfullmoon)
     if self._task ~= nil then
         self._task:Cancel()
+        self._task = nil
     end
-    self._task =
-        isfullmoon ~= self:IsInWereState() and
-        not self.inst:IsInLimbo() and
-        self.inst:DoTaskInTime(math.max(0, GetRandomWithVariance(1, 2)), DoTransform, self, isfullmoon) or
-        nil
+    if isfullmoon == self:IsInWereState() then
+        if isfullmoon and self._reverttask ~= nil then
+            local remaining = GetTaskRemaining(self._reverttask)
+            local time = TUNING.TOTAL_DAY_TIME * (1 - TheWorld.state.time) + math.max(0, GetRandomWithVariance(1, 2))
+            if time > remaining then
+                self._reverttask:Cancel()
+                self._reverttask = self.inst:DoTaskInTime(time, OnRevert, self)
+            end
+        end
+    elseif not self.inst:IsInLimbo() then
+        self._task = self.inst:DoTaskInTime(math.max(0, GetRandomWithVariance(1, 2)), DoTransform, self, isfullmoon)
+    end
 end
 
 local function DoToggleWere(inst, self)
@@ -94,12 +108,6 @@ end
 
 function WereBeast:ResetTriggers()
     self.triggeramount = self.triggerlimit ~= nil and 0 or nil
-end
-
-local function OnRevert(inst, self)
-    if self:IsInWereState() and not inst.sg:HasStateTag("transform") then
-        self:SetNormal()
-    end
 end
 
 function WereBeast:SetWere(time)

@@ -6,7 +6,7 @@ local TextEdit = require "widgets/textedit"
 local Text = require "widgets/text"
 local Widget = require "widgets/widget"
 local TEMPLATES = require "widgets/templates"
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 
 local BugReportScreen = Class(Screen, function(self)
     Screen._ctor(self, "BugReportScreen")

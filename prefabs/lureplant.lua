@@ -172,11 +172,7 @@ local function SelectLure(inst)
         local lures = {}
         for k = 1, inst.components.inventory.maxslots do
             local item = inst.components.inventory.itemslots[k]
-            if item ~= nil and
-                item.components.weapon == nil and
-                item.components.edible ~= nil and
-                inst.components.eater:CanEat(item) and
-                not item:HasTag("preparedfood") then
+            if item ~= nil and item:HasTag("lureplant_bait") then
                 table.insert(lures, item)
             end
         end

@@ -33,6 +33,11 @@ local IntentionPicker = Class(Widget, function(self, titlestring, descriptionstr
     for i, v in ipairs(intention_options) do
         self.buttons[i] = self:AddChild(ImageButton("images/ui.xml", "in-window_button_tile_idle.tex", "in-window_button_tile_hl.tex", "in-window_button_tile_disabled.tex", "in-window_button_tile_hl_noshadow.tex", "in-window_button_tile_disabled.tex", {tile_scale, tile_scale}, {0,0}))
 
+        self.buttons[i]:SetImageNormalColour(UICOLOURS.GOLD_SELECTED)
+        self.buttons[i]:SetImageFocusColour(UICOLOURS.GOLD_SELECTED)
+        self.buttons[i]:SetImageDisabledColour(UICOLOURS.GOLD_SELECTED)
+        self.buttons[i]:SetImageSelectedColour(UICOLOURS.GOLD_SELECTED)
+
         self.buttons[i].bigicon = self.buttons[i]:AddChild(Image(intention_options[i].atlas, intention_options[i].image))
         self.buttons[i].bigicon:SetScale(0.45)
         self.buttons[i].bigicon:SetPosition(0,-10)

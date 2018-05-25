@@ -4,7 +4,7 @@ local startlocations = require ("map/startlocations")
 local Levels = require("map/levels")
 
 local frequency_descriptions
-if PLATFORM ~= "PS4" then
+if IsNotConsole() then
 	frequency_descriptions = {
 		{ text = STRINGS.UI.SANDBOXMENU.SLIDENEVER, data = "never" },
 		{ text = STRINGS.UI.SANDBOXMENU.SLIDERARE, data = "rare" },
@@ -16,7 +16,9 @@ else
 	frequency_descriptions = {
 		{ text = STRINGS.UI.SANDBOXMENU.SLIDENEVER, data = "never" },
 		{ text = STRINGS.UI.SANDBOXMENU.SLIDERARE, data = "rare" },
-		{ text = STRINGS.UI.SANDBOXMENU.SLIDEDEFAULT, data = "default" }
+		{ text = STRINGS.UI.SANDBOXMENU.SLIDEDEFAULT, data = "default" },
+--		{ text = STRINGS.UI.SANDBOXMENU.SLIDEOFTEN, data = "often" },
+--		{ text = STRINGS.UI.SANDBOXMENU.SLIDEALWAYS, data = "always" },
 	}
 end
 
@@ -92,11 +94,11 @@ local season_start_descriptions = {
 }
 
 local size_descriptions = nil
-if PLATFORM == "PS4" then
+if IsPS4() then
 	size_descriptions = {
-		{ text = STRINGS.UI.SANDBOXMENU.SLIDESMALL, data = "default"},-- 	image = "world_size_small.tex"}, 	--350x350
-		{ text = STRINGS.UI.SANDBOXMENU.SLIDESMEDIUM, data = "medium"},-- 	image = "world_size_medium.tex"},	--450x450
-		{ text = STRINGS.UI.SANDBOXMENU.SLIDESLARGE, data = "large"},-- 	image = "world_size_large.tex"},	--550x550
+		{ text = STRINGS.UI.SANDBOXMENU.PS4_SLIDESMALL, data = "default"},-- 	image = "world_size_small.tex"}, 	--350x350
+		{ text = STRINGS.UI.SANDBOXMENU.PS4_SLIDESMEDIUM, data = "medium"},-- 	image = "world_size_medium.tex"},	--450x450
+--		{ text = STRINGS.UI.SANDBOXMENU.SLIDESLARGE, data = "large"},-- 	image = "world_size_large.tex"},	--550x550
 	}
 else
 	size_descriptions = {
@@ -136,6 +138,7 @@ local specialevent_descriptions = {
 	{ text = STRINGS.UI.SANDBOXMENU.EVENT_HALLOWEDNIGHTS_2016, data = SPECIAL_EVENTS.HALLOWED_NIGHTS },
 	{ text = STRINGS.UI.SANDBOXMENU.EVENT_WINTERSFEAST_2016, data = SPECIAL_EVENTS.WINTERS_FEAST },
 	{ text = STRINGS.UI.SANDBOXMENU.EVENT_YEAR_OF_THE_GOBBLER_2017, data = SPECIAL_EVENTS.YOTG },
+    { text = STRINGS.UI.SANDBOXMENU.EVENT_YEAR_OF_THE_VARG_2018, data = SPECIAL_EVENTS.YOTV },
 }
 
 -- TODO: Read this from the tasks.lua

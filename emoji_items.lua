@@ -16,6 +16,20 @@ EMOJI_ITEMS =
 			utf8_str = "󰀀",
 		},
 	},
+	emoji_battle =
+	{
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		input_name = "battle",
+		type = "emoji",
+		skin_tags = { "VARG", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_battle",
+			requires_validation = true,
+			utf8_str = "󰀘",
+		},
+	},
 	emoji_beefalo =
 	{
 		rarity = "Common",
@@ -128,6 +142,20 @@ EMOJI_ITEMS =
 			utf8_str = "󰀈",
 		},
 	},
+	emoji_flex =
+	{
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		input_name = "flex",
+		type = "emoji",
+		skin_tags = { "VARG", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_flex",
+			requires_validation = true,
+			utf8_str = "󰀙",
+		},
+	},
 	emoji_ghost =
 	{
 		rarity = "Common",
@@ -140,6 +168,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_ghost",
 			requires_validation = true,
 			utf8_str = "󰀉",
+		},
+	},
+	emoji_gold =
+	{
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		input_name = "gold",
+		type = "emoji",
+		skin_tags = { "VARG", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_gold",
+			requires_validation = true,
+			utf8_str = "󰀚",
 		},
 	},
 	emoji_grave =
@@ -322,6 +364,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_tophat",
 			requires_validation = true,
 			utf8_str = "󰀖",
+		},
+	},
+	emoji_torch =
+	{
+		rarity = "Common",
+		rarity_modifier = "Seasonal",
+		input_name = "torch",
+		type = "emoji",
+		skin_tags = { "VARG", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_torch",
+			requires_validation = true,
+			utf8_str = "󰀛",
 		},
 	},
 	emoji_web =

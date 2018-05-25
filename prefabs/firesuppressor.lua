@@ -146,7 +146,7 @@ local function OnFuelEmpty(inst)
 end
 
 local function OnAddFuel(inst)
-    inst.SoundEmitter:PlaySound("dontstarve_DLC001/common/machine_fuel")
+	inst.SoundEmitter:PlaySound("dontstarve_DLC001/common/machine_fuel")
     if inst.on == false then
         inst.components.machine:TurnOn()
     end

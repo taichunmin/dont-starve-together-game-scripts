@@ -1,16 +1,16 @@
 --Alive/ Annoying version.
 
 --prefab transforms between different prefabs depending on state.
-	--mandrake_planted --> mandrake_active (picked)
-	--mandrake_planted <-- mandrake_active (replant)
-	--mandrake_active --> mandrake_inactive (death)
+    --mandrake_planted --> mandrake_active (picked)
+    --mandrake_planted <-- mandrake_active (replant)
+    --mandrake_active --> mandrake_inactive (death)
 
 local brain = require "brains/mandrakebrain"
 
 local assets =
 {
-	Asset("ANIM", "anim/mandrake.zip"),
-	Asset("SOUND", "sound/mandrake.fsb"),
+    Asset("ANIM", "anim/mandrake.zip"),
+    Asset("SOUND", "sound/mandrake.fsb"),
 }
 
 local prefabs =
@@ -20,42 +20,29 @@ local prefabs =
 }
 
 local function replant(inst)
-	--turn into "mandrake_planted"
-	local pos = inst:GetPosition()
+    --turn into "mandrake_planted"
+    local planted = SpawnPrefab("mandrake_planted")
+    planted.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    planted:replant(inst)
 
-	local planted = SpawnPrefab("mandrake_planted")
-	planted.Transform:SetPosition(pos:Get())
-	planted:replant(inst)
-
-	inst:Remove()
+    inst:Remove()
 end
 
 local function ondeath(inst)
-	--turn into "mandrake_inactive"
-	local pos = inst:GetPosition()
+    --turn into "mandrake_inactive"
+    local mandrake = SpawnPrefab("mandrake")
+    mandrake.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    mandrake.AnimState:PlayAnimation("death")
+    mandrake.AnimState:SetTime(2)
 
-	local mandrake = SpawnPrefab("mandrake")
-	mandrake.Transform:SetPosition(pos:Get())
-	mandrake.AnimState:PlayAnimation("death")
-	mandrake.AnimState:SetTime(2)
-
-	inst:Remove()
+    inst:Remove()
 end
 
-local FindNewLeader = nil -- forward declare...
-
-local function onpicked(inst, leader)
-	--Go to proper animation state
-	inst.sg:GoToState("picked")
-
-    FindNewLeader(inst)
-
-	--(Die if it's day time)
-	inst:DoTaskInTime(26*FRAMES, function()
-		if TheWorld.state.isday then
-			inst.components.health:Kill()
-		end
-	end)
+local function FindNewLeader(inst)
+    local player = FindClosestPlayerToInst(inst, 5, true)
+    if player ~= nil then
+        inst.components.follower:SetLeader(player)
+    end
 end
 
 local function StartFindLeaderTask(inst)
@@ -64,29 +51,31 @@ local function StartFindLeaderTask(inst)
     end
 end
 
-FindNewLeader = function(inst) -- was forward declared
-    if inst.components.follower.leader == nil then
-        local player = FindClosestPlayerToInst(inst, 5, true)
-        if player ~= nil then
-            inst.components.follower:SetLeader(player)
-            inst:ListenForEvent("onremove", function(other)
-                StartFindLeaderTask(inst)
-            end, player)
-        end
-    end
-
-    if inst.components.follower.leader ~= nil then
+local function StopFindLeaderTask(inst)
+    if inst._findleadertask ~= nil then
         inst._findleadertask:Cancel()
         inst._findleadertask = nil
     end
 end
 
-local function onstartday(inst)
-	replant(inst)
+local function CheckDay(inst)
+    if TheWorld.state.isday then
+        inst.components.health:Kill()
+    end
+end
+
+local function onpicked(inst, leader)
+    --Go to proper animation state
+    inst.sg:GoToState("picked")
+
+    FindNewLeader(inst)
+
+    --(Die if it's day time)
+    inst:DoTaskInTime(26 * FRAMES, CheckDay)
 end
 
 local function fn()
-	local inst = CreateEntity()
+    local inst = CreateEntity()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
@@ -108,30 +97,32 @@ local function fn()
 
     inst.entity:SetPristine()
 
-	if not TheWorld.ismastersim then
-		return inst
-	end
+    if not TheWorld.ismastersim then
+        return inst
+    end
 
-	inst:AddComponent("inspectable")
-	inst:AddComponent("combat")
+    inst:AddComponent("inspectable")
+    inst:AddComponent("combat")
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(20)
     inst.components.health.nofadeout = true
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = 6
-	inst:AddComponent("follower")
+    inst:AddComponent("follower")
 
     inst:SetStateGraph("SGMandrake")
     inst:SetBrain(brain)
 
-	inst.onpicked = onpicked
+    inst.onpicked = onpicked
 
-	--Watch world state
-	inst:WatchWorldState("startday", onstartday)
+    --Watch world state
+    inst:WatchWorldState("startday", replant)
+    inst:ListenForEvent("startfollowing", StopFindLeaderTask)
+    inst:ListenForEvent("stopfollowing", StartFindLeaderTask)
     StartFindLeaderTask(inst)
-	inst.ondeath = ondeath
+    inst.ondeath = ondeath
 
-	return inst
+    return inst
 end
 
 return Prefab("mandrake_active", fn, assets, prefabs)

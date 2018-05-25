@@ -1,118 +1,352 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
     ActionHandler(ACTIONS.GOHOME, "action"),
 }
 
-local events=
+local events =
 {
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
     CommonHandlers.OnAttack(),
     CommonHandlers.OnAttacked(),
     CommonHandlers.OnDeath(),
-    CommonHandlers.OnLocomote(true,false),
+    CommonHandlers.OnLocomote(true, false),
+
+    EventHandler("heardwhistle", function(inst, data)
+        if not (inst.sg:HasStateTag("statue") or
+                inst.components.health:IsDead() or
+                (inst.components.freezable ~= nil and inst.components.freezable:IsFrozen())) then
+            if inst.components.sleeper ~= nil and inst.components.sleeper:IsAsleep() then
+                inst.components.sleeper:WakeUp()
+                inst.components.combat:SetTarget(nil)
+            else
+                if inst.components.combat:TargetIs(data.musician) then
+                    inst.components.combat:SetTarget(nil)
+                end
+                if not inst.sg:HasStateTag("howling") then
+                    inst.sg:GoToState("howl", 2)
+                end
+            end
+        end
+    end),
+
+    --Clay warg
+    EventHandler("becomestatue", function(inst)
+        if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
+            inst.sg:GoToState("transformstatue")
+        end
+    end),
 }
 
 local function SpawnHound(inst)
     local hounded = TheWorld.components.hounded
-	if hounded ~= nil then
+    if hounded ~= nil then
         local num = inst:NumHoundsToSpawn()
-		local pt = inst:GetPosition()
-		for i = 1, num do
-			local hound = hounded:SummonSpawn(pt)
-			if hound ~= nil and hound.components.follower ~= nil then
-				hound.components.follower:SetLeader(inst)
-			end
-		end
-	end
+        local pt = inst:GetPosition()
+        for i = 1, num do
+            local hound = hounded:SummonSpawn(pt)
+            if hound ~= nil and hound.components.follower ~= nil then
+                hound.components.follower:SetLeader(inst)
+            end
+        end
+    end
 end
 
-local states=
+local function ShowEyeFX(inst)
+    if inst._eyeflames ~= nil then
+        inst._eyeflames:set(true)
+    end
+end
+
+local function HideEyeFX(inst)
+    if inst._eyeflames ~= nil then
+        inst._eyeflames:set(false)
+    end
+end
+
+local function PlayClayShakeSound(inst)
+    inst.SoundEmitter:PlaySound("dontstarve/creatures/together/clayhound/stone_shake")
+end
+
+local function PlayClayFootstep(inst)
+    inst.SoundEmitter:PlaySound("dontstarve/creatures/together/clayhound/footstep")
+end
+
+local function MakeStatue(inst)
+    if not inst.sg.mem.statue then
+        inst.sg.mem.statue = true
+        local x, y, z = inst.Transform:GetWorldPosition()
+        inst.Physics:Stop()
+        ChangeToObstaclePhysics(inst)
+        inst.Physics:Teleport(x, 0, z)
+        inst:AddTag("notarget")
+        inst.components.health:SetInvincible(true)
+
+        --Snap to nearest 45 degrees + 15 degree offset for better facing update during camera rotation
+        inst.Transform:SetRotation(math.floor(inst.Transform:GetRotation() / 45 + .5) * 45 + 15)
+
+        inst:OnBecameStatue()
+    end
+end
+
+local function MakeReanimated(inst)
+    if inst.sg.mem.statue then
+        inst.sg.mem.statue = nil
+        local x, y, z = inst.Transform:GetWorldPosition()
+        inst.Physics:SetMass(1000)
+        ChangeToCharacterPhysics(inst)
+        inst.Physics:Teleport(x, 0, z)
+        inst:RemoveTag("notarget")
+        inst.components.health:SetInvincible(false)
+
+        inst:OnReanimated()
+    end
+end
+
+local states =
 {
-	State
-	{
-		name = "idle",
-		tags = {"idle"},
+    State
+    {
+        name = "idle",
+        tags = { "idle" },
 
-		onenter = function(inst)
-			inst.Physics:Stop()
-			inst.AnimState:PlayAnimation("idle_loop")
-			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/idle")
-		end,
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("idle_loop")
+            if not inst.noidlesound then
+                inst.SoundEmitter:PlaySound(inst.sounds.idle)
+            end
+        end,
 
-		events = 
-		{
-			EventHandler("animover", function(inst) 
-				inst.sg:GoToState("idle") 
-			end)
-		},
-	},
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
 
-	State
-	{
-		name = "howl",
-		tags = {"busy"},
+    State
+    {
+        name = "howl",
+        tags = { "busy", "howling" },
 
-		onenter = function(inst)
-			inst.Physics:Stop()
-			inst.AnimState:PlayAnimation("howl")
-			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/howl")
-		end,
+        onenter = function(inst, count)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("howl")
+            inst.SoundEmitter:PlaySound(inst.sounds.howl)
+            inst.sg.statemem.count = count
+        end,
 
-		timeline = 
-		{
-			TimeEvent(10*FRAMES, SpawnHound),
-		},
+        timeline =
+        {
+            TimeEvent(10 * FRAMES, function(inst)
+                if inst.sg.statemem.count == nil then
+                    SpawnHound(inst)
+                end
+            end),
+        },
 
-		events = 
-		{
-			EventHandler("animover", function(inst) 
-				inst.sg:GoToState("idle") 
-			end)
-		},
-	},
+        events =
+        {
+            EventHandler("heardwhistle", function(inst)
+                inst.sg.statemem.count = 2
+            end),
+            EventHandler("animover", function(inst)
+                if inst.sg.statemem.count ~= nil and inst.sg.statemem.count > 1 then
+                    inst.sg:GoToState("howl", inst.sg.statemem.count - 1)
+                else
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+    },
+
+    --Clay warg
+    State
+    {
+        name = "statue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst)
+            MakeStatue(inst)
+            HideEyeFX(inst)
+            inst.AnimState:PlayAnimation("statue")
+        end,
+
+        events =
+        {
+            EventHandler("reanimate", function(inst, data)
+                inst.sg.statemem.statue = true
+                inst.sg:GoToState("reanimatestatue", data ~= nil and data.target or nil)
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.statue then
+                MakeReanimated(inst)
+                ShowEyeFX(inst)
+            end
+        end,
+    },
+
+    State
+    {
+        name = "reanimatestatue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst, target)
+            MakeStatue(inst)
+            ShowEyeFX(inst)
+            inst.AnimState:PlayAnimation("statue_pst")
+            inst.SoundEmitter:PlaySound("dontstarve/music/clay_resurrection")
+            inst.sg.statemem.target = target
+        end,
+
+        timeline =
+        {
+            TimeEvent(1 * FRAMES, PlayClayShakeSound),
+            TimeEvent(3 * FRAMES, PlayClayShakeSound),
+            TimeEvent(5 * FRAMES, PlayClayShakeSound),
+            TimeEvent(7 * FRAMES, PlayClayShakeSound),
+            TimeEvent(21 * FRAMES, PlayClayShakeSound),
+            TimeEvent(23 * FRAMES, PlayClayShakeSound),
+            TimeEvent(25 * FRAMES, PlayClayShakeSound),
+            TimeEvent(29 * FRAMES, PlayClayShakeSound),
+            TimeEvent(32 * FRAMES, PlayClayShakeSound),
+            TimeEvent(34 * FRAMES, PlayClayShakeSound),
+            TimeEvent(36 * FRAMES, PlayClayShakeSound),
+            TimeEvent(38 * FRAMES, PlayClayShakeSound),
+            TimeEvent(39 * FRAMES, PlayClayShakeSound),
+            TimeEvent(41 * FRAMES, PlayClayFootstep),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            MakeReanimated(inst)
+            if inst.sg.statemem.target ~= nil then
+                inst.components.combat:SetTarget(inst.sg.statemem.target)
+            end
+        end,
+    },
+
+    State
+    {
+        name = "transformstatue",
+        tags = { "busy", "noattack", "statue" },
+
+        onenter = function(inst)
+            MakeStatue(inst)
+            inst.AnimState:PlayAnimation("statue_pre")
+        end,
+
+        timeline =
+        {
+            TimeEvent(2 * FRAMES, PlayClayShakeSound),
+            TimeEvent(4 * FRAMES, PlayClayShakeSound),
+            TimeEvent(6 * FRAMES, function(inst)
+                PlayClayShakeSound(inst)
+                PlayClayFootstep(inst)
+            end),
+            TimeEvent(8 * FRAMES, PlayClayShakeSound),
+            TimeEvent(10 * FRAMES, function(inst)
+                PlayClayShakeSound(inst)
+                HideEyeFX(inst)
+            end),
+            TimeEvent(12 * FRAMES, PlayClayShakeSound),
+            TimeEvent(14 * FRAMES, PlayClayShakeSound),
+            TimeEvent(16 * FRAMES, PlayClayShakeSound),
+            TimeEvent(18 * FRAMES, PlayClayShakeSound),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg.statemem.statue = true
+                    inst.sg:GoToState("statue")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.statue then
+                MakeReanimated(inst)
+                ShowEyeFX(inst)
+            end
+        end,
+    },
 }
 
 CommonStates.AddCombatStates(states,
 {
-	hittimeline = 
-	{
-		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/hit") end)
-	},
-	attacktimeline = 
-	{
-		TimeEvent(12*FRAMES, function(inst) inst.components.combat:DoAttack() end),
-		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/attack") end)
-	},
-	deathtimeline = 
-	{
-		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/death") end)
-	},
-})
-CommonStates.AddRunStates(states, 
-{	
-	starttimeline = {},
-    runtimeline = 
-    { 
-        TimeEvent(5*FRAMES, 
-        function(inst) 
-        	PlayFootstep(inst)
-        	inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/idle")
+    hittimeline =
+    {
+        TimeEvent(0 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.hit) end),
+    },
+    attacktimeline =
+    {
+        TimeEvent(0 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack) end),
+        TimeEvent(12 * FRAMES, function(inst) inst.components.combat:DoAttack() end),
+    },
+    deathtimeline =
+    {
+        TimeEvent(0 * FRAMES, function(inst)
+            if inst:HasTag("clay") then
+                inst.sg.statemem.clay = true
+                HideEyeFX(inst)
+                inst.SoundEmitter:PlaySound("dontstarve/common/destroy_pot")
+                inst.SoundEmitter:PlaySoundWithParams("dontstarve/creatures/together/antlion/sfx/ground_break", { size = .1 })
+            end
+            inst.SoundEmitter:PlaySound(inst.sounds.death)
+        end),
+        TimeEvent(4 * FRAMES, function(inst)
+            if inst.sg.statemem.clay then
+                PlayClayFootstep(inst)
+            end
+        end),
+        TimeEvent(6 * FRAMES, function(inst)
+            if inst.sg.statemem.clay then
+                PlayClayFootstep(inst)
+            end
         end),
     },
-	endtimeline = {},
+})
+CommonStates.AddRunStates(states,
+{
+    starttimeline = {},
+    runtimeline =
+    {
+        TimeEvent(5 * FRAMES, function(inst)
+            if inst:HasTag("clay") then
+                PlayClayFootstep(inst)
+            else
+                PlayFootstep(inst)
+            end
+            inst.SoundEmitter:PlaySound(inst.sounds.idle)
+        end),
+    },
+    endtimeline = {},
 })
 CommonStates.AddSleepStates(states,
 {
-	starttimeline = {},
-	sleeptimeline = 
-	{
-		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/sleep") end)
-	},
-	endtimeline = {},
+    starttimeline = {},
+    sleeptimeline =
+    {
+        TimeEvent(0 * FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.sleep) end),
+    },
+    endtimeline = {},
 })
-CommonStates.AddFrozenStates(states)
-  
+CommonStates.AddFrozenStates(states, HideEyeFX, ShowEyeFX)
+
 return StateGraph("warg", states, events, "idle", actionhandlers)

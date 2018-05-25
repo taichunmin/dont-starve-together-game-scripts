@@ -987,6 +987,8 @@ return {
         CHESSPIECE_BEARGER = "It was a lot bigger up close.",
         CHESSPIECE_MOOSEGOOSE = "Eurgh. It's so lifelike.",
         CHESSPIECE_DRAGONFLY = "Ah, that brings back memories. Bad ones.",
+        CHESSPIECE_CLAYHOUND = "??",
+        CHESSPIECE_CLAYWARG = "??",
         CHESSJUNK1 = "A pile of broken chess pieces.",
         CHESSJUNK2 = "Another pile of broken chess pieces.",
         CHESSJUNK3 = "Even more broken chess pieces.",
@@ -1907,7 +1909,26 @@ return {
         LUCKY_GOLDNUGGET = "What a lucky find!",
         FIRECRACKERS = "Filled with explosion science!",
         PERDFAN = "It's inordinately large.",
-        REDPOUCH = "Is there something inside that?",
+        REDPOUCH = "Is there something inside?",
+        WARGSHRINE = 
+        {
+            GENERIC = "I should make something fun.",
+            EMPTY = "I need to put a torch in it.",
+            BURNT = "It burned down.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "A terror cotta monster!",
+        	STATUE = "Did it just move?",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "It's been unleashed!",
+        	STATUE = "It looks so real.",
+        },
+        HOUNDWHISTLE = "This'd stop a dog in its tracks.",
+        CHESSPIECE_CLAYHOUND = "That thing's the leashed of my worries.",
+        CHESSPIECE_CLAYWARG = "And I didn't even get eaten!",
 
 		BISHOP_CHARGE_HIT = "Ow!",
 		TRUNKVEST_SUMMER = "Wilderness casual.",

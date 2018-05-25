@@ -23,7 +23,8 @@ local DebugMenuScreen = Class(Screen, function(self)
 	self.blackoverlay:SetClickable(false)
 	self.blackoverlay:SetTint(0,0,0,.75)
 
-	self.text = self:AddChild(Text(BODYTEXTFONT, 16, "blah"))
+--	self.text = self:AddChild(Text(BODYTEXTFONT, 16, "blah"))
+	self.text = self:AddChild(Text(BODYTEXTFONT, TheSim:GetIsSplitScreen() and 32 or 16, "blah"))
 	self.text:SetVAlign(ANCHOR_TOP)
 	self.text:SetHAlign(ANCHOR_LEFT)
     self.text:SetVAnchor(ANCHOR_MIDDLE)
@@ -37,9 +38,25 @@ local DebugMenuScreen = Class(Screen, function(self)
 end)
 
 
-
+local god = false
 local map_reveal = false
 local free_craft = false
+
+function Remote_Spawn(prefab, x, y, z)
+		local fnstr = string.format('c_spawn("%s")',prefab)
+		print("Command:",fnstr)
+		print("pos",x,z)
+		TheNet:SendRemoteExecute(fnstr, x, z)
+end
+
+function ConsoleRemote(cmd, data)
+		local fnstr = string.format(cmd, unpack(data or {}))
+		c_remote(fnstr)
+end
+
+local function c_gonext(val)
+	ConsoleRemote('c_gonext("%s")', {val})
+end
 
 function DebugMenuScreen:OnBecomeActive()
 	DebugMenuScreen._base.OnBecomeActive(self)
@@ -50,14 +67,13 @@ function DebugMenuScreen:OnBecomeActive()
 
 
 	local map = TheWorld and TheWorld.minimap or nil
-	local god = false
 
 
 	local craft_menus = {}
 	for k,v in pairs(AllRecipes) do
         if IsRecipeValid(v.name) and v.tab then -- no tab for pighead/mermhead (things that aren't buidlable but need to behave like recipes)
     		craft_menus[v.tab] = craft_menus[v.tab] or {}
-    		table.insert(craft_menus[v.tab], menus.DoAction(v.name, function() for kk,vv in pairs(v.ingredients) do c_give(vv.type, vv.amount) end end))
+    		table.insert(craft_menus[v.tab], menus.DoAction(v.name, function() for kk,vv in pairs(v.ingredients) do ConsoleRemote('c_give("%s", %d)',{vv.type, vv.amount}) end end))
         end
 	end
 
@@ -66,22 +82,24 @@ function DebugMenuScreen:OnBecomeActive()
 		table.insert(spawncraft, menus.Submenu(k.str, v))
 	end
 
-
 	local bars = {
-		menus.NumericToggle("Health", 1, 100, function() return math.floor(ThePlayer.components.health:GetPercent()*100) end, function(val) ThePlayer.components.health:SetPercent(val/100) end,5),
-		menus.NumericToggle("Sanity", 1, 100, function() return math.floor(ThePlayer.components.sanity:GetPercent()*100) end, function(val) ThePlayer.components.sanity:SetPercent(val/100) end,5),
-		menus.NumericToggle("Hunger", 1, 100, function() return math.floor(ThePlayer.components.hunger:GetPercent()*100) end, function(val) ThePlayer.components.hunger:SetPercent(val/100) end,5)
+		menus.NumericToggle("Health", 1, 100, function() return math.floor(ThePlayer.replica.health:GetPercent()*100) end, function(val) ConsoleRemote('c_sethealth("%f")',{val/100}) end,5),
+		menus.NumericToggle("Sanity", 1, 100, function() return math.floor(ThePlayer.replica.sanity:GetPercent()*100) end, function(val) ConsoleRemote('c_setsanity("%f")',{val/100}) end,5),
+		menus.NumericToggle("Hunger", 1, 100, function() return math.floor(ThePlayer.replica.hunger:GetPercent()*100) end, function(val) ConsoleRemote('c_sethunger("%f")',{val/100}) end,5),
 	}
 	local timecontrol = {
-		menus.NumericToggle("Adjust Time Warp", 0, 4, function() return time_warp end, function(val) time_warp = val end,.25),
-		menus.DoAction("Advance Day", function() LongUpdate(TUNING.TOTAL_DAY_TIME, true) end),
-		menus.DoAction("Advance Segment", function() LongUpdate(TUNING.TOTAL_DAY_TIME / 16, true) end)
+		menus.DoAction("Advance Phase", function() ConsoleRemote('TheWorld:PushEvent("ms_nextphase")') end),
+		menus.DoAction("Advance Day", function() ConsoleRemote('TheWorld:PushEvent("ms_nextcycle")') end),
+		menus.DoAction("Advance Season", function() for i=1,TheWorld.state.remainingdaysinseason do ConsoleRemote('TheWorld:PushEvent("ms_advanceseason")') end end),
 	}
 	local teleport = {
-		menus.DoAction("Eyebone", function() c_gonext("chester_eyebone") self:Close() end),
-		menus.DoAction("Maxwell Door", function() c_gonext("adventure_portal") self:Close() end),
+		menus.DoAction("Eyebone", function() ConsoleRemote('c_gonext("chester_eyebone")') self:Close() end),
 		menus.DoAction("Cave Entrance", function() c_gonext("cave_entrance") self:Close() end),
 		menus.DoAction("Cave Exit", function() c_gonext("cave_exit") self:Close() end),
+		menus.DoAction("Spawn Portal", function() c_gonext("multiplayer_portal") self:Close() end),
+        menus.DoAction("Antlion Nest", function() ConsoleRemote('c_give("deserthat")') ConsoleRemote('c_gonext("antlion_spawner")') self:Close() end),
+        menus.DoAction("Desert Oasis", function() ConsoleRemote('c_give("deserthat")') ConsoleRemote('c_gonext("oasislake")') self:Close() end),
+		menus.DoAction("Gather Players", function() ConsoleRemote("c_gatherplayers()") self:Close() end),
 	}
 
 	local allprefabs = {}
@@ -114,7 +132,7 @@ function DebugMenuScreen:OnBecomeActive()
 	for k,v in pairs(spawn_lists) do
 		local inner_list = {}
 		for kk, vv in pairs(v) do
-			table.insert(inner_list, menus.DoAction(vv, function() DebugSpawn(vv).Transform:SetPosition(ThePlayer.Transform:GetWorldPosition()) end))
+			table.insert(inner_list, menus.DoAction(vv, function() ConsoleRemote('c_spawn("%s")',{vv}) end))
 		end
 		table.insert(spawn, menus.Submenu(v[1] .. " thru " .. v[#v], inner_list))
 	end
@@ -123,53 +141,52 @@ function DebugMenuScreen:OnBecomeActive()
     local weathercontrol = {
         menus.CheckBox("Toggle Precipitation", function() return TheWorld.state.precipitation ~= "none" or TheWorld.state.moisture >= TheWorld.state.moistureceil end, 
             function(val)
-                TheWorld:PushEvent("ms_forceprecipitation", val)
+                ConsoleRemote('TheWorld:PushEvent("ms_forceprecipitation", true)')
             end),
             menus.CheckBox("Toggle Winter", function() return TheWorld.state.iswinter end,
             function(val)
                 if val then
-                    TheWorld:PushEvent("ms_setseason", "winter")
+                    ConsoleRemote('TheWorld:PushEvent("ms_setseason", "winter")')
                 else
-                    TheWorld:PushEvent("ms_setseason", "summer")
+                    ConsoleRemote('TheWorld:PushEvent("ms_setseason", "summer")')
                 end
             end)
     }
-
-
+    
+    local languages = 
+    {
+		menus.DoAction("French", function() SwapLanguage(LANGUAGE.FRENCH) self:Close() end),	
+        menus.DoAction("Spanish", function() SwapLanguage(LANGUAGE.SPANISH) self:Close() end),
+        menus.DoAction("Mexican", function() SwapLanguage(LANGUAGE.SPANISH_LA) self:Close() end),
+        menus.DoAction("German", function() SwapLanguage(LANGUAGE.GERMAN) self:Close() end),	
+		menus.DoAction("Italian", function() SwapLanguage(LANGUAGE.ITALIAN) self:Close() end),
+        menus.DoAction("Brazilian", function() SwapLanguage(LANGUAGE.PORTUGUESE_BR) self:Close() end),
+        menus.DoAction("Polish", function() SwapLanguage(LANGUAGE.POLISH) self:Close() end),
+        menus.DoAction("Korean", function() SwapLanguage(LANGUAGE.KOREAN) self:Close() end),
+        menus.DoAction("Japanese", function() SwapLanguage(LANGUAGE.JAPANESE) self:Close() end),
+        menus.DoAction("Chinese (T)", function() SwapLanguage(LANGUAGE.CHINESE_T) self:Close() end),
+        menus.DoAction("Chinese (S)", function() SwapLanguage(LANGUAGE.CHINESE_S) self:Close() end),
+    }
+    
 	if InGamePlay() then
-		table.insert(main_options, menus.CheckBox("Toggle God Mode", function() return god end, function(val) god = val ThePlayer.components.health:SetInvincible(god) end))		
-		table.insert(main_options, menus.CheckBox("Toggle Reveal Map", function() return map_reveal end, function(val) map_reveal = val map.MiniMap:EnableFogOfWar(not map_reveal) end))		
-		table.insert(main_options, menus.CheckBox("Toggle Free Crafting", function() return free_craft end, function(val) free_craft = val ThePlayer.components.builder:GiveAllRecipes() ThePlayer:PushEvent("techlevelchange") end))		
+		table.insert(main_options, menus.CheckBox("Toggle God Mode", function() return god end, function(val) god = val ConsoleRemote("c_godmode()") end))		
+		table.insert(main_options, menus.CheckBox("Toggle Reveal Map", function() return map_reveal end, 
+                                            function(val) 
+                                                map_reveal = val 
+                                                map.MiniMap:EnableFogOfWar(not map_reveal)
+                                            end))		
+		table.insert(main_options, menus.CheckBox("Toggle Free Crafting", function() return free_craft end, function(val) free_craft = val ConsoleRemote("c_freecrafting()") end))		
 		table.insert(main_options, menus.Submenu("Teleport", teleport))
 		table.insert(main_options, menus.Submenu("Time Control", timecontrol))
 		table.insert(main_options, menus.Submenu("Weather Control", weathercontrol))
 		table.insert(main_options, menus.Submenu("Player Bars", bars))
 		table.insert(main_options, menus.Submenu("Spawn", spawn))
 		table.insert(main_options, menus.Submenu("Give Ingredients for", spawncraft))
-	else
-
-
-		local adv_slot = 1
-		local adventure_mode_menu = {menus.NumericToggle("Overwrite Slot:", 1, 4, function() return adv_slot end, function(v) adv_slot = v end)}
-
-		for k = 1, 7 do
-
-			local opt = menus.DoAction(STRINGS.UI.SANDBOXMENU.ADVENTURELEVELS[k], function()
-				local function onstart()
-					StartNextInstance({reset_action=RESET_ACTION.LOAD_SLOT, save_slot = adv_slot})
-				end
-				SaveGameIndex:FakeAdventure(onstart, adv_slot, k)
-			end)
-
-			table.insert(adventure_mode_menu, opt)
-		end
-
-		table.insert(main_options, menus.DoAction("Unlock All Characters", function() Profile:UnlockEverything() self:Close() end ))
-		table.insert(main_options, menus.DoAction("Reset Profile", function() Profile:Reset() self:Close() end ))
-		table.insert(main_options, menus.Submenu("Test Adventure Level", adventure_mode_menu, "Pick A level"))
 	end
 
-	table.insert(main_options, menus.DoAction("Restart", function() StartNextInstance() self:Close() end ))
+	table.insert(main_options, menus.DoAction("Grab Profile", function() TheSim:Profile() self:Close() end ))
+    table.insert(main_options, menus.Submenu("Language", languages))
+	--table.insert(main_options, menus.DoAction("Restart", function() StartNextInstance() self:Close() end ))
 
 
 	self.menu:PushOptions(main_options, "")
@@ -183,6 +200,7 @@ function DebugMenuScreen:OnControl(control, down)
 
 	if not down and control == CONTROL_OPEN_DEBUG_MENU then 
 		self:Close()
+
 		return true
 	end
 

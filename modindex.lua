@@ -13,6 +13,9 @@ local ModIndex = Class(function(self)
 		known_api_version = 0,
 		disable_special_event_warning = false,
 	}
+	if IsConsole() then
+		self.modsettings = {}
+	end
 end)
 
 --[[
@@ -140,7 +143,7 @@ function ModIndex:GetServerModNamesTable()
 end
 
 function ModIndex:Save(callback)
-    if PLATFORM == "PS4" then
+    if IsConsole() then
         return
     end
     
@@ -276,6 +279,9 @@ function ResolveModname(modname)
 end
 
 function IsWorkshopMod(modname)
+	if modname == nil then
+		return false
+	end
 	return modname:sub( 1, workshop_prefix:len() ) == workshop_prefix
 end
 
@@ -646,7 +652,7 @@ function ModIndex:SaveHostConfiguration(modname)
 end
 
 function ModIndex:SaveConfigurationOptions(callback, modname, configdata, client_config)
-	if PLATFORM == "PS4" or not configdata then
+	if IsConsole() or not configdata then
         return
     end
     --print("### SaveConfigurationOptions ", modname)

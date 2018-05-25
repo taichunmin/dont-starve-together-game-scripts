@@ -72,6 +72,7 @@ GIFT_TYPE = {
 }
 
 TRANSITION_DURATION = 0.9
+DEFAULT_TITLE_SIZE = 55
 
 local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     Screen._ctor(self, "ThankYouPopup")
@@ -108,7 +109,7 @@ local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     self.bg:SetScale(.97)
 
     --title 
-    self.title = self.proot:AddChild(Text(TITLEFONT, 60))
+    self.title = self.proot:AddChild(Text(TITLEFONT, DEFAULT_TITLE_SIZE))
     self.title:SetPosition(0, 235, 0)
 
     ---- Logo
@@ -135,7 +136,7 @@ local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     self.spawn_portal:GetAnimState():Hide("BG")
 
     -- Text saying "you received" on the upper banner
-    self.upper_banner_text = self.proot:AddChild(Text(UIFONT, 55, STRINGS.UI.ITEM_SCREEN.RECEIVED))
+    self.upper_banner_text = self.proot:AddChild(Text(UIFONT, 50, STRINGS.UI.ITEM_SCREEN.RECEIVED))
     self.upper_banner_text:SetPosition(0, 75, 0)
     self.upper_banner_text:SetColour(36/255, 118/255, 169/255, 1)
 
@@ -147,7 +148,7 @@ local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     --self.item_name = self.banner:AddChild(Text(UIFONT, 55))
     --self.item_name:SetString("Dragonfly Backpack")
     --self.item_name:SetPosition(0, -10, 0)
-    self.item_name = self.proot:AddChild(Text(UIFONT, 55))
+    self.item_name = self.proot:AddChild(Text(UIFONT, 50))
     self.item_name:SetString("Dragonfly Backpack")
     self.item_name:SetPosition(0, -205, 0)
 
@@ -228,10 +229,10 @@ function ThankYouPopup:OnUpdate(dt)
 
         self.proot:MoveTo({x=0,y=0,z=0}, {x=0,y=RESOLUTION_Y,z=0}, TRANSITION_DURATION, nil)
         self.black:TintTo({r=0,g=0,b=0,a=0.75}, {r=0,g=0,b=0,a=0}, TRANSITION_DURATION, function()
-            TheFrontEnd:PopScreen(self)
             if self.callbackfn then
                 self.callbackfn()
             end
+            TheFrontEnd:PopScreen(self)
         end)
 
     -- We just navigated to an unrevealed skin
@@ -312,7 +313,7 @@ function ThankYouPopup:ChangeGift(offset)
 
 	local message = self.items[self.current_item].message
     self.title:SetString( (message ~= "" and message) or gifttype.title)
-    self.title:SetSize( gifttype.title_size or 60 )
+    self.title:SetSize( gifttype.title_size or DEFAULT_TITLE_SIZE )
     
     if gifttype.titleoffset ~= nil then
         self.title:SetPosition(
@@ -393,7 +394,9 @@ function ThankYouPopup:OpenGift()
     -- Mark the item as revealed
     self.revealed_items[self.current_item] = true
     self.reveal_skin = true -- Used on update
-    TheInventory:SetItemOpened(self.items[self.current_item].item_id)
+    if self.items[self.current_item].item_id ~= 0 then
+        TheInventory:SetItemOpened(self.items[self.current_item].item_id)
+    end
 end
 
 function ThankYouPopup:OnControl(control, down)
@@ -409,11 +412,11 @@ function ThankYouPopup:OnControl(control, down)
 				self:GoAway()
 			end
 		end
-		
-		if self.can_left and control == CONTROL_SCROLLBACK then
+
+		if not down and self.can_left and control == CONTROL_SCROLLBACK then
             self:ChangeGift(-1)
             return true
-        elseif self.can_right and control == CONTROL_SCROLLFWD then
+        elseif not down and self.can_right and control == CONTROL_SCROLLFWD then
         	self:ChangeGift(1)
             return true
        	end

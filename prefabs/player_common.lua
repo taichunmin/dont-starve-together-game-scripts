@@ -173,11 +173,16 @@ local function OnGetItem(inst, giver, item)
     if item ~= nil and item.prefab == "reviver" and inst:HasTag("playerghost") then
         item:PushEvent("usereviver", { user = giver })
         giver.hasRevivedPlayer = true
+        AwardPlayerAchievement("hasrevivedplayer", giver)
         item:Remove()
         inst:PushEvent("respawnfromghost", { source = item, user = giver })
 
         inst.components.health:DeltaPenalty(TUNING.REVIVE_HEALTH_PENALTY)
         giver.components.sanity:DoDelta(TUNING.REVIVE_OTHER_SANITY_BONUS)
+    elseif item ~= nil then
+		if giver.components.age:GetAgeInDays() >= TUNING.ACHIEVEMENT_HELPOUT_GIVER_MIN_AGE and inst.components.age:GetAgeInDays() <= TUNING.ACHIEVEMENT_HELPOUT_RECEIVER_MAX_AGE then
+			AwardPlayerAchievement("helping_hand", giver)
+		end
     end
 end
 
@@ -435,6 +440,10 @@ local function ActivatePlayer(inst)
     TheWorld.minimap.MiniMap:DrawForgottenFogOfWar(true)
     if inst.player_classified ~= nil then
         inst.player_classified.MapExplorer:ActivateLocalMiniMap()
+        
+        if not TheNet:GetIsHosting(true) and not TheNet:GetServerFriendsOnly() and not TheNet:GetServerLANOnly() then
+			AwardPlayerAchievement("join_game", ThePlayer)
+        end
     end
 
     inst:PushEvent("playeractivated")
@@ -696,6 +705,11 @@ local function OnSave(inst, data)
         data.wormlight = inst.wormlight:GetSaveRecord()
     end
 
+	if IsConsole() then
+		TheGameService:NotifyProgress("flush",inst.components.age:GetDisplayAgeInDays(), inst.userid)
+		TheGameService:NotifyProgress("dayssaved",inst.components.age:GetDisplayAgeInDays(), inst.userid)
+	end
+
     if inst._OnSave ~= nil then
         inst:_OnSave(data)
     end
@@ -756,6 +770,10 @@ local function OnLoad(inst, data)
             end
         end
     end
+
+	if IsConsole() then
+		TheGameService:NotifyProgress("dayssaved",inst.components.age:GetDisplayAgeInDays(), inst.userid)
+	end
 
     if inst._OnLoad ~= nil then
         inst:_OnLoad(data)

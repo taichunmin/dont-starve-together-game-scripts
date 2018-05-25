@@ -44,6 +44,9 @@ local survival_together = {
 			"Warzone_3",
 		},
 	}
+if IsConsole() then
+	survival_together.name = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_TOGETHER_PS4
+end
 AddLevel(LEVELTYPE.SURVIVAL, survival_together)
 
 -- if a mod preset vanishes (i.e. the mod isn't running), just use the default preset instead.
@@ -115,7 +118,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 	})
 
 
-if PLATFORM == "PS4" then   -- boons and spiders at default values rather than "often"
+if IsConsole() then   -- boons and spiders at default values rather than "often"
 AddLevel(LEVELTYPE.SURVIVAL, {
 		id="SURVIVAL_DEFAULT_PLUS",
 		name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_DEFAULT_PLUS,

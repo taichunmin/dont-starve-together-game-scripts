@@ -75,7 +75,8 @@ local function onupdatefueledraining(inst)
         owner ~= nil and
         owner.components.sheltered ~= nil and
         owner.components.sheltered.sheltered and
-        1 or 1 + TUNING.TORCH_RAIN_RATE * TheWorld.state.precipitationrate
+        (inst._fuelratemult or 1) or
+        (1 + TUNING.TORCH_RAIN_RATE * TheWorld.state.precipitationrate) * (inst._fuelratemult or 1)
 end
 
 local function onisraining(inst, israining)
@@ -85,7 +86,7 @@ local function onisraining(inst, israining)
             onupdatefueledraining(inst)
         else
             inst.components.fueled:SetUpdateFn()
-            inst.components.fueled.rate = 1
+            inst.components.fueled.rate = inst._fuelratemult or 1
         end
     end
 end
@@ -112,6 +113,14 @@ local function onfuelchange(newsection, oldsection, inst)
             end
         end
         inst:Remove()
+    end
+end
+
+local function SetFuelRateMult(inst, mult)
+    mult = mult ~= 1 and mult or nil
+    if inst._fuelratemult ~= mult then
+        inst._fuelratemult = mult
+        onisraining(inst, TheWorld.state.israining)
     end
 end
 
@@ -184,6 +193,9 @@ local function fn()
 
     inst:WatchWorldState("israining", onisraining)
     onisraining(inst, TheWorld.state.israining)
+
+    inst._fuelratemult = nil
+    inst.SetFuelRateMult = SetFuelRateMult
 
     MakeHauntableLaunch(inst)
 

@@ -8,6 +8,10 @@ ERRORS = {
     CUSTOM_COMMANDS_ERROR = {
         message = "Error loading customcommands.lua.",
     },
+    AGREEMENTS_WRITE_PERMISSION = {
+        message = "Unable to write to the agreements file. Please make sure you have permissions for your Klei save folder.",
+        url = "http://support.kleientertainment.com/customer/portal/articles/2940330",
+    },
 }
 
 if DEBUG_MODE then

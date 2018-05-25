@@ -306,13 +306,13 @@ function Spinner:SetTextColour(r,g,b,a)
 end
 
 function Spinner:Enable()
-	self._base.Enable(self)
+	Spinner._base.Enable(self)
 	self.text:SetColour( self.textcolour )
 	self:UpdateState()
 end
 
 function Spinner:Disable()
-	self._base.Disable(self)
+	Spinner._base.Disable(self)
 	-- self.text:SetColour(.7,.7,.7,1)
 	self.text:SetColour(.5,.5,.5,1)
 	self.leftimage:Disable()

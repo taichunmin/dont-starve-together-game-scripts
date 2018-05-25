@@ -174,7 +174,9 @@ function Fueled:TakeFuelItem(item)
         local wetmult = item:GetIsWet() and TUNING.WET_FUEL_PENALTY or 1
         self:DoDelta(item.components.fuel.fuelvalue * self.bonusmult * wetmult)
 
-        if item.components.fuel then
+        local fuelvalue = 0
+        if item.components.fuel ~= nil then
+            fuelvalue = item.components.fuel.fuelvalue
             item.components.fuel:Taken(self.inst)
         end
         item:Remove()
@@ -182,6 +184,7 @@ function Fueled:TakeFuelItem(item)
         if self.ontakefuelfn ~= nil then
             self.ontakefuelfn(self.inst)
         end
+        self.inst:PushEvent("takefuel", { fuelvalue = fuelvalue })
 
         return true
     end

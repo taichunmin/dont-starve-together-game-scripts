@@ -138,12 +138,6 @@ local function getstatus(inst)
         or "COOKING_SHORT"
 end
 
-local function onfar(inst)
-    if inst.components.container ~= nil then
-        inst.components.container:Close()
-    end
-end
-
 local function onbuilt(inst)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:PushAnimation("idle_empty", false)
@@ -240,10 +234,6 @@ local function fn()
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
-
-    inst:AddComponent("playerprox")
-    inst.components.playerprox:SetDist(3,5)
-    inst.components.playerprox:SetOnPlayerFar(onfar)
 
     inst:AddComponent("lootdropper")
     inst:AddComponent("workable")

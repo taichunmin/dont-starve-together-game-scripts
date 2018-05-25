@@ -90,6 +90,10 @@ local function OnPlayerDeath(inst, data)
         return
     end
 
+	if IsConsole() then
+		TheGameService:NotifyProgress("dayssurvived",inst.components.age:GetAgeInDays(), inst.userid)
+	end
+
     inst:ClearBufferedAction()
 
     inst.components.age:PauseAging()

@@ -104,9 +104,12 @@ local function updatelevel(inst)
     end
 end
 
-local function onharvest(inst, picker)
+local function onharvest(inst, picker, produce)
     --print(inst, "onharvest")
     if not inst:HasTag("burnt") then
+		if produce == levels[1].amount then
+			AwardPlayerAchievement("honey_harvester", picker)
+		end
         updatelevel(inst)
         if inst.components.childspawner ~= nil and not TheWorld.state.iswinter then
             inst.components.childspawner:ReleaseAllChildren(picker)

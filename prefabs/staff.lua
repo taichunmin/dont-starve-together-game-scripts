@@ -580,7 +580,7 @@ local function createlight(staff, target, pos)
 end
 
 local function light_reticuletargetfn()
-    return Vector3(ThePlayer.entity:LocalToWorldSpace(5, 0, 0))
+    return Vector3(ThePlayer.entity:LocalToWorldSpace(5, 0.001, 0)) -- raised this off the ground a touch so it wont have any z-fighting with the ground biome transition tiles.
 end
 
 local function onhauntlight(inst)

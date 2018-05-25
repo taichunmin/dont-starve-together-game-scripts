@@ -156,13 +156,14 @@ local function SpawnerOnIsNight(inst, isnight)
     if isnight then
         inst.OnEntityWake = nil
         inst.components.childspawner:StopSpawning()
-        inst.components.childspawner:StartRegen()
+        if not inst.components.childspawner.regening and inst.components.childspawner.numchildrenoutside + inst.components.childspawner.childreninside < inst.components.childspawner.maxchildren then
+            inst.components.childspawner:StartRegen()
+        end
         ReturnChildren(inst)
         CancelAwakeTasks(inst)
     else
         inst.OnEntityWake = OnEntityWake
         inst.components.childspawner:StartSpawning()
-        inst.components.childspawner:StopRegen()
         if not inst:IsAsleep() then
             OnEntityWake(inst)
         end
@@ -180,6 +181,13 @@ local function SpawnerOnIsWinter(inst, iswinter)
     else
         inst:WatchWorldState("isnight", SpawnerOnIsNight)
         SpawnerOnIsNight(inst, TheWorld.state.isnight)
+    end
+end
+
+local function OnAddChild(inst)
+    UpdateShadows(inst)
+    if inst.components.childspawner.numchildrenoutside + inst.components.childspawner.childreninside >= inst.components.childspawner.maxchildren then
+        inst.components.childspawner:StopRegen()
     end
 end
 
@@ -211,10 +219,11 @@ local function fn()
     inst:AddComponent("childspawner")
     inst.components.childspawner.childname = "buzzard"
     inst.components.childspawner:SetSpawnedFn(OnSpawn)
-    inst.components.childspawner:SetOnAddChildFn(UpdateShadows)
+    inst.components.childspawner:SetOnAddChildFn(OnAddChild)
     inst.components.childspawner:SetMaxChildren(math.random(1, 2))
     inst.components.childspawner:SetSpawnPeriod(TUNING.BUZZARD_SPAWN_PERIOD + math.random(-TUNING.BUZZARD_SPAWN_VARIANCE, TUNING.BUZZARD_SPAWN_VARIANCE))
     inst.components.childspawner:SetRegenPeriod(TUNING.BUZZARD_REGEN_PERIOD)
+    inst.components.childspawner:StopRegen()
 
     inst.buzzardshadows = {}
     inst.foodtask = nil

@@ -14,6 +14,19 @@ function PlayerDeaths:Reset()
 end
 
 function PlayerDeaths:OnDeath(row)
+	if IsXB1() then
+		if row.pk and row.killed_by then
+			local ClientObjs = TheNet:GetClientTable()
+			if ClientObjs ~= nil and #ClientObjs > 0 then
+				for i, v in ipairs(ClientObjs) do
+					if row.killed_by == v.name then
+						row.netid = v.netid
+						break
+					end
+				end
+			end
+		end
+	end
     table.insert(self.persistdata, row)
     self.dirty = true
 	self:Save()

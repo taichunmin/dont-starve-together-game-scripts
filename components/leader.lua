@@ -14,7 +14,7 @@ local Leader = Class(function(self, inst)
     self.inst = inst
     self.followers = {}
     self.numfollowers = 0
-
+    
     inst:ListenForEvent("newcombattarget", OnNewCombatTarget)
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("death", OnDeath)
@@ -36,7 +36,7 @@ end
 
 function Leader:OnAttacked(attacker)
     if not self:IsFollower(attacker) and self.inst ~= attacker then
-        for k, v in pairs(self.followers) do
+        for k,v in pairs(self.followers) do
             if k.components.combat ~= nil and k.components.follower ~= nil and k.components.follower.canaccepttarget then
                 k.components.combat:SuggestTarget(attacker)
             end
@@ -50,16 +50,16 @@ function Leader:CountFollowers(tag)
     end
 
     local count = 0
-    for k, v in pairs(self.followers) do
+    for k,v in pairs(self.followers) do
         if k:HasTag(tag) then
             count = count + 1
-        end
-    end
-    return count
+		end
+	end
+	return count
 end
 
 function Leader:OnNewTarget(target)
-    for k, v in pairs(self.followers) do
+    for k,v in pairs(self.followers) do
         if k.components.combat ~= nil and k.components.follower ~= nil and k.components.follower.canaccepttarget then
             k.components.combat:SuggestTarget(target)
         end
@@ -78,10 +78,10 @@ function Leader:RemoveFollower(follower, invalid)
             self.onremovefollower(self.inst, follower)
         end
 
-        if not invalid then
+		if not invalid then
             follower:PushEvent("stopfollowing", { leader = self.inst })
-            follower.components.follower:SetLeader(nil)
-        end
+	        follower.components.follower:SetLeader(nil)
+		end
     end
 end
 
@@ -91,6 +91,7 @@ function Leader:AddFollower(follower)
         self.numfollowers = self.numfollowers + 1
         follower.components.follower:SetLeader(self.inst)
         follower:PushEvent("startfollowing", { leader = self.inst })
+		NotifyPlayerProgress("TotalFollowersAcquired", 1, self.inst);
 
         if not follower.components.follower.keepdeadleader then
             self.inst:ListenForEvent("death", self._onfollowerdied, follower)
@@ -98,22 +99,27 @@ function Leader:AddFollower(follower)
 
         self.inst:ListenForEvent("onremove", self._onfollowerremoved, follower)
 
-        if self.inst:HasTag("player") and follower.prefab ~= nil then
-            ProfileStatsAdd("befriend_"..follower.prefab)
-        end
-    end
+	    if self.inst:HasTag("player") and follower.prefab ~= nil then
+			if self:CountFollowers("pig") == TUNING.ACHIEVEMENT_PIG_POSSE_SIZE then
+				AwardPlayerAchievement("pigman_posse", self.inst)
+			elseif self:CountFollowers("rocky") == TUNING.ACHIEVEMENT_ROCKY_POSSE_SIZE then
+				AwardPlayerAchievement("rocky_posse", self.inst)
+			end
+		    ProfileStatsAdd("befriend_"..follower.prefab)
+	    end
+	end
 end
 
 function Leader:RemoveFollowersByTag(tag, validateremovefn)
-    for k, v in pairs(self.followers) do
+    for k,v in pairs(self.followers) do
         if k:HasTag(tag) and (validateremovefn == nil or validateremovefn(k)) then
-            self:RemoveFollower(k)
+                    self:RemoveFollower(k)
+                end
+            end
         end
-    end
-end
 
 function Leader:RemoveAllFollowers()
-    for k, v in pairs(self.followers) do
+    for k,v in pairs(self.followers) do
         self:RemoveFollower(k)
     end
 end
@@ -127,7 +133,7 @@ function Leader:RemoveAllFollowersOnDeath()
 end
 
 function Leader:IsBeingFollowedBy(prefabName)
-    for k, v in pairs(self.followers) do
+    for k,v in pairs(self.followers) do
         if k.prefab == prefabName then
             return true
         end
@@ -144,7 +150,7 @@ function Leader:OnSave()
     for k, v in pairs(self.followers) do
         table.insert(followers, k.GUID)
     end
-
+    
     if #followers > 0 then
         return { followers = followers }, followers
     end
@@ -156,7 +162,7 @@ function Leader:LoadPostPass(newents, savedata)
     end
 
     if savedata ~= nil and savedata.followers ~= nil then
-        for k, v in pairs(savedata.followers) do
+        for k,v in pairs(savedata.followers) do
             local targ = newents[v]
             if targ ~= nil and targ.entity.components.follower ~= nil then
                 self:AddFollower(targ.entity)

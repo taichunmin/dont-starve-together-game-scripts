@@ -1909,6 +1909,25 @@ return {
         FIRECRACKERS = "Let's not set them off in the forest.",
         PERDFAN = "It had to be birds, didn't it?",
         REDPOUCH = "It's Lucy-colour.",
+        WARGSHRINE = 
+        {
+            GENERIC = "Nice and toasty.",
+            EMPTY = "Gotta warm this doghouse up, eh?",
+            BURNT = "Burned up.",
+        },
+        CLAYWARG = 
+        {
+        	GENERIC = "Look at the size of you.",
+        	STATUE = "Wonder where that sculpture came from.",
+        },
+        CLAYHOUND = 
+        {
+        	GENERIC = "Earth hounds!",
+        	STATUE = "Someone carved each individual hair.",
+        },
+        HOUNDWHISTLE = "I usually do my own animal calls.",
+        CHESSPIECE_CLAYHOUND = "All the dog, none of the smell.",
+        CHESSPIECE_CLAYWARG = "Not a wood sculpture, but it'll do.",
 
 		TRUNKVEST_SUMMER = "Nice and breezy.",
 		TRUNKVEST_WINTER = "This could stand up to the winters back home, eh?",
