@@ -113,8 +113,8 @@ local function onpickedfn(inst, picker)
             end
         end
     end
-    if not picker:HasTag("berrythief") and
-        math.random() < (IsSpecialEventActive(SPECIAL_EVENTS.YOTG) and TUNING.YOTG_PERD_SPAWNCHANCE or TUNING.PERD_SPAWNCHANCE) then
+
+    if not (picker:HasTag("berrythief") or inst._noperd) and math.random() < (IsSpecialEventActive(SPECIAL_EVENTS.YOTG) and TUNING.YOTG_PERD_SPAWNCHANCE or TUNING.PERD_SPAWNCHANCE) then
         inst:DoTaskInTime(3 + math.random() * 3, spawnperd)
     end
 end
@@ -302,6 +302,11 @@ local function createbush(name, inspectname, berryname, master_postinit)
         --witherable (from witherable component) added to pristine state for optimization
         inst:AddTag("witherable")
 
+        if TheNet:GetServerGameMode() == "quagmire" then
+            -- for stats tracking
+            inst:AddTag("quagmire_wildplant")
+        end
+
         inst.MiniMapEntity:SetIcon(name..".png")
 
         inst.AnimState:SetBank(name)
@@ -336,9 +341,12 @@ local function createbush(name, inspectname, berryname, master_postinit)
         AddHauntableCustomReaction(inst, OnHaunt, false, false, true)
 
         inst:AddComponent("lootdropper")
-        inst:AddComponent("workable")
-        inst.components.workable:SetWorkAction(ACTIONS.DIG)
-        inst.components.workable:SetWorkLeft(1)
+
+        if not GetGameModeProperty("disable_transplanting") then
+            inst:AddComponent("workable")
+            inst.components.workable:SetWorkAction(ACTIONS.DIG)
+            inst.components.workable:SetWorkLeft(1)
+        end
 
         inst:AddComponent("inspectable")
         if name ~= inspectname then
@@ -358,6 +366,10 @@ local function createbush(name, inspectname, berryname, master_postinit)
             inst:ListenForEvent("spawnperd", spawnperd)
         end
 
+        if TheNet:GetServerGameMode() == "quagmire" then
+            event_server_data("quagmire", "prefabs/berrybush").master_postinit(inst)
+        end
+
         return inst
     end
 
@@ -370,7 +382,9 @@ local function normal_postinit(inst)
     inst.components.pickable.max_cycles = TUNING.BERRYBUSH_CYCLES + math.random(2)
     inst.components.pickable.cycles_left = inst.components.pickable.max_cycles
 
-    inst.components.workable:SetOnFinishCallback(dig_up_normal)
+    if inst.components.workable ~= nil then
+        inst.components.workable:SetOnFinishCallback(dig_up_normal)
+    end
 end
 
 local function juicy_postinit(inst)
@@ -382,8 +396,10 @@ local function juicy_postinit(inst)
     inst.components.pickable.droppicked = true
     inst.components.pickable.dropheight = 3.5
 
-    inst.components.workable:SetOnWorkCallback(onworked_juicy)
-    inst.components.workable:SetOnFinishCallback(dig_up_juicy)
+    if inst.components.workable ~= nil then
+        inst.components.workable:SetOnWorkCallback(onworked_juicy)
+        inst.components.workable:SetOnFinishCallback(dig_up_juicy)
+    end
 end
 
 return createbush("berrybush", "berrybush", "berries", normal_postinit),

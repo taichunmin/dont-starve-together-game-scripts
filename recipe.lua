@@ -48,7 +48,7 @@ end
 
 mod_protect_Recipe = false
 
-Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing, nounlock, numtogive, builder_tag, atlas, image, testfn)
+Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing, nounlock, numtogive, builder_tag, atlas, image, testfn, product)
     if mod_protect_Recipe then
         print("Warning: Calling Recipe from a mod is now deprecated. Please call AddRecipe from your modmain.lua file.")
     end
@@ -68,15 +68,15 @@ Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing
         )
     end
 
-    self.product       = name
+    self.product       = product or name
     self.tab           = tab
 
     self.atlas         = (atlas and resolvefilepath(atlas)) or resolvefilepath("images/inventoryimages.xml")
     self.imagefn       = type(image) == "function" and image or nil
-    self.image         = self.imagefn == nil and image or (name .. ".tex")
+    self.image         = self.imagefn == nil and image or (self.product .. ".tex")
 
     --self.lockedatlas   = (lockedatlas and resolvefilepath(lockedatlas)) or (atlas == nil and resolvefilepath("images/inventoryimages_inverse.xml")) or nil
-    --self.lockedimage   = lockedimage or (name ..".tex")
+    --self.lockedimage   = lockedimage or (self.product ..".tex")
 
     self.sortkey       = num
     self.rpc_id        = num --mods will set the rpc_id in SetModRPCID when called by AddRecipe()
@@ -118,4 +118,9 @@ end
 
 function IsRecipeValid(recname)
     return GetValidRecipe(recname) ~= nil
+end
+
+function RemoveAllRecipes()
+    AllRecipes = {}
+    num = 0
 end

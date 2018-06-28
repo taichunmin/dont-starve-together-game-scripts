@@ -12,6 +12,7 @@ math.random()
 --print ("worldgen_main.lua MAIN = 1")
 
 WORLDGEN_MAIN = 1
+POT_GENERATION = false
 
 --install our crazy loader! MUST BE HERE FOR NACL
 local loadfn = function(modulename)
@@ -56,6 +57,15 @@ function IsXB1()
 	return (PLATFORM == "XBONE")
 end
 
+function IsSteam()
+	return PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM"
+end
+
+function IsRail()
+	return PLATFORM == "WIN32_RAIL"
+end
+
+
 
 require("stacktrace")
 
@@ -67,17 +77,16 @@ require("debugprint")
 -- add our print loggers
 AddPrintLogger(function(...) WorldSim:LuaPrint(...) end)
 
+require("debugtools")
 require("json")
 require("vector3")
 require("tuning")
-require("languages/language")
+require("class")
+require("util")
 require("dlcsupport_worldgen")
+require("constants")
 require("strings")
 require("dlcsupport_strings")
-require("constants")
-require("class")
-require("debugtools")
-require("util")
 require("prefabs")
 require("profiler")
 require("dumper")

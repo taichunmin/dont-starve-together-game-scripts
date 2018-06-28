@@ -93,7 +93,7 @@ function ProfileFlairExplorerPanel:OnClickedItem(item_data, is_selected)
 end
 
 function ProfileFlairExplorerPanel:_SetProfileFlair(item_key)
-    self.puppet:SetRank(item_key, TheInventory:GetWXPLevel())
+    self.puppet:SetRank(item_key, wxputils.GetActiveLevel())
 end
 
 function ProfileFlairExplorerPanel:_BuildItemExplorer()

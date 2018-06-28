@@ -15,11 +15,13 @@ Translator = Class(function(self)
 	self.languages = {}
 	self.defaultlang = nil
 
-	--self.dbfile = io.open("debuglog.txt", "w")
-	self.dbfile = nil
-
+	self.use_longest_locs = false
 end)
 
+
+function Translator:UseLongestLocs(to)
+    self.use_longest_locs = to
+end
 
 -- Join multiline strings in a po file, return array of joined strings
 local function JoinPOFileMultilineStrings(fname)
@@ -64,8 +66,6 @@ end
 --
 function Translator:LoadPOFile(fname,lang)
 
-if self.dbfile then self.dbfile:write("Translator: Loading PO file: "..fname.."\n") end
-
 	local strings = {}
 	print("Translator:LoadPOFile - loading file: "..resolvefilepath(fname))
 	local file = io.open(resolvefilepath(fname))
@@ -83,14 +83,12 @@ if self.dbfile then self.dbfile:write("Translator: Loading PO file: "..fname.."\
 			local sidx, eidx, c1, c2 = string.find(line, "^msgctxt(%s*)\"(%S*)\"")
 			if c2 then
 				current_id = c2
-if self.dbfile then self.dbfile:write("Found new format id: "..tostring(c2).."\n") end
 			end
 		--Skip lines until find an id using old format (reference field)
 		elseif not newformat_flag and not current_id then
 			local sidx, eidx, c1, c2 = string.find(line, "^%#%:(%s*)(%S*)")
 			if c2 then
 				current_id = c2
-if self.dbfile then self.dbfile:write("Found old format id: "..tostring(c2).."\n") end
 			 end
 		--Gather up parts of translated text (since POedit breaks it up into 80 char strings)
 		elseif msgstr_flag then
@@ -100,7 +98,6 @@ if self.dbfile then self.dbfile:write("Found old format id: "..tostring(c2).."\n
 				--Store translated text if provided
 				if current_str ~= "" then
 					strings[current_id] = self:ConvertEscapeCharactersToRaw(current_str)
-if self.dbfile then self.dbfile:write("Found id: "..current_id.."\tFound str: "..current_str.."\n") end
 				end
 				msgstr_flag = false
 				current_str = ""
@@ -118,7 +115,6 @@ if self.dbfile then self.dbfile:write("Found id: "..current_id.."\tFound str: ".
 			--Found translated text so store it
 			elseif c2 then
 				strings[current_id] = self:ConvertEscapeCharactersToRaw(c2)
-if self.dbfile then self.dbfile:write("Found id: "..current_id.."\t\t\t"..c2.."\n") end
 				current_id = false
 			end
 		else
@@ -131,8 +127,6 @@ if self.dbfile then self.dbfile:write("Found id: "..current_id.."\t\t\t"..c2.."\
 				or string.find(line, "X-Generator: Poedit", 0, true) then --Assume that Poedit is generating the new format files with msgctxt
 				newformat_flag = true
 			end
-
-if self.dbfile then self.dbfile:write("Found new file format\n") end
 		end
 
 	end
@@ -141,9 +135,6 @@ if self.dbfile then self.dbfile:write("Found new file format\n") end
 
 	self.languages[lang] = strings
 	self.defaultlang = lang
-
-if self.dbfile then self.dbfile:write("Done!\n") end
-
 end
 
 
@@ -177,7 +168,6 @@ function Translator:GetTranslatedString(strid, lang)
 	lang = lang or self.defaultlang
 
 	if lang and self.languages[lang] then
-if self.dbfile then self.dbfile:write("Reqested id: "..strid.."\t\t\t"..tostring(self.languages[lang][strid]).."\n") end
 		if self.languages[lang][strid] then
 			return self:ConvertEscapeCharactersToRaw(self.languages[lang][strid])
 		else
@@ -189,6 +179,23 @@ if self.dbfile then self.dbfile:write("Reqested id: "..strid.."\t\t\t"..tostring
 	return nil
 end
 
+function Translator:GetLongestTranslatedString(strid)
+
+    local str = nil
+    for _, lang in pairs(self.languages) do
+        if lang[strid] then
+            local temp_str = self:ConvertEscapeCharactersToRaw(lang[strid])
+            if nil == str then
+                str = temp_str
+            elseif string.len(temp_str) > string.len(str) then
+                str = temp_str
+            end
+        end
+    end
+    
+    return str
+end
+
 --Recursive function to process table structure
 local function DoTranslateStringTable( base, tbl )
 	
@@ -197,7 +204,13 @@ local function DoTranslateStringTable( base, tbl )
 		if type(v) == "table" then
 			DoTranslateStringTable(path, v)
 		else
-			local str = LanguageTranslator:GetTranslatedString(path)
+			local str
+			if LanguageTranslator.use_longest_locs then
+			    str = LanguageTranslator:GetLongestTranslatedString(path)
+			else
+			    str = LanguageTranslator:GetTranslatedString(path)
+			end
+			
 			if str and str ~= "" then
 				tbl[k] = str
 			end
@@ -207,16 +220,9 @@ end
 
 --called by strings.lua
 function TranslateStringTable( tbl )
-
-if LanguageTranslator.dbfile then LanguageTranslator.dbfile:write("Translator: Translating string table....\n") end
-
 	local root = "STRINGS"
 	DoTranslateStringTable( root, tbl )
-
-if LanguageTranslator.dbfile then LanguageTranslator.dbfile:close() end
-
 end
 
 
 LanguageTranslator = Translator()
-

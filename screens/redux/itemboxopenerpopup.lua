@@ -209,6 +209,11 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
     elseif self.ui_state == "BUNDLE_CLOSING" and self.bundle:GetAnimState():AnimDone() then
         self.ui_state = "BUNDLE_REVIEW"
 
+        if self.resize_root then
+            self.bundle_root:SetPosition(0,90)
+            self.bundle_root:SetScale(0.9,0.9)
+        end
+
         -- update the background size
         local rows = math.ceil(#self.items/columns)
         self.frame:SetSize(columns * COLUMN_WIDTH + bg_frame_w_offset, rows * COLUMN_HEIGHT + bg_frame_h_offset)
@@ -287,12 +292,17 @@ function ItemBoxOpenerPopup:_OpenItemBox()
             columns = 2
         elseif #item_types == 3 or #item_types == 6 or #item_types == 9 then
             columns = 3
-        elseif #item_types == 8 then
+        elseif #item_types == 7 or #item_types == 8 then
             columns = 4
         elseif #item_types == 5 or #item_types == 10 then
             columns = 5
         elseif #item_types == 12 then
 			columns = 6
+        elseif #item_types == 19 then
+			columns = 7
+            self.resize_root = true
+        else
+            print("Warning: Found an unexpected number of items in a box.", #item_types)
         end
 
         self.opened_item_display:FillGrid(columns, COLUMN_WIDTH, COLUMN_HEIGHT, item_images)
@@ -389,6 +399,8 @@ function ItemBoxOpenerPopup:GetHelpText()
 
     if self.ui_state == "PENDING_OPEN" then
         table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.ITEM_SCREEN.OPEN_BUTTON)
+    elseif self.ui_state == "WAIT_ON_NEXT" then
+        table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.ITEM_SCREEN.OPEN_NEXT)
     end
 
     if self:CanExit() then

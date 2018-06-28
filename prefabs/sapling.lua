@@ -178,10 +178,13 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("lootdropper")
-    inst:AddComponent("workable")
-    inst.components.workable:SetWorkAction(ACTIONS.DIG)
-    inst.components.workable:SetOnFinishCallback(dig_up)
-    inst.components.workable:SetWorkLeft(1)
+
+    if not GetGameModeProperty("disable_transplanting") then
+        inst:AddComponent("workable")
+        inst.components.workable:SetWorkAction(ACTIONS.DIG)
+        inst.components.workable:SetOnFinishCallback(dig_up)
+        inst.components.workable:SetWorkLeft(1)
+    end
 
     MakeMediumBurnable(inst)
     MakeSmallPropagator(inst)
@@ -191,6 +194,10 @@ local function fn()
 
     inst.OnPreLoad = OnPreLoad
     inst.MakeDiseaseable = makediseaseable
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/sapling").master_postinit(inst)
+    end
 
     return inst
 end

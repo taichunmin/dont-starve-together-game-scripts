@@ -19,9 +19,10 @@ local start_inv =
         "lighter",
         "bernie_inactive",
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WILLOW,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WILLOW
+end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
@@ -58,6 +59,8 @@ local function common_postinit(inst)
         inst:AddTag("bernie_reviver")
 
         inst:AddComponent("pethealthbar")
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_shopper")
     end
 end
 
@@ -97,6 +100,8 @@ local function master_postinit(inst)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         event_server_data("lavaarena", "prefabs/willow").master_postinit(inst)
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/willow").master_postinit(inst)
     end
 end
 

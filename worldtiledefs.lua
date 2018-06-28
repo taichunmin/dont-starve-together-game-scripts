@@ -4,6 +4,13 @@ require "constants"
 
 local GROUND_PROPERTIES =
 {
+    { GROUND.QUAGMIRE_GATEWAY,      { name = "grass3",     noise_texture = "levels/textures/quagmire_gateway_noise.tex",           runsound="dontstarve/movement/run_woods",       walksound="dontstarve/movement/walk_woods",     snowsound="dontstarve/movement/run_snow",   mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+    { GROUND.QUAGMIRE_CITYSTONE,    { name = "cave",       noise_texture = "levels/textures/quagmire_citystone_noise.tex",         runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+    { GROUND.QUAGMIRE_PARKFIELD,    { name = "deciduous",  noise_texture = "levels/textures/quagmire_parkfield_noise.tex",         runsound="dontstarve/movement/run_carpet",      walksound="dontstarve/movement/walk_carpet",    snowsound="dontstarve/movement/run_snow",   mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+    { GROUND.QUAGMIRE_PARKSTONE,    { name = "cave",       noise_texture = "levels/textures/quagmire_parkstone_noise.tex",         runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+    { GROUND.QUAGMIRE_PEATFOREST,   { name = "grass2",     noise_texture = "levels/textures/quagmire_peatforest_noise.tex",        runsound="dontstarve/movement/run_marsh",       walksound="dontstarve/movement/walk_marsh",     snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+    { GROUND.QUAGMIRE_SOIL,         { name = "carpet",     noise_texture = "levels/textures/quagmire_soil_noise.tex",              runsound="dontstarve/movement/run_mud",         walksound="dontstarve/movement/walk_mud",       snowsound="dontstarve/movement/run_snow",   mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+
     { GROUND.ROAD,       { name = "cobblestone",noise_texture = "images/square.tex",                                runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
     { GROUND.MARSH,      { name = "marsh",      noise_texture = "levels/textures/Ground_noise_marsh.tex",           runsound="dontstarve/movement/run_marsh",       walksound="dontstarve/movement/walk_marsh",     snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
     { GROUND.ROCKY,      { name = "rocky",      noise_texture = "levels/textures/noise_rocky.tex",                  runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_ice",    mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
@@ -34,6 +41,7 @@ local GROUND_PROPERTIES =
 
     { GROUND.LAVAARENA_TRIM, { name = "lavaarena_trim_ms",       noise_texture = "levels/textures/lavaarena_trim_noise.tex",         runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_snow",   mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
     { GROUND.LAVAARENA_FLOOR,{ name = "lavaarena_floor_ms",		noise_texture = "levels/textures/lavaarena_floor_noise.tex",         runsound="dontstarve/movement/run_dirt",        walksound="dontstarve/movement/walk_dirt",      snowsound="dontstarve/movement/run_snow",   mudsound = "dontstarve/movement/run_mud", flashpoint_modifier = 0   } },
+
 }
 
 local WALL_PROPERTIES =

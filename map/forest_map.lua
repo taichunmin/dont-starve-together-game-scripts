@@ -55,6 +55,30 @@ local function pickspawngroup(groups)
     end
 end
 
+local function pickspawncountprefabforground(prefabs, ground_type)
+	local items = {}
+	for item, _ in pairs(prefabs) do
+		if terrain.filter[item] == nil then
+			table.insert(items, item)
+		else
+			local add = true
+	        for idx,gt in ipairs(terrain.filter[item]) do
+        		if gt == ground_type then
+					add = false
+					break
+				end
+			end
+			if add then 
+				table.insert(items, item)
+			end
+		end
+	end
+	if #items > 0 then
+		return items[math.random(#items)]
+	end
+	return nil
+end
+
 local MULTIPLY = {
 	["never"] = 0,
 	["rare"] = 0.5,
@@ -183,6 +207,7 @@ local function Generate(prefab, map_width, map_height, tasks, level, level_type)
     local SpawnFunctions = {
         pickspawnprefab = pickspawnprefab,
         pickspawngroup = pickspawngroup,
+		pickspawncountprefabforground = pickspawncountprefabforground,
     }
 
     assert(level.overrides ~= nil, "Level must have overrides specified.")
@@ -202,6 +227,7 @@ local function Generate(prefab, map_width, map_height, tasks, level, level_type)
         local start_loc = startlocations.GetStartLocation( current_gen_params.start_location )
         story_gen_params.start_setpeice = type(start_loc.start_setpeice) == "table" and start_loc.start_setpeice[math.random(#start_loc.start_setpeice)] or start_loc.start_setpeice
         story_gen_params.start_node = type(start_loc.start_node) == "table" and start_loc.start_node[math.random(#start_loc.start_node)] or start_loc.start_node
+        story_gen_params.existing_start_node = type(start_loc.existing_start_node) == "table" and start_loc.existing_start_node[math.random(#start_loc.existing_start_node)] or start_loc.existing_start_node
     end
 
     if  current_gen_params.islands ~= nil then
@@ -440,7 +466,8 @@ local function Generate(prefab, map_width, map_height, tasks, level, level_type)
    	if topology_save.GlobalTags["Maze"] ~= nil and GetTableSize(topology_save.GlobalTags["Maze"]) >0 then
 
    		for task, nodes in pairs(topology_save.GlobalTags["Maze"]) do
-	 		local xs, ys, types = WorldSim:GetPointsForMetaMaze(nodes)
+			local maze_tile_size = topology_save.root:GetNodeById(task).maze_tile_size or 8
+	 		local xs, ys, types = WorldSim:GetPointsForMetaMaze(maze_tile_size, nodes)
 			
 			if xs ~= nil and #xs >0 then
 				local choices = topology_save.root:GetNodeById(task).maze_tiles
@@ -610,6 +637,7 @@ local function Generate(prefab, map_width, map_height, tasks, level, level_type)
     save.playerinfo = {}
 	if (save.ents.spawnpoint_multiplayer == nil or #save.ents.spawnpoint_multiplayer == 0)
         and (save.ents.multiplayer_portal == nil or #save.ents.multiplayer_portal == 0)
+        and (save.ents.quagmire_portal == nil or #save.ents.quagmire_portal == 0)
         and (save.ents.lavaarena_portal == nil or #save.ents.lavaarena_portal == 0) then
     	print("PANIC: No start location!")
     	if SKIP_GEN_CHECKS == false then

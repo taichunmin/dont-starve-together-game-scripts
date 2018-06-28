@@ -118,7 +118,7 @@ function Workable:WorkedBy(worker, numworks)
     self.inst:PushEvent("worked", { worker = worker, workleft = self.workleft })
 
     if self.onwork ~= nil then
-        self.onwork(self.inst, worker, self.workleft)
+        self.onwork(self.inst, worker, self.workleft, numworks)
     end
 
     if self.workleft <= 0 then

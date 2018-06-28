@@ -292,8 +292,11 @@ function IsUserCommerceBuyAllowedOnItem(item_type)
 	return num_owned == 0 and TheItems:GetBarterBuyPrice(item_type) ~= 0	
 end
 
-function GetIsPermOwned(item_type)
-	return TheInventory:GetIsPermOwned(item_type)
+function GetIsDLCOwned(item_type)
+    if GetRarityForItem(item_type) == "Event" or GetRarityForItem(item_type) == "Reward" then
+        return false
+    end
+	return TheInventory:GetIsDLCOwned(item_type)
 end
 	
 function GetTypeForItem(item)

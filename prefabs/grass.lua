@@ -298,11 +298,12 @@ local function grass(name, stage)
         inst:AddComponent("lootdropper")
         inst:AddComponent("inspectable")
 
-        inst:AddComponent("workable")
-        inst.components.workable:SetWorkAction(ACTIONS.DIG)
-        inst.components.workable:SetOnFinishCallback(dig_up)
-        inst.components.workable:SetWorkLeft(1)
-
+		if not GetGameModeProperty("disable_transplanting") then
+			inst:AddComponent("workable")
+			inst.components.workable:SetWorkAction(ACTIONS.DIG)
+			inst.components.workable:SetOnFinishCallback(dig_up)
+			inst.components.workable:SetWorkLeft(1)
+		end
         ---------------------
 
         MakeMediumBurnable(inst)

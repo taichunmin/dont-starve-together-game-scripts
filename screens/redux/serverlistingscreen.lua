@@ -342,7 +342,7 @@ local function tchelper(first, rest)
   return first:upper()..rest:lower()
 end
 
-function ServerListingScreen:Join(warnedOffline)
+function ServerListingScreen:Join(warnedOffline, warnedLanguage)
     if self.selected_server ~= nil then
 		local beta = GetBetaInfoId(self.selected_server.tags)
         if BRANCH == "release" and beta > 0 then
@@ -373,8 +373,21 @@ function ServerListingScreen:Join(warnedOffline)
                                 })
             self.last_focus = TheFrontEnd:GetFocusWidget()
             TheFrontEnd:PushScreen(confirm_offline_popup)
+        elseif IsConsole() and not warnedLanguage and self.view_online and self.event_id == "" and self.selected_server.tags:split(",")[1] ~= STRINGS.PRETRANSLATED.LANGUAGES[GetLanguage()]:lower() then
+            local confirm_language_popup = PopupDialogScreen(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LANGUAGE_WARNING_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LANGUAGE_WARNING_BODY,
+                                {
+                                    {text=STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = function()
+                                        -- If player is okay with offline mode, go ahead
+                                        TheFrontEnd:PopScreen()
+                                        self:Join(true, true)
+                                    end},
+                                    {text=STRINGS.UI.SERVERLISTINGSCREEN.CANCEL, cb = function()
+                                        TheFrontEnd:PopScreen()
+                                    end}
+                                })
+            self.last_focus = TheFrontEnd:GetFocusWidget()
+            TheFrontEnd:PushScreen(confirm_language_popup)
         else
-
             local filters = {}
             for i, v in ipairs(self.filters) do
                 if v.spinner ~= nil then 

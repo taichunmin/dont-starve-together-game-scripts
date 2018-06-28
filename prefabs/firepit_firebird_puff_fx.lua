@@ -2,6 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/campfire_fire.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/firepit_firebird.zip"),
+    Asset("PKGREF", "anim/dynamic/firepit_firebird.dyn"),
 }
 
 local function PlayPuffAnim(proxy)

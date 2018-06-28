@@ -5,6 +5,7 @@ local SKIN_GIFT_TYPES =
 	cane_ancient = "ANRARG",
 	emote_swoon = "CUPID",
 	firepit_hole = "EARLY_ACCESS",
+	playerportrait_bg_foods = "GORGE",
 	reviver_cupid = "CUPID",
 	reviver_cupid_2 = "CUPID",
 	torch_shadow = "ARG",
@@ -36,6 +37,13 @@ local SKIN_GIFT_POPUPDATA =
 		image = {"thankyou_gift.tex"},
 		title = STRINGS.THANKS_POPUP.CUPID,
 		titleoffset = {0, -30, 0},
+	},
+	GORGE =
+	{
+		atlas = "images/thankyou_item_event2.xml",
+		image = {"thankyou_gorge.tex"},
+		title = STRINGS.THANKS_POPUP.GORGE,
+		titleoffset = {0, -20, 0},
 	},
 	LUNAR =
 	{

@@ -173,9 +173,10 @@ function Inventory:GetNumSlots()
 end
 
 function Inventory:CanTakeItemInSlot(item, slot)
-    return item ~= nil and
-        item.replica.inventoryitem ~= nil and
-        (self:IgnoresCanGoInContainer() or item.replica.inventoryitem:CanGoInContainer())
+    return item ~= nil
+        and item.replica.inventoryitem ~= nil
+        and (self:IgnoresCanGoInContainer() or item.replica.inventoryitem:CanGoInContainer())
+        and not (GetGameModeProperty("non_item_equips") and item.replica.equippable ~= nil)
 end
 
 function Inventory:AcceptsStacks()

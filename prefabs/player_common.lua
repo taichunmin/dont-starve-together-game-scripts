@@ -440,14 +440,20 @@ local function ActivatePlayer(inst)
     TheWorld.minimap.MiniMap:DrawForgottenFogOfWar(true)
     if inst.player_classified ~= nil then
         inst.player_classified.MapExplorer:ActivateLocalMiniMap()
-        
-        if not TheNet:GetIsHosting(true) and not TheNet:GetServerFriendsOnly() and not TheNet:GetServerLANOnly() then
-			AwardPlayerAchievement("join_game", ThePlayer)
+
+        if not (TheNet:GetIsHosting() or TheNet:GetServerFriendsOnly() or TheNet:GetServerLANOnly()) then
+            AwardPlayerAchievement("join_game", ThePlayer)
         end
     end
 
     inst:PushEvent("playeractivated")
     TheWorld:PushEvent("playeractivated", inst)
+
+    if inst == ThePlayer and not TheWorld.ismastersim then
+        -- Clients save locally as soon as they spawn in, so it is
+        -- easier to find the server to rejoin in case of a crash.
+        SerializeUserSession(inst)
+    end
 end
 
 local function DeactivatePlayer(inst)
@@ -457,14 +463,12 @@ local function DeactivatePlayer(inst)
         return
     end
 
-    if inst == ThePlayer then
+    if inst == ThePlayer and not TheWorld.ismastersim then
         -- For now, clients save their local minimap reveal cache
         -- and we need to trigger this here as well as on network
         -- disconnect.  On migration, we will hit this code first
         -- whereas normally we will hit the one in disconnection.
-        if not TheWorld.ismastersim then
-            SerializeUserSession(inst)
-        end
+        SerializeUserSession(inst)
     end
 
     inst:PushEvent("playerdeactivated")
@@ -860,7 +864,7 @@ local function OnDespawn(inst)
     inst.components.debuffable:RemoveOnDespawn()
     inst.components.rider:ActualDismount()
     inst.components.bundler:StopBundling()
-    if TheNet:GetServerGameMode() == "lavaarena" then
+    if GetGameModeProperty("drop_everything_on_despawn") then
         inst.components.inventory:DropEverything()
     else
         inst.components.inventory:DropEverythingWithTag("irreplaceable")
@@ -981,11 +985,11 @@ local function SetCameraZoomed(inst, iszoomed)
     end
 end
 
-local function SnapCamera(inst)
+local function SnapCamera(inst, resetrot)
     if TheWorld.ismastersim then
         --Forces a netvar to be dirty regardless of value
-        inst.player_classified.camerasnap:set_local(true)
-        inst.player_classified.camerasnap:set(true)
+        inst.player_classified.camerasnap:set_local(false)
+        inst.player_classified.camerasnap:set(resetrot == true)
     end
 end
 
@@ -1099,6 +1103,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         Asset("ANIM", "anim/player_actions_fishing.zip"),
         Asset("ANIM", "anim/player_actions_boomerang.zip"),
         Asset("ANIM", "anim/player_actions_whip.zip"),
+        Asset("ANIM", "anim/player_actions_till.zip"),
         Asset("ANIM", "anim/player_bush_hat.zip"),
         Asset("ANIM", "anim/player_attacks.zip"),
         Asset("ANIM", "anim/player_idles.zip"),
@@ -1301,7 +1306,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.AnimState:AddOverrideBuild("player_attack_leap")
         inst.AnimState:AddOverrideBuild("player_superjump")
         inst.AnimState:AddOverrideBuild("player_multithrust")
-		inst.AnimState:AddOverrideBuild("player_emote_extra")
+        inst.AnimState:AddOverrideBuild("player_emote_extra")
 
         inst.DynamicShadow:SetSize(1.3, .6)
 
@@ -1461,8 +1466,11 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.components.combat:SetAttackPeriod(TUNING.WILSON_ATTACK_PERIOD)
         inst.components.combat:SetRange(2)
 
-        if TheNet:GetServerGameMode() == "lavaarena" then
+        local gamemode = TheNet:GetServerGameMode()
+        if gamemode == "lavaarena" then
             event_server_data("lavaarena", "prefabs/player_common").master_postinit(inst)
+        elseif gamemode == "quagmire" then
+            event_server_data("quagmire", "prefabs/player_common").master_postinit(inst)
         end
 
         MakeMediumBurnableCharacter(inst, "torso")
@@ -1489,6 +1497,9 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
 
         inst:AddComponent("temperature")
         inst.components.temperature.usespawnlight = true
+        if GetGameModeProperty("no_temperature") then
+            inst.components.temperature:SetTemp(TUNING.STARTING_TEMP)
+        end
 
         inst:AddComponent("moisture")
         inst:AddComponent("sheltered")
@@ -1531,7 +1542,9 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
 
         -------
 
-        inst:AddComponent("eater")
+        if not GetGameModeProperty("no_eating") then
+            inst:AddComponent("eater")
+        end
         inst:AddComponent("leader")
         inst:AddComponent("age")
         inst:AddComponent("rider")

@@ -615,7 +615,8 @@ function ItemExplorer:_UpdateClickedWidget(item_widget)
             if prev_data and prev_data ~= item_widget.data then
                 self:_SetItemActiveFlag(prev_data, false)
                 if prev_data.widget then -- could have scrolled off screen?
-					prev_data.widget:UpdateSelectionState()
+                    print("update prev widget", prev_data.widget)
+                    prev_data.widget:UpdateSelectionState()
 				end
             end
         end
@@ -762,7 +763,7 @@ function ItemExplorer:_CreateScrollingGridItem(context, scroll_index, width, hei
 
     w.UpdateSelectionState = function(w_self)
         local item_data = w_self.data
-        w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key), item_data.is_perm_owned)
+        w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key), item_data.is_dlc_owned)
     end
 
     return w
@@ -803,7 +804,7 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
                 is_owned = is_owned,
                 owned_count = TheInventory:GetOwnedItemCount(item_key),
                 item_blob = item_blob,
-                is_perm_owned = GetIsPermOwned(item_key),
+                is_dlc_owned = GetIsDLCOwned(item_key),
             }
             table.insert(contained_items, data)
         end

@@ -167,12 +167,13 @@ function Fueled:SetTakeFuelFn(fn)
     self.ontakefuelfn = fn
 end
 
-function Fueled:TakeFuelItem(item)
+function Fueled:TakeFuelItem(item, doer)
     if self:CanAcceptFuelItem(item) then
         local oldsection = self:GetCurrentSection()
 
         local wetmult = item:GetIsWet() and TUNING.WET_FUEL_PENALTY or 1
-        self:DoDelta(item.components.fuel.fuelvalue * self.bonusmult * wetmult)
+        local masterymult = doer ~= nil and doer.components.fuelmaster ~= nil and doer.components.fuelmaster.bonusmult or 1
+        self:DoDelta(item.components.fuel.fuelvalue * self.bonusmult * wetmult * masterymult, doer)
 
         local fuelvalue = 0
         if item.components.fuel ~= nil then
@@ -255,7 +256,7 @@ function Fueled:InitializeFuelLevel(fuel)
     end
 end
 
-function Fueled:DoDelta(amount)
+function Fueled:DoDelta(amount, doer)
     local oldsection = self:GetCurrentSection()
 
     self.currentfuel = math.max(0, math.min(self.maxfuel, self.currentfuel + amount) )
@@ -264,7 +265,7 @@ function Fueled:DoDelta(amount)
 
     if oldsection ~= newsection then
         if self.sectionfn then
-            self.sectionfn(newsection, oldsection, self.inst)
+            self.sectionfn(newsection, oldsection, self.inst, doer)
         end
         if self.currentfuel <= 0 and self.depleted then
             self.depleted(self.inst)

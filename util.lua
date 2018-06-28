@@ -554,6 +554,7 @@ end
 
 function softresolvefilepath(filepath, force_path_search)
     force_path_search = force_path_search or false
+
 	if IsConsole() and not force_path_search then
 		return filepath -- it's already absolute, so just send it back
 	end

@@ -23,11 +23,13 @@ local ServerCreationScreen = require "screens/redux/servercreationscreen"
 
 local TEMPLATES = require "widgets/redux/templates"
 
+local FriendsManager = require "widgets/friendsmanager"
 local OnlineStatus = require "widgets/onlinestatus"
 local ThankYouPopup = require "screens/thankyoupopup"
 local SkinGifts = require("skin_gifts")
 local Stats = require("stats")
 
+local CountdownBeta = require "widgets/countdownbeta"
 
 
 
@@ -66,7 +68,11 @@ function MultiplayerMainScreen:DoInit()
 
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
 
-    if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
+
+
+    if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
+        self.bg_anim = self.fixed_root:AddChild(TEMPLATES.QuagmireAnim())
+    elseif IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
         self.bg = self.fixed_root:AddChild(TEMPLATES.BoarriorBackground())
         self.bg_anim = self.fixed_root:AddChild(TEMPLATES.BoarriorAnim())
 	elseif IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
@@ -111,7 +117,7 @@ function MultiplayerMainScreen:DoInit()
     
     self.motd = self.fixed_root:AddChild(Widget("motd"))
     if IsAnyFestivalEventActive() then
-        self.motd:SetPosition(-240, 230)
+        SHOW_MOTD = false
         
         if not TheFrontEnd:GetIsOfflineMode() then
 			self.userprogress = self.fixed_root:AddChild(TEMPLATES.UserProgress(function()
@@ -195,24 +201,6 @@ function MultiplayerMainScreen:DoInit()
     self.title:SetScale(.32)
     self.title:SetPosition( -RESOLUTION_X/2 + 160, 220)
     self.title:SetTint(unpack(FRONTEND_TITLE_COLOUR))
-
-	local updatename_x = -RESOLUTION_X * .5 + 170
-	local updatename_y = -RESOLUTION_Y * .5 + 55
-
-    self.updatename = self.fixed_root:AddChild(Text(NEWFONT, 21))
-    self.updatename:SetPosition( updatename_x, updatename_y )
-    self.updatename:SetColour(1,1,1,1)
-    self.updatename:SetHAlign(ANCHOR_LEFT)
-    self.updatename:SetRegionSize(200,45)
-    local suffix = ""
-    if BRANCH == "dev" then
-		suffix = " (internal v"..APP_VERSION..")"
-    elseif BRANCH == "staging" then
-		suffix = " (preview v"..APP_VERSION..")"
-    else
-        suffix = " (v"..APP_VERSION..")"
-    end
-    self.updatename:SetString(STRINGS.UI.MAINSCREEN.DST_UPDATENAME .. suffix)
     
     self:MakeMainMenu()
 	self:MakeSubMenu()
@@ -225,23 +213,34 @@ function MultiplayerMainScreen:DoInit()
 	self.filter_settings = nil
 
     --focus moving
-    self.motd:SetFocusChangeDir(MOVE_LEFT, self.menu, -1)
-    self.motd:SetFocusChangeDir(MOVE_DOWN, self.submenu)
-    self.motd:SetFocusChangeDir(MOVE_RIGHT, self.submenu)
+    self.motd:SetFocusChangeDir(MOVE_LEFT, self.menu)
+    self.motd:SetFocusChangeDir(MOVE_DOWN, self.submenu.items[#self.submenu.items] )
     if SHOW_MOTD then
         self.menu:SetFocusChangeDir(MOVE_RIGHT, self.motd)
-        self.submenu:SetFocusChangeDir(MOVE_LEFT, self.motd)
-        self.submenu:SetFocusChangeDir(MOVE_UP, self.motd)
-    else
-        self.menu:SetFocusChangeDir(MOVE_RIGHT, self.submenu)
-        self.submenu:SetFocusChangeDir(MOVE_LEFT, self.menu)
-        self.submenu:SetFocusChangeDir(MOVE_UP, self.menu)
+        self.submenu:SetFocusChangeDir(MOVE_RIGHT, self.motd)
     end
-    if self.debug_menu then 
-        self.motd:SetFocusChangeDir(MOVE_RIGHT, self.debug_menu, -1)
-        self.debug_menu:SetFocusChangeDir(MOVE_LEFT, self.motd)
-        self.debug_menu:SetFocusChangeDir(MOVE_RIGHT, self.submenu)
+    self.submenu:SetFocusChangeDir(MOVE_UP, self.menu.items[1])
+    self.menu:SetFocusChangeDir(MOVE_DOWN, self.submenu)
+
+
+    if self.debug_menu then
+        self.menu:SetFocusChangeDir(MOVE_UP, self.debug_menu, -1)
+        self.menu:SetFocusChangeDir(MOVE_RIGHT, self.debug_menu, -1)
+        self.motd:SetFocusChangeDir(MOVE_LEFT, self.debug_menu, -1)
+        self.debug_menu:SetFocusChangeDir(MOVE_LEFT, self.menu)
+        self.debug_menu:SetFocusChangeDir(MOVE_RIGHT, self.motd)
     end
+
+	--[[if IsNotConsole() then
+		self.beta_countdown = self.fixed_root:AddChild(CountdownBeta(self, "quagmire"))
+		self.beta_countdown:SetScale(.8)
+		self.beta_countdown:SetPosition(500, -100)
+
+		self.beta_countdown:SetFocusChangeDir(MOVE_DOWN, self.submenu)
+		self.beta_countdown:SetFocusChangeDir(MOVE_UP, self.motd.button)
+		self.submenu:SetFocusChangeDir(MOVE_UP, self.beta_countdown)
+		self.motd.button:SetFocusChangeDir(MOVE_DOWN, self.beta_countdown)
+	end]]
 
 
     self.menu:SetFocus(#self.menu.items)
@@ -313,7 +312,9 @@ end
 
 --------------------------------------------------------------------------------
 function MultiplayerMainScreen:_GoToFestfivalEventScreen(fadeout_cb)
-	self:StopMusic()
+    if GetFestivalEventInfo().FEMUSIC ~= nil then
+        self:StopMusic() --only stop the main menu music if we have something for the next screeen
+    end
 	
 	self.last_focus_widget = TheFrontEnd:GetFocusWidget()
     self.menu:Disable()
@@ -331,7 +332,7 @@ end
 
 function MultiplayerMainScreen:OnFestivalEventButton()
     if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
-        TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY, 
+        TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY[WORLD_FESTIVAL_EVENT], 
             {
                 {text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
                         SimReset()
@@ -340,7 +341,8 @@ function MultiplayerMainScreen:OnFestivalEventButton()
             }))
     else
 		if AreAnyModsEnabled() and not KnownModIndex:GetIsSpecialEventModWarningDisabled() then
-			TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.MODS_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.MODS_POPUP_BODY, 
+			local popup_body = subfmt(STRINGS.UI.FESTIVALEVENTSCREEN.MODS_POPUP_BODY, {event=STRINGS.UI.GAMEMODES[string.upper(GetFestivalEventInfo().GAME_MODE)]})
+			TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.MODS_POPUP_TITLE, popup_body, 
 				{
 					{text=STRINGS.UI.FESTIVALEVENTSCREEN.MODS_POPUP_DISABLE_MODS, cb = function()
 							self:Disable()
@@ -450,7 +452,7 @@ end
 
 
 function MultiplayerMainScreen:Settings()
-    self:_FadeToScreen(OptionsScreen, {})
+    self:_FadeToScreen(OptionsScreen, {self})
 end
 
 function MultiplayerMainScreen:OnModsButton()
@@ -532,23 +534,14 @@ end
 function MultiplayerMainScreen:MakeMainMenu()
     -- There's no Back on main menu, so menu and tooltip positions are shifted.
     self.menu_root = self.fixed_root:AddChild(Widget("menu_root"))
-    self.menu_root:SetPosition(0,-50)
+    self.menu_root:SetPosition(0,-35)
 
     self.tooltip = self.menu_root:AddChild(TEMPLATES.ScreenTooltip())
+    self.tooltip:SetPosition( -(RESOLUTION_X*.5)+220, -(RESOLUTION_Y*.5)+157 )
+    self.tooltip:SetRegionSize(300,100)
 
     local function MakeMainMenuButton(text, onclick, tooltip_text, tooltip_widget)
         local btn = TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
-
-        -- Inject our updatename_root handlers to move the game's version number in place.
-        local old_ongainfocus = btn.ongainfocus
-        btn.ongainfocus = function()
-            old_ongainfocus()
-        end
-        local old_onlosefocus = btn.onlosefocus
-        btn.onlosefocus = function()
-            old_onlosefocus()
-        end
-
         return btn
     end
 	
@@ -609,16 +602,6 @@ function MultiplayerMainScreen:MakeSubMenu()
         btn.bg = btn:AddChild(Image("images/ui.xml", "blank.tex"))
         local w,h = btn.text:GetRegionSize()
         btn.bg:ScaleToSize(w+15, h+15)
-        local gainfocusfn = btn.OnGainFocus
-        local losefocusfn = btn.OnLoseFocus
-        btn.OnGainFocus = function()
-            gainfocusfn(btn)
-            btn:SetTextSize(43)
-        end
-        btn.OnLoseFocus = function()
-            losefocusfn(btn)
-            btn:SetTextSize(40)
-        end
         btn:SetOnClick(onclick)
         btn:SetScale(.75)
 
@@ -660,11 +643,7 @@ function MultiplayerMainScreen:MakeSubMenu()
 	end
 	
     self.submenu = self.fixed_root:AddChild(Menu(submenuitems, 75, true))
-    if TheInput:ControllerAttached() then
-        self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+80, 0)
-    else
-        self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+77, 0)    
-    end
+    self.submenu:SetPosition( -RESOLUTION_X*.5 + 90, -(RESOLUTION_Y*.5)+85, 0)
     self.submenu:SetScale(.8)
 end
 
@@ -681,6 +660,11 @@ function MultiplayerMainScreen:OnBecomeActive()
     if not self.shown then
         self:Show()
     end
+
+    local friendsmanager = self:AddChild(FriendsManager())
+    friendsmanager:SetHAnchor(ANCHOR_RIGHT)
+    friendsmanager:SetVAnchor(ANCHOR_BOTTOM)
+    friendsmanager:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
 	if self.last_focus_widget then
 		self.menu:RestoreFocusTo(self.last_focus_widget)
@@ -712,7 +696,7 @@ end
 function MultiplayerMainScreen:FinishedFadeIn()
 	
     if HasNewSkinDLCEntitlements() then
-        if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
+        if IsSteam() then
             local popup_screen = PopupDialogScreen( STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_BODY,
                     {
                         {text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function() TheFrontEnd:PopScreen() MakeSkinDLCPopup() end },
@@ -735,34 +719,28 @@ function MultiplayerMainScreen:FinishedFadeIn()
 			local thankyou_popup = ThankYouPopup(items)
 			TheFrontEnd:PushScreen(thankyou_popup)
 		else
-			--Make sure we only do one mainscreen popup at a time
-			--Do language mods assistance popup
-			local interface_lang = TheNet:GetLanguageCode()
-			if interface_lang ~= "english" then
-				if Profile:GetValue("language_mod_asked_"..interface_lang) ~= true then
-					TheSim:QueryServer( "https://s3.amazonaws.com/ds-mod-language/dst_mod_languages.json",
-					function( result, isSuccessful, resultCode )
- 						if isSuccessful and string.len(result) > 1 and resultCode == 200 then
- 							local status, language_mods = pcall( function() return json.decode(result) end )
-							local lang_popup = language_mods[interface_lang]
-							if status and lang_popup ~= nil then
-								if lang_popup.collection ~= "" then
-									local popup_screen = PopupDialogScreen( lang_popup.title, lang_popup.body,
-											{
-												{text=lang_popup.yes, cb = function() VisitURL("http://steamcommunity.com/workshop/filedetails/?id="..lang_popup.collection) TheFrontEnd:PopScreen() self:OnModsButton() end },
-												{text=lang_popup.no, cb = function() TheFrontEnd:PopScreen() end}
-											}
-										)
-
-									TheFrontEnd:PushScreen( popup_screen )
-									Profile:SetValue("language_mod_asked_"..interface_lang, true)
-									Profile:Save()
-								end
-							end
-						end
-					end, "GET" )
-				end
-			end
+            if IsConsole() then
+			    --Make sure we only do one mainscreen popup at a time
+			    --Do language assistance popup
+			    local interface_lang = TheNet:GetLanguageCode()
+			    if interface_lang ~= "english" then
+                    if Profile:GetValue("language_asked_"..interface_lang) ~= true then
+                        local lang_id = LANGUAGE_STEAMCODE_TO_ID[interface_lang]
+                        local locale = GetLocale(lang_id)
+                        if locale ~= nil then
+                            local popup_screen = PopupDialogScreen( STRINGS.PRETRANSLATED.LANGUAGES_TITLE[locale.id], STRINGS.PRETRANSLATED.LANGUAGES_BODY[locale.id],
+						            {
+							            { text = STRINGS.PRETRANSLATED.LANGUAGES_YES[locale.id], cb = function() Profile:SetLanguageID(lang_id, function() SimReset() end ) end },
+							            { text = STRINGS.PRETRANSLATED.LANGUAGES_NO[locale.id], cb = function() TheFrontEnd:PopScreen() end}
+						            }
+					            )
+				            TheFrontEnd:PushScreen( popup_screen )
+				            Profile:SetValue("language_asked_"..interface_lang, true)
+				            Profile:Save()
+                        end
+                    end
+			    end
+            end
 		end
 	end
 end

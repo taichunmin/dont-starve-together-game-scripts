@@ -4,7 +4,7 @@ birds.lua
 Different birds are just reskins of crow without any special powers at the moment.
 To make a new bird add it at the bottom of the file as a 'makebird(name)' call
 
-This assumes the bird already has a build, inventory icon, sounds and a feather_name prefab exists
+This assumes the bird already has a build, inventory icon, sounds and a feather_name prefab exists, unless no_feather is set
 
 ]]--
 
@@ -174,7 +174,7 @@ end
 
 --------------------------------------------------------------------------
 
-local function makebird(name, soundname)
+local function makebird(name, soundname, no_feather)
     local assets =
     {
         Asset("ANIM", "anim/crow.zip"),
@@ -182,18 +182,25 @@ local function makebird(name, soundname)
         Asset("SOUND", "sound/birds.fsb"),
     }
 
-    local prefabs =
+    local prefabs = name == "quagmire_pigeon" and
+    {
+        "quagmire_smallmeat",
+        "quagmire_cookedsmallmeat",
+    } or
     {
         "seeds",
         "smallmeat",
         "cookedsmallmeat",
-        "feather_"..name,
 
         --mercy items
         "flint",
         "twigs",
         "cutgrass",
     }
+
+	if not no_feather then
+        table.insert(prefabs, "feather_"..name)
+	end
 
     if name == "canary" then
         table.insert(prefabs, "canary_poisoned")
@@ -257,8 +264,10 @@ local function makebird(name, soundname)
         inst:SetStateGraph("SGbird")
 
         inst:AddComponent("lootdropper")
-        inst.components.lootdropper:AddRandomLoot("feather_"..name, name == "canary" and .1 or 1)
-        inst.components.lootdropper:AddRandomLoot("smallmeat", 1)
+		if not no_feather then
+			inst.components.lootdropper:AddRandomLoot("feather_"..name, name == "canary" and .1 or 1)
+		end
+        inst.components.lootdropper:AddRandomLoot(name == "quagmire_pigeon" and "quagmire_smallmeat" or "smallmeat", 1)
         inst.components.lootdropper.numrandomloot = 1
 
         inst:AddComponent("occupier")
@@ -275,29 +284,33 @@ local function makebird(name, soundname)
         inst.components.inventoryitem.canbepickedupalive = true
 
         inst:AddComponent("cookable")
-        inst.components.cookable.product = "cookedsmallmeat"
+        inst.components.cookable.product = name == "quagmire_pigeon" and "quagmire_cookedsmallmeat" or "cookedsmallmeat"
 
         inst:AddComponent("health")
         inst.components.health:SetMaxHealth(TUNING.BIRD_HEALTH)
         inst.components.health.murdersound = "dontstarve/wilson/hit_animal"
 
-        inst:AddComponent("combat")
-        inst.components.combat.hiteffectsymbol = "crow_body"
-
         inst:AddComponent("inspectable")
 
-        inst:SetBrain(brain)
+        if TheNet:GetServerGameMode() ~= "quagmire" then
+            inst:AddComponent("combat")
+            inst.components.combat.hiteffectsymbol = "crow_body"
 
-        MakeSmallBurnableCharacter(inst, "crow_body")
-        MakeTinyFreezableCharacter(inst, "crow_body")
+            MakeSmallBurnableCharacter(inst, "crow_body")
+            MakeTinyFreezableCharacter(inst, "crow_body")
+        end
+
+        inst:SetBrain(brain)
 
         inst:AddComponent("hauntable")
         inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
 
-        inst:AddComponent("periodicspawner")
-        inst.components.periodicspawner:SetPrefab(SpawnPrefabChooser)
-        inst.components.periodicspawner:SetDensityInRange(20, 2)
-        inst.components.periodicspawner:SetMinimumSpacing(8)
+        if not GetGameModeProperty("disable_bird_mercy_items") then
+            inst:AddComponent("periodicspawner")
+            inst.components.periodicspawner:SetPrefab(SpawnPrefabChooser)
+            inst.components.periodicspawner:SetDensityInRange(20, 2)
+            inst.components.periodicspawner:SetMinimumSpacing(8)
+        end
 
         inst:ListenForEvent("ontrapped", OnTrapped)
         inst:ListenForEvent("attacked", OnAttacked)
@@ -339,4 +352,5 @@ end
 return makebird("crow", "crow"),
     makebird("robin", "robin"),
     makebird("robin_winter", "junco"),
-    makebird("canary", "canary")
+    makebird("canary", "canary"),
+    makebird("quagmire_pigeon", "quagmire_pigeon", true)

@@ -129,6 +129,7 @@ function Inventory:CanTakeItemInSlot(item, slot)
         and item.components.inventoryitem ~= nil
         and (item.components.inventoryitem.cangoincontainer or self.ignorescangoincontainer)
         and (slot == nil or (slot >= 1 and slot <= self.maxslots))
+        and not (GetGameModeProperty("non_item_equips") and item.components.equippable ~= nil)
 end
 
 function Inventory:AcceptsStacks()
@@ -1471,7 +1472,7 @@ function Inventory:ControllerUseItemOnSelfFromInvTile(item, actioncode, mod_name
         local act = nil
         if not (item.components.equippable ~= nil and item.components.equippable:IsEquipped()) then
             act = self.inst.components.playercontroller:GetItemSelfAction(item)
-        elseif self.maxslots > 0 and not item:HasTag("heavy") then
+        elseif self.maxslots > 0 and not (item:HasTag("heavy") or GetGameModeProperty("non_item_equips")) then
             act = BufferedAction(self.inst, nil, ACTIONS.UNEQUIP, item)
         end
 

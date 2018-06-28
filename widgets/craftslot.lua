@@ -1,13 +1,8 @@
-local TileBG = require "widgets/tilebg"
-local InventorySlot = require "widgets/invslot"
 local Image = require "widgets/image"
-local ImageButton = require "widgets/imagebutton"
 local Widget = require "widgets/widget"
-local TabGroup = require "widgets/tabgroup"
-local UIAnim = require "widgets/uianim"
-local Text = require "widgets/text"
 local RecipeTile = require "widgets/recipetile"
 local RecipePopup = require "widgets/recipepopup"
+local QuagmireRecipePopup = require "widgets/quagmire_recipepopup"
 
 require "widgets/widgetutil"
 
@@ -21,13 +16,19 @@ local CraftSlot = Class(Widget, function(self, atlas, bgim, owner)
     self.tile = self:AddChild(RecipeTile(nil))
     self.fgimage = self:AddChild(Image("images/hud.xml", "craft_slot_locked.tex"))
     self.fgimage:Hide()
-    self.lightbulbimage = self:AddChild(Image("images/hud.xml", "craft_slot_prototype.tex"))
+    self.lightbulbimage = self:AddChild(Image(self.atlas, "craft_slot_prototype.tex"))
     self.lightbulbimage:Hide()
+
+    self.isquagmireshop = TheNet:GetServerGameMode() == "quagmire" or nil
 end)
+
+function CraftSlot:GetSize()
+	return self.bgimage:GetSize()
+end
 
 function CraftSlot:EnablePopup()
     if not self.recipepopup then
-        self.recipepopup = self:AddChild(RecipePopup())
+        self.recipepopup = self:AddChild(self.isquagmireshop and QuagmireRecipePopup() or RecipePopup())
         self.recipepopup:SetPosition(0,-20,0)
         self.recipepopup:Hide()
         local s = 1.25
@@ -88,9 +89,6 @@ end
 function CraftSlot:LockOpen()
 	self:Open()
 	self.locked = true
-    if self.recipepopup then
-	   self.recipepopup:SetPosition(-300,-300,0)
-    end
 end
 
 function CraftSlot:Open()
@@ -146,20 +144,29 @@ function CraftSlot:Refresh(recipename)
 
         if self.fgimage then
             if knows or recipe.nounlock then
-                if buffered then
-                    self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex")
-                else
-                    self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
-                end
-
-                if canbuild or buffered then
+                if self.isquagmireshop then
+                    if canbuild or buffered then
+                        self.bgimage:SetTexture(self.atlas, "craft_slot_locked_highlight.tex")
+                    else
+                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
+                    end
+                    self.lightbulbimage:Hide()
                     self.fgimage:Hide()
                 else
-                    self.fgimage:Show()
-                    self.fgimage:SetTexture(self.atlas, "craft_slot_missing_mats.tex")
+                    if buffered then
+                        self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex")
+                    else
+                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
+                    end
+                    if canbuild or buffered then
+                        self.fgimage:Hide()
+                    else
+                        self.fgimage:Show()
+                        self.fgimage:SetTexture(self.atlas, "craft_slot_missing_mats.tex")
+                    end
+                    self.lightbulbimage:Hide()
+                    self.fgimage:SetTint(1, 1, 1, 1)
                 end
-                self.lightbulbimage:Hide()
-                self.fgimage:SetTint(1,1,1,1)
             else
                 --print("Right_Level for: ", recipename, " ", right_level)
                 local show_highlight = false
@@ -201,7 +208,10 @@ function CraftSlot:Refresh(recipename)
 
         if self.recipepopup then
             self.recipepopup:SetRecipe(self.recipe, self.owner)
-        end
+			if self.focus and not self.open then
+				self:Open()
+			end
+		end
         
         --self:HideRecipe()
     end

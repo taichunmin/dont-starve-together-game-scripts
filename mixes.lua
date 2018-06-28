@@ -113,6 +113,7 @@ TheMixer:AddNewMix("lobby", 2, 8,
 
 --------------------------------------------------------------------------
 
+--quagmire uses the same one as lavaarena
 TheMixer:AddNewMix("lavaarena_normal", .1, 1,
 { 
     [amb] = .8,

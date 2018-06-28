@@ -313,7 +313,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return names.cactus_flower and tags.veggie and tags.veggie >= 2 and not tags.meat and not tags.inedible and not tags.egg and not tags.sweetener and not tags.fruit end,
 		priority = 10,
-		foodtype = "VEGGIE",
+		foodtype = FOODTYPE.VEGGIE,
 		health = TUNING.HEALING_LARGE,
 		hunger = TUNING.CALORIES_SMALL,
 		perishtime = TUNING.PERISH_FAST,
@@ -325,7 +325,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return tags.frozen and tags.dairy and tags.sweetener and not tags.meat and not tags.veggie and not tags.inedible and not tags.egg end,
 		priority = 10,
-		foodtype = "VEGGIE",
+		foodtype = FOODTYPE.VEGGIE,
 		health = 0,
 		hunger = TUNING.CALORIES_MED,
 		perishtime = TUNING.PERISH_SUPERFAST,
@@ -339,7 +339,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return names.watermelon and tags.frozen and names.twigs and not tags.meat and not tags.veggie and not tags.egg end,
 		priority = 10,
-		foodtype = "VEGGIE",
+		foodtype = FOODTYPE.VEGGIE,
 		health = TUNING.HEALING_SMALL,
 		hunger = TUNING.CALORIES_SMALL,
 		perishtime = TUNING.PERISH_SUPERFAST,
@@ -353,7 +353,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return names.acorn_cooked and tags.seed and tags.seed >= 1 and (names.berries or names.berries_cooked or names.berries_juicy or names.berries_juicy_cooked) and tags.fruit and tags.fruit >= 1 and not tags.meat and not tags.veggie and not tags.egg and not tags.dairy end,
 		priority = 10,
-		foodtype = "VEGGIE",
+		foodtype = FOODTYPE.VEGGIE,
 		health = TUNING.HEALING_MEDLARGE,
 		hunger = TUNING.CALORIES_SMALL,
 		perishtime = TUNING.PERISH_SLOW,
@@ -365,7 +365,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return tags.meat and tags.veggie and tags.meat >= 1.5 and tags.veggie >= 1.5 end,
 		priority = 10,
-		foodtype = "MEAT",
+		foodtype = FOODTYPE.MEAT,
 		health = TUNING.HEALING_MED,
 		hunger = TUNING.CALORIES_LARGE,
 		perishtime = TUNING.PERISH_MED,
@@ -379,7 +379,7 @@ local foods=
 	{
 		test = function(cooker, names, tags) return names.mole and names.cactus_meat and not tags.fruit end,
 		priority = 10,
-		foodtype = "MEAT",
+		foodtype = FOODTYPE.MEAT,
 		health = TUNING.HEALING_MED,
 		hunger = TUNING.CALORIES_LARGE,
 		perishtime = TUNING.PERISH_MED,

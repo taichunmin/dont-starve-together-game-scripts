@@ -11,7 +11,6 @@ local TextEdit = require "widgets/textedit"
 local TrueScrollList = require "widgets/truescrolllist"
 local UIAnim = require "widgets/uianim"
 local Widget = require "widgets/widget"
-local xputil = require "wxputils"
 
 require("constants")
 require("skinsutils")
@@ -124,16 +123,31 @@ function TEMPLATES.BackgroundTint(a, rgb)
     return TEMPLATES.old.BackgroundTint(a, rgb)
 end
 
+function TEMPLATES.QuagmireAnim()
+    local anims = { "quagmire_menu_bg", "quagmire_menu_mid", "quagmire_menu"}
+    local root = Widget("root")
+    for _,anim in ipairs(anims) do
+        local a = root:AddChild(UIAnim())
+        a:GetAnimState():SetBuild(anim)
+        a:GetAnimState():SetBank(anim)
+        a:SetScale(0.67)
+        a:SetPosition(0, 0)
+        if anim == "quagmire_menu_bg" then
+            local darken = 0.3
+            a:GetAnimState():SetMultColour( darken, darken, darken, 1)
+        end
+        a:GetAnimState():PlayAnimation("idle", true)
+    end
+    return root
+end
+
 function TEMPLATES.BoarriorAnim()
     local anim = UIAnim()
     anim:GetAnimState():SetBuild("main_menu1")
     anim:GetAnimState():SetBank("main_menu1")
     anim:SetScale(0.6)
     anim:SetPosition(-190, -300)
-    anim.PlayOnLoop = function()
-        anim:GetAnimState():PlayAnimation("idle", true)
-    end
-    anim:PlayOnLoop()
+    anim:GetAnimState():PlayAnimation("idle", true)
     return anim
 end
 
@@ -925,7 +939,7 @@ function TEMPLATES.LabelTextbox(labeltext, fieldtext, width_label, width_field, 
 end
 
 -- Spinner with a label beside it
-function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinner, height, spacing, font, font_size, horiz_offset)
+function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinner, height, spacing, font, font_size, horiz_offset, onchanged_fn, colour)
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
@@ -940,8 +954,8 @@ function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinn
     wdg.label:SetPosition( (-total_width/2)+(width_label/2) + offset, 0 )
     wdg.label:SetRegionSize( width_label, height )
     wdg.label:SetHAlign( ANCHOR_RIGHT )
-    wdg.label:SetColour(UICOLOURS.GOLD)
-    wdg.spinner = wdg:AddChild(TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, font_size))
+    wdg.label:SetColour(colour or UICOLOURS.GOLD)
+    wdg.spinner = wdg:AddChild(TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, font_size, onchanged_fn, colour))
     wdg.spinner:SetPosition((total_width/2)-(width_spinner/2) + offset, 0)
 
     wdg.focus_forward = wdg.spinner
@@ -995,7 +1009,7 @@ function TEMPLATES.LabelButton(onclick, labeltext, buttontext, width_label, widt
 end
 
 -- checkbox button with a label beside it
-function TEMPLATES.LabelCheckbox(onclick, labeltext, checked, width_label, width_button, height, checkbox_size, spacing, font, font_size, horiz_offset)
+function TEMPLATES.OptionsLabelCheckbox(onclick, labeltext, checked, width_label, width_button, height, checkbox_size, spacing, font, font_size, horiz_offset)
     local offset = horiz_offset or 0
     local total_width = width_label + width_button + spacing
     local wdg = Widget("labelbutton")
@@ -1012,12 +1026,45 @@ function TEMPLATES.LabelCheckbox(onclick, labeltext, checked, width_label, width
     return wdg
 end
 
+function TEMPLATES.LabelCheckbox(onclick, checked, text)
+    local checkbox = ImageButton()
+	checkbox._text_offset = 20
+    checkbox:SetTextColour(UICOLOURS.GOLD)
+    checkbox:SetTextFocusColour(UICOLOURS.HIGHLIGHT_GOLD)
+    checkbox:SetFont(CHATFONT_OUTLINE)
+    checkbox:SetDisabledFont(CHATFONT_OUTLINE)
+    checkbox:SetTextDisabledColour(UICOLOURS.GOLD)
+    checkbox:SetText(text)
+    checkbox:SetTextSize(25)
+    checkbox.text:SetHAlign(ANCHOR_LEFT)
+
+	local text_width = checkbox.text:GetRegionSize()
+    checkbox.text:SetPosition(checkbox._text_offset + text_width/2, 0)
+
+    checkbox.clickoffset = Vector3(0,0,0)
+
+    checkbox.checked = checked
+    checkbox:SetOnClick(function() onclick(checkbox) end)
+
+	checkbox.Refresh = function(self)
+		if self.checked then
+			self:SetTextures("images/global_redux.xml", "checkbox_normal_check.tex", "checkbox_focus_check.tex", "checkbox_normal_check.tex", nil, nil, {1,1}, {0,0})
+		else
+			self:SetTextures("images/global_redux.xml", "checkbox_normal.tex", "checkbox_focus.tex", "checkbox_normal.tex", nil, nil, {1,1}, {0,0})
+		end
+	end
+
+	checkbox:Refresh()
+	return checkbox
+end
+
 -- Spinner
-function TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, font_size)
+function TEMPLATES.StandardSpinner(spinnerdata, width_spinner, height, font, font_size, onchanged_fn, colour)
     local atlas = "images/global_redux.xml"
     local lean = true
     local wdg = Spinner(spinnerdata, width_spinner, height, {font = font or CHATFONT, size = font_size or 25}, nil, atlas, nil, lean)
-    wdg:SetTextColour(UICOLOURS.GOLD)
+    wdg:SetTextColour(colour or UICOLOURS.GOLD)
+	wdg:SetOnChangedFn(onchanged_fn)
     return wdg
 end
 
@@ -1149,8 +1196,8 @@ function TEMPLATES.UserProgress(onclick)
     progress.btn:SetOnClick(onclick)
 
     progress.UpdateProgress = function(self)
-        self.rank:SetRank(GetMostRecentlySelectedItem(Profile, "profileflair"), TheInventory:GetWXPLevel())
-        self.bar:GetAnimState():SetPercent("fill_progress", xputil.GetLevelPercentage())
+        self.rank:SetRank(GetMostRecentlySelectedItem(Profile, "profileflair"), wxputils.GetActiveLevel())
+        self.bar:GetAnimState():SetPercent("fill_progress", wxputils.GetLevelPercentage())
     end
 
     -- Progress can change within the frontend (buying items or opening mystery
@@ -1224,12 +1271,11 @@ function TEMPLATES.WxpBar()
         xp_earn:SetString(tostring(math.floor(wxp)))
     end
     wxpbar.UpdateExperienceForLocalUser = function(w_self,profileflair)
-        bar:SetPercent(xputil.GetLevelPercentage())
-        xp_earn:SetString(xputil.BuildProgressString())
+        bar:SetPercent(wxputils.GetLevelPercentage())
+        xp_earn:SetString(wxputils.BuildProgressString())
 
-        local level = TheItems:GetLevelForWXP(TheInventory:GetWXP())
-        local level_start_xp = TheItems:GetWXPForLevel(level)
-        local next_level_xp = TheItems:GetWXPForLevel(level + 1)
+        local level = wxputils.GetActiveLevel()
+        local level_start_xp, next_level_xp = wxputils.GetWXPForLevel(level)
         w_self:SetRank(level, next_level_xp - level_start_xp, profileflair)
     end
 
@@ -1569,7 +1615,8 @@ function TEMPLATES.ScrollingGrid(items, opts)
         scissor_width,
         scissor_height,
         opts.scrollbar_offset,
-        opts.scrollbar_height_offset
+        opts.scrollbar_height_offset,
+		opts.scroll_per_click
         )
     scroller:SetItemsData(items)
     scroller.GetScrollRegionSize = function(self)

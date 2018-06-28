@@ -48,8 +48,9 @@ end
 function Activatable:DoActivate(doer)
     if self.OnActivate ~= nil then
         self.inactive = false
-        self.OnActivate(self.inst, doer)
+        return self.OnActivate(self.inst, doer)
     end
+	return nil
 end
 
 return Activatable

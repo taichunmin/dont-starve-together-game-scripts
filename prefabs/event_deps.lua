@@ -73,6 +73,7 @@ local SPECIAL_EVENT_DEPS =
             assets =
             {
                 Asset("DYNAMIC_ANIM", "anim/dynamic/frontend_perd.zip"),
+                Asset("PKGREF", "anim/dynamic/frontend_perd.dyn"),
                 Asset("PKGREF", "sound/music_frontend_yotg.fsb"),
             },
         },
@@ -115,6 +116,20 @@ local FESTIVAL_EVENT_DEPS =
                 Asset("ATLAS", "images/bg_redux_labg.xml"),
                 Asset("IMAGE", "images/bg_redux_labg.tex"),
                 Asset("PKGREF", "sound/lava_arena.fsb"),
+            },
+        },
+    },
+    [FESTIVAL_EVENTS.QUAGMIRE] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("IMAGE", "images/colour_cubes/quagmire_cc.tex"),
+                Asset("ANIM", "anim/quagmire_menu.zip"),
+                Asset("ANIM", "anim/quagmire_menu_mid.zip"),
+                Asset("ANIM", "anim/quagmire_menu_bg.zip"),
+                Asset("PKGREF", "sound/quagmire.fsb"),
             },
         },
     },

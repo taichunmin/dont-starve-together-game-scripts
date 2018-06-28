@@ -159,6 +159,15 @@ ACTIONS =
     PET = Action(),
 
     CASTAOE = Action({ priority=10, rmb=true, distance=8 }),
+
+    --Quagmire
+    TILL = Action({ distance=0.5 }),
+    PLANTSOIL = Action(),
+    INSTALL = Action(),
+    TAPTREE = Action({priority=1, rmb=true}),
+    SLAUGHTER = Action({ canforce=true, rangecheckfn=DefaultRangeCheck }),
+    REPLATE = Action(),
+    SALT = Action(),
 }
 
 ACTION_IDS = {}
@@ -222,6 +231,7 @@ end
 ACTIONS.UNEQUIP.strfn = function(act)
     return (act.invobject ~= nil and
             act.invobject:HasTag("heavy") or
+            GetGameModeProperty("non_item_equips") or
             act.doer.replica.inventory:GetNumSlots() <= 0)
         and "HEAVY"
         or nil
@@ -229,7 +239,7 @@ end
 
 ACTIONS.UNEQUIP.fn = function(act)
     if act.invobject ~= nil and act.doer.components.inventory ~= nil then
-        if act.invobject.components.inventoryitem.cangoincontainer then
+        if act.invobject.components.inventoryitem.cangoincontainer and not GetGameModeProperty("non_item_equips") then
             act.doer.components.inventory:GiveItem(act.invobject)
         else
             act.doer.components.inventory:DropItem(act.invobject, true, true)
@@ -255,9 +265,11 @@ ACTIONS.PICKUP.fn = function(act)
             (act.target.components.burnable ~= nil and act.target.components.burnable:IsBurning()) or
             (act.target.components.projectile ~= nil and act.target.components.projectile:IsThrown())) then
 
-		if act.doer.components.itemtyperestrictions ~= nil and not act.doer.components.itemtyperestrictions:IsAllowed(act.target) then
-			return false, "restriction"
-		end
+        if act.doer.components.itemtyperestrictions ~= nil and not act.doer.components.itemtyperestrictions:IsAllowed(act.target) then
+            return false, "restriction"
+        elseif act.target.components.container ~= nil and act.target.components.container:IsOpen() and not act.target.components.container:IsOpenedBy(act.doer) then
+            return false, "inuse"
+        end
 
         act.doer:PushEvent("onpickupitem", { item = act.target })
 
@@ -275,15 +287,18 @@ ACTIONS.PICKUP.fn = function(act)
             return true
         end
 
-        if act.doer:HasTag("player") and
-            (   act.target.components.equippable ~= nil and
-                not act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot) or
-                act.doer.components.inventory:GetNumSlots() <= 0
-            ) then
-            act.doer.components.inventory:Equip(act.target)
-        else
-            act.doer.components.inventory:GiveItem(act.target, nil, act.target:GetPosition())
+        if act.target.components.equippable ~= nil and act.doer:HasTag("player") then
+            local equip = act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot)
+            if equip == nil or act.doer.components.inventory:GetNumSlots() <= 0 then
+                act.doer.components.inventory:Equip(act.target)
+                return true
+            elseif GetGameModeProperty("non_item_equips") then
+                act.doer.components.inventory:DropItem(equip)
+                act.doer.components.inventory:Equip(act.target)
+                return true
+            end
         end
+        act.doer.components.inventory:GiveItem(act.target, nil, act.target:GetPosition())
         return true
     end
 end
@@ -332,6 +347,17 @@ ACTIONS.RUMMAGE.fn = function(act)
         elseif targ.components.container:IsOpen() then
             return false, "INUSE"
         elseif targ.components.container.canbeopened then
+            local owner = targ.components.inventoryitem ~= nil and targ.components.inventoryitem:GetGrandOwner() or nil
+            if owner ~= nil and targ.components.quagmire_stewer ~= nil then
+                if owner == act.doer then
+                    owner.components.inventory:DropItem(targ, true, true)
+                elseif owner.components.container ~= nil and owner.components.container:IsOpenedBy(act.doer) then
+                    owner.components.container:DropItem(targ)
+                else
+                    --Silent fail, should not reach here
+                    return true
+                end
+            end
             --Silent fail for opening containers in the dark
             if CanEntitySeeTarget(act.doer, targ) then
                 act.doer:PushEvent("opencontainer", { container = targ })
@@ -348,10 +374,7 @@ ACTIONS.RUMMAGE.strfn = function(act)
         and (   targ.replica.container ~= nil and
                 targ.replica.container:IsOpenedBy(act.doer) and
                 "CLOSE" or
-                (   act.target ~= nil and
-                    act.target:HasTag("winter_tree") and
-                    "DECORATE"
-                )
+                (act.target ~= nil and act.target:HasTag("winter_tree") and "DECORATE")
             )
         or nil
 end
@@ -504,24 +527,19 @@ ACTIONS.DIG.fn = function(act)
 end
 
 ACTIONS.FERTILIZE.fn = function(act)
-    if act.target and act.target.components.crop and not act.target.components.crop:IsReadyForHarvest() and not act.target:HasTag("withered")
-        and act.invobject and act.invobject.components.fertilizer then
-
-        local obj = act.invobject
-
-        if act.target.components.crop:Fertilize(obj, act.doer) then
+    if act.target ~= nil and act.invobject ~= nil and act.invobject.components.fertilizer ~= nil then
+        if act.target.components.crop ~= nil and not (act.target.components.crop:IsReadyForHarvest() or act.target:HasTag("withered")) then
+            return act.target.components.crop:Fertilize(act.invobject, act.doer)
+        elseif act.target.components.grower ~= nil and act.target.components.grower:IsEmpty() then
+            act.target.components.grower:Fertilize(act.invobject, act.doer)
             return true
-        else
-            return false
+        elseif act.target.components.pickable ~= nil and act.target.components.pickable:CanBeFertilized() then
+            act.target.components.pickable:Fertilize(act.invobject, act.doer)
+            return true
+        elseif act.target.components.quagmire_fertilizable ~= nil then
+            act.target.components.quagmire_fertilizable:Fertilize(act.invobject, act.doer)
+            return true
         end
-    elseif act.target.components.grower and act.target.components.grower:IsEmpty() and act.invobject and act.invobject.components.fertilizer then
-        local obj = act.invobject
-        act.target.components.grower:Fertilize(obj, act.doer)
-        return true
-    elseif act.target.components.pickable and act.target.components.pickable:CanBeFertilized() and act.invobject and act.invobject.components.fertilizer then
-        local obj = act.invobject
-        act.target.components.pickable:Fertilize(obj, act.doer)
-        return true     
     end
 end
 
@@ -753,7 +771,7 @@ ACTIONS.ADDFUEL.fn = function(act)
     if act.doer.components.inventory then
         local fuel = act.doer.components.inventory:RemoveItem(act.invobject)
         if fuel then
-            if act.target.components.fueled:TakeFuelItem(fuel) then
+            if act.target.components.fueled:TakeFuelItem(fuel, act.doer) then
                 return true
             else
                 --print("False")
@@ -767,7 +785,7 @@ ACTIONS.ADDWETFUEL.fn = function(act)
     if act.doer.components.inventory then
         local fuel = act.doer.components.inventory:RemoveItem(act.invobject)
         if fuel then
-            if act.target.components.fueled:TakeFuelItem(fuel) then
+            if act.target.components.fueled:TakeFuelItem(fuel, act.doer) then
                 return true
             else
                 -- print("False")
@@ -777,14 +795,50 @@ ACTIONS.ADDWETFUEL.fn = function(act)
     end
 end
 
-ACTIONS.GIVE.fn = function(act)
-    if act.target ~= nil and act.target.components.trader ~= nil then
-        local able, reason = act.target.components.trader:AbleToAccept(act.invobject, act.doer)
-        if not able then
-            return false, reason
+ACTIONS.GIVE.strfn = function(act)
+    return act.target ~= nil and act.target:HasTag("gemsocket") and "SOCKET" or nil
+end
+
+ACTIONS.GIVE.stroverridefn = function(act)
+    --Quagmire action strings
+    if act.target ~= nil and act.invobject ~= nil then
+        if act.target.nameoverride ~= nil and act.invobject:HasTag("quagmire_stewer") then
+            return subfmt(STRINGS.ACTIONS.GIVE[string.upper(act.target.nameoverride)], { item = act.invobject:GetBasicDisplayName() })
+        elseif act.target:HasTag("quagmire_altar") then
+            if act.invobject.prefab == "quagmire_portal_key" then
+                return STRINGS.ACTIONS.GIVE.SOCKET
+            elseif act.invobject.prefab:sub(1, 14) == "quagmire_food_" then
+                local dish = act.invobject.basedish
+                if dish == nil then
+                    local i = act.invobject.prefab:find("_", 15)
+                    if i ~= nil then
+                        dish = STRINGS.NAMES[string.upper(act.invobject.prefab:sub(1, i - 1))]
+                    end
+                end
+                local str = dish ~= nil and STRINGS.ACTIONS.GIVE.QUAGMIRE_ALTAR[string.upper(dish)] or nil
+                if str ~= nil then
+                    return subfmt(str, { food = act.invobject:GetBasicDisplayName() })
+                end
+            end
+            return subfmt(STRINGS.ACTIONS.GIVE.QUAGMIRE_ALTAR.GENERIC, { food = act.invobject:GetBasicDisplayName() })
         end
-        act.target.components.trader:AcceptGift(act.doer, act.invobject)
-        return true
+    end
+end
+
+ACTIONS.GIVE.fn = function(act)
+    if act.target ~= nil then
+        if act.target.components.trader ~= nil then
+            local able, reason = act.target.components.trader:AbleToAccept(act.invobject, act.doer)
+            if not able then
+                return false, reason
+            end
+            act.target.components.trader:AcceptGift(act.doer, act.invobject)
+            return true
+        elseif act.target.components.quagmire_cookwaretrader ~= nil then
+            return act.target.components.quagmire_cookwaretrader:AcceptCookware(act.doer, act.invobject)
+        elseif act.target.components.quagmire_altar ~= nil then
+            return act.target.components.quagmire_altar:AcceptFoodTribute(act.doer, act.invobject)
+        end
     end
 end
 
@@ -860,10 +914,6 @@ ACTIONS.FEEDPLAYER.fn = function(act)
     end
 end
 
-ACTIONS.GIVE.strfn = function(act)
-    return act.target ~= nil and act.target:HasTag("gemsocket") and "SOCKET" or nil
-end
-
 ACTIONS.DECORATEVASE.fn = function(act)
     if act.target ~= nil and act.target.components.vase ~= nil and act.target.components.vase.enabled then
         act.target.components.vase:Decorate(act.doer, act.invobject)
@@ -879,9 +929,19 @@ ACTIONS.STORE.fn = function(act)
             return false, "NOTALLOWED"
         end
 
+        local forceopen = act.target.components.quagmire_stewer ~= nil and act.target.components.inventoryitem ~= nil
+        local forcedrop = forceopen and act.target.components.inventoryitem:GetGrandOwner() or nil
+        if forcedrop ~= nil and forcedrop ~= act.doer then
+            --Silent fail, should not reach here
+            return true
+        end
+
         local item = act.invobject.components.inventoryitem:RemoveFromOwner(act.target.components.container.acceptsstacks)
         if item ~= nil then
-            if act.target.components.inventoryitem == nil then
+            if forcedrop ~= nil then
+                forcedrop.components.inventory:DropItem(act.target, true, true)
+            end
+            if forceopen or act.target.components.inventoryitem == nil then
                 act.target.components.container:Open(act.doer)
             end
 
@@ -908,7 +968,7 @@ ACTIONS.BUNDLESTORE.fn = ACTIONS.STORE.fn
 
 ACTIONS.STORE.strfn = function(act)
     if act.target ~= nil then
-        return (act.target.prefab == "cookpot" and "COOK")
+        return ((act.target.prefab == "cookpot" or act.target:HasTag("quagmire_stewer")) and "COOK")
             or (act.target.prefab == "birdcage" and "IMPRISON")
             or (act.target:HasTag("winter_tree") and "DECORATE")
             or nil
@@ -960,6 +1020,8 @@ ACTIONS.HARVEST.fn = function(act)
             act.doer.components.inventory:GiveItem(item)
             return true
         end
+	elseif act.target.components.quagmire_tappable ~= nil then
+		return act.target.components.quagmire_tappable:Harvest(act.doer)
     end
 end
 
@@ -1155,8 +1217,8 @@ end
 
 ACTIONS.ACTIVATE.fn = function(act)
     if act.target.components.activatable ~= nil and act.target.components.activatable:CanActivate(act.doer) then
-        act.target.components.activatable:DoActivate(act.doer)
-        return true
+        local success, msg = act.target.components.activatable:DoActivate(act.doer)
+        return (success ~= false), msg -- note: for legacy reasons, nil will be true
     end
 end
 
@@ -1230,7 +1292,7 @@ ACTIONS.HEAL.fn = function(act)
 end
 
 ACTIONS.UNLOCK.fn = function(act)
-	if act.target.components.lock then
+    if act.target.components.lock ~= nil then
         if act.target.components.lock:IsLocked() then
             act.target.components.lock:Unlock(act.invobject, act.doer)
         --else
@@ -1241,12 +1303,12 @@ ACTIONS.UNLOCK.fn = function(act)
 end
 
 ACTIONS.USEKLAUSSACKKEY.fn = function(act)
-	if act.target.components.klaussacklock then
-		local able, reason = act.target.components.klaussacklock:UseKey(act.invobject, act.doer)
-		if not able then
-			return false, reason
-		end
-		return true
+    if act.target.components.klaussacklock ~= nil then
+        local able, reason = act.target.components.klaussacklock:UseKey(act.invobject, act.doer)
+        if not able then
+            return false, reason
+        end
+        return true
     end
 end
 
@@ -1308,6 +1370,11 @@ ACTIONS.TAKEITEM.strfn = function(act)
     return act.target.prefab == "birdcage" and "BIRDCAGE" or "GENERIC"
 end
 
+ACTIONS.TAKEITEM.stroverridefn = function(act)
+    local item = act.target.takeitem ~= nil and act.target.takeitem:value() or nil
+    return item ~= nil and subfmt(STRINGS.ACTIONS.TAKEITEM.ITEM, { item = item:GetBasicDisplayName() }) or nil
+end
+
 ACTIONS.CASTSPELL.strfn = function(act)
     return act.invobject ~= nil and act.invobject.spelltype or nil
 end
@@ -1353,9 +1420,9 @@ ACTIONS.UNPIN.fn = function(act)
 end
 
 ACTIONS.STEALMOLEBAIT.fn = function(act)
-    if act.doer and act.target and act.doer.prefab == "mole" then
-        act.target.selectedasmoletarget = false
-        act.target:PushEvent("onstolen", {thief=act.doer})
+    if act.doer ~= nil and act.target ~= nil and act.doer.prefab == "mole" then
+        act.target.selectedasmoletarget = nil
+        act.target:PushEvent("onstolen", { thief = act.doer })
         return true
     end
 end
@@ -1691,16 +1758,14 @@ ACTIONS.DRAW.fn = function(act)
 end
 
 ACTIONS.STARTCHANNELING.fn = function(act)
-    local target = act.target
-	return target ~= nil and target.components.channelable:StartChanneling(act.doer)
+    return act.target ~= nil and act.target.components.channelable:StartChanneling(act.doer)
 end
 
 ACTIONS.STOPCHANNELING.fn = function(act)
-    local target = act.target
-	if target ~= nil then
-		target.components.channelable:StopChanneling(true)
-	end
-	return true
+    if act.target ~= nil then
+        act.target.components.channelable:StopChanneling(true)
+    end
+    return true
 end
 
 ACTIONS.BUNDLE.fn = function(act)
@@ -1747,6 +1812,202 @@ end
 ACTIONS.CASTAOE.fn = function(act)
     if act.invobject ~= nil and act.invobject.components.aoespell ~= nil and act.invobject.components.aoespell:CanCast(act.doer, act.pos) then
         act.invobject.components.aoespell:CastSpell(act.doer, act.pos)
+        return true
+    end
+end
+
+--Quagmire
+ACTIONS.TILL.fn = function(act)
+    if act.invobject ~= nil and act.invobject.components.quagmire_tiller ~= nil then
+        return act.invobject.components.quagmire_tiller:Till(act.pos, act.doer)
+    end
+end
+
+ACTIONS.PLANTSOIL.fn = function(act)
+    if act.invobject ~= nil and
+        act.doer.components.inventory ~= nil and
+        act.target ~= nil and act.target:HasTag("soil") then
+        local seed = act.doer.components.inventory:RemoveItem(act.invobject)
+        if seed ~= nil then
+            if seed.components.quagmire_plantable ~= nil and seed.components.quagmire_plantable:Plant(act.target, act.doer) then
+                return true
+            end
+            act.doer.components.inventory:GiveItem(seed)
+        end
+    end
+end
+
+ACTIONS.INSTALL.fn = function(act)
+    if act.invobject ~= nil and act.target ~= nil then
+        if act.invobject.components.quagmire_installable ~= nil and
+            act.invobject.components.quagmire_installable.installprefab ~= nil and
+            act.target.components.quagmire_installations ~= nil and
+            act.target.components.quagmire_installations:IsEnabled() then
+            local part = SpawnPrefab(act.invobject.components.quagmire_installable.installprefab)
+            if part ~= nil then
+                act.invobject:Remove()
+                act.target.components.quagmire_installations:Install(part)
+                return true
+            end
+        elseif act.invobject.components.quagmire_saltextractor ~= nil
+            and act.target.components.quagmire_saltpond ~= nil
+            and act.invobject.components.quagmire_saltextractor:DoInstall(act.target) then
+            act.invobject:Remove()
+            return true
+        end
+    end
+end
+
+ACTIONS.TAPTREE.fn = function(act)
+    if act.target ~= nil and  act.target.components.quagmire_tappable ~= nil then
+        if act.target.components.quagmire_tappable:IsTapped() then
+            act.target.components.quagmire_tappable:UninstallTap(act.doer)
+            return true
+        elseif act.invobject ~= nil and act.invobject.components.quagmire_tapper ~= nil then
+            act.target.components.quagmire_tappable:InstallTap(act.doer, act.invobject)
+            return true
+        end
+    end
+end
+
+ACTIONS.TAPTREE.strfn = function(act)
+    return not act.target:HasTag("tappable") and "UNTAP" or nil
+end
+
+ACTIONS.SLAUGHTER.stroverridefn = function(act)
+    return act.invobject ~= nil
+        and act.invobject.GetSlaughterActionString ~= nil
+        and act.invobject:GetSlaughterActionString(act.target)
+        or nil
+end
+
+ACTIONS.SLAUGHTER.fn = function(act)
+    if act.invobject.components.quagmire_slaughtertool ~= nil and act.invobject:IsValid() and act.doer:IsValid() then
+        if act.target == nil then
+            return false, "TOOFAR"
+        elseif not (act.target:IsValid() and act.target:HasTag("canbeslaughtered")) then
+            return false
+        elseif not (act.target:IsInLimbo() or act.doer:IsNear(act.target, 2)) then
+            return false, "TOOFAR"
+        elseif act.target.components.health ~= nil and not act.target.components.health:IsDead() then
+            act.invobject.components.quagmire_slaughtertool:Slaughter(act.doer, act.target)
+            return true
+        end
+    end
+end
+
+ACTIONS.REPLATE.stroverridefn = function(act)
+    --Quagmire action strings
+    local replatable_inst = (act.target ~= nil and act.target:HasTag("quagmire_replatable") and act.target) or (act.invobject ~= nil and act.invobject:HasTag("quagmire_replatable") and act.invobject) or nil
+    if replatable_inst ~= nil then
+        local i = replatable_inst.prefab:find("_", 15)
+        if i ~= nil then
+            local dish = STRINGS.NAMES[string.upper(replatable_inst.prefab:sub(1, i - 1))]
+            return dish ~= nil and subfmt(STRINGS.ACTIONS.REPLATE.FMT, { dish = dish }) or nil
+        end
+    end
+end
+
+ACTIONS.REPLATE.fn = function(act)
+    if act.target ~= nil and act.invobject ~= nil then
+        local replater = act.target.components.quagmire_replater or act.invobject.components.quagmire_replater
+        local replatable = act.target.components.quagmire_replatable or act.invobject.components.quagmire_replatable
+        if replater ~= nil and replatable ~= nil and replater ~= replatable then
+            if replater.basedish ~= replatable.basedish then
+                return false, "MISMATCH"
+            elseif replater.dishtype == replatable.dishtype then
+                return false, "SAMEDISH"
+            end
+
+            local dishtype = replater.dishtype
+            local owner = replatable.inst.components.inventoryitem:GetGrandOwner()
+            if owner ~= nil then
+                local inventory = owner.components.inventory or owner.components.container
+                local replater_owner = replater.inst.components.inventoryitem.owner
+                if replater_owner == nil then
+                    --new plate on the ground
+                    inventory:DropItem(replatable.inst, true, false, replater.inst:GetPosition())
+                    replater.inst:Remove()
+                    replatable:Replate(dishtype, nil, act.doer)
+                elseif replatable.inst == act.invobject then
+                    --new plate in inventory
+                    --spawn new entity so UI animates on clients
+                    local replater_container = replater_owner.components.inventory or replater_owner.components.container
+                    local replater_slot = replater_container:GetItemSlot(replater.inst)
+                    local prefab = replatable.inst.prefab
+                    local perish = replatable.inst.components.perishable ~= nil and replatable.inst.components.perishable:GetPercent() or nil
+                    local salted = replatable.inst:HasTag("quagmire_salted")
+                    replatable.inst:Remove()
+                    replater.inst:Remove()
+                    local newitem = SpawnPrefab(prefab)
+                    if perish ~= nil then
+                        newitem.components.perishable:SetPercent(perish)
+                    end
+                    if salted then
+                        newitem.components.quagmire_saltable:Salt(0, true)
+                    end
+                    newitem.components.quagmire_replatable:Replate(dishtype, true, act.doer)
+                    replater_container:GiveItem(newitem, replater_slot, replater_owner:GetPosition())
+                else
+                    --food plate in inventory
+                    --spawn new entity so UI animates on clients
+                    local slot = inventory:GetItemSlot(replatable.inst)
+                    local prefab = replatable.inst.prefab
+                    local perish = replatable.inst.components.perishable ~= nil and replatable.inst.components.perishable:GetPercent() or nil
+                    local salted = replatable.inst:HasTag("quagmire_salted")
+                    replatable.inst:Remove()
+                    replater.inst:Remove()
+                    local newitem = SpawnPrefab(prefab)
+                    if perish ~= nil then
+                        newitem.components.perishable:SetPercent(perish)
+                    end
+                    if salted then
+                        newitem.components.quagmire_saltable:Salt(0, true)
+                    end
+                    newitem.components.quagmire_replatable:Replate(dishtype, true, act.doer)
+                    inventory:GiveItem(newitem, slot, owner:GetPosition())
+                end
+            else
+                --food plate on the ground
+                replater.inst:Remove()
+                replatable:Replate(dishtype)
+            end
+            return true
+        end
+    end
+end
+
+ACTIONS.SALT.fn = function(act)
+    if act.target ~= nil and act.target.components.quagmire_saltable ~= nil then
+        if act.invobject.components.stackable ~= nil then
+            act.invobject.components.stackable:Get():Remove()
+        else
+            act.invobject:Remove()
+        end
+
+        local owner = act.target.components.inventoryitem:GetGrandOwner()
+        if owner ~= nil then
+            --food plate in inventory
+            --spawn new entity so UI animates on clients
+            local inventory = owner.components.inventory or owner.components.container
+            local slot = inventory:GetItemSlot(act.target)
+            local prefab = act.target.prefab
+            local perish = act.target.components.perishable ~= nil and act.target.components.perishable:GetPercent() or nil
+            local replated = act.target.components.quagmire_replatable ~= nil and act.target.components.quagmire_replatable.dishtype or nil
+            act.target:Remove()
+            local newitem = SpawnPrefab(prefab)
+            if perish ~= nil then
+                newitem.components.perishable:SetPercent(perish)
+            end
+            if replated ~= nil then
+                newitem.components.quagmire_replatable:Replate(replated, true)
+            end
+            newitem.components.quagmire_saltable:Salt(1, true)
+            inventory:GiveItem(newitem, slot, owner:GetPosition())
+        else
+            --food plate on the ground
+            act.target.components.quagmire_saltable:Salt(1)
+        end
         return true
     end
 end

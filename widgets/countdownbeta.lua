@@ -3,7 +3,7 @@ local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local ImageButton = require "widgets/imagebutton"
 local Image = require "widgets/image"
-local TEMPLATES = require "widgets/templates"
+local TEMPLATES = require "widgets/redux/templates"
 require "os"
 
 local klei_tz = 28800--The time zone offset for vancouver
@@ -129,9 +129,44 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 			self.daysuntiltext:SetSize(25)
 			self.daysuntiltext:SetString(update_name)
 		end
-		
+	elseif mode == "quagmire" then
+		self.image = self:AddChild(UIAnim())
+		self.image:GetAnimState():SetBuild("quagmire_countdown2")
+		self.image:GetAnimState():SetBank("quagmire_countdown2")
+		self.image:GetAnimState():PlayAnimation("1", true)
+
+		self.image:SetScale(.3, .3)
+		self.image:SetPosition(-30, 50)
+		self.image:SetClickable(false)
+
+		local lableroot = self:AddChild(Widget("LableRoot"))
+		lableroot:SetPosition(0, -85)
+
+		self.bg = lableroot:AddChild( Image("images/frontend.xml", "scribble_black.tex") )
+		self.bg:SetPosition(0, -2)
+		self.bg:SetScale(1.25, 1.6, 1)
+
+		self.title = lableroot:AddChild(Text(NUMBERFONT, 35))
+		self.title:SetPosition(0, 18)
+		self.title:SetRegionSize(240, 50)
+		self.title:SetClickable(false)
+		self.title:SetString(STRINGS.UI.MAINSCREEN.BETA_LABEL)
+
+		self.daysuntiltext = lableroot:AddChild(Text(NUMBERFONT, 30))
+		self.daysuntiltext:SetPosition(0, -18, 0)
+		self.daysuntiltext:SetRegionSize( 240, 50 )
+		self.daysuntiltext:SetClickable(false)
+
+		self:SetCountdownDate({year = 2018, day = 14, month = 6, hour = 22})
+
+		self.button = lableroot:AddChild(TEMPLATES.StandardButton(function() VisitURL("https://forums.kleientertainment.com/topic/91519-coming-soon-the-gorge/") end, STRINGS.UI.MODSSCREEN.MODLINK_MOREINFO))
+		self.button:SetScale(0.5, 0.5)
+		self.button:SetPosition(0, -55)
 	end
 
+	if self.button ~= nil then 
+		self.focus_forward = self.button
+	end
 
 end)
 
@@ -145,32 +180,24 @@ function CountdownBeta:SetCountdownDate(date)
 		return
 	end
 
-	local now = os.time() - get_timezone()
-	local update_time = os.time(date) - klei_tz
-	local build_time = TheSim:GetBuildDate()
 
-	local days_until 		= ((((update_time - now) / 60) / 60) / 24)
-	local days_since 		= ((((now - build_time) / 60) / 60) / 24)
-	local build_update_diff = ((((build_time - update_time) / 60) / 60) / 24)
+	--local now = os.time({year = 2018, day = 15, month = 6, hour = 3}) -- os.time() -- os.time({year = 2018, day = 5, month = 6, hour = 3})
 
-	print( "SetCountdownDate:", days_until, days_since, build_update_diff)
+	local now = os.time(os.date("!*t", os.time()))
+	local update_time = os.time(date) + klei_tz
+	local time_until = os.difftime(update_time, now)
+	local days_until = math.floor(time_until / 60 / 60 / 24)
 
-	if not days_until and not days_since then return end
-	if days_until and days_since then
-		if days_until >= 1 then
-			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTUPDATEDAYS, math.ceil(days_until)) .. "!"
-			--self.daysuntilanim:GetAnimState():PlayAnimation("about", true)
-		elseif days_until < 1 and days_until >= -1 and build_update_diff < 0 then
-			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTBUILDIMMINENT)
-			--self.daysuntilanim:GetAnimState():PlayAnimation("coming", true)
-		else
-			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTBUILDIMMINENT)
-			--self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.FRESHBUILD)
-			--self.daysuntilanim:GetAnimState():PlayAnimation("fresh", true)
-		end
-		
-		self.daysuntiltext:SetString(self.days_until_string)
+	if days_until >= 2 then
+		self.daysuntiltext:SetString(string.format(STRINGS.UI.MAINSCREEN.EVENT_UPDATEDAYS, days_until))
+	elseif days_until >= 1 then
+		self.daysuntiltext:SetString(STRINGS.UI.MAINSCREEN.EVENT_UPDATEDAY)
+		self.image:GetAnimState():PlayAnimation("2", true)
+	else
+		self.daysuntiltext:SetString(STRINGS.UI.MAINSCREEN.EVENT_IMMINENT)
+		self.image:GetAnimState():PlayAnimation("2", true)
 	end
+		
 end
 
 return CountdownBeta

@@ -18,6 +18,10 @@ local MapScreen = require "screens/mapscreen"
 local FollowText = require "widgets/followtext"
 local StatusDisplays = require "widgets/statusdisplays"
 local Lavaarena_StatusDisplays = require "widgets/statusdisplays_lavaarena"
+local Quagmire_StatusDisplays = require "widgets/statusdisplays_quagmire"
+local Quagmire_StatusCravingDisplay = require "widgets/statusdisplays_quagmire_cravings"
+local Quagmire_NotificationWidget = require "widgets/quagmire_notificationwidget"
+local QuagmireRecipeBookScreen = require "screens/quagmire_recipebookscreen"
 local ChatQueue = require "widgets/chatqueue"
 local Desync = require "widgets/desync"
 local WorldResetTimer = require "widgets/worldresettimer"
@@ -87,6 +91,12 @@ local Controls = Class(Widget, function(self, owner)
     if TheNet:GetServerGameMode() == "lavaarena" then
         self.status = self.bottom_root:AddChild(Lavaarena_StatusDisplays(self.owner))
         self.teamstatus = self.topleft_root:AddChild(TeamStatusBars(self.owner))
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        self.status = self.bottom_root:AddChild(Quagmire_StatusDisplays(self.owner))
+		self.quagmire_hangriness = self.top_root:AddChild(Quagmire_StatusCravingDisplay(self.owner))
+		self.quagmire_notifications = self.right_root:AddChild(Quagmire_NotificationWidget(self.owner))
+		self.quagmire_notifications:SetPosition(0, 200)
+		self.containerroot:MoveToFront() -- so safes ui opens on top of hangriness meter
     else
         self.status = self.sidepanel:AddChild(StatusDisplays(self.owner))
         self.status:SetPosition(0,-110,0)
@@ -117,6 +127,11 @@ local Controls = Class(Widget, function(self, owner)
 
     self.mapcontrols = self.bottomright_root:AddChild(MapControls())
     self.mapcontrols:SetPosition(-60,70,0)
+    if TheNet:GetServerGameMode() == "quagmire" then
+		self.mapcontrols.minimapBtn:SetTextures("images/quagmire_hud.xml", "map_button.tex")
+		self.mapcontrols.map_tooltip = STRINGS.UI.RECIPE_BOOK.TITLE.."\n"
+		self.mapcontrols:RefreshTooltips()
+	end
 
     --set this to true, to enable the PAX demo timer
     if false and not IsGamePurchased() then
@@ -161,6 +176,7 @@ local Controls = Class(Widget, function(self, owner)
     end
 
     self.dismounthintdelay = 0
+    self.craftingandinventoryshown = false
 
     self:SetHUDSize()
 
@@ -170,8 +186,8 @@ end)
 function Controls:ShowStatusNumbers()
     self.status:ShowStatusNumbers()
     if self.teamstatus ~= nil then
-	    self.teamstatus:ShowStatusNumbers()
-	end
+        self.teamstatus:ShowStatusNumbers()
+    end
 end
 
 function Controls:HideStatusNumbers()
@@ -368,15 +384,18 @@ function Controls:OnUpdate(dt)
         local controller_target = self.owner.components.playercontroller:GetControllerTarget()
         local controller_attack_target = self.owner.components.playercontroller:GetControllerAttackTarget()
         if controller_target ~= nil then
-            local cmds = {}
+            local cmds, cmdsoffset
             local textblock = self.playeractionhint.text
             if self.groundactionhint.shown and distsq(self.owner:GetPosition(), controller_target:GetPosition()) < 1.33 then
                 --You're close to your target so we should combine the two text blocks.
                 cmds = ground_cmds
+                cmdsoffset = #cmds
                 textblock = self.groundactionhint.text
                 self.playeractionhint:Hide()
                 itemInActions = false
             else
+                cmds = {}
+                cmdsoffset = 0
                 self.playeractionhint:Show()
                 self.playeractionhint:SetTarget(controller_target)
                 itemInActions = true
@@ -403,8 +422,30 @@ function Controls:OnUpdate(dt)
             if r ~= nil and ground_r == nil then
                 table.insert(cmds, TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION) .. " " .. r:GetActionString())
             end
+            if controller_target.quagmire_shoptab ~= nil then
+                for k, v in pairs(self.crafttabs.tabs.shown) do
+                    if k.filter == controller_target.quagmire_shoptab then
+                        if v then
+                            table.insert(cmds, TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_OPEN_CRAFTING).." "..STRINGS.UI.CRAFTING.TABACTION[controller_target.quagmire_shoptab.str])
+                        end
+                        break
+                    end
+                end
+            end
 
-            textblock:SetString(table.concat(cmds, "\n"))
+            if #cmds - cmdsoffset <= 1 then
+                --New special case that we support:
+                -- target is highlighted but with no actions
+                -- -> suppress any ground action hints
+                -- -> use target's custom display name to show special action hint
+                if cmds ~= ground_cmds then
+                    self.groundactionhint:Hide()
+                    self.groundactionhint:SetTarget(nil)
+                end
+                textblock:SetString(cmds[#cmds])
+            else
+                textblock:SetString(table.concat(cmds, "\n"))
+            end
         elseif not self.groundactionhint.shown
             and self.dismounthintdelay <= 0
             and self.owner.replica.rider ~= nil
@@ -459,7 +500,7 @@ function Controls:OnUpdate(dt)
 
         local sep = (x1 + w1/2) < (x2 - w2/2) or
                     (x1 - w1/2) > (x2 + w2/2) or
-                    (y1 + h1/2) < (y2 - h2/2) or                    
+                    (y1 + h1/2) < (y2 - h2/2) or
                     (y1 - h1/2) > (y2 + h2/2)
 
         if not sep then
@@ -524,11 +565,18 @@ function Controls:HighlightActionItem(itemIndex, itemInActions)
 end
 
 function Controls:ShowMap()
-    if self.owner ~= nil and self.owner.HUD ~= nil and (not self.owner.HUD:IsMapScreenOpen()) and (not GetGameModeProperty("no_minimap")) then
-        if self.owner.HUD:IsStatusScreenOpen() then
-            TheFrontEnd:PopScreen()
-        end
-        TheFrontEnd:PushScreen(MapScreen(self.owner))
+    if self.owner ~= nil and self.owner.HUD ~= nil and (not self.owner.HUD:IsMapScreenOpen()) then
+		if TheNet:GetServerGameMode() == "quagmire" then
+			if self.owner.HUD:IsStatusScreenOpen() then
+				TheFrontEnd:PopScreen()
+			end
+			TheFrontEnd:PushScreen(QuagmireRecipeBookScreen(self.owner))
+		elseif not GetGameModeProperty("no_minimap") then
+			if self.owner.HUD:IsStatusScreenOpen() then
+				TheFrontEnd:PopScreen()
+			end
+			TheFrontEnd:PushScreen(MapScreen(self.owner))
+		end
     end
 end
 
@@ -539,45 +587,62 @@ function Controls:HideMap()
 end
 
 function Controls:ToggleMap()
-    if self.owner ~= nil and self.owner.HUD ~= nil and (not GetGameModeProperty("no_minimap")) then
-        if self.owner.HUD:IsMapScreenOpen() then
-            TheFrontEnd:PopScreen()
-        elseif self.owner.components.playercontroller ~= nil and self.owner.components.playercontroller:IsMapControlsEnabled() then
-            if self.owner.HUD:IsStatusScreenOpen() then
-                TheFrontEnd:PopScreen()
-            end
-            TheFrontEnd:PushScreen(MapScreen(self.owner))
-        end
+    if self.owner ~= nil and self.owner.HUD ~= nil then
+		if TheNet:GetServerGameMode() == "quagmire" then
+			if self.owner.HUD:IsMapScreenOpen() then
+				TheFrontEnd:PopScreen()
+			elseif self.owner.components.playercontroller ~= nil and self.owner.components.playercontroller:IsMapControlsEnabled() then
+				if self.owner.HUD:IsStatusScreenOpen() then
+					TheFrontEnd:PopScreen()
+				end
+				TheFrontEnd:PushScreen(QuagmireRecipeBookScreen(self.owner))
+			end
+		elseif not GetGameModeProperty("no_minimap") then
+			if self.owner.HUD:IsMapScreenOpen() then
+				TheFrontEnd:PopScreen()
+			elseif self.owner.components.playercontroller ~= nil and self.owner.components.playercontroller:IsMapControlsEnabled() then
+				if self.owner.HUD:IsStatusScreenOpen() then
+					TheFrontEnd:PopScreen()
+				end
+				TheFrontEnd:PushScreen(MapScreen(self.owner))
+			end
+		end
     end
 end
 
 function Controls:ShowCraftingAndInventory()
-    if not GetGameModeProperty("no_crafting") then
-        self.crafttabs:Show()
-    end
-    self.inv:Show()
-    self.containerroot_side:Show()
-    self.item_notification:ToggleCrafting(false)
-    if self.status.ToggleCrafting ~= nil then
-        self.status:ToggleCrafting(false)
+    if not self.craftingandinventoryshown then
+        self.craftingandinventoryshown = true
+        if not GetGameModeProperty("no_crafting") then
+            self.crafttabs:Show()
+        end
+        self.inv:Show()
+        self.containerroot_side:Show()
+        self.item_notification:ToggleCrafting(false)
+        if self.status.ToggleCrafting ~= nil then
+            self.status:ToggleCrafting(false)
+        end
     end
 end
 
 function Controls:HideCraftingAndInventory()
-    if self.owner ~= nil and self.owner.HUD ~= nil then
-        if self.owner.HUD:IsControllerCraftingOpen() then
-            self.owner.HUD:CloseControllerCrafting()
+    if self.craftingandinventoryshown then
+        self.craftingandinventoryshown = false
+        if self.owner ~= nil and self.owner.HUD ~= nil then
+            if self.owner.HUD:IsControllerCraftingOpen() then
+                self.owner.HUD:CloseControllerCrafting()
+            end
+            if self.owner.HUD:IsControllerInventoryOpen() then
+                self.owner.HUD:CloseControllerInventory()
+            end
         end
-        if self.owner.HUD:IsControllerInventoryOpen() then
-            self.owner.HUD:CloseControllerInventory()
+        self.crafttabs:Hide()
+        self.inv:Hide()
+        self.containerroot_side:Hide()
+        self.item_notification:ToggleCrafting(true)
+        if self.status.ToggleCrafting ~= nil then
+            self.status:ToggleCrafting(true)
         end
-    end
-    self.crafttabs:Hide()
-    self.inv:Hide()
-    self.containerroot_side:Hide()
-    self.item_notification:ToggleCrafting(true)
-    if self.status.ToggleCrafting ~= nil then
-        self.status:ToggleCrafting(true)
     end
 end
 

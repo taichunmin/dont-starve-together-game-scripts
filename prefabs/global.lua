@@ -41,6 +41,15 @@ local assets =
     Asset("DYNAMIC_ATLAS", "images/lavaarena_achievements.xml"),
     Asset("PKGREF", "images/lavaarena_achievements.tex"),
 
+    Asset("DYNAMIC_ATLAS", "images/quagmire_food_common_inv_images_hires.xml"),
+    Asset("PKGREF", "images/quagmire_food_common_inv_images_hires.tex"),
+
+    Asset("ATLAS", "images/quagmire_achievements.xml"),
+    Asset("IMAGE", "images/quagmire_achievements.tex"),
+
+    Asset("ATLAS", "images/quagmire_recipebook.xml"),
+    Asset("IMAGE", "images/quagmire_recipebook.tex"),
+
     Asset("DYNAMIC_ATLAS", "images/options.xml"),
     Asset("PKGREF", "images/options.tex"),
     Asset("DYNAMIC_ATLAS", "images/options_bg.xml"),
@@ -126,6 +135,7 @@ local assets =
     Asset("SHADER", "shaders/splat.ksh"),
     Asset("SHADER", "shaders/texture.ksh"),
     Asset("SHADER", "shaders/ui.ksh"),
+    Asset("SHADER", "shaders/ui_cc.ksh"),
     Asset("SHADER", "shaders/ui_yuv.ksh"),
     Asset("SHADER", "shaders/swipe_fade.ksh"),
     Asset("SHADER", "shaders/ui_anim.ksh"),
@@ -181,9 +191,15 @@ local assets =
     Asset("DYNAMIC_ANIM", "anim/dynamic/hand_default1.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/legs_default1.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/feet_default1.zip"),
+    Asset("PKGREF", "anim/dynamic/body_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/hand_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/legs_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/feet_default1.dyn"),
 
     Asset("DYNAMIC_ANIM", "anim/dynamic/previous_skin.zip"),
+    Asset("PKGREF", "anim/dynamic/previous_skin.dyn"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/random_skin.zip"),
+    Asset("PKGREF", "anim/dynamic/random_skin.dyn"),
 }
 
 -- Loading Screens from items
@@ -250,9 +266,13 @@ for _,skin_prefab in pairs(skinprefabs) do
     end
 end
 
---klump files for package refs
-for _,klump_asset in pairs(require("klump_assets")) do
-    table.insert(assets, klump_asset)
+--Add the custom quagmire recipe images
+for _,file in pairs(require("klump_files")) do
+    local klump_file = string.gsub(file, "klump/", "")
+    if klump_file:find(".tex") and klump_file:find("_hires") then --crappy assumption for now that _hires .tex klump files have a matching atlas that we need to load
+        local xml_file = string.gsub(klump_file, ".tex", ".xml")
+        table.insert(assets, Asset("DYNAMIC_ATLAS", xml_file)) --global because the recipe book is used in the frontend and backend
+    end
 end
 
 return Prefab("global", function() end, assets)

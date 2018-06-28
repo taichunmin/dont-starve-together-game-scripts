@@ -652,16 +652,19 @@ local function OnMountHurtDirty(inst)
     end
 end
 
-local function DoSnapCamera()
+local function DoSnapCamera(inst, resetrot)
+    if resetrot then
+        TheCamera:SetHeadingTarget(45)
+    end
     TheCamera:Snap()
 end
 
 local function OnPlayerCameraSnap(inst)
     if inst._parent ~= nil and inst._parent.HUD ~= nil then
         if TheWorld.ismastersim then
-            TheCamera:Snap()
+            DoSnapCamera(inst, inst.camerasnap:value())
         else
-            inst:DoTaskInTime(0, DoSnapCamera)
+            inst:DoTaskInTime(0, DoSnapCamera, inst.camerasnap:value())
         end
     end
 end

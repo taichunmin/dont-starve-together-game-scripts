@@ -196,8 +196,10 @@ local function GetDisplayModeInfo( display_id, mode_idx )
 	return w, h, hz
 end
 
-local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
+local OptionsScreen = Class(Screen, function(self, prev_screen)
 	Screen._ctor(self, "OptionsScreen")
+
+    self.show_language_options = (prev_screen ~= nil and prev_screen.name == "MultiplayerMainScreen") and IsConsole()
 
 	self.show_datacollection = IsSteam() and not InGamePlay()
 
@@ -218,6 +220,7 @@ local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
         movementprediction = Profile:GetMovementPredictionEnabled(),
 		automods = Profile:GetAutoSubscribeModsEnabled(),
 		wathgrithrfont = Profile:IsWathgrithrFontEnabled(),
+        lang_id = Profile:GetLanguageID(),
 	}
 
 
@@ -265,13 +268,16 @@ local OptionsScreen = Class(Screen, function(self, user_profile, prev_screen)
 
 
 	self:DoInit()
-    self.subscreener = Subscreener(self,
-        self._BuildMenu,
-        {
+
+    local menu_items = {
             -- Left menu items
             settings = self.panel_root:AddChild(self:_BuildSettings()),
             controls = self.panel_root:AddChild(self:_BuildControls()),
-        })
+        }
+    if self.show_language_options then
+        menu_items["languages"] = self.panel_root:AddChild(self:_BuildLanguages())
+    end
+    self.subscreener = Subscreener(self, self._BuildMenu, menu_items )
     self.subscreener:SetPostMenuSelectionAction(function(selection)
         self.selected_tab = selection
         self:UpdateMenu()
@@ -311,11 +317,19 @@ function OptionsScreen:_BuildMenu(subscreener)
 	
 	local settings_button = subscreener:MenuButton(STRINGS.UI.OPTIONS.SETTINGS, "settings", STRINGS.UI.OPTIONS.TOOLTIP_SETTINGS, self.tooltip)
 	local controls_button = subscreener:MenuButton(STRINGS.UI.OPTIONS.CONTROLS, "controls", STRINGS.UI.OPTIONS.TOOLTIP_CONTROLS, self.tooltip)
+	local languages_button = nil
+    if self.show_language_options then
+        languages_button = subscreener:MenuButton(STRINGS.UI.OPTIONS.LANGUAGES, "languages", STRINGS.UI.OPTIONS.TOOLTIP_LANGUAGES, self.tooltip)
+    end
 
     local menu_items = {
         {widget = controls_button},
         {widget = settings_button},
     }
+
+    if self.show_language_options then
+        table.insert( menu_items, 1, {widget = languages_button} )
+    end
 
     return self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 38, nil, nil, true))
 end
@@ -601,6 +615,10 @@ function OptionsScreen:Apply()
         ThePlayer:EnableMovementPrediction(self.working.movementprediction)
     end
 
+    if self.working.lang_id ~= Profile:GetLanguageID() then
+        Profile:SetLanguageID(self.working.lang_id, function() SimReset() end )
+    end
+
     self:MakeClean()
 end
 
@@ -736,10 +754,6 @@ function OptionsScreen:OnDestroy()
 	    end
 	end
 
-    --if self.prev_screen ~= nil then
-        --self.prev_screen:TransferPortalOwnership(self, self.prev_screen)
-    --end
-
 	self._base.OnDestroy(self)
 end
 
@@ -815,6 +829,80 @@ function OptionsScreen:DoInit()
     ))
 end
 
+
+local function BuildSectionTitle(text, region_size)
+    local title_root = Widget("title_root")
+    local title = title_root:AddChild(Text(HEADERFONT, 26))
+    title:SetRegionSize(region_size, 70)
+    title:SetString(text)
+    title:SetColour(UICOLOURS.GOLD_SELECTED)
+
+    local titleunderline = title_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
+    titleunderline:SetScale(0.4, 0.5)
+    titleunderline:SetPosition(0, -20)
+
+    return title_root
+end
+
+function OptionsScreen:_BuildLangButton(region_size, button_height, lang_id)
+    -- Use noop function to make ListItemBackground build something that's clickable.
+    local langButton = TEMPLATES.ListItemBackground(region_size, button_height, function() end)
+    langButton.move_on_click = true
+    langButton.text:SetRegionSize(region_size, 70)
+    langButton:SetTextSize(28)
+    langButton:SetFont(CHATFONT)
+    langButton:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+    langButton:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+    langButton:SetTextSelectedColour(UICOLOURS.GOLD_FOCUS)
+
+    if lang_id == Profile:GetLanguageID() then
+        langButton:Select()
+        self.last_selected = langButton
+    end
+
+    local name = STRINGS.PRETRANSLATED.LANGUAGES[lang_id]
+    langButton:SetText(name)
+    langButton:SetOnClick(function()
+        self.working.lang_id = lang_id
+        langButton:Select()
+        if self.last_selected ~= nil then
+            self.last_selected:Unselect()
+        end
+        self.last_selected = langButton
+
+        self:UpdateMenu()
+    end)
+
+    return langButton
+end
+
+-- This is the "languages" tab
+function OptionsScreen:_BuildLanguages()
+    local languagesRoot = Widget("ROOT")
+    
+    languagesRoot:SetPosition(0,0)
+    
+    local button_width = 430
+    local button_height = 45
+
+    self.langtitle = languagesRoot:AddChild(BuildSectionTitle(STRINGS.UI.OPTIONS.LANG_TITLE, 200))
+    self.langtitle:SetPosition(92, 160)
+
+    self.langButtons = {}
+
+    self.lang_grid = languagesRoot:AddChild(Grid())
+    self.lang_grid:SetPosition(-125, 90)
+    for _,id in pairs(GetLocalizationOptions()) do
+        table.insert(self.langButtons, self:_BuildLangButton(button_width, button_height, id))
+    end
+    self.lang_grid:FillGrid(2, button_width, button_height, self.langButtons)
+    
+    languagesRoot.focus_forward = self.lang_grid
+
+    return languagesRoot
+end
+
+
 -- This is the "settings" tab
 function OptionsScreen:_BuildSettings()
     local settingsroot = Widget("ROOT")
@@ -861,7 +949,7 @@ function OptionsScreen:_BuildSettings()
     end
 
     local function CreateCheckBox(labeltext, onclicked, checked )
-        local w = TEMPLATES.LabelCheckbox(onclicked, labeltext, checked, label_width, spinner_width, spinner_height, spinner_height + 15, space_between, CHATFONT, nil, narrow_field_nudge)
+        local w = TEMPLATES.OptionsLabelCheckbox(onclicked, labeltext, checked, label_width, spinner_width, spinner_height, spinner_height + 15, space_between, CHATFONT, nil, narrow_field_nudge)
         AddListItemBackground(w)
         return w.button
     end
@@ -1012,7 +1100,7 @@ function OptionsScreen:_BuildSettings()
 			function()
 				local opt_in = not TheSim:GetDataCollectionSetting()
 				local str = STRINGS.UI.DATACOLLECTION_POPUP[opt_in and "OPT_IN" or "OPT_OUT"]
-				TheFrontEnd:PushScreen(PopupDialogScreen( str.TITLE, STRINGS.UI.DATACOLLECTION_POPUP.BODY,
+				TheFrontEnd:PushScreen(PopupDialogScreen( STRINGS.UI.DATACOLLECTION_POPUP.TITLE, STRINGS.UI.DATACOLLECTION_POPUP.BODY,
 				{ 
 					{ 
 						text = str.CONTINUE,

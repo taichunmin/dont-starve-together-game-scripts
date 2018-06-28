@@ -348,6 +348,7 @@ end
 
 local MorgueScreen = Class(Screen, function(self, prev_screen, user_profile)
     Widget._ctor(self, "MorgueScreen")
+	self.can_view_profile = not IsPS4()
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot("ROOT"))
     self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
@@ -490,11 +491,16 @@ local function EncounterWidgetConstructor(context, i)
         left:SetFocusChangeDir(MOVE_RIGHT, right)
         right:SetFocusChangeDir(MOVE_LEFT, left)
     end
-    SequenceFocusHorizontal(group.bg, group.NET_ID)
-    SequenceFocusHorizontal(group.NET_ID, group.CLEAR)
-    group.NET_ID:SetFocusChangeDir(MOVE_DOWN, group.CLEAR)
-    group.CLEAR:SetFocusChangeDir(MOVE_UP, group.NET_ID)
-    SequenceFocusHorizontal(group.NET_ID, group.CLEAR)
+
+	if context.screen.can_view_profile then
+		SequenceFocusHorizontal(group.bg, group.NET_ID)
+		SequenceFocusHorizontal(group.NET_ID, group.CLEAR)
+		group.NET_ID:SetFocusChangeDir(MOVE_DOWN, group.CLEAR)
+		group.CLEAR:SetFocusChangeDir(MOVE_UP, group.NET_ID)
+	else	
+		SequenceFocusHorizontal(group.bg, group.CLEAR)
+		group.NET_ID:Hide()
+	end
 
     return group
 end

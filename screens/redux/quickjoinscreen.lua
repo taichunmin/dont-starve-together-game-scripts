@@ -7,7 +7,7 @@ local Stats = require("stats")
 
 local MAX_INITIAL_SEARCH_TIME = 7
 local MAX_SEARCH_TIME = 15
-local MAX_JOIN_ATTEMPTS = 20
+local MAX_JOIN_ATTEMPTS = 40
 
 if PLATFORM == "WIN32_RAIL" then
 	MAX_INITIAL_SEARCH_TIME = 10
@@ -101,9 +101,18 @@ function QuickJoinScreen:IsValidWithFilters(server)
     -- Hide version mismatched servers (except beta) on live builds
     -- We don't count this towards unjoinable because you probably could
     -- have joined them previously, and this keeps the count consistent.
+    local ignore_version = false
+    if BRANCH == "dev" then
+        if true then
+            ignore_version = true
+        else
+            print("~~~### Quick Match Disabled On Dev Build ###~~~")
+            print("This is so that dev builds don't connect to live servers and cause issues.")
+            print("Turn it on only if you know what you're doing.")
+        end
+    end
     local version_mismatch = APP_VERSION ~= tostring(server.version)
-    local dev_build = false -- BRANCH == "dev"
-    if version_mismatch and not dev_build then
+    if not ignore_version and version_mismatch then
         return false
     end
 

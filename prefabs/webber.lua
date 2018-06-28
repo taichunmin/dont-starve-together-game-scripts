@@ -21,9 +21,10 @@ local start_inv =
         "monstermeat",
         "monstermeat",
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WEBBER,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WEBBER
+end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
@@ -31,6 +32,12 @@ local function common_postinit(inst)
     inst:AddTag("spiderwhisperer")
     inst:AddTag("monster")
     inst:AddTag(UPGRADETYPES.SPIDER.."_upgradeuser")
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("fastpicker")
+        inst:AddTag("quagmire_farmhand")
+        inst:AddTag("quagmire_shopper")
+    end
 
     --bearded (from beard component) added to pristine state for optimization
     inst:AddTag("bearded")
@@ -64,7 +71,9 @@ local function master_postinit(inst)
 
     inst.talker_path_override = "dontstarve_DLC001/characters/"
 
-    inst.components.eater.strongstomach = true
+    if inst.components.eater ~= nil then
+        inst.components.eater.strongstomach = true
+    end
 
     inst.components.health:SetMaxHealth(TUNING.WEBBER_HEALTH)
     inst.components.hunger:SetMax(TUNING.WEBBER_HUNGER)

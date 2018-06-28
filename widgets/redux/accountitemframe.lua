@@ -99,7 +99,7 @@ function AccountItemFrame:PlayUnlock()
     self:GetAnimState():PushAnimation("icon", true)
 end
 
-function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable, is_perm_owned)
+function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable, is_dlc_owned)
     if is_owned then
         if is_active then
             self:GetAnimState():Show("SELECT")
@@ -114,7 +114,7 @@ function AccountItemFrame:SetActivityState(is_active, is_owned, is_unlockable, i
         end
     end
 
-    if is_perm_owned then
+    if is_dlc_owned then
         self:GetAnimState():Show("DLC")
     else
         self:GetAnimState():Hide("DLC")

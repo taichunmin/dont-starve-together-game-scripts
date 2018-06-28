@@ -6,6 +6,7 @@ local Screen = require "widgets/screen"
 local ServerListingScreen = require "screens/redux/serverlistingscreen"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local AchievementsPanel = require "widgets/redux/achievementspanel"
+local BookWidget = require "widgets/redux/quagmire_book"
 
 local TEMPLATES = require("widgets/redux/templates")
 
@@ -13,6 +14,8 @@ require("constants")
 
 local FestivalEventScreen = Class(Screen, function(self, prev_screen, session_data)
 	Screen._ctor(self, "FestivalEventScreen")
+
+    self.parent_screen = prev_screen
 
     self.session_data = session_data
 
@@ -25,26 +28,44 @@ end)
 function FestivalEventScreen:DoInit()
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
-    self.bg = self.root:AddChild(TEMPLATES.BoarriorBackground())
-    self.bg_anim = self.root:AddChild(TEMPLATES.BoarriorAnim())
+    
+    if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
+        self.bg_anim = self.root:AddChild(TEMPLATES.QuagmireAnim())
+    elseif IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
+        self.bg = self.root:AddChild(TEMPLATES.BoarriorBackground())
+        self.bg_anim = self.root:AddChild(TEMPLATES.BoarriorAnim())
+    end
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(WORLD_FESTIVAL_EVENT)]))
 
-    self.achievements = self.root:AddChild(AchievementsPanel(self.user_profile, WORLD_FESTIVAL_EVENT))
-    self.achievements:SetPosition(120,-60)
+    if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
+		self.achievements = self.root:AddChild(AchievementsPanel(self.user_profile, WORLD_FESTIVAL_EVENT))
+		self.achievements:SetPosition(120,-60)
+	end
 
     self.onlinestatus = self.root:AddChild(OnlineStatus(true))
     self.userprogress = self.root:AddChild(TEMPLATES.UserProgress(function()
-        self:StopMusic()
+        self:StopMusic(false)
         self:_FadeToScreen(PlayerSummaryScreen, {Profile})
     end))
 
     self.menu = self.root:AddChild(self:_MakeMenu())
 	self.menu.reverse = true
 
+	if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
+		self.recipebook = self.root:AddChild(BookWidget(self.user_profile, self.menu))
+		self.recipebook:SetPosition(120, -40)
+		self.recipebook:MoveToFront()
+
+        PostProcessor:SetColourCubeData(0, "images/colour_cubes/quagmire_cc.tex", "images/colour_cubes/quagmire_cc.tex")
+        PostProcessor:SetColourCubeData(1, "images/colour_cubes/quagmire_cc.tex", "images/colour_cubes/quagmire_cc.tex")
+        PostProcessor:SetColourCubeLerp(0, 1)
+        PostProcessor:SetColourCubeLerp(1, 0)
+	end
+
     if not TheInput:ControllerAttached() then
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
-                    self:StopMusic()
+                    self:StopMusic(true)
                     TheFrontEnd:FadeBack()
                 end
             ))
@@ -64,7 +85,9 @@ function FestivalEventScreen:_MakeMenu()
         {widget = button_quickmatch},
     }
 
-    return self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 38, nil, nil, true))
+	local menu = self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 38, nil, nil, true))
+
+	return menu
 end
 
 local function CalcQuickJoinServerScoreForEvent(server)
@@ -117,13 +140,17 @@ function FestivalEventScreen:OnHostButton()
 end
 function FestivalEventScreen:OnBrowseButton()
     local filter_settings = {
-        { is_forced = true, name = "ISDEDICATED",  data = true },
+        { is_forced = true, name = "ISDEDICATED",  data = (BRANCH == "dev" and "ANY" or true) },
         { is_forced = true, name = "GAMEMODE",     data = "ANY" },
         { is_forced = true, name = "HASPVP",       data = false },
         { is_forced = true, name = "ISEMPTY",      data = false },
         { is_forced = true, name = "SEASON",       data = "ANY" },
         { is_forced = true, name = "MODSENABLED",  data = false },
     }
+    if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
+        table.insert(filter_settings, { is_forced = true, name = "MINOPENSLOTS", data = "ANY" })
+	end
+
     local forced_settings = {
         intention = "any",
         online = true,
@@ -148,21 +175,30 @@ local function OnStartMusic(inst, self, music)
 end
 
 function FestivalEventScreen:StartMusic()
-    if not self.musicstarted and self.musictask == nil then
-        local music = GetFestivalEventInfo().FEMUSIC
-        if music ~= nil then
+    local music = GetFestivalEventInfo().FEMUSIC
+    if music ~= nil then
+        if not self.musicstarted and self.musictask == nil then
             self.musictask = self.inst:DoTaskInTime(1.25, OnStartMusic, self, music)
         end
+    else
+        self.parent_screen:StartMusic()
     end
 end
 
-function FestivalEventScreen:StopMusic()
-    if self.musicstarted then
-        self.musicstarted = false
-        TheFrontEnd:GetSound():KillSound("FEMusic")
-    elseif self.musictask ~= nil then
-        self.musictask:Cancel()
-        self.musictask = nil
+function FestivalEventScreen:StopMusic(going_back)
+    local music = GetFestivalEventInfo().FEMUSIC
+    if music ~= nil then
+        if self.musicstarted then
+            self.musicstarted = false
+            TheFrontEnd:GetSound():KillSound("FEMusic")
+        elseif self.musictask ~= nil then
+            self.musictask:Cancel()
+            self.musictask = nil
+        end
+    else
+        if not going_back then
+            self.parent_screen:StopMusic()
+        end
     end
 end
 
@@ -186,14 +222,14 @@ function FestivalEventScreen:OnBecomeActive()
     self.leaving = nil
 
 	if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
-		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY, 
+		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY[WORLD_FESTIVAL_EVENT], 
 			{
 				{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
 						SimReset()
 					end},
 				{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BACK, cb = function()
 					    self.popup_backout = true
-						self:StopMusic()
+						self:StopMusic(true)
 						TheFrontEnd:FadeBack(nil, nil, function() TheFrontEnd:PopScreen() end)
 					end},
 			}))
@@ -201,35 +237,47 @@ function FestivalEventScreen:OnBecomeActive()
 end
 
 function FestivalEventScreen:OnControl(control, down)
+	if self.recipebook ~= nil and self.recipebook:OnControlTabs(control, down) then
+		return true 
+	end
+
     if FestivalEventScreen._base.OnControl(self, control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
-        self:StopMusic()
+        self:StopMusic(true)
         TheFrontEnd:FadeBack()
         return true
     end
 
-	if down then
-        if control == CONTROL_SCROLLBACK then
-            if self.achievements.grid:Scroll(-.66) then
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
-            end
-            return true
-        elseif control == CONTROL_SCROLLFWD then
-            if self.achievements.grid:Scroll(.66) then
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
-            end
-            return true
-        end
-    end
+	if self.achievements ~= nil then
+		if down then
+			if control == CONTROL_SCROLLBACK then
+				if self.achievements.grid:Scroll(-.66) then
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+				end
+				return true
+			elseif control == CONTROL_SCROLLFWD then
+				if self.achievements.grid:Scroll(.66) then
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+				end
+				return true
+			end
+		end
+	end
 end
 
 function FestivalEventScreen:GetHelpText()
     local controller_id = TheInput:GetControllerID()
     local t = {}
 
-	if not self.achievements.grid.focus and self.achievements.grid:CanScroll() then
+    table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
+
+	if self.achievements ~= nil and not self.achievements.grid.focus and self.achievements.grid:CanScroll() then
 	    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK) .. "/" .. TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD) .. " " .. STRINGS.UI.HELP.SCROLL)
+	end
+
+	if self.recipebook ~= nil and not self.recipebook.focus then
+		table.insert(t, self.recipebook:GetHelpText())
 	end
 
     return table.concat(t, "  ")

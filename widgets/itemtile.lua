@@ -24,7 +24,7 @@ local ItemTile = Class(Widget, function(self, invitem)
         return
     end
 
-    if self.item.prefab == "spoiled_food" or self:HasSpoilage() then
+    if self.item:HasTag("show_spoiled") or self:HasSpoilage() then
         self.bg = self:AddChild(Image(HUD_ATLAS, "inv_slot_spoiled.tex"))
         self.bg:SetClickable(false)
     end
@@ -54,7 +54,18 @@ local ItemTile = Class(Widget, function(self, invitem)
         self.rechargeframe:GetAnimState():PlayAnimation("frame")
     end
 
+    if self.item.inv_image_bg ~= nil then
+        self.imagebg = self:AddChild(Image(self.item.inv_image_bg.atlas, self.item.inv_image_bg.image, "default.tex"))
+        self.imagebg:SetClickable(false)
+        if GetGameModeProperty("icons_use_cc") then
+            self.imagebg:SetEffect("shaders/ui_cc.ksh")
+        end
+    end
     self.image = self:AddChild(Image(invitem.replica.inventoryitem:GetAtlas(), invitem.replica.inventoryitem:GetImage(), "default.tex"))
+    if GetGameModeProperty("icons_use_cc") then
+        self.image:SetEffect("shaders/ui_cc.ksh")
+    end
+
     --self.image:SetClickable(false)
 
     if self.rechargeframe ~= nil then
@@ -65,7 +76,15 @@ local ItemTile = Class(Widget, function(self, invitem)
     end
 
     self.inst:ListenForEvent("imagechange",
-        function(invitem) 
+        function(invitem)
+            if self.imagebg ~= nil then
+                if self.item.inv_image_bg ~= nil then
+                    self.imagebg:SetTexture(self.item.inv_image_bg.atlas, self.item.inv_image_bg.image)
+                    self.imagebg:Show()
+                else
+                    self.imagebg:Hide()
+                end
+            end
             self.image:SetTexture(invitem.replica.inventoryitem:GetAtlas(), invitem.replica.inventoryitem:GetImage())
         end, invitem)
 
@@ -81,6 +100,9 @@ local ItemTile = Class(Widget, function(self, invitem)
                     end
                     local dest_pos = self:GetWorldPosition()
                     local im = Image(invitem.replica.inventoryitem:GetAtlas(), invitem.replica.inventoryitem:GetImage())
+                    if GetGameModeProperty("icons_use_cc") then
+                        im:SetEffect("shaders/ui_cc.ksh")
+                    end
                     im:MoveTo(Vector3(TheSim:GetScreenPos(data.src_pos:Get())), dest_pos, .3, function()
                         --V2C: tile could be killed already if the user picked it
                         --     up with mouse cursor during the move to animation.
@@ -349,7 +371,7 @@ end
 function ItemTile:CancelDrag()
     self:StopFollowMouse()
 
-    if self.item.prefab == "spoiled_food" or (self.item.components.edible and self.item.components.perishable) then
+    if self.item:HasTag("show_spoiled") or (self.item.components.edible and self.item.components.perishable) then
         self.bg:Show( )
     end
 

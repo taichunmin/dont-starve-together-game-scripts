@@ -17,6 +17,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("icebox_valid")
+    inst:AddTag("show_spoiled")
 
     inst.entity:SetPristine()
 
@@ -47,6 +48,10 @@ local function fn()
     inst:AddComponent("edible")
     inst.components.edible.healthvalue = TUNING.SPOILED_HEALTH
     inst.components.edible.hungervalue = TUNING.SPOILED_HUNGER
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/spoiledfood").master_postinit(inst)
+    end
 
     MakeHauntableLaunchAndIgnite(inst)
 

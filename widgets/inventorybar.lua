@@ -53,6 +53,13 @@ local Inv = Class(Widget, function(self, owner)
 		self.bg = self.root:AddChild(Image("images/lavaarena_hud.xml", "lavaarena_inventorybar.tex"))
 		self.bgcover = self.root:AddChild(Widget("dummy"))
 		self.in_pos = Vector3(41,W*1.5,0)
+	elseif TheNet:GetServerGameMode() == "quagmire" then
+		self.bg = self.root:AddChild(Image("images/quagmire_hud.xml", "inventory_bg.tex"))
+		self.bgcover = self.root:AddChild(Widget("dummy"))
+		self.in_pos = Vector3(0,72,0)
+	    self.base_scale = .75
+		self.selected_scale = .8
+	    self:SetScale(self.base_scale)
 	else
 		self.bg = self.root:AddChild(Image(HUD_ATLAS, "inventory_bg.tex"))
 		self.bgcover = self.root:AddChild(Image(HUD_ATLAS, "inventory_bg_cover.tex"))
@@ -75,9 +82,13 @@ local Inv = Class(Widget, function(self, owner)
     self.actionstring:Hide()
 
     --default equip slots
-    self:AddEquipSlot(EQUIPSLOTS.HANDS, HUD_ATLAS, "equip_slot.tex")
-    self:AddEquipSlot(EQUIPSLOTS.BODY, HUD_ATLAS, "equip_slot_body.tex")
-    self:AddEquipSlot(EQUIPSLOTS.HEAD, HUD_ATLAS, "equip_slot_head.tex")
+	if TheNet:GetServerGameMode() == "quagmire" then
+		self:AddEquipSlot(EQUIPSLOTS.HANDS, HUD_ATLAS, "equip_slot.tex")
+	else
+		self:AddEquipSlot(EQUIPSLOTS.HANDS, HUD_ATLAS, "equip_slot.tex")
+		self:AddEquipSlot(EQUIPSLOTS.BODY, HUD_ATLAS, "equip_slot_body.tex")
+		self:AddEquipSlot(EQUIPSLOTS.HEAD, HUD_ATLAS, "equip_slot_head.tex")
+	end
 
     self.inst:ListenForEvent("builditem", function(inst, data) self:OnBuild() end, self.owner)
     self.inst:ListenForEvent("itemget", function(inst, data) self:OnItemGet(data.item, self.inv[data.slot], data.src_pos, data.ignore_stacksize_anim) end, self.owner)
@@ -95,7 +106,11 @@ local Inv = Class(Widget, function(self, owner)
     self.openhint = self:AddChild(Text(UIFONT, 52))
     self.openhint:SetRegionSize(300, 60)
     self.openhint:SetHAlign(ANCHOR_LEFT)
-    self.openhint:SetPosition(940, 70, 0)
+	if TheNet:GetServerGameMode() == "quagmire" then
+	    self.openhint:SetPosition(400, 70, 0)
+	else
+	    self.openhint:SetPosition(940, 70, 0)
+	end
 
     self.hint_update_check = HINT_UPDATE_INTERVAL
 
@@ -130,34 +145,62 @@ local function BackpackLose(inst, data)
     end
 end
 
-function Inv:Rebuild()
-    if self.cursor ~= nil then
-        self.cursor:Kill()
-        self.cursor = nil
+
+local function RebuildLayout_Quagmire(self, inventory, overflow, do_integrated_backpack, do_self_inspect)
+	local inv_scale = 1
+	local inv_w = 68 * inv_scale
+	local inv_sep = 10 * inv_scale
+	local inv_y = -77
+	local inv_tip_y = inv_w + inv_sep + (30 * inv_scale)
+
+    local num_slots = inventory:GetNumSlots()
+    local x = -165
+    for k = 1, num_slots do
+        self.inv[k] = InvSlot(k, HUD_ATLAS, "inv_slot.tex", self.owner, self.owner.replica.inventory)
+		local slot = self.toprow:AddChild(Widget("slot_scaler"..k))
+		slot:AddChild(self.inv[k])
+        slot:SetPosition(x, inv_y)
+		slot:SetScale(inv_scale)
+        slot.top_align_tip = inv_w + inv_sep + 30 -- tooltip text offset when using cursors
+
+        local item = inventory:GetItemInSlot(k)
+        if item ~= nil then
+            self.inv[k]:SetTile(ItemTile(item))
+        end
+
+        x = x + 83
     end
 
-    if self.toprow ~= nil then
-        self.toprow:Kill()
+
+	x = x 
+
+	local equip_scale = 0.8
+	local equip_y = -74
+
+    local hand_slot = self.equipslotinfo[1]
+    local slot = EquipSlot(hand_slot.slot, hand_slot.atlas, hand_slot.image, self.owner)
+    slot:SetPosition(x, equip_y)
+	slot.highlight_scale = 1
+	slot.base_scale = equip_scale
+	slot:SetScale(equip_scale)
+
+
+    self.equip[hand_slot.slot] = self.toprow:AddChild(slot)
+
+    local item = inventory:GetEquippedItem(hand_slot.slot)
+    if item ~= nil then
+        slot:SetTile(ItemTile(item))
     end
 
-    if self.bottomrow ~= nil then
-        self.bottomrow:Kill()
-    end
 
-    self.toprow = self.root:AddChild(Widget("toprow"))
-    self.bottomrow = self.root:AddChild(Widget("toprow"))
+    self.toprow:SetPosition(0, 75)
+    self.bg:SetPosition(0, 15)
 
-    self.inv = {}
-    self.equip = {}
-    self.backpackinv = {}
+    self.root:SetPosition(self.in_pos)
+    self:UpdatePosition()
+end
 
-    self.controller_build = TheInput:ControllerAttached()
-
-    local inventory = self.owner.replica.inventory
-    local overflow = inventory:GetOverflowContainer()
-    local do_integrated_backpack = overflow ~= nil and self.controller_build
-    local do_self_inspect = not (self.controller_build or GetGameModeProperty("no_avatar_popup"))
-
+local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, do_self_inspect)
     local y = overflow ~= nil and ((W + YSEP) / 2) or 0
     local eslot_order = {}
 
@@ -168,7 +211,7 @@ function Inv:Rebuild()
     local num_equipintersep = num_buttons > 0 and 1 or 0
     local total_w = (num_slots + num_equip + num_buttons) * W + (num_slots + num_equip + num_buttons - num_slotintersep - num_equipintersep - 1) * SEP + (num_slotintersep + num_equipintersep) * INTERSEP
 
-    local x = (W - total_w) * .5 + num_slots * W + (num_slots - num_slotintersep) * SEP + num_slotintersep * INTERSEP
+	local x = (W - total_w) * .5 + num_slots * W + (num_slots - num_slotintersep) * SEP + num_slotintersep * INTERSEP
     for k, v in ipairs(self.equipslotinfo) do
         local slot = EquipSlot(v.slot, v.atlas, v.image, self.owner)
         self.equip[v.slot] = self.toprow:AddChild(slot)
@@ -305,6 +348,41 @@ function Inv:Rebuild()
             self:UpdatePosition()
         end
     end
+end
+
+function Inv:Rebuild()
+    if self.cursor ~= nil then
+        self.cursor:Kill()
+        self.cursor = nil
+    end
+
+    if self.toprow ~= nil then
+        self.toprow:Kill()
+    end
+
+    if self.bottomrow ~= nil then
+        self.bottomrow:Kill()
+    end
+
+    self.toprow = self.root:AddChild(Widget("toprow"))
+    self.bottomrow = self.root:AddChild(Widget("toprow"))
+
+    self.inv = {}
+    self.equip = {}
+    self.backpackinv = {}
+
+    self.controller_build = TheInput:ControllerAttached()
+
+    local inventory = self.owner.replica.inventory
+    local overflow = inventory:GetOverflowContainer()
+    local do_integrated_backpack = overflow ~= nil and self.controller_build
+    local do_self_inspect = not (self.controller_build or GetGameModeProperty("no_avatar_popup"))
+
+	if TheNet:GetServerGameMode() == "quagmire" then
+		RebuildLayout_Quagmire(self, inventory, overflow, do_integrated_backpack, do_self_inspect)
+	else
+		RebuildLayout(self, inventory, overflow, do_integrated_backpack, do_self_inspect)
+	end
 
     self.actionstring:MoveToFront()
 
@@ -557,7 +635,10 @@ function Inv:OnControl(control, down)
     end
 
     if control == CONTROL_ACCEPT then
-        if inv_item ~= nil and active_item == nil and not inv_item.replica.inventoryitem:CanGoInContainer() then
+        if inv_item ~= nil and active_item == nil and
+            (   (GetGameModeProperty("non_item_equips") and inv_item.replica.equippable ~= nil) or
+                not inv_item.replica.inventoryitem:CanGoInContainer()
+            ) then
             self.owner.replica.inventory:DropItemFromInvTile(inv_item)
             self:CloseControllerInventory()
             return true
@@ -720,7 +801,7 @@ function Inv:UpdateCursorText()
                     if self_action ~= nil and self_action.action ~= ACTIONS.UNEQUIP then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_USEONSCENE) .. " " .. self_action:GetActionString())
                     end
-                    if #self.inv > 0 and not inv_item:HasTag("heavy") then
+                    if #self.inv > 0 and not (inv_item:HasTag("heavy") or GetGameModeProperty("non_item_equips")) then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_USEONSELF) .. " " .. STRINGS.UI.HUD.UNEQUIP)
                     end
                 end
@@ -737,10 +818,11 @@ function Inv:UpdateCursorText()
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.EQUIP)
                     end
                 elseif active_item == nil and inv_item ~= nil then
-                    if inv_item.replica.inventoryitem:CanGoInContainer() then
-                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.UNEQUIP)             
+                    if not (GetGameModeProperty("non_item_equips") and inv_item.replica.equippable ~= nil) and
+                        inv_item.replica.inventoryitem:CanGoInContainer() then
+                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.UNEQUIP)
                     else
-                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.DROP)                
+                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.DROP)
                     end
                 end
             else
@@ -1055,6 +1137,17 @@ function Inv:OnItemGet(item, slot, source_pos, ignore_stacksize_anim)
         if source_pos ~= nil then
             local dest_pos = slot:GetWorldPosition()
             local im = Image(item.replica.inventoryitem:GetAtlas(), item.replica.inventoryitem:GetImage())
+            if GetGameModeProperty("icons_use_cc") then
+                im:SetEffect("shaders/ui_cc.ksh")
+            end
+            if item.inv_image_bg ~= nil then
+                local bg = Image(item.inv_image_bg.atlas, item.inv_image_bg.image)
+                bg:AddChild(im)
+                im = bg
+                if GetGameModeProperty("icons_use_cc") then
+                    im:SetEffect("shaders/ui_cc.ksh")
+                end
+            end
             im:MoveTo(Vector3(TheSim:GetScreenPos(source_pos:Get())), dest_pos, .3, function() tile:Show() tile:ScaleTo(2, 1, .25) im:Kill() end)
         else
             tile:Show() 

@@ -10,6 +10,7 @@ end
 local function onclose(inst)
     if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("close")
+        inst.AnimState:PushAnimation("closed", false)
         inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_close")
     end
 end
@@ -57,7 +58,7 @@ local function onload(inst, data)
     end
 end
 
-local function MakeChest(name, bank, build, indestructible, custom_postinit, prefabs)
+local function MakeChest(name, bank, build, indestructible, custom_postinit, prefabs, override_widget)
     local assets =
     {
         Asset("ANIM", "anim/"..build..".zip"),
@@ -92,7 +93,7 @@ local function MakeChest(name, bank, build, indestructible, custom_postinit, pre
 
         inst:AddComponent("inspectable")
         inst:AddComponent("container")
-        inst.components.container:WidgetSetup("treasurechest")
+        inst.components.container:WidgetSetup(override_widget or "treasurechest")
         inst.components.container.onopenfn = onopen
         inst.components.container.onclosefn = onclose
 
@@ -172,3 +173,4 @@ return MakeChest("treasurechest", "chest", "treasure_chest", false, nil, { "coll
     MakePlacer("treasurechest_placer", "chest", "treasure_chest", "closed"),
     MakeChest("pandoraschest", "pandoras_chest", "pandoras_chest", true, pandora_custom_postinit, { "pandorachest_reset" }),
     MakeChest("minotaurchest", "pandoras_chest_large", "pandoras_chest_large", true, minotuar_custom_postinit, { "collapse_small" })
+	

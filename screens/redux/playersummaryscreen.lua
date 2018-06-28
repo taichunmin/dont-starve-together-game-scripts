@@ -12,6 +12,8 @@ local TEMPLATES = require "widgets/redux/templates"
 local Text = require "widgets/text"
 local TradeScreen = require "screens/tradescreen"
 local Widget = require "widgets/widget"
+local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
+local PopupDialogScreen = require "screens/redux/popupdialog"
 
 require("characterutil")
 require("skinsutils")
@@ -21,6 +23,7 @@ local PlayerSummaryScreen = Class(Screen, function(self, prev_screen, user_profi
 	Screen._ctor(self, "PlayerSummaryScreen")
     self.prev_screen = prev_screen
     self.user_profile = user_profile
+	self.can_shop = IsNotConsole()
 
     TheSim:PauseFileExistsAsync(true)
 
@@ -57,7 +60,6 @@ function PlayerSummaryScreen:DoInit()
     if IsAnyFestivalEventActive() then
         self.experiencebar = self.experience_root:AddChild(TEMPLATES.WxpBar())
         self.experiencebar:SetPosition(240,40)
-
     else
         self.festivals_root = self.root:AddChild(Widget("festivals_root"))
         self.festivals_root:SetPosition(325,210)
@@ -67,14 +69,11 @@ function PlayerSummaryScreen:DoInit()
         self.festivals_divider_top = self.festivals_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
         self.festivals_divider_top:SetScale(0.5)
         self.festivals_divider_top:SetPosition(60,55)
-        if TheInventory:GetWXP() > 0 then
-            self.festivals_badge = self.festivals_root:AddChild(self:_BuildFestivalHistory(PREVIOUS_FESTIVAL_EVENT))
-            self.festivals_badge:SetPosition(-60,-10)
-        else
-            self.festivals_untouched = self.festivals_root:AddChild(Text(UIFONT, 30, STRINGS.UI.PLAYERSUMMARYSCREEN.NO_HISTORY))
-            self.festivals_untouched:SetRegionSize(width,60)
-            self.festivals_untouched:EnableWordWrap(true)
-            self.festivals_untouched:SetPosition(60,0)
+        
+        self.festivals_badges = {}
+        for i,event_name in pairs(PREVIOUS_FESTIVAL_EVENTS) do
+            self.festivals_badges[i] = self.festivals_root:AddChild(self:_BuildFestivalHistory(event_name))
+            self.festivals_badges[i]:SetPosition(-60,65 - i*80)
         end
     end
 
@@ -134,19 +133,56 @@ function PlayerSummaryScreen:DoInit()
                 end
             ))
     end
+    
+    if IsConsole() then
+        self.task = self.inst:DoPeriodicTask(1, function() 
+            if TheFrontEnd:GetActiveScreen() == self then
+                TheInventory:RefreshDLCSkinOwnership() --this refreshes both player's inventories if a second is logged in.
+                MakeSkinDLCPopup() --refresh any pending skin DLC (will only happen for player1, which is good, no need to double up the UI presentation)
+            end
+        end)
+    end
 end
 
 function PlayerSummaryScreen:_DoFocusHookups()
-    if self.festivals_badge then
-        self.menu:SetFocusChangeDir(MOVE_RIGHT, self.festivals_badge)
-        self.festivals_badge:SetFocusChangeDir(MOVE_LEFT, self.menu)
+    if self.festivals_badges ~= nil then
+        self.menu:SetFocusChangeDir(MOVE_RIGHT, self.festivals_badges[1])
+        for i,_ in pairs(self.festivals_badges) do
+            self.festivals_badges[i]:SetFocusChangeDir(MOVE_UP, self.festivals_badges[i-1])
+            self.festivals_badges[i]:SetFocusChangeDir(MOVE_LEFT, self.menu)
+            self.festivals_badges[i]:SetFocusChangeDir(MOVE_DOWN, self.festivals_badges[i+1])
+        end
     end
+end
+
+
+local function PushWaitingPopup()
+    local event_wait_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, false)
+    TheFrontEnd:PushScreen(event_wait_popup)
+    return event_wait_popup
 end
 
 function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
     local function onclick()
-        local screen = AchievementsPopup(self.prev_screen, self.user_profile, festival_key)
-        TheFrontEnd:PushScreen(screen)
+        local event_wait_popup = PushWaitingPopup()
+        wxputils.GetEventStatus(festival_key, function(success)
+            self.inst:DoTaskInTime(0, function() --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
+                event_wait_popup:Close()
+
+                if success then
+                    local screen = AchievementsPopup(self.prev_screen, self.user_profile, festival_key)
+                    TheFrontEnd:PushScreen(screen)
+                else
+                    local ok_scr = PopupDialogScreen( STRINGS.UI.PLAYERSUMMARYSCREEN.FESTIVAL_HISTORY, STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT,
+					{
+						{text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function() 
+							TheFrontEnd:PopScreen()
+						end }, 
+					})
+                    TheFrontEnd:PushScreen(ok_scr)
+                end
+            end, self)
+        end)
     end
     -- Using ImageButton to get scaling on focus on image children.
     local w = ImageButton("images/ui.xml", "blank.tex")
@@ -155,13 +191,6 @@ function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
     w:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
     w:SetTextFocusColour(UICOLOURS.GOLD_SELECTED)
     w:SetOnClick(onclick)
-
-    w.badge = w.image:AddChild(TEMPLATES.FestivalNumberBadge(festival_key))
-    -- TODO(event2): Retrieve level for past event by name instead of relying on the old data.
-    local festival_rank = TheInventory:GetWXPLevel()
-    w.badge:SetRank(festival_rank)
-    w.badge.num:SetSize(30)
-
 
     local festival_title = STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(festival_key)]
     w:SetText(festival_title)
@@ -356,31 +385,70 @@ function PlayerSummaryScreen:_RefreshPuppet()
 end
 
 function PlayerSummaryScreen:_BuildMenu()
-    self.tooltip = self.root:AddChild(TEMPLATES.ScreenTooltip())
+		
+	-- choose whether to use standard or wide menu buttons based on the length of the longest string
+	local menu_button_character_limit = 22
+	local menu_button_style = nil
+    local skinsStr = STRINGS.UI.MAINSCREEN.SKINS
+    if IsAnyItemNew(self.user_profile) then
+        skinsStr = string.format("%s (%s)", skinsStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
+    end
+    local numboxes = GetTotalMysteryBoxCount()
+    local mysteryboxStr = ""
+    if numboxes > 0 then
+        mysteryboxStr = string.format("%s (%d)", STRINGS.UI.MAINSCREEN.MYSTERYBOX, numboxes)
+    else
+        mysteryboxStr = STRINGS.UI.MAINSCREEN.MYSTERYBOX
+    end
+	local shopStr = STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE
+	if IsShopNew(self.user_profile) then
+		shopStr = string.format("%s (%s)", shopStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
+	end 
+	local menu_strings = { skinsStr, 
+						   mysteryboxStr, 
+						   STRINGS.UI.MORGUESCREEN.HISTORY, 
+						   STRINGS.UI.PLAYERSUMMARYSCREEN.TRADING, 
+						   shopStr,
+						 }
+	for i, item in pairs(menu_strings) do
+		if item:utf8len() > menu_button_character_limit then
+			menu_button_style = "wide"
+			break
+		end
+	end
 
-    local skins_button      = TEMPLATES.MenuButton(STRINGS.UI.MAINSCREEN.SKINS, function() self:OnSkinsButton() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_SKINS, self.tooltip)
-    local mysterybox_button = TEMPLATES.MenuButton(STRINGS.UI.MAINSCREEN.MYSTERYBOX, function() self:OnMysteryBoxButton() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_MYSTERYBOX, self.tooltip)
-    local history_button    = TEMPLATES.MenuButton(STRINGS.UI.MORGUESCREEN.HISTORY, function() self:OnHistoryButton() end,    STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_HISTORY,  self.tooltip)
-    local trading_button    = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.TRADING, function() self:_FadeToScreen(TradeScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_TRADE, self.tooltip)
-    local purchase_button   = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() self:_FadeToScreen(PurchasePackScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip)
+    self.tooltip = self.root:AddChild(TEMPLATES.ScreenTooltip(menu_button_style))
+
+    local skins_button      = TEMPLATES.MenuButton(STRINGS.UI.MAINSCREEN.SKINS, function() self:OnSkinsButton() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_SKINS, self.tooltip, menu_button_style)
+    local mysterybox_button = TEMPLATES.MenuButton(STRINGS.UI.MAINSCREEN.MYSTERYBOX, function() self:OnMysteryBoxButton() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_MYSTERYBOX, self.tooltip, menu_button_style)
+    local history_button    = TEMPLATES.MenuButton(STRINGS.UI.MORGUESCREEN.HISTORY, function() self:OnHistoryButton() end,    STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_HISTORY,  self.tooltip, menu_button_style)
+    local trading_button    = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.TRADING, function() self:_FadeToScreen(TradeScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_TRADE, self.tooltip, menu_button_style)
 
     local menu_items = {
-        {widget = purchase_button},
         {widget = trading_button},
         {widget = history_button},
         {widget = mysterybox_button},
         {widget = skins_button},
     }
-
+	
     -- These won't be available when you first attempt to load this screen
     -- because they require the inventory to function correctly.
     self.waiting_for_inventory = {
-        purchase_button,
         trading_button,
         history_button, -- There's no online data in history, but it looks weird as the lone available item.
         mysterybox_button,
         skins_button,
     }
+
+	if self.can_shop then
+		local purchase_button   = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() self:_FadeToScreen(PurchasePackScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip, menu_button_style)	
+        table.insert(menu_items, 1, {widget = purchase_button})
+        table.insert(self.waiting_for_inventory, 1, purchase_button)
+    else
+        local purchase_button   = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() TheSystemService:GotoSkinDLCStorePage()  end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip, menu_button_style)	
+        table.insert(menu_items, 1, {widget = purchase_button})
+        table.insert(self.waiting_for_inventory, 1, purchase_button)
+    end
 
     for i,w in ipairs(self.waiting_for_inventory) do
         w:Disable()
@@ -415,15 +483,39 @@ function PlayerSummaryScreen:_RefreshTitles()
     if IsAnyItemNew(self.user_profile) then
         skinsStr = string.format("%s (%s)", skinsStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
     end
+
+	local max_menu_text_length = 28
+	local default_menu_text_size = 25
+	local text_font_size = 0
+	if skinsStr:utf8len() > max_menu_text_length then
+		text_font_size = 20
+	else
+		text_font_size = default_menu_text_size
+	end
+	self.menu:EditItem(#self.menu.items, skinsStr, text_font_size)				-- skins are the last item in the menu
+		
+	local text_font_size = 25
+	if mysteryboxStr:utf8len() > max_menu_text_length then
+		text_font_size = 20
+	else
+		text_font_size = default_menu_text_size
+	end
+	self.menu:EditItem(#self.menu.items - 1, mysteryboxStr, text_font_size)		-- mystery box is the second last item in the menu
     
-    local shopStr = STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE
-    if IsShopNew(self.user_profile) then
-        shopStr = string.format("%s (%s)", shopStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
-    end
-    
-    self.menu:EditItem(5,skinsStr)
-    self.menu:EditItem(4,mysteryboxStr)
-    self.menu:EditItem(1,shopStr)
+	if self.can_shop then
+		local shopStr = STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE
+		if IsShopNew(self.user_profile) then
+			shopStr = string.format("%s (%s)", shopStr, STRINGS.UI.COLLECTIONSCREEN.NEW)
+		end    
+		
+		if shopStr:utf8len() > max_menu_text_length then
+			text_font_size = 20
+		else
+			text_font_size = default_menu_text_size
+		end
+		self.menu:EditItem(1, shopStr, text_font_size)
+	end
+	
 end
 
 function PlayerSummaryScreen:_RefreshClientData()

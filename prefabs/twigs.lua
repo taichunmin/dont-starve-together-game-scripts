@@ -54,6 +54,10 @@ local function fn()
     inst.components.repairer.repairmaterial = MATERIALS.WOOD
     inst.components.repairer.healthrepairvalue = TUNING.REPAIR_STICK_HEALTH
 
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/twigs").master_postinit(inst)
+    end
+
     return inst
 end
 

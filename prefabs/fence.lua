@@ -228,19 +228,19 @@ local function FixUpFenceOrientation(inst, deployedrotation) -- rotates the plac
                 
                 if neighbor.isdoor then
                     if CalcRotationEnum(neighbor.Transform:GetRotation(), false) == CalcRotationEnum(rot, false) then
-						rot = neighbor.Transform:GetRotation()
-					end
+                        rot = neighbor.Transform:GetRotation()
+                    end
                     SetIsSwingRight(inst, not IsSwingRight(neighbor))
                 else
                     SetIsSwingRight(inst, CalcRotationEnum(rot, true) ~= CalcRotationEnum(rot_to_neighbor, true))
 
-					-- some extra fixup to handle the case when two doors are placed with opposite camera angles, but the found neighbour was a wall even though there is a door on the otherside
-					inst.Transform:SetRotation(rot)
-					local otherdoor = FindPairedDoor(inst)
-					if otherdoor ~= nil then
-						rot = otherdoor.Transform:GetRotation()
-						SetIsSwingRight(inst, not IsSwingRight(otherdoor))
-					end
+                    -- some extra fixup to handle the case when two doors are placed with opposite camera angles, but the found neighbour was a wall even though there is a door on the otherside
+                    inst.Transform:SetRotation(rot)
+                    local otherdoor = FindPairedDoor(inst)
+                    if otherdoor ~= nil then
+                        rot = otherdoor.Transform:GetRotation()
+                        SetIsSwingRight(inst, not IsSwingRight(otherdoor))
+                    end
                 end
             end
 
@@ -354,6 +354,10 @@ end
 local function ToggleDoor(inst)
     inst.components.activatable.inactive = true
 
+    if inst._isunlocked ~= nil and not inst._isunlocked:value() then
+        return false, "LOCKED_GATE"
+    end
+
     if IsOpen(inst) then
         CloseDoor(inst)
         CloseDoor(FindPairedDoor(inst))
@@ -366,6 +370,35 @@ end
 local function getdooractionstring(inst)
     return IsOpen(inst) and "CLOSE" or "OPEN"
 end
+
+local function lockabledoor_displaynamefn(inst)
+    return not inst._isunlocked:value() and STRINGS.NAMES[string.upper(inst.prefab.."_locked")] or nil
+end
+
+local function lockabledoor_getstatus(inst)
+    return not inst._isunlocked:value() and "LOCKED" or nil
+end
+
+local function onusekey(inst, key, doer)
+    if not key:IsValid() or key.components.klaussackkey == nil or inst._isunlocked:value() then
+        return false, nil, false
+    elseif key.components.klaussackkey.keytype ~= inst.klaussackkeyid then
+        return false, "QUAGMIRE_WRONGKEY", false
+    end
+
+    inst._isunlocked:set(true)
+    local otherdoor = FindPairedDoor(inst)
+    if otherdoor ~= nil then
+        otherdoor._isunlocked:set(true)
+    end
+
+    inst.SoundEmitter:PlaySound("dontstarve/quagmire/common/safe/key")
+
+    ToggleDoor(inst)
+
+    return true, nil, true
+end
+
 -------------------------------------------------------------------------------
 
 local function onsave(inst, data)
@@ -374,10 +407,15 @@ local function onsave(inst, data)
     data.offsetdoor = inst.offsetdoor
     data.swingright = inst._isswingright ~= nil and inst._isswingright:value() or nil
     data.isopen = inst._isopen ~= nil and inst._isopen:value() or nil
+    data.isunlocked = inst._isunlocked ~= nil and inst._isunlocked:value() or nil
 end
 
 local function onload(inst, data)
     if data ~= nil then
+        if inst._isunlocked ~= nil then
+            inst._isunlocked:set(data.isunlocked == true)
+        end
+
         inst.offsetdoor = data.offsetdoor
 
         if inst._isswingright ~= nil then
@@ -401,7 +439,7 @@ local function onload(inst, data)
     end
 end
 
-local function MakeWall(name, builds, isdoor)
+local function MakeWall(name, builds, isdoor, klaussackkeyid)
     local assets, custom_wall_prefabs
 
     if isdoor then
@@ -442,6 +480,10 @@ local function MakeWall(name, builds, isdoor)
             inst:AddTag("door")
             inst._isopen = net_bool(inst.GUID, name.."._open", "doorstatedirty")
             inst._isswingright = net_bool(inst.GUID, name.."._swingright", "doorstatedirty")
+            if klaussackkeyid ~= nil then
+                inst._isunlocked = net_bool(inst.GUID, name.."._unlocked")
+                inst.displaynamefn = lockabledoor_displaynamefn
+            end
             inst.GetActivateVerb = getdooractionstring
         else
             inst.AnimState:SetBank(builds.wide)
@@ -468,15 +510,19 @@ local function MakeWall(name, builds, isdoor)
             return inst
         end
 
+        inst:AddComponent("inspectable")
+
         if isdoor then
             inst.dooranim = SpawnPrefab(name.."_anim")
             inst.dooranim.entity:SetParent(inst.entity)
             inst.highlightforward = inst.dooranim
+            if klaussackkeyid ~= nil then
+                inst.components.inspectable.getstatus = lockabledoor_getstatus
+            end
         end
 
         inst.builds = builds
 
-        inst:AddComponent("inspectable")
         inst:AddComponent("lootdropper")
         inst.components.lootdropper:SetLoot(
             isdoor and
@@ -484,34 +530,42 @@ local function MakeWall(name, builds, isdoor)
             { "twigs" }
         )
 
-        inst:AddComponent("workable")
-        inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
-        inst.components.workable:SetWorkLeft(3)
-        inst.components.workable:SetOnFinishCallback(onhammered)
-        inst.components.workable:SetOnWorkCallback(onworked)
+        if TheNet:GetServerGameMode() ~= "quagmire" then
+            inst:AddComponent("workable")
+            inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
+            inst.components.workable:SetWorkLeft(3)
+            inst.components.workable:SetOnFinishCallback(onhammered)
+            inst.components.workable:SetOnWorkCallback(onworked)
 
-        inst:AddComponent("combat")
-        inst.components.combat:SetKeepTargetFunction(keeptargetfn)
-        inst.components.combat.onhitfn = onhit
+            inst:AddComponent("combat")
+            inst.components.combat:SetKeepTargetFunction(keeptargetfn)
+            inst.components.combat.onhitfn = onhit
 
-        inst:AddComponent("health")
-        inst.components.health:SetMaxHealth(1)
-        inst.components.health:SetAbsorptionAmount(1)
-        inst.components.health.fire_damage_scale = 0
-        inst.components.health.canheal = false
-        inst.components.health.nofadeout = true
-        inst:ListenForEvent("death", onhammered)
+            inst:AddComponent("health")
+            inst.components.health:SetMaxHealth(1)
+            inst.components.health:SetAbsorptionAmount(1)
+            inst.components.health.fire_damage_scale = 0
+            inst.components.health.canheal = false
+            inst.components.health.nofadeout = true
+            inst:ListenForEvent("death", onhammered)
 
-        MakeMediumBurnable(inst)
-        MakeMediumPropagator(inst)
-        inst.components.burnable.flammability = .5
+            MakeMediumBurnable(inst)
+            MakeMediumPropagator(inst)
+            inst.components.burnable.flammability = .5
 
-        MakeHauntableWork(inst)
+            MakeHauntableWork(inst)
+        end
 
         if isdoor then
             inst:AddComponent("activatable")
             inst.components.activatable.OnActivate = ToggleDoor
             inst.components.activatable.standingaction = true
+
+            if klaussackkeyid ~= nil then
+                inst:AddComponent("klaussacklock")
+                inst.components.klaussacklock:SetOnUseKey(onusekey)
+                inst.klaussackkeyid = klaussackkeyid
+            end
         else
             MakeSnowCovered(inst)
         end
@@ -712,4 +766,7 @@ return MakeWall("fence", {wide="fence", narrow="fence_thin"}, false),
     MakeWall("fence_gate", {wide="fence_gate", narrow="fence_gate_thin"}, true),
     MakeWallAnim("fence_gate_anim", {wide="fence_gate", narrow="fence_gate_thin"}, true),
     MakeInvItem("fence_gate_item", "fence_gate", "fence_gate", true),
-    MakeWallPlacer("fence_gate_item_placer", "fence_gate", {wide="fence_gate", narrow="fence_gate_thin"}, true)
+    MakeWallPlacer("fence_gate_item_placer", "fence_gate", {wide="fence_gate", narrow="fence_gate_thin"}, true),
+
+    MakeWall("quagmire_park_gate", {wide="quagmire_park_gate"}, true, "gate_key"),
+    MakeWallAnim("quagmire_park_gate_anim", {wide="quagmire_park_gate"}, true)

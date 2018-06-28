@@ -170,5 +170,24 @@ local function fn()
     return inst
 end
 
+-------------------------------------------------------------------------------
+
+local function quagmire_fn()
+    local inst = fn()
+
+    inst:SetPrefabNameOverride("campfire")
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    event_server_data("quagmire", "prefabs/campfire").master_postinit(inst, SECTION_STATUS, updatefuelrate)
+
+    return inst
+end
+
+-------------------------------------------------------------------------------
+
 return Prefab("campfire", fn, assets, prefabs),
-    MakePlacer("campfire_placer", "campfire", "campfire", "preview")
+    MakePlacer("campfire_placer", "campfire", "campfire", "preview"),
+    Prefab("quagmire_campfire", quagmire_fn, assets, prefabs)

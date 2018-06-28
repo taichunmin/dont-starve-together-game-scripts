@@ -250,6 +250,8 @@ function GetCharacterDescription(herocharacter)
     end
     if TheNet:GetServerGameMode() == "lavaarena" then
 		return STRINGS.LAVAARENA_CHARACTER_DESCRIPTIONS[herocharacter]
+	elseif TheNet:GetServerGameMode() == "quagmire" then
+		return STRINGS.QUAGMIRE_CHARACTER_DESCRIPTIONS[herocharacter]
 	end
     return STRINGS.CHARACTER_DESCRIPTIONS[herocharacter]
 end

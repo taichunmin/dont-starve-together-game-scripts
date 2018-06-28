@@ -58,10 +58,22 @@ local AMBIENT_SOUNDS =
     [GROUND.LAVAARENA_FLOOR] = { sound = "dontstarve/lava_arena_amb/arena_day" },
     [GROUND.LAVAARENA_TRIM] = { sound = "dontstarve/lava_arena_amb/arena_day" },
 
+    [GROUND.QUAGMIRE_PEATFOREST] = {sound = "dontstarve/quagmire/amb/peat_forest"},
+    [GROUND.QUAGMIRE_PARKFIELD] = {sound = "dontstarve/quagmire/amb/park_field"},
+    [GROUND.QUAGMIRE_PARKSTONE] = {sound = "dontstarve/quagmire/amb/park_field"},
+    [GROUND.QUAGMIRE_GATEWAY] = {sound = "dontstarve/quagmire/amb/gateway"},
+    [GROUND.QUAGMIRE_SOIL] = {sound = "dontstarve/quagmire/amb/city_stone"},
+    [GROUND.QUAGMIRE_CITYSTONE] = {sound = "dontstarve/quagmire/amb/city_stone"},
+
     ABYSS = { sound = "dontstarve/cave/pitAMB" },
     VOID = { sound = "dontstarve/chess/void", wintersound = "dontstarve/chess/void", springsound="dontstarve/chess/void", summersound="dontstarve/chess/void", rainsound = "dontstarve/chess/void" },
     CIVRUINS = { sound = "dontstarve/cave/civruinsAMB" },
 }
+
+if TheNet:GetServerGameMode() == "quagmire" then
+    AMBIENT_SOUNDS[GROUND.ROAD] = {sound = "dontstarve/quagmire/amb/city_stone"}
+end
+
 local SEASON_SOUND_KEY =
 {
     ["autumn"] = "sound",

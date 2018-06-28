@@ -51,13 +51,13 @@ local function IsCrazyGuy(guy)
 end
 
 local function SetRabbitLoot(lootdropper)
-    if lootdropper.loot ~= rabbitloot then
+    if lootdropper.loot ~= rabbitloot and not lootdropper.inst._fixedloot then
         lootdropper:SetLoot(rabbitloot)
     end
 end
 
 local function SetBeardlingLoot(lootdropper)
-    if lootdropper.loot == rabbitloot then
+    if lootdropper.loot == rabbitloot and not lootdropper.inst._fixedloot then
         lootdropper:SetLoot(nil)
         lootdropper:AddRandomLoot("beardhair", .5)
         lootdropper:AddRandomLoot("monstermeat", 1)
@@ -306,17 +306,22 @@ local function fn()
     inst.components.cookable:SetOnCookedFn(OnCookedFn)
 
     inst:AddComponent("knownlocations")
-    inst:AddComponent("combat")
-    inst.components.combat.hiteffectsymbol = "chest"
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(TUNING.RABBIT_HEALTH)
 
-    MakeSmallBurnableCharacter(inst, "chest")
-    MakeTinyFreezableCharacter(inst, "chest")
-
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLootSetupFn(LootSetupFunction)
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/rabbit").master_postinit(inst)
+    else
+        inst:AddComponent("combat")
+        inst.components.combat.hiteffectsymbol = "chest"
+
+        MakeSmallBurnableCharacter(inst, "chest")
+        MakeTinyFreezableCharacter(inst, "chest")
+    end
 
     inst:AddComponent("inspectable")
     inst:AddComponent("sleeper")

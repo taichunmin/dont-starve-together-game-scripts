@@ -680,7 +680,7 @@ function Widget:SetHoverText(text, params)
 
             
             if not self.hovertext then
-                self.hovertext = self.hovertext_root:AddChild(Text(params.font or NEWFONT_OUTLINE, 22, text))
+                self.hovertext = self.hovertext_root:AddChild(Text(params.font or NEWFONT_OUTLINE, params.font_size or 22, text))
                 self.hovertext:SetClickable(false)
                 self.hovertext:SetScale(1.1,1.1)
 

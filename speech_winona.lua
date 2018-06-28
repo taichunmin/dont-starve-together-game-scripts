@@ -36,7 +36,12 @@ return {
         {
         	WRONGKEY = "Hm. Didn't work.",
         	KLAUS = "Success!",
+        	QUAGMIRE_WRONGKEY = "There's another key around here somewhere.",
         },
+        ACTIVATE = 
+		{
+			LOCKED_GATE = "Can't get in yet.",
+		},
         COOK =
         {
             GENERIC = "I'm not really in a cooking mood.",
@@ -56,6 +61,8 @@ return {
             MUSHROOMFARM_NEEDSSHROOM = "It doesn't need this.",
             MUSHROOMFARM_NEEDSLOG = "It needs something else.",
             SLOTFULL = "No sense wasting materials.",
+            FOODFULL = "Ah, a wonderful bird, the peli-can.", --it's beak can hold more than its belly-can!
+            NOTDISH = "I don't wanna go angering no demons.",
             DUPLICATE = "We already got these schematics.",
             NOTSCULPTABLE = "That ain't for sculpting.",
             CANTSHADOWREVIVE = "Don't think that'll work.",
@@ -119,6 +126,12 @@ return {
         PICKUP =
         {
 			RESTRICTION = "That's not really my forte.",
+			INUSE = "Shucks. Someone beat me to it.",
+        },
+        REPLATE =
+        {
+            MISMATCH = "I always get my dishes mixed up.", 
+            SAMEDISH = "It's on a dish already.", 
         },
 	},
 	ACTIONFAIL_GENERIC = "I sure gummed the works there.",
@@ -219,7 +232,7 @@ return {
 	ANNOUNCE_WET = "I oughta find some shelter.",
 	ANNOUNCE_WETTER = "This is just uncomfortable now.",
 	ANNOUNCE_SOAKED = "I'm DRENCHED!",
-	
+
 	ANNOUNCE_BECOMEGHOST = "ooOooooO!",
 	ANNOUNCE_GHOSTDRAIN = "My head's all fuzzy...",
 	ANNOUNCE_PETRIFED_TREES = "Do these trees seem shadier?",
@@ -227,10 +240,15 @@ return {
 	ANNOUNCE_KLAUS_UNCHAINED = "The mitts are coming off!",
 	ANNOUNCE_KLAUS_CALLFORHELP = "He called his goons!",
 
---boarlord event
+    --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Up'n'attem now.",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "Back to work!",
     ANNOUNCE_REVIVED_FROM_CORPSE = "I'm back on the clock!",
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "The ingredients didn't assemble right.",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "What a waste of food!",
+    QUAGMIRE_ANNOUNCE_LOSE = "N-nice sky wyrm... Uh-oh.",
+    QUAGMIRE_ANNOUNCE_WIN = "Better leave while we can!",
 
 	BATTLECRY =
 	{
@@ -2120,12 +2138,223 @@ return {
         LAVAARENA_RECHARGERHAT = "I'd be so efficient with that!",
         LAVAARENA_HEALINGGARLANDHAT = "That's fer a bit of self maintenance.",
         LAVAARENA_CROWNDAMAGERHAT = "You'd be a real heavy hitter with that.",
-	},
-	DESCRIBE_GENERIC = "Incredible! I have no idea what that is.",
-	DESCRIBE_TOODARK = "Low visibility causes workplace accidents!",
-	DESCRIBE_SMOLDERING = "That's gonna start a fire!",
-	EAT_FOOD =
-	{
-		TALLBIRDEGG_CRACKED = "That crunch was upsetting.",
-	},
+
+        --Quagmire
+        QUAGMIRE_ALTAR = 
+        {
+        	GENERIC = "Moss has grown over some sorta socket in the base.",
+            FULL = "That should keep it busy fer a bit.",
+    	},
+		QUAGMIRE_ALTAR_STATUE1 = "It probably looked real nice once.",
+		QUAGMIRE_PARK_FOUNTAIN = "Under-used 'n overgrown.",
+		--
+        QUAGMIRE_HOE = "I never done farmwork.",
+        --
+        QUAGMIRE_TURNIP = "A fresh, ripe turnip.",
+        QUAGMIRE_TURNIP_COOKED = "I'd rather not eat them on their own.",
+        QUAGMIRE_TURNIP_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_GARLIC = "Makes everything taste better.",
+        QUAGMIRE_GARLIC_COOKED = "Bet that brought out the flavor.",
+        QUAGMIRE_GARLIC_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_ONION = "I hate chopping vegetables.",
+        QUAGMIRE_ONION_COOKED = "Done and done.",
+        QUAGMIRE_ONION_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_POTATO = "I just think they're neat.",
+        QUAGMIRE_POTATO_COOKED = "I've always been a meat and potatoes gal.",
+        QUAGMIRE_POTATO_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_TOMATO = "Gotta appreciate havin' fresh vegetables.",
+        QUAGMIRE_TOMATO_COOKED = "I prefer'em fried and green.",
+        QUAGMIRE_TOMATO_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_FLOUR = "I ain't much of a baker.",
+        QUAGMIRE_WHEAT = "I go against the grain whenever possible. Ha!",
+        QUAGMIRE_WHEAT_SEEDS = "I got no idea what they'd grow into.",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "I got no idea what they'd grow into.",
+        --
+        QUAGMIRE_ROTTEN_CROP = "I am not a good farmer.",
+        --
+		QUAGMIRE_SALMON = "It ain't pink. It's salmon! Ha!",
+		QUAGMIRE_SALMON_COOKED = "Fancy dining.",
+		QUAGMIRE_CRABMEAT = "I get crabby when I'm hungry. Ha!",
+		QUAGMIRE_CRABMEAT_COOKED = "It's a big lump of cooked crab.",
+		QUAGMIRE_SUGARWOODTREE = 
+		{
+			GENERIC = "It's a big, pink tree.",
+			STUMP = "That ain't growin' back.",
+			TAPPED_EMPTY = "I wish trees leaked a little faster.",
+			TAPPED_READY = "That bucket's practically overflowing!",
+			TAPPED_BUGS = "It's a little buggy.",
+			WOUNDED = "It's lost some of its color.",
+		},
+		QUAGMIRE_SPOTSPICE_SHRUB = 
+		{
+			GENERIC = "Yeah, we could probably eat that.",
+			PICKED = "It's got a weird texture.",
+		},
+		QUAGMIRE_SPOTSPICE_SPRIG = "Tastes sorta like... pepper?",
+		QUAGMIRE_SPOTSPICE_GROUND = "That should add some kick.",
+		QUAGMIRE_SAPBUCKET = "Buckets. The most advanced farming technology.",
+		QUAGMIRE_SAP = "Alright, it's pretty good.",
+		QUAGMIRE_FERN = "Fresh roughage.",
+        QUAGMIRE_FOLIAGE_COOKED = "Cooked roughage.",
+		
+		QUAGMIRE_SALT_RACK =
+		{
+			READY = "Salt's ready for minin'.",
+			GENERIC = "It needs a bit more time.",
+		},
+
+		QUAGMIRE_SALT_RACK_ITEM = "Let's set'er up proper.",
+
+		QUAGMIRE_SAFE = 
+		{
+			GENERIC = "Wouldn't mind a peek inside.",
+			LOCKED = "My lockpicking skills are a bit rusty.",
+		},
+		
+		QUAGMIRE_KEY = "Hmmm... looks like the key to a safe.",
+		QUAGMIRE_KEY_PARK = "It's a gate key.",
+        QUAGMIRE_PORTAL_KEY = "Looks like it unlocks somethin' big.",
+
+		QUAGMIRE_MUSHROOMSTUMP =
+		{
+			GENERIC = "Well, they don't LOOK poisonous.",
+			PICKED = "It's just a stump.",
+		},
+		QUAGMIRE_MUSHROOMS = "Wouldn't mind popping these suckers into the pot.",
+        QUAGMIRE_MEALINGSTONE = "Ah! A job that could use some elbow grease!",
+
+		QUAGMIRE_PEBBLECRAB = "He ain't a threat to no one.",
+
+		QUAGMIRE_POND_SALT = "It's a bit salty, hey?",
+		--
+		QUAGMIRE_RUBBLE_CARRIAGE = "Never thought I'd say this, but it's beyond repair.",
+        QUAGMIRE_RUBBLE_CLOCK = "Something muddled this clockwork real good.",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "Well I sure ain't goin' in it now.",
+        QUAGMIRE_RUBBLE_PUBDOOR = "Even I can't fix it.",
+        QUAGMIRE_RUBBLE_ROOF = "I've repaired roofs before but this is a lost cause.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "Looks like something destroyed it.",
+        QUAGMIRE_RUBBLE_BIKE = "It's busted.",
+        QUAGMIRE_RUBBLE_HOUSE = {"Something happened here.", "Ain't no one here anymore.", "Something busted this town.",},
+        QUAGMIRE_RUBBLE_CHIMNEY = "It's broken. I can't fix it.",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "Needs a lot more love than I got to give it.",
+        QUAGMIRE_MERMHOUSE = "Zero form, zero function.",
+        QUAGMIRE_SWAMPIG_HOUSE = "Plain shoddy worksmanship.",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "It might have been a house, once.",
+        QUAGMIRE_SWAMPIGELDER =
+        {
+            GENERIC = "You're a big guy, hey?",
+            SLEEPING = "Sleeping on the job.",
+        },
+        QUAGMIRE_SWAMPIG = "They don't seem very afraid of people.",
+        --
+        QUAGMIRE_PORTAL = "I might not be good at rescue missions.",
+        QUAGMIRE_SALTROCK = "It's a big ol' eatin' rock.",
+        QUAGMIRE_SALT = "But where's the pepper?",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "It's a little toastier than normal.",
+        --QUAGMIRE_FOOD_PLATE = "It's a ceramic dish.",
+        --QUAGMIRE_FOOD_BOWL = "Makes eatin' soup a lot easier.",
+        --QUAGMIRE_FOOD_SOUP = "Warm soup. Nothin' better.",
+        --QUAGMIRE_FOOD_SNACK = "A lip smackin' snack.",
+        --QUAGMIRE_FOOD_BREAD = "Bread is the best foundation for every meal.",
+        --QUAGMIRE_FOOD_PASTA = "Fancy pasta dish.",
+        --QUAGMIRE_FOOD_VEGGIE = "Full o' veggies to make me big and strong.",
+        --QUAGMIRE_FOOD_MEAT = "A hearty meat meal.",
+        --QUAGMIRE_FOOD_FISH = "Still got that fish smell.",
+        --QUAGMIRE_FOOD_CRAB = "Ohh... a fancy dish.",
+        --QUAGMIRE_FOOD_CHEESE = "You gotta love cheese.",
+        --QUAGMIRE_FOOD_SWEET = "Good for someone with a sweet tooth. Like me!",
+        QUAGMIRE_FOOD =
+        {
+        	GENERIC = "Let's throw it up on that altar, hey?",
+            MISMATCH = "Well this ain't right.",
+            MATCH = "Perfect.",
+            MATCH_BUT_SNACK = "It's the right food, but it don't look too filling.",
+        },
+        --
+        QUAGMIRE_COIN1 = "A lucky coin.",
+        QUAGMIRE_COIN2 = "Save this for a rainy day.",
+        QUAGMIRE_COIN3 = "Gotta watch I don't turn into a rich dope.",
+        QUAGMIRE_COIN4 = "We could bust outta here with enough of these.",
+        QUAGMIRE_GOATMILK = "I try to support local artisans.",
+        QUAGMIRE_SYRUP = "It's like honey from a tree.",
+        QUAGMIRE_SAP_SPOILED = "It's no good now.",
+        QUAGMIRE_SEEDPACKET = "Better than a market.",
+        --QUAGMIRE_SEEDPACKET_SMALL = "I could start a small garden with this.",
+        --QUAGMIRE_SEEDPACKET_MEDIUM = "A good start.",
+        --QUAGMIRE_SEEDPACKET_LARGE = "Better than a market.",
+        --QUAGMIRE_SEEDPACKET_MIX_SMALL = "There's a whole mix of seeds in here.",
+        --QUAGMIRE_SEEDPACKET_MIX_MEDIUM = "Bunch o' different seeds.",
+        --QUAGMIRE_SEEDPACKET_MIX_LARGE = "A lotta variety in here.",
+        ---
+        QUAGMIRE_OVEN_ITEM = "Welp. Another day, another project.",
+        QUAGMIRE_OVEN = "It's a regular ol' oven.",
+        QUAGMIRE_POT = "Could make a real big stew in that pot.",
+        QUAGMIRE_POT_SMALL = "I only ever made stew before this.",
+        QUAGMIRE_POT_SYRUP = "Syrup makes me sappy. Ha!",
+        QUAGMIRE_POT_HANGER = "Needs a pot in there or somethin'.",
+        QUAGMIRE_POT_HANGER_ITEM = "Ready for assembly.",
+        QUAGMIRE_GRILL = "Time for a cookout!",
+        QUAGMIRE_GRILL_ITEM = "I need to to find a firepit for this to work.",
+        QUAGMIRE_GRILL_SMALL = "Big enough for a small cookout. ",
+        QUAGMIRE_GRILL_SMALL_ITEM = "Now where can I put this...",
+        QUAGMIRE_CASSEROLEDISH = "I'll need to bake it.",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "For making little stews and stuff.",
+        QUAGMIRE_PLATE_SILVER = "Little too fancy for my tastes.",
+        QUAGMIRE_BOWL_SILVER = "Fancy lookin' but it still just holds food.",
+
+        --
+        QUAGMIRE_MERM_CART1 = "Anything good in there?", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "It's full of stuff I could use.", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "Gives me the heebie jeebies.",
+        QUAGMIRE_PARK_ANGEL2 = "Kinda creepy.",
+        QUAGMIRE_PARK_URN = "Oh well. Happens to the best of us.",
+        QUAGMIRE_PARK_OBELISK = "Nice stonework.",
+        QUAGMIRE_PARK_GATE =
+        {
+            GENERIC = "Can't keep me outta nothing.",
+            LOCKED = "Needs a key.",
+        },
+        QUAGMIRE_PARKSPIKE = "Nice metalwork.",
+        QUAGMIRE_CRABTRAP = "Here lil crabby crab.",
+        QUAGMIRE_TRADER_MERM = "What'a ya got?",
+        QUAGMIRE_TRADER_MERM2 = "Got anything good?",
+        --
+        QUAGMIRE_GOATMUM = "Got anything for me?",
+        QUAGMIRE_GOATKID = "What's goin' on, squirt?",
+        QUAGMIRE_PIGEON =
+        {
+            DEAD = "Dead as a doornail.",
+            GENERIC = "You seen one, you seen'em all.",
+            SLEEPING = "Sleeping on the job.",
+        },
+        QUAGMIRE_LAMP_POST = "That'd be a street lamp. Yep.",
+
+        QUAGMIRE_BEEFALO = "Take it easy. You don't looks so good.",
+        QUAGMIRE_SLAUGHTERTOOL = "Not my kinda tool.",
+
+        QUAGMIRE_SAPLING = "That's gone.",
+        QUAGMIRE_BERRYBUSH = "Nothing in that bush anymore.",
+
+        QUAGMIRE_ALTAR_STATUE2 = "I wonder who chiseled that.",
+        QUAGMIRE_ALTAR_QUEEN = "Woo-wee. Impress-ive.",
+        QUAGMIRE_ALTAR_BOLLARD = "Nice metalwork.",
+        QUAGMIRE_ALTAR_IVY = "That stuff can ruin good architecture.",
+
+        QUAGMIRE_LAMP_SHORT = "That's a light.",
+
+    },
+    DESCRIBE_GENERIC = "Incredible! I have no idea what that is.",
+    DESCRIBE_TOODARK = "Low visibility causes workplace accidents!",
+    DESCRIBE_SMOLDERING = "That's gonna start a fire!",
+    EAT_FOOD =
+    {
+        TALLBIRDEGG_CRACKED = "That crunch was upsetting.",
+    },
 }

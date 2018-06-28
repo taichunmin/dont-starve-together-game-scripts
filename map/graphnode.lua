@@ -225,6 +225,9 @@ function Node:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut
 		if prefab_data.scenario then
 			save_data["scenario"] = prefab_data.scenario
 		end
+        if prefab_data.skinname then
+            save_data["skinname"] = prefab_data.skinname
+        end
 	end
 	table.insert(entitiesOut[prefab], save_data)
 					
@@ -344,7 +347,7 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 	end
 	local current_pos_idx = 1
 	
-	--print("Number of points returned:",#points_x)	
+	--print("Number of points returned: " .. tostring(#points_x) .. " for site " .. self.id)	
 
 	if self.data.terrain_contents.countprefabs ~= nil then
 		for prefab, count in pairs(self.data.terrain_contents.countprefabs) do
@@ -360,23 +363,57 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 			return
 		end
 			
-		for prefab, count in pairs(generate_these) do 	
-			for id = 1, count do
-				if current_pos_idx > #points_x then
+		if self.data.terrain_contents.countprefabs_uses_filters then
+			local cur_pt = #points_x
+
+			while next(generate_these) ~= nil do
+				local prefab = spawnFn.pickspawncountprefabforground(generate_these, points_type[cur_pt])
+				if prefab ~= nil then
+					local prefab_data = {}
+					prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil
+					self:AddEntity(prefab, points_x, points_y, cur_pt, entitiesOut, width, height, prefab_list, prefab_data)
+					
+					generate_these[prefab] = generate_these[prefab] - 1
+					if generate_these[prefab] == 0 then
+						generate_these[prefab] = nil
+					end
+
+					table.remove(points_x, cur_pt)
+					table.remove(points_y, cur_pt)
+					table.remove(points_type, cur_pt)
+					if #points_x == 0 then
+						print(self.id.." countprefabs used all the points")
+						return
+					end
+				end
+				cur_pt = cur_pt - 1
+				if cur_pt <= 0 then
 					break
 				end
-
-				local prefab_data = {}
-				prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil
-				self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)
-
-				--print("Creating count:", prefab)
-				
-				current_pos_idx = current_pos_idx + 1
 			end
-			if current_pos_idx > #points_x then
-				print(self.id.." Didnt get enough points for all counted prefabs, bailed at "..current_pos_idx )
-				return
+
+			for p, c in pairs(generate_these) do
+				print ("Warning: CountPrefabs could not be placed : " .. c .. " " .. p .. " in site " .. self.id) 
+			end
+		else
+			for prefab, count in pairs(generate_these) do 	
+				for id = 1, count do
+					if current_pos_idx > #points_x then
+						break
+					end
+
+					local prefab_data = {}
+					prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil
+					self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)
+
+					--print("Creating count:", current_pos_idx, self.id, prefab)
+				
+					current_pos_idx = current_pos_idx + 1
+				end
+				if current_pos_idx > #points_x then
+					print(self.id.." Didnt get enough points for all counted prefabs, bailed at "..current_pos_idx )
+					return
+				end
 			end
 		end
 	end

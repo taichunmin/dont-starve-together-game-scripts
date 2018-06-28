@@ -2588,21 +2588,39 @@ function Tune(overrides)
             WINONA = 200,
         },
 
-        LAVAARENA_STARTING_ITEMS =
-        {
-            WILSON = { "blowdart_lava", "lavaarena_armormedium" },
-            WILLOW = { "blowdart_lava", "lavaarena_armorlightspeed" },
-            WENDY = { "blowdart_lava", "lavaarena_armorlightspeed" },
-            WOLFGANG = { "hammer_mjolnir", "lavaarena_armormedium" },
-            WX78 = { "hammer_mjolnir", "lavaarena_armormedium" },
-            WICKERBOTTOM = { "book_fossil", "lavaarena_armorlight" },
-            WES = { "blowdart_lava", "lavaarena_armorlightspeed" },
-            WAXWELL = { "book_fossil", "lavaarena_armorlight" },
-            WOODIE = { "lavaarena_lucy", "lavaarena_armormedium" },
-            WATHGRITHR = { "spear_gungnir", "lavaarena_armorlightspeed" },
-            WEBBER = { "blowdart_lava", "lavaarena_armorlightspeed" },
-            WINONA = { "hammer_mjolnir", "lavaarena_armormedium" },
-        },
+		GAMEMODE_STARTING_ITEMS =
+		{
+			LAVAARENA =
+			{
+				WILSON = { "blowdart_lava", "lavaarena_armormedium" },
+				WILLOW = { "blowdart_lava", "lavaarena_armorlightspeed" },
+				WENDY = { "blowdart_lava", "lavaarena_armorlightspeed" },
+				WOLFGANG = { "hammer_mjolnir", "lavaarena_armormedium" },
+				WX78 = { "hammer_mjolnir", "lavaarena_armormedium" },
+				WICKERBOTTOM = { "book_fossil", "lavaarena_armorlight" },
+				WES = { "blowdart_lava", "lavaarena_armorlightspeed" },
+				WAXWELL = { "book_fossil", "lavaarena_armorlight" },
+				WOODIE = { "lavaarena_lucy", "lavaarena_armormedium" },
+				WATHGRITHR = { "spear_gungnir", "lavaarena_armorlightspeed" },
+				WEBBER = { "blowdart_lava", "lavaarena_armorlightspeed" },
+				WINONA = { "hammer_mjolnir", "lavaarena_armormedium" },
+			},
+			QUAGMIRE =
+			{
+				WILSON = {},
+				WILLOW = {},
+				WENDY = { "spoiled_food" },
+				WOLFGANG = {},
+				WX78 = {},
+				WICKERBOTTOM = {},
+				WES = {},
+				WAXWELL = {},
+				WOODIE = {},
+				WATHGRITHR = {},
+				WEBBER = {},
+				WINONA = {},
+			},
+		},
 
         LAVAARENA_SURVIVOR_DIFFICULTY =
         {

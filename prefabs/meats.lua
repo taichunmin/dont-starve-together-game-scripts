@@ -10,6 +10,11 @@ local assets =
     Asset("ANIM", "anim/plant_meat.zip"),
 }
 
+local quagmire_assets =
+{
+    Asset("ANIM", "anim/quagmire_meat_small.zip"),
+}
+
 local prefabs =
 {
     "cookedmeat",
@@ -55,6 +60,11 @@ local plantmeatprefabs =
 {
     "plantmeat_cooked",
     "spoiled_food",
+}
+
+local quagmire_prefabs =
+{
+    "quagmire_cookedsmallmeat",
 }
 
 local function AddMonsterMeatChange(inst, prefab)
@@ -114,7 +124,7 @@ local function common(bank, build, anim, tags, dryable, cookable)
     if dryable ~= nil then
         --dryable (from dryable component) added to pristine state for optimization
         inst:AddTag("dryable")
-		inst:AddTag("lureplant_bait")
+        inst:AddTag("lureplant_bait")
     end
 
     if cookable ~= nil then
@@ -129,7 +139,7 @@ local function common(bank, build, anim, tags, dryable, cookable)
     end
 
     inst:AddComponent("edible")
-    inst.components.edible.ismeat = true    
+    inst.components.edible.ismeat = true
     inst.components.edible.foodtype = FOODTYPE.MEAT
 
     inst:AddComponent("bait")
@@ -148,17 +158,21 @@ local function common(bank, build, anim, tags, dryable, cookable)
     inst.components.perishable.onperishreplacement = "spoiled_food"
 
     if dryable ~= nil then
-		inst:AddTag("lureplant_bait")
-		if dryable.product ~= nil then
-			inst:AddComponent("dryable")
-			inst.components.dryable:SetProduct(dryable.product)
-			inst.components.dryable:SetDryTime(dryable.time)
-		end
+        inst:AddTag("lureplant_bait")
+        if dryable.product ~= nil then
+            inst:AddComponent("dryable")
+            inst.components.dryable:SetProduct(dryable.product)
+            inst.components.dryable:SetDryTime(dryable.time)
+        end
     end
 
     if cookable ~= nil then
         inst:AddComponent("cookable")
         inst.components.cookable.product = cookable.product
+    end
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/meats").master_postinit(inst, cookable)
     end
 
     MakeHauntableLaunchAndPerish(inst)
@@ -291,6 +305,10 @@ local function cooked()
 
     AddMonsterMeatChange(inst, "cookedmonstermeat")
 
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/meats").master_postinit_cooked(inst)
+    end
+
     return inst
 end
 
@@ -311,10 +329,8 @@ local function driedmeat()
     return inst
 end
 
-
-
 local function raw()
-	local inst = common("meat", "meat", "raw", { "catfood" }, { product = "meat_dried", time = TUNING.DRY_MED }, { product = "cookedmeat" })
+    local inst = common("meat", "meat", "raw", { "catfood" }, { product = "meat_dried", time = TUNING.DRY_MED }, { product = "cookedmeat" })
     
     if not TheWorld.ismastersim then
         return inst
@@ -323,16 +339,20 @@ local function raw()
     inst.components.edible.healthvalue = TUNING.HEALING_TINY
     inst.components.edible.hungervalue = TUNING.CALORIES_MED
     inst.components.edible.sanityvalue = -TUNING.SANITY_SMALL
-    
+
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
 
     AddMonsterMeatChange(inst, "monstermeat")
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/meats").master_postinit_raw(inst)
+    end
 
     return inst
 end
 
 local function smallmeat()
-	local inst = common("meat_small", "meat_small", "raw", { "catfood" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "cookedsmallmeat" })
+    local inst = common("meat_small", "meat_small", "raw", { "catfood" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "cookedsmallmeat" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -341,16 +361,16 @@ local function smallmeat()
     inst.components.edible.healthvalue = 0
     inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_SMALL
-    
+
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
 
-	inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
+    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
 
     return inst
 end
 
 local function cookedsmallmeat()
-	local inst = common("meat_small", "meat_small", "cooked")
+    local inst = common("meat_small", "meat_small", "cooked")
 
     if not TheWorld.ismastersim then
         return inst
@@ -362,11 +382,11 @@ local function cookedsmallmeat()
 
     inst.components.perishable:SetPerishTime(TUNING.PERISH_MED)
 
-	inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
+    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
 
     return inst
 end
-   
+
 local function driedsmallmeat()
 	local inst = common("meat_rack_food", "meat_rack_food", "idle_dried_small", nil, { isdried = true })
 
@@ -475,6 +495,30 @@ local function plantmeat_cooked()
     return inst
 end
 
+local function quagmire_smallmeat()
+    local inst = common("quagmire_meat_small", "quagmire_meat_small", "raw", { "catfood" }, nil, { product = "quagmire_cookedsmallmeat" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    event_server_data("quagmire", "prefabs/meats").master_postinit_smallmeat(inst)
+
+    return inst
+end
+
+local function quagmire_cookedsmallmeat()
+    local inst = common("quagmire_meat_small", "quagmire_meat_small", "cooked")
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    event_server_data("quagmire", "prefabs/meats").master_postinit_cookedsmallmeat(inst)
+
+    return inst
+end
+
 return Prefab("meat", raw, assets, prefabs),
         Prefab("cookedmeat", cooked, assets),
         Prefab("meat_dried", driedmeat, assets),
@@ -492,4 +536,6 @@ return Prefab("meat", raw, assets, prefabs),
         Prefab("plantmeat_cooked", plantmeat_cooked, assets),
         Prefab("humanmeat", humanmeat, assets, humanprefabs),
         Prefab("humanmeat_cooked", humanmeat_cooked, assets),
-        Prefab("humanmeat_dried", humanmeat_dried, assets)
+        Prefab("humanmeat_dried", humanmeat_dried, assets),
+        Prefab("quagmire_smallmeat", quagmire_smallmeat, quagmire_assets, quagmire_prefabs),
+        Prefab("quagmire_cookedsmallmeat", quagmire_cookedsmallmeat, quagmire_assets)

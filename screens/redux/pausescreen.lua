@@ -9,12 +9,7 @@ local UIAnim = require "widgets/uianim"
 local Widget = require "widgets/widget"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TEMPLATES = require "widgets/redux/templates"
-local OptionsScreen = nil
-if PLATFORM == "PS4" then
-    OptionsScreen = require "screens/optionsscreen_ps4"
-else
-    OptionsScreen = require "screens/redux/optionsscreen"
-end
+local OptionsScreen = require "screens/redux/optionsscreen"
 
 local PauseScreen = Class(Screen, function(self)
     Screen._ctor(self, "PauseScreen")
@@ -42,7 +37,8 @@ local PauseScreen = Class(Screen, function(self)
     self.proot:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
     --throw up the background
-    self.bg = self.proot:AddChild(TEMPLATES.CurlyWindow(0, 236, STRINGS.UI.PAUSEMENU.DST_TITLE, nil, nil, STRINGS.UI.PAUSEMENU.DST_SUBTITLE))
+	local height = IsConsole() and 200 or 236	-- consoles are shorter since they don't have the '
+    self.bg = self.proot:AddChild(TEMPLATES.CurlyWindow(0, height, STRINGS.UI.PAUSEMENU.DST_TITLE, nil, nil, STRINGS.UI.PAUSEMENU.DST_SUBTITLE))
     self.bg.body:SetVAlign(ANCHOR_TOP)
     self.bg.body:SetSize(20)
     
@@ -69,23 +65,18 @@ local PauseScreen = Class(Screen, function(self)
     table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.DISCONNECT, cb=function() self:doconfirmquit()	end})
     if PLATFORM == "WIN32_RAIL" then
     	if TheSim:RAILGetPlatform() == "TGP" then
-		    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://plat.tgp.qq.com/forum/index.html#!/2000004/detail/115888") end })
+		    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://plat.tgp.qq.com/forum/index.html#/2000004?type=11") end })
 		else
 		    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://qqgame.gamebbs.qq.com/forum.php?mod=forumdisplay&fid=31043") end })
 		end
-	else
+	elseif IsNotConsole() then
 		table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://forums.kleientertainment.com/klei-bug-tracker/dont-starve-together/") end })
 	end
 
     self.menu = self.proot:AddChild(Menu(buttons, -button_h, false, "carny_xlong", nil, 30))
-    self.menu:SetPosition(0, 68, 0)
+	local y_pos = IsConsole() and 50 or 68 -- consoles have fewer buttons and smaller dialog box so menu positioning needs adjusting
+    self.menu:SetPosition(0, y_pos, 0)
     for i,v in pairs(self.menu.items) do
-		if PLATFORM == "WIN32_RAIL" and TheSim:RAILGetPlatform() == "TGP" then
-			if v:GetText() == STRINGS.UI.PAUSEMENU.ISSUE then
-				v:Select()
-				v:SetHoverText(STRINGS.UI.PAUSEMENU.NOT_YET_OPEN)
-			end
-		end
         v:SetScale(.7)
     end
 

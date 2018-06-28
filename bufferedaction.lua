@@ -45,12 +45,16 @@ end
 BufferedAction.TestForStart = BufferedAction.IsValid
 
 function BufferedAction:GetActionString()
-    return self.doer ~= nil
-        and self.doer.ActionStringOverride ~= nil
-        and self.doer:ActionStringOverride(self)
-        or (self.action.stroverridefn ~= nil and self.action.stroverridefn(self))
-        or GetActionString(self.action.id, self.action.strfn ~= nil and self.action.strfn(self) or nil)
-        or nil
+    local str = self.doer ~= nil and self.doer.ActionStringOverride ~= nil and self.doer:ActionStringOverride(self) or nil
+    if str ~= nil then
+        return str
+    elseif self.action.stroverridefn ~= nil then
+        str = self.action.stroverridefn(self)
+        if str ~= nil then
+            return str, true
+        end
+    end
+    return GetActionString(self.action.id, self.action.strfn ~= nil and self.action.strfn(self) or nil)
 end
 
 function BufferedAction:__tostring()

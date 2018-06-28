@@ -1,4 +1,4 @@
-local InputDialogScreen = require "screens/inputdialog"
+local InputDialogScreen = require "screens/redux/inputdialog"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local Widget = require "widgets/widget"
 local ImageButton = require "widgets/imagebutton"
@@ -771,6 +771,7 @@ function GetDefaultServerData()
         name = TheNet:GetDefaultServerName(),
         password = TheNet:GetDefaultServerPassword(),
         description = TheNet:GetDefaultServerDescription(),
+        server_language = TheNet:GetDefaultServerLanguage(),
         privacy_type =
             (TheNet:GetDefaultFriendsOnlyServer() and PRIVACY_TYPE.FRIENDS) or
             (TheNet:GetDefaultLANOnlyServer() and PRIVACY_TYPE.LOCAL) or
@@ -889,4 +890,52 @@ function ClientDisconnected(userid)
 	if TheWorld ~= nil and TheWorld:IsValid() then
 		TheWorld:PushEvent("ms_clientdisconnected", {userid = userid})
 	end
+end
+
+--------------------------------------------------------------------------
+local _friendsmanager = nil
+
+local function UnregisterFriendsManager(inst)
+    _friendsmanager = nil
+end
+
+function RegisterFriendsManager(widg)
+    if _friendsmanager == nil then
+        _friendsmanager = widg
+        widg.inst:ListenForEvent("onremove", UnregisterFriendsManager)
+    end
+end
+
+function Networking_PartyInvite(inviter, partyid)
+    if _friendsmanager ~= nil then
+        _friendsmanager:ReceiveInvite(inviter, partyid)
+    end
+end
+
+function Networking_JoinedParty()
+    if _friendsmanager ~= nil then
+        _friendsmanager:SwitchToPartyTab()
+    end
+end
+
+function Networking_LeftParty()
+    if _friendsmanager ~= nil then
+        _friendsmanager:SwitchToFriendsTab()
+    end
+end
+
+function Networking_PartyChanged()
+    if _friendsmanager ~= nil then
+        _friendsmanager:RefreshPartyTab()
+    end
+end
+
+function Networking_PartyServer(ip, port)
+    print("Party server: "..ip..":"..tostring(port))
+end
+
+function Networking_PartyChat(chatline)
+    if _friendsmanager ~= nil then
+        _friendsmanager:ReceivePartyChat(chatline)
+    end
 end

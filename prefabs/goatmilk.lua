@@ -3,6 +3,11 @@ local assets =
     Asset("ANIM", "anim/goatmilk.zip"),
 }
 
+local prefabs =
+{
+    "spoiled_food",
+}
+
 local function fn()
     local inst = CreateEntity()
 
@@ -12,7 +17,7 @@ local function fn()
 
     inst.AnimState:SetBank("goatmilk")
     inst.AnimState:SetBuild("goatmilk")
-    inst.AnimState:PlayAnimation("idle")  
+    inst.AnimState:PlayAnimation("idle")
 
     MakeInventoryPhysics(inst)
 
@@ -40,11 +45,11 @@ local function fn()
 
     inst:AddComponent("inspectable")
 
-    inst:AddComponent("inventoryitem")  
+    inst:AddComponent("inventoryitem")
 
     MakeHauntableLaunch(inst)
 
     return inst
 end
 
-return Prefab("goatmilk", fn, assets)
+return Prefab("goatmilk", fn, assets, prefabs)

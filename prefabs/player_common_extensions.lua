@@ -150,7 +150,9 @@ local function CommonActualRez(inst)
     if not GetGameModeProperty("no_hunger") then
         inst.components.hunger:Resume()
     end
-    inst.components.temperature:SetTemp() --nil param will resume temp
+    if not GetGameModeProperty("no_temperature") then
+        inst.components.temperature:SetTemp() --nil param will resume temp
+    end
     inst.components.frostybreather:Enable()
 
     MakeMediumBurnableCharacter(inst, "torso")
@@ -450,7 +452,9 @@ local function CommonPlayerDeath(inst)
     end
     inst.components.hunger:Pause()
 
-    inst.components.temperature:SetTemp(TUNING.STARTING_TEMP)
+    if not GetGameModeProperty("no_temperature") then
+        inst.components.temperature:SetTemp(TUNING.STARTING_TEMP)
+    end
     inst.components.frostybreather:Disable()
 end
 

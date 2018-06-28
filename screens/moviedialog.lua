@@ -57,7 +57,7 @@ end
 function MovieDialog:OnControl(control, down)
     if MovieDialog._base.OnControl(self, control, down) then
         return true
-    elseif down and control == CONTROL_PAUSE then
+    elseif down and (control == CONTROL_PAUSE or control == CONTROL_ACCEPT) then
         self:Cancel()
         return true
     end

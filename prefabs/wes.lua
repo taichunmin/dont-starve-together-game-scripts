@@ -13,9 +13,10 @@ local start_inv =
     {
         "balloons_empty",
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WES,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WES
+end
 
 local prefabs = FlattenTree(start_inv, true)
 
@@ -30,6 +31,10 @@ end
 local function common_postinit(inst)
     inst:AddTag("mime")
     inst:AddTag("balloonomancer")
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_cheapskate")
+    end
 end
 
 local function master_postinit(inst)

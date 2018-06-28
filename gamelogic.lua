@@ -66,8 +66,6 @@ local screen_fade_time = .25
 
 local start_game_time = nil
 
-LOADED_CHARACTER = nil
-
 TheSim:SetRenderPassDefaultEffect( RENDERPASS.BLOOM, "shaders/anim_bloom.ksh" )
 TheSim:SetErosionTexture( "images/erosion.tex" )
 
@@ -182,7 +180,13 @@ local function LoadAssets(asset_set, savedata)
 	local in_frontend = not in_backend
 
 	KeepAlive()
-    
+
+    if Settings.loaded_characters ~= nil then
+        print("\tUnload characters")
+        TheSim:UnloadPrefabs(Settings.loaded_characters)
+        Settings.loaded_characters = nil
+    end
+
 	if Settings.current_asset_set == "FRONTEND" then
 		if Settings.last_asset_set == "FRONTEND" then
 			print("\tFE assets already loaded")
@@ -327,14 +331,14 @@ local function PopulateWorld(savedata, profile)
 
         if not LOAD_UPFRONT_MODE then
             local oldloaded = {}
-            if LOADED_CHARACTER ~= nil then
-                for i, v in ipairs(LOADED_CHARACTER) do
+            if Settings.loaded_characters ~= nil then
+                for i, v in ipairs(Settings.loaded_characters) do
                     oldloaded[v] = true
                 end
             end
-            LOADED_CHARACTER = GetActiveCharacterList()
+            Settings.loaded_characters = GetActiveCharacterList()
             local newchars = {}
-            for i, v in ipairs(LOADED_CHARACTER) do
+            for i, v in ipairs(Settings.loaded_characters) do
                 if oldloaded[v] then
                     oldloaded[v] = nil
                 else
@@ -345,12 +349,15 @@ local function PopulateWorld(savedata, profile)
             for k, v in pairs(oldloaded) do
                 table.insert(unloadchars, k)
             end
-            if next(unloadchars) ~= nil then
+            if #unloadchars > 0 then
+                print("Unloading "..tostring(#unloadchars).." old character(s)")
                 TheSim:UnloadPrefabs(unloadchars)
             end
-            if next(newchars) ~= nil then
+            if #newchars > 0 then
+                print("Loading "..tostring(#newchars).." new character(s)")
                 TheSim:LoadPrefabs(newchars)
             end
+            print("Total "..tostring(#Settings.loaded_characters).." character(s) loaded")
         end
 
         --this was spawned by the level file. kinda lame - we should just do everything from in here.
@@ -1032,7 +1039,6 @@ local function OnFilesLoaded()
     UpdateGamePurchasedState(OnUpdatePurchaseStateComplete)
 end
 
-Profile = require("playerprofile")()
 SaveGameIndex = SaveIndex()
 Morgue = PlayerDeaths()
 PlayerHistory = PlayerHistory()

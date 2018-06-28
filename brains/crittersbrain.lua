@@ -177,7 +177,7 @@ function CritterBrain:OnStart()
                     SequenceNode{
                         WaitNode(6),
                         PriorityNode{
-                            Leash(self.inst, function() return self.playfultarget:GetPosition() and nil end, PLAYFUL_OFFSET, PLAYFUL_OFFSET),
+                            Leash(self.inst, function() return self.playfultarget:GetPosition() end, PLAYFUL_OFFSET, PLAYFUL_OFFSET),
                             ActionNode(function() PlayWithPlaymate(self) end),
                             StandStill(self.inst),
                         },

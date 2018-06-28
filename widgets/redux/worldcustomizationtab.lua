@@ -16,9 +16,10 @@ SERVER_LEVEL_LOCATIONS =
     "cave",
 }
 
-SERVER_LEVEL_LOCATIONS_LAVAARENA =
+EVENTSERVER_LEVEL_LOCATIONS =
 {
-	"lavaarena",
+	[LEVELTYPE.LAVAARENA] = { "lavaarena" },
+	[LEVELTYPE.QUAGMIRE] = { "quagmire" },
 }
 
 local CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
@@ -222,16 +223,15 @@ end
 
 function WorldCustomizationTab:OnChangeGameMode(gamemode)
 	local leveltype = GetLevelType(gamemode)
-    if leveltype == LEVELTYPE.LAVAARENA then
-		CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS_LAVAARENA
+
+    if EVENTSERVER_LEVEL_LOCATIONS[leveltype] ~= nil then
+		CURRENT_LEVEL_LOCATIONS = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
 	else
 		CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
 	end
 
-    if CURRENT_LEVEL_LOCATIONS[self.tab_location_index] == nil
-        and self:IsLevelEnabled(self.tab_location_index)
-        then
-            self:RemoveMultiLevel(self.tab_location_index)
+    if CURRENT_LEVEL_LOCATIONS[self.tab_location_index] == nil and self:IsLevelEnabled(self.tab_location_index) then
+		self:RemoveMultiLevel(self.tab_location_index)
     end
 
     self:Refresh()

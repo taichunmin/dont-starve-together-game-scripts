@@ -5,7 +5,7 @@
 -- times: see constructor. Note that the wander distance is hard-coded - if the walk time is too long, the entity will merely stand still after reaching their target point
 -- getdirectionFn: instead of picking a random direction, try to use the one returned by this function
 -- setdirectionFn: use this to store the direction that was randomly chosen
-Wander = Class(BehaviourNode, function(self, inst, homelocation, max_dist, times, getdirectionFn, setdirectionFn)
+Wander = Class(BehaviourNode, function(self, inst, homelocation, max_dist, times, getdirectionFn, setdirectionFn, checkpointFn)
     BehaviourNode._ctor(self, "Wander")
     self.homepos = homelocation
     self.maxdist = max_dist
@@ -14,6 +14,8 @@ Wander = Class(BehaviourNode, function(self, inst, homelocation, max_dist, times
 
     self.getdirectionFn = getdirectionFn
     self.setdirectionFn = setdirectionFn
+
+	self.checkpointFn = checkpointFn
 
     self.times =
     {
@@ -124,10 +126,10 @@ function Wander:PickNewDirection()
 
         local radius = 12
         local attempts = 8
-        local offset, check_angle, deflected = FindWalkableOffset(pt, angle, radius, attempts, true, false) -- try to avoid walls
+        local offset, check_angle, deflected = FindWalkableOffset(pt, angle, radius, attempts, true, false, self.checkpointFn) -- try to avoid walls
         if not check_angle then
             --print(self.inst, "no los wander, fallback to ignoring walls")
-            offset, check_angle, deflected = FindWalkableOffset(pt, angle, radius, attempts, true, true) -- if we can't avoid walls, at least avoid water
+            offset, check_angle, deflected = FindWalkableOffset(pt, angle, radius, attempts, true, true, self.checkpointFn) -- if we can't avoid walls, at least avoid water
         end
         if check_angle then
             angle = check_angle

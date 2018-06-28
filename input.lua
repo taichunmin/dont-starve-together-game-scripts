@@ -282,17 +282,32 @@ function Input:OnUpdate()
         self.entitiesundermouse = TheSim:GetEntitiesAtScreenPoint(TheSim:GetPosition())
 
         local inst = self.entitiesundermouse[1]
-        if inst ~= nil and inst.CanMouseThrough ~= nil and inst:CanMouseThrough() then
-            for i = 2, #self.entitiesundermouse do
-                local nextinst = self.entitiesundermouse[i]
-                if nextinst == nil or
-                    nextinst:HasTag("player") or
-                    (nextinst.Transform ~= nil) ~= (inst.Transform ~= nil) then
-                    break
+        if inst ~= nil and inst.CanMouseThrough ~= nil then
+            local mousethrough, keepnone = inst:CanMouseThrough()
+            if mousethrough then
+                for i = 2, #self.entitiesundermouse do
+                    local nextinst = self.entitiesundermouse[i]
+                    if nextinst == nil or
+                        nextinst:HasTag("player") or
+                        (nextinst.Transform ~= nil) ~= (inst.Transform ~= nil) then
+                        if keepnone then
+                            inst = nextinst
+                            mousethrough, keepnone = false, false
+                        end
+                        break
+                    end
+                    inst = nextinst
+                    if nextinst.CanMouseThrough == nil then
+                        mousethrough, keepnone = false, false
+                    else
+                        mousethrough, keepnone = nextinst:CanMouseThrough()
+                    end
+                    if not mousethrough then
+                        break
+                    end
                 end
-                inst = nextinst
-                if nextinst.CanMouseThrough == nil or not nextinst:CanMouseThrough() then
-                    break
+                if mousethrough and keepnone then
+                    inst = nil
                 end
             end
         end

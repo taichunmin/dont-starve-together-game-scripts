@@ -45,6 +45,7 @@ Graph = Class(function(self, id, args)
 	self.set_pieces = args.set_pieces
 	self.random_set_pieces = args.random_set_pieces
 	self.maze_tiles = args.maze_tiles
+	self.maze_tile_size = args.maze_tile_size
 	-- print("####New node!! ",self.id, self.maze_tiles)
 	-- dumptable(self.maze_tiles,1)
 	self.MIN_WORMHOLE_ID = 2300000
@@ -550,6 +551,30 @@ function Graph:GetRandomNode()
 	return picked
 end
 
+function Graph:GetRandomNodeForExit()
+	local picks = {}
+	for k, v in pairs(self.nodes) do
+		if v.data.entrance ~= true and (v.data.random_node_exit_weight == nil or v.data.random_node_exit_weight > 0) then
+			picks[v] = v.data.random_node_exit_weight or 1
+		end
+	end
+	
+ 	assert(next(picks) ~= nil)
+	return weighted_random_choice(picks)
+end
+
+function Graph:GetRandomNodeForEntrance()
+	local picks = {}
+	for k, v in pairs(self.nodes) do
+		if v.data.entrance ~= true and (v.data.random_node_entrance_weight == nil or v.data.random_node_entrance_weight > 0) then
+			picks[v] = v.data.random_node_entrance_weight or 1
+		end
+	end
+	
+ 	assert(next(picks) ~= nil)
+	return weighted_random_choice(picks)
+end
+
 -- Each increment is one more link ie: a triangle would be factor 1, a line factor 0, a tree factor 0, a square -> 1
 function Graph:CrosslinkRandom(crossLinkFactor)
 	if GetTableSize(self.nodes)<=2 then
@@ -607,6 +632,14 @@ function Graph:MakeLoop()
 	end
 
 	self:AddEdge({node1id=first.id, node2id=last.id})
+end
+
+function Graph:MakeHub(center_room_id)
+	for node_id, node in pairs(self.nodes) do
+		if node_id ~= center_room_id then
+			self:AddEdge({node1id=node_id, node2id=center_room_id})
+		end
+	end
 end
 
 function Graph:RemoveNode(id)

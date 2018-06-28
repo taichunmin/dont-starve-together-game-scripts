@@ -12,7 +12,6 @@ local GRAZING_TIME = 20
 
 local ROAMING_FORMATION_DIST = 5
 
-
 local DeerHerding = Class(function(self, inst)
     self.inst = inst
 
@@ -28,6 +27,13 @@ local DeerHerding = Class(function(self, inst)
 	self.isgrazing = false
 	self.keepheading = nil
 
+	self.grazing_time = GRAZING_TIME
+	self.roaming_time = ROAMING_TIME
+
+	--self.disable_spooked = false
+	--self.valid_area_check = nil -- ! Use SetValidAareaCheckFn() to set this. A custom function to check if the target location is okay, if this function fails on all points then the deer will not get a new location...
+	--self.force_keep_herd_together = false -- enable this if you don't want deer to leave the herd when too far away. This will have issues the deer can be walled in.
+
 	self.alerttargets = {}
 end)
 
@@ -37,12 +43,16 @@ function DeerHerding:Init(startingpt, herdspawner)
     self.herdspawner = herdspawner
 end
 
+function DeerHerding:SetValidAareaCheckFn(fn)
+	self.valid_area_check = function(x, y, z) return fn(self.inst, x, y, z) end
+end
+
 function DeerHerding:CalcHerdCenterPoint(detailedinfo)
 	local activedeer = {}
 	local count = 0
 	local center = Vector3(0,0,0)
 	local facing = 0
-	local max_dist = 0
+	local max_dist = 3 -- minimum max dist is 3
 
 	for k, _ in pairs(self.herdspawner:GetDeer()) do
 		if k:IsValid() then
@@ -73,7 +83,7 @@ function DeerHerding:UpdateHerdLocation(radius)
 		return
 	end
 
-	--not moving herd, too mant members are far away
+	--not moving herd, too many members are far away
 	if not self.isspooked and distsq(center, self.herdlocation) > radius * 2.8 then
 		return
 	end
@@ -90,9 +100,9 @@ function DeerHerding:UpdateHerdLocation(radius)
 	end
 	facing = GetRandomWithVariance(facing, 50) 
 
-	local result_offset, result_angle, deflected = FindWalkableOffset(center, facing*DEGREES, radius, 8, true, false) -- try avoiding walls
+	local result_offset, result_angle, deflected = FindWalkableOffset(center, facing*DEGREES, radius, 8, true, false, self.valid_area_check) -- try avoiding walls
 	if result_angle == nil then
-		result_offset, result_angle, deflected = FindWalkableOffset(center, facing*DEGREES, radius, 8, true, true) -- ok don't try to avoid walls, but at least avoid water
+		result_offset, result_angle, deflected = FindWalkableOffset(center, facing*DEGREES, radius, 8, true, true, self.valid_area_check) -- ok don't try to avoid walls, but at least avoid water
 	end
 
 	if result_angle ~= nil then
@@ -138,6 +148,10 @@ function DeerHerding:UpdateDeerHerdingStatus()
 end
 
 function DeerHerding:CalcIsHerdSpooked()
+	if self.disable_spooked then
+		return false
+	end
+
 	for deer, _ in pairs(self.herdspawner:GetDeer()) do
 		if deer:IsValid() and self:IsActiveInHerd(deer) then			
 			if deer.components.health.takingfiredamage
@@ -180,12 +194,12 @@ function DeerHerding:OnUpdate(dt)
 		self.grazetimer = self.grazetimer - dt
 		if self.grazetimer <= 0 then
 			self.isgrazing = not self.isgrazing or self:IsAnyEntityAsleep()
-			self.grazetimer = self.isgrazing and GRAZING_TIME or ROAMING_TIME
+			self.grazetimer = self.isgrazing and self.grazing_time or self.roaming_time
 		end
 	else
 		if was_spooked ~= self.isspooked then
 			self.isgrazing = false
-			self.grazetimer = ROAMING_TIME * 0.5
+			self.grazetimer = self.roaming_time * 0.5
 			self.lastupdate = curtime
 		end
 	end
@@ -195,7 +209,9 @@ function DeerHerding:OnUpdate(dt)
 	end
 	self.lastupdate = curtime + math.random() * 2
 
-	self:UpdateDeerHerdingStatus()
+	if not self.force_keep_herd_together then
+		self:UpdateDeerHerdingStatus()
+	end
 
 	if self.isspooked then
 		local herd_center = self:CalcHerdCenterPoint()
@@ -218,7 +234,6 @@ function DeerHerding:OnUpdate(dt)
 			--print (" ???", self.herdlocation, herd_center + (spookdir * TUNING.DEER_HERD_MOVE_DIST * 2))
 		end
 	elseif not self.isgrazing then
-
 		self:UpdateHerdLocation(TUNING.DEER_HERD_MOVE_DIST)
 		self.keepheading = false
 	end
@@ -292,13 +307,15 @@ function DeerHerding:OnLoad(data)
 end
 
 function DeerHerding:LoadPostPass(newents, data)
-	self.herdspawner = TheWorld.components.deerherdspawner
+	if self.herdspawner == nil then
+		self.herdspawner = TheWorld.components.deerherdspawner
+	end
 end
 
 function DeerHerding:GetDebugString()
 	local s = ""
 	if self.herdspawner ~= nil then
-	    s = s .. string.format("%s: %.2f : %s", self.isgrazing and "Grazing" or "Roaming", self.grazetimer, tostring(GetTableSize(self.alerttargets)))
+	    s = s .. string.format("%s: %.2f : %s, %s", self.isgrazing and "Grazing" or "Roaming", self.grazetimer, tostring(GetTableSize(self.alerttargets)), self.isspooked and "sooked" or "not spooked")
 	    if self:IsAnyEntityAsleep() then
 			s = s .. " Some Entity is asleep"
 	    end

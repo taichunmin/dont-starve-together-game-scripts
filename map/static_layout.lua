@@ -39,15 +39,14 @@ local function ConvertStaticLayoutToLayout(layoutsrc, additionalProps)
 	layout.ground_types = {
 							--Translates tile type index from constants.lua into tiled tileset. 
 							--Order they appear here is the order they will be used in tiled.
-							GROUND.IMPASSABLE,		GROUND.ROAD,				GROUND.ROCKY,		GROUND.DIRT,			GROUND.SAVANNA,		GROUND.GRASS,				GROUND.FOREST,			GROUND.MARSH, 
-							GROUND.WOODFLOOR,		GROUND.CARPET,				GROUND.CHECKER,		GROUND.CAVE,			GROUND.FUNGUS,		GROUND.SINKHOLE,			GROUND.WALL_ROCKY,		GROUND.WALL_DIRT, 
-							GROUND.WALL_MARSH,		GROUND.WALL_CAVE,			GROUND.WALL_FUNGUS, GROUND.WALL_SINKHOLE, 	GROUND.UNDERROCK,	GROUND.MUD,					GROUND.WALL_MUD,		GROUND.WALL_WOOD,
-							GROUND.BRICK,			GROUND.BRICK_GLOW,			GROUND.TILES,		GROUND.TILES_GLOW, 		GROUND.TRIM,		GROUND.TRIM_GLOW,			GROUND.WALL_HUNESTONE,	GROUND.WALL_HUNESTONE_GLOW,
-							GROUND.WALL_STONEEYE,	GROUND.WALL_STONEEYE_GLOW,	GROUND.FUNGUSRED,	GROUND.FUNGUSGREEN,		GROUND.FAKE_GROUND,	GROUND.LAVAARENA_FLOOR,		GROUND.LAVAARENA_TRIM,
+							GROUND.IMPASSABLE,		GROUND.ROAD,				GROUND.ROCKY,		GROUND.DIRT,			GROUND.SAVANNA,		GROUND.GRASS,				GROUND.FOREST,			        GROUND.MARSH, 
+							GROUND.WOODFLOOR,		GROUND.CARPET,				GROUND.CHECKER,		GROUND.CAVE,			GROUND.FUNGUS,		GROUND.SINKHOLE,			GROUND.QUAGMIRE_GATEWAY,		GROUND.QUAGMIRE_SOIL, 
+							GROUND.IMPASSABLE,		GROUND.IMPASSABLE,			GROUND.IMPASSABLE,  GROUND.IMPASSABLE, 	    GROUND.UNDERROCK,	GROUND.MUD,					GROUND.QUAGMIRE_PEATFOREST,		GROUND.IMPASSABLE,
+							GROUND.BRICK,			GROUND.BRICK_GLOW,			GROUND.TILES,		GROUND.TILES_GLOW, 		GROUND.TRIM,		GROUND.TRIM_GLOW,			GROUND.QUAGMIRE_PARKSTONE,	    GROUND.QUAGMIRE_PARKFIELD,
+							GROUND.IMPASSABLE,	    GROUND.IMPASSABLE,	        GROUND.FUNGUSRED,	GROUND.FUNGUSGREEN,		GROUND.FAKE_GROUND,	GROUND.LAVAARENA_FLOOR,		GROUND.LAVAARENA_TRIM,          GROUND.QUAGMIRE_CITYSTONE,
 						}
 	layout.ground = {}
-
-
+	
 	-- so we can support both 16 wide grids and 64 wide grids from tiled
 	local tilefactor = math.ceil(64/staticlayout.tilewidth)
 
@@ -62,14 +61,14 @@ local function ConvertStaticLayoutToLayout(layoutsrc, additionalProps)
 			while i < #layer.data do
 				local data = {}
 				local j = 1
-				while j < layer.width and i+j < #layer.data do
+				while j <= layer.width and i+j <= #layer.data do
 					table.insert(data, layer.data[i+j])
 					j = j + tilefactor
 				end
 				table.insert(layout.ground, data)
 				i = i + val_per_row + layer.width
 			end
-		elseif layer.type == "objectgroup" and layer.name == "FG_OBJECTS" then
+		elseif layer.type == "objectgroup" and string.find(layer.name, "FG_OBJECTS") then
 			for obj_idx, obj in ipairs(layer.objects) do
                 if not PrefabSwaps.IsPrefabInactive(obj.type) then
                     local prefab = PrefabSwaps.ResolvePrefabProxy(obj.type)

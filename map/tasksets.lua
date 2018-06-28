@@ -77,6 +77,7 @@ end
 require("map/tasksets/forest")
 require("map/tasksets/caves")
 require("map/tasksets/lavaarena")
+require("map/tasksets/quagmire")
 
 ------------------------------------------------------------------
 -- Export functions

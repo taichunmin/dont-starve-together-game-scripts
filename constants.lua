@@ -271,7 +271,7 @@ GESTURE_ROTATE_RIGHT = 903
 GESTURE_MAX = 904
 
 
-BACKEND_PREFABS = { "forest", "cave", "lavaarena" }
+BACKEND_PREFABS = { "forest", "cave", "lavaarena", "quagmire" }
 FRONTEND_PREFABS = { "frontend" }
 RECIPE_PREFABS = {}
 --Defined below:
@@ -425,6 +425,12 @@ GROUND =
 	LAVAARENA_FLOOR = 33,
 	LAVAARENA_TRIM = 34,
 
+	QUAGMIRE_PEATFOREST = 35,
+	QUAGMIRE_PARKFIELD = 36,
+	QUAGMIRE_PARKSTONE = 37,
+	QUAGMIRE_GATEWAY = 38,
+	QUAGMIRE_SOIL = 39,
+	QUAGMIRE_CITYSTONE = 41,
 
 
 	-- PUBLIC USE SPACE FOR MODS is 70 to 89 --
@@ -478,9 +484,10 @@ FESTIVAL_EVENTS =
 {
     NONE = "none",
     LAVAARENA = "lavaarena",
+    QUAGMIRE = "quagmire",
 }
-WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.NONE
-PREVIOUS_FESTIVAL_EVENT = FESTIVAL_EVENTS.LAVAARENA
+WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.QUAGMIRE
+PREVIOUS_FESTIVAL_EVENTS = { FESTIVAL_EVENTS.LAVAARENA } --this is an array now, not a single event key
 
 
 ---------------------------------------------------------
@@ -531,6 +538,12 @@ FESTIVAL_EVENT_MUSIC =
         bank = "lava_arena.fsb",
         sound = "dontstarve/music/lava_arena/FE_1_2",
     },
+    --the ??
+    [FESTIVAL_EVENTS.QUAGMIRE] =
+    {
+        bank = "quagmire.fsb",
+        sound = "dontstarve/quagmire/music/FE",
+    },
 }
 
 
@@ -552,6 +565,14 @@ local FESTIVAL_EVENT_INFO =
         GAME_MODE = "lavaarena",
         SERVER_NAME = "LavaArena",
         FEMUSIC = "dontstarve/music/lava_arena/FE2",
+		STATS_FILE_PREFIX = "forge_stats",
+    },
+    [FESTIVAL_EVENTS.QUAGMIRE] =
+    {
+        GAME_MODE = "quagmire",
+        SERVER_NAME = "Quagmire",
+        FEMUSIC = nil, --no special FE music for the festival event screen
+		STATS_FILE_PREFIX = "thegorge_stats",
     },
 }
 
@@ -577,6 +598,15 @@ function IsFestivalEventActive(event)
     return WORLD_FESTIVAL_EVENT == event
 end
 
+function IsPreviousFestivalEvent(event)
+    for _,prev_event in pairs(PREVIOUS_FESTIVAL_EVENTS) do
+        if prev_event == event then
+            return true
+        end
+    end
+    return false
+end
+
 function IsAnyFestivalEventActive()
     return WORLD_FESTIVAL_EVENT ~= FESTIVAL_EVENTS.NONE
 end
@@ -590,12 +620,25 @@ function GetFestivalEventInfo()
 end
 
 -- Used by C side. Do NOT rename without editing simulation.cpp
-function GetMostRecentFestivalEventServerName()
-    local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT or PREVIOUS_FESTIVAL_EVENT
-    assert(festival ~= FESTIVAL_EVENTS.NONE, "We must have had an event at some point.")
+function GetActiveFestivalEventServerName()
+    local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT
     return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
 end
 
+function GetFestivalEventServerName(festival)
+    return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
+end
+
+function GetActiveFestivalEventStatsFilePrefix()
+    local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT
+    return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].STATS_FILE_PREFIX or "stats"
+end
+
+function GetActiveFestivalEventAchievementStrings()
+    --Note, this requires the festival name to have the same spelling at the name in the STRINGS.UI.ACHIEVEMENTS string table
+    local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT
+    return STRINGS.UI.ACHIEVEMENTS[festival:upper()]
+end
 
 ---------------------------------------------------------
 --If changing this logic, remember to update preloadsounds.lua
@@ -650,12 +693,12 @@ TECH =
 -- See cell_data.h
 NODE_TYPE =
 {
-    Default = 0,
-    Blank = 1,
+    Default = 0,		-- Land can touch any other Default node in the task that is within range
+    Blank = 1,			-- empty room with impassible ground
     Background = 2,
     Random = 3,
-    Blocker = 4,
-    Room = 5,
+    Blocker = 4,		-- Adds 2 Blank nodes beside it
+    Room = 5,			-- Land can only touch the room(s) it is connected to by the graph (adds impassible around its parameter)
     BackgroundRoom = 6,
 }
 
@@ -843,6 +886,16 @@ CUSTOM_RECIPETABS =
 {
     BOOKS =         { str = "BOOKS",        sort = 999, icon = "tab_book.tex",      owner_tag = "bookbuilder" },
     SHADOW =        { str = "SHADOW",       sort = 999, icon = "tab_shadow.tex",    owner_tag = "shadowmagic" },
+}
+
+QUAGMIRE_RECIPETABS =
+{
+    QUAGMIRE_MEALINGSTONE = { str = "QUAGMIRE_MEALINGSTONE", sort = 0, icon = "tab_quagmire_mealingstone.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true },
+    QUAGMIRE_TRADER_ELDER = { str = "QUAGMIRE_TRADER_ELDER", sort = 0, icon = "tab_quagmire_swampigelder.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true, shop = true },
+    QUAGMIRE_TRADER_MERM1 = { str = "QUAGMIRE_TRADER_MERM1", sort = 0, icon = "tab_quagmire_trader_merm1.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true, shop = true },
+    QUAGMIRE_TRADER_MERM2 = { str = "QUAGMIRE_TRADER_MERM2", sort = 0, icon = "tab_quagmire_trader_merm2.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true, shop = true },
+    QUAGMIRE_TRADER_MUM =   { str = "QUAGMIRE_TRADER_MUM",   sort = 0, icon = "tab_quagmire_trader_mum.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true, shop = true },
+    QUAGMIRE_TRADER_KID =   { str = "QUAGMIRE_TRADER_KID",   sort = 0, icon = "tab_quagmire_trader_kid.tex", icon_atlas = "images/quagmire_hud.xml", crafting_station = true, shop = true },
 }
 
 VERBOSITY =
@@ -1288,6 +1341,7 @@ TOOLACTIONS =
     NET = true,
     PLAY = true,
     UNSADDLE = true,
+	REACH_HIGH = true,
 }
 
 DEPLOYMODE =
@@ -1300,12 +1354,14 @@ DEPLOYMODE =
     WALL = 5,
 }
 
+-- Max value of 7 (net_tinybyte)
 DEPLOYSPACING =
 {
     DEFAULT = 0,
     MEDIUM = 1,
     LESS = 2,
     NONE = 3,
+	PLACER_DEFAULT = 4,
 }
 
 DEPLOYSPACING_RADIUS =
@@ -1314,6 +1370,7 @@ DEPLOYSPACING_RADIUS =
     [DEPLOYSPACING.MEDIUM] = 1,
     [DEPLOYSPACING.LESS] = .75,
     [DEPLOYSPACING.NONE] = 0,
+	[DEPLOYSPACING.PLACER_DEFAULT] = 3.2,
 }
 
 DONT_STARVE_TOGETHER_APPID = 322330
@@ -1481,6 +1538,7 @@ LEVELTYPE = {
     CAVE = "CAVE",
     ADVENTURE = "ADVENTURE",
     LAVAARENA = "LAVAARENA",
+    QUAGMIRE = "QUAGMIRE",
     TEST = "TEST",
     UNKNOWN = "UNKNOWN",
     CUSTOM = "CUSTOM",
@@ -1501,6 +1559,68 @@ COMMAND_RESULT = {
 }
 
 MAX_VOTE_OPTIONS = 6
+
+-- Mirrors enum in SystemService.h
+LANGUAGE = 
+{
+    ENGLISH = 0,
+    ENGLISH_UK = 1,
+    FRENCH = 2,
+    FRENCH_CA = 3,
+    SPANISH = 4,
+    SPANISH_LA = 5,
+    GERMAN = 6,
+    ITALIAN = 7,
+    PORTUGUESE = 8,
+    PORTUGUESE_BR = 9,
+    DUTCH = 10,
+    FINNISH = 11,
+    SWEDISH = 12,
+    DANISH = 13,
+    NORWEGIAN = 14,
+    POLISH = 15,
+    RUSSIAN = 16,
+    TURKISH = 17,
+    ARABIC = 18,
+    KOREAN = 19,
+    JAPANESE = 20,
+    CHINESE_T = 21,
+    CHINESE_S = 22,
+    CHINESE_S_RAIL = 23,
+}
+
+LANGUAGE_STEAMCODE_TO_ID =
+{
+    brazilian = LANGUAGE.PORTUGUESE_BR,
+    bulgarian = nil,
+    czech = nil,
+    danish = LANGUAGE.DANISH,
+    dutch = LANGUAGE.DUTCH,
+    english = LANGUAGE.ENGLISH,
+    finnish = LANGUAGE.FINNISH,
+    french = LANGUAGE.FRENCH,
+    german = LANGUAGE.GERMAN,
+    greek = nil,
+    hungarian = nil,
+    italian = LANGUAGE.ITALIAN,
+    japanese = LANGUAGE.JAPANESE,
+    korean = LANGUAGE.KOREAN,
+    norwegian = LANGUAGE.NORWEGIAN,
+    polish = LANGUAGE.POLISH,
+    portuguese = LANGUAGE.PORTUGUESE,
+    romanian = nil,
+    russian = LANGUAGE.RUSSIAN,
+    schinese = LANGUAGE.CHINESE_S,
+    spanish = LANGUAGE.SPANISH,
+    swedish = LANGUAGE.SWEDISH,
+    tchinese = LANGUAGE.CHINESE_T,
+    thai = nil,
+    turkish = LANGUAGE.TURKISH,
+    ukrainian = nil,
+}
+
+QUAGMIRE_NUM_FOOD_PREFABS = 69
+QUAGMIRE_NUM_SEEDS_PREFABS = 7
 
 CURRENT_BETA = 0 -- set to 0 if there is no beta. Note: release builds wont use this so only staging and dev really care
 BETA_INFO =

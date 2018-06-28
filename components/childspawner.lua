@@ -67,6 +67,7 @@ local ChildSpawner = Class(function(self, inst)
     self.timetonextspawn = 0
     self.spawnperiod = 20
     self.spawnvariance = 2
+	--self.spawnradius = nil
 
     self.regening = true
     self.timetonextregen = 0
@@ -136,6 +137,14 @@ end
 
 function ChildSpawner:SetEmergencyRadius(rad)
     self.emergencydetectionradius = rad
+end
+
+function ChildSpawner:IsFull() 
+	return (self.numchildrenoutside + self.childreninside) >= self.maxchildren
+end
+
+function ChildSpawner:NumChildren() 
+	return self.numchildrenoutside + self.childreninside
 end
 
 function ChildSpawner:OnUpdate(dt)
@@ -220,6 +229,10 @@ end
 
 function ChildSpawner:SetVacateFn(fn)
     self.onvacate = fn
+end
+
+function ChildSpawner:SetOnChildKilledFn(fn)
+	self.onchildkilledfn = fn
 end
 
 function ChildSpawner:SetOnAddChildFn(fn)
@@ -351,7 +364,9 @@ function ChildSpawner:DoTakeOwnership(child)
     if child.components.knownlocations ~= nil then
         child.components.knownlocations:RememberLocation("home", self.inst:GetPosition())
     end
-    child:AddComponent("homeseeker")
+	if child.components.homeseeker == nil then
+	    child:AddComponent("homeseeker")
+	end
     child.components.homeseeker:SetHome(self.inst)
     AddChildListeners(self, child)
 end
@@ -393,7 +408,7 @@ end
 -- This should only be called interally
 function ChildSpawner:DoSpawnChild(target, prefab, radius)
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, (radius or .5) + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles)
+    local offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, (radius or self.spawnradius or .5) + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles)
     if offset == nil then
         return
     end

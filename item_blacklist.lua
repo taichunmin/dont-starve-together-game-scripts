@@ -18,6 +18,7 @@ ITEM_DISPLAY_BLACKLIST =
 	lamb_winter_builder = true,
 	minerhat_floppy = true,
 	orangestaff_ancient = true,
+	orangestaff_victorian = true,
 	perdling_rooster_builder = true,
 	perdling_winter_builder = true,
 	puppy_chow_builder = true,

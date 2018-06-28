@@ -173,7 +173,14 @@ function Image:OnDisable()
 end
 
 function Image:SetEffect(filename)
-	self.inst.ImageWidget:SetEffect(filename)
+    self.inst.ImageWidget:SetEffect(filename)
+    
+    if filename == "shaders/ui_cc.ksh" then
+        --hack for faked ambient lighting influence (common_postinit, quagmire.lua)
+        --might need to get the colour from the gamemode???
+        --If we're going to use the ui_cc shader again, we'll have to have a more sane implementation for setting the ambient lighting influence
+        self.inst.ImageWidget:SetEffectParams( 0.784, 0.784, 0.784, 1)
+    end
 end
 
 function Image:SetEffectParams(param1, param2, param3, param4)

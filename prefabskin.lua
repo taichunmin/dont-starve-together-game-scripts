@@ -144,6 +144,30 @@ function spear_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Axe skin functions ]]
+--------------------------------------------------------------------------
+function axe_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_axe")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Shovel skin functions ]]
+--------------------------------------------------------------------------
+function shovel_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_shovel")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
 --[[ Hambat skin functions ]]
 --------------------------------------------------------------------------
 function hambat_init_fn(inst, build_name)
@@ -410,32 +434,27 @@ local function cane_do_trail(inst)
 end
 
 local function cane_equipped(inst, data)
-    if inst.vfx_fx then
-        local fx = SpawnPrefab(inst.vfx_fx)
-        local owner = data.owner
-        fx.entity:SetParent(owner.entity)
-        fx.entity:AddFollower()
-        if inst.base_prefab == "cane" then
-            fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, -60, 0)
-        else
-            fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, -110, 0)
+    if inst.vfx_fx ~= nil then
+        if inst._vfx_fx_inst == nil then
+            inst._vfx_fx_inst = SpawnPrefab(inst.vfx_fx)
+            inst._vfx_fx_inst.entity:AddFollower()
         end
-        inst.vfx_fx_insts = fx
-    else
-        if inst._trailtask == nil then
-            inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, cane_do_trail, 2 * FRAMES)
-        end
+        inst._vfx_fx_inst.entity:SetParent(data.owner.entity)
+        inst._vfx_fx_inst.Follower:FollowSymbol(data.owner.GUID, "swap_object", 0, inst.vfx_fx_offset or 0, 0)
+    end
+    if inst.trail_fx ~= nil and inst._trailtask == nil then
+        inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, cane_do_trail, 2 * FRAMES)
     end
 end
 
 local function cane_unequipped(inst, owner)
-    if inst.vfx_fx then
-        inst.vfx_fx_insts:Remove()
-    else
-        if inst._trailtask ~= nil then
-            inst._trailtask:Cancel()
-            inst._trailtask = nil
-        end
+    if inst._vfx_fx_inst ~= nil then
+        inst._vfx_fx_inst:Remove()
+        inst._vfx_fx_inst = nil
+    end
+    if inst._trailtask ~= nil then
+        inst._trailtask:Cancel()
+        inst._trailtask = nil
     end
 end
 
@@ -449,15 +468,17 @@ function cane_init_fn(inst, build_name)
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 
     local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for canes
-    if skin_fx ~= nil and skin_fx[1] ~= nil then
-        if Prefabs[skin_fx[1]].vfx_fx then
-            inst.vfx_fx = skin_fx[1]
-        else
-            inst.trail_fx = skin_fx[1]
+    if skin_fx ~= nil then
+        inst.vfx_fx = skin_fx[1] ~= nil and skin_fx[1]:len() > 0 and skin_fx[1] or nil
+        inst.trail_fx = skin_fx[2]
+        if inst.vfx_fx ~= nil or inst.trail_fx ~= nil then
+            inst:ListenForEvent("equipped", cane_equipped)
+            inst:ListenForEvent("unequipped", cane_unequipped)
+            if inst.vfx_fx ~= nil then
+                inst.vfx_fx_offset = -60
+                inst:ListenForEvent("onremove", cane_unequipped)
+            end
         end
-        
-        inst:ListenForEvent("equipped", cane_equipped)
-        inst:ListenForEvent("unequipped", cane_unequipped)
     end
 end
 
@@ -482,18 +503,20 @@ function orangestaff_init_fn(inst, build_name)
     end
 
     local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for canes
-    if skin_fx ~= nil and skin_fx[1] ~= nil then
-        if Prefabs[skin_fx[1]].vfx_fx then
-            inst.vfx_fx = skin_fx[1]
-        else
-            inst.trail_fx = skin_fx[1]
+    if skin_fx ~= nil then
+        inst.vfx_fx = skin_fx[1] ~= nil and skin_fx[1]:len() > 0 and skin_fx[1] or nil
+        inst.trail_fx = skin_fx[2] ~= nil and skin_fx[2]:len() > 0 and skin_fx[2] or nil
+        if inst.vfx_fx ~= nil or inst.trail_fx ~= nil then
+            inst:ListenForEvent("equipped", cane_equipped)
+            inst:ListenForEvent("unequipped", cane_unequipped)
+            if inst.vfx_fx ~= nil then
+                inst.vfx_fx_offset = -110
+                inst:ListenForEvent("onremove", cane_unequipped)
+            end
         end
 
-        inst:ListenForEvent("equipped", cane_equipped)
-        inst:ListenForEvent("unequipped", cane_unequipped)
-
-        if skin_fx[2] ~= nil then
-            inst.components.blinkstaff:SetFX(skin_fx[2], skin_fx[3])
+        if skin_fx[3] ~= nil then
+            inst.components.blinkstaff:SetFX(skin_fx[3], skin_fx[4])
         end
     end
 end

@@ -32,7 +32,7 @@ local function WanderTarget(inst)
 end
 
 local function ShouldGoHome(inst)
-    return TheWorld.state.isday or TheWorld.state.iswinter
+    return TheWorld.state.iswinter or (TheWorld.state.isday and not inst.override_stay_out)
 end
 
 local MosquitoBrain = Class(Brain, function(self, inst)
@@ -58,7 +58,7 @@ function MosquitoBrain:OnStart()
 end
 
 function MosquitoBrain:OnInitializationComplete()
-    self.inst.components.knownlocations:RememberLocation("home", Point(self.inst.Transform:GetWorldPosition()))
+    self.inst.components.knownlocations:RememberLocation("home", Point(self.inst.Transform:GetWorldPosition()), true)
 end
 
 return MosquitoBrain

@@ -101,6 +101,37 @@ function Burnable:AddBurnFX(prefab, offset, followsymbol, followaschild)
     table.insert(self.fxdata, { prefab = prefab, x = offset.x, y = offset.y, z = offset.z, follow = followsymbol, followaschild = followaschild or nil })
 end
 
+function Burnable:OverrideBurnFXBuild(build)
+    for i, v in ipairs(self.fxdata) do
+        v.build = build
+    end
+    for i, v in ipairs(self.fxchildren) do
+        v.AnimState:SetBank(build)
+        v.AnimState:SetBuild(build)
+    end
+end
+
+function Burnable:OverrideBurnFXFinalOffset(offs)
+    for i, v in ipairs(self.fxdata) do
+        v.finaloffset = offs
+    end
+    for i, v in ipairs(self.fxchildren) do
+        v.AnimState:SetFinalOffset(offs)
+    end
+end
+
+function Burnable:OverrideBurnFXRadius(radius_levels)
+    for i, v in ipairs(self.fxdata) do
+        v.radius_levels = radius_levels
+    end
+    for i, v in ipairs(self.fxchildren) do
+        if v.components.firefx ~= nil then
+            v.components.firefx.radius_levels = radius_levels
+            v.components.firefx:UpdateRadius()
+        end
+    end
+end
+
 --Set an optional offset to be added on top of all individually registered offsets from AddBurnFX
 function Burnable:SetFXOffset(x, y, z)
     self.fxoffset = x ~= nil and (y ~= nil and z ~= nil and Vector3(x, y, z) or Vector3(x:Get())) or nil
@@ -239,7 +270,7 @@ local function OnKilled(inst)
     end
 end
 
-function Burnable:Ignite(immediate, source)
+function Burnable:Ignite(immediate, source, doer)
     if not (self.burning or self.inst:HasTag("fireimmune")) then
         self:StopSmoldering()
 
@@ -247,7 +278,7 @@ function Burnable:Ignite(immediate, source)
         self.inst:ListenForEvent("death", OnKilled)
         self:SpawnFX(immediate)
 
-        self.inst:PushEvent("onignite")
+        self.inst:PushEvent("onignite", {doer = doer})
         if self.onignite ~= nil then
             self.onignite(self.inst)
         end
@@ -365,6 +396,13 @@ function Burnable:SpawnFX(immediate)
     for k, v in pairs(self.fxdata) do
         local fx = v.prefab ~= nil and SpawnPrefab(v.prefab) or nil
         if fx ~= nil then
+            if v.build ~= nil then
+                fx.AnimState:SetBank(v.build)
+                fx.AnimState:SetBuild(v.build)
+            end
+            if v.finaloffset ~= nil then
+                fx.AnimState:SetFinalOffset(v.finaloffset)
+            end
             fx.Transform:SetScale(self.inst.Transform:GetScale())
             local xoffs, yoffs, zoffs = v.x + fxoffset.x, v.y + fxoffset.y, v.z + fxoffset.z
             if v.follow ~= nil then
@@ -380,6 +418,7 @@ function Burnable:SpawnFX(immediate)
             fx.persists = false
             table.insert(self.fxchildren, fx)
             if fx.components.firefx ~= nil then
+                fx.components.firefx.radius_levels = v.radius_levels
                 fx.components.firefx:SetLevel(self.fxlevel, immediate)
             end
         end

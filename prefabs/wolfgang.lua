@@ -14,9 +14,10 @@ local start_inv =
     default =
     {
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WOLFGANG,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WOLFGANG
+end
 
 local prefabs = FlattenTree(start_inv, true)
 
@@ -244,6 +245,9 @@ local function common_postinit(inst)
         end
 
         lavaarena_onisavatardirty(inst)
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_ovenmaster")
+        inst:AddTag("quagmire_shopper")
     end
 end
 

@@ -403,11 +403,14 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
             cluster_info.settings.NETWORK.lan_only_cluster       = tostring(serverdata.privacy_type == PRIVACY_TYPE.LOCAL)
             cluster_info.settings.NETWORK.cluster_intention      = serverdata.intention
             cluster_info.settings.NETWORK.offline_cluster        = tostring(not serverdata.online_mode)
+            cluster_info.settings.NETWORK.cluster_language       = GetLocaleCode()
 
             cluster_info.settings.GAMEPLAY                       = {}
             cluster_info.settings.GAMEPLAY.game_mode             = serverdata.game_mode
             cluster_info.settings.GAMEPLAY.pvp                   = tostring(serverdata.pvp)
-            cluster_info.settings.GAMEPLAY.max_players           = tostring(serverdata.max_players)
+
+			local gamemode_max_players = GetGameModeMaxPlayers(serverdata.game_mode)
+			cluster_info.settings.GAMEPLAY.max_players           = tostring(gamemode_max_players ~= nil and math.min(serverdata.max_players, gamemode_max_players) or serverdata.max_players)
 
             if serverdata.privacy_type == PRIVACY_TYPE.CLAN then
                 cluster_info.settings.STEAM                      = {}

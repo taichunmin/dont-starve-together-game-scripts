@@ -1,54 +1,81 @@
+local LOAD_UPFRONT_MODE = false
     
 local loaded_klumps = {}
 
-function LoadAccessibleKlumpFiles()
-    --print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ LOADING KLUMP ASSETS from profile")
+function LoadAccessibleKlumpFiles(minimal_load)
     --dumptable(Profile.persistdata.klump_ciphers)
-    for _,klump_asset in pairs(require("klump_assets")) do
-        local klump_key = string.gsub(klump_asset.file, "klump/", "")
-        local is_strings = false
-        if string.sub(klump_key,1,8) == "strings/" then
-            is_strings = true
-            klump_key = string.gsub(klump_key, "strings/", "")
-        end
+    if LOAD_UPFRONT_MODE then
+        if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) or IsPreviousFestivalEvent(FESTIVAL_EVENTS.QUAGMIRE) then
+			require("quagmire_event_server/quagmire_food_ids")
+			local secrets = event_server_data("quagmire", "klump_secrets")
+			for _,name in pairs(QUAGMIRE_FOOD_IDS) do
+				LoadKlumpFile("images/quagmire_food_inv_images_"..name..".tex", secrets[name].cipher, true)
+				LoadKlumpFile("images/quagmire_food_inv_images_hires_"..name..".tex", secrets[name].cipher, true)
+				LoadKlumpFile("anim/dynamic/"..name..".dyn", secrets[name].cipher, true)
+				if not minimal_load then
+					LoadKlumpString("STRINGS.NAMES."..string.upper(name), secrets[name].cipher, true)
+				end
+			end
+		end
+    else
+        if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) or IsPreviousFestivalEvent(FESTIVAL_EVENTS.QUAGMIRE) then
+            print("Klump load on boot started.")
+            local load_count = 0
+            for _,file in pairs(require("klump_files")) do
+                local klump_file = string.gsub(file, "klump/", "")
+                local is_strings = false
+                if string.sub(klump_file,1,8) == "strings/" then
+                    is_strings = true
+                    klump_file = string.gsub(klump_file, "strings/", "")
+                end
 
-        local cipher = Profile:GetKlumpCipher(klump_key)
-        if cipher ~= nil then
-            if is_strings then
-                LoadKlumpString( klump_key, cipher )
-            else
-                LoadKlumpFile( klump_key, cipher )
+                local cipher = Profile:GetKlumpCipher(klump_file)
+                if cipher ~= nil then   
+                    load_count = load_count + 1
+                    if is_strings then
+                        LoadKlumpString( klump_file, cipher, true )
+                    else
+                        LoadKlumpFile( klump_file, cipher, true )
+				    end
+                end
             end
+            print("Klump files loaded: ", load_count)
         end
     end
 end
 
-function LoadKlumpFile( klump_key, cipher )
-	if not IsKlumpLoaded( klump_key ) then
-        Profile:SaveKlumpCipher( klump_key, cipher )
-        TheSim:LoadKlumpFile( klump_key, cipher )
-        loaded_klumps[klump_key] = true
+function LoadKlumpFile( klump_file, cipher, suppress_print )
+	if not IsKlumpLoaded( klump_file ) then
+        if not suppress_print then
+            print("LoadKlumpFile", klump_file, cipher)
+        end
+        Profile:SaveKlumpCipher( klump_file, cipher )
+        TheSim:LoadKlumpFile( klump_file, cipher )
+        loaded_klumps[klump_file] = true
     end
 end
 
-function LoadKlumpString( klump_key, cipher)
-	if not IsKlumpLoaded( klump_key ) then
-        Profile:SaveKlumpCipher( klump_key, cipher )
-        TheSim:LoadKlumpString( klump_key, cipher )
-        loaded_klumps[klump_key] = true
+function LoadKlumpString( klump_file, cipher, suppress_print)
+	if not IsKlumpLoaded( klump_file ) then
+        if not suppress_print then
+            print("LoadKlumpString", klump_file, cipher)
+        end
+        Profile:SaveKlumpCipher( klump_file, cipher )
+        TheSim:LoadKlumpString( klump_file, cipher )
+        loaded_klumps[klump_file] = true
     end
 end
 
-function IsKlumpLoaded(klump_key)
-    return loaded_klumps[klump_key] ~= nil
+function IsKlumpLoaded(klump_file)
+    return loaded_klumps[klump_file] ~= nil
 end
 
-function ApplyKlumpToStringTable(json_str)
+function ApplyKlumpToStringTable(string_id, json_str)
     local json_data = json.decode(json_str)
     local s = _G
     local last_table = nil
     local last_key = nil
-    for i in string.gmatch(json_data.ID, "[%w_]+") do
+    for i in string.gmatch(string_id, "[%w_]+") do
         if i ~= nil then
             last_table = s
             last_key = i
@@ -59,5 +86,17 @@ function ApplyKlumpToStringTable(json_str)
             s = s[i]            
         end
     end
-    last_table[last_key] = json_data[GetLocaleCode()]
+
+    local locale_code = GetLocaleCode()    
+    if locale_code == "zhr" then
+        locale_code = "zh"
+    elseif locale_code == "mex" then
+        locale_code = "es"
+    end
+
+    if json_data[locale_code] == nil or json_data[locale_code] == "" then
+        last_table[last_key] = json_data["en"]
+    else
+        last_table[last_key] = json_data[locale_code]
+    end
 end

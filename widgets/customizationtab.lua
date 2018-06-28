@@ -19,9 +19,10 @@ SERVER_LEVEL_LOCATIONS =
     "cave",
 }
 
-SERVER_LEVEL_LOCATIONS_LAVAARENA =
+EVENTSERVER_LEVEL_LOCATIONS =
 {
-	"lavaarena",
+	[LEVELTYPE.LAVAARENA] = "lavaarena",
+	[LEVELTYPE.QUAGMIRE] = "quagmire",
 }
 
 local CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
@@ -228,8 +229,8 @@ end)
 
 function CustomizationTab:OnChangeGameMode(gamemode)
 	local leveltype = GetLevelType(gamemode)
-    if leveltype == LEVELTYPE.LAVAARENA then
-		CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS_LAVAARENA
+    if EVENTSERVER_LEVEL_LOCATIONS[leveltype] ~= nil then
+		CURRENT_LEVEL_LOCATIONS = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
 		self.currentmultilevel = 1
 		if self:IsLevelEnabled(2) then
 			self:RemoveMultiLevel(2)

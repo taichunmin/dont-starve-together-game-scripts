@@ -409,9 +409,8 @@ function Builder:DoBuild(recname, pt, rotation, skin)
         end
         self.inst:PushEvent("refreshcrafting")
 
-        local prod = SpawnPrefab(recipe.product, skin, nil, self.inst.userid)
+        local prod = SpawnPrefab(recipe.product, recipe.chooseskin or skin, nil, self.inst.userid)
         if prod ~= nil then
-            
             pt = pt or self.inst:GetPosition()
 
             if wetlevel > 0 and prod.components.inventoryitem ~= nil then
@@ -421,7 +420,10 @@ function Builder:DoBuild(recname, pt, rotation, skin)
             if prod.components.inventoryitem ~= nil then
                 if self.inst.components.inventory ~= nil then
                     --self.inst.components.inventory:GiveItem(prod)
-                    self.inst:PushEvent("builditem", { item = prod, recipe = recipe, skin = skin })
+                    self.inst:PushEvent("builditem", { item = prod, recipe = recipe, skin = skin, prototyper = self.current_prototyper })
+                    if self.current_prototyper ~= nil and self.current_prototyper:IsValid() then
+                        self.current_prototyper:PushEvent("builditem", { item = prod, recipe = recipe, skin = skin })
+                    end
                     ProfileStatsAdd("build_"..prod.prefab)
 
                     if prod.components.equippable ~= nil and self.inst.components.inventory:GetEquippedItem(prod.components.equippable.equipslot) == nil then
@@ -548,13 +550,13 @@ function Builder:MakeRecipeFromMenu(recipe, skin)
     if recipe.placer == nil then
         if self:KnowsRecipe(recipe.name) then
             if self:IsBuildBuffered(recipe.name) or self:CanBuild(recipe.name) then
-                self:MakeRecipe(recipe, nil, nil, ValidateRecipeSkinRequest(self.inst.userid, recipe.name, skin))
+                self:MakeRecipe(recipe, nil, nil, ValidateRecipeSkinRequest(self.inst.userid, recipe.product, skin))
             end
         elseif CanPrototypeRecipe(recipe.level, self.accessible_tech_trees) and
             self:CanLearn(recipe.name) and
             self:CanBuild(recipe.name) then
             self:MakeRecipe(recipe, nil, nil,
-                ValidateRecipeSkinRequest(self.inst.userid, recipe.name, skin),
+                ValidateRecipeSkinRequest(self.inst.userid, recipe.product, skin),
                 function()
                     self:ActivateCurrentResearchMachine()
                     self:UnlockRecipe(recipe.name)

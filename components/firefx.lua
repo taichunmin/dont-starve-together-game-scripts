@@ -31,9 +31,13 @@ function FireFX:OnUpdate(dt)
     end
 end
 
+function FireFX:GetLevelRadius(level)
+    return self.radius_levels ~= nil and self.radius_levels[level] or self.levels[level].radius
+end
+
 function FireFX:UpdateRadius()
-    local highval_r = self.levels[self.level].radius
-    local lowval_r = self.level > 1 and self.levels[self.level - 1].radius or 0
+    local highval_r = self:GetLevelRadius(self.level)
+    local lowval_r = self.level > 1 and self:GetLevelRadius(self.level - 1) or 0
 
     self.current_radius = self.percent * (highval_r - lowval_r) + lowval_r
 
@@ -69,10 +73,10 @@ function FireFX:SetLevel(lev, immediate)
             self.inst.AnimState:PushAnimation(params.anim, true)
         end
 
-        self.current_radius = params.radius
+        self.current_radius = self:GetLevelRadius(self.level)
         self.inst.Light:Enable(true)
         self.inst.Light:SetIntensity(params.intensity)
-        self.inst.Light:SetRadius(params.radius)
+        self.inst.Light:SetRadius(self.current_radius)
         self.inst.Light:SetFalloff(params.falloff)
         self.inst.Light:SetColour(unpack(params.colour))
 

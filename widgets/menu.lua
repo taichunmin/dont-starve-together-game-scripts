@@ -201,6 +201,10 @@ function Menu:AddItem(text, cb, offset, style, size, control)
         button.image:SetScale(.7)
         button:SetFont(CHATFONT)
     elseif style == "tabs" then
+        local scale = .7
+        if IsConsole() then
+            scale = .8
+        end
         button = self:AddChild(ImageButton(
                 "images/frontend_redux.xml",
                 "list_tabs_normal.tex",
@@ -208,7 +212,7 @@ function Menu:AddItem(text, cb, offset, style, size, control)
                 nil, -- "list_tabs_disabled.tex",
                 nil, -- "list_tabs_down.tex",
                 "list_tabs_selected.tex",
-                {.7},
+                {scale},
                 {0,4}
             ))
         button.scale_on_focus = false
@@ -281,7 +285,7 @@ function Menu:AutoSpaceByText(spacing)
     return math.max(0, x - spacing)
 end
 
-function Menu:EditItem(num, text, cb)
+function Menu:EditItem(num, text, text_size, cb)
 
     if self.items[num] then
         local i = self.items[num]
@@ -289,6 +293,10 @@ function Menu:EditItem(num, text, cb)
         if text then
             i:SetText(text)
         end
+
+		if text_size then
+			i:SetTextSize(text_size)
+		end
 
         if cb then
             i:SetOnClick(cb)

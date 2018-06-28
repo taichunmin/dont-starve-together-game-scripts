@@ -54,7 +54,7 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 
 	local outcome = Settings.match_results ~= nil and Settings.match_results.outcome or {}
 
-	self.title = outcome.won and STRINGS.UI.WXPLOBBYPANEL.TITLE_VICTORY or STRINGS.UI.WXPLOBBYPANEL.TITLE_DEFEAT
+	self.title = STRINGS.UI.WXPLOBBYPANEL[string.upper(TheNet:GetServerGameMode())][outcome.won and "TITLE_VICTORY" or "TITLE_DEFEAT"]
 	self.next_button_title = Settings.match_results.wxp_data == nil and STRINGS.UI.WXPLOBBYPANEL.CONTINUE or STRINGS.UI.WXPLOBBYPANEL.SKIP
 
 	local show_mvp_cards = Settings.match_results.mvp_cards ~= nil
@@ -68,9 +68,27 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 	self.wxp = self:AddChild(WxpLobbyPanel(owner.profile, function() owner.next_button:SetText(STRINGS.UI.WXPLOBBYPANEL.CONTINUE) end))
     self.wxp:SetPosition(0, show_mvp_cards and -145 or 70)
 
+	local info_y = 285
+
+	if outcome.score ~= nil then
+		local score = self:AddChild(Text(CHATFONT, 18, subfmt(STRINGS.UI.WXPLOBBYPANEL.SCORE, {score = outcome.score})))
+		score:SetPosition(-250, info_y)
+		score:SetColour(UICOLOURS.GOLD)
+		score:SetRegionSize(400, 20)
+		score:SetHAlign(ANCHOR_LEFT)
+		info_y = info_y - 20
+	end
+	if outcome.tributes_success ~= nil then
+		local score = self:AddChild(Text(CHATFONT, 18, subfmt(STRINGS.UI.WXPLOBBYPANEL.TRIBUTES, {success = outcome.tributes_success, failed = outcome.tributes_failed})))
+		score:SetPosition(-250, info_y)
+		score:SetColour(UICOLOURS.GOLD)
+		score:SetRegionSize(400, 20)
+		score:SetHAlign(ANCHOR_LEFT)
+		info_y = info_y - 20
+	end
 	if outcome.time ~= nil then
 		local match_time = self:AddChild(Text(CHATFONT, 18, subfmt(STRINGS.UI.WXPLOBBYPANEL.MATCH_TIME, {time = str_seconds(outcome.time)})))
-		match_time:SetPosition(-250, 285)
+		match_time:SetPosition(-250, info_y)
 		match_time:SetColour(UICOLOURS.GOLD)
 		match_time:SetRegionSize(400, 20)
 		match_time:SetHAlign(ANCHOR_LEFT)
@@ -78,11 +96,13 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 	if outcome.total_deaths ~= nil then
 		local text = outcome.total_deaths == 0 and STRINGS.UI.WXPLOBBYPANEL.NO_DEATHS or subfmt(STRINGS.UI.WXPLOBBYPANEL.DEATHS, {deaths = outcome.total_deaths})
 		local deaths = self:AddChild(Text(CHATFONT, 18, text))
-		deaths:SetPosition(-250, 265)
+		deaths:SetPosition(-250, info_y)
 		deaths:SetColour(UICOLOURS.GOLD)
 		deaths:SetRegionSize(400, 20)
 		deaths:SetHAlign(ANCHOR_LEFT)
+		info_y = info_y - 20
 	end
+	
 	
 	if not TheNet:IsOnlineMode() then
 		self.wxp:Hide()
@@ -184,7 +204,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
     self:SetPosition(-160, 0)
 
 	self.title = STRINGS.UI.COLLECTIONSCREEN.SKINS
-	self.next_button_title = GetGameModeProperty("lobbywaitforallplayers") and STRINGS.UI.LOBBYSCREEN.READY or STRINGS.UI.LOBBYSCREEN.START
+	self.next_button_title = GetGameModeProperty("lobbywaitforallplayers") and STRINGS.UI.LOBBYSCREEN.SELECT or STRINGS.UI.LOBBYSCREEN.START
 
 	self.loadout = self:AddChild(LoadoutSelect(owner.profile))
     self.loadout:SelectPortrait(owner.lobbycharacter)
@@ -287,10 +307,18 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
         end
     end
 
+	-- lavaarena
 --	Settings.match_results.mvp_cards = json.decode('[{"user":{"name":"ScqTTFyott","prefab":"wickerbottom","userid":"FU_229530977","base":"wickerbottom_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["kills2",234]},{"user":{"name":"Scott","prefab":"wilson","userid":"FU_229530977","base":"wilson_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken2",546]},{"user":{"name":"Scott","prefab":"wes","userid":"FU_229530977","base":"wes_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["blowdarts",5203]},{"user":{"name":"ThisIsAVeryLongName","prefab":"wolfgang","userid":"FU_229530977","base":"wolfgang_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["standards",65]},{"user":{"name":"Scott","prefab":"waxwell","userid":"FU_229530977","base":"waxwell_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken",87]},{"user":{"name":"Scott","prefab":"webber","userid":"FU_229530977","base":"webber_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["aggroheld",34]}]')
 --	Settings.match_results.wxp_data = {}
 --	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="DAILY_FIRST_WIN", val=2000}, {desc="WIN", val=1000}, {desc="DURATION", val=500}, {desc="webber_victory", val=1000}, {desc="webber_merciless", val=500}, {desc="webber_darts", val=500}, {desc="nodeaths_self", val=1000}, {desc="nodeaths_team", val=3000}, {desc="nodeaths_uniqueteam", val=5500}, {desc="wintime_30", val=1500}, {desc="wintime_25", val=3500}, {desc="wintime_20", val=5500}} }
---	Settings.match_results.outcome = {won = true, round = 5, time = 333, total_deaths = 23}
+--	Settings.match_results.outcome = {won = true, time = 333}
+
+	-- quagmire
+--	Settings.match_results.mvp_cards = json.decode('[{"user":{"name":"ScqTTFyott","prefab":"wickerbottom","userid":"FU_229530977","base":"wickerbottom_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["kills2",234]},{"user":{"name":"Scott","prefab":"wilson","userid":"FU_229530977","base":"wilson_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken2",546]},{"user":{"name":"Scott","prefab":"wes","userid":"FU_229530977","base":"wes_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["blowdarts",5203]}]')
+--	Settings.match_results.wxp_data = {}
+--	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="quag_win_fast", val=2001}, {desc="quag_win_long", val=2002}, {desc="food_001", val=501}, {desc="food_016", val=502}, {desc="food_syrup", val=503}} }
+--	Settings.match_results.outcome = {won = true, time = 333, tributes_success = 5, tributes_failed = 1, score = 12345}
+
 
     self.lobbycharacter = nil
 	self.character_for_game = nil
@@ -359,9 +387,8 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 	-- TODO: Move this somewhere better
 	if not TheNet:IsDedicated() then
 		local player_stats = Settings.match_results.player_stats or TheFrontEnd.match_results.player_stats
-		if player_stats ~= nil then
-			local str = "\ngamemode,"..player_stats.gametype
-			str = str .."\nsession," .. player_stats.session
+		if player_stats ~= nil and #player_stats.data > 0 then
+			local str = "\nstats_type,"..player_stats.gametype
 			str = str .."\nclient_date," .. os.date("%c")
 			
 			local outcome = Settings.match_results.outcome or TheFrontEnd.match_results.outcome
@@ -369,17 +396,29 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 				str = str .. "\nwon," .. (outcome.won and "true" or "false") 
 				str = str .. "\nround," .. tostring(outcome.round)
 				str = str .. "\ntime," .. tostring(math.floor(outcome.time))
+				str = str .. "\nscore," .. tostring(outcome.score)
+				str = str .. "\ntributes_success," .. tostring(outcome.tributes_success)
+				str = str .. "\ntributes_failed," .. tostring(outcome.tributes_failed)
 			end
 			
-			str = str .. "\nfields"
-			for _, v in ipairs(player_stats.fields) do
-				str = str .. "," .. v
-			end
-			
-			for _, player in ipairs(player_stats.data) do
-				str = str .. "\nuser"
-				for _, v in ipairs(player) do
+			local userid_index = 0
+			str = str .. "\nfields,is_you"
+			for i, v in ipairs(player_stats.fields) do
+				if v == "userid" then
+					userid_index = i
+				elseif v ~= "netid" then
 					str = str .. "," .. v
+				end
+			end
+			
+			for j, player in ipairs(player_stats.data) do
+				str = str .. "\nplayer"..j
+				for i, v in ipairs(player) do
+					if i == userid_index then
+						str = str .. (v == tostring(TheNet:GetUserID()) and ",yes" or ",no")
+					elseif player_stats.fields[i] ~= "netid" then
+						str = str .. "," .. v
+					end
 				end
 			end
 			print(str)
@@ -387,7 +426,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 			str = str .. "\nendofmatch"
 
 			print("Logging Match Statistics")
-			local stats_file = "forge_stats/forge_stats_" .. string.gsub(os.date("%x"), "/", "-") .. ".csv"
+			local stats_file = "event_match_stats/"..GetActiveFestivalEventStatsFilePrefix().."_" .. string.gsub(os.date("%x"), "/", "-") .. ".csv"
 			TheSim:GetPersistentString(stats_file, function(load_success, old_str) 
 				if old_str ~= nil then
 					str = str .. "\n" .. old_str

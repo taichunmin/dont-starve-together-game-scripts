@@ -832,10 +832,10 @@ function PlayerProfile:Save(callback)
     end
 end
 
-function PlayerProfile:Load(callback)
+function PlayerProfile:Load(callback, minimal_load)
     TheSim:GetPersistentString(self:GetSaveName(),
         function(load_success, str)
-            self:Set(str, callback)
+            self:Set(str, callback, minimal_load)
         end, false)
 end
 
@@ -847,7 +847,7 @@ local function GetValueOrDefault( value, default )
 	end
 end
 
-function PlayerProfile:Set(str, callback)
+function PlayerProfile:Set(str, callback, minimal_load)
     if str == nil or string.len(str) <= 0 then
         if callback ~= nil then
             --These are purposely inside the if to prevent infinite recursion
@@ -906,6 +906,12 @@ function PlayerProfile:Set(str, callback)
                 self.persistdata.movementprediction = true
 		    end
 		end
+        
+        if minimal_load then
+            assert(callback == nil)
+            return 
+        end
+
 
 		local amb, sfx, music = self:GetVolume()
 		Print(VERBOSITY.DEBUG, "volumes", amb, sfx, music )
@@ -1071,16 +1077,20 @@ function PlayerProfile:SetWarnModsEnabled(do_warning)
 	end
 end
 
+local function _EntitlementKey(entitlement)
+    return TheNet:GetItemsBranch() .. TheNet:GetUserID().."entitlement_"..entitlement
+end
+
 function PlayerProfile:IsEntitlementReceived(entitlement)
-	if self:GetValue("entitlement_"..entitlement) ~= nil then
-		return self:GetValue("entitlement_"..entitlement)
+	if self:GetValue(_EntitlementKey(entitlement)) ~= nil then
+		return self:GetValue(_EntitlementKey(entitlement))
 	else
 		return false
 	end
 end
 
 function PlayerProfile:SetEntitlementReceived(entitlement)
-	self:SetValue("entitlement_"..entitlement, true)
+	self:SetValue(_EntitlementKey(entitlement), true)
 	self.dirty = true
     self:Save()
 end
@@ -1110,6 +1120,11 @@ end
 
 
 function PlayerProfile:SaveKlumpCipher(file, cipher)
+    if IsConsole() then
+        --do nothing on console for Klump ciphers
+        return
+    end
+
 	if not self.persistdata.klump_ciphers then
 		self.persistdata.klump_ciphers = {}
 	end
@@ -1132,11 +1147,33 @@ function PlayerProfile:SaveKlumpCipher(file, cipher)
 end
 
 function PlayerProfile:GetKlumpCipher(file)
+    if IsConsole() then
+        print("~~~ERROR~~~ GetKlumpCipher should never be called on console")
+        return ""
+    end
+     
 	if not self.persistdata.klump_ciphers then
 		return nil
 	end
 
 	return self.persistdata.klump_ciphers[file]
+end
+
+
+function PlayerProfile:GetLanguageID()
+	if self:GetValue("language_id") ~= nil then
+		return self:GetValue("language_id")
+	elseif IsConsole() then
+		return TheSystemService:GetLanguage()	
+	else
+		return LANGUAGE.ENGLISH
+	end
+end
+
+function PlayerProfile:SetLanguageID(language_id, cb)
+	self:SetValue("language_id", language_id)
+	self.dirty = true
+    self:Save(cb)
 end
 
 

@@ -417,6 +417,10 @@ params.pandoraschest = params.treasurechest
 params.skullchest = params.treasurechest
 params.minotaurchest = params.treasurechest
 
+params.quagmire_safe = deepcopy(params.treasurechest)
+params.quagmire_safe.widget.animbank = "quagmire_ui_chest_3x3"
+params.quagmire_safe.widget.animbuild = "quagmire_ui_chest_3x3"
+
 params.dragonflychest = params.shadowchester
 
 --------------------------------------------------------------------------
@@ -466,6 +470,157 @@ end
 
 function params.candybag.itemtestfn(container, item, slot)
     return item:HasTag("halloweencandy") or string.sub(item.prefab, 1, 8) == "trinket_"
+end
+
+--------------------------------------------------------------------------
+--[[ quagmire_pot ]]
+--------------------------------------------------------------------------
+
+params.quagmire_pot =
+{
+    widget =
+    {
+        slotpos =
+        {
+            Vector3(0, 64 + 32 + 8 + 4, 0), 
+            Vector3(0, 32 + 4, 0),
+            Vector3(0, -(32 + 4), 0), 
+            Vector3(0, -(64 + 32 + 8 + 4), 0),
+        },
+        animbank = "quagmire_ui_pot_1x4",
+        animbuild = "quagmire_ui_pot_1x4",
+        pos = Vector3(200, 0, 0),
+        side_align_tip = 100,
+    },
+    acceptsstacks = false,
+    type = "cooker",
+}
+
+function params.quagmire_pot.itemtestfn(container, item, slot)
+    return item:HasTag("quagmire_stewable")
+        and item.prefab ~= "quagmire_sap"
+        and ((item.components.inventoryitem ~= nil and not item.components.inventoryitem:IsHeld()) or
+            not (item.prefab == "spoiled_food" or item:HasTag("preparedfood") or item:HasTag("overcooked") or container.inst:HasTag("takeonly")))
+end
+
+--------------------------------------------------------------------------
+--[[ quagmire_pot_small ]]
+--------------------------------------------------------------------------
+
+params.quagmire_pot_small =
+{
+    widget =
+    {
+        slotpos =
+        {
+            Vector3(0, 64 + 8, 0), 
+            Vector3(0, 0, 0),
+            Vector3(0, -(64 + 8), 0), 
+        },
+        animbank = "quagmire_ui_pot_1x3",
+        animbuild = "quagmire_ui_pot_1x3",
+        pos = Vector3(200, 0, 0),
+        side_align_tip = 100,
+    },
+    acceptsstacks = false,
+    type = "cooker",
+}
+
+params.quagmire_pot_small.itemtestfn = params.quagmire_pot.itemtestfn
+
+--------------------------------------------------------------------------
+--[[ quagmire_casseroledish ]]
+--------------------------------------------------------------------------
+
+params.quagmire_casseroledish = params.quagmire_pot
+
+--------------------------------------------------------------------------
+--[[ quagmire_casseroledish_small ]]
+--------------------------------------------------------------------------
+
+params.quagmire_casseroledish_small = params.quagmire_pot_small
+
+--------------------------------------------------------------------------
+--[[ quagmire_grill ]]
+--------------------------------------------------------------------------
+
+params.quagmire_grill = params.quagmire_pot
+
+--------------------------------------------------------------------------
+--[[ quagmire_grill_small ]]
+--------------------------------------------------------------------------
+
+params.quagmire_grill_small = params.quagmire_pot_small
+
+--------------------------------------------------------------------------
+--[[ quagmire_pot_syrup ]]
+--------------------------------------------------------------------------
+
+params.quagmire_pot_syrup =
+{
+    widget =
+    {
+        slotpos =
+        {
+            Vector3(0, 64 + 8, 0), 
+            Vector3(0, 0, 0),
+            Vector3(0, -(64 + 8), 0), 
+        },
+        animbank = "quagmire_ui_pot_1x3",
+        animbuild = "quagmire_ui_pot_1x3",
+        pos = Vector3(200, 0, 0),
+        side_align_tip = 100,
+    },
+    acceptsstacks = false,
+    type = "cooker",
+}
+
+function params.quagmire_pot_syrup.itemtestfn(container, item, slot)
+    return item:HasTag("quagmire_stewable")
+        and ((item.components.inventoryitem ~= nil and not item.components.inventoryitem:IsHeld()) or
+            (item.prefab == "quagmire_sap" and not container.inst:HasTag("takeonly")))
+end
+
+--------------------------------------------------------------------------
+--[[ quagmire_backpack_small ]]
+--------------------------------------------------------------------------
+
+params.quagmire_backpack_small =
+{
+    widget =
+    {
+        slotpos = {},
+        animbank = "ui_chest_3x3",
+        animbuild = "ui_chest_3x3",
+        pos = Vector3(-50, -450, 0),
+        side_align_tip = 100,
+    },
+    type = "backpack",
+}
+
+for x = 0, 3 do
+    table.insert(params.quagmire_backpack_small.widget.slotpos, Vector3(-x * 75 - 75*.5, 120, 0))
+end
+
+--------------------------------------------------------------------------
+--[[ quagmire_backpack ]]
+--------------------------------------------------------------------------
+
+params.quagmire_backpack =
+{
+    widget =
+    {
+        slotpos = {},
+        animbank = "ui_chest_3x3",
+        animbuild = "ui_chest_3x3",
+        pos = Vector3(-50, -450, 0),
+        side_align_tip = 100,
+    },
+    type = "backpack",
+}
+
+for x = 0, 7 do
+    table.insert(params.quagmire_backpack.widget.slotpos, Vector3(-x * 75 - 75*.5, 120, 0))
 end
 
 --------------------------------------------------------------------------

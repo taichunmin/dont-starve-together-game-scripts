@@ -15,6 +15,8 @@ require "widgets/widgetutil"
 local REPEAT_TIME = .15
 local POPUPOFFSET = Vector3(-300,-360,0)
 
+local selected_scale = .9
+
 local ControllerCrafting = Class(Crafting, function(self, owner)
     Crafting._ctor(self, owner, 10)
 	self:SetOrientation(true)
@@ -71,6 +73,7 @@ end
 
 function ControllerCrafting:Close(fn)
     ControllerCrafting._base.Close(self, fn)
+    self:GetTabs():ScaleTo(selected_scale, self:GetTabs().base_scale, .15)
     self:StopUpdating()
     --V2C: focus hacks because this is not a proper screen
     TheFrontEnd:LockFocus(false)
@@ -79,6 +82,7 @@ end
 
 function ControllerCrafting:Open(fn)
 	ControllerCrafting._base.Open(self, fn)
+	self:GetTabs():ScaleTo(self:GetTabs().base_scale, selected_scale, .15)
 	self:StartUpdating()
 
 	self.control_held = TheInput:IsControlPressed(CONTROL_OPEN_CRAFTING)

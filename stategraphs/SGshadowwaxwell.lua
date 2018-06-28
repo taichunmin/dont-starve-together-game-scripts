@@ -425,6 +425,60 @@ local states =
             inst.AnimState:PushAnimation("emoteXL_loop_dance0", true)
         end,
     },
+
+    State{
+        name = "jumpout",
+        tags = { "busy", "canrotate", "jumping" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("jumpout")
+            inst.Physics:SetMotorVel(4, 0, 0)
+            inst.Physics:ClearCollisionMask()
+            inst.Physics:CollidesWith(COLLISION.GROUND)
+        end,
+
+        timeline =
+        {
+            TimeEvent(10 * FRAMES, function(inst)
+                inst.Physics:SetMotorVel(3, 0, 0)
+            end),
+            TimeEvent(15 * FRAMES, function(inst)
+                inst.Physics:SetMotorVel(2, 0, 0)
+            end),
+            TimeEvent(15.2 * FRAMES, function(inst)
+                inst.sg.statemem.physicson = true
+                inst.Physics:ClearCollisionMask()
+                inst.Physics:CollidesWith(COLLISION.WORLD)
+                inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+                inst.Physics:CollidesWith(COLLISION.GIANTS)
+            end),
+            TimeEvent(17 * FRAMES, function(inst)
+                inst.Physics:SetMotorVel(1, 0, 0)
+            end),
+            TimeEvent(18 * FRAMES, function(inst)
+                inst.Physics:Stop()
+            end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.physicson then
+                inst.Physics:ClearCollisionMask()
+                inst.Physics:CollidesWith(COLLISION.WORLD)
+                inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+                inst.Physics:CollidesWith(COLLISION.GIANTS)
+            end
+        end,
+    },
 }
 
 return StateGraph("shadowmaxwell", states, events, "idle", actionhandlers)

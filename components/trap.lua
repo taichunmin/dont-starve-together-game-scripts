@@ -157,7 +157,7 @@ function Trap:OnUpdate(dt)
             self.target = guy
             self:StopUpdating()
             self.inst:PushEvent("springtrap")
-            self.target:PushEvent("trapped")
+            self.target:PushEvent("trapped", {trap = self.inst})
         end
     end
 end
@@ -283,7 +283,7 @@ function Trap:Harvest(doer)
         local pos = self.inst:GetPosition()
         local timeintrap = self.inst.components.timer ~= nil and self.inst.components.timer:GetTimeElapsed("foodspoil") or 0
 
-        self.inst:PushEvent("harvesttrap")
+        self.inst:PushEvent("harvesttrap", {doer = doer})
         if self.onharvest ~= nil then
             self.onharvest(self.inst)
         end
@@ -310,8 +310,8 @@ function Trap:Harvest(doer)
             self:Reset()
 
             if inventory ~= nil and
-                self.inst.components.finiteuses ~= nil and
-                self.inst.components.finiteuses:GetUses() > 0 then
+                (self.inst.components.finiteuses == nil or
+                self.inst.components.finiteuses:GetUses() > 0) then
                 inventory:GiveItem(self.inst, nil, pos)
             end
         end

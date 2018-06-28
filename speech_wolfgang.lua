@@ -20,6 +20,11 @@ return {
         {
             WRONGKEY = "Is not right key!",
             KLAUS = "Later! Now we FIGHT!",
+            QUAGMIRE_WRONGKEY = "Is wrong key.",
+        },
+        ACTIVATE = 
+        {
+            LOCKED_GATE = "Let Wolfgang in!",
         },
         STORE =
         {
@@ -66,6 +71,8 @@ return {
             MUSHROOMFARM_NEEDSSHROOM = "Is needing tiny mushy-room, I think.",
             MUSHROOMFARM_NEEDSLOG = "Is needing tiny log with face.",
             SLOTFULL = "Something is already put!",
+            FOODFULL = "It must enjoy first yummy food from Wolfgang first!",
+            NOTDISH = "Wolfgang serves only best dishes!",
             DUPLICATE = "Little recipe is already in there!",
             NOTSCULPTABLE = "Material is not mighty enough for strong statues!",
             CANTSHADOWREVIVE = "Is not working.",
@@ -112,6 +119,12 @@ return {
         PICKUP =
         {
             RESTRICTION = "That is not mighty weapon!",
+            INUSE = "Wolfgang will wait for friend to finish.",
+        },
+        REPLATE =
+        {
+            MISMATCH = "Food need different dish.", 
+            SAMEDISH = "Wolfgang already put on dish.", 
         },
     },
     ACTIONFAIL_GENERIC = "I am not mighty enough to do that.",
@@ -242,11 +255,16 @@ return {
     ANNOUNCE_NOWARDROBEONFIRE = "Ehh, Wolfgang do that later...",
     ANNOUNCE_WORMS = "Earth is tremble beneath Wolfgang's mighty feet!",
 
---boarlord event
+    --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Up now, friend!",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "Go! Fight many things!",
     ANNOUNCE_REVIVED_FROM_CORPSE = "Thank-you, friend!",
-    
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "That was not good recipe!",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "Little meal cooked too long.",
+    QUAGMIRE_ANNOUNCE_LOSE = "Sky beast is mad!",
+    QUAGMIRE_ANNOUNCE_WIN = "Is time to leave. Goodbye, good food!",
+
     BATTLECRY =
     {
         GENERIC = "I will punch you!",
@@ -2115,6 +2133,220 @@ return {
         LAVAARENA_RECHARGERHAT = "Nice little head rocks.",
         LAVAARENA_HEALINGGARLANDHAT = "Is many little fast flowers.",
         LAVAARENA_CROWNDAMAGERHAT = "Is so mighty!",
+
+        --Quagmire
+        QUAGMIRE_ALTAR = 
+        {
+            GENERIC = "Little stone. Wolfgang will cook for you.",
+            FULL = "Enjoy hearty meal from Wolfgang!",
+        },
+        QUAGMIRE_ALTAR_STATUE1 = "Nice stone lady.",
+        QUAGMIRE_PARK_FOUNTAIN = "There is no water for little birdies.",
+        --
+        QUAGMIRE_HOE = "Wolfgang must do farmwork for tastiest veggies.",
+        --
+        QUAGMIRE_TURNIP = "I will use in many dishes! Yes!",
+        QUAGMIRE_TURNIP_COOKED = "Smell is very good.",
+        QUAGMIRE_TURNIP_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_GARLIC = "Is good flavor for stewing.",
+        QUAGMIRE_GARLIC_COOKED = "Flavor is good now.",
+        QUAGMIRE_GARLIC_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_ONION = "Wolfgang eats like apple when not cooking.",
+        QUAGMIRE_ONION_COOKED = "Crispy, brown, sweet.",
+        QUAGMIRE_ONION_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_POTATO = "Wolfgang's favorite veggie.",
+        QUAGMIRE_POTATO_COOKED = "Is golden brown! Texture like sun!",
+        QUAGMIRE_POTATO_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_TOMATO = "Is good for sauce makings.",
+        QUAGMIRE_TOMATO_COOKED = "Roasty and toasty.",
+        QUAGMIRE_TOMATO_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_FLOUR = "Is for dough and many good noodles.",
+        QUAGMIRE_WHEAT = "Flour! Wolfgang will grind with bare hands!",
+        QUAGMIRE_WHEAT_SEEDS = "Is little tiny seeds for burying.",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "Is little tiny seeds for burying.",
+        --
+        QUAGMIRE_ROTTEN_CROP = "Ground turned veggie to gunk.",
+        --
+        QUAGMIRE_SALMON = "Is floppy, floppy fish.",
+        QUAGMIRE_SALMON_COOKED = "Fish is cooked now.",
+        QUAGMIRE_CRABMEAT = "Is meat of tiny pincher.",
+        QUAGMIRE_CRABMEAT_COOKED = "Yummy, yummy pincher.",
+        QUAGMIRE_POT = "Wolfgang brought most important ingredient: love.",
+        QUAGMIRE_POT_SMALL = "Friends, do not look! Pot needs to boil.",
+        QUAGMIRE_POT_HANGER_ITEM = "Makes pot hang above fire.",
+        QUAGMIRE_OVEN_ITEM = "Is fire box bits.",
+        QUAGMIRE_OVEN = "Friends! Wolfgang will cook for you!",
+        QUAGMIRE_SUGARWOODTREE = 
+        {
+            GENERIC = "Is little tree of yummy goop.",
+            STUMP = "Tree has been cut down!",
+            TAPPED_EMPTY = "Little bucket needs to fill up.",
+            TAPPED_READY = "Little bucket is full!",
+			TAPPED_BUGS = "Wolfgang will crush tiny creatures.",
+            WOUNDED = "Little tree has boo-boo.",
+        },
+        QUAGMIRE_SPOTSPICE_SHRUB = 
+        {
+            GENERIC = "Is little shrub for eating.",
+            PICKED = "We took the food bits.",
+        },
+        QUAGMIRE_SPOTSPICE_SPRIG = "Is nice little garnish.",
+        QUAGMIRE_SPOTSPICE_GROUND = "Wolfgang will cook delicious things.",
+        QUAGMIRE_SAPBUCKET = "Is for get yummy tree goop.",
+        QUAGMIRE_SAP = "Is yummy tree goop!",
+        QUAGMIRE_SALT_RACK =
+        {
+            READY = "Is ready!",
+            GENERIC = "Is not ready yet.",
+        },
+
+        QUAGMIRE_SALT_RACK_ITEM = "Mighty hands make quick work.",
+
+        QUAGMIRE_SAFE = 
+        {
+            GENERIC = "What is inside?",
+            LOCKED = "Punches do nothing.",
+        },
+
+        QUAGMIRE_KEY = "Wolfgang have key to treasure.",
+        QUAGMIRE_KEY_PARK = "Haha! Wolfgang open gate now!",
+        QUAGMIRE_PORTAL_KEY = "Is heavy key but Wolfgang strong!",
+        
+        QUAGMIRE_MUSHROOMSTUMP =
+        {
+            GENERIC = "Wolfgang could use in soups.",
+            PICKED = "No more for Wolfgang.",
+        },
+        QUAGMIRE_MUSHROOMS = "Mushrooms need cooking!",
+        QUAGMIRE_MEALINGSTONE = "We must grind grain for bread!",
+
+        QUAGMIRE_PEBBLECRAB = "Hello, itty bitty pincher!",
+
+        QUAGMIRE_POND_SALT = "Is tiny ocean.",
+        --
+        QUAGMIRE_RUBBLE_CARRIAGE = "Is not work.",
+        QUAGMIRE_RUBBLE_CLOCK = "Wolfgang cannot tell time.",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "Someone is smashed it.",
+        QUAGMIRE_RUBBLE_PUBDOOR = "Is not going nowhere.",
+        QUAGMIRE_RUBBLE_ROOF = "Wolfgang lift it, then Wolfgang have roof over head.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "Is working? No is not working.",
+        QUAGMIRE_RUBBLE_BIKE = "Is busted.",
+        QUAGMIRE_RUBBLE_HOUSE = {"Is no one here.", "Someone crushed homes.", "Must have made something angry.",},
+        QUAGMIRE_RUBBLE_CHIMNEY = "Wolfgang will punch whatever did this.",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "Wolfgang not do this. But Wolfgang could.",
+        QUAGMIRE_MERMHOUSE = "That house is for smelly fish men.",
+        QUAGMIRE_SWAMPIG_HOUSE = "Wimpy house for hairy pigs.",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "Little house is ruined.",
+        QUAGMIRE_SWAMPIGELDER =
+        {
+            GENERIC = "He seems like good fellow!",
+            SLEEPING = "Gone beddy-bye.",
+        },
+        QUAGMIRE_SWAMPIG = "Is big teeth you have!",
+        --
+        QUAGMIRE_PORTAL = "It did not go home. Is no surprise.",
+        QUAGMIRE_SALTROCK = "Wolfgang will crush bits into salt shaker.",
+        QUAGMIRE_SALT = "Is make food taste good.",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "Is sad sight.",
+        --QUAGMIRE_FOOD_PLATE = "Plating is best part!",
+        --QUAGMIRE_FOOD_BOWL = "Is hat? Nope.",
+        --QUAGMIRE_FOOD_SOUP = "Is like Wolfgang Mommy used to make.",
+        --QUAGMIRE_FOOD_SNACK = "Is tiny bit of food.",
+        --QUAGMIRE_FOOD_BREAD = "Is keeping Wolfgang going.",
+        --QUAGMIRE_FOOD_PASTA = "Is full of wheaty things.",
+        --QUAGMIRE_FOOD_VEGGIE = "Wolfgang always eat his vegetables.",
+        --QUAGMIRE_FOOD_MEAT = "Meat! Wolfgang like.",
+        --QUAGMIRE_FOOD_FISH = "Is meal with floppy fishies.",
+        --QUAGMIRE_FOOD_CRAB = "Is make Wolfgang big and strong!",
+        --QUAGMIRE_FOOD_CHEESE = "Gooey parts is good.",
+        --QUAGMIRE_FOOD_SWEET = "Wolfgang save room for dessert.",
+        QUAGMIRE_FOOD =
+        {
+            GENERIC = "Wolfgang will feed big sky beast!",
+            MISMATCH = "Is not what sky beast wants.",
+            MATCH = "Is good for sky beast.",
+            MATCH_BUT_SNACK = "Is tiny food, but good for sky beast.",
+        },
+        QUAGMIRE_FERN = "Is tiny leaf plant.",
+        QUAGMIRE_FOLIAGE_COOKED = "Is garnish now.",
+        --
+        QUAGMIRE_COIN1 = "Goat lady and fish men would like.",
+        QUAGMIRE_COIN2 = "Goat lady and fish men would like.",
+        QUAGMIRE_COIN3 = "Goat lady and fish men would like.",
+        QUAGMIRE_COIN4 = "Sky beast liked Wolfgang's cookings!",
+        QUAGMIRE_GOATMILK = "Maybe goat lady got from hair cows?",
+        QUAGMIRE_SYRUP = "Yummy sugar goop!",
+        QUAGMIRE_SAP_SPOILED = "Wolfgang cannot cook with yuck sludge.",
+        QUAGMIRE_SEEDPACKET = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_SMALL = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_MEDIUM = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_LARGE = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_MIX_SMALL = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_MIX_MEDIUM = "Give your seeds to Wolfgang, tiny paper!",
+        --QUAGMIRE_SEEDPACKET_MIX_LARGE = "Give your seeds to Wolfgang, tiny paper!",
+        ---
+        QUAGMIRE_POT = "Wolfgang put this over fire.",
+        QUAGMIRE_POT_SMALL = "Friends, do not look! Pot needs to boil.",
+        QUAGMIRE_POT_SYRUP = "Wolfgang put in sugar goop. New sugar goop come out.",
+        QUAGMIRE_POT_HANGER = "Wolfgang hang things over fire.",
+        QUAGMIRE_POT_HANGER_ITEM = "Is make pot hang over fire.",
+        QUAGMIRE_GRILL = "Is put fire to food.",
+        QUAGMIRE_GRILL_ITEM = "Where will Wolfgang put this?",
+        QUAGMIRE_GRILL_SMALL = "Is put fire on tiny food.",
+        QUAGMIRE_GRILL_SMALL_ITEM = "Wolfgang needs put this down some place.",
+        QUAGMIRE_OVEN = "Friends! Wolfgang will cook for you!",
+        QUAGMIRE_OVEN_ITEM = "Is fire box bits.",
+        QUAGMIRE_CASSEROLEDISH = "Is shame Wolfgang forget cabbage casserole recipe.",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "Is making of small foods.",
+        QUAGMIRE_PLATE_SILVER = "Is for fancy eating.",
+        QUAGMIRE_BOWL_SILVER = "Is for fancy eating.",
+        --
+        QUAGMIRE_MERM_CART1 = "Wolfgang could lift it.", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "Wolfgang could lift it.", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "Is scary.",
+        QUAGMIRE_PARK_ANGEL2 = "Wolfgang don't like.",
+        QUAGMIRE_PARK_URN = "Is burned dead person pieces.",
+        QUAGMIRE_PARK_OBELISK = "Wolfgang could lift it.",
+        QUAGMIRE_PARK_GATE =
+        {
+            GENERIC = "What nice things is in pink park?",
+            LOCKED = "Is needing key.",
+        },
+        QUAGMIRE_PARKSPIKE = "Is pointy spiky thing.",
+        QUAGMIRE_CRABTRAP = "Is for catching tiny pinchers.",
+        QUAGMIRE_TRADER_MERM = "Is having things for Wolfgang?",
+        QUAGMIRE_TRADER_MERM2 = "Is having things for Wolfgang?",
+        --
+        QUAGMIRE_GOATMUM = "Is fluffy goat lady!",
+        QUAGMIRE_GOATKID = "You grow up strong like Wolfgang, yes?",
+        QUAGMIRE_PIGEON =
+        {
+            DEAD = "Is dead.",
+            GENERIC = "Silly bird does not matter to Wolfgang.",
+            SLEEPING = "Gone beddy-bye.",
+        },
+        QUAGMIRE_LAMP_POST = "Wolfgang loves lamp.",
+
+        QUAGMIRE_BEEFALO = "Is old.",
+        QUAGMIRE_SLAUGHTERTOOL = "Wolfgang use to kill things.",
+
+        QUAGMIRE_SAPLING = "Is broken.",
+        QUAGMIRE_BERRYBUSH = "Is all gone.",
+
+        QUAGMIRE_ALTAR_STATUE2 = "Is silly statue. Wolfgang not afraid.",
+        QUAGMIRE_ALTAR_QUEEN = "Is big lady.",
+        QUAGMIRE_ALTAR_BOLLARD = "Is post.",
+        QUAGMIRE_ALTAR_IVY = "Is plant.",
+
+        QUAGMIRE_LAMP_SHORT = "Wolfgang loves lamp.",
+
     },
     DESCRIBE_GENERIC = "What is this thing?",
     DESCRIBE_TOODARK = "Help friends! Save Wolfgang from dark!",

@@ -125,7 +125,6 @@ end
 
 local function master_postinit(inst)
     event_server_data("lavaarena", "prefabs/lavaarena").master_postinit(inst)
-    event_server_data("common", "cloudserverconsolecommands")
 end
 
 return MakeWorld("lavaarena", prefabs, assets, common_postinit, master_postinit, { "lavaarena" }, {common_preinit = common_preinit})

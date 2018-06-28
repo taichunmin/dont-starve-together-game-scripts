@@ -3,17 +3,24 @@ local Widget = require "widgets/widget"
 local UIAnim = require "widgets/uianim"
 
 local TEMPLATES = require "widgets/redux/templates"
-local WxpUtils = require "wxputils"
 require("stringutil")
 
 local TIME_PER_DETAIL = 2
 local LEVELUP_TIME = 1
 local achievement_spacing = 38
+local achievement_image_size = 36
+local achievement_max_per_row = 9
+
 local achievement_start = -256-18
 
 local function TextTintToHelper(self, r, g, b, a)
 	self:SetColour(self.colour[1], self.colour[2], self.colour[3], a)
 end 
+
+local function IsAFoodDiscovery(name)
+	local prefix = "food_"
+	return string.sub(name, 1, string.len(prefix)) == prefix
+end
 
 local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
     Widget._ctor(self, "WxpLobbyPanel")
@@ -32,13 +39,19 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
 					detail._is_achievement = true
 					EventAchievements:SetAchievementTempUnlocked(detail.desc)
 					table.insert(self.wxp.achievements, detail.desc)
+				elseif IsAFoodDiscovery(detail.desc) then
+					detail._is_achievement = true
+					detail._is_discovery = true
+
+					EventAchievements:SetAchievementTempUnlocked(detail.desc)
+					table.insert(self.wxp.achievements, detail.desc)
 				end
 			end
 
-			table.sort(self.wxp.details, function(a, b) return (a.val+(a._is_achievement and 99999 or 0)) < (b.val+(b._is_achievement and 99999 or 0)) end)
+			table.sort(self.wxp.details, function(a, b) return (a.val+(a._is_achievement and 99999 or 0)+(a._is_discovery and 999999 or 0)) < (b.val+(b._is_achievement and 99999 or 0)+(b._is_discovery and 999999 or 0)) end)
 			
 			self.wxp.old_xp = math.max(0, self.wxp.new_xp - self.wxp.match_xp)
-			self.wxp.old_level = TheItems:GetLevelForWXP(self.wxp.old_xp)
+			self.wxp.old_level = wxputils.GetLevelForWXP(self.wxp.old_xp)
 
 			new_wxp = true
 			Settings.match_results.wxp_data[TheNet:GetUserID()] = {new_xp = self.wxp.new_xp, achievements = self.wxp.achievements}
@@ -50,17 +63,23 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
 			self.wxp.details = {}
 			self.wxp.match_xp = 0
 			self.wxp.old_xp = self.wxp.new_xp
-			self.wxp.old_level = TheItems:GetLevelForWXP(self.wxp.new_xp)
+			self.wxp.old_level = wxputils.GetLevelForWXP(self.wxp.new_xp)
 		end
 	else
 		self.wxp = {}
-		self.wxp.new_xp = TheInventory:GetWXP()
+		self.wxp.new_xp = wxputils.GetActiveWXP()
 		self.wxp.earned_boxes = 0
 		self.wxp.details = {}
 		self.wxp.match_xp = 0
 		self.wxp.old_xp = self.wxp.new_xp
-		self.wxp.old_level = TheInventory:GetWXPLevel()
+		self.wxp.old_level = wxputils.GetActiveLevel()
 		self.wxp.achievements = {}
+	end
+
+	if #self.wxp.achievements > 18 then
+		achievement_spacing = 30
+		achievement_image_size = 28
+		achievement_max_per_row = 11
 	end
 
 	self.detail_index = 1
@@ -69,8 +88,7 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
 	self.displayinfo.timer = 0
 	self.displayinfo.duration =  #self.wxp.details * TIME_PER_DETAIL
 	self.displayinfo.showing_level = self.wxp.old_level
-	self.displayinfo.showing_level_start_xp = TheItems:GetWXPForLevel(self.wxp.old_level)
-	self.displayinfo.showing_level_end_xp = TheItems:GetWXPForLevel(self.wxp.old_level + 1)
+	self.displayinfo.showing_level_start_xp, self.displayinfo.showing_level_end_xp = wxputils.GetWXPForLevel(self.wxp.old_level)
 
 	self.displayachievements = {}
 
@@ -105,13 +123,45 @@ end
 
 function WxpLobbyPanel:ShowAchievement(achievement_id, animate)
 	local num_shown = #self.displayachievements
-	local img_width = 36
-	local max_num_wide = 9
+	local img_width = achievement_image_size
+	local max_num_wide = achievement_max_per_row
 	
-	local img = self.achievement_root:AddChild(Image("images/"..self.current_eventid.."_achievements.xml", achievement_id..".tex"))
+	local img = nil
+
+	print("SDFSDF", achievement_id, IsAFoodDiscovery(achievement_id))
+	if IsAFoodDiscovery(achievement_id) then
+		img = self.achievement_root:AddChild(Image("images/quagmire_recipebook.xml", "recipe_known.tex"))
+
+		local split_desc = string.split(achievement_id, "_")
+		local recipe_name = (tonumber(split_desc[#split_desc]) ~= nil and "quagmire_food_" or "quagmire_") .. tostring(split_desc[#split_desc])
+		img:SetHoverText(subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]}), {offset_y = 32, colour = UICOLOURS.EGGSHELL})
+
+		if TheRecipeBook.recipes[recipe_name] ~= nil then
+			local dish = TheRecipeBook.recipes[recipe_name].dish
+			if dish ~= nil then
+				local dish_img = img:AddChild(Image("images/quagmire_food_common_inv_images_hires.xml", dish..".tex"))
+				dish_img:SetSize(img_width - 8, img_width - 8)
+				if animate then
+					dish_img:SetTint(1,1,1,0)
+					dish_img:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, LEVELUP_TIME)
+				end
+			end
+			local food_img = img:AddChild(Image(dish == nil and "images/inventoryimages.xml" or "images/quagmire_food_inv_images_hires_"..recipe_name..".xml", recipe_name..".tex"))
+			food_img:SetSize(img_width - 8, img_width - 8)
+			if animate then
+				food_img:SetTint(1,1,1,0)
+				food_img:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, LEVELUP_TIME)
+			end
+		end
+	else
+		img = self.achievement_root:AddChild(Image("images/"..self.current_eventid.."_achievements.xml", achievement_id..".tex"))
+
+		local ach_str = GetActiveFestivalEventAchievementStrings()
+		img:SetHoverText(ach_str.ACHIEVEMENT[achievement_id].TITLE, {offset_y = 32, colour = UICOLOURS.EGGSHELL})
+	end
+
 	img:SetPosition(achievement_start + (achievement_spacing)*(num_shown%max_num_wide), (achievement_spacing*math.floor(1 + num_shown/max_num_wide)) + 3)
 	img:SetSize(img_width, img_width)
-	img:SetHoverText(STRINGS.UI.ACHIEVEMENTS.LAVAARENA.ACHIEVEMENT[achievement_id].TITLE, {offset_y = 32, colour = UICOLOURS.EGGSHELL})
 	img:MoveToBack()
 	
 	if animate then
@@ -209,10 +259,10 @@ function WxpLobbyPanel:OnCompleteAnimation()
 		newbox_body:SetRegionSize(350, 200)
 		
 		if self.wxp.earned_boxes == 1 then
-			newbox_title:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOX_TITLE)
+			newbox_title:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOX_TITLE[WORLD_FESTIVAL_EVENT])
 			newbox_body:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOX_BODY)
 		else
-			newbox_title:SetString(subfmt(STRINGS.UI.WXPLOBBYPANEL.NEWBOXES_TITLE, {num = tostring(self.wxp.earned_boxes)}))
+			newbox_title:SetString(subfmt(STRINGS.UI.WXPLOBBYPANEL.NEWBOXES_TITLE[WORLD_FESTIVAL_EVENT], {num = tostring(self.wxp.earned_boxes)}))
 			newbox_body:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOXES_BODY)
 		end
 	end
@@ -231,10 +281,9 @@ function WxpLobbyPanel:OnCompleteAnimation()
 		end
 	end
 	
-	local level = TheItems:GetLevelForWXP(self.wxp.new_xp)
-	local level_start_xp = TheItems:GetWXPForLevel(level)
-	local next_level_xp = TheItems:GetWXPForLevel(level + 1)
-	local levelup = self.wxp.match_xp ~= nil and (TheItems:GetLevelForWXP(self.wxp.new_xp - self.wxp.match_xp) ~= level) or false
+	local level = wxputils.GetLevelForWXP(self.wxp.new_xp)
+	local level_start_xp, next_level_xp = wxputils.GetWXPForLevel(level)
+	local levelup = self.wxp.match_xp ~= nil and (wxputils.GetLevelForWXP(self.wxp.new_xp - self.wxp.match_xp) ~= level) or false
 	self:SetRank(level, levelup, next_level_xp - level_start_xp)
 	self.wxpbar:UpdateExperience(self.wxp.new_xp - level_start_xp, next_level_xp - level_start_xp)
 	
@@ -248,9 +297,18 @@ function WxpLobbyPanel:RefreshWxpDetailWidgets()
 	if #self.wxp.details > 0 then
 		local name = STRINGS.UI.WXP_DETAILS[self.wxp.details[self.detail_index].desc]
 		if name == nil then
-			local achievelemt_desc = STRINGS.UI.ACHIEVEMENTS.LAVAARENA.ACHIEVEMENT[self.wxp.details[self.detail_index].desc]
-			if achievelemt_desc ~= nil then
-				name = subfmt(STRINGS.UI.WXPLOBBYPANEL.ACHIEVEMENT_UNLOCKED, {name=achievelemt_desc.TITLE})
+			if self.wxp.details[self.detail_index]._is_achievement then
+				if self.wxp.details[self.detail_index]._is_discovery then
+					local split_desc = string.split(self.wxp.details[self.detail_index].desc, "_")
+					local recipe_name = (tonumber(split_desc[#split_desc]) ~= nil and "quagmire_food_" or "quagmire_") .. tostring(split_desc[#split_desc])
+					name = subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]})
+				else
+					local ach_str = GetActiveFestivalEventAchievementStrings()
+					local achievelemt_desc = ach_str.ACHIEVEMENT[self.wxp.details[self.detail_index].desc]
+					if achievelemt_desc ~= nil then
+						name = subfmt(STRINGS.UI.WXPLOBBYPANEL.ACHIEVEMENT_UNLOCKED, {name=achievelemt_desc.TITLE})
+					end
+				end
 				self:ShowAchievement(self.wxp.details[self.detail_index].desc, true)
 			end
 		end
@@ -296,7 +354,7 @@ function WxpLobbyPanel:OnUpdate(dt)
 		showing_xp = self.displayinfo.showing_level_end_xp
 		self.displayinfo.showing_level = self.displayinfo.showing_level + 1
 		self.displayinfo.showing_level_start_xp = self.displayinfo.showing_level_end_xp
-		self.displayinfo.showing_level_end_xp = TheItems:GetWXPForLevel(self.displayinfo.showing_level + 1)
+		self.displayinfo.showing_level_end_xp = wxputils.GetWXPForLevel(self.displayinfo.showing_level + 1)
 
 		-- do level up anims on badge
 		self:SetRank(self.displayinfo.showing_level, true, self.displayinfo.showing_level_end_xp - self.displayinfo.showing_level_start_xp)

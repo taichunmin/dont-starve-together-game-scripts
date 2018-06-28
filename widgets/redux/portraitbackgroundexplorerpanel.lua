@@ -91,7 +91,7 @@ function PortraitBackgroundExplorerPanel:OnClickedItem(item_data, is_selected)
 end
 
 function PortraitBackgroundExplorerPanel:_SetRank()
-    self.puppet:SetRank(GetMostRecentlySelectedItem(self.user_profile, "profileflair"), TheInventory:GetWXPLevel())
+    self.puppet:SetRank(GetMostRecentlySelectedItem(self.user_profile, "profileflair"), wxputils.GetActiveLevel())
 end
 
 function PortraitBackgroundExplorerPanel:_BuildItemExplorer()

@@ -132,8 +132,9 @@ function UIAnim:OnWallUpdate(dt)
 
             self.pos_t = nil
             if self.pos_whendone then
-                self.pos_whendone()
-                self.pos_whendone = nil
+                local pos_whendonefn = self.pos_whendone
+				self.pos_whendone = nil -- reset this here so that self.pos_whendone can call MoveTo
+                pos_whendonefn()
             end
         end
     end

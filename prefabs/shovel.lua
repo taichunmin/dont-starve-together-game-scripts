@@ -7,7 +7,13 @@ local assets =
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_shovel", "swap_shovel")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_shovel", inst.GUID, "swap_shovel")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_shovel", "swap_shovel")
+    end    
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -15,6 +21,10 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function common_fn(bank, build)
@@ -41,16 +51,18 @@ local function common_fn(bank, build)
     inst:AddComponent("tool")
     inst.components.tool:SetAction(ACTIONS.DIG)
 
-    -------
-    inst:AddComponent("finiteuses")
-    inst.components.finiteuses:SetMaxUses(TUNING.SHOVEL_USES)
-    inst.components.finiteuses:SetUses(TUNING.SHOVEL_USES)
-    inst.components.finiteuses:SetOnFinished(inst.Remove) 
-    inst.components.finiteuses:SetConsumption(ACTIONS.DIG, 1)
-    -------
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        -------
+        inst:AddComponent("finiteuses")
+        inst.components.finiteuses:SetMaxUses(TUNING.SHOVEL_USES)
+        inst.components.finiteuses:SetUses(TUNING.SHOVEL_USES)
+        inst.components.finiteuses:SetOnFinished(inst.Remove) 
+        inst.components.finiteuses:SetConsumption(ACTIONS.DIG, 1)
 
-    inst:AddComponent("weapon")
-    inst.components.weapon:SetDamage(TUNING.SHOVEL_DAMAGE)
+        -------
+        inst:AddComponent("weapon")
+        inst.components.weapon:SetDamage(TUNING.SHOVEL_DAMAGE)
+    end
 
     inst:AddInherentAction(ACTIONS.DIG)
 

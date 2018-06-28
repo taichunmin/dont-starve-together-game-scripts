@@ -361,15 +361,35 @@ function Story:RestrictNodesByKey(startParentNode, unusedTasks)
                     end
                 end
                  print_lockandkey_ex("\tAttaching "..currentNode.id.." to next key", effectiveLastNode.id)
+            elseif self.gen_params.branching == "random" then
+				local num_parents = GetTableSize(parents)
+				if num_parents == 1 then
+					local dummy
+					dummy, effectiveLastNode = next(parents)
+				else
+					local choice = last_parent
+					while (choice == last_parent) do
+						choice = math.random(num_parents)
+					end
+					last_parent = choice
+					for _, v in pairs(parents) do
+						effectiveLastNode = v
+						choice = choice - 1
+						if choice <= 0 then
+							break
+						end
+					end
+				end
+                print_lockandkey_ex("\tAttaching "..currentNode.id.." to random key" .. effectiveLastNode.id)
             elseif self.gen_params.branching == "most" then
                 effectiveLastNode = lowest.node
-                 print_lockandkey_ex("\tAttaching "..currentNode.id.." to lowest key", effectiveLastNode.id)
+                print_lockandkey_ex("\tAttaching "..currentNode.id.." to lowest key" .. effectiveLastNode.id)
             elseif self.gen_params.branching == "least" then
                 effectiveLastNode = highest.node
-                 print_lockandkey_ex("\tAttaching "..currentNode.id.." to highest key", effectiveLastNode.id)
+                print_lockandkey_ex("\tAttaching "..currentNode.id.." to highest key" .. effectiveLastNode.id)
             elseif self.gen_params.branching == "never" then
                 effectiveLastNode = lastNode
-                 print_lockandkey_ex("\tAttaching "..currentNode.id.." to end of chain", effectiveLastNode.id)
+                print_lockandkey_ex("\tAttaching "..currentNode.id.." to end of chain" .. effectiveLastNode.id)
             end
 
             print_lockandkey_ex(string.format("Connected it to %s", effectiveLastNode.id))
@@ -377,11 +397,8 @@ function Story:RestrictNodesByKey(startParentNode, unusedTasks)
             currentNode.story_depth = story_depth
             story_depth = story_depth + 1
 
-            local lastNodeExit = effectiveLastNode:GetRandomNode()
-            local currentNodeEntrance = currentNode:GetRandomNode()
-            if currentNode.entrancenode then
-                currentNodeEntrance = currentNode.entrancenode
-            end
+            local lastNodeExit = effectiveLastNode:GetRandomNodeForExit()
+            local currentNodeEntrance = currentNode.entrancenode or currentNode:GetRandomNodeForEntrance()
 
             assert(lastNodeExit)
             assert(currentNodeEntrance)
@@ -415,9 +432,10 @@ function Story:RestrictNodesByKey(startParentNode, unusedTasks)
             AppendNode( self:GetRandomNodeFromTasks(unusedTasks), usedTasks )
         else
             for taskid, unlockingNodes in pairs(candidateTasks) do
-                print_lockandkey_ex("PARENTS:")
+		        print_lockandkey_ex("Current Node: " .. taskid)
+                print_lockandkey_ex("  PARENTS:")
                 for k,v in pairs(unlockingNodes) do
-                    print_lockandkey_ex("\t",k)
+                    print_lockandkey_ex("    " .. k)
                 end
                 AppendNode( unusedTasks[taskid], unlockingNodes )
             end
@@ -426,7 +444,7 @@ function Story:RestrictNodesByKey(startParentNode, unusedTasks)
 
     end
 
-	return lastNode:GetRandomNode()
+	return lastNode:GetRandomNodeForExit()
 end
 
 function Story:LinkNodesByKeys(startParentNode, unusedTasks)
@@ -512,7 +530,7 @@ function Story:LinkNodesByKeys(startParentNode, unusedTasks)
 					end
 				end
 
-				if self.gen_params.branching == nil or self.gen_params.branching == "default" then
+				if self.gen_params.branching == nil or self.gen_params.branching == "default" or self.gen_params.branching == "random" then
 					effectiveLastNode = GetRandomItem(unlockingNodes)
 					print_lockandkey("\tAttaching "..currentNode.id.." to random key", effectiveLastNode.id)
 				elseif self.gen_params.branching == "most" then
@@ -539,11 +557,8 @@ function Story:LinkNodesByKeys(startParentNode, unusedTasks)
 		currentNode.story_depth = story_depth
 		story_depth = story_depth + 1
 
-		local lastNodeExit = effectiveLastNode:GetRandomNode()
-		local currentNodeEntrance = currentNode:GetRandomNode()
-		if currentNode.entrancenode then
-			currentNodeEntrance = currentNode.entrancenode
-		end
+		local lastNodeExit = effectiveLastNode:GetRandomNodeForExit()
+		local currentNodeEntrance = currentNode.entrancenode or currentNode:GetRandomNodeForEntrance()
 
 		assert(lastNodeExit)
 		assert(currentNodeEntrance)
@@ -569,7 +584,7 @@ function Story:LinkNodesByKeys(startParentNode, unusedTasks)
 		currentNode = nil
 	end
 
-	return lastNode:GetRandomNode()
+	return lastNode:GetRandomNodeForExit()
 end
 
 function Story:GetRandomNodeFromTasks(taskSet)
@@ -591,17 +606,38 @@ function Story:GetRandomNodeFromTasks(taskSet)
 	return self.TERRAIN[task]
 end
 
+function Story:AddStartingSetPiece(starting_node_data)
+	if self.gen_params.start_setpeice ~= nil then
+		starting_node_data.terrain_contents.countstaticlayouts = {}
+		starting_node_data.terrain_contents.countstaticlayouts[self.gen_params.start_setpeice] = 1
+		
+		if starting_node_data.terrain_contents.countprefabs ~= nil then
+			starting_node_data.terrain_contents.countprefabs.spawnpoint = nil
+		end
+	end
+end
+
 function Story:GenerateNodesFromTasks()	
 	--print("Story:GenerateNodesFromTasks creating stories")
 
+    local randomStartTaskName = nil
+    if self.level.valid_start_tasks ~= nil then
+		randomStartTaskName = self.level.valid_start_tasks[math.random(#self.level.valid_start_tasks)]
+	end
+	
 	local unusedTasks = {}
 	
 	-- Generate all the TERRAIN
 	for k,task in pairs(self.tasks) do
 		--print("Story:GenerateNodesFromTasks k,task",k,task,  GetTableSize(self.TERRAIN))
-		local node = self:GenerateNodesFromTask(task, task.crosslink_factor or 1)--0.5)
-		self.TERRAIN[task.id] = node
-		unusedTasks[task.id] = node
+		local start_node_name = (randomStartTaskName == k) and self.gen_params.existing_start_node or nil
+		local task_node = self:GenerateNodesFromTask(task, task.crosslink_factor or 1, start_node_name)
+		self.TERRAIN[task.id] = task_node
+		unusedTasks[task.id] = task_node
+		
+		if start_node_name ~= nil then
+			self.startNode = task_node:GetNodeById("START")
+		end
 	end
 		
 	--print("Story:GenerateNodesFromTasks lock terrain")
@@ -633,75 +669,62 @@ function Story:GenerateNodesFromTasks()
         finalNode = self:LinkNodesByKeys(startParentNode, unusedTasks)
     end
 	
-    local randomStartTask = nil
-	local randomStartNode = nil
-    if self.level.valid_start_tasks ~= nil then
-        print("Finding valid start task...")
-        local validKeys = shuffleArray(deepcopy(self.level.valid_start_tasks))
-        local targetTask = nil
-        while targetTask == nil and #validKeys > 0 do
-            for id,task in pairs(self.rootNode:GetChildren()) do
-                if id == validKeys[1] then
-                    targetTask = task
-                    break
-                end
-            end
-            table.remove(validKeys, 1)
-        end
-        if targetTask ~= nil then
-            print("   ...picked ", targetTask.id)
-            randomStartTask = targetTask
-            randomStartNode = targetTask:GetRandomNode()
-        end
-    end
-
-    if randomStartNode == nil then
-        print("No valid start node, using first task.")
-        randomStartTask = startParentNode
-        randomStartNode = startParentNode:GetRandomNode()
-    end
-	
-	local start_node_data = {id="START"}
-
-	if self.gen_params.start_node ~= nil then
-		print("Has start node", self.gen_params.start_node)
-		start_node_data.data = self:GetRoom(self.gen_params.start_node)
-		start_node_data.data.terrain_contents = start_node_data.data.contents		
-	else
-		print("No start node!")
-		start_node_data.data = {
-								value = GROUND.GRASS,								
-								terrain_contents={
-									countprefabs = {
-										spawnpoint=1,
-										sapling=1,
-					                    twiggytree=1,
-										flint=1,
-										berrybush=1, 
-										berrybush_juicy = 0.5,
-										grass=function () return 2 + math.random(2) end
-									} 
-								}
-							 }
-	end
-
-	start_node_data.data.name = "START"
-	start_node_data.data.colour = {r=0,g=1,b=1,a=.80}
-	
-	if self.gen_params.start_setpeice ~= nil then
-		start_node_data.data.terrain_contents.countstaticlayouts = {}
-		start_node_data.data.terrain_contents.countstaticlayouts[self.gen_params.start_setpeice] = 1
-		
-		if start_node_data.data.terrain_contents.countprefabs ~= nil then
-			start_node_data.data.terrain_contents.countprefabs.spawnpoint = nil
+	if self.startNode == nil then
+		local randomStartTask = nil
+		local randomStartNode = nil
+		if randomStartTaskName ~= nil then
+			print("Finding valid start task...")
+			for id,task in pairs(self.rootNode:GetChildren()) do 
+				if id == randomStartTaskName then
+					print("   ...picked ", task.id)
+					randomStartTask = task
+					randomStartNode = task:GetRandomNodeForEntrance()
+					break
+				end
+			end
 		end
+		    
+		if randomStartNode == nil then
+			print("No valid start node, using first task.")
+			randomStartTask = startParentNode
+			randomStartNode = startParentNode:GetRandomNodeForEntrance()
+		end
+		
+		local start_node_data = {id="START"}
+
+		if self.gen_params.start_node ~= nil then
+			print("Has start node", self.gen_params.start_node)
+			start_node_data.data = self:GetRoom(self.gen_params.start_node)
+			start_node_data.data.terrain_contents = start_node_data.data.contents		
+		else
+			print("No start node!")
+			start_node_data.data = {
+									value = GROUND.GRASS,								
+									terrain_contents={
+										countprefabs = {
+											spawnpoint=1,
+											sapling=1,
+											twiggytree=1,
+											flint=1,
+											berrybush=1, 
+											berrybush_juicy = 0.5,
+											grass=function () return 2 + math.random(2) end
+										} 
+									}
+								 }
+		end
+
+		start_node_data.data.name = "START"
+		start_node_data.data.colour = {r=0,g=1,b=1,a=.80}
+		
+		self:AddStartingSetPiece(start_node_data.data)
+		
+		self.startNode = randomStartTask:AddNode(start_node_data)
+
+		--print("Story:GenerateNodesFromTasks adding start node link", self.startNode.id.." -> "..randomStartNode.id)
+		randomStartTask:AddEdge({node1id=self.startNode.id, node2id=randomStartNode.id})
 	end
-
-	self.startNode = randomStartTask:AddNode(start_node_data)
-											
-	--print("Story:GenerateNodesFromTasks adding start node link", self.startNode.id.." -> "..randomStartNode.id)
-	randomStartTask:AddEdge({node1id=self.startNode.id, node2id=randomStartNode.id})	
-
+	
 	-- form the map into a loop!
 	if self.gen_params.loop_percent ~= nil then
 		if math.random() < self.gen_params.loop_percent then
@@ -898,7 +921,7 @@ function Story:RunTaskSubstitution(task, items )
 end
 
 -- Generate a subgraph containing all the items for this story
-function Story:GenerateNodesFromTask(task, crossLinkFactor)
+function Story:GenerateNodesFromTask(task, crossLinkFactor, starting_node_name)
 	--print("Story:GenerateNodesFromTask", task.id)
 	-- Create stack of rooms
 	local room_choices = Stack:Create()
@@ -951,7 +974,7 @@ function Story:GenerateNodesFromTask(task, crossLinkFactor)
 	end
 
 
-	local task_node = Graph(task.id, {parent=self.rootNode, default_bg=task.room_bg, colour = task.colour, background=task.background_room, set_pieces=task.set_pieces, random_set_pieces=task.random_set_pieces, maze_tiles=task.maze_tiles, room_tags=task.room_tags, required_prefabs=task.required_prefabs})
+	local task_node = Graph(task.id, {parent=self.rootNode, default_bg=task.room_bg, colour = task.colour, background=task.background_room, set_pieces=task.set_pieces, random_set_pieces=task.random_set_pieces, maze_tiles=task.maze_tiles, maze_tile_size=task.maze_tile_size, room_tags=task.room_tags, required_prefabs=task.required_prefabs})
 	task_node.substitutes = task.substitutes
 	--print ("Adding Voronoi Child", self.rootNode.id, task.id, task.backround_room, task.room_bg, task.colour.r, task.colour.g, task.colour.b, task.colour.a )
 
@@ -961,10 +984,22 @@ function Story:GenerateNodesFromTask(task, crossLinkFactor)
 	local prevNode = nil
 	-- TODO: we could shuffleArray here on rom_choices_.et to make it more random
 	local roomID = 0
+	local hub_node = nil
+	local starting_node_picked = false
 	--print("Story:GenerateNodesFromTask adding "..room_choices:getn().." rooms")
 	while room_choices:getn() > 0 do
 		local next_room = room_choices:pop()
-		next_room.id = task.id..":"..roomID..":"..next_room.name	-- TODO: add room names for special rooms
+		
+		local is_starting_room = starting_node_name == next_room.name and not starting_node_picked
+		
+		if is_starting_room then
+			print("Found starting task " .. task.id .. ", picked existing room " .. next_room.name)
+			starting_node_picked = true
+			next_room.id = "START"
+		else
+			next_room.id = task.id..":"..roomID..":"..next_room.name	-- TODO: add room names for special rooms
+		end
+	
 		next_room.task = task.id
 
 		self:RunTaskSubstitution(task, next_room.contents.distributeprefabs)
@@ -972,41 +1007,69 @@ function Story:GenerateNodesFromTask(task, crossLinkFactor)
 		-- TODO: Move this to 
 		local extra_contents, extra_tags = self:GetExtrasForRoom(next_room)
 
+		local next_room_data = {
+								type = next_room.entrance and NODE_TYPE.Blocker or next_room.type, 
+                                task = next_room.task,
+                                name = next_room.name,
+								colour = next_room.colour,
+								value = next_room.value,
+								internal_type = next_room.internal_type,
+								tags = ArrayUnion(extra_tags, task.room_tags),
+								custom_tiles = next_room.custom_tiles,
+								custom_objects = next_room.custom_objects,
+								terrain_contents = next_room.contents,
+								terrain_contents_extra = extra_contents,
+								terrain_filter = self.terrain.filter,
+								entrance = next_room.entrance,
+								required_prefabs = next_room.required_prefabs,
+								random_node_exit_weight = next_room.random_node_exit_weight,
+								random_node_entrance_weight = next_room.random_node_entrance_weight,
+							  }										
+
+		if is_starting_room then
+			next_room_data.name = "START"
+			next_room_data.colour = {r=0,g=1,b=1,a=.80}
+			next_room_data.random_node_exit_weight = 0
+			next_room_data.random_node_entrance_weight = 0
+			self:AddStartingSetPiece(next_room_data)
+		end
+
 		newNode = task_node:AddNode({
 										id=next_room.id, 
-										data={
-												type = next_room.entrance and NODE_TYPE.Blocker or next_room.type, 
-                                                task = next_room.task,
-                                                name = next_room.name,
-												colour = next_room.colour,
-												value = next_room.value,
-												internal_type = next_room.internal_type,
-												tags = ArrayUnion(extra_tags, task.room_tags),
-												custom_tiles = next_room.custom_tiles,
-												custom_objects = next_room.custom_objects,
-												terrain_contents = next_room.contents,
-												terrain_contents_extra = extra_contents,
-												terrain_filter = self.terrain.filter,
-												entrance = next_room.entrance,
-												required_prefabs = next_room.required_prefabs
-											  }										
+										data=next_room_data,
 									})
 		
-		if prevNode then
-			--dumptable(prevNode)
-			--print("Story:GenerateNodesFromTask Adding edge "..newNode.id.." -> "..prevNode.id)
-			local edge = task_node:AddEdge({node1id=newNode.id, node2id=prevNode.id})
+		if task.hub_room ~= nil and hub_node == nil and next_room.name == task.hub_room then
+			hub_node = newNode
+			hub_node.data.random_node_exit_weight = 0
+			hub_node.data.random_node_entrance_weight = 0
 		end
 		
-		--dumptable(newNode)
-		-- This will make long line of nodes
-		prevNode = newNode
+		-- Dont add edges if there is a hub room, this will hapen later in MakeHub, if we want to make a loop, then just dont add the hub to it.
+		if task.hub_room == nil or task.make_loop then
+			if newNode ~= hub_node then
+				if prevNode then
+					--dumptable(prevNode)
+					--print("Story:GenerateNodesFromTask Adding edge "..newNode.id.." -> "..prevNode.id)
+					local edge = task_node:AddEdge({node1id=newNode.id, node2id=prevNode.id})
+				end
+				
+				--dumptable(newNode)
+				-- This will make long line of nodes
+				prevNode = newNode
+			end
+		end
 		roomID = roomID + 1
 	end
 	
 	if task.make_loop then
 		task_node:MakeLoop()
 	end
+
+	if hub_node ~= nil then
+		task_node:MakeHub(hub_node.id)
+	end
+
 	if crossLinkFactor then
 		--print("Story:GenerateNodesFromTask crosslinking")
 		-- do some extra linking.

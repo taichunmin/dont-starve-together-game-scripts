@@ -52,8 +52,8 @@ function OvalPortrait:_BuildCharacterDetails()
     self.characterdetails:EnableWordWrap(true)
     self.characterdetails:SetColour(UICOLOURS.GREY)
 	
-	if TheNet:GetServerEvent() then 
-		self.eventid = TheNet:GetServerGameMode()
+	if TheNet:GetServerEvent() == FESTIVAL_EVENTS.LAVAARENA then 
+		self.eventid = TheNet:GetServerGameMode() --Note(Peter):Ahhhhh! we're mixing game mode and event id and server event name, it works though because it's all "lavarena" due to the c-side being case-insensitive
 		portrait_root:SetPosition(0, -50)
 	
 	    self.character_text:SetPosition(0, -150)
@@ -141,7 +141,7 @@ function OvalPortrait:SetPortrait(herocharacter)
 	end
 	
     if self.la_items then
-		local hero_items = TUNING.LAVAARENA_STARTING_ITEMS[string.upper(herocharacter)]
+		local hero_items = TUNING.GAMEMODE_STARTING_ITEMS.LAVAARENA[string.upper(herocharacter)]
 		if hero_items ~= nil then
 			local item1 = STRINGS.NAMES[string.upper(hero_items[1])]
 			local item2 = STRINGS.NAMES[string.upper(hero_items[2])]
@@ -167,7 +167,7 @@ function OvalPortrait:SetPortrait(herocharacter)
 				self.achievements_root:Show()
 				for i, v in ipairs(cat.data) do
 					local achievementid = cat.data[3-(i-1)].achievementid
-					local image = EventAchievements:IsAchievementUnlocked(achievementid) and (achievementid..".tex") or "achievement_locked.tex"
+					local image = EventAchievements:IsAchievementUnlocked(FESTIVAL_EVENTS.LAVAARENA, achievementid) and (achievementid..".tex") or "achievement_locked.tex"
 					self.la_achievements[i].image:SetTexture("images/"..self.eventid.."_achievements.xml", image)
 
 					self.la_achievements[i].name:SetString(STRINGS.UI.ACHIEVEMENTS[string.upper(self.eventid)].ACHIEVEMENT[achievementid].TITLE)

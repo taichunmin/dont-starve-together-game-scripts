@@ -48,18 +48,29 @@ local function MakeNewHomeAction(inst)
     end
 end
 
+local function IsMoleBait(item)
+    return item.components.bait ~= nil or item:HasTag("bell")
+end
+
+local function SelectedTargetTimeout(target)
+    target.selectedasmoletarget = nil
+end
+
 local function TakeBaitAction(inst)
     -- Don't look for bait if just spawned, busy making a new home, or has full inventory
     if inst:GetTimeAlive() < 3 or inst.sg:HasStateTag("busy") or ShouldMakeHome(inst) or (inst.components.inventory and inst.components.inventory:IsFull()) then
         return
     end
 
-    local target = FindEntity(inst, SEE_BAIT_DIST, function(item) return (item.components.bait or item:HasTag("bell")) and not (item.components.inventoryitem and item.components.inventoryitem:IsHeld()) end, {"molebait"}, {"outofreach"})
-    if target and not target.selectedasmoletarget then
+    local target = FindEntity(inst, SEE_BAIT_DIST, IsMoleBait, { "molebait" }, { "outofreach", "INLIMBO", "fire" })
+    if target ~= nil and not target.selectedasmoletarget then
         target.selectedasmoletarget = true
-        target:DoTaskInTime(5, function(target) target.selectedasmoletarget = false end)
+        target:DoTaskInTime(5, SelectedTargetTimeout)
         local act = BufferedAction(inst, target, ACTIONS.STEALMOLEBAIT)
-        act.validfn = function() return not (target.components.inventoryitem and target.components.inventoryitem:IsHeld()) end
+        act.validfn = function()
+            return not (target.components.inventoryitem ~= nil and target.components.inventoryitem:IsHeld())
+                and not (target.components.burnable ~= nil and target.components.burnable:IsBurning())
+        end
         return act
     end
 end

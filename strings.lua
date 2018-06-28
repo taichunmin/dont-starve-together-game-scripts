@@ -136,9 +136,28 @@ STRINGS =
         random = "\nSelect a random character",
     },
 
+    QUAGMIRE_CHARACTER_DESCRIPTIONS =
+    {
+        wilson = "*Improves nearby Cookpot efficiency\n*Inspects food to determine if it matches the Gnaw's craving\n\n*Expertise:\nCooking",
+        willow = "*Logs burn longer on the fire\n\n\n\n*Expertise:\nCooking",
+        wendy = "*Improves nearby Grill efficiency\n\n\n\n*Expertise:\nCooking",
+        wolfgang = "*Improves nearby Oven efficiency\n\n\n\n*Expertise:\nCooking",
+        wx78 = "*Enhanced robotic runspeed\n\n\n\n*Expertise:\nGathering",
+        wickerbottom = "*Has just the book for the occasion\n*Inspects food to determine if it matches the Gnaw's craving\n\n*Expertise:\nFarming",
+        wes = "*Expert haggler\n\n\n\n*Expertise:\nShopping",
+        waxwell = "*Summons a Shadow Logger\n\n\n\n*Expertise:\nGathering",
+        woodie = "*Chops wood more quickly\n\n\n\n*Expertise:\nGathering",
+        woodie_us = "*Chops wood more quickly\n\n\n\n*Expertise:\nGathering",
+        woodie_canada = "*Chops wood more quickly\n\n\n\n*Expertise:\nGathering",
+        wathgrithr = "*Harvests an extra meat when slaughtering Beefalo\n\n\n*Expertise:\nGathering",
+        webber = "*Sows seeds and harvests plants much more quickly\n\n\n*Expertise:\nFarming",
+        winona = "*Performs most actions slightly faster\n\n\n\n*Expertise:\nFarming",
+        random = "\nSelect a random character",
+    },
+
     CHARACTER_ABOUTME =
     {
-        wilson = "At heart Wilson is truly man of science. It's not in his nature to resist the call of the unknown.",
+        wilson = "At heart Wilson is truly a man of science. It's not in his nature to resist the call of the unknown.",
         willow = "Willow is a candid woman whose penchant for fire often gets her into more than a little trouble.",
         wendy = "Wendy is a morose young lady with a sisterly bond so powerful, it transcends death itself.",
         wolfgang = "Wolfgang is an affable, musclebound giant with a heart plagued by a myriad of phobias.",
@@ -170,6 +189,14 @@ STRINGS =
             NOTREADY = "Place",
             READY    = "Sacrifice",
             SOCKET   = "Socket",
+            QUAGMIRE_POT_HANGER = "Hang {item}",
+            QUAGMIRE_OVEN       = "Place {item}",
+            QUAGMIRE_ALTAR =
+            {
+                GENERIC = "Snackrifice {food}",
+                PLATE = "Snackrifice Plate of {food}",
+                BOWL = "Snackrifice Bowl of {food}",
+            },
         },
         GIVETOPLAYER = "Give",
         GIVEALLTOPLAYER = "Give All",
@@ -339,6 +366,7 @@ STRINGS =
         {
             GENERIC = "Take Item",
             BIRDCAGE = "Muck Out",
+            ITEM = "Take {item}",
         },
         CASTSPELL =
         {
@@ -390,6 +418,32 @@ STRINGS =
             BLOWDART_LAVA2 = "Molten Bolt",
             LAVAARENA_LUCY = "Chuck Lucy",
         },
+
+        --Quagmire
+        TILL = "Till",
+        PLANTSOIL = "Plant",
+        INSTALL = "Install",
+        HARVEST_TREE = "Harvest",
+        TAPTREE =
+        {
+            GENERIC = "Tap",
+            UNTAP = "Untap",
+        },
+        SLAUGHTER =
+        {
+            DISEMBOWEL = "Gently Disembowel",
+            MURDER = "Tastefully Murder",
+            BUTCHER = "Politely Butcher",
+            KILL = "Delicately Kill",
+            EVISCERATE = "Softly Eviscerate",
+            SLAUGHTER = "Gingerly Slaughter",
+        },
+        REPLATE =
+        {
+            GENERIC = "Change Plating",
+            FMT = "Change {dish}",
+        },
+        SALT = "Salt",
     },
 
     -- PC controls get hex ranges EE90xx to EE9Fxx
@@ -1516,6 +1570,171 @@ STRINGS =
         LAVAARENA_RECHARGERHAT = "Crystal Tiara",
         LAVAARENA_HEALINGGARLANDHAT = "Blossomed Wreath",
         LAVAARENA_CROWNDAMAGERHAT = "Resplendent Nox Helm",
+
+        QUAGMIRE_CRATE_POT_HANGER = "Cookpot Kit",
+        QUAGMIRE_CRATE_OVEN = "Oven Kit",
+        QUAGMIRE_CRATE_GRILL_SMALL = "Grill Kit",
+        QUAGMIRE_CRATE_GRILL = "Large Grill Kit",
+
+        QUAGMIRE_TRADER_MERM = "Sammy\nThe Lucid Bog Merm",
+        QUAGMIRE_TRADER_MERM2 = "Pipton\nThe Cognizant Bog Merm",
+        QUAGMIRE_MERM = "Bog Merm",
+        QUAGMIRE_MERM_CART1 = "Sammy's Wagon",
+        QUAGMIRE_MERM_CART2 = "Pipton's Cart",
+
+        QUAGMIRE_MERMHOUSE = "Rundown House",
+
+        --Quagmire
+        QUAGMIRE_HOE = "Hoe",
+        --
+        QUAGMIRE_TURNIP = "Turnip",
+        QUAGMIRE_TURNIP_COOKED = "Roast Turnip",
+        --
+        QUAGMIRE_GARLIC = "Garlic",
+        QUAGMIRE_GARLIC_COOKED = "Roast Garlic",
+        --
+        QUAGMIRE_ONION = "Onion",
+        QUAGMIRE_ONION_COOKED = "Roast Onion",
+        --
+        QUAGMIRE_POTATO = "Potato",
+        QUAGMIRE_POTATO_COOKED = "Roast Potato",
+        --
+        QUAGMIRE_TOMATO = "Toma Root",
+        QUAGMIRE_TOMATO_COOKED = "Roast Toma Root",
+        --
+        QUAGMIRE_WILDWHEAT = "Wheat",
+        QUAGMIRE_FLOUR = "Flour",
+        QUAGMIRE_WHEAT = "Wheat",
+        --QUAGMIRE_WHEAT_COOKED = "Roast Wheat",
+        --
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_SEEDS_1 = "Blue Seeds",
+        QUAGMIRE_SEEDS_2 = "Fluffy Seeds",
+        QUAGMIRE_SEEDS_3 = "Spiky Seeds",
+        QUAGMIRE_SEEDS_4 = "Pointy Seeds",
+        QUAGMIRE_SEEDS_5 = "Round Seeds",
+        QUAGMIRE_SEEDS_6 = "Oblong Seeds",
+        QUAGMIRE_SEEDS_7 = "Seed Pods",
+        QUAGMIRE_SEEDPACKET_1 = "Packet of Blue Seeds",
+        QUAGMIRE_SEEDPACKET_2 = "Packet of Fluffy Seeds",
+        QUAGMIRE_SEEDPACKET_3 = "Packet of Spiky Seeds",
+        QUAGMIRE_SEEDPACKET_4 = "Packet of Pointy Seeds",
+        QUAGMIRE_SEEDPACKET_5 = "Packet of Round Seeds",
+        QUAGMIRE_SEEDPACKET_6 = "Packet of Oblong Seeds",
+        QUAGMIRE_SEEDPACKET_7 = "Packet of Seed Pods",
+        QUAGMIRE_SEEDPACKET_MIX = "Packet of Mixed Seeds",
+        --
+        QUAGMIRE_ROTTEN_CROP = "Rotten Crop",
+        --
+        QUAGMIRE_FOLIAGE_COOKED = "Cooked Foliage",
+        --
+        QUAGMIRE_SMALLMEAT = "Meat Scraps",
+        QUAGMIRE_COOKEDSMALLMEAT = "Cooked Meat Scraps",
+        --
+        QUAGMIRE_FOOD_BURNT = "Burnt Food",
+        QUAGMIRE_FOOD_PLATE = "Plate",
+        QUAGMIRE_FOOD_BOWL = "Bowl",
+         --
+        QUAGMIRE_POT = "Large Cookpot",
+        QUAGMIRE_POT_SMALL = "Cookpot",
+        QUAGMIRE_POT_SYRUP = "Syrup Pot",
+        QUAGMIRE_POT_HANGER = "Pot Hanger",
+        QUAGMIRE_POT_HANGER_ITEM = "Pot Hanger",
+        QUAGMIRE_GRILL = "Large Grill",
+        QUAGMIRE_GRILL_ITEM = "Large Grill",
+        QUAGMIRE_GRILL_SMALL = "Small Grill",
+        QUAGMIRE_GRILL_SMALL_ITEM = "Small Grill",
+        QUAGMIRE_OVEN = "Oven",
+        QUAGMIRE_OVEN_ITEM = "Oven",
+        QUAGMIRE_CASSEROLEDISH = "Large Casserole Dish",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "Small Casserole Dish",
+        QUAGMIRE_PLATE_SILVER = "Silver Plate",
+        QUAGMIRE_BOWL_SILVER = "Silver Bowl",
+		--
+		QUAGMIRE_LAMP_POST = "Streetlight",
+		QUAGMIRE_LAMP_SHORT = "Small Streetlight",
+		QUAGMIRE_SAFE = "Safe",
+        QUAGMIRE_SAFE_LOCKED = "Locked Safe",
+		QUAGMIRE_KEY = "Key",
+		QUAGMIRE_KEY_PARK = "Iron Key",
+		QUAGMIRE_SAP = "Sap",
+		QUAGMIRE_SYRUP = "Syrup",
+		QUAGMIRE_SAP_SPOILED = "Ruined Sap",
+		QUAGMIRE_SAPBUCKET = "Tree Tapping Kit",
+		--
+		QUAGMIRE_ALTAR = "The Altar of Gnaw",
+        QUAGMIRE_ALTAR_STATUE1 = "Beast of Hunger",
+		QUAGMIRE_ALTAR_STATUE2 = "Beast of Hunger",
+        QUAGMIRE_ALTAR_QUEEN = "Queen Beast",
+		QUAGMIRE_ALTAR_BOLLARD = "Post",
+		QUAGMIRE_ALTAR_IVY = "Ivy",
+		QUAGMIRE_PARK_FOUNTAIN = "Fountain",
+		QUAGMIRE_PARK_ANGEL = "Gnaw Worshipper",
+		QUAGMIRE_PARK_ANGEL2 = "Gnaw Worshipper",
+		QUAGMIRE_PARK_URN = "Urn",
+		QUAGMIRE_PARK_OBELISK = "Stone Pillar",
+		QUAGMIRE_PARKSPIKE = "Iron Fence",
+		QUAGMIRE_PARK_GATE = "Iron Gate",
+        QUAGMIRE_PARK_GATE_LOCKED = "Locked Iron Gate",
+		--
+		QUAGMIRE_SUGARWOODTREE = "Sugarwood Tree",
+		QUAGMIRE_SPOTSPICE_SHRUB = "Spotty Shrub",
+		QUAGMIRE_SPOTSPICE_SPRIG = "Spotty Sprig",
+		QUAGMIRE_SPOTSPICE_GROUND = "Spot Spice",
+		QUAGMIRE_MEALINGSTONE = "Mealing Stone",
+		QUAGMIRE_FERN = "Fern",
+		QUAGMIRE_SALMON = "Salmon",
+		QUAGMIRE_SALMON_COOKED = "Cooked Salmon",
+		QUAGMIRE_CRABMEAT = "Crab Meat",
+		QUAGMIRE_CRABMEAT_COOKED = "Cooked Crab Meat",
+
+		QUAGMIRE_POND_SALT = "Salt Pond",
+		QUAGMIRE_SALT_RACK = "Salt Rack",
+		QUAGMIRE_SALT_RACK_ITEM = "Salt Rack",
+		QUAGMIRE_SALTROCK = "Salt Crystals",
+		QUAGMIRE_SALT = "Salt",
+        QUAGMIRE_SALTED_FOOD_FMT = "Salted {food}",
+        QUAGMIRE_SALTY_FOOD_FMT = "Salty {food}",
+
+		QUAGMIRE_PEBBLECRAB = "Pebble Crab",
+		QUAGMIRE_CRABTRAP = "Crab Trap",
+
+		QUAGMIRE_MUSHROOMSTUMP = "Mushroom",
+		QUAGMIRE_MUSHROOMS = "Mushroom",
+        QUAGMIRE_MUSHROOMS_COOKED = "Cooked Mushroom",
+
+		QUAGMIRE_SWAMPIG_HOUSE = "Worn Pig House",
+		QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "House Rubble",
+		QUAGMIRE_SWAMPIGELDER = "Swamp Pig Elder",
+
+		QUAGMIRE_GOATMUM = "Mumsy",
+		QUAGMIRE_GOATKID = "Billy",
+
+        QUAGMIRE_PORTAL = "Ancient Gateway",
+		QUAGMIRE_PORTAL_KEY = "Ancient Key",
+
+        QUAGMIRE_RUBBLE_CARRIAGE = "Broken Carriage",
+        QUAGMIRE_RUBBLE_CLOCK = "Smashed Clock",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "Dilapidated Cathedral",
+        QUAGMIRE_RUBBLE_PUBDOOR = "Dilapidated Door",
+        QUAGMIRE_RUBBLE_ROOF = "Dilapidated Roof",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "Dilapidated Clocktower",
+        QUAGMIRE_RUBBLE_BIKE = "Wrecked Bicycle",
+        QUAGMIRE_RUBBLE_HOUSE = "Dilapidated House",
+        QUAGMIRE_RUBBLE_CHIMNEY = "Dilapidated Chimney",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "Dilapidated Chimney",
+
+        QUAGMIRE_COIN1 = "Old Coin",
+        QUAGMIRE_COIN2 = "Sapphire Medallion",
+        QUAGMIRE_COIN3 = "Red Mark",
+        QUAGMIRE_COIN4 = "Gnaw's Favor",
+
+        QUAGMIRE_PIGEON = "Pigeon",
+
+		QUAGMIRE_BEEFALO = "Old Beefalo",
+		QUAGMIRE_SLAUGHTERTOOL = "Slaughter Tools",
+
+		QUAGMIRE_GOATMILK = "Goat Milk",
     },
 
     NAME_DETAIL_EXTENTION =
@@ -1824,6 +2043,43 @@ STRINGS =
 
         CANDYBAG = "Only carries Hallowed Nights goodies.",
         WINTER_TREESTAND = "Plant and decorate a Winter's Feast tree!",
+
+        --Quagmire
+        QUAGMIRE_CRATE_POT_HANGER = "Everything you need to set up a cookpot.",
+        QUAGMIRE_CRATE_OVEN = "Everything you need to set up an oven.",
+        QUAGMIRE_CRATE_GRILL_SMALL = "Everything you need to set up a grill.",
+        QUAGMIRE_CRATE_GRILL = "Everything you need to set up a large grill.",
+
+        QUAGMIRE_HOE = "Till soil for crop seeds.",
+        QUAGMIRE_SAPBUCKET = "Don't be a sap, get syrup from the tap!",
+        QUAGMIRE_SPOTSPICE_GROUND = "One teaspoon of delicious spice.",
+        QUAGMIRE_SALT = "A few pinches of salt.",
+        QUAGMIRE_FLOUR = "Ground wheat.",
+        QUAGMIRE_CRABTRAP = "Trap the crabs in the bucket.",
+        QUAGMIRE_POT = "State of the art cookware.",
+        QUAGMIRE_POT_HANGER_ITEM = "Hang a pot on the fire. Hands free!",
+        QUAGMIRE_POT_SYRUP = "For sugary, delicious sap processing.",
+        QUAGMIRE_CASSEROLEDISH = "Fine ceramics for finer food.",
+        QUAGMIRE_PLATE_SILVER = "High class plating for improved dishes.",
+        QUAGMIRE_BOWL_SILVER = "Presentation is half the taste.",
+        QUAGMIRE_SALT_RACK_ITEM = "Get a little salty.",
+        QUAGMIRE_SLAUGHTERTOOL = "Well, meat doesn't grow on trees.",
+        QUAGMIRE_PIGEON = "It's a whole, live pigeon.",
+
+        QUAGMIRE_KEY = "Open things that aren't yours.",
+        QUAGMIRE_KEY_PARK = "The key to Sugarwood Memorial Park.",
+        QUAGMIRE_PORTAL_KEY = "The way out. I can charge it with Favors.",
+
+        QUAGMIRE_SEEDPACKET_1 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_2 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_3 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_4 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_5 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_6 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_7 = "Unusual crop seeds. Plant in tilled soil.",
+        QUAGMIRE_SEEDPACKET_MIX = "Unusual crop seeds. Plant in tilled soil.",
+
+        QUAGMIRE_GOATMILK = "Fresh from the source.",
     },
 
     -- MAXWELL_TEST = {"Say pal, you don't look so good.", "You better find something to eat before night comes!"},
@@ -2192,28 +2448,275 @@ STRINGS =
         "Well struck!",
 	},
 
--- Not used at the moment
---[[
-
-    BOARLORD_BONUS1_FIGHT_BANTER = 
+	-- gameplay WIP
+    MERM2_TALK_GREETING = --Pipton
     {
-        "Ha!",
-        "Push them back!"
-        "We cannot be defeated!",
-        "For our future!",
-        "Honor. Glory. Redemption!",
+        "Good afternoon! Care to trade?",
+        "At least the sickness didn't take my moustache. Ho ho!",
+        "Sammy's faculties are slipping, but you didn't hear it from me.",
+        "Many of our sick disappeared into the sea. Odd, that.",
+        "Shame you couldn't see the town in its glory days.",
+        "I've only the finest goods for sale.",
+        "This is a dreadful place for a kid to grow up in.",
     },
-    BOARLORD_ROUND3_FIGHT_BANTER = 
+    MERM2_TALK_TRADE = --Pipton
     {
-        "Fight with all you have.",
-        "Do not give in...",
-        "Defeat is not an option.",
-        "We... cannot lose...",
-        "Grr...",
-        "Our Forge, our proving grounds...",
-    },    
-]]
+        "In a hurry, then?",
+        "Don't tarry now, friend.",
+        "I'll not waste anymore of your time.",
+        "I tip my hat to you.",
+        "It's been a pleasure.",
+        "Gnaw smile on you.",
+    },
+    MERM1_TALK_GREETING = --Sammy
+    {
+        "Thoughts don't come to me like they used to.",
+        "Who's Mumsy again? Ah, right. Nice lady.",
+        "Been havin' odd cravings for fish lately. Hmf.",
+        "Pip's too uptight. Always worryin' about me.",
+        "Hey, trade with ol'Sammy!",
+        "SEEDS! SEEDS HERE!",
+        "What was I doing? ...Oh, SEEDS HERE!",
+    },
+    MERM1_TALK_TRADE = --Sammy
+    {
+        "Alright, alright, get a move on.",
+        "'Pleasure.",
+        "Always in a rush, you lot.",
+        "The plague ain't so bad, y'know.",
+        "Come back now, y'hear?",
+        "Who're you again?",
+        "Thanks, stranger.",
+    },
+    MERM_TALK_CLOSED = --Pipton/Sammy
+    {
+        "Ya talk to ol'Mumsy yet?",
+        "I ain't taking business right now.",
+        "Don't keep the lady waiting.",
+        "Speak with Mumsy. Hurry on, then.",
+    },
 
+    --Quagmire Event
+    --NOTE: Keep intro short (no more than 4 lines)
+    --      If there's a lot of story to tell, we can pick
+    --      randomly from alternate intro sequences as well
+    GOATMUM_WELCOME_INTRO =
+    {
+        --At the start of the match, right after players spawn
+        --Transitions directly into the coin toss
+        "BAAA! Who are you?",
+        "No, there's no time for pleasantries!",
+        "You've got to get cooking, or you'll anger the beast!",
+        "I'll help how I can.",
+        "Take these coins and see me when you're ready.",
+    },
+    GOATMUM_TALK_START_BECKON =
+    {
+        --After intro, before buying starting kit, and players are not near
+        "Come a little closer.",
+        "Yoo-hoo, over here! Baa.",
+        "Over here, dear!",
+        "Wait! You need cookware!",
+        "My dear, come closer.",
+        "There's no time to waste!",
+        "Where are you going?",
+    },
+    GOATMUM_TALK_START_CHOICE =
+    {
+        --After intro, before buying starting kit, and players are near
+        "You'll need one of my cookware kits.",
+        "Baa. Let's trade.",
+        "I have some spare cookware for trade.",
+        "Would you like a pot, an oven or a grill?",
+        "Use those coins to trade with me, okay?",
+        "Let's trade. I'll get you set up.",
+        "I hope you're good in the kitchen, dear.",
+    },
+    GOATMUM_TALK_START_PURCHASE =
+    {
+        --After player buys first cooking station
+        --Craving hints will start right after this speech
+        "Wonderful choice, baa! Now, let's see...",
+    },
+    GOATMUM_TALK_GREETING =
+    {
+        --During match, triggers when walking close enough to shop
+        "If you can earn the Gnaw's favor... you might escape.",
+        "The Gnaw's been around since I was just a lamb.",
+        "Another of your kind passed through here once.",
+        "Favor from the Gnaw might recharge the old key.",
+        "You must cook, or you will perish.",
+        "Your presence here distracts it from Billy and I.",
+        "Are you... Gatekeepers, by chance?",
+    },
+    GOATMUM_TALK_GREETING_URGENT =
+    {
+        --During match, triggers when walking close enough to shop, but with little time remaining
+        "Hurry, please!",
+        "The Gnaw is growing impatient!",
+        "It must be fed, at all costs.",
+        "The Gnaw's demands know no end.",
+        "I believe in you. You can do this.",
+        "Don't give up.",
+        "The Gnaw will cast down its plague if not fed!",
+    },
+    GOATMUM_TALK_TRADE =
+    {
+        --Triggers whenever buying something
+        "Thank-you, dear.",
+        "I hope it helps.",
+        "You're welcome, baa.",
+        "Good luck, dear.",
+        "Take care, baa.",
+        "Thank-you.",
+        "Anything you need, dear.",
+    },
+    ----------------------------------------------------------------------------
+    --Eg: "The Gnaw craves a snack... I'm sure of it, baa."
+    --    "The Gnaw hungers for a meat dish... or anything! Hurry, BAAA!"
+    GOATMUM_CRAVING_HINTS =
+    {
+        "The Gnaw craves {craving}... {part2}",
+        "The Gnaw hungers for {craving}... {part2}",
+        "The Gnaw desires {craving}... {part2}",
+        "The Gnaw wants {craving}... {part2}",
+        "The Gnaw craves {craving}!",
+        "The Gnaw desires {craving}!",
+        "The Gnaw hungers for {craving}!",
+    },
+    GOATMUM_CRAVING_HINTS_PART2 =
+    {
+        "I can tell, baa.",
+        "I feel it.",
+        "It's time to cook.",
+        "baa.",
+        "I'm certain of it.",
+        "You must oblige.",
+    },
+    GOATMUM_CRAVING_HINTS_PART2_IMPATIENT =
+    {
+        "or anything! Hurry, BAAA!",
+        "or whatever! Quick, BAAA!",
+        "BAAA! Hurry!",
+        "there's no time!",
+        "give it something! Anything!",
+    },
+    ----------------------------------------------------------------------------
+    GOATMUM_CRAVING_MATCH =
+    {
+        "Oh yes, {craving}! That'll buy you some time.",
+        "Yes, yes, {craving}! That should sate the beast.",
+        "You found what the Gnaw craved!",
+        "The Gnaw's pleased with your offering.",
+        "Mighty Gnaw! Feast now upon on {craving}!",
+    },
+    GOATMUM_CRAVING_MISMATCH =
+    {
+        "Well, it wasn't {craving}. But better than nothing!",
+        "That wasn't what the Gnaw craved, but we'll make do.",
+        "I wouldn't call that {craving}, but oh well.",
+    },
+    ----------------------------------------------------------------------------
+    GOATMUM_CRAVING_MAP =
+    {
+        SNACK = "a SNACK",
+        SOUP = "SOUP",
+        VEGGIE = "a VEGETABLE dish",
+        FISH = "FISH",
+        BREAD = "a meal on BREAD",
+        MEAT = "MEAT",
+        CHEESE = "a meal with CHEESE",
+        PASTA = "PASTA",
+        SWEET = "a DESSERT",
+    },
+    ----------------------------------------------------------------------------
+
+    GOATMUM_VICTORY = -- Players win
+    {
+        "Baa! The way is open!",
+        "Quickly, make haste to your world.",
+        "Billy and I'll follow soon behind.",
+        "May we all leave this plague behind us.",
+        "Good luck, kind strangers!",
+    },
+    GOATMUM_LOST = -- Players lost
+    {
+        "It's over.",
+        "The Gnaw's plague is upon you.",
+        "I'm sorry I couldn't help more.",
+        "Goodbye.",
+    },
+
+    -- gameplay done
+    --NOTE: Limit to 7 strings per table! (Using net_tinybyte for NPC chatter)
+    SWAMPIG_TALK_TO_WILSON =
+    {
+        "KIND ELDER SICK. NEED REST",
+        "YOU DIFFERENT",
+        "HELLO",
+        "YOU HELP PIGS?",
+        "YOU WEIRD GOAT",
+        "YOU FEED GNAW?",
+        "(SNIFF SNIFF) (SNORT)",
+    },
+
+    GOATKID_TALK_GREETING =
+    {
+        "Pipton lets me have sweets, when Mumsy says it's okay.",
+        "I like playing with the pebble crabs.",
+        "Our house used to be around here, baa.",
+        "Mumsy says my friends can't come out to play.",
+        "I wish my bike still worked, baa.",
+        "Sammy was a goat before, like mum and I.",
+        "Mumsy tells me not to look at the sky.",
+    },
+    GOATKID_TALK_TRADE =
+    {
+        "Baaaa! My favorite!",
+        "Oh, thanks!",
+        "We're friends now, right?",
+        "Baa!",
+        "Mumsy says always to say \"thank-you\".",
+        "Tradesies are fun.",
+        "Baa, thanks!",
+    },
+    GOATKID_TALK_CLOSED =
+    {
+        "I'll only talk to you if Mumsy says it's okay.",
+        "Go talk to my mum. Baa.",
+        "Can you ask my mum before we play?",
+        "Go ask Mumsy if we can play. Baa.",
+    },
+
+    QUAGMIRE_ELDER_TALK_SLEEP =
+    {
+        "...HRUMPF...",
+        "(SNORT) ...s...scales...",
+        "...p...plague...",
+        "...zzzZZzzz...",
+        "...g-GNAW...",
+        "...s-sky...",
+    },
+    QUAGMIRE_ELDER_TALK_GREETING =
+    {
+        "HRF? YOU TRADE? SUPPLIES?",
+        "HRF? SLEEP... GIVE ELDER NIGHTMARES",
+        "HRF! OUR HOMES DESTROYED",
+        "HRF! GNAW MAD AT PIGS",
+        "HRF! MOST GOATS NO HELP TO PIGS",
+        "HRF! WE NEED FIX HOUSES",
+        "HRF? ...WHAT LITTLE PIGS DO IF ELDER GONE?",
+    },
+    QUAGMIRE_ELDER_TALK_BUY =
+    {
+        "THANK-YOU. NOW LET ELDER REST.",
+        "YES. YOU GOOD GOAT.",
+        "MAYBE NOW WE FIX HOUSES",
+        "THANK-YOU",
+        "ELDER'S EYE FEEL HEAVY",
+        "GOOD LUCK. WITH GNAW.",
+        "THANK-YOU, LITTLE GOAT.",
+    },
 
     EPITAPHS =
     {
@@ -2242,14 +2745,14 @@ STRINGS =
         "It says \"Mind your own business.\"",
         "It says \"Help, get me out!\" and \"Nah, just kidding,\" beneath.",
         "It reads \"Pulvis Et Umbra Sumus.\"",
-        "An engravement of their last words: \"I love it so much I could just die!\"",
-        "An engravement of their last words: \"Hey, watch this.\"",
-        "An engravement of their last words: \"Uh-oh.\"",
-        "An engravement of their last words: \"This is fine.\"",
-        "An engravement of their last words: \"I'm out of here.\"",
-        "An engravement of their last words: \"That's enough of that.\"",
-        "An engravement of their last words: \"I'd rather die!\"",
-        "An engravement of their last words: \"Uh, okay bye.\"",
+        "An engraving of their last words: \"I love it so much I could just die!\"",
+        "An engraving of their last words: \"Hey, watch this.\"",
+        "An engraving of their last words: \"Uh-oh.\"",
+        "An engraving of their last words: \"This is fine.\"",
+        "An engraving of their last words: \"I'm out of here.\"",
+        "An engraving of their last words: \"That's enough of that.\"",
+        "An engraving of their last words: \"I'd rather die!\"",
+        "An engraving of their last words: \"Uh, okay bye.\"",
         "It reads \"Right behind you...\" and \"Made you look!\"",
         "\"Whoops.\"",
         "It's cracked down the middle.",
@@ -2303,8 +2806,13 @@ STRINGS =
         SCULPTING = "Sculptures",
         ORPHANAGE = "Critters",
         PERDOFFERING = "Offerings",
+		QUAGMIRE_MEALINGSTONE = "Mealing Stone",
+		QUAGMIRE_TRADER_ELDER = "Swamp Pig Elder",
+		QUAGMIRE_TRADER_MERM1 = "Sammy",
+        QUAGMIRE_TRADER_MERM2 = "Pipton",
+		QUAGMIRE_TRADER_MUM = "Mumsy",
+		QUAGMIRE_TRADER_KID = "Billy",
     },
-
     GREENAMULET_TOOLTIP = "Reduced Material Cost",
 }
 
@@ -2540,6 +3048,32 @@ STRINGS.PIGNAMES =
     "Salty",
 }
 
+STRINGS.SWAMPIGNAMES =
+{
+    --farmers
+    "Titus",
+    "Domitian",
+    "Nerva",
+    "Trajan",
+    "Hadrian",
+    "Antonius",
+    "Lucius",
+    "Marcus",
+    "Commodus",
+    "Pertinax",
+    "Didius",
+    "Septmius",
+    "Caracalla",
+    "Geta",
+    "Marcrinus",
+    "Elagabalus",
+    "Severus",
+    "Maximinus",
+    "Gordian",
+    "Pupienus",
+    "Balbinus",
+}
+
 STRINGS.UI =
 {
 	TIME_FORMAT = 
@@ -2604,6 +3138,21 @@ STRINGS.UI =
             SCULPTING = "Create",
             ORPHANAGE = "Adopt",
             PERDOFFERING = "Offer",
+			QUAGMIRE_MEALINGSTONE = "Grind",
+			QUAGMIRE_TRADER_ELDER = "Trade",
+			QUAGMIRE_TRADER_MERM1 = "Purchase",
+			QUAGMIRE_TRADER_MERM2 = "Purchase",
+			QUAGMIRE_TRADER_MUM = "Purchase",
+			QUAGMIRE_TRADER_KID = "Purchase",
+        },
+        TABNEEDSTUFF =
+        {
+            QUAGMIRE_MEALINGSTONE = "Find ingredients \nto grind!",
+            QUAGMIRE_TRADER_ELDER = "Find materials \nto trade!",
+            QUAGMIRE_TRADER_MERM1 = "Earn coins to trade!",
+            QUAGMIRE_TRADER_MERM2 = "Earn coins to trade!",
+            QUAGMIRE_TRADER_MUM = "Earn coins to trade!",
+            QUAGMIRE_TRADER_KID = "Earn coins to trade!",
         },
         NEEDSTUFF = "Find ingredients \nto craft!",
         BUILD = "Build",
@@ -2979,6 +3528,7 @@ STRINGS.UI =
         FESTIVALEVENT =
         {
             LAVAARENA = "Enter the Forge",
+            QUAGMIRE = "Enter the Gorge",
         },
         QUICKJOIN = "Quick Join",
         SPLITSCREEN = "Split Screen",
@@ -3013,8 +3563,12 @@ STRINGS.UI =
         UPDATERELEASED = "Now Playing:",
         LASTBUILDDAYS = "Last build %d days ago",
         NEXTBUILDIMMINENT = "Next build imminent!",
-        NEXTUPDATEDAYS = "Next Update: %d days",
-        BETA_LABEL = "A New Reign Beta",
+        NEXTUPDATEDAYS = "Next Update: %d days!",
+        BETA_LABEL = "The Gorge Event",
+
+        EVENT_UPDATEDAYS = "Starts in %d days!",
+        EVENT_UPDATEDAY = "Starts in 1 day!",
+        EVENT_IMMINENT = "Update imminent!",
 
         MOTDTITLE = "Klei Store",
         MOTD = "Check out the latest items in the Klei Store!",
@@ -3093,6 +3647,7 @@ STRINGS.UI =
         TOOLTIP_FESTIVALEVENT =
         {
             LAVAARENA = "Challenge Battlemaster Pugna's warriors in this limited-time event!",
+            QUAGMIRE = "Prepare offerings for the Altar of Gnaw in this limited-time event!",
         },
         TOOLTIP_BROWSE = "Browse all servers",
         TOOLTIP_QUICKJOIN = "Jump in and start playing",
@@ -3138,6 +3693,48 @@ STRINGS.UI =
 		PLAYER_2_PRESS_START_PREFIX = "PRESS",
 		PLAYER_2_PRESS_START_POSTFIX = "TO JOIN",
     },
+
+	RECIPE_BOOK =
+	{
+		TITLE = "Recipe Book",
+		DISCOVERED_RECIPES = "Discovered Recipes",
+		FILTER_ANY = "Any",
+		CRAVINGS =
+		{
+			SNACK = "Snack",
+			SOUP = "Soup",
+			VEGGIE = "Veggie",
+			FISH = "Fish",
+			BREAD = "Bread",
+			MEAT = "Meat",
+			CHEESE = "Cheese",
+			PASTA = "Pasta",
+			SWEET = "Dessert",
+		},
+		STATIONS = 
+		{
+			POT = "Cookpot",
+			OVEN = "Oven",
+			GRILL = "Grill",
+		},
+		DETAILS_LABEL_TRIBUTE = "Offering",
+		DETAILS_LABEL_TRIBUTE_SILVER = "{dish} Offering",
+		DETAILS_LABEL_TRIBUTE_SILVER_UNKNOWN = "Silver Dish Offering",
+		DETAILS_LABEL_CRAVING = "Satisfies Craving",
+		DETAILS_LABEL_CRAVINGS = "Satisfies Cravings",
+		DETAILS_LABEL_STATION = "Cooking Station",
+		DETAILS_LABEL_STATIONS = "Cooking Stations",
+		DETAILS_LABEL_RECIPES = "Recent Recipes",
+		DETAILS_SPINNER_CRAVING = "Craving",
+		DETAILS_SPINNER_STATION = "Station",
+		--DETAILS_SPINNER_TRIBUTE = "Offering",
+		NO_TRIBUTE_VALUE = "None",
+		TRIBUTE_UNKNOWN = "Unknown",
+		NO_CRAVING = "None",
+		SYRUP_RECIPE_ID = "**",
+		UNKNOWN_RECIPE = "Unknown",
+        UNKNOWN_DATA = "???", --used for bad data
+	},
 
     HUD =
     {
@@ -3211,6 +3808,17 @@ STRINGS.UI =
         LAVAARENA_WIN_BODY = "You have bested Battlemaster Pugna's champions in battle.",
         LAVAARENA_LOSE_TITLE = "Defeat!",
         LAVAARENA_LOSE_BODY = "You have failed Battlemaster Pugna's challenge.",
+
+		QUAGMIRE_NOTFICATIONS = 
+		{
+			DISCOVERED = "New Recipe Discovered",
+			MADE = "Meal Cooked",
+			INGREDIENT_MADE = "Syrup Produced",
+			FAILED = "Recipe Failed",
+			OVERCOOKED = "Meal Burnt",
+			SENT = "Meal Snackrificed",
+		},
+
     },
 
     ACCOUNT =
@@ -3292,9 +3900,12 @@ STRINGS.UI =
         TITLE = "Game Options",
         SETTINGS = "Settings",
         CONTROLS = "Controls",
+        LANGUAGES = "Languages",
+        LANG_TITLE = "Language Options",
         MORE = "More",
         TOOLTIP_SETTINGS = "Modify features of the game and user interface",
         TOOLTIP_CONTROLS = "Rebind which input does which in-game action",
+        TOOLTIP_LANGUAGES = "Select display language",
 		TOOLTIP_CONTROLS_CONSOLE = "Check which control does which in-game action",
 		TOOLTIP_MORE = "View additional options",
         OPTIONS = "Options",
@@ -3401,6 +4012,7 @@ STRINGS.UI =
         NEW_SKIN = "You got a skin for %s!",
         OK_BUTTON = "Close",
         OPEN_BUTTON = "Open Now!",
+        OPEN_NEXT = "Proceed",
         OPENING = "Opening",
         BACK = "Back", 
         NEXT_ITEM = "Put it Away",
@@ -3477,6 +4089,7 @@ STRINGS.UI =
             ID_DST_USER_BANNED   = "Banned",
             ID_DST_USER_KICKED   = "Kicked",
             ID_DST_IDLE_TIMEOUT = "Disconnected",
+            ID_DST_STEAM_NET_CONNECTION_TIMEOUT = "Disconnected",
             ID_DST_INCOMING_CONNECTIONS_DISABLED = "Failed To Connect",
             FAILED_TO_AUTOJOIN_LAN = "LAN Join Failed",
             ID_DST_INITIALIZATION_FAILED = "Networking Failed To Start",
@@ -3536,6 +4149,7 @@ STRINGS.UI =
             ID_DST_USER_BANNED   = "You have been banned from this server.",
             ID_DST_USER_KICKED = "You have been kicked from this server.",
             ID_DST_IDLE_TIMEOUT = "You have lost connection to the server.",
+            ID_DST_STEAM_NET_CONNECTION_TIMEOUT = "You have lost connection to the server.",
             ID_DST_INCOMING_CONNECTIONS_DISABLED = "The server is not accepting new connections temporarily. Please wait a moment and try again.",
             FAILED_TO_AUTOJOIN_LAN = "Unable to join a LAN server.\nAre you sure it exists?",
             ID_DST_INITIALIZATION_FAILED = "Networking did not initialize properly. Please try again.",
@@ -3608,7 +4222,6 @@ STRINGS.UI =
         AFK = "Go AFK",
         SERVER_ADMIN = "Server Admin",
         ISSUE = "Report an Issue",
-		NOT_YET_OPEN = "Not yet open",
     },
 
 	WORDPREDICTIONWIDET = 
@@ -3940,6 +4553,7 @@ STRINGS.UI =
             DST_CAVE_PS4 = "Standard Caves",
             DST_CAVE_PLUS = "Caves Plus",
             LAVAARENA = "The Forge",
+            QUAGMIRE = "The Gorge",
 
             MOD_MISSING = "<MOD MISSING>",
         },
@@ -3968,6 +4582,7 @@ STRINGS.UI =
             DST_CAVE = "Delve into the caves... together!",
             DST_CAVE_PLUS = "A darker, more arachnid-y cave experience.",
             LAVAARENA = "Dare you prove yourself in The Forge?",
+            QUAGMIRE = "Can you stand the heat in The Gorge?",
 
             MOD_MISSING = "This preset came from a mod, but that mod isn't active right now!",
         },
@@ -3978,6 +4593,7 @@ STRINGS.UI =
             CLASSIC = "Classic",
             CAVE_DEFAULT = "Underground",
             LAVA_ARENA = "The Forge",
+            QUAGMIRE = "The Gorge",
         },
 		
 		ICON_TITLES = {
@@ -4296,6 +4912,8 @@ STRINGS.UI =
         },
         MISSINGDATATITLE = "Out-of-Date Server",
         MISSINGDATABODY = "This server is not up to date. We cannot display its world settings.",
+        SERVER_LANGUAGE_WARNING_TITLE = "Server Language Mismatch",
+        SERVER_LANGUAGE_WARNING_BODY = "Your language option doesn't match the language set by this server, do want to join anyways?",
     },
     
 	DEMOOVERDIALOG =
@@ -4428,6 +5046,8 @@ STRINGS.UI =
         ENDLESS_DESCRIPTION = "A neverending Don't Starve sandbox.\n\n* Enter the world through the Florid Postern.\n* Become a ghost when you die (no sanity drain).\n* Resurrection is always available via the Florid Postern.",
         LAVAARENA = "The Forge",
         LAVAARENA_DESCRIPTION = "Prove yourself to Battlemaster Pugna in this Gate Realm.\n* Enter the world through the Molten Gateway.\n* No hunger or sanity.\n* Use what you can find. No outside weapons in the Pit!",
+        QUAGMIRE = "The Gorge",
+        QUAGMIRE_DESCRIPTION = "Cook delicious dishes to appease the Eternal Gnaw in this Gate Realm.\n* Enter the world through the Mossy Gateway.\n* No nighttime.\n* Use what you can find to cook offerings for the altar!",
         CUSTOM = "Custom Game",
         UNKNOWN = "Game Mode Unknown",
         UNKNOWN_DESCRIPTION = "We could not retrieve the details of this game mode.",
@@ -4537,12 +5157,14 @@ STRINGS.UI =
     LOBBY_WAITING_FOR_PLAYERS_SCREEN =
     {
         SPAWN_DELAY = "Match starts in {time}",
-        ENABLE_NO_WAITING_HELPTEXT = "Vote to start with {num}/{max} players",
-        DISABLE_NO_WAITING_HELPTEXT = "Cancel early start vote",
-        PLATER_VOTED_TO_FORCE_START = "Voted To Start",
+		LOCAL_PLAYER_READY_TO_START = "Ready to start",
+		LOCAL_PLAYER_VOTE_TO_START = "Vote to start with {num}/{max} players",
+        LOCAL_PLAYER_READY_CANCEL_HELPTEXT = "Wait, I'm not ready!",
+        PLAYER_VOTED_TO_FORCE_START = "Voted To Start",
+		PLAYER_READY_TO_START = "Ready",
         
         VOTE_POPUP_TITLE = "Voting to Start",
-        VOTE_POPUP_BODY = "You are voting to begin the match with only {num} player(s).\nThe Forge event is designed for {max} players, playing with less is not advised.",
+        VOTE_POPUP_BODY = "You are voting to start the match without a full server.\nThe difficulty does not scale based on the number of players.\nThis will be a more challenging experience.",
         VOTE_POPUP_CONTINUE = "Vote",
         VOTE_POPUP_CANCEL = "Cancel",
     },
@@ -4596,6 +5218,7 @@ STRINGS.UI =
         TITLE =
         {
             LAVAARENA = "The Forge",
+            QUAGMIRE = "The Gorge",
         },
 
         QUICKMATCH = "Quick Match",
@@ -4614,17 +5237,28 @@ STRINGS.UI =
         HOST_CONNECTINGTOSERVER = "Connecting to server",
         HOST_FAILED = "Network Error",
         HOST_FAILED_BODY = "Failed to connect to event server.",
+        HOST_NO_SERVERS_BODY = "No servers are currently available for your game version.",
+        HOST_PINGS_FAILED_BODY = "Unable to contact Klei servers.\nPlease check your network connection and try again.",
         
         OFFLINE_POPUP_TITLE = "Offline",
-        OFFLINE_POPUP_BODY = "You must be logged in to challenge\nBattlemaster Pugna's warriors.",
+        OFFLINE_POPUP_BODY =
+        { 
+            lavaarena = "You must be logged in to challenge\nBattlemaster Pugna's warriors.",
+            quagmire = "You must be logged in to prepare\nofferings for the Altar of Gnaw.",
+        },
+
         OFFLINE_POPUP_BACK = "Back",
         OFFLINE_POPUP_LOGIN = "Log In",
 		
 		OFFLINE_POPUP_TITLE_CONSOLE = "You are in offline mode",
-		OFFLINE_POPUP_BODY_CONSOLE = "All players must be online to challenge\nBattlemaster Pugna's warriors.",
+		OFFLINE_POPUP_BODY_CONSOLE =
+        { 
+            lavaarena = "All players must be online to challenge\nBattlemaster Pugna's warriors.",
+            quagmire = "All players must be online to prepare\nofferings for the Altar of Gnaw.",
+        },
 
         MODS_POPUP_TITLE = "Mods Detected!",
-        MODS_POPUP_BODY = "Warning!\nClient mods are unsupported in The Forge.\nDisabling all mods is recommended.",
+        MODS_POPUP_BODY = "Warning!\nClient mods are unsupported in {event}.\nDisabling all mods is recommended.",
         MODS_POPUP_CONTINUE = "Continue",
         MODS_POPUP_DISABLE_MODS = "Disable All Mods",
         MODS_POPUP_CANCEL = "Cancel",
@@ -4639,16 +5273,35 @@ STRINGS.UI =
     
     WXPLOBBYPANEL = 
     {
-        TITLE_VICTORY = "Victory!",
-        TITLE_DEFEAT = "Defeat",
+		LAVAARENA = 
+		{
+			TITLE_VICTORY = "Victory!",
+			TITLE_DEFEAT = "Defeat",
+		},
+		QUAGMIRE = 
+		{
+			TITLE_VICTORY = "Gateway Activated!",
+			TITLE_DEFEAT = "Mermified",
+		},
+
         MATCH_TIME = "Match Time: {time}",
         DEATHS = "Total Deaths: {deaths}",
         NO_DEATHS = "No Deaths",
+        SCORE = "Appeasement Points: {score}",
+		TRIBUTES = "Gnaw's Cravings: {success} fulfilled and {failed} failed",
 
         SKIP = "Skip",
         CONTINUE = "Continue",
-        NEWBOX_TITLE = "Forge Chest Earned!",
-        NEWBOXES_TITLE = "{num} Forge Chests Earned!",
+        NEWBOX_TITLE = 
+        { 
+            lavaarena = "Forge Chest Earned!",
+            quagmire = "Victorian Chest Earned!",
+        },
+        NEWBOXES_TITLE = 
+        { 
+            lavaarena = "{num} Forge Chests Earned!",
+            quagmire = "{num} Victorian Chests Earned!",
+        },
         NEWBOX_BODY = "Visit the Treasury to open your chest",
         NEWBOXES_BODY = "Visit the Treasury to open your chests",
 
@@ -4658,16 +5311,23 @@ STRINGS.UI =
         DETAILS_XP = "+{num}",
         LEVEL_UP = "LEVEL UP!",
         ACHIEVEMENT_UNLOCKED = "Achievement: {name}",
+		FOOD_DISCOVERY = "Recipe: {name}",
     },
 
 	WXP_DETAILS =
 	{
+		-- common
 		DAILY_FIRST_WIN = "Daily Win Bonus",
 		DURATION = "Time",
 		FRIENDS_BONUS = "Playing with Friends",
 		DAILY_FIRST_MATCH = "Daily Match Bonus",
 		WEEKLY_FIRST_MATCH = "Weekly Match Bonus",
 		CONSECUTIVE = "Consecutive Match Bonus",
+		WIN = "Victory",
+		DAILY_FIRST_WIN = "Daily Victory Bonus",
+		LAVA_ARENA_XP_MOD = "debug test",
+
+		-- lavaarena
 		LAVA_ARENA_MILESTONE_1 = "Pit Pigs Defeated",
 		LAVA_ARENA_MILESTONE_2 = "Crocommanders Defeated",
 		LAVA_ARENA_MILESTONE_3 = "Snortoises Defeated",
@@ -4675,11 +5335,19 @@ STRINGS.UI =
 		LAVA_NO_PLAYER_DEATHS = "No Deaths",
 		LAVA_NO_TEAM_DEATHS = "No Deaths (Team)",
 		LAVA_UNIQUE_CHARACTERS = "No Doubles Bonus",
-		WIN = "Victory",
-		DAILY_FIRST_WIN = "Daily Victory Bonus",
-		LAVA_ARENA_XP_MOD = "debug test",
+		UNIQUE_CHARACTERS = "No Doubles Bonus",
+
+		-- quagmire --
+		QUAGMIRE_MILESTONE_1 = "Sapphire Medallion Earned",
+		QUAGMIRE_MILESTONE_2 = "Red Mark Earned",
+		QUAGMIRE_MILESTONE_3 = "Gnaw's Favor Earned",
+        QUAGMIRE_NO_TRIBUTES_FAILED = "No Failed Offerings",
+		QUAGMIRE_NO_DUPLICATE_TRIUBUTES = "Unique Offerings",
+        QUAGMIRE_UNIQUE_CHARACTERS = "No Duplicate Survivors",
+        QUAGMIRE_NO_DUPLICATE_TRIUBUTES = "No Repeat Meals",
+        QUAGMIRE_TRIBUTE_SCORE = "Appeasement Point Bonus",
 	},
-	
+
 	XPUTILS = 
 	{
 		XPPROGRESS = "{num}/{max}",
@@ -4687,64 +5355,120 @@ STRINGS.UI =
 
     MVP_LOADING_WIDGET =
     {
-        TITLES =
-        { 
-            deaths = "Reborn",
-            total_damagedealt = "Brawler",
-            total_damagedealt2 = "Merciless",
-            kills = "Assassin",
-            kills2 = "Master Assassin",
-            aggroheld = "Distraction",
-            aggroheld2 = "Expert Decoy",
-            corpsesrevived = "Resurrector",
-            healingdone = "Healer",
-            healingdone2 = "Doctor",
-            total_damagetaken = "Protector",
-            total_damagetaken2 = "Loyal Guardian",
-            attacks = "Combatant",
-            turtillusflips = "Turtle Flipper",
-            spellscast = "Archmage",
-            altattacks = "Powerful",
-            stepcounter = "Fast-Paced",
-            blowdarts = "Sharpshooter",
-            blowdarts2 = "Ace Marksman",
-            standards = "Vandal",
-            numcc = "Immobilizer",
-            guardsbroken = "Breacher",
-            none = "Participator!",
-        },
-        DESCRIPTIONS =
-        {
-            deaths = "deaths",
-            total_damagedealt = "damage dealt",
-            total_damagedealt2 = "damage dealt",
-            kills = "killing blows",
-            kills2 = "killing blows struck",
-            aggroheld = "seconds with creatures' attention",
-            aggroheld2 = "seconds with creatures' attention",
-            corpsesrevived = "allies revived",
-            healingdone = "health restored",
-            healingdone2 = "health restored",
-            total_damagetaken = "damage taken",
-            total_damagetaken2 = "damage taken for the team",
-            attacks = "swings landed",
-            turtillusflips = "Snortoises flipped",
-            spellscast = "spells cast",
-            altattacks = "special attacks used",
-            stepcounter = "steps taken",
-            blowdarts = "darts hit their mark",
-            blowdarts2 = "darts hit their mark",
-            standards = "battle standards destroyed",
-            numcc = "enemies immobilized",
-            guardsbroken = "enemy guards broken",
-            none = "thanks for playing",
-        },
-        NO_STAT_VALUE = "-",
+		LAVAARENA = 
+		{
+			TITLES =
+			{ 
+				deaths = "Reborn",
+				total_damagedealt = "Brawler",
+				total_damagedealt2 = "Merciless",
+				kills = "Assassin",
+				kills2 = "Master Assassin",
+				aggroheld = "Distraction",
+				aggroheld2 = "Expert Decoy",
+				corpsesrevived = "Resurrector",
+				healingdone = "Healer",
+				healingdone2 = "Doctor",
+				total_damagetaken = "Protector",
+				total_damagetaken2 = "Loyal Guardian",
+				attacks = "Combatant",
+				turtillusflips = "Turtle Flipper",
+				spellscast = "Archmage",
+				altattacks = "Powerful",
+				stepcounter = "Fast-Paced",
+				blowdarts = "Sharpshooter",
+				blowdarts2 = "Ace Marksman",
+				standards = "Vandal",
+				numcc = "Immobilizer",
+				guardsbroken = "Breacher",
+				none = "Participator!",
+			},
+			DESCRIPTIONS =
+			{
+				deaths = "deaths",
+				total_damagedealt = "damage dealt",
+				total_damagedealt2 = "damage dealt",
+				kills = "killing blows",
+				kills2 = "killing blows struck",
+				aggroheld = "seconds with creatures' attention",
+				aggroheld2 = "seconds with creatures' attention",
+				corpsesrevived = "allies revived",
+				healingdone = "health restored",
+				healingdone2 = "health restored",
+				total_damagetaken = "damage taken",
+				total_damagetaken2 = "damage taken for the team",
+				attacks = "swings landed",
+				turtillusflips = "Snortoises flipped",
+				spellscast = "spells cast",
+				altattacks = "special attacks used",
+				stepcounter = "steps taken",
+				blowdarts = "darts hit their mark",
+				blowdarts2 = "darts hit their mark",
+				standards = "battle standards destroyed",
+				numcc = "enemies immobilized",
+				guardsbroken = "enemy guards broken",
+				none = "thanks for playing",
+			},
+			NO_STAT_VALUE = "-",
+		},
+		QUAGMIRE = 
+		{
+			TITLES =
+			{ 
+				crops_farmed = "Farmhand",
+				crops_farmed2 = "Greenthumb",
+				crops_planted = "Sower",
+				crops_picked = "Harvester",
+				crops_rotten = "Composter",
+				herbs_picked = "Forager",
+				herbs_picked2 = "Master Gatherer",
+				buys = "Barterer",
+				meals_made = "Sous Chef",
+				meals_made2 = "Master Chef",
+				meals_burnt = "Overcooker",
+				meals_burnt2 = "Kitchen Disaster",
+				meals_saved = "Meal Saver",
+				meals_saved2 = "Kitchen Rescuer",
+				logs = "Lumberjack",
+				logs2 = "Clearcutter",
+				tributes = "Gnaw Worshipper",
+
+				-- same as forge
+				none = "Participator!",
+				stepcounter = "Fast-Paced",
+			},
+			DESCRIPTIONS =
+			{
+				crops_farmed = "fresh crops farmed",
+				crops_farmed2 = "fresh crops farmed",
+				crops_planted = "fresh crops planted",
+				crops_picked = "fresh crops picked",
+				crops_rotten = "crops left to rot",
+				herbs_picked = "wild plants picked",
+				herbs_picked2 = "wild plants picked",
+				buys = "goods bought from traders",
+				meals_made = "meals cooked",
+				meals_made2 = "meals cooked",
+				meals_burnt = "meals burnt to cinders",
+				meals_burnt2 = "meals burnt to cinders",
+				meals_saved = "meals saved from the fire",
+				meals_saved2 = "meals saved from the fire",
+				logs = "logs harvested",
+				logs2 = "logs harvested",
+				tributes = "dishes sacrificed to the Altar",
+
+				-- same as forge
+				none = "thanks for playing",
+				stepcounter = "steps taken",
+			},
+			NO_STAT_VALUE = "-",
+		},
     },
 
 	ACHIEVEMENTS =
 	{
         SCREENTITLE = "Accomplishments",
+        INGAME_NOTICE = "Accomplishments are awarded at the end of a match.",
 		LAVAARENA =
 		{
 			CATEGORIES =
@@ -5019,6 +5743,181 @@ STRINGS.UI =
 				},
 			},
 		},	
+		QUAGMIRE =
+		{
+			CATEGORIES =
+			{
+				victory = "Victory",
+				tributes = "Offerings",
+				chef = "Cooking",
+				farmer = "Farming",
+				gatherer = "Resource Collection",
+			},
+			ACHIEVEMENT =
+			{
+				quag_win_first = 
+				{
+					TITLE = "Escape!",
+					DESC  = "Activate the Ancient Gateway and escape the Gorge",
+				},
+				quag_win_perfect = 
+				{
+					TITLE = "Taste Maker",
+					DESC  = "Escape the Gorge without failing to fulfill any cravings",
+				},
+				quag_win_nodups = 
+				{
+					TITLE = "No Repeater Eater",
+					DESC  = "Escape the Gorge without offering any duplicate meals",
+				},
+				quag_win_nosilver = 
+				{
+					TITLE = "No Silver Linings",
+					DESC  = "Escape the Gorge without offering any silver plated meals to the Gnaw",
+				},
+				quag_win_noburnt = 
+				{
+					TITLE = "Cooked to Perfection",
+					DESC  = "Escape the Gorge without having burned or ruined any meals",
+				},
+				quag_win_nosalt = 
+				{
+					TITLE = "Sodi-yum",
+					DESC  = "Escape the Gorge without offering the Gnaw any salted meals",
+				},
+				quag_win_verylong = 
+				{
+					TITLE = "Flavorville",
+					DESC  = "Escape the Gorge having fulfilled 18 or more of the Gnaw's cravings",
+				},
+				quag_win_long = 
+				{
+					TITLE = "Gnaw's Gnosh",
+					DESC  = "Escape the Gorge having fulfilled 15 or more of the Gnaw's cravings",
+				},
+				quag_win_fast = 
+				{
+					TITLE = "Quick Lunch",
+					DESC  = "Escape the Gorge by offering 10 meals or less",
+				},
+				quag_win_veryfast = 
+				{
+					TITLE = "Zero-Wait Staff",
+					DESC  = "Escape the Gorge by offering 7 meals or less",
+				},
+				tribute_coin4 = 
+				{
+					TITLE = "Favored",
+					DESC  = "Earn the Gnaw's Favor",
+				},
+				tribute_coin3 = 
+				{
+					TITLE = "Marked",
+					DESC  = "Find or earn a Red Mark",
+				},
+				tribute_coin2 = 
+				{
+					TITLE = "Gnaw In The Sky With Sapphires",
+					DESC  = "Find or earn a Sapphire Medallion",
+				},
+				tribute_num_high = 
+				{
+					TITLE = "Spoiled Wyrm",
+					DESC  = "Sacrifice something the Gnaw is craving at least 9 times in one match",
+				},
+				tribute_num_med = 
+				{
+					TITLE = "Eternal Cravings",
+					DESC  = "Sacrifice something the Gnaw is craving at least 6 times in one match",
+				},
+				tribute_num_low = 
+				{
+					TITLE = "Cheat Day",
+					DESC  = "Sacrifice something the Gnaw is craving at least 3 times in one match",
+				},
+				tribute_fast = 
+				{
+					TITLE = "Fast Food",
+					DESC  = "Sacrifice something the Gnaw is craving 3 times in 3 minutes",
+				},
+				cook_full_book = 
+				{
+					TITLE = "Master Chef",
+					DESC  = "Discover all possible recipes",
+				},
+				cook_noburnt = 
+				{
+					TITLE = "It's Not Raw",
+					DESC  = "Cook at least 6 meals from start to finish in a single match, without burning any of them",
+				},
+				cook_first = 
+				{
+					TITLE = "Great Victorian Cook Off",
+					DESC  ="Cook a meal",
+				},
+				cook_large = 
+				{
+					TITLE = "Big Meal",
+					DESC  ="Cook and complete at least one meal using a Large Grill, Large Pot or Large Casserole Dish",
+				},
+				cook_all_stations = 
+				{
+					TITLE = "Bake Boss",
+					DESC  ="Cook and complete at least one meal using an oven, a pot, and a grill, respectively",
+				},
+				cook_silver = 
+				{
+					TITLE = "The Silver Gullet",
+					DESC  ="Increase the value of a dish by plating it in a silver plate or bowl",
+				},
+				farm_sow_all = 
+				{
+					TITLE = "Sowing Machine",
+					DESC  ="Sow one or more of each type of seed",
+				},
+
+				farm_fertilize = 
+				{
+					TITLE = "Premium Plant Food",
+					DESC  ="Fertilize at least 20 crops in a single match",
+				},
+				farm_sow = 
+				{
+					TITLE = "Reap What You Sow",
+					DESC  ="Sow at least 30 seeds in a single match",
+				},
+				farm_till = 
+				{
+					TITLE = "Dawn Till Dusk",
+					DESC  ="Till at least 50 farm plots in a single match",
+				},
+				gather_sap = 
+				{
+					TITLE = "Extra Sappy",
+					DESC  ="Gather sap from Sugarwood trees 9 times or more in a single match",
+				},
+				gather_logs = 
+				{
+					TITLE = "Chopped",
+					DESC  ="Chop and gather 80 logs or more in a single match",
+				},
+				gather_crab = 
+				{
+					TITLE = "The Landed Land Crab",
+					DESC  ="Catch a Pebble Crab",
+				},
+				gather_spice = 
+				{
+					TITLE = "The Spice of Strife",
+					DESC  ="Grind 5 teaspoons of spice in a single match",
+				},
+				gather_safe = 
+				{
+					TITLE = "Finders, Keepers",
+					DESC  ="Unlock at least one safe",
+				},
+			},
+		},
 	},
 
     PLAYERSUMMARYSCREEN =
@@ -5029,7 +5928,6 @@ STRINGS.UI =
         PURCHASE = "Shop",
 
         FESTIVAL_HISTORY = "History of Travels",
-        NO_HISTORY = "The Atrium Gate Lies Dormant",
         CURRENCY_LABEL = "Spools",
         CURRENCY_EXPLAIN = "Items can be unraveled into Spools to weave event items.",
         XP_LABEL = "XP Earned",
@@ -5047,6 +5945,7 @@ STRINGS.UI =
         TOOLTIP_HISTORY = "View missed connections and revisit past lives",
         TOOLTIP_PURCHASE = "Browse purchasable skin sets",
 
+        LEVEL_ACHIEVED_FMT = "{event_title} level accomplished:",
     },
 
     COLLECTIONSCREEN = 
@@ -5069,7 +5968,6 @@ STRINGS.UI =
         TOOLTIP_PROFILEFLAIR = "Select an icon for your profile",
         TOOLTIP_PORTRAITBACKGROUNDS = "Equip new backgrounds to your characters' portraits",
 
-        UNLOCK_LABEL = "Unlocked:",
         FAILED_TO_LOAD = "Sorry!\nWe've temporarily misplaced your curios.\nPlease try again later.",
         VIEW_MARKET = "Steam",
         SET_INFO = "Ensemble",
@@ -5170,6 +6068,7 @@ STRINGS.UI =
     ITEM_SERVER =
     {
         FAILED_TITLE = "Purchase Failure",
+        FAILED_EVENT_TITLE = "Achievements Failure",
         
         FAILED_DEFAULT = "Sorry!\nFailed to contact Klei Servers. Please try again.",
         FAILED_MULTIPLE_PENDING_PURCHASES = "Unable to start a new transaction due to having an outstanding purchase active. Please close all other Steam purchases, and try again later.",
@@ -5425,7 +6324,6 @@ STRINGS.UI =
         DAY = "Day",
         DAYS = "Days",
         UNKNOWN_DAYS = "?",
-        REMOVE_ENCOUNTER = "Remove Encounter",
     },
 
     CONTROLSSCREEN =
@@ -5948,17 +6846,16 @@ STRINGS.UI =
 	{
 		OPT_OUT = 
 		{
-			TITLE = "Opt-out for Data Collection",
-			CONTINUE = "Opt-out",
+			CONTINUE = "Disable",
 		},
 
 		OPT_IN =
 		{
-			TITLE = "Opt-in for Data Collection",
-			CONTINUE = "Opt-in",
+			CONTINUE = "Enable",
 		},
 
-		BODY = "We require the collection of user data to provide online services. Players who opt-out of data collection will only have access to play in offline mode.\n\nFor more details on our privacy policy and how we use the data we collect, please see our official privacy policy.",
+		TITLE = "Data Collection",
+		BODY = "We require the collection of user data to provide online services. Players who disable data collection will only have access to play in offline mode.\n\nFor more details on our privacy policy and how we use the data we collect, please see our official privacy policy.",
 
 		PRIVACY_PORTAL = "View Privacy Policy",
 		CANCEL = "Cancel",
@@ -5967,7 +6864,7 @@ STRINGS.UI =
 	DATACOLLECTION_LOGIN =
 	{
 		TITLE = "Offline Mode",
-		BODY = "We require the collection of user data to provide online services. Players who opt out of data collection will only have access to play in offline mode.\n\nCharacters and worlds from online games will be unavailable.\n\nData Collection settings can be modified in the Options menu.",
+		BODY = "We require the collection of user data to provide online services. Players who disable data collection will only have access to play in offline mode.\n\nCharacters and worlds from online games will be unavailable.\n\nData Collection settings can be modified in the Options menu.",
 		CONTINUE = "Continue",
 	},
 
@@ -6046,6 +6943,7 @@ STRINGS.UI =
             FOREST = "Forest",
             CAVE = "Caves",
             LAVAARENA = "The Forge",
+            QUAGMIRE = "The Gorge",
             UNKNOWN = "???",
         },
 
@@ -6054,6 +6952,7 @@ STRINGS.UI =
             FOREST = "Forest",
             CAVE = "Cave",
             LAVAARENA = "The Forge",
+            QUAGMIRE = "The Gorge",
             UNKNOWN = "Some",
         },
 
@@ -6605,6 +7504,7 @@ STRINGS.TAGS =
     GAMEMODE =
     {
         LAVAARENA = "the_forge",
+        QUAGMIRE = "quagmire",
     },
 }
 
@@ -6769,6 +7669,11 @@ STRINGS.SHARD =
     },
 }
 
+--Don't include this in pot generation as this file is already translated.
+if POT_GENERATION == false then
+    require "strings_pretranslated"
+end
+
 ----------------------------------------------------------------------------
 -- Include the names and descriptions of the clothing and craftable skins.
 ----------------------------------------------------------------------------
@@ -6929,7 +7834,6 @@ if PLATFORM == "WIN32_RAIL" then
 	STRINGS.UI.MORGUESCREEN.PLAYER_CHAR_PS4 = nil
 	STRINGS.UI.MORGUESCREEN.DECEASED_PS4 = nil
 	STRINGS.UI.MORGUESCREEN.MODE_PS4 = nil
-	STRINGS.UI.MORGUESCREEN.REMOVE_ENCOUNTER = nil
 
 	STRINGS.UI.CONTROLSSCREEN.PS4 = nil
 
@@ -6951,9 +7855,17 @@ if PLATFORM == "WIN32_RAIL" then
     STRINGS.UI.EMOTES = nil
 
     STRINGS.UI.PRESENCE = nil
-
-    STRINGS.SIGNS.MENU = nil
-	
+    	
 	STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE_CONSOLE = nil
 	STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY_CONSOLE = nil
+
+    STRINGS.UI.OPTIONS.LANGUAGES = nil
+    STRINGS.UI.OPTIONS.LANG_TITLE = nil
+    STRINGS.UI.OPTIONS.TOOLTIP_LANGUAGES = nil
+
+    STRINGS.UI.DATACOLLECTION_LOGIN.TITLE = nil
+    STRINGS.UI.DATACOLLECTION_LOGIN.BODY = nil
+    STRINGS.UI.DATACOLLECTION_POPUP.PRIVACY_PORTAL = nil
+    STRINGS.UI.DATACOLLECTION_POPUP.TITLE = nil
+    STRINGS.UI.DATACOLLECTION_POPUP.BODY = nil
 end

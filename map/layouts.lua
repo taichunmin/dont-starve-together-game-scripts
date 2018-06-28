@@ -820,7 +820,7 @@ local ExampleLayout =
 	}),
 
 --------------------------------------------------------------------------------
--- Events
+-- LAVAARENA
 --------------------------------------------------------------------------------
 
 	["LavaArenaLayout"] = StaticLayout.Get("map/static_layouts/events/lava_arena", 
@@ -831,6 +831,47 @@ local ExampleLayout =
 		disable_transform = true,
     }),
 
+
+--------------------------------------------------------------------------------
+-- QUAGMIRE
+--------------------------------------------------------------------------------
+	
+	["Quagmire_Kitchen"] = StaticLayout.Get("map/static_layouts/events/quagmire_kitchen", 
+    {
+        start_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
+        fill_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
+        layout_position = LAYOUT_POSITION.CENTER,
+		disable_transform = true,
+
+		areas =
+		{
+			quagmire_parkspike_row = function(area, data) 
+				local vert = data.height > data.width
+--				local x = vert and (data.x) or (data.x - data.width/2.0)
+--				local y = vert and (data.y - data.height/2.0) or (data.y)
+				local x = data.x - data.width/2.0
+				local y = data.y - data.height/2.0
+				local spacing = 0.18
+				local num = math.ceil((vert and data.height or data.width) / spacing)
+
+				local prefabs = {}
+				for i = 1, num do
+					table.insert(prefabs, 
+					{
+						prefab = i % 2 == (vert and 0 or 1) and "quagmire_parkspike_short" or "quagmire_parkspike",
+						x = x,
+						y = y,
+					})
+					if vert then
+						y = y + spacing
+					else
+						x = x + spacing
+					end
+				end
+				return prefabs
+			end,
+		},
+    }),
 
 
 --------------------------------------------------------------------------------

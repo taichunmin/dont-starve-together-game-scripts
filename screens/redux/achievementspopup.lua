@@ -1,7 +1,7 @@
 local AchievementsPanel = require "widgets/redux/achievementspanel"
 local Screen = require "widgets/screen"
 local TEMPLATES = require "widgets/redux/templates"
-
+local Text = require "widgets/text"
 
 
 local AchievementsPopup = Class(Screen, function(self, prev_screen, user_profile, festival_key)
@@ -28,7 +28,21 @@ function AchievementsPopup:DoInit()
     end
 
     self.achievements = self.root:AddChild(AchievementsPanel(self.user_profile, self.festival_key))
-    self.achievements:SetPosition(0, 30)
+    self.achievements:SetPosition(0, -30)
+
+    local level_str = subfmt(STRINGS.UI.PLAYERSUMMARYSCREEN.LEVEL_ACHIEVED_FMT, {
+                event_title = STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(self.festival_key)]
+            })
+    self.level_text = self.achievements:AddChild(Text(HEADERFONT, 28, level_str, UICOLOURS.HIGHLIGHT_GOLD))
+    self.level_text:SetPosition(-15, 300)
+    local w,h  = self.level_text:GetRegionSize()
+
+    self.badge = self.achievements:AddChild(TEMPLATES.FestivalNumberBadge(self.festival_key))
+
+    local festival_rank = wxputils.GetLevel(self.festival_key)
+    self.badge:SetRank(festival_rank)
+    self.badge.num:SetSize(30)
+    self.badge:SetPosition(w/2 + 15, 300)
 end
 
 function AchievementsPopup:OnControl(control, down)

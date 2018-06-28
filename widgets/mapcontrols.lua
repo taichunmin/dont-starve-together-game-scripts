@@ -50,7 +50,7 @@ end)
 
 function MapControls:RefreshTooltips()
     local controller_id = TheInput:GetControllerID()
-    self.minimapBtn:SetTooltip(STRINGS.UI.HUD.MAP.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_MAP)..")")
+    self.minimapBtn:SetTooltip((self.map_tooltip or STRINGS.UI.HUD.MAP).."("..TheInput:GetLocalizedControl(controller_id, CONTROL_MAP)..")")
     self.pauseBtn:SetTooltip(STRINGS.UI.HUD.PAUSE.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL)..")")
     self.rotleft:SetTooltip(STRINGS.UI.HUD.ROTLEFT.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_LEFT)..")")
     self.rotright:SetTooltip(STRINGS.UI.HUD.ROTRIGHT.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_RIGHT)..")")

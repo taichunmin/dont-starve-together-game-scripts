@@ -132,6 +132,7 @@ require("map/tasks/caves")
 require("map/tasks/ruins")
 require("map/tasks/DLCtasks")
 require("map/tasks/lavaarena")
+require("map/tasks/quagmire")
 
 ------------------------------------------------------------------------------------------------------------------------
 -- TEST TASKS

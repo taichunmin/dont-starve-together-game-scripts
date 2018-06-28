@@ -22,6 +22,9 @@ function TabGroup:HideTab(tab)
         if self.base_pos[tab] then
             tab:MoveTo(self.base_pos[tab], (self.base_pos[tab] + self.hideoffset), .33)
             self.shown[tab] = false
+            if self.onhidetab ~= nil then
+                self.onhidetab()
+            end
         end
     end
 end
@@ -82,6 +85,9 @@ function TabGroup:ShowTab(tab)
         if self.base_pos[tab] then
             tab:MoveTo((self.base_pos[tab] + self.hideoffset), self.base_pos[tab], .33)
             self.shown[tab] = true
+            if self.onshowtab ~= nil then
+                self.onshowtab()
+            end
         end
     end
 end

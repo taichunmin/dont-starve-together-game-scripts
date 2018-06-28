@@ -7,6 +7,19 @@ local TEMPLATES = require "widgets/redux/templates"
 
 require("skinsutils")
 
+local function GetTextScale()
+	-- the Russian text is just too darn long
+	local lang = GetLanguage()
+	local scale = 20
+	if (LANGUAGE.RUSSIAN == lang) or (LANGUAGE.PORTUGUESE_BR == lang) then
+		scale = 16
+	elseif (LANGUAGE.SPANISH == lang) or (LANGUAGE.SPANISH_LA == lang) then
+		scale = 14
+	end
+
+	return  scale
+end
+
 local FilterBar = Class(Widget, function(self, picker, filter_category)
     Widget._ctor(self, "FilterBar")
 
@@ -40,7 +53,7 @@ end
 function FilterBar:AddFilter(ontext, offtext, id, filterfn)
     local btn = TEMPLATES.StandardButton(nil,
         "",
-        {180, 45})
+        {185, 45})
 
     btn.SetFilterState = function(_, should_enable)
         if should_enable then
@@ -60,6 +73,7 @@ function FilterBar:AddFilter(ontext, offtext, id, filterfn)
 
     btn:SetOnClick(onclick)
     btn:SetText(offtext)
+	btn:SetTextSize(GetTextScale())
 
     table.insert(self.filter_btns, {btnid=id, widget=btn})
 

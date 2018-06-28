@@ -48,24 +48,25 @@ local function fn()
         return inst
     end
 
-    inst:AddComponent("weapon")
-    inst.components.weapon:SetDamage(TUNING.FISHINGROD_DAMAGE)
-    inst.components.weapon.attackwear = 4
-    -----
     inst:AddComponent("fishingrod")
     inst.components.fishingrod:SetWaitTimes(4, 40)
     inst.components.fishingrod:SetStrainTimes(0, 5)
-    -------
-    inst:AddComponent("finiteuses")
-    inst.components.finiteuses:SetMaxUses(TUNING.FISHINGROD_USES)
-    inst.components.finiteuses:SetUses(TUNING.FISHINGROD_USES)
-    inst.components.finiteuses:SetOnFinished(inst.Remove)
-    inst:ListenForEvent("fishingcollect", onfished)
-
-    ---------
+    -----
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/fishingrod").master_postinit(inst)
+    else
+        inst:AddComponent("weapon")
+        inst.components.weapon:SetDamage(TUNING.FISHINGROD_DAMAGE)
+        inst.components.weapon.attackwear = 4
+        -----
+        inst:AddComponent("finiteuses")
+        inst.components.finiteuses:SetMaxUses(TUNING.FISHINGROD_USES)
+        inst.components.finiteuses:SetUses(TUNING.FISHINGROD_USES)
+        inst.components.finiteuses:SetOnFinished(inst.Remove)
+        inst:ListenForEvent("fishingcollect", onfished)
+    end
 
     inst:AddComponent("inspectable")
-
     inst:AddComponent("inventoryitem")
 
     inst:AddComponent("equippable")

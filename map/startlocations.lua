@@ -119,6 +119,13 @@ AddStartLocation("lavaarena", {
     start_node = "Blank",
 })
 
+AddStartLocation("quagmire_startlocation", {
+    name = STRINGS.UI.SANDBOXMENU.DEFAULTSTART,
+    location = "quagmire",
+    start_setpeice = "Quagmire_Kitchen",
+    start_node = "Blank",
+})
+
 ------------------------------------------------------------------
 -- Export functions
 ------------------------------------------------------------------

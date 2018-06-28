@@ -1,5 +1,8 @@
 local assets =
 {
+	Asset("ATLAS", "images/quagmire_food_common_inv_images.xml"),
+	Asset("ATLAS", "images/quagmire_food_common_inv_images_hires.xml"),
+
     --FE
     Asset("DYNAMIC_ANIM", "anim/dynamic/credits.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/credits2.zip"),
@@ -9,6 +12,14 @@ local assets =
     Asset("DYNAMIC_ANIM", "anim/dynamic/credits6.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/credits7.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/credits8.zip"),
+    Asset("PKGREF", "anim/dynamic/credits.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits2.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits3.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits4.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits5.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits6.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits7.dyn"),
+    Asset("PKGREF", "anim/dynamic/credits8.dyn"),
 
     Asset("IMAGE", "images/customisation.tex"),
     Asset("ATLAS", "images/customisation.xml"),
@@ -16,6 +27,9 @@ local assets =
     --BETA
     Asset("DYNAMIC_ATLAS", "images/anr_silhouettes.xml"),
     Asset("PKGREF", "images/anr_silhouettes.tex"),
+
+    Asset("DYNAMIC_ANIM", "anim/dynamic/quagmire_countdown2.zip"),
+    Asset("PKGREF", "anim/dynamic/quagmire_countdown2.dyn"),
 
     Asset("ATLAS", "images/frontscreen.xml"),
     Asset("IMAGE", "images/frontscreen.tex"),
@@ -83,7 +97,9 @@ local assets =
     --
 
     Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared_spiral.zip"),
+    Asset("PKGREF", "anim/dynamic/box_shared_spiral.dyn"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared.zip"), --needed for the mystery and purchase box opening animation (happens to contain the forge box build too)
+    Asset("PKGREF", "anim/dynamic/box_shared.dyn"),
     
     Asset("ATLAS", "images/tradescreen.xml"),
     Asset("IMAGE", "images/tradescreen.tex"),
@@ -134,6 +150,8 @@ local assets =
     Asset("PKGREF", "images/thankyou_item_popup.tex"),
     Asset("DYNAMIC_ATLAS", "images/thankyou_item_event.xml"),
     Asset("PKGREF", "images/thankyou_item_event.tex"),
+    Asset("DYNAMIC_ATLAS", "images/thankyou_item_event2.xml"),
+    Asset("PKGREF", "images/thankyou_item_event2.tex"),
     Asset("DYNAMIC_ATLAS", "images/thankyou_item_popup_rog.xml"),
     Asset("PKGREF", "images/thankyou_item_popup_rog.tex"),
 
@@ -198,6 +216,7 @@ end
 for item,data in pairs(MISC_ITEMS) do
 	if data.box_build ~= nil then
 		table.insert(assets, Asset("DYNAMIC_ANIM", "anim/dynamic/" .. data.box_build .. ".zip"))
+		table.insert(assets, Asset("PKGREF", "anim/dynamic/" .. data.box_build .. ".dyn"))
 	end
 	
 	if data.featured_pack then

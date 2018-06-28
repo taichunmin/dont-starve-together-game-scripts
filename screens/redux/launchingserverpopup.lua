@@ -1,7 +1,7 @@
 local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 
 local LaunchingServerPopup = Class(GenericWaitingPopup, function(self, serverinfo, successCallback, errorCallback)
-    GenericWaitingPopup._ctor(self, "LaunchingServerPopup", STRINGS.UI.NOTIFICATION.LAUNCHING_SERVER)
+    GenericWaitingPopup._ctor(self, "LaunchingServerPopup", STRINGS.UI.NOTIFICATION.LAUNCHING_SERVER, nil, IsConsole())
 
     self.serverinfo = serverinfo
     self.successCallback = successCallback

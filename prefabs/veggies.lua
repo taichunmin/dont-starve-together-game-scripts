@@ -201,6 +201,10 @@ local function MakeVeggie(name, has_seeds)
         inst:AddComponent("cookable")
         inst.components.cookable.product = name.."_cooked"
 
+        if TheNet:GetServerGameMode() == "quagmire" then
+            event_server_data("quagmire", "prefabs/veggies").master_postinit(inst)
+        end
+
         MakeHauntableLaunchAndPerish(inst)
 
         return inst
@@ -250,6 +254,10 @@ local function MakeVeggie(name, has_seeds)
 
         ------------------------------------------------
         inst:AddComponent("tradable")
+
+        if TheNet:GetServerGameMode() == "quagmire" then
+            event_server_data("quagmire", "prefabs/veggies").master_postinit_cooked(inst)
+        end
 
         MakeHauntableLaunchAndPerish(inst)
 

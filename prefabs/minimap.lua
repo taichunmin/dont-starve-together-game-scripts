@@ -37,6 +37,14 @@ local MINIMAP_GROUND_PROPERTIES =
     { GROUND.LAVAARENA_TRIM, { name = "lavaarena_floor_ms",      noise_texture = "levels/textures/lavaarena_trim_mini.tex" } },
     { GROUND.LAVAARENA_FLOOR,{ name = "lavaarena_floor_ms",      noise_texture = "levels/textures/lavaarena_floor_mini.tex" } },
 
+    { GROUND.QUAGMIRE_PARKFIELD,   { name = "map_edge",      noise_texture = "levels/textures/quagmire_parkfield_mini.tex" } },
+    { GROUND.QUAGMIRE_PEATFOREST,  { name = "map_edge",      noise_texture = "levels/textures/quagmire_peatforest_mini.tex" } },
+    { GROUND.QUAGMIRE_PARKSTONE,   { name = "map_edge",      noise_texture = "levels/textures/quagmire_parkstone_mini.tex" } },
+    { GROUND.QUAGMIRE_CITYSTONE,   { name = "map_edge",      noise_texture = "levels/textures/quagmire_citystone_mini.tex" } },
+    { GROUND.QUAGMIRE_GATEWAY,     { name = "map_edge",      noise_texture = "levels/textures/quagmire_gateway_mini.tex" } },
+    { GROUND.QUAGMIRE_SOIL,        { name = "map_edge",      noise_texture = "levels/textures/quagmire_soil_mini.tex" } },
+    
+
     -- { GROUND.WALL_CAVE,    { name = "map_edge",      noise_texture = "levels/textures/mini_cave_wall_noise.tex" } },
     -- { GROUND.WALL_FUNGUS,  { name = "map_edge",      noise_texture = "levels/textures/mini_fungus_wall_noise.tex" } },
     -- { GROUND.WALL_SINKHOLE,{ name = "map_edge",      noise_texture = "levels/textures/mini_sinkhole_wall_noise.tex" } },

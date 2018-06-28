@@ -26,6 +26,11 @@ return
         {
             WRONGKEY = "That may have been the wrong implement.",
             KLAUS = "The beast must first be defeated.",
+            QUAGMIRE_WRONGKEY = "I'll have to find the right key.",
+        },
+        ACTIVATE = 
+        {
+            LOCKED_GATE = "I appears to be locked.",
         },
         STORE =
         {
@@ -86,6 +91,8 @@ return
             MUSHROOMFARM_NEEDSSHROOM = "Goodness no, it needs a fresh mushroom.",
             MUSHROOMFARM_NEEDSLOG = "It needs a log, imbued with magical properties.",
             SLOTFULL = "Let's finish what's on our plate first, shall we?",
+            FOODFULL = "I'll be around when you're ready for seconds, dear.",
+            NOTDISH = "That food is simply not suitable.",
             DUPLICATE = "We've already taken note of this recipe.",
             NOTSCULPTABLE = "No one ought to sculpt with that, dear.",
             CANTSHADOWREVIVE = "Conditions are not right.",
@@ -118,9 +125,123 @@ return
         PICKUP =
         {
             RESTRICTION = "That's not my area of expertise.",
+            INUSE = "It's already in use.",
+        },
+        REPLATE =
+        {
+            MISMATCH = "That's not the proper dinnerware for this food.", 
+            SAMEDISH = "It's already on the proper dinnerware.", 
         },
     },
     ACTIONFAIL_GENERIC = "It seems I can't do that.",
+    
+    ANNOUNCE_EAT =
+    {
+        GENERIC = "Yum!",
+        SPOILED = "That was partially decomposed.", 
+        STALE = "That was not at optimal freshness.",
+        PAINFUL = "I should not have ingested that.",
+        INVALID = "This cannot be consumed.",
+        YUCKY = "Ingesting this would be ill-advised.",
+    },
+    ANNOUNCE_ENCUMBERED =
+    {
+        "It's all in the legs.",
+        "Goodness...",
+        "Dear me...",
+        "I've got it, dear.",
+        "I'm more spry than I look!",
+        "You just need to know how to lift!",
+        "No sweat off my back! Ho ho!",
+        "How invigorating!",
+        "This gets the blood pumping!",
+    },
+    ANNOUNCE_ATRIUM_DESTABILIZING = 
+    {
+        "I do believe it's time to go.",
+        "It's dangerous to be here.",
+        "Goodness gracious!",
+    },
+    ANNOUNCE_RUINS_RESET = "Careful, the monsters are back.",
+
+    ANNOUNCE_CANFIX = "\nI do believe I can repair this.",
+    ANNOUNCE_ADVENTUREFAIL = "We must learn from our failures.",
+    ANNOUNCE_COLD = "The ambient temperature is low.",
+    ANNOUNCE_HOT = "The ambient temperature is high.",
+    ANNOUNCE_HUNGRY = "Librarian needs food.",
+    ANNOUNCE_TORCH_OUT = "I need another light.",
+    ANNOUNCE_FAN_OUT = "This fragile device has decayed.",
+    ANNOUNCE_THURIBLE_OUT = "That's that.",
+    ANNOUNCE_COMPASS_OUT = "My compass has become demagnetized.",
+    ANNOUNCE_DUSK = "Night will be here soon.",
+
+    ANNOUNCE_BECOMEGHOST = "oOoooOoO!!",
+    ANNOUNCE_GHOSTDRAIN = "My humanity... it's slipping.",
+    ANNOUNCE_PETRIFED_TREES = "The chemical reaction has been catalyzed...",
+
+    ANNOUNCE_CHARLIE_ATTACK = "OUCH! Who dares?!",
+    ANNOUNCE_CHARLIE = "A noise! And a distinctly floral scent?",
+    ANNOUNCE_BOOMERANG = "I misjudged the timing of its return.",
+    ANNOUNCE_HOUNDS = "Something is approaching.",
+
+    ANNOUNCE_NOSLEEPONFIRE = "Even if I could sleep, these temperatures are highly unsafe.",
+    ANNOUNCE_NODANGERSIESTA = "I can't lie down when I'm in danger!",
+    ANNOUNCE_NONIGHTSIESTA = "I can't sleep, no matter where I lie down.",
+    ANNOUNCE_NONIGHTSIESTA_CAVE = "I couldn't possibly relax in these caves.",
+    ANNOUNCE_NOHUNGERSIESTA = "My hunger won't make relaxing any easier!",
+    ANNOUNCE_SHELTER = "Ah, a welcome respite.",
+    ANNOUNCE_BURNT = "First degree, at least!",
+    ANNOUNCE_TOOL_SLIP = "My grip!",
+    ANNOUNCE_DAMP = "The layer of water begins to build up.",
+    ANNOUNCE_WET = "I wonder what my body's saturation point is...",
+    ANNOUNCE_WETTER = "Wet, wet, wet!",
+    ANNOUNCE_SOAKED = "Positively soaked.",
+
+    ANNOUNCE_PECKED = "Settle down, this instant!",
+
+    ANNOUNCE_ENTER_LIGHT = "It is bright enough to see.",
+    ANNOUNCE_ENTER_DARK = "I am in the dark.",
+    ANNOUNCE_SNARED = "You can't hold me for long, dear.",
+    ANNOUNCE_REPELLED = "There's magic at work here.",
+    ANNOUNCE_INV_FULL = "I can't carry anything more.",
+
+    ANNOUNCE_CRAFTING_FAIL = "I can't make that now.",
+
+    ANNOUNCE_WORMHOLE = "A detailed lesson in biology!",
+    ANNOUNCE_TOWNPORTALTELEPORT = "Goodness! That's one way to travel.",
+
+    ANNOUNCE_HUNT_LOST_TRAIL = "The trail is no longer distinguishable.",
+    ANNOUNCE_HUNT_LOST_TRAIL_SPRING = "The trail's been washed away by the precipitation.",
+    ANNOUNCE_HUNT_BEAST_NEARBY = "The appearance of this track indicates recent activity.",
+    ANNOUNCE_ACCOMPLISHMENT= "It's not there yet!",
+    ANNOUNCE_ACCOMPLISHMENT_DONE = "File that under completed!",
+
+    ANNOUNCE_TRAP_WENT_OFF = "Eek!",
+    ANNOUNCE_QUAKE = "A tremor! At least magnitude seven on the Richter scale.",
+    ANNOUNCE_NODANGERSLEEP = "I can barely sleep even when I'm not in danger!",
+    ANNOUNCE_UNIMPLEMENTED = "Tut tut, I don't think it's quite ready.",
+    ANNOUNCE_NOHUNGERSLEEP = "I can barely sleep even when I'm not starving!",
+    ANNOUNCE_FREEDOM = "Freedom! I'll find a good book and tuck in.",
+    ANNOUNCE_RESEARCH = "No information should go to waste, no matter how trivial.",
+    ANNOUNCE_NO_TRAP = "A cinch!",
+    ANNOUNCE_HIGHRESEARCH = "My my, that was extremely interesting!",
+    ANNOUNCE_THORNS = "Dang spinose structure!",
+    ANNOUNCE_NODAYSLEEP_CAVE = "These caves don't make it any easier to sleep.",
+    ANNOUNCE_BEES = "Stinging nasties!",
+    ANNOUNCE_KNOCKEDOUT = "Oof, that's one way to get some rest, I suppose.",
+    ANNOUNCE_LOWRESEARCH = "Not a great resource, but there were useful bits.",
+    ANNOUNCE_DEERCLOPS = "That sounds quite large!",
+    ANNOUNCE_CAVEIN = "The rocks above will soon give way.",
+    ANNOUNCE_MOSQUITOS = "Cursed bloodsuckers!",
+    ANNOUNCE_NODAYSLEEP = "I can hardly get to sleep at night, nevermind during the day.", 
+    ANNOUNCE_INSUFFICIENTFERTILIZER = "It needs just a touch more fecal assistance, I'd say.",
+    ANNOUNCE_LIGHTNING_DAMAGE_AVOIDED = "Thank goodness for this non-conductive clothing!",
+    ANNOUNCE_TOADESCAPING = "It will need to burrow soon to rehydrate its skin.",
+    ANNOUNCE_TOADESCAPED = "It has burrowed away.",
+
+    ANNOUNCE_TOOMANYBIRDS = "It doesn't work as well with this many birds around.",
+    ANNOUNCE_WAYTOOMANYBIRDS = "The sky is out of birds for now.",
+
     ANNOUNCE_DIG_DISEASE_WARNING = "Caught it just in time. The roots were nearly rotten.",
     ANNOUNCE_PICK_DISEASE_WARNING = "This plant is exhibiting concerning signs.",
     ANNOUNCE_MOUNT_LOWHEALTH = "My mount requires attention of the medical variety.",
@@ -148,11 +269,35 @@ return
     ANNOUNCE_KLAUS_UNCHAINED = "Whatever enchantment restrained it has been undone.",
     ANNOUNCE_KLAUS_CALLFORHELP = "Careful! It has summoned lesser Krampii.",
 
---boarlord event
+    --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Hold on a moment, dear.",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "Off you go now.",
     ANNOUNCE_REVIVED_FROM_CORPSE = "Oof! Back on my feet!",
-    
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "That was not a viable recipe.",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "It was too long on the fire.",
+    QUAGMIRE_ANNOUNCE_LOSE = "We've failed.",
+    QUAGMIRE_ANNOUNCE_WIN = "We best be on our way. Ta!",
+
+    BATTLECRY =
+    {
+        GENERIC = "Combat!",
+        PIG = "Foul cad!",
+        PREY = "Just give up.",
+        SPIDER = "Behave!",
+        SPIDER_WARRIOR = "Respect your elders!",
+        DEER = "This will be easy.",
+    },
+
+    COMBAT_QUIT =
+    {
+        GENERIC = "Well, that's over.",
+        PIG = "Oh dear.",
+        PREY = "I must reassess the situation.",
+        SPIDER = "I must read up on this!",
+        SPIDER_WARRIOR = "Back to the drawing board!",
+    },
+
     DESCRIBE=
     {
         PLAYER =
@@ -2034,9 +2179,224 @@ return
         LAVAARENA_RECHARGERHAT = "A focal point for magical energies.",
         LAVAARENA_HEALINGGARLANDHAT = "Proximity to the blossoms produces a restorative effect for the user.",
         LAVAARENA_CROWNDAMAGERHAT = "Goodness, I've no desire to wear such a thing.",
+
+        --Quagmire
+        QUAGMIRE_ALTAR = 
+        {
+            GENERIC = "What is this \"Gnaw\", I wonder?",
+            FULL = "That should tide it over while I prepare our next dish.",
+        },
+        QUAGMIRE_ALTAR_STATUE1 = "Decrepit statuary.",
+        QUAGMIRE_PARK_FOUNTAIN = "A pity. I always enjoyed a good fountain.",
+        --
+        QUAGMIRE_HOE = "It can be used to till fertile soil.",
+        --
+        QUAGMIRE_TURNIP = "Edible root of Brassica rapa.",
+        QUAGMIRE_TURNIP_COOKED = "Roast Brassica rapa.",
+        QUAGMIRE_TURNIP_SEEDS = "Mutated seed of Brassica rapa.",
+        --
+        QUAGMIRE_GARLIC = "Edible bulb of Allium cepa.",
+        QUAGMIRE_GARLIC_COOKED = "Roast Allium cepa.",
+        QUAGMIRE_GARLIC_SEEDS = "Mutated seed of Allium cepa.",
+        --
+        QUAGMIRE_ONION = "Allium sativum, a close relative of Allium cepa.",
+        QUAGMIRE_ONION_COOKED = "Roast Allium sativum.",
+        QUAGMIRE_ONION_SEEDS = "Mutated seed of Allium sativum.",
+        --
+        QUAGMIRE_POTATO = "Solanum tuberosum, a staple in some cultures.",
+        QUAGMIRE_POTATO_COOKED = "Roasted Solanum tuberosum.",
+        QUAGMIRE_POTATO_SEEDS = "Mutated seed of Solanum tuberosum.",
+        --
+        QUAGMIRE_TOMATO = "Fruit of Solanum lycopersicum.",
+        QUAGMIRE_TOMATO_COOKED = "Roasted Solanum lycopersicum.",
+        QUAGMIRE_TOMATO_SEEDS = "Mutated seed of Solanum lycopersicum.",
+        --
+        QUAGMIRE_FLOUR = "Ground Triticum aestivum grain.",
+        QUAGMIRE_WHEAT = "Fresh Triticum aestivum.",
+        QUAGMIRE_WHEAT_SEEDS = "Mutated grain of Triticum aestivum.",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "Mutated seed of Daucus carota.",
+        --
+        QUAGMIRE_ROTTEN_CROP = "The soil in this realm is fetid.",
+        --
+        QUAGMIRE_SALMON = "Mmmm! Oncorhynchus nerka!",
+        QUAGMIRE_SALMON_COOKED = "Seared oncorhynchus nerka.",
+        QUAGMIRE_CRABMEAT = "Raw Paralithodes meat.",
+        QUAGMIRE_CRABMEAT_COOKED = "It no longer presents a threat of salmonellosis.",
+        QUAGMIRE_POT = "A larger pot takes longer to boil.",
+        QUAGMIRE_POT_SMALL = "Hmm, what shall we make next?",
+        QUAGMIRE_POT_HANGER_ITEM = "The old fashioned way to cook over a fire.",
+        QUAGMIRE_OVEN_ITEM = "All the parts necessary to construct a fully functional oven.",
+        QUAGMIRE_OVEN = "It's been designed to use magic as fuel.",
+        QUAGMIRE_SUGARWOODTREE = 
+        {
+            GENERIC = "What unique coloring. I should like to press its leaves in my books!",
+            STUMP = "I should at least like to study its rings.",
+            TAPPED_EMPTY = "Sap collection is under way.",
+            TAPPED_READY = "No sense letting it sit.",
+			TAPPED_BUGS = "The insecta are drawn to the glucose.",
+            WOUNDED = "Its internal structure has been damaged, but it can still recover.",
+        },
+        QUAGMIRE_SPOTSPICE_SHRUB = 
+        {
+            GENERIC = "I am not familiar with this species of plant.",
+            PICKED = "I don't have time to wait for it to grow back.",
+        },
+        QUAGMIRE_SPOTSPICE_SPRIG = "It passes the universal edibility test.",
+        QUAGMIRE_SPOTSPICE_GROUND = "Processed and ready for cooking.",
+        QUAGMIRE_SAPBUCKET = "A simple implement for tapping trees.",
+        QUAGMIRE_SAP = "This tree sap has extraordinary glucose content.",
+        
+        QUAGMIRE_SALT_RACK =
+        {
+            READY = "Enough salt has crystallized to harvest.",
+            GENERIC = "Salt deposits should form on the rack soon.",
+        },
+
+        QUAGMIRE_SALT_RACK_ITEM = "We ought to put it up by the sodium spring.",
+
+        QUAGMIRE_SAFE = 
+        {
+            GENERIC = "This city's former inhabitants had stashed goods within.",
+            LOCKED = "Surely there's an accompanying key.",
+        },
+
+        QUAGMIRE_KEY = "I shall have to see what this unlocks.",
+        QUAGMIRE_KEY_PARK = "I believe this is for the park.",
+        QUAGMIRE_PORTAL_KEY = "Quite an elaborate key.",
+
+
+        QUAGMIRE_MUSHROOMSTUMP =
+        {
+            GENERIC = "A wild cluster of edible mushrooms.",
+            PICKED = "I don't think they'll grow back.",
+        },
+        QUAGMIRE_MUSHROOMS = "I'm not familiar with the species, though it is edible.",
+        QUAGMIRE_MEALINGSTONE = "For mechanically powdering our ingredients.",
+        QUAGMIRE_PEBBLECRAB = "I should like to study its shell more closely.",
+
+        QUAGMIRE_POND_SALT = "It is a natural spring of sodium-infused water.",
+        --
+        QUAGMIRE_RUBBLE_CARRIAGE = "The remnants of a once thriving culture.",
+        QUAGMIRE_RUBBLE_CLOCK = "Antiquated but not without sophistication.",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "Interesting. It appears they didn't worship Gnaw.",
+        QUAGMIRE_RUBBLE_PUBDOOR = "The door to a public house.",
+        QUAGMIRE_RUBBLE_ROOF = "It has collapsed.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "The clockwork has siezed as well.",
+        QUAGMIRE_RUBBLE_BIKE = "Beyond repair.",
+        QUAGMIRE_RUBBLE_HOUSE = {"What creatures once lived here?", "There's nothing left of the inhabitants.", "What caused this city to crumble?",},
+        QUAGMIRE_RUBBLE_CHIMNEY = "Something must have knocked it down.",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "It's crumbling.",
+        QUAGMIRE_MERMHOUSE = "Home of the local piscean bipeds.",
+        QUAGMIRE_SWAMPIG_HOUSE = "Tsk! What disrepair.",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "This house is no longer livable.",
+        QUAGMIRE_SWAMPIGELDER =
+        {
+            GENERIC = "Their society has stark social class roles.",
+            SLEEPING = "It has entered the REM stage of sleep.",
+        },
+        QUAGMIRE_SWAMPIG = "What a magnificent subspecies!",
+        --
+        QUAGMIRE_PORTAL = "My suspicions were correct. It has more than one destination.",
+        QUAGMIRE_SALTROCK = "Clusters of unprocessed sodium chloride.",
+        QUAGMIRE_SALT = "Sodium chloride. Also known as table salt.",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "Completely carbonized.",
+        --QUAGMIRE_FOOD_PLATE = "A common serving plate.",
+        --QUAGMIRE_FOOD_BOWL = "I believe it's from the modern era.",
+        --QUAGMIRE_FOOD_SOUP = "Broth is good for the digestion.",
+        --QUAGMIRE_FOOD_SNACK = "A light meal is better for the metabolism.",
+        --QUAGMIRE_FOOD_BREAD = "A refined meal.",
+        --QUAGMIRE_FOOD_PASTA = "A variation on an Italian dish.",
+        --QUAGMIRE_FOOD_VEGGIE = "It is important to eat your vegetables.",
+        --QUAGMIRE_FOOD_MEAT = "Protein rich.",
+        --QUAGMIRE_FOOD_FISH = "A cornucopia from the sea.",
+        --QUAGMIRE_FOOD_CRAB = "One hopes this was worth all the trouble.",
+        --QUAGMIRE_FOOD_CHEESE = "Cheese does make everything better.",
+        --QUAGMIRE_FOOD_SWEET = "A spoonful of sugar...",
+        QUAGMIRE_FOOD =
+        {
+            GENERIC = "I suppose it's ready for the altar.",
+            MISMATCH = "Not the proper dish for the great wyrm.",
+            MATCH = "The exact thing to placate the great wyrm.",
+            MATCH_BUT_SNACK = "It's the correct food, although an insufficient amount.",
+        },
+        QUAGMIRE_FERN = "This species of fern is edible.",
+        QUAGMIRE_FOLIAGE_COOKED = "I believe we could have prepared it better.",
+        --
+        QUAGMIRE_COIN1 = "Worth a paltry sum to the locals.",
+        QUAGMIRE_COIN2 = "A coin of some denomination.",
+        QUAGMIRE_COIN3 = "A coin of some value.",
+        QUAGMIRE_COIN4 = "It's made of a sort of condensed magic.",
+        QUAGMIRE_GOATMILK = "I shan't question its origins.",
+        QUAGMIRE_SYRUP = "A sweetener.",
+        QUAGMIRE_SAP_SPOILED = "No longer food grade.",
+        QUAGMIRE_SEEDPACKET = "An envelope of potential crops.",
+        --QUAGMIRE_SEEDPACKET_SMALL = "A small packet of seeds.",
+        --QUAGMIRE_SEEDPACKET_MEDIUM = "Seeds for the garden.",
+        --QUAGMIRE_SEEDPACKET_LARGE = "Enough seeds here to keep me busy.",
+        --QUAGMIRE_SEEDPACKET_MIX_SMALL = "A small medley of seeds.",
+        --QUAGMIRE_SEEDPACKET_MIX_MEDIUM = "A hodgepodge of future vegetables.",
+        --QUAGMIRE_SEEDPACKET_MIX_LARGE = "There's quite a variety in here.",
+        ---
+        QUAGMIRE_POT = "A larger pot takes longer to boil.",
+        QUAGMIRE_POT_SMALL = "Hmmm, what shall we make next?",
+        QUAGMIRE_POT_SYRUP = "It needs sap.",
+        QUAGMIRE_POT_HANGER = "Traditionally one hangs a pot from it.",
+        QUAGMIRE_POT_HANGER_ITEM = "The old fashioned way to cook over a fire.",
+        QUAGMIRE_GRILL = "Perhaps some barbeque is in order.",
+        QUAGMIRE_GRILL_ITEM = "It needs to be on the ground.",
+        QUAGMIRE_GRILL_SMALL = "Smaller than normal, but it'll do.",
+        QUAGMIRE_GRILL_SMALL_ITEM = "I need to put it down somewhere to use it.",
+        QUAGMIRE_OVEN = "It is best suited to baking sweets.",
+        QUAGMIRE_OVEN_ITEM = "All the parts are necessary to construct a fully functional oven.",
+        QUAGMIRE_CASSEROLEDISH = "I do love a good casserole.",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "Enough for one.",
+        QUAGMIRE_PLATE_SILVER = "I did miss proper dishware.",
+        QUAGMIRE_BOWL_SILVER = "There are so many uses for a bowl.",
+
+        ---
+        QUAGMIRE_MERM_CART1 = "Reminds me of my bookmobile days.", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "There are wares within.", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "Quite an interesting sculpture.",
+        QUAGMIRE_PARK_ANGEL2 = "Rather ghoulish monument.",
+        QUAGMIRE_PARK_URN = "I wonder who's ashes those are.",
+        QUAGMIRE_PARK_OBELISK = "I wish I could read the writing.",
+        QUAGMIRE_PARK_GATE =
+        {
+            GENERIC = "We should have full access now.",
+            LOCKED = "It needs a key to open.",
+        },
+        QUAGMIRE_PARKSPIKE = "Wrought iron, it seems.",
+        QUAGMIRE_CRABTRAP = "For trapping sea creatures.",
+        QUAGMIRE_TRADER_MERM = "They appear to have been quarantined. How foolish.",
+        QUAGMIRE_TRADER_MERM2 = "They appear to have been quarantined. How foolish.",
+        --
+        QUAGMIRE_GOATMUM = "Perhaps she would be willing to barter.",
+        QUAGMIRE_GOATKID = "A sweet bipedal Bovidae adolescent.",
+        QUAGMIRE_PIGEON =
+        {
+            DEAD = "Deceased.",
+            GENERIC = "An agreeable member of the Columbidae family.",
+            SLEEPING = "It has entered the REM stage of sleep.",
+        },
+        QUAGMIRE_LAMP_POST = "What is it powered by, I wonder?",
+
+        QUAGMIRE_BEEFALO = "Years past its life expectancy.",
+        QUAGMIRE_SLAUGHTERTOOL = "Gruesome.",
+
+        QUAGMIRE_SAPLING = "That's not growing back.",
+        QUAGMIRE_BERRYBUSH = "Those berries need time to grow back. Time I don't have.",
+
+        QUAGMIRE_ALTAR_STATUE2 = "A gruesome gargoyle.",
+        QUAGMIRE_ALTAR_QUEEN = "Impressive in scope.",
+        QUAGMIRE_ALTAR_BOLLARD = "A nice enough bullard.",
+        QUAGMIRE_ALTAR_IVY = "Something in the Hedera family.",
+
+        QUAGMIRE_LAMP_SHORT = "It's a nice enough light.",
    },
 
-    EAT_FOOD = 
+    EAT_FOOD =
     {
         TALLBIRDEGG_CRACKED = "Al dente.",
     },
@@ -2044,130 +2404,4 @@ return
     DESCRIBE_TOODARK = "I can't see in the dark.",
     DESCRIBE_SMOLDERING = "Seems it's about to ignite from the heat.",
     DESCRIBE_GENERIC = "A rare occurrence. I don't know what that is.",
-
-    BATTLECRY =
-    {
-        GENERIC = "Combat!",
-        PIG = "Foul cad!",
-        PREY = "Just give up.",
-        SPIDER = "Behave!",
-        SPIDER_WARRIOR = "Respect your elders!",
-        DEER = "This will be easy.",
-    },
-
-    COMBAT_QUIT =
-    {
-        GENERIC = "Well, that's over.",
-        PIG = "Oh dear.",
-        PREY = "I must reassess the situation.",
-        SPIDER = "I must read up on this!",
-        SPIDER_WARRIOR = "Back to the drawing board!",
-    },
-
-    ANNOUNCE_EAT =
-    {
-        GENERIC = "Yum!",
-        SPOILED = "That was partially decomposed.", 
-        STALE = "That was not at optimal freshness.",
-        PAINFUL = "I should not have ingested that.",
-        INVALID = "This cannot be consumed.",
-        YUCKY = "Ingesting this would be ill-advised.",
-    },
-    ANNOUNCE_ENCUMBERED =
-    {
-        "It's all in the legs.",
-        "Goodness...",
-        "Dear me...",
-        "I've got it, dear.",
-        "I'm more spry than I look!",
-        "You just need to know how to lift!",
-        "No sweat off my back! Ho ho!",
-        "How invigorating!",
-        "This gets the blood pumping!",
-    },
-    ANNOUNCE_ATRIUM_DESTABILIZING = 
-    {
-        "I do believe it's time to go.",
-        "It's dangerous to be here.",
-        "Goodness gracious!",
-    },
-    ANNOUNCE_RUINS_RESET = "Careful, the monsters are back.",
-
-    ANNOUNCE_CANFIX = "\nI do believe I can repair this.",
-    ANNOUNCE_ADVENTUREFAIL = "We must learn from our failures.",
-    ANNOUNCE_COLD = "The ambient temperature is low.",
-    ANNOUNCE_HOT = "The ambient temperature is high.",
-    ANNOUNCE_HUNGRY = "Librarian needs food.",
-    ANNOUNCE_TORCH_OUT = "I need another light.",
-    ANNOUNCE_FAN_OUT = "This fragile device has decayed.",
-    ANNOUNCE_THURIBLE_OUT = "That's that.",
-    ANNOUNCE_COMPASS_OUT = "My compass has become demagnetized.",
-    ANNOUNCE_DUSK = "Night will be here soon.",
-
-    ANNOUNCE_BECOMEGHOST = "oOoooOoO!!",
-    ANNOUNCE_GHOSTDRAIN = "My humanity... it's slipping.",
-    ANNOUNCE_PETRIFED_TREES = "The chemical reaction has been catalyzed...",
-
-    ANNOUNCE_CHARLIE_ATTACK = "OUCH! Who dares?!",
-    ANNOUNCE_CHARLIE = "A noise! And a distinctly floral scent?",
-    ANNOUNCE_BOOMERANG = "I misjudged the timing of its return.",
-    ANNOUNCE_HOUNDS = "Something is approaching.",
-
-    ANNOUNCE_NOSLEEPONFIRE = "Even if I could sleep, these temperatures are highly unsafe.",
-    ANNOUNCE_NODANGERSIESTA = "I can't lie down when I'm in danger!",
-    ANNOUNCE_NONIGHTSIESTA = "I can't sleep, no matter where I lie down.",
-    ANNOUNCE_NONIGHTSIESTA_CAVE = "I couldn't possibly relax in these caves.",
-    ANNOUNCE_NOHUNGERSIESTA = "My hunger won't make relaxing any easier!",
-    ANNOUNCE_SHELTER = "Ah, a welcome respite.",
-    ANNOUNCE_BURNT = "First degree, at least!",
-    ANNOUNCE_TOOL_SLIP = "My grip!",
-    ANNOUNCE_DAMP = "The layer of water begins to build up.",
-    ANNOUNCE_WET = "I wonder what my body's saturation point is...",
-    ANNOUNCE_WETTER = "Wet, wet, wet!",
-    ANNOUNCE_SOAKED = "Positively soaked.",
-
-    ANNOUNCE_PECKED = "Settle down, this instant!",
-
-    ANNOUNCE_ENTER_LIGHT = "It is bright enough to see.",
-    ANNOUNCE_ENTER_DARK = "I am in the dark.",
-    ANNOUNCE_SNARED = "You can't hold me for long, dear.",
-    ANNOUNCE_REPELLED = "There's magic at work here.",
-    ANNOUNCE_INV_FULL = "I can't carry anything more.",
-
-    ANNOUNCE_CRAFTING_FAIL = "I can't make that now.",
-
-    ANNOUNCE_WORMHOLE = "A detailed lesson in biology!",
-    ANNOUNCE_TOWNPORTALTELEPORT = "Goodness! That's one way to travel.",
-
-    ANNOUNCE_HUNT_LOST_TRAIL = "The trail is no longer distinguishable.",
-    ANNOUNCE_HUNT_LOST_TRAIL_SPRING = "The trail's been washed away by the precipitation.",
-    ANNOUNCE_HUNT_BEAST_NEARBY = "The appearance of this track indicates recent activity.",
-    ANNOUNCE_ACCOMPLISHMENT= "It's not there yet!",
-    ANNOUNCE_ACCOMPLISHMENT_DONE = "File that under completed!",
-
-    ANNOUNCE_TRAP_WENT_OFF = "Eek!",
-    ANNOUNCE_QUAKE = "A tremor! At least magnitude seven on the Richter scale.",
-    ANNOUNCE_NODANGERSLEEP = "I can barely sleep even when I'm not in danger!",
-    ANNOUNCE_UNIMPLEMENTED = "Tut tut, I don't think it's quite ready.",
-    ANNOUNCE_NOHUNGERSLEEP = "I can barely sleep even when I'm not starving!",
-    ANNOUNCE_FREEDOM = "Freedom! I'll find a good book and tuck in.",
-    ANNOUNCE_RESEARCH = "No information should go to waste, no matter how trivial.",
-    ANNOUNCE_NO_TRAP = "A cinch!",
-    ANNOUNCE_HIGHRESEARCH = "My my, that was extremely interesting!",
-    ANNOUNCE_THORNS = "Dang spinose structure!",
-    ANNOUNCE_NODAYSLEEP_CAVE = "These caves don't make it any easier to sleep.",
-    ANNOUNCE_BEES = "Stinging nasties!",
-    ANNOUNCE_KNOCKEDOUT = "Oof, that's one way to get some rest, I suppose.",
-    ANNOUNCE_LOWRESEARCH = "Not a great resource, but there were useful bits.",
-    ANNOUNCE_DEERCLOPS = "That sounds quite large!",
-    ANNOUNCE_CAVEIN = "The rocks above will soon give way.",
-    ANNOUNCE_MOSQUITOS = "Cursed bloodsuckers!",
-    ANNOUNCE_NODAYSLEEP = "I can hardly get to sleep at night, nevermind during the day.", 
-    ANNOUNCE_INSUFFICIENTFERTILIZER = "It needs just a touch more fecal assistance, I'd say.",
-    ANNOUNCE_LIGHTNING_DAMAGE_AVOIDED = "Thank goodness for this non-conductive clothing!",
-    ANNOUNCE_TOADESCAPING = "It will need to burrow soon to rehydrate its skin.",
-    ANNOUNCE_TOADESCAPED = "It has burrowed away.",
-
-    ANNOUNCE_TOOMANYBIRDS = "It doesn't work as well with this many birds around.",
-    ANNOUNCE_WAYTOOMANYBIRDS = "The sky is out of birds for now.",
 }

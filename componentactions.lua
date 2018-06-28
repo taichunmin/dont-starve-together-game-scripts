@@ -119,7 +119,8 @@ local COMPONENT_ACTIONS =
                 doer.replica.inventory ~= nil and
                 (doer.replica.inventory:GetNumSlots() > 0 or inst.replica.equippable ~= nil) and
                 not (inst:HasTag("catchable") or inst:HasTag("fire") or inst:HasTag("smolder")) and
-                (right or not inst:HasTag("heavy")) then
+                (right or not inst:HasTag("heavy")) and
+                not (right and inst.replica.container ~= nil and inst.replica.equippable == nil) then
                 table.insert(actions, ACTIONS.PICKUP)
             end
         end,
@@ -294,6 +295,17 @@ local COMPONENT_ACTIONS =
                 table.insert(actions, ACTIONS.ATTUNE)
             end
         end,
+
+        quagmire_tappable = function(inst, doer, actions, right)
+            if not inst:HasTag("tappable") and not inst:HasTag("fire") then
+                if right then
+                    --TAPTREE action also untaps the tree
+                    table.insert(actions, inst:HasTag("tapped_harvestable") and doer.replica.inventory:EquipHasTag("CHOP_tool") and ACTIONS.HARVEST or ACTIONS.TAPTREE)
+                elseif inst:HasTag("tapped_harvestable") then
+                    table.insert(actions, ACTIONS.HARVEST)
+                end
+            end
+        end,
     },
 
     USEITEM = --args: inst, doer, target, actions, right
@@ -404,7 +416,8 @@ local COMPONENT_ACTIONS =
         fertilizer = function(inst, doer, target, actions)
             if --[[crop]] (target:HasTag("notreadyforharvest") and not target:HasTag("withered")) or
                 --[[grower]] target:HasTag("fertile") or target:HasTag("infertile") or
-                --[[pickable]] target:HasTag("barren") then
+                --[[pickable]] target:HasTag("barren") or
+                --[[quagmire_fertilizable]] target:HasTag("fertilizable") then
                 table.insert(actions, ACTIONS.FERTILIZE)
             end
         end,
@@ -428,6 +441,13 @@ local COMPONENT_ACTIONS =
         fuel = function(inst, doer, target, actions)
             if not (doer.replica.rider ~= nil and doer.replica.rider:IsRiding())
                 or (target.replica.inventoryitem ~= nil and target.replica.inventoryitem:IsGrandOwner(doer)) then
+                if inst.prefab ~= "spoiled_food" and
+                    inst:HasTag("quagmire_stewable") and
+                    target:HasTag("quagmire_stewer") and
+                    target.replica.container ~= nil and
+                    target.replica.container:IsOpenedBy(doer) then
+                    return
+                end
                 for k, v in pairs(FUELTYPE) do
                     if inst:HasTag(v.."_fuel") then
                         if target:HasTag(v.."_fueled") then
@@ -454,15 +474,21 @@ local COMPONENT_ACTIONS =
         inventoryitem = function(inst, doer, target, actions, right)
             if target.replica.container ~= nil and
                 target.replica.container:CanBeOpened() and
+                inst.replica.inventoryitem ~= nil and
                 inst.replica.inventoryitem:IsGrandOwner(doer) then
-                table.insert(actions, target:HasTag("bundle") and ACTIONS.BUNDLESTORE or ACTIONS.STORE)
+                if not (GetGameModeProperty("non_item_equips") and inst.replica.equippable ~= nil) and
+                    (   (inst.prefab ~= "spoiled_food" and inst:HasTag("quagmire_stewable") and target:HasTag("quagmire_stewer") and target.replica.container:IsOpenedBy(doer)) or
+                        not (target:HasTag("BURNABLE_fueled") and inst:HasTag("BURNABLE_fuel"))
+                    ) then
+                    table.insert(actions, target:HasTag("bundle") and ACTIONS.BUNDLESTORE or ACTIONS.STORE)
+                end
             elseif target:HasTag("playerghost") then
                 if inst.prefab == "reviver" then
                     table.insert(actions, ACTIONS.GIVETOPLAYER)
                 end
             elseif target:HasTag("player") then
-                if not (target.replica.rider ~= nil and
-                        target.replica.rider:IsRiding()) then
+                if not (target.replica.rider ~= nil and target.replica.rider:IsRiding()) and
+                    not (GetGameModeProperty("non_item_equips") and inst.replica.equippable ~= nil) then
                     table.insert(actions,
                         not (doer.components.playercontroller ~= nil and
                             doer.components.playercontroller:IsControlPressed(CONTROL_FORCE_STACK)) and
@@ -657,7 +683,12 @@ local COMPONENT_ACTIONS =
                 target.replica.container ~= nil and
                 target.replica.container:CanBeOpened() then
                 -- put weapons into chester, don't attack him unless forcing attack with key press
-                table.insert(actions, target:HasTag("bundle") and ACTIONS.BUNDLESTORE or ACTIONS.STORE)
+                if not (GetGameModeProperty("non_item_equips") and inst.replica.equippable ~= nil) and
+                    (   (inst.prefab ~= "spoiled_food" and inst:HasTag("quagmire_stewable") and target:HasTag("quagmire_stewer") and target.replica.container:IsOpenedBy(doer)) or
+                        not (target:HasTag("BURNABLE_fueled") and inst:HasTag("BURNABLE_fuel"))
+                    ) then
+                    table.insert(actions, target:HasTag("bundle") and ACTIONS.BUNDLESTORE or ACTIONS.STORE)
+                end
             elseif not right and
                 doer.replica.combat ~= nil and
                 doer.replica.combat:CanTarget(target) and
@@ -678,6 +709,72 @@ local COMPONENT_ACTIONS =
         winter_treeseed = function(inst, doer, target, actions)
             if target:HasTag("winter_treestand") and not (target:HasTag("fire") or target:HasTag("smolder") or target:HasTag("burnt")) then
                 table.insert(actions, ACTIONS.PLANT)
+            end
+        end,
+
+        quagmire_plantable = function(inst, doer, target, actions)
+            if target:HasTag("soil") then
+                table.insert(actions, ACTIONS.PLANTSOIL)
+            end
+        end,
+
+        quagmire_installable = function(inst, doer, target, actions)
+            if target:HasTag("installations") then
+                table.insert(actions, ACTIONS.INSTALL)
+            end
+        end,
+
+        quagmire_stewer = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_cookwaretrader") then
+                table.insert(actions, ACTIONS.GIVE)
+            end
+        end,
+
+        quagmire_stewable = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_altar") then
+                table.insert(actions, ACTIONS.GIVE)
+            end
+        end,
+
+        quagmire_saltextractor = function(inst, doer, target, actions)
+            if target:HasTag("saltpond") then
+                table.insert(actions, ACTIONS.INSTALL)
+            end
+        end,
+
+        quagmire_portalkey = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_altar") then
+                table.insert(actions, ACTIONS.GIVE)
+            end
+        end,
+
+        quagmire_tapper = function(inst, doer, target, actions)
+            if target:HasTag("tappable") and not inst:HasTag("fire") and not inst:HasTag("burnt") then
+                table.insert(actions, ACTIONS.TAPTREE)
+            end
+        end,
+
+        quagmire_replater = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_replatable") then
+                table.insert(actions, ACTIONS.REPLATE)
+            end
+        end,
+
+        quagmire_replatable = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_replater") then
+                table.insert(actions, ACTIONS.REPLATE)
+            end
+        end,
+
+        quagmire_salter = function(inst, doer, target, actions)
+            if target:HasTag("quagmire_saltable") then
+                table.insert(actions, ACTIONS.SALT)
+            end
+        end,
+
+        quagmire_slaughtertool = function(inst, doer, target, actions)
+            if target:HasTag("canbeslaughtered") and target.replica.health ~= nil and not target.replica.health:IsDead() then
+                table.insert(actions, ACTIONS.SLAUGHTER)
             end
         end,
     },
@@ -730,6 +827,12 @@ local COMPONENT_ACTIONS =
                     (TheWorld.Map:IsAboveGroundAtPoint(pos:Get()) and not TheWorld.Map:IsGroundTargetBlocked(pos))
                 ) then
                 table.insert(actions, ACTIONS.CASTAOE)
+            end
+        end,
+
+        quagmire_tiller = function(inst, doer, pos, actions, right)
+            if right and TheWorld.Map:CanTillSoilAtPoint(pos) then
+                table.insert(actions, ACTIONS.TILL)
             end
         end,
     },
@@ -1006,7 +1109,7 @@ local COMPONENT_ACTIONS =
                 table.insert(actions, ACTIONS.SHAVE)
             end
         end,
-
+		
         sleepingbag = function(inst, doer, actions)
             if doer:HasTag("player") and not doer:HasTag("insomniac") and not inst:HasTag("hassleeper") then
                 table.insert(actions, ACTIONS.SLEEPIN)

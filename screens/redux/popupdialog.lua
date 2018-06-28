@@ -37,6 +37,9 @@ local LENGTHS =
     small = {
         height = 150,
     },
+    medium = {
+        height = 200,
+    },
     big = {
         height = 250,
     },

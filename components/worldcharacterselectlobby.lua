@@ -34,9 +34,9 @@ local _countdownf = -1
 local _countdowni = net_byte(inst.GUID, "worldcharacterselectlobby._countdowni", "spawncharacterdelaydirty")
 local _lockedforshutdown = net_bool(inst.GUID, "worldcharacterselectlobby._lockedforshutdown", "lockedforshutdown")
 
-local _nowaiting_vote = {}
+local _players_ready_to_start = {}
 for i = 1, TheNet:GetServerMaxPlayers() do
-	table.insert(_nowaiting_vote, net_string(inst.GUID, "worldcharacterselectlobby._nowaiting_vote."..i, "nowaiting_vote_dirty"))
+	table.insert(_players_ready_to_start, net_string(inst.GUID, "worldcharacterselectlobby._players_ready_to_start."..i, "player_ready_to_start_dirty"))
 end
 
 --------------------------------------------------------------------------
@@ -55,14 +55,14 @@ local function GetPlayersClientTable()
     return clients
 end
 
-local function SetNoWaitingVote(userid, no_waiting)
+local function SetPlayerReadyToStart(userid, is_ready)
 	if _countdowni:value() ~= COUNTDOWN_INACTIVE then
 		return
 	end
 	    
-    if no_waiting then
+    if is_ready then
 		local empty_slot = nil
-		for i, v in ipairs(_nowaiting_vote) do
+		for i, v in ipairs(_players_ready_to_start) do
 			local value = v:value()
 			if value == userid then
 				return
@@ -71,35 +71,35 @@ local function SetNoWaitingVote(userid, no_waiting)
 			end
 		end
 		if empty_slot ~= nil then
-			_nowaiting_vote[empty_slot]:set(userid)
+			_players_ready_to_start[empty_slot]:set(userid)
 		end
     else
-		for i, v in ipairs(_nowaiting_vote) do
+		for i, v in ipairs(_players_ready_to_start) do
 			if v:value() == userid then
-				_nowaiting_vote[i]:set("")
+				_players_ready_to_start[i]:set("")
 				return
 			end
 		end
 	end
 end
 
-local function ToggleNoWaitingVote(userid)
+local function TogglePlayerReadyToStart(userid)
 	if _countdowni:value() ~= COUNTDOWN_INACTIVE then
 		return
 	end
 
 	local empty_slot = nil
-	for i, v in ipairs(_nowaiting_vote) do
+	for i, v in ipairs(_players_ready_to_start) do
 		local value = v:value()
 		if value == userid then
-			_nowaiting_vote[i]:set("")
+			_players_ready_to_start[i]:set("")
 			return
 		elseif value == "" then
 			empty_slot = i
 		end
 	end
 	if empty_slot ~= nil then
-		_nowaiting_vote[empty_slot]:set(userid)
+		_players_ready_to_start[empty_slot]:set(userid)
 	end
 end
 
@@ -107,21 +107,20 @@ end
 --[[ Global Setup ]]
 --------------------------------------------------------------------------
 
-AddUserCommand("nowaitingforplayers", {
+AddUserCommand("playerreadytostart", {
     prettyname = nil, --default to STRINGS.UI.BUILTINCOMMANDS.RESCUE.PRETTYNAME
     desc = nil, --default to STRINGS.UI.BUILTINCOMMANDS.RESCUE.DESC
     permission = COMMAND_PERMISSION.USER,
     slash = false,
     usermenu = false,
     servermenu = false,
-    params = {"no_waiting"},
+    params = {"ready"},
     vote = false,
     canstartfn = function(command, caller, targetid)
         return _countdowni:value() == COUNTDOWN_INACTIVE and not _lockedforshutdown:value()
     end,
     serverfn = function(params, caller)
-		--SetNoWaitingVote(caller.userid, params.no_waiting == "true")
-		ToggleNoWaitingVote(caller.userid)
+		TogglePlayerReadyToStart(caller.userid)
     end,
 })
 
@@ -129,32 +128,42 @@ AddUserCommand("nowaitingforplayers", {
 --[[ Private Server event handlers ]]
 --------------------------------------------------------------------------
 
-local function ClearNoWaitingVotes()
-	for i, v in ipairs(_nowaiting_vote) do
+local function ClearAllPlayersReadyToStart()
+	for i, v in ipairs(_players_ready_to_start) do
 		v:set("")
 	end
+end
+
+local function CalcLobbyUpTime()
+	return _lobby_up_time and (GetTimeRealSeconds() - _lobby_up_time) or 0
 end
 
 local function StarTimer(time)
 	print ("[WorldCharacterSelectLobby] Countdown started")
 
-	local msg = {}	
-	msg.up_time = _lobby_up_time and (GetTimeRealSeconds() - _lobby_up_time) or 0
-	TheWorld.components.lavaarenaanalytics:SendAnalyticsLobbyEvent("forge.lobby.startmatch", nil, msg)
+	local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
+	if analytics ~= nil then
+		analytics:SendAnalyticsLobbyEvent("lobby.startmatch", nil, { up_time = CalcLobbyUpTime() })
 	
+		for userid, _ in pairs(_client_wait_time) do
+			local data = {play_t = _client_wait_time[userid] ~= nil and (GetTimeRealSeconds() - _client_wait_time[userid]) or 0}
+			analytics:SendAnalyticsLobbyEvent("lobby.clientstartmatch", userid, data)
+		end
+	end
+
 	_countdownf = time
     _countdowni:set(math.ceil(time))
 
 	TheNet:SetAllowNewPlayersToConnect(false)
     TheNet:SetIsMatchStarting(true)
-	ClearNoWaitingVotes()
+	ClearAllPlayersReadyToStart()
 
 	self.inst:StartWallUpdatingComponent(self)
 end
 
-local function CountStartWithoutWaitingPlayers()
+local function CountPlayersReadyToStart()
 	local count = 0
-	for i, v in ipairs(_nowaiting_vote) do
+	for i, v in ipairs(_players_ready_to_start) do
 		if v:value() ~= "" then
 			count = count + 1
 		end
@@ -164,18 +173,13 @@ end
 
 local function TryStartCountdown()
 	if not self:IsAllowingCharacterSelect() then
-		return false
+		return
 	end
 
     local clients = GetPlayersClientTable()
-	if #clients < TheNet:GetServerMaxPlayers() and #clients > CountStartWithoutWaitingPlayers() then
-		return false
+	if CountPlayersReadyToStart() < #clients then
+		return
 	end
-	for _, v in ipairs(clients) do
-        if v.lobbycharacter == nil or v.lobbycharacter == "" then
-            return
-        end
-    end
 
 	StarTimer(COUNTDOWN_TIME)
 end
@@ -191,13 +195,13 @@ local function OnRequestLobbyCharacter(world, data)
 	end
 
 	TheNet:SetLobbyCharacter(data.userid, data.prefab_name, data.skin_base, data.clothing_body, data.clothing_hand, data.clothing_legs, data.clothing_feet)
-	SetNoWaitingVote(data.userid, false)
+	SetPlayerReadyToStart(data.userid, false)
 	
 	TryStartCountdown()
 end
 
 local function OnLobbyClientConnected(src, data)
-	ClearNoWaitingVotes()
+	ClearAllPlayersReadyToStart()
 
 	if _countdowni:value() == COUNTDOWN_INACTIVE then
 		if GetTableSize(_client_wait_time) == 0 then
@@ -205,35 +209,42 @@ local function OnLobbyClientConnected(src, data)
 		end
 		_client_wait_time[data.userid] = GetTimeRealSeconds()
 
-		local msg = {}
-		msg.up_time = _lobby_up_time and (GetTimeRealSeconds() - _lobby_up_time) or 0
-		TheWorld.components.lavaarenaanalytics:SendAnalyticsLobbyEvent("forge.lobby.join", data.userid, msg)
 		
+		local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
+		if analytics ~= nil then
+			local msg = {}
+			msg.up_time = CalcLobbyUpTime()
+			analytics:SendAnalyticsLobbyEvent("lobby.join", nil, msg)
+		end		
 	else		
-		-- TODO: force disconnection
+		-- players will have no choice but to disconncet at this point.
 	end
 end
 
 local function OnLobbyClientDisconnected(src, data)
-	ClearNoWaitingVotes()
+	ClearAllPlayersReadyToStart()
 
 	if self:IsAllowingCharacterSelect() and _client_wait_time[data.userid] ~= nil then
 		local wait_time = _client_wait_time[data.userid] and (GetTimeRealSeconds() - _client_wait_time[data.userid]) or 0
 		_client_wait_time[data.userid] = nil 
 		local num_remaining_players = GetTableSize(_client_wait_time)
 
-		local msg = {}
-		msg.up_time = _lobby_up_time and (GetTimeRealSeconds() - _lobby_up_time) or 0
-		msg.duration = wait_time
-		msg.consecutive_match = TheNet:IsConsecutiveMatchForPlayer(data.userid)
-		TheWorld.components.lavaarenaanalytics:SendAnalyticsLobbyEvent("forge.lobby.leave", data.userid, msg)
-		
-		if GetTableSize(_client_wait_time) == 0 then
+		local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
+		if analytics ~= nil then
 			local msg = {}
-			msg.up_time = _lobby_up_time and (GetTimeRealSeconds() - _lobby_up_time) or 0
-			TheWorld.components.lavaarenaanalytics:SendAnalyticsLobbyEvent("forge.lobby.cancelmatch", nil, msg)
+			msg.up_time = CalcLobbyUpTime()
+			msg.play_t = wait_time
+			msg.consecutive_match = TheNet:IsConsecutiveMatchForPlayer(data.userid)
+			local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
+			analytics:SendAnalyticsLobbyEvent("lobby.leave", data.userid, msg)
+		
+			if GetTableSize(_client_wait_time) == 0 then
+				local msg2 = {}
+				msg2.up_time = msg.up_time
+				analytics:SendAnalyticsLobbyEvent("lobby.cancelmatch", nil, msg2)
 
-			_lobby_up_time = nil
+				_lobby_up_time = nil
+			end
 		end
 	end
 end
@@ -272,7 +283,7 @@ if _ismastersim then
 
     --Register events
     inst:ListenForEvent("ms_requestedlobbycharacter", OnRequestLobbyCharacter, _world)
-    inst:ListenForEvent("nowaiting_vote_dirty", TryStartCountdown)
+    inst:ListenForEvent("player_ready_to_start_dirty", TryStartCountdown)
     inst:ListenForEvent("ms_clientauthenticationcomplete", OnLobbyClientConnected, _world)
     inst:ListenForEvent("ms_clientdisconnected", OnLobbyClientDisconnected, _world)
 
@@ -299,8 +310,8 @@ function self:IsServerLockedForShutdown()
 	return _lockedforshutdown:value()
 end
 
-function self:GetNoWaitingVote(userid)
-	for i, v in ipairs(_nowaiting_vote) do
+function self:IsPlayerReadyToStart(userid)
+	for i, v in ipairs(_players_ready_to_start) do
 		if v:value() == userid then
 			return true
 		end
@@ -317,7 +328,7 @@ end end
 -- TheWorld.net.components.worldcharacterselectlobby:Dump()
 function self:Dump()
 	local str = ""
-	for i, v in ipairs(_nowaiting_vote) do
+	for i, v in ipairs(_players_ready_to_start) do
 		str = str .. ", " .. tostring(v:value())
 	end
 	print(str)
@@ -337,12 +348,14 @@ end
 
 function self:OnUpdate(dt)
     if #AllPlayers <= 0 then
-        local isdedicated = not TheNet:GetServerIsClientHosted()
-        local index = 1
-        for i, v in ipairs(TheNet:GetClientTable()) do
-            if not isdedicated or v.performance == nil then
-                --Still someone connected
-                return
+        local clients = TheNet:GetClientTable()
+        if clients ~= nil then
+            local isdedicated = not TheNet:GetServerIsClientHosted()
+            for i, v in ipairs(TheNet:GetClientTable()) do
+                if not isdedicated or v.performance == nil then
+                    --Still someone connected
+                    return
+                end
             end
         end
     end

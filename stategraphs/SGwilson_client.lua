@@ -128,7 +128,10 @@ local actionhandlers =
     ActionHandler(ACTIONS.TRAVEL, "doshortaction"),
     ActionHandler(ACTIONS.LIGHT, "give"),
     ActionHandler(ACTIONS.UNLOCK, "give"),
-    ActionHandler(ACTIONS.USEKLAUSSACKKEY, "dolongaction"),
+    ActionHandler(ACTIONS.USEKLAUSSACKKEY,
+        function(inst)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.TURNOFF, "give"),
     ActionHandler(ACTIONS.TURNON, "give"),
     ActionHandler(ACTIONS.ADDFUEL, "doshortaction"),
@@ -142,7 +145,10 @@ local actionhandlers =
         function(inst)
             return inst.replica.inventory:IsHeavyLifting() and "heavylifting_drop" or "doshortaction"
         end),
-    ActionHandler(ACTIONS.MURDER, "dolongaction"),
+    ActionHandler(ACTIONS.MURDER,
+        function(inst)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.UPGRADE, "dolongaction"),
     ActionHandler(ACTIONS.ACTIVATE,
         function(inst, action)
@@ -154,16 +160,27 @@ local actionhandlers =
         function(inst, action)
             return (action.target:HasTag("jostlepick") and "dojostleaction")
                 or (action.target:HasTag("quickpick") and "doshortaction")
+                or (inst:HasTag("fastpicker") and "doshortaction")
+                or (inst:HasTag("quagmire_fasthands") and "domediumaction")
                 or "dolongaction"
         end),
     ActionHandler(ACTIONS.SLEEPIN,
         function(inst, action)
             return action.invobject ~= nil and "bedroll" or "tent"
         end),
-    ActionHandler(ACTIONS.TAKEITEM, "dolongaction"),
+    ActionHandler(ACTIONS.TAKEITEM,
+        function(inst, action)
+            return action.target ~= nil
+                and action.target.takeitem ~= nil --added for quagmire
+                and "give"
+                or "dolongaction"
+        end),
     ActionHandler(ACTIONS.BUILD,
-        function(inst)--, action)
-            return inst:HasTag("fastbuilder") and "domediumaction" or "dolongaction"
+        function(inst, action)
+            local rec = GetValidRecipe(action.recipe)
+            return (rec ~= nil and rec.tab.shop and "give")
+                or (inst:HasTag("fastbuilder") and "domediumaction")
+                or "dolongaction"
         end),
     ActionHandler(ACTIONS.SHAVE, "shave"),
     ActionHandler(ACTIONS.COOK, "dolongaction"),
@@ -193,13 +210,24 @@ local actionhandlers =
                 end
             end
         end),
-    ActionHandler(ACTIONS.GIVE, "give"),
+    ActionHandler(ACTIONS.GIVE,
+        function(inst, action)
+            return action.invobject ~= nil
+                and action.invobject.prefab == "quagmire_portal_key"
+                and action.target ~= nil
+                and action.target:HasTag("quagmire_altar")
+                and "dolongaction"
+                or "give"
+        end),
     ActionHandler(ACTIONS.GIVETOPLAYER, "give"),
     ActionHandler(ACTIONS.GIVEALLTOPLAYER, "give"),
     ActionHandler(ACTIONS.FEEDPLAYER, "give"),
     ActionHandler(ACTIONS.DECORATEVASE, "dolongaction"),
     ActionHandler(ACTIONS.PLANT, "doshortaction"),
-    ActionHandler(ACTIONS.HARVEST, "dolongaction"),
+    ActionHandler(ACTIONS.HARVEST,
+        function(inst)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.PLAY, "play"),
     ActionHandler(ACTIONS.JUMPIN, "jumpin"),
     ActionHandler(ACTIONS.TELEPORT,
@@ -258,9 +286,41 @@ local actionhandlers =
     ActionHandler(ACTIONS.PET, "dolongaction"),
     ActionHandler(ACTIONS.DRAW, "dolongaction"),
     ActionHandler(ACTIONS.BUNDLE, "bundle"),
-    ActionHandler(ACTIONS.UNWRAP, "dolongaction"),
+    ActionHandler(ACTIONS.UNWRAP,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.STARTCHANNELING, "startchanneling"),
     ActionHandler(ACTIONS.REVIVE_CORPSE, "dolongaction"),
+
+    --Quagmire
+    ActionHandler(ACTIONS.TILL, "till_start"),
+    ActionHandler(ACTIONS.PLANTSOIL,
+        function(inst, action)
+            return (inst:HasTag("quagmire_farmhand") and "doshortaction")
+                or (inst:HasTag("quagmire_fasthands") and "domediumaction")
+                or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.INSTALL,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.TAPTREE,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.SLAUGHTER,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.REPLATE,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.SALT,
+        function(inst, action)
+            return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
 }
 
 local events =
@@ -2488,6 +2548,38 @@ local states =
         ontimeout = function(inst)
             inst:ClearBufferedAction()
             inst.AnimState:PlayAnimation("channel_pst")
+            inst.sg:GoToState("idle", true)
+        end,
+    },
+
+    State
+    {
+        name = "till_start",
+        tags = { "doing", "busy" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("till_pre")
+            inst.AnimState:PushAnimation("till_lag", false)
+
+            inst:PerformPreviewBufferedAction()
+            inst.sg:SetTimeout(TIMEOUT)
+        end,
+
+        onupdate = function(inst)
+            if inst:HasTag("doing") then
+                if inst.entity:FlattenMovementPrediction() then
+                    inst.sg:GoToState("idle", "noanim")
+                end
+            elseif inst.bufferedaction == nil then
+                inst.AnimState:PlayAnimation("till_pst")
+                inst.sg:GoToState("idle", true)
+            end
+        end,
+
+        ontimeout = function(inst)
+            inst:ClearBufferedAction()
+            inst.AnimState:PlayAnimation("till_pst")
             inst.sg:GoToState("idle", true)
         end,
     },

@@ -48,13 +48,13 @@ local function onupdatefueled(inst)
     end
 end
 
-local function onfuelchange(newsection, oldsection, inst)
+local function onfuelchange(newsection, oldsection, inst, doer)
     if newsection <= 0 then
         inst.components.burnable:Extinguish()
     else
         if not inst.components.burnable:IsBurning() then
             updatefuelrate(inst)
-            inst.components.burnable:Ignite()
+            inst.components.burnable:Ignite(nil, nil, doer)
         end
         inst.components.burnable:SetFXLevel(newsection, inst.components.fueled:GetSectionPercent())
     end
@@ -102,6 +102,24 @@ local function OnInit(inst)
     end
 end
 
+--------------------------------------------------------------------------
+--quagmire
+
+local function OnPrefabOverrideDirty(inst)
+    if inst.prefaboverride:value() ~= nil then
+        inst:SetPrefabNameOverride(inst.prefaboverride:value().prefab)
+        if not TheWorld.ismastersim and inst.replica.container:CanBeOpened() then
+            inst.replica.container:WidgetSetup(inst.prefaboverride:value().prefab)
+        end
+    end
+end
+
+local function OnRadiusDirty(inst)
+    inst:SetPhysicsRadiusOverride(inst.radius:value() > 0 and inst.radius:value() / 100 or nil)
+end
+
+--------------------------------------------------------------------------
+
 local function fn()
     local inst = CreateEntity()
 
@@ -110,8 +128,6 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
-
-    MakeObstaclePhysics(inst, .3)
 
     inst.MiniMapEntity:SetIcon("firepit.png")
     inst.MiniMapEntity:SetPriority(1)
@@ -126,6 +142,26 @@ local function fn()
 
     --cooker (from cooker component) added to pristine state for optimization
     inst:AddTag("cooker")
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("installations")
+        inst:AddTag("quagmire_stewer")
+        inst:AddTag("quagmire_cookwaretrader")
+
+        inst.takeitem = net_entity(inst.GUID, "firepit.takeitem")
+        inst.prefaboverride = net_entity(inst.GUID, "firepit.prefaboverride", "prefaboverridedirty")
+        inst.radius = net_byte(inst.GUID, "firepit.radius", "radiusdirty")
+
+        if not TheWorld.ismastersim then
+            inst:ListenForEvent("prefaboverridedirty", OnPrefabOverrideDirty)
+            inst:ListenForEvent("radiusdirty", OnRadiusDirty)
+        end
+
+        inst.curradius = .6
+        MakeObstaclePhysics(inst, inst.curradius)
+    else
+        MakeObstaclePhysics(inst, .3)
+    end
 
     inst.entity:SetPristine()
 
@@ -162,6 +198,10 @@ local function fn()
     inst.components.fueled:InitializeFuelLevel(TUNING.FIREPIT_FUEL_START)
 
     -----------------------------
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/firepit").master_postinit(inst, OnPrefabOverrideDirty, OnRadiusDirty)
+    end
+    -----------------------------
 
     inst:AddComponent("hauntable")
     inst.components.hauntable.cooldown = TUNING.HAUNT_COOLDOWN_HUGE
@@ -181,3 +221,4 @@ end
 
 return Prefab("firepit", fn, assets, prefabs),
     MakePlacer("firepit_placer", "firepit", "firepit", "preview")
+	

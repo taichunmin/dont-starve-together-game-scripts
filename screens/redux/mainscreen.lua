@@ -1,3 +1,4 @@
+local FriendsManager = require "widgets/friendsmanager"
 local Screen = require "widgets/screen"
 local Button = require "widgets/button"
 local AnimButton = require "widgets/animbutton"
@@ -82,7 +83,27 @@ function MainScreen:DoInit()
     self.legalese_image:SetPosition(title_x+subtitle_offset_x, title_y+subtitle_offset_y-50, 0)
     self.legalese_image:SetScale(.7)
     self.legalese_image:SetTint(unpack(FRONTEND_TITLE_COLOUR))
-   
+
+
+   	local updatename_x = RESOLUTION_X * .5 - 150
+	local updatename_y = -RESOLUTION_Y * .5 + 55
+
+    self.updatename = self.fixed_root:AddChild(Text(NEWFONT, 21))
+    self.updatename:SetPosition( updatename_x, updatename_y )
+    self.updatename:SetColour(1,1,1,1)
+    self.updatename:SetHAlign(ANCHOR_RIGHT)
+    self.updatename:SetRegionSize(200,45)
+    local suffix = ""
+    if BRANCH == "dev" then
+		suffix = " (internal v"..APP_VERSION..")"
+    elseif BRANCH == "staging" then
+		suffix = " (preview v"..APP_VERSION..")"
+    else
+        suffix = " (v"..APP_VERSION..")"
+    end
+    self.updatename:SetString(STRINGS.UI.MAINSCREEN.DST_UPDATENAME .. suffix)
+
+
     self.play_button = self.fixed_root:AddChild(ImageButton("images/frontscreen.xml", "play_highlight.tex", nil, nil, nil, nil, {1,1}, {0,0}))--"highlight.tex", "highlight_hover.tex"))
     self.play_button.bg = self.play_button:AddChild(Image("images/frontscreen.xml", "play_highlight_hover.tex"))
     self.play_button.bg:SetScale(.69, .53)
@@ -153,7 +174,7 @@ function MainScreen:DoInit()
 	--focus moving
     self.play_button:SetFocusChangeDir(MOVE_DOWN, self.exit_button)
     self.exit_button:SetFocusChangeDir(MOVE_UP, self.play_button)
-	
+
 	self:MakeDebugButtons()
     self.play_button:SetFocus()
 end
@@ -364,6 +385,11 @@ function MainScreen:OnBecomeActive()
     self.exit_button:Enable()
     self.play_button:SetFocus()
     self.leaving = nil
+
+    local friendsmanager = self:AddChild(FriendsManager())
+    friendsmanager:SetHAnchor(ANCHOR_RIGHT)
+    friendsmanager:SetVAnchor(ANCHOR_BOTTOM)
+    friendsmanager:SetScaleMode(SCALEMODE_PROPORTIONAL)
 end
 
 function MainScreen:OnUpdate(dt)

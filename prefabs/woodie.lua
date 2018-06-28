@@ -33,9 +33,10 @@ local start_inv =
     {
         "lucy",
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WOODIE,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WOODIE
+end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
@@ -419,8 +420,10 @@ local function onbecamehuman(inst)
     inst.components.combat.bonusdamagefn = nil
     inst.components.health:SetAbsorptionAmount(0)
     inst.components.sanity.custom_rate_fn = nil
-    inst.components.eater:SetDiet({ FOODGROUP.WOODIE }, { FOODGROUP.WOODIE })
-    inst.components.eater:SetAbsorptionModifiers(1,1,1)
+    if inst.components.eater ~= nil then
+        inst.components.eater:SetDiet({ FOODGROUP.WOODIE }, { FOODGROUP.WOODIE })
+        inst.components.eater:SetAbsorptionModifiers(1,1,1)
+    end
     inst.components.pinnable.canbepinned = true
     if not GetGameModeProperty("no_hunger") then
         inst.components.hunger:Resume()
@@ -475,8 +478,10 @@ local function onbecamebeaver(inst)
     inst.components.combat.bonusdamagefn = beaverbonusdamagefn
     inst.components.health:SetAbsorptionAmount(TUNING.BEAVER_ABSORPTION)
     inst.components.sanity.custom_rate_fn = beaversanityfn
-    inst.components.eater:SetDiet(BEAVER_DIET, BEAVER_DIET)
-    inst.components.eater:SetAbsorptionModifiers(0,0,0)
+    if inst.components.eater ~= nil then
+        inst.components.eater:SetDiet(BEAVER_DIET, BEAVER_DIET)
+        inst.components.eater:SetAbsorptionModifiers(0,0,0)
+    end
     inst.components.pinnable.canbepinned = false
     inst.components.hunger:Pause()
     inst.components.temperature.inherentinsulation = TUNING.INSULATION_LARGE
@@ -618,7 +623,11 @@ local function common_postinit(inst)
     --bearded (from beard component) added to pristine state for optimization
     inst:AddTag("bearded")
 
-    if TheNet:GetServerGameMode() ~= "lavaarena" then
+    if TheNet:GetServerGameMode() == "lavaarena" then
+        --do nothing
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_shopper")
+    else
         --beaverness (from beaverness component) added to pristine state for optimization
         inst:AddTag("beaverness")
 
@@ -647,6 +656,8 @@ local function master_postinit(inst)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         event_server_data("lavaarena", "prefabs/woodie").master_postinit(inst)
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+		-- nothing to see here (dont go into the else case, or else!)
     else
         -- Give Woodie a beard so he gets some insulation from winter cold
         -- (Value is Wilson's level 2 beard.)

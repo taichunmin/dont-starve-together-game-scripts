@@ -12,6 +12,9 @@ local Text = require "widgets/text"
 local RecipeTile = Class(Widget, function(self, recipe)
     Widget._ctor(self, "RecipeTile")
     self.img = self:AddChild(Image())
+    if GetGameModeProperty("icons_use_cc") then
+        self.img:SetEffect("shaders/ui_cc.ksh")
+    end
     self:SetClickable(false)
     if recipe ~= nil then
         self.recipe = recipe

@@ -12,15 +12,25 @@ local GenericWaitingPopup = Class(Screen, function(self, name, title_text, addit
 	self.forbid_cancel = forbid_cancel
 
     local buttons = additional_buttons or {}
-    if not self.forbid_cancel then
-        table.insert(buttons, {
-                text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON,
-                cb = function() 
-                    self:OnCancel()            
-                end
-            })
+    if not TheInput:ControllerAttached() then
+		if not self.forbid_cancel then
+			table.insert(buttons, {
+					text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON,
+					cb = function() 
+						self:OnCancel()            
+					end
+				})
+		end
     end
+
+	local width = 470
 	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(470, 100, title_text, buttons, nil, "."))
+
+	if self.dialog.title then
+		self.dialog.title:SetRegionSize(width+50, 80)
+		self.dialog.title:SetPosition(0, -50)
+		self.dialog.title:EnableWordWrap(true)
+	end
 
 	self.buttons = buttons
 	self.default_focus = self.dialog
@@ -60,6 +70,17 @@ end
 
 function GenericWaitingPopup:Close()
     self:OnCancel()
+end
+
+function GenericWaitingPopup:GetHelpText()
+    local controller_id = TheInput:GetControllerID()
+    local t = {}
+
+	if not self.forbid_cancel then
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.CANCEL)
+	end
+
+    return table.concat(t, "  ")
 end
 
 return GenericWaitingPopup

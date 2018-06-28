@@ -17,9 +17,10 @@ local start_inv =
     {
         "abigail_flower",
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WENDY,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WENDY
+end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
@@ -28,6 +29,9 @@ local function common_postinit(inst)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         inst:AddComponent("pethealthbar")
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_grillmaster")
+        inst:AddTag("quagmire_shopper")
     end
 end
 

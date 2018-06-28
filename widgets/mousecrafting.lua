@@ -11,8 +11,8 @@ local Crafting = require "widgets/crafting"
 
 require "widgets/widgetutil"
 
-local MouseCrafting = Class(Crafting, function(self, owner)
-    Crafting._ctor(self, owner, NUM_CRAFTING_RECIPES)
+local MouseCrafting = Class(Crafting, function(self, owner, num_tabs)
+    Crafting._ctor(self, owner, num_tabs or NUM_CRAFTING_RECIPES)
     self:SetOrientation(false)
     self.in_pos = Vector3(145,0,0)
     self.out_pos = Vector3(0,0,0)

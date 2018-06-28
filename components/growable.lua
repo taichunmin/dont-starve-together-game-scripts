@@ -5,6 +5,7 @@ local Growable = Class(function(self, inst)
     self.loopstages = false
     self.growonly = false
     self.springgrowth = false
+    --self.growoffscreen = false
 end)
 
 function Growable:GetDebugString()
@@ -39,7 +40,7 @@ function Growable:StartGrowing(time)
             end
             self.targettime = GetTime() + timeToGrow
 
-            if not self.inst:IsAsleep() then
+            if self.growoffscreen or not self.inst:IsAsleep() then
                 if self.task ~= nil then
                     self.task:Cancel()
                 end
@@ -77,7 +78,7 @@ function Growable:DoGrowth()
         self.stages[stage].growfn(self.inst)
     end
 
-    if stage < #self.stages or self.loopstages then 
+    if self.stage < #self.stages or self.loopstages then 
         self:StartGrowing()
     end
 end
@@ -103,6 +104,20 @@ function Growable:Resume()
         local remainingtime = math.max(0, self.pausedremaining)
         self.pausedremaining = nil
         self:StartGrowing(remainingtime)
+    end
+end
+
+function Growable:ExtendGrowTime(extra_time)
+	if self.targettime ~= nil then
+		self.targettime = self.targettime + extra_time
+	end
+	if self.pausedremaining ~= nil then
+		self.pausedremaining = self.pausedremaining + extra_time
+	end
+
+    if self.task ~= nil then
+        self.task:Cancel()
+        self.task = self.inst:DoTaskInTime(self.targettime - GetTime(), ongrow, self)
     end
 end
 
@@ -150,14 +165,14 @@ function Growable:LongUpdate(dt)
 end
 
 function Growable:OnEntitySleep()
-    if self.task ~= nil then
+    if self.task ~= nil and not self.growoffscreen then
         self.task:Cancel()
         self.task = nil
     end
 end
 
 function Growable:OnEntityWake()
-    if self.targettime ~= nil then
+    if self.targettime ~= nil and not self.growoffscreen then
         local time = GetTime()
         if self.targettime <= time then
             self:DoGrowth()

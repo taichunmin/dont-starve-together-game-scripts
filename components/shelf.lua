@@ -34,7 +34,7 @@ end
 function Shelf:PutItemOnShelf(item)
     self.itemonshelf = item
 
-    if self.onshelfitemfn then
+    if self.onshelfitemfn ~= nil then
         self.onshelfitemfn(self.inst, item)
     end
 end
@@ -46,7 +46,9 @@ function Shelf:TakeItem(taker)
         end
 
         if taker.components.inventory ~= nil then
-            self.inst.components.inventory:RemoveItem(self.itemonshelf)
+            if self.inst.components.inventory ~= nil then
+                self.inst.components.inventory:RemoveItem(self.itemonshelf)
+            end
             self.itemonshelf.prevslot = nil
             self.itemonshelf.prevcontainer = nil
             taker.components.inventory:GiveItem(self.itemonshelf, nil, self.inst:GetPosition())

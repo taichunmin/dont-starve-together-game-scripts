@@ -43,6 +43,7 @@ local MainSounds =
 	"koalefant.fsb",
 	"krampus.fsb",
     "lava_arena.fsb",
+    "quagmire.fsb",
 	"leif.fsb",
 	"mandrake.fsb",
 	"maxwell.fsb",

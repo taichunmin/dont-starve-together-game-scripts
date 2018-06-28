@@ -3,7 +3,7 @@ local assets =
     Asset("ANIM", "anim/rocks.zip"),
 }
 
-local names = {"f1","f2","f3"}
+local names = { "f1", "f2", "f3" }
 
 local function onsave(inst, data)
     data.anim = inst.animname
@@ -61,10 +61,15 @@ local function fn()
     inst.components.repairer.repairmaterial = MATERIALS.STONE
     inst.components.repairer.healthrepairvalue = TUNING.REPAIR_ROCKS_HEALTH
 
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/inv_rocks").master_postinit(inst)
+    end
+
     MakeHauntableLaunchAndSmash(inst)
 
     inst.OnSave = onsave 
-    inst.OnLoad = onload 
+    inst.OnLoad = onload
+
     return inst
 end
 

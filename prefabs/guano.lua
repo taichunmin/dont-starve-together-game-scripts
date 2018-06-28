@@ -77,6 +77,10 @@ local function fn()
     inst.components.fuel.fuelvalue = TUNING.MED_FUEL
     inst.components.fuel:SetOnTakenFn(FuelTaken)
 
+    if TheNet:GetServerGameMode() == "quagmire" then
+        inst.components.fuel:SetOnTakenFn(nil)
+    end
+
     MakeSmallBurnable(inst, TUNING.MED_BURNTIME)
     inst.components.burnable:SetOnIgniteFn(OnBurn)
     MakeSmallPropagator(inst)

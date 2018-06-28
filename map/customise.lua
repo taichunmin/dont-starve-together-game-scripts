@@ -116,6 +116,7 @@ local branching_descriptions = {
 	{ text = STRINGS.UI.SANDBOXMENU.BRANCHINGLEAST, data = "least" },
 	{ text = STRINGS.UI.SANDBOXMENU.BRANCHINGANY, data = "default" },
 	{ text = STRINGS.UI.SANDBOXMENU.BRANCHINGMOST, data = "most" },
+	{ text = STRINGS.UI.SANDBOXMENU.RANDOM, data = "random" },
 }
 
 local loop_descriptions = {

@@ -117,10 +117,12 @@ local function fn()
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
 
-    inst:AddComponent("finiteuses")
-    inst.components.finiteuses:SetMaxUses(TUNING.TRAP_USES)
-    inst.components.finiteuses:SetUses(TUNING.TRAP_USES)
-    inst.components.finiteuses:SetOnFinished(inst.Remove)
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        inst:AddComponent("finiteuses")
+        inst.components.finiteuses:SetMaxUses(TUNING.TRAP_USES)
+        inst.components.finiteuses:SetUses(TUNING.TRAP_USES)
+        inst.components.finiteuses:SetOnFinished(inst.Remove)
+    end
 
     inst:AddComponent("trap")
     inst.components.trap.targettag = "bird"

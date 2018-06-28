@@ -187,10 +187,11 @@ function Container:CanBeOpened()
 end
 
 function Container:CanTakeItemInSlot(item, slot)
-    return item ~= nil and
-        item.replica.inventoryitem ~= nil and
-        item.replica.inventoryitem:CanGoInContainer() and
-        (self.itemtestfn == nil or self:itemtestfn(item, slot))
+    return item ~= nil
+        and item.replica.inventoryitem ~= nil
+        and item.replica.inventoryitem:CanGoInContainer()
+        and not (GetGameModeProperty("non_item_equips") and item.replica.equippable ~= nil)
+        and (self.itemtestfn == nil or self:itemtestfn(item, slot))
 end
 
 function Container:AcceptsStacks()

@@ -19,6 +19,7 @@ local MVPLoadingWidget = Class(Widget, function(self)
 
 	self.mvp_widgets = {}
 	self.total_width = 0
+    self.current_eventid = string.upper(TheNet:GetServerGameMode())
 
 	self:SetClickable(false)
 end)
@@ -45,12 +46,11 @@ local function UpdatePlayerListing(widget, data)
 			widget.puppet:Show()
 		end
     end
-    
+
     widget.playername:SetColour(unpack(not empty and data.user.colour or DEFAULT_PLAYER_COLOUR))
     widget.playername:SetTruncatedString((not empty) and data.user.name or "", 200, nil, "...")
-    
-    widget.fake_rand = (data.user.colour[1] + data.user.colour[2] + data.user.colour[3]) / 3
-    
+
+    widget.fake_rand = not empty and data.user.colour ~= nil and (data.user.colour[1] + data.user.colour[2] + data.user.colour[3]) / 3 or .5
 end
 
 function MVPLoadingWidget:PopulateData()
@@ -93,13 +93,13 @@ function MVPLoadingWidget:PopulateData()
 			local c = .6
 			line:SetTint(UICOLOURS.GOLD[1]*c, UICOLOURS.GOLD[2]*c, UICOLOURS.GOLD[3]*c, UICOLOURS.GOLD[4])
 
-			widget.title = widget:AddChild(Text(TITLEFONT, 40, STRINGS.UI.MVP_LOADING_WIDGET.TITLES[data.participation and "none" or data.beststat[1]], UICOLOURS.GOLD))
+			widget.title = widget:AddChild(Text(TITLEFONT, 40, STRINGS.UI.MVP_LOADING_WIDGET[self.current_eventid].TITLES[data.participation and "none" or data.beststat[1]], UICOLOURS.GOLD))
 			widget.title:SetPosition(0, -98)
 
-			widget.score = widget:AddChild(Text(CHATFONT, 45, tostring(data.beststat[2] or STRINGS.UI.MVP_LOADING_WIDGET.NO_STAT_VALUE), UICOLOURS.EGGSHELL))
+			widget.score = widget:AddChild(Text(CHATFONT, 45, tostring(data.beststat[2] or STRINGS.UI.MVP_LOADING_WIDGET[self.current_eventid].NO_STAT_VALUE), UICOLOURS.EGGSHELL))
 			widget.score:SetPosition(0, -146)
 
-			widget.description = widget:AddChild(Text(CHATFONT, 30, STRINGS.UI.MVP_LOADING_WIDGET.DESCRIPTIONS[data.beststat[1] or "none"], UICOLOURS.EGGSHELL))
+			widget.description = widget:AddChild(Text(CHATFONT, 30, STRINGS.UI.MVP_LOADING_WIDGET[self.current_eventid].DESCRIPTIONS[data.beststat[1] or "none"], UICOLOURS.EGGSHELL))
 			widget.description:SetPosition(0, -203)
 			widget.description:SetRegionSize( 200, 66 )
 			widget.description:SetVAlign(ANCHOR_TOP)

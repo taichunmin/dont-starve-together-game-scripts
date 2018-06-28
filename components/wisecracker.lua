@@ -159,6 +159,10 @@ local Wisecracker = Class(function(self, inst)
     inst:ListenForEvent("encumberedwalking", function(inst)
         inst.components.talker:Say(GetString(inst, "ANNOUNCE_ENCUMBERED"))
     end)
+
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "components/wisecracker").AddQuagmireEventListeners(inst)
+    end
 end)
 
 function Wisecracker:OnUpdate(dt)

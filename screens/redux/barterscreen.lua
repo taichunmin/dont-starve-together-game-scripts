@@ -34,7 +34,7 @@ function BarterScreen:DoInit()
 end
 
 local function PushWaitingPopup()
-    local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, false)
+    local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
     TheFrontEnd:PushScreen(commerce_popup)
     return commerce_popup
 end

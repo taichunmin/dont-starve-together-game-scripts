@@ -77,7 +77,6 @@ end)
 
 function TopModsPanel:GenerateRandomPicks(num, numrange)
     local picks = {}
-
     while #picks < num do
         local index = math.random(1, numrange)
         if not table.contains(picks, index) then
@@ -91,12 +90,13 @@ function TopModsPanel:OnStatsQueried( success, json_body )
     if not (self.inst:IsValid()) then
         return
     end
-
+    
     if not success or string.len(json_body) <= 1 then return end
-
     local status, jsonresult = pcall( function() return json.decode(json_body) end )
-
+    
     if not jsonresult or type(jsonresult) ~= "table" or  not status or jsonresult["modnames"] == nil then return end
+    
+    if next(jsonresult["modnames"]) == nil then return end 
 
     local randomPicks = self:GenerateRandomPicks(#self.modlinks, #jsonresult["modnames"])
     for i = 1, #self.modlinks do

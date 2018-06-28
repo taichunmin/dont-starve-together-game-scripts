@@ -10,11 +10,11 @@ local EquipSlot = Class(ItemSlot, function(self, equipslot, atlas, bgim, owner)
         if data.item ~= nil and
             data.item.replica.equippable ~= nil and
             equipslot == data.item.replica.equippable:EquipSlot() then
-            self:ScaleTo(1, 1.3, .125)
+            self:ScaleTo(self.base_scale, self.highlight_scale, 0.125)
             self.highlight = true
         elseif self.highlight then
             self.highlight = false
-            self:ScaleTo(1.3, 1, .125)
+            self:ScaleTo(self.highlight_scale, self.base_scale, 0.125)
         end
     end, owner)
 end)

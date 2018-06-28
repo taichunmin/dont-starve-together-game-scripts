@@ -73,7 +73,8 @@ local function InitParticles(inst)
     EmitterManager:AddEmitter(inst, nil, function()
         --sync the particle bursting to the start of the
         --animation, and then wait until the next start.
-        if inst.entity:GetParent().AnimState:GetCurrentAnimationTime() >= .1 then
+        local parent = inst.entity:GetParent()
+        if parent == nil or parent.AnimState == nil or parent.AnimState:GetCurrentAnimationTime() >= .1 then
             inst.wait_for_burst = true
         elseif inst.wait_for_burst then
             inst.wait_for_burst = false

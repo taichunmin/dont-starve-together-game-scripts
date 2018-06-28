@@ -108,8 +108,15 @@ local function ToggleUpdate(force)
 end
 
 local function PickBird(spawnpoint)
-    local tile = _map:GetTileAtPoint(spawnpoint:Get())
-    local bird = GetRandomItem(BIRD_TYPES[tile] or { "crow" })
+    local bird = "crow"
+	if TheNet:GetServerGameMode() == "quagmire" then
+		bird = "quagmire_pigeon"
+	else
+	    local tile = _map:GetTileAtPoint(spawnpoint:Get())
+		if BIRD_TYPES[tile] ~= nil then
+			bird = GetRandomItem(BIRD_TYPES[tile])
+		end
+	end
 
     if bird == "crow" then
         local x, y, z = spawnpoint:Get()

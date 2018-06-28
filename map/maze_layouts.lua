@@ -9,39 +9,56 @@ local ruins_areas =
 	, {"rocks"}) end,
 }
 
-local function GetLayoutsForType( name )
+local function GetLayoutsForType( name, sub_dir, params )
+	sub_dir = "map/static_layouts/" .. (sub_dir or "rooms") .. "/"
+	params = params or {}
 	local layouts = 
 		{
-			["SINGLE_NORTH"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/one",	{
-				force_rotation = LAYOUT_ROTATION.NORTH}),
-			["SINGLE_EAST"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/one",	{
-				force_rotation = LAYOUT_ROTATION.EAST}),
-			["L_NORTH"] = 		StaticLayout.Get("map/static_layouts/rooms/"..name.."/two", 	{
-				force_rotation = LAYOUT_ROTATION.NORTH}),
-			["SINGLE_SOUTH"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/one",	{
-				force_rotation = LAYOUT_ROTATION.SOUTH}),
-			["TUNNEL_NS"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/long", 	{
-				force_rotation = LAYOUT_ROTATION.NORTH}),
-			["L_EAST"] = 		StaticLayout.Get("map/static_layouts/rooms/"..name.."/two",	{
-				force_rotation = LAYOUT_ROTATION.EAST}),
-			["THREE_WAY_N"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/three", 	{
-				force_rotation = LAYOUT_ROTATION.NORTH}),
-			["SINGLE_WEST"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/one",	{
-				force_rotation = LAYOUT_ROTATION.WEST}),
-			["L_WEST"] = 		StaticLayout.Get("map/static_layouts/rooms/"..name.."/two",	{
-				force_rotation = LAYOUT_ROTATION.WEST}),
-			["TUNNEL_EW"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/long",	{
-				force_rotation = LAYOUT_ROTATION.EAST}),
-			["THREE_WAY_W"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/three",	{
-				force_rotation = LAYOUT_ROTATION.WEST}),
-			["L_SOUTH"] = 		StaticLayout.Get("map/static_layouts/rooms/"..name.."/two",	{
-				force_rotation = LAYOUT_ROTATION.SOUTH}),
-			["THREE_WAY_S"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/three",	{
-				force_rotation = LAYOUT_ROTATION.SOUTH}),
-			["THREE_WAY_E"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/three",	{
-				force_rotation = LAYOUT_ROTATION.EAST}),
-			["FOUR_WAY"] = 		StaticLayout.Get("map/static_layouts/rooms/"..name.."/four", 	{
-				force_rotation = LAYOUT_ROTATION.NORTH}),
+			["SINGLE_NORTH"] = 	StaticLayout.Get(sub_dir..name.."/one",	{
+				force_rotation = LAYOUT_ROTATION.NORTH,
+				fill_mask = params.fill_mask}),
+			["SINGLE_EAST"] = 	StaticLayout.Get(sub_dir..name.."/one",	{
+				force_rotation = LAYOUT_ROTATION.EAST,
+				fill_mask = params.fill_mask}),
+			["L_NORTH"] = 		StaticLayout.Get(sub_dir..name.."/two", {
+				force_rotation = LAYOUT_ROTATION.NORTH,
+				fill_mask = params.fill_mask}),
+			["SINGLE_SOUTH"] = 	StaticLayout.Get(sub_dir..name.."/one",	{
+				force_rotation = LAYOUT_ROTATION.SOUTH,
+				fill_mask = params.fill_mask}),
+			["TUNNEL_NS"] = 	StaticLayout.Get(sub_dir..name.."/long", {
+				force_rotation = LAYOUT_ROTATION.NORTH,
+				fill_mask = params.fill_mask}),
+			["L_EAST"] = 		StaticLayout.Get(sub_dir..name.."/two",	{
+				force_rotation = LAYOUT_ROTATION.EAST,
+				fill_mask = params.fill_mask}),
+			["THREE_WAY_N"] = 	StaticLayout.Get(sub_dir..name.."/three", {
+				force_rotation = LAYOUT_ROTATION.NORTH,
+				fill_mask = params.fill_mask}),
+			["SINGLE_WEST"] = 	StaticLayout.Get(sub_dir..name.."/one",	{
+				force_rotation = LAYOUT_ROTATION.WEST,
+				fill_mask = params.fill_mask}),
+			["L_WEST"] = 		StaticLayout.Get(sub_dir..name.."/two",	{
+				force_rotation = LAYOUT_ROTATION.WEST,
+				fill_mask = params.fill_mask}),
+			["TUNNEL_EW"] = 	StaticLayout.Get(sub_dir..name.."/long", {
+				force_rotation = LAYOUT_ROTATION.EAST,
+				fill_mask = params.fill_mask}),
+			["THREE_WAY_W"] = 	StaticLayout.Get(sub_dir..name.."/three", {
+				force_rotation = LAYOUT_ROTATION.WEST,
+				fill_mask = params.fill_mask}),
+			["L_SOUTH"] = 		StaticLayout.Get(sub_dir..name.."/two",	{
+				force_rotation = LAYOUT_ROTATION.SOUTH,
+				fill_mask = params.fill_mask}),
+			["THREE_WAY_S"] = 	StaticLayout.Get(sub_dir..name.."/three", {
+				force_rotation = LAYOUT_ROTATION.SOUTH,
+				fill_mask = params.fill_mask}),
+			["THREE_WAY_E"] = 	StaticLayout.Get(sub_dir..name.."/three", {
+				force_rotation = LAYOUT_ROTATION.EAST,
+				fill_mask = params.fill_mask}),
+			["FOUR_WAY"] = 		StaticLayout.Get(sub_dir..name.."/four", {
+				force_rotation = LAYOUT_ROTATION.NORTH,
+				fill_mask = params.fill_mask}),
 		}
 
     for k,v in pairs(layouts) do
@@ -52,16 +69,17 @@ local function GetLayoutsForType( name )
 	return layouts
 end
 
-local function GetSpecialLayoutsForType( name )
+local function GetSpecialLayoutsForType( layout_dir, name, sub_dir )
+	local path = "map/static_layouts/" .. (sub_dir or "rooms") .. "/" .. layout_dir .. "/" .. name
 	local layouts = 
 		{
-			["SINGLE_NORTH"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/"..name,	{
+			["SINGLE_NORTH"] = 	StaticLayout.Get(path,	{
 				force_rotation = LAYOUT_ROTATION.NORTH}),
-			["SINGLE_EAST"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/"..name,	{
+			["SINGLE_EAST"] = 	StaticLayout.Get(path,	{
 				force_rotation = LAYOUT_ROTATION.EAST}),
-			["SINGLE_SOUTH"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/"..name,	{
+			["SINGLE_SOUTH"] = 	StaticLayout.Get(path,	{
 				force_rotation = LAYOUT_ROTATION.SOUTH}),
-			["SINGLE_WEST"] = 	StaticLayout.Get("map/static_layouts/rooms/"..name.."/"..name,	{
+			["SINGLE_WEST"] = 	StaticLayout.Get(path,	{
 				force_rotation = LAYOUT_ROTATION.WEST}),
 		}
 
@@ -95,8 +113,7 @@ return {
 			["atrium_hallway"] = GetLayoutsForType("atrium_hallway"),
 			["atrium_hallway_two"] = GetLayoutsForType("atrium_hallway_two"),
 			["atrium_hallway_three"] = GetLayoutsForType("atrium_hallway_three"),
-			["atrium_end"] = GetSpecialLayoutsForType("atrium_end"),
-			["atrium_start"] = GetSpecialLayoutsForType("atrium_start"),
-			
+			["atrium_end"] = GetSpecialLayoutsForType("atrium_end", "atrium_end"),
+			["atrium_start"] = GetSpecialLayoutsForType("atrium_start", "atrium_start"),
 		},
 	}

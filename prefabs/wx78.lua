@@ -17,9 +17,10 @@ local start_inv =
     default =
     {
     },
-
-    lavaarena = TUNING.LAVAARENA_STARTING_ITEMS.WX78,
 }
+for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
+	start_inv[string.lower(k)] = v.WX78
+end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
@@ -277,6 +278,10 @@ local function common_postinit(inst)
     --electricdamageimmune is for combat and not lightning strikes
     --also used in stategraph for not stomping custom light values
 
+    if TheNet:GetServerGameMode() == "quagmire" then
+        inst:AddTag("quagmire_shopper")
+    end
+
     inst.components.talker.mod_str_fn = string.utf8upper
 
     inst.foleysound = "dontstarve/movement/foley/wx78"
@@ -293,9 +298,11 @@ local function master_postinit(inst)
     inst.spark_time_offset = 3
     inst.watchingrain = false
 
-    inst.components.eater.ignoresspoilage = true
-    inst.components.eater:SetCanEatGears()
-    inst.components.eater:SetOnEatFn(oneat)
+    if inst.components.eater ~= nil then
+        inst.components.eater.ignoresspoilage = true
+        inst.components.eater:SetCanEatGears()
+        inst.components.eater:SetOnEatFn(oneat)
+    end
     applyupgrades(inst)
 
     inst:ListenForEvent("ms_respawnedfromghost", onbecamerobot)
@@ -314,6 +321,8 @@ local function master_postinit(inst)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         event_server_data("lavaarena", "prefabs/wx78").master_postinit(inst)
+    elseif TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/wx78").master_postinit(inst)
     end
 end
 

@@ -101,8 +101,9 @@ end
 
 function LobbyChatQueue:_MessageConstructor(data)
     local group = Widget("lobbychat-group")
+    local username = data.username:match("^[^\n\v\f\r]*") or ""
     group.user_widget = group:AddChild(Text(self.chat_name_font, self.chat_name_size, nil, data.colour))
-    group.user_widget:SetTruncatedString(data.username..":", self.username_maxwidth, 30, "..:")
+    group.user_widget:SetTruncatedString(username..":", self.username_maxwidth, 30, "..:")
 
     local username_width = group.user_widget:GetRegionSize()
     group.user_widget:SetPosition(self.line_xpos + username_width * .5, 0)

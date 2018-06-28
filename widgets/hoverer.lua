@@ -55,7 +55,8 @@ function HoverText:OnUpdate()
     if str == nil and not self.isFE and self.owner:IsActionsVisible() then
         lmb = self.owner.components.playercontroller:GetLeftMouseAction()
         if lmb ~= nil then
-            str = lmb:GetActionString()
+            local overriden
+            str, overriden = lmb:GetActionString()
 
             if colour == nil then
                 if lmb.target ~= nil then
@@ -69,7 +70,7 @@ function HoverText:OnUpdate()
                 end
             end
 
-            if lmb.target ~= nil and lmb.invobject == nil and lmb.target ~= lmb.doer then
+            if not overriden and lmb.target ~= nil and lmb.invobject == nil and lmb.target ~= lmb.doer then
                 local name = lmb.target:GetDisplayName() or (lmb.target.components.named ~= nil and lmb.target.components.named.name) or nil
                 if name ~= nil then
                     local adjective = lmb.target:GetAdjective()

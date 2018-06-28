@@ -2,6 +2,34 @@
 
 EMOJI_ITEMS =
 {
+	emoji_abigail =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "abigail",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_abigail",
+			requires_validation = true,
+			utf8_str = "󰀜",
+		},
+	},
+	emoji_alchemyengine =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "alchemy",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_alchemyengine",
+			requires_validation = true,
+			utf8_str = "󰀝",
+		},
+	},
 	emoji_arcane =
 	{
 		rarity = "Common",
@@ -14,6 +42,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_arcane",
 			requires_validation = true,
 			utf8_str = "󰀀",
+		},
+	},
+	emoji_backpack =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "backpack",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_backpack",
+			requires_validation = true,
+			utf8_str = "󰀞",
 		},
 	},
 	emoji_battle =
@@ -42,6 +84,48 @@ EMOJI_ITEMS =
 			item_type = "emoji_beefalo",
 			requires_validation = true,
 			utf8_str = "󰀁",
+		},
+	},
+	emoji_beehive =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "beehive",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_beehive",
+			requires_validation = true,
+			utf8_str = "󰀟",
+		},
+	},
+	emoji_berry_bush =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "berry",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_berry_bush",
+			requires_validation = true,
+			utf8_str = "󰀠",
+		},
+	},
+	emoji_carrot =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "carrot",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_carrot",
+			requires_validation = true,
+			utf8_str = "󰀡",
 		},
 	},
 	emoji_chest =
@@ -86,6 +170,20 @@ EMOJI_ITEMS =
 			utf8_str = "󰀄",
 		},
 	},
+	emoji_egg =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "egg",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_egg",
+			requires_validation = true,
+			utf8_str = "󰀢",
+		},
+	},
 	emoji_eyeball =
 	{
 		rarity = "Common",
@@ -98,6 +196,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_eyeball",
 			requires_validation = true,
 			utf8_str = "󰀅",
+		},
+	},
+	emoji_eyeplant =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "eyeplant",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_eyeplant",
+			requires_validation = true,
+			utf8_str = "󰀣",
 		},
 	},
 	emoji_faketeeth =
@@ -140,6 +252,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_fire",
 			requires_validation = true,
 			utf8_str = "󰀈",
+		},
+	},
+	emoji_firepit =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "firepit",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_firepit",
+			requires_validation = true,
+			utf8_str = "󰀤",
 		},
 	},
 	emoji_flex =
@@ -240,6 +366,20 @@ EMOJI_ITEMS =
 			utf8_str = "󰀍",
 		},
 	},
+	emoji_horn =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "horn",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_horn",
+			requires_validation = true,
+			utf8_str = "󰀥",
+		},
+	},
 	emoji_hunger =
 	{
 		rarity = "Common",
@@ -266,6 +406,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_lightbulb",
 			requires_validation = true,
 			utf8_str = "󰀏",
+		},
+	},
+	emoji_meat_big =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "meat",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_meat_big",
+			requires_validation = true,
+			utf8_str = "󰀦",
 		},
 	},
 	emoji_pig =
@@ -310,6 +464,34 @@ EMOJI_ITEMS =
 			utf8_str = "󰀒",
 		},
 	},
+	emoji_refine =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "refine",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_refine",
+			requires_validation = true,
+			utf8_str = "󰀧",
+		},
+	},
+	emoji_salt =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "salt",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_salt",
+			requires_validation = true,
+			utf8_str = "󰀨",
+		},
+	},
 	emoji_sanity =
 	{
 		rarity = "Common",
@@ -338,6 +520,34 @@ EMOJI_ITEMS =
 			utf8_str = "󰀔",
 		},
 	},
+	emoji_shadowmanipulator =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "shadow",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_shadowmanipulator",
+			requires_validation = true,
+			utf8_str = "󰀩",
+		},
+	},
+	emoji_shovel =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "shovel",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_shovel",
+			requires_validation = true,
+			utf8_str = "󰀪",
+		},
+	},
 	emoji_skull =
 	{
 		rarity = "Common",
@@ -350,6 +560,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_skull",
 			requires_validation = true,
 			utf8_str = "󰀕",
+		},
+	},
+	emoji_thumbsup =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "thumbsup",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_thumbsup",
+			requires_validation = true,
+			utf8_str = "󰀫",
 		},
 	},
 	emoji_tophat =
@@ -380,6 +604,48 @@ EMOJI_ITEMS =
 			utf8_str = "󰀛",
 		},
 	},
+	emoji_trap =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "trap",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_trap",
+			requires_validation = true,
+			utf8_str = "󰀬",
+		},
+	},
+	emoji_trophy =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "trophy",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_trophy",
+			requires_validation = true,
+			utf8_str = "󰀭",
+		},
+	},
+	emoji_wave =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "wave",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_wave",
+			requires_validation = true,
+			utf8_str = "󰀮",
+		},
+	},
 	emoji_web =
 	{
 		rarity = "Common",
@@ -392,6 +658,20 @@ EMOJI_ITEMS =
 			item_type = "emoji_web",
 			requires_validation = true,
 			utf8_str = "󰀗",
+		},
+	},
+	emoji_wormhole =
+	{
+		rarity = "Common",
+		rarity_modifier = "EventModifier",
+		input_name = "wormhole",
+		type = "emoji",
+		skin_tags = { "VICTORIAN", "EMOJI", },
+		data =
+		{
+			item_type = "emoji_wormhole",
+			requires_validation = true,
+			utf8_str = "󰀯",
 		},
 	},
 }

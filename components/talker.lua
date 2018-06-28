@@ -170,14 +170,14 @@ local function sayfn(self, script, nobroadcast, colour)
 end
 
 local function CancelSay(self)
+    if self.widget ~= nil then
+        self.widget:Kill()
+        self.widget = nil
+    end
+
     if self.task ~= nil then
         scheduler:KillTask(self.task)
         self.task = nil
-
-        if self.widget ~= nil then
-            self.widget:Kill()
-            self.widget = nil
-        end
 
         if self.donetalkingfn ~= nil then
             self.donetalkingfn(self.inst)

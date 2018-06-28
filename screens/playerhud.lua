@@ -119,6 +119,7 @@ function PlayerHud:CreateOverlays(owner)
     self.eventannouncer:SetHAnchor(ANCHOR_MIDDLE)
     self.eventannouncer:SetVAnchor(ANCHOR_TOP)
     self.eventannouncer = self.eventannouncer:AddChild(EventAnnouncer(owner))
+	self.eventannouncer:SetPosition(0, GetGameModeProperty("eventannouncer_offset") or 0)
 end
 
 function PlayerHud:OnDestroy()
@@ -505,11 +506,13 @@ function PlayerHud:OnUpdate(dt)
 end
 
 function PlayerHud:HideControllerCrafting()
-    self.controls.crafttabs:MoveTo(self.controls.crafttabs:GetPosition(), Vector3(-200, 0, 0), .25)
+    local pt = self.controls.crafttabs:GetPosition()
+    self.controls.crafttabs:MoveTo(pt, Vector3(-200, pt.y, pt.z), .25)
 end
 
 function PlayerHud:ShowControllerCrafting()
-    self.controls.crafttabs:MoveTo(self.controls.crafttabs:GetPosition(), Vector3(0, 0, 0), .25)
+    local pt = self.controls.crafttabs:GetPosition()
+    self.controls.crafttabs:MoveTo(pt, Vector3(0, pt.y, pt.z), .25)
 end
 
 function PlayerHud:OpenControllerInventory()
@@ -626,12 +629,14 @@ function PlayerHud:IsPlayerAvatarPopUpOpen()
 end
 
 function PlayerHud:OpenControllerCrafting()
-    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/craft_open")
-    TheFrontEnd:StopTrackingMouse()
-    self:CloseControllerInventory()
-    self.controls.inv:Disable()
-    self.controls.crafttabs:OpenControllerCrafting()
-    self.controls.item_notification:ToggleController(true)
+    if self.controls.crafttabs.tabs:GetFirstIdx() ~= nil then
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/craft_open")
+        TheFrontEnd:StopTrackingMouse()
+        self:CloseControllerInventory()
+        self.controls.inv:Disable()
+        self.controls.crafttabs:OpenControllerCrafting()
+        self.controls.item_notification:ToggleController(true)
+    end
 end
 
 function PlayerHud:CloseControllerCrafting()

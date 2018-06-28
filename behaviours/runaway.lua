@@ -1,4 +1,4 @@
-RunAway = Class(BehaviourNode, function(self, inst, hunterparams, see_dist, safe_dist, fn, runhome)
+RunAway = Class(BehaviourNode, function(self, inst, hunterparams, see_dist, safe_dist, fn, runhome, fix_overhang)
     BehaviourNode._ctor(self, "RunAway")
     self.safe_dist = safe_dist
     self.see_dist = see_dist
@@ -16,6 +16,7 @@ RunAway = Class(BehaviourNode, function(self, inst, hunterparams, see_dist, safe
     self.inst = inst
     self.runshomewhenchased = runhome
     self.shouldrunfn = fn
+	self.fix_overhang = fix_overhang -- this will put the point check back on land if self.inst is stepping on the ocean overhang part of the land
 end)
 
 function RunAway:__tostring()
@@ -46,7 +47,15 @@ function RunAway:GetRunAngle(pt, hp)
     if result_angle == nil then
         result_offset, result_angle, deflected = FindWalkableOffset(pt, angle*DEGREES, radius, 8, true, true) -- ok don't try to avoid walls, but at least avoid water
         if result_angle == nil then
-            return angle -- ok whatever, just run
+			if self.fix_overhang and not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) then
+				local back_on_ground = FindNearbyLand(pt, 1) -- find a point back on proper ground
+				if back_on_ground ~= nil then
+			        result_offset, result_angle, deflected = FindWalkableOffset(back_on_ground, math.random()*2*math.pi, radius - 1, 8, true, true) -- ok don't try to avoid walls, but at least avoid water
+				end
+			end
+			if result_angle == nil then
+	            return angle -- ok whatever, just run
+			end
         end
     end
 

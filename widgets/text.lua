@@ -7,8 +7,8 @@ local Text = Class(Widget, function(self, font, size, text, colour)
 
     self.inst.TextWidget:SetFont(font)
     self.font = font
-    self.inst.TextWidget:SetSize(size)
-    self.size = size
+
+	self:SetSize(size)
 
     self:SetColour(colour or { 1, 1, 1, 1 })
 
@@ -83,8 +83,13 @@ function Text:SetFont(font)
 end
 
 function Text:SetSize(sz)
+    sz = sz * GetTextScale()
     self.inst.TextWidget:SetSize(sz)
     self.size = sz
+end
+
+function Text:GetSize()
+    return self.size
 end
 
 function Text:SetRegionSize(w,h)

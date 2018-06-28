@@ -27,6 +27,9 @@ local function AddChestItems(chest, loot, num)
 		local spawn = math.random() <= (itemtype.chance or 1)
 
 		local count = itemtype.count or 1
+		if type(count) == "function" then
+			count = count()
+		end
 
 		if spawn then
 			for i = 1, count do

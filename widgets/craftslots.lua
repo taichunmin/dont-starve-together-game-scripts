@@ -1,20 +1,16 @@
-local TileBG = require "widgets/tilebg"
-local InventorySlot = require "widgets/invslot"
-local Image = require "widgets/image"
-local ImageButton = require "widgets/imagebutton"
 local Widget = require "widgets/widget"
-local TabGroup = require "widgets/tabgroup"
-local UIAnim = require "widgets/uianim"
-local Text = require "widgets/text"
 local CraftSlot = require "widgets/craftslot"
+
 
 local CraftSlots = Class(Widget, function(self, num, owner)
     Widget._ctor(self, "CraftSlots")
     
+    local CRAFTING_ATLAS = GetGameModeProperty("hud_atlas") or HUD_ATLAS
+
     self.owner = owner
     self.slots = {}
     for k = 1, num do
-        local slot = CraftSlot(HUD_ATLAS, "craft_slot.tex", owner)
+        local slot = CraftSlot(CRAFTING_ATLAS, "craft_slot.tex", owner)
         -- self.slots[k] = slot
         self:AddChild(slot)
         table.insert(self.slots, slot)

@@ -304,7 +304,7 @@ end
 
 function d_unlockallachievements()
 	local achievements = {}
-	for k, _ in pairs(EventAchievements:GetAchievementsIdList("lavaarena")) do
+	for k, _ in pairs(EventAchievements:GetAchievementsIdList("quagmire")) do
 		table.insert(achievements, k)
 	end
 	
@@ -326,6 +326,36 @@ function d_unlockallachievements()
 
 end
 
+function d_unlockfoodachievements()
+	local achievements = {
+    	"food_001", "food_002", "food_003", "food_004", "food_005", "food_006", "food_007", "food_008", "food_009",
+	    "food_010", "food_011", "food_012", "food_013", "food_014", "food_015", "food_016", "food_017", "food_018", "food_019",
+	    "food_020", "food_021", "food_022", "food_023", "food_024", "food_025", "food_026", "food_027", "food_028", "food_029",
+	    "food_030", "food_031", "food_032", "food_033", "food_034", "food_035", "food_036", "food_037", "food_038", "food_039",
+	    "food_040", "food_041", "food_042", "food_043", "food_044", "food_045", "food_046", "food_047", "food_048", "food_049",
+	    "food_050", "food_051", "food_052", "food_053", "food_054", "food_055", "food_056", "food_057", "food_058", "food_059",
+		"food_060",	"food_061", "food_062", "food_063", "food_064", "food_065", "food_066", "food_067", "food_068", "food_069",
+	    "food_syrup",
+    }
+	
+	TheItems:ReportEventProgress(json.encode(
+		{
+			WorldID = "dev_"..tostring(math.random(9999999))..tostring(math.random(9999999)),
+			Teams =
+			{
+				{
+					Won=true,
+					Points=5,
+					PlayerStats=
+					{
+						{KU = TheNet:GetUserID(), PlaytimeMs = 1000, Custom = { UnlockAchievements = achievements }},
+					}
+				},
+			}
+		}), function(ku_tbl, success) print( "Report event:", success) dumptable(ku_tbl) end )
+
+end
+
 function d_reportevent(other_ku)
 	TheItems:ReportEventProgress(json.encode(
 		{
@@ -338,17 +368,35 @@ function d_reportevent(other_ku)
 					PlayerStats=
 					{
 						{KU = TheNet:GetUserID(), PlaytimeMs = 100000, Custom = { UnlockAchievements = {"nodeaths_self", "wintime_30", "wilson_reviver"} }},
-						{KU = other_ku or "KU_test", PlaytimeMs = 60000}
+						--{KU = other_ku or "KU_test", PlaytimeMs = 60000}
 					}
 				},
-				{
-					Won=false,
-					Points=2,
-					PlayerStats=
-					{
-						{KU = "KU_test2", PlaytimeMs = 6000}
-					}
-				}
+				--{
+				--	Won=false,
+				--	Points=2,
+				--	PlayerStats=
+				--	{
+				--		{KU = "KU_test2", PlaytimeMs = 6000}
+				--	}
+				--}
 			}
 		}), function(ku_tbl, success) print( "Report event:", success) dumptable(ku_tbl) end )
+end
+
+function d_makesoil()
+	local pt = TheInput:GetWorldPosition()
+	
+    local x, y = TheWorld.Map:GetTileCoordsAtPoint(pt:Get())
+
+    local original_tile_type = TheWorld.Map:GetTileAtPoint(pt:Get())
+    TheWorld.Map:SetTile(x, y, GROUND.QUAGMIRE_SOIL)
+    TheWorld.Map:RebuildLayer(original_tile_type, x, y)
+    TheWorld.Map:RebuildLayer(GROUND.QUAGMIRE_SOIL, x, y)
+
+    TheWorld.minimap.MiniMap:RebuildLayer(original_tile_type, x, y)
+    TheWorld.minimap.MiniMap:RebuildLayer(GROUND.QUAGMIRE_SOIL, x, y)
+end
+
+function d_portalfx()
+	TheWorld:PushEvent("ms_newplayercharacterspawned", { player = ThePlayer})
 end

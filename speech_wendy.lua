@@ -25,7 +25,12 @@ return {
         {
         	WRONGKEY = "It remains locked, like my heart.",
         	KLAUS = "Death would surely find me if I tried...",
+        	QUAGMIRE_WRONGKEY = "Should I give up, or find another key?",
         },
+        ACTIVATE = 
+		{
+			LOCKED_GATE = "I can't open it without a key.",
+		},
 		WRITE =
         {
             GENERIC = "I... I can't.",
@@ -80,6 +85,8 @@ return {
             MUSHROOMFARM_NEEDSSHROOM = "It doesn't need that. It needs a mushroom.",
             MUSHROOMFARM_NEEDSLOG = "It doesn't need that. It needs a magic log.",
             SLOTFULL = "There's no room...",
+            FOODFULL = "It hasn't yet eaten our last sacrifice...",
+            NOTDISH = "That may not be best...",
             DUPLICATE = "Oh... my information's useless...",
             NOTSCULPTABLE = "I think that's... wrong...",
             CANTSHADOWREVIVE = "It has no will to live.",
@@ -112,6 +119,12 @@ return {
         PICKUP =
         {
 			RESTRICTION = "No... I don't want that...",
+			INUSE = "Someone's beat me to it.",
+        },
+        REPLATE =
+        {
+            MISMATCH = "Like my soul, this food doesn't belong in this vessel.", 
+            SAMEDISH = "I've already put this on a dish.", 
         },
 	},
 	ACTIONFAIL_GENERIC = "I can't do anything right.",
@@ -236,11 +249,16 @@ return {
 	ANNOUNCE_WETTER = "An eternity of moisture and sorrow.",
 	ANNOUNCE_SOAKED = "A veritable apocalypse of water.",
 
-	--boarlord event
-	ANNOUNCE_REVIVING_CORPSE = "You'll not glimpse death today...",
-	ANNOUNCE_REVIVED_OTHER_CORPSE = "All done.",
-	ANNOUNCE_REVIVED_FROM_CORPSE = "Thank-you...",
-	
+    --lavaarena event
+    ANNOUNCE_REVIVING_CORPSE = "You'll not glimpse death today...",
+    ANNOUNCE_REVIVED_OTHER_CORPSE = "All done.",
+    ANNOUNCE_REVIVED_FROM_CORPSE = "Thank-you...",
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "Those foods weren't meant to be together.",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "It's ruined.",
+    QUAGMIRE_ANNOUNCE_LOSE = "What a horrible place to have a curse.",
+    QUAGMIRE_ANNOUNCE_WIN = "Let us depart this terrible place.",
+
 	BATTLECRY =
 	{
 		GENERIC = "Death will find you!",
@@ -1163,7 +1181,7 @@ return {
 			BURNING = "Well, old maps always do look burnt at the edges...",
 			BURNT = "No more mapmaking, then.",
 		},
-		CAVE_FERN = "A touch of color in the darkness.",
+		CAVE_FERN = "A touch of color in the bleakness.",
 		CHARCOAL = "Cold, dead and black, just like my heart.",
 
         CHESSPIECE_PAWN = "We are all but pawns in this game called \"life\".",
@@ -2108,13 +2126,229 @@ return {
         LAVAARENA_CROWNDAMAGERHAT = "I forsee a wave of death.",
         
         WEBBER_SPIDER_MINION = "Webber seems proud of them.",
-	},
-	DESCRIBE_GENERIC = "Sigh... I don't know.",
-	DESCRIBE_TOODARK = "The darkness! It is too dark!",
-	DESCRIBE_SMOLDERING = "It's about to be swallowed by flames.",
 
-	EAT_FOOD =
-	{
-		TALLBIRDEGG_CRACKED = "I spared it the torment of living.",
-	},
+        --Quagmire
+        QUAGMIRE_ALTAR = 
+        {
+        	GENERIC = "The monster's hunger shall never cease.",
+        	FULL = "We have prolonged our horrific demise.",
+        },
+		QUAGMIRE_ALTAR_STATUE1 = "What horror have those eyes witnessed?",
+		QUAGMIRE_PARK_FOUNTAIN = "Long dry.",
+		--
+        QUAGMIRE_HOE = "To till the corrupt soil.",
+        --
+        QUAGMIRE_TURNIP = "It's... a turnip.",
+        QUAGMIRE_TURNIP_COOKED = "The turnip is now cooked.",
+        QUAGMIRE_TURNIP_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_GARLIC = "It gives food flavor.",
+        QUAGMIRE_GARLIC_COOKED = "It smells a bit nice.",
+        QUAGMIRE_GARLIC_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_ONION = "I never cry.",
+        QUAGMIRE_ONION_COOKED = "It will never make anyone cry again.",
+        QUAGMIRE_ONION_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_POTATO = "It has eyes, yet it never cries.",
+        QUAGMIRE_POTATO_COOKED = "Now its eyes will never open.",
+        QUAGMIRE_POTATO_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_TOMATO = "Red as heart's blood.",
+        QUAGMIRE_TOMATO_COOKED = "Its flesh is far more bloody now.",
+        QUAGMIRE_TOMATO_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_FLOUR = "Flour by any other name would smell as sweet.",
+        QUAGMIRE_WHEAT = "We can grind it down into flour.",
+        QUAGMIRE_WHEAT_SEEDS = "The life they contain is a mystery.",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "The life they contain is a mystery.",
+        --
+        QUAGMIRE_ROTTEN_CROP = "Time came for it.",
+        --
+		QUAGMIRE_SALMON = "It flops as its life slowly leaves its body.",
+		QUAGMIRE_SALMON_COOKED = "Not so lively now.",
+		QUAGMIRE_CRABMEAT = "Its insides are as horrid as its outsides.",
+		QUAGMIRE_CRABMEAT_COOKED = "It's ready now.",
+        QUAGMIRE_POT = "We cook to stave off death.",
+        QUAGMIRE_POT_SMALL = "We will cook, or we will die.",
+        QUAGMIRE_POT_HANGER_ITEM = "It's for hanging the pot over the fire.",
+        QUAGMIRE_OVEN_ITEM = "Sigh... Why bother?",
+        QUAGMIRE_OVEN = "It looks good.",
+		QUAGMIRE_SUGARWOODTREE = 
+		{
+			GENERIC = "It has a sickly beauty.",
+			STUMP = "All things must end.",
+			TAPPED_EMPTY = "Like a dagger through the heart. A tree heart.",
+			TAPPED_READY = "I can harvest it now.",
+			TAPPED_BUGS = "All that sacrifice for nothing.",
+			WOUNDED = "Its life ebbs.",
+		},
+		QUAGMIRE_SPOTSPICE_SHRUB = 
+		{
+			GENERIC = "I suppose it could be edible.",
+			PICKED = "We've taken all there was to take.",
+		},
+		QUAGMIRE_SPOTSPICE_SPRIG = "We ripped it from its home on the shrub.",
+		QUAGMIRE_SPOTSPICE_GROUND = "Just a dash.",
+		QUAGMIRE_SAPBUCKET = "For collecting tree blood.",
+		QUAGMIRE_SAP = "Tree blood.",
+		
+		QUAGMIRE_SALT_RACK =
+		{
+			READY = "There is salt to be had.",
+			GENERIC = "There is no salt, yet.",
+		},
+
+		QUAGMIRE_SALT_RACK_ITEM = "It's for collecting salt from the pond.",
+
+		QUAGMIRE_SAFE = 
+		{
+			GENERIC = "Let's have a peek inside...",
+			LOCKED = "Locked, like my heart.",
+		},
+
+		QUAGMIRE_KEY = "It is the key to something precious.",
+		QUAGMIRE_KEY_PARK = "The key to a beautiful place, locked long away.",
+        QUAGMIRE_PORTAL_KEY = "Perhaps I'll be happier in the next world.",
+
+
+		QUAGMIRE_MUSHROOMSTUMP =
+		{
+			GENERIC = "They thrive on a stump made by death.",
+			PICKED = "All things die. Even fungus.",
+		},
+		QUAGMIRE_MUSHROOMS = "Maybe we'll get lucky and they'll be poisonous.",
+        QUAGMIRE_MEALINGSTONE = "I am ground down on the mealing stone of life.",
+
+		QUAGMIRE_PEBBLECRAB = "Had I such a shell, I would never emerge.",
+
+		QUAGMIRE_POND_SALT = "Water, water, everywhere...",
+		--
+		QUAGMIRE_RUBBLE_CARRIAGE = "It's been forgotten.",
+        QUAGMIRE_RUBBLE_CLOCK = "Time is an illusion.",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "Nothing more to pray for.",
+        QUAGMIRE_RUBBLE_PUBDOOR = "A door that leads nowhere.",
+        QUAGMIRE_RUBBLE_ROOF = "The roof cannot protect you when death comes.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "Time is death's ally.",
+        QUAGMIRE_RUBBLE_BIKE = "Nothing escaped this plague.",
+        QUAGMIRE_RUBBLE_HOUSE = {"Death has been here.", "It's a ghost town.", "Some tragedy has struck this house.",},
+        QUAGMIRE_RUBBLE_CHIMNEY = "This was once a happy home.",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "Its hearth no longer has a home.",
+        QUAGMIRE_MERMHOUSE =  "Seclusion has not been kind to it.",
+        QUAGMIRE_SWAMPIG_HOUSE = "I see no joy in this house.",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "Neither a house nor a home.",
+        QUAGMIRE_SWAMPIGELDER =
+        {
+            GENERIC = "How do you do, sir?",
+            SLEEPING = "He is practicing for the big sleep.",
+        },
+        QUAGMIRE_SWAMPIG = "They're less standoffish than their brethren.",
+        --
+        QUAGMIRE_PORTAL = "There's no night here. It is a nice change.",
+        QUAGMIRE_SALTROCK = "It needs to be ground down before we can use it.",
+        QUAGMIRE_SALT = "It adds flavor...",
+        QUAGMIRE_FERN = "Wilson calls them \"greens\"... but they're purple...",
+        QUAGMIRE_FOLIAGE_COOKED = "Cooked purples.",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "A waste.",
+        --QUAGMIRE_FOOD_PLATE = "My usual dinner. A big plate of nothing.",
+        --QUAGMIRE_FOOD_SOUP = "Merely a broth. It's not sustenance for my soul.",
+        --QUAGMIRE_FOOD_SNACK = "This will keep me alive a bit longer.",
+        --QUAGMIRE_FOOD_BREAD = "Prolongs my life so that I may suffer further.",
+        --QUAGMIRE_FOOD_PASTA = "Morte bene.",
+        --QUAGMIRE_FOOD_VEGGIE = "Vegetables are good for you but what's the point.",
+        --QUAGMIRE_FOOD_MEAT = "An animal died for this food.",
+        --QUAGMIRE_FOOD_FISH = "A fish died for this food.",
+        --QUAGMIRE_FOOD_CRAB = "A sea creature died for this food.",
+        --QUAGMIRE_FOOD_CHEESE = "Death is not cheesy.",
+        --QUAGMIRE_FOOD_SWEET = "It cannot sweeten life.",
+        QUAGMIRE_FOOD =
+        {
+        	GENERIC = "We should offer it to the beast.",
+            MISMATCH = "The beast doesn't want that.",
+            MATCH = "The beast will be satisfied with this.",
+            MATCH_BUT_SNACK = "This will satisfy the beast, but not for long.",
+        },
+        --
+        QUAGMIRE_COIN1 = "I shall put them on my eyes when I die.",
+        QUAGMIRE_COIN2 = "Money will not bring back Abigail.",
+        QUAGMIRE_COIN3 = "Wealth cannot buy immortality.",
+        QUAGMIRE_COIN4 = "It came from above.",
+        QUAGMIRE_GOATMILK = "But no honey.",
+        QUAGMIRE_SYRUP = "Not as sweet as Abigail.",
+        QUAGMIRE_SAP_SPOILED = "As bittersweet as life.",
+        QUAGMIRE_SEEDPACKET = "Planting seeds requires an optimism I don't possess.",
+        --QUAGMIRE_SEEDPACKET_SMALL = "A small amount of idealism.",
+        --QUAGMIRE_SEEDPACKET_MEDIUM = "A moderate amount of hopefulness.",
+        --QUAGMIRE_SEEDPACKET_LARGE = "A large collection of sanguinity.",
+        --QUAGMIRE_SEEDPACKET_MIX_SMALL = "A mystery of disappointments.",
+        --QUAGMIRE_SEEDPACKET_MIX_MEDIUM = "I suspect they will all spoil.",
+        --QUAGMIRE_SEEDPACKET_MIX_LARGE = "So much potential for blight.",
+        ---
+        QUAGMIRE_POT = "We cook to stave off death.",
+        QUAGMIRE_POT_SMALL = "We will cook, or we will die.",
+        QUAGMIRE_POT_SYRUP = "Sweetness begets sweetness.",
+        QUAGMIRE_POT_HANGER = "The hanger is a noose for a pot.",
+        QUAGMIRE_POT_HANGER_ITEM = "It's for hanging the pot over the fire.",
+        QUAGMIRE_GRILL = "It can't make life more palatable.",
+        QUAGMIRE_GRILL_ITEM = "I don't want to carry this around.",
+        QUAGMIRE_GRILL_SMALL = "It makes a little bit of food.",
+        QUAGMIRE_GRILL_SMALL_ITEM = "It only works if I place it somewhere.",
+        QUAGMIRE_OVEN = "It looks okay.",
+        QUAGMIRE_OVEN_ITEM = "Sigh... Why bother?",
+        QUAGMIRE_CASSEROLEDISH = "For making food.",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "For making a small amount of food.",
+        QUAGMIRE_PLATE_SILVER = "If only life had been handed to me on a silver plate.",
+        QUAGMIRE_BOWL_SILVER = "It is empty, like my heart.",
+
+        ---
+        QUAGMIRE_MERM_CART1 = "I, too, cart around my baggage.", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "Nothing in there could bring me happiness.", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "It's winged, but it's no angel.",
+        QUAGMIRE_PARK_ANGEL2 = "Abigail needs a statue.",
+        QUAGMIRE_PARK_URN = "Dust to dust.",
+        QUAGMIRE_PARK_OBELISK = "A monument. But not to Abigail.",
+        QUAGMIRE_PARK_GATE =
+        {
+            GENERIC = "Now I may enter the park.",
+            LOCKED = "I need a key to enter.",
+        },
+        QUAGMIRE_PARKSPIKE = "Looks dangerous.",
+        QUAGMIRE_CRABTRAP = "Life is a trap.",
+        QUAGMIRE_TRADER_MERM = "How do you do?",
+        QUAGMIRE_TRADER_MERM2 = "How do you do?",
+        --
+        QUAGMIRE_GOATMUM = "Hello, ma'am. Care to trade?",
+        QUAGMIRE_GOATKID = "What childhood is this for you?",
+        QUAGMIRE_PIGEON =
+        {
+            DEAD = "Cold and dead.",
+            GENERIC = "Would you like to be a pie, little bird?",
+            SLEEPING = "It's practicing for the big sleep.",
+        },
+        QUAGMIRE_LAMP_POST = "It sheds light on nothing important.",
+
+        QUAGMIRE_BEEFALO = "Don't worry. You'll be dead soon.",
+        QUAGMIRE_SLAUGHTERTOOL = "Is all of life not a slaughter?",
+
+        QUAGMIRE_SAPLING = "We will perish before this grows back.",
+        QUAGMIRE_BERRYBUSH = "It shall never grow another berry.",
+
+        QUAGMIRE_ALTAR_STATUE2 = "Yet another reminder of death.",
+        QUAGMIRE_ALTAR_QUEEN = "I am not impressed by opulence.",
+        QUAGMIRE_ALTAR_BOLLARD = "A post. Not very exciting.",
+        QUAGMIRE_ALTAR_IVY = "Like death, it creeps everywhere.",
+
+        QUAGMIRE_LAMP_SHORT = "The only light in my light is Abigail.",
+
+    },
+    DESCRIBE_GENERIC = "Sigh... I don't know.",
+    DESCRIBE_TOODARK = "The darkness! It is too dark!",
+    DESCRIBE_SMOLDERING = "It's about to be swallowed by flames.",
+
+    EAT_FOOD =
+    {
+        TALLBIRDEGG_CRACKED = "I spared it the torment of living.",
+    },
 }

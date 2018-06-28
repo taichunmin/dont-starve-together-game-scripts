@@ -60,20 +60,22 @@ function Button:OnControl(control, down)
 	if control == self.control then
 
 		if down then
-			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-			self.o_pos = self:GetLocalPosition()
-			self:SetPosition(self.o_pos + self.clickoffset)
-			self.down = true
-			if self.whiledown then
-				self:StartUpdating()
-			end
-			if self.ondown then
-				self.ondown()
+			if not self.down then
+				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+				self.o_pos = self:GetLocalPosition()
+				self:SetPosition(self.o_pos + self.clickoffset)
+				self.down = true
+				if self.whiledown then
+					self:StartUpdating()
+				end
+				if self.ondown then
+					self.ondown()
+				end
 			end
 		else
 			if self.down then
 				self.down = false
-				self:SetPosition(self.o_pos)
+                self:ResetPreClickPosition()
 				if self.onclick then
 					self.onclick()
 				end
@@ -108,15 +110,21 @@ function Button:OnGainFocus()
     end
 end
 
+function Button:ResetPreClickPosition()
+	if self.o_pos then
+		self:SetPosition(self.o_pos)
+        self.o_pos = nil
+    end
+end
+
 function Button:OnLoseFocus()
 	Button._base.OnLoseFocus(self)
 	
 	if self:IsEnabled() and not self.selected then
 		self.text:SetColour(self.textcolour)
 	end
-	if self.o_pos then
-		self:SetPosition(self.o_pos)
-	end
+	self:ResetPreClickPosition()
+
 	self.down = false
 
     if self.onlosefocus then

@@ -42,15 +42,15 @@ local function common_fn(bank, build)
     -----
     inst:AddComponent("tool")
     inst.components.tool:SetAction(ACTIONS.MINE)
+
     -------
     inst:AddComponent("finiteuses")
-    
     inst.components.finiteuses:SetMaxUses(TUNING.PICKAXE_USES)
     inst.components.finiteuses:SetUses(TUNING.PICKAXE_USES)
     inst.components.finiteuses:SetOnFinished(inst.Remove) 
     inst.components.finiteuses:SetConsumption(ACTIONS.MINE, 1)
-    -------
 
+    -------
     inst:AddComponent("weapon")
     inst.components.weapon:SetDamage(TUNING.PICK_DAMAGE)
 

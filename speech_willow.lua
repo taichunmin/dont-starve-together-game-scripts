@@ -20,7 +20,12 @@ return {
         {
         	WRONGKEY = "Darn thing won't work!",
         	KLAUS = "But that big ugly thing is on my tail!",
+        	QUAGMIRE_WRONGKEY = "You mean there's another key?!",
         },
+        ACTIVATE = 
+		{
+			LOCKED_GATE = "I can't even burn it!",
+		},
 		STORE =
 		{
 			GENERIC = "It's full already.",
@@ -80,6 +85,8 @@ return {
             MUSHROOMFARM_NEEDSSHROOM = "Ughh, it doesn't need this! It needs a mushroom!",
             MUSHROOMFARM_NEEDSLOG = "Ughh, it doesn't need this! It needs a living log!",
             SLOTFULL = "Naw, can't make it fit.",
+            FOODFULL = "I have to wait for it to eat this one first.",
+            NOTDISH = "I wouldn't serve that to a dog!",
             DUPLICATE = "Awww, we already know that one!",
             NOTSCULPTABLE = "I'd like to see someone try to sculpt with that!",
             CANTSHADOWREVIVE = "It's not working.",
@@ -112,6 +119,12 @@ return {
         PICKUP =
         {
 			RESTRICTION = "I'm not using that!",
+			INUSE = "But I want to use it!",
+        },
+        REPLATE =
+        {
+            MISMATCH = "Ugh! I can't use that dish for that food!", 
+            SAMEDISH = "It's already on a dish!", 
         },
 	},
 	ACTIONFAIL_GENERIC = "I can'tttttt.",
@@ -249,10 +262,15 @@ return {
 	ANNOUNCE_TOADESCAPING = "Don't even think about running, toad!",
 	ANNOUNCE_TOADESCAPED = "Ughh! But I was winning!",
 
-	--boarlord event
-	ANNOUNCE_REVIVING_CORPSE = "Hey! Get back up!",
-	ANNOUNCE_REVIVED_OTHER_CORPSE = "You got this!",
-	ANNOUNCE_REVIVED_FROM_CORPSE = "Thanks for the hand!",
+    --lavaarena event
+    ANNOUNCE_REVIVING_CORPSE = "Hey! Get back up!",
+    ANNOUNCE_REVIVED_OTHER_CORPSE = "You got this!",
+    ANNOUNCE_REVIVED_FROM_CORPSE = "Thanks for the hand!",
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "Okay, so that didn't work.",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "Whoops, burnt it. Heh heh.",
+    QUAGMIRE_ANNOUNCE_LOSE = "I think it's angry!!",
+    QUAGMIRE_ANNOUNCE_WIN = "Let's get out of here!",
 
 	BATTLECRY =
 	{
@@ -2135,13 +2153,227 @@ return {
         LAVAARENA_RECHARGERHAT = "Ohh, I want it!",
         LAVAARENA_HEALINGGARLANDHAT = "I don't even wanna burn it!",
         LAVAARENA_CROWNDAMAGERHAT = "Dibs!",
-	},
-	DESCRIBE_GENERIC = "I have no idea what that is!",
-	DESCRIBE_TOODARK = "I need more light!",
-	DESCRIBE_SMOLDERING = "Hooray, it's about to light on fire!",
 
-	EAT_FOOD =
-	{
-		TALLBIRDEGG_CRACKED = "Ugh. Crunchy.",
-	},
+        --Quagmire
+        QUAGMIRE_ALTAR = 
+        {
+        	GENERIC = "Don't. Look. Up.",
+            FULL = "I wonder where all the food goes. Probably somewhere gross.",
+    	},
+		QUAGMIRE_ALTAR_STATUE1 = "Haha! Look at this dumb goat statue.",
+		QUAGMIRE_PARK_FOUNTAIN = "A fountain with no water. Maybe that's a metaphor?",
+		--
+        QUAGMIRE_HOE = "You mean I gotta do work?",
+        --
+        QUAGMIRE_TURNIP = "Haha gross, I hate turnips.",
+        QUAGMIRE_TURNIP_COOKED = "Take that, turnip.",
+        QUAGMIRE_TURNIP_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_GARLIC = "It's just a couple cloves of garlic.",
+        QUAGMIRE_GARLIC_COOKED = "Fire made it better.",
+        QUAGMIRE_GARLIC_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_ONION = "It's so bulbous.",
+        QUAGMIRE_ONION_COOKED = "Roasting. My favorite cooking method.",
+        QUAGMIRE_ONION_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_POTATO = "We grew it in that gross muck.",
+        QUAGMIRE_POTATO_COOKED = "Cooking just means sticking stuff in fire.",
+        QUAGMIRE_POTATO_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_TOMATO = "Cutting these is a pain.",
+        QUAGMIRE_TOMATO_COOKED = "It just needed a couple minutes on the fire.",
+        QUAGMIRE_TOMATO_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_FLOUR = "Can you just eat flour?",
+        QUAGMIRE_WHEAT = "How on earth do you eat this?",
+        QUAGMIRE_WHEAT_SEEDS = "It's just a bunch of seeds.",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "It's just a bunch of seeds.",
+        --
+        QUAGMIRE_ROTTEN_CROP = "That one stayed in the ground too long.",
+        --
+		QUAGMIRE_SALMON = "Look at it, flopping around like that.",
+		QUAGMIRE_SALMON_COOKED = "All it needed was some fire.",
+		QUAGMIRE_CRABMEAT = "Needs more fire.",
+		QUAGMIRE_CRABMEAT_COOKED = "I bet it's tasty.",
+        QUAGMIRE_POT = "I should light a fire under its butt.",
+        QUAGMIRE_POT_SMALL = "It goes on the fire.",
+        QUAGMIRE_POT_HANGER_ITEM = "We're gonna cook that up real nice.",
+        QUAGMIRE_OVEN_ITEM = "I can't wait to use it!",
+        QUAGMIRE_OVEN = "Now we're cooking!",
+		QUAGMIRE_SUGARWOODTREE = 
+		{
+			GENERIC = "Aw! It's impervious to fire.",
+			STUMP = "It's kinda useless now.",
+			TAPPED_EMPTY = "It's taking forever!",
+			TAPPED_READY = "Sap's ready!",
+			TAPPED_BUGS = "Stupid bugs.",
+			WOUNDED = "You don't look so hot, tree.",
+		},
+		QUAGMIRE_SPOTSPICE_SHRUB = 
+		{
+			GENERIC = "It smells kind of pepper-y.",
+			PICKED = "That's not growing back.",
+		},
+		QUAGMIRE_SPOTSPICE_SPRIG = "It's a piece of that pepper-y bush.",
+		QUAGMIRE_SPOTSPICE_GROUND = "Spices... the true spice of life.",
+		QUAGMIRE_SAPBUCKET = "Now we can get sap out of the trees.",
+		QUAGMIRE_SAP = "Mmm! Pure sugar!",
+		QUAGMIRE_SALT_RACK =
+		{
+			READY = "Gotta dredge the salt up.",
+			GENERIC = "Grow faster, salt crystals!",
+		},
+		
+		QUAGMIRE_SALT_RACK_ITEM = "We can use it to get some cooking salt.",
+
+		QUAGMIRE_SAFE = 
+		{
+			GENERIC = "Ha! Cracked it.",
+			LOCKED = "I can't get it to open.",
+		},
+
+		QUAGMIRE_KEY = "I'll use this if I can't burn it open.",
+		QUAGMIRE_KEY_PARK = "There's more stuff to burn in the park.",
+        QUAGMIRE_PORTAL_KEY = "Fancy key.",
+
+		QUAGMIRE_MUSHROOMSTUMP =
+		{
+			GENERIC = "They're so hideous they're almost cute.",
+			PICKED = "Hey! Give me more mushrooms!",
+		},
+		QUAGMIRE_MUSHROOMS = "It's totally raw. Fire could fix that!",
+        QUAGMIRE_MEALINGSTONE = "I can smash stuff down with it.",
+
+		QUAGMIRE_PEBBLECRAB = "Don't worry, I won't kick you.",
+
+		QUAGMIRE_POND_SALT = "Blech! Tastes like ocean.",
+		--
+		QUAGMIRE_RUBBLE_CARRIAGE = "It's so busted, I don't even wanna light it on fire.",
+        QUAGMIRE_RUBBLE_CLOCK = "I'd love to burn that to ashes.",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "What a waste. It could've burned down.",
+        QUAGMIRE_RUBBLE_PUBDOOR = "It'd be better if it was burnt.",
+        QUAGMIRE_RUBBLE_ROOF = "The roof isn't on fire.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "That would look better on fire.",
+        QUAGMIRE_RUBBLE_BIKE = "Metal doesn't burn well.",
+        QUAGMIRE_RUBBLE_HOUSE = {"It's like there was a Great Fire, without the fire.", "There's no one here. Boring.", "I wish this would burn.",},
+        QUAGMIRE_RUBBLE_CHIMNEY = "What's a chimney without a fireplace?",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "Ugh! It won't even burn.",
+        QUAGMIRE_MERMHOUSE = "That's what passes for a village around here, I guess.",
+        QUAGMIRE_SWAMPIG_HOUSE = "It's just asking to be burned down.",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "Hey pigs! Your house blew down!",
+        QUAGMIRE_SWAMPIGELDER =
+        {
+            GENERIC = "They're not so different from the pigs back at our place.",
+            SLEEPING = "It's taking a nap.",
+        },
+        QUAGMIRE_SWAMPIG = "Not the prettiest face.",
+        --
+        QUAGMIRE_PORTAL = "I'm just gonna keep jumping through portals til I figure out a way home.",
+        QUAGMIRE_SALTROCK = "I licked one. Had to.",
+        QUAGMIRE_SALT = "I need a pinch or two on all my food.",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "Looks good to me.",
+        --QUAGMIRE_FOOD_PLATE = "Can't make a dish without breaking a few plates.",
+        --QUAGMIRE_FOOD_BOWL = "Now I don't have to eat soup out of my hands.",
+        --QUAGMIRE_FOOD_SOUP = "Even water tastes better when fire's been added to it.",
+        --QUAGMIRE_FOOD_SNACK = "This will keep me going for a little longer.",
+        --QUAGMIRE_FOOD_BREAD = "So this is what all that wheat is for.",
+        --QUAGMIRE_FOOD_PASTA = "Load up on carbs.",
+        --QUAGMIRE_FOOD_VEGGIE = "Vegetables. Ugh.",
+        --QUAGMIRE_FOOD_MEAT = "It's got protein.",
+        --QUAGMIRE_FOOD_FISH = "Something smells fishy.",
+        --QUAGMIRE_FOOD_CRAB = "Kinda makes me crabby.",
+        --QUAGMIRE_FOOD_CHEESE = "Good thing I'm not lactose intolerant.",
+        --QUAGMIRE_FOOD_SWEET = "Aww...sweet!",
+        QUAGMIRE_FOOD =
+        {
+        	GENERIC = "Maybe that thing up there'll eat it.",
+            MISMATCH = "It doesn't want that. Might as well burn it.",
+            MATCH = "This should shut that thing up for a while.",
+            MATCH_BUT_SNACK = "This won't shut it up for long.",
+        },
+        QUAGMIRE_FERN = "I can take my pick of them.",
+        QUAGMIRE_FOLIAGE_COOKED = "Leaf this to a professional.",
+        --
+        QUAGMIRE_COIN1 = "Wow. A coin. Pfft.",
+        QUAGMIRE_COIN2 = "I can probably buy something good with this.",
+        QUAGMIRE_COIN3 = "I'm rich!",
+        QUAGMIRE_COIN4 = "Guess that thing liked what we gave it.",
+        QUAGMIRE_GOATMILK = "What? We needed milk.",
+        QUAGMIRE_SYRUP = "Mmmm...",
+        QUAGMIRE_SAP_SPOILED = "Well that's dumb.",
+        QUAGMIRE_SEEDPACKET = "Aw...I won't know what these are until I plant them.",
+        --QUAGMIRE_SEEDPACKET_SMALL = "It's just a small packet.",
+        --QUAGMIRE_SEEDPACKET_MEDIUM = "It's got a bunch of seeds in it.",
+        --QUAGMIRE_SEEDPACKET_LARGE = "It's gotta a lot of seeds in it.",
+        --QUAGMIRE_SEEDPACKET_MIX_SMALL = "There's different kinds of seeds in here.",
+        --QUAGMIRE_SEEDPACKET_MIX_MEDIUM = "Aw...I won't know what these are until I plant them.",
+        --QUAGMIRE_SEEDPACKET_MIX_LARGE = "There's a lot of seeds in there.",
+        ---
+        QUAGMIRE_POT = "I should light a fire under its butt.",
+        QUAGMIRE_POT_SMALL = "It goes with the fire.",
+        QUAGMIRE_POT_SYRUP = "Sweet stuff goes in there.",
+        QUAGMIRE_POT_HANGER = "I set it up. Now what?",
+        QUAGMIRE_POT_HANGER_ITEM = "It needs to be set up in a firepit.",
+        QUAGMIRE_GRILL = "Fire it up!",
+        QUAGMIRE_GRILL_ITEM = "Ugh, I guess I should set it up.",
+        QUAGMIRE_GRILL_SMALL = "If it was bigger I could use more fire.",
+        QUAGMIRE_GRILL_SMALL_ITEM = "I should set it up over the firepit.",
+        QUAGMIRE_OVEN = "Now we're cooking.",
+        QUAGMIRE_OVEN_ITEM = "I can't wait to use it!",
+        QUAGMIRE_CASSEROLEDISH = "Fancy.",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "It's kinda small.",
+        QUAGMIRE_PLATE_SILVER = "Ohh. Look who's fancy now!",
+        QUAGMIRE_BOWL_SILVER = "Now I don't have to use my hands.",
+        ---
+        QUAGMIRE_MERM_CART1 = "There's a lot of stuff to burn in there.", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "I'd burn it, but I need the things in there.", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "Gross.",
+        QUAGMIRE_PARK_ANGEL2 = "Ugly.",
+        QUAGMIRE_PARK_URN = "Cremation is the only way to do it.",
+        QUAGMIRE_PARK_OBELISK = "It's stone. I can't burn it.",
+        QUAGMIRE_PARK_GATE =
+        {
+            GENERIC = "Didn't even have to melt the locks.",
+            LOCKED = "I can't even burn it open!",
+        },
+        QUAGMIRE_PARKSPIKE = "That looks sharp.",
+        QUAGMIRE_CRABTRAP = "That'll show those crabs.",
+        QUAGMIRE_TRADER_MERM = "Hey, what'dya got for me?",
+        QUAGMIRE_TRADER_MERM2 = "Nice hat. Are you selling that, too?",
+        --
+        QUAGMIRE_GOATMUM = "Her eyes creep me out.",
+        QUAGMIRE_GOATKID = "He'll eat just about anything.",
+        QUAGMIRE_PIGEON =
+        {
+            DEAD = "It's dead.",
+            GENERIC = "I haven't got any crumbs for you.",
+            SLEEPING = "It's taking a nap.",
+        },
+        QUAGMIRE_LAMP_POST = "Just an old lamp post.",
+
+        QUAGMIRE_BEEFALO = "Haha. You're old.",
+        QUAGMIRE_SLAUGHTERTOOL = "I'd rather burn things.",
+
+        QUAGMIRE_SAPLING = "Well. Might as well burn it now.",
+        QUAGMIRE_BERRYBUSH = "But I want more berries!",
+
+        QUAGMIRE_ALTAR_STATUE2 = "Ew. It's ugly.",
+        QUAGMIRE_ALTAR_QUEEN = "What's so great about her?",
+        QUAGMIRE_ALTAR_BOLLARD = "Boring.",
+        QUAGMIRE_ALTAR_IVY = "Yawn.",
+
+        QUAGMIRE_LAMP_SHORT = "Whatever. It's a lamp.",
+
+    },
+    DESCRIBE_GENERIC = "I have no idea what that is!",
+    DESCRIBE_TOODARK = "I need more light!",
+    DESCRIBE_SMOLDERING = "Hooray, it's about to light on fire!",
+
+    EAT_FOOD =
+    {
+        TALLBIRDEGG_CRACKED = "Ugh. Crunchy.",
+    },
 }

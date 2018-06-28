@@ -49,20 +49,23 @@ local function common_fn(bank, build)
         return inst
     end
 
-    inst:AddComponent("weapon")
-    inst.components.weapon:SetDamage(TUNING.AXE_DAMAGE)
-
     inst:AddComponent("inventoryitem")
     -----
     inst:AddComponent("tool")
     inst.components.tool:SetAction(ACTIONS.CHOP)
-    -------
-    inst:AddComponent("finiteuses")
-    inst.components.finiteuses:SetMaxUses(TUNING.AXE_USES)
-    inst.components.finiteuses:SetUses(TUNING.AXE_USES)
-    inst.components.finiteuses:SetOnFinished(inst.Remove)
-    inst.components.finiteuses:SetConsumption(ACTIONS.CHOP, 1)
-    -------
+
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        -------
+        inst:AddComponent("finiteuses")
+        inst.components.finiteuses:SetMaxUses(TUNING.AXE_USES)
+        inst.components.finiteuses:SetUses(TUNING.AXE_USES)
+        inst.components.finiteuses:SetOnFinished(inst.Remove)
+        inst.components.finiteuses:SetConsumption(ACTIONS.CHOP, 1)
+
+        -------
+        inst:AddComponent("weapon")
+        inst.components.weapon:SetDamage(TUNING.AXE_DAMAGE)
+    end
 
     inst:AddComponent("inspectable")
     

@@ -148,8 +148,8 @@ function ItemImage:ScaleToSize(side)
     self.image_scale = scale
 end
 
-function ItemImage:SetInteractionState(is_active, is_owned, is_interaction_target, is_unlockable, is_perm_owned)
-    self.frame:SetActivityState(is_active, is_owned, is_unlockable, is_perm_owned)
+function ItemImage:SetInteractionState(is_active, is_owned, is_interaction_target, is_unlockable, is_dlc_owned)
+    self.frame:SetActivityState(is_active, is_owned, is_unlockable, is_dlc_owned)
     if is_interaction_target then
         self.frame:SetStyle_Highlight()
     else

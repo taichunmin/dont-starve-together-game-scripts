@@ -49,6 +49,9 @@ local function fn()
 
     inst:AddComponent("firefx")
     inst.components.firefx.levels = firelevels
+    if TheNet:GetServerGameMode() == "quagmire" then
+        event_server_data("quagmire", "prefabs/campfirefire").master_postinit(inst)
+    end
     inst.components.firefx:SetLevel(1)
     inst.components.firefx.usedayparamforsound = true
 

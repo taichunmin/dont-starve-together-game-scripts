@@ -50,3 +50,23 @@ AddLocation({
         "lavaarena_portal",
     },
 })
+
+AddLocation({
+    location = "quagmire",
+    version = 2,
+    overrides = {
+        task_set = "quagmire_taskset",
+        start_location = "quagmire_startlocation",
+        season_start = "default",
+        world_size = "small",
+        layout_mode = "RestrictNodesByKey",
+        keep_disconnected_tiles = false,
+        wormhole_prefab = nil,
+        roads = "never",
+        loop_percent = 0,
+	    branching = "random",
+    },
+    required_prefabs = {
+        "quagmire_portal",
+    },
+})

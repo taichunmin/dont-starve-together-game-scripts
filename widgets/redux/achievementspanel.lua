@@ -10,31 +10,74 @@ require("misc_items")
 require("util")
 
 
-local AchievementsPanel = Class(Widget, function(self, user_profile, festival_key)
+local AchievementsPanel = Class(Widget, function(self, user_profile, festival_key, overrides)
     Widget._ctor(self, "AchievementsPanel")
     self.user_profile = user_profile
 
-    self.achievements_root = self:AddChild(Widget("achievements_root"))
+	self.overrides = overrides or {}
 
-    self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(736, 406))
-    local r,g,b = unpack(UICOLOURS.BROWN_DARK)
-    self.dialog:SetBackgroundTint(r,g,b,0.8) -- need high opacity because of text behind
-    self.dialog:SetPosition(0, -5)
-    self.dialog.top:Hide() -- top crown would be behind our title.
+    self.achievements_root = self:AddChild(Widget("achievements_root"))
+	self.achievements_root:SetPosition(self.overrides.offset_x or 0, self.overrides.offset_y or 0)
+	
+	local grid = nil
+	if self.overrides.quagmire_gridframe then
+		grid = self.achievements_root:AddChild( self:_BuildAchievementsExplorer(festival_key) )
+		grid:SetPosition(-10,0)
+
+		local boarder_scale = .73
+		local grid_boarder = self.achievements_root:AddChild(Image("images/quagmire_recipebook.xml", "quagmire_recipe_line_long.tex"))
+		grid_boarder:SetScale(boarder_scale, boarder_scale)
+		grid_boarder:SetPosition(0, 204)
+		grid_boarder = self.achievements_root:AddChild(Image("images/quagmire_recipebook.xml", "quagmire_recipe_line_long.tex"))
+		grid_boarder:SetScale(boarder_scale, -boarder_scale)
+		grid_boarder:SetPosition(0, -205)
+
+		grid.up_button:SetTextures("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_arrow_hover.tex")
+		grid.up_button:SetScale(0.5)
+
+		grid.down_button:SetTextures("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_arrow_hover.tex")
+		grid.down_button:SetScale(-0.5)
+
+		grid.scroll_bar_line:SetTexture("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_bar.tex")
+		grid.scroll_bar_line:SetScale(.8)
+
+		grid.position_marker:SetTextures("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_handle.tex")
+		grid.position_marker.image:SetTexture("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_handle.tex")
+		grid.position_marker:SetScale(.6)
+
+		if TheWorld ~= nil then
+			local notice = self.achievements_root:AddChild(Text(CHATFONT, 20, STRINGS.UI.ACHIEVEMENTS.INGAME_NOTICE, self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD))
+			notice:SetPosition(0, -225)
+		end
+	else
+		self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(736, 406))
+		local r,g,b = unpack(UICOLOURS.BROWN_DARK)
+		self.dialog:SetBackgroundTint(r,g,b,0.8) -- need high opacity because of text behind
+		self.dialog:SetPosition(0, -5)
+		self.dialog.top:Hide() -- top crown would be behind our title.
     
-    self.grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key) )
-    self.grid:SetPosition(-10,0)
-    
-    local title = self.achievements_root:AddChild(Text(HEADERFONT, 28, STRINGS.UI.ACHIEVEMENTS.SCREENTITLE, UICOLOURS.HIGHLIGHT_GOLD))
-	title:SetPosition(0, 222)
+		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key) )
+		grid:SetPosition(-10,0)
+	end
+    self.grid = grid
+
+	if not self.overrides.no_title then
+		local title = self.achievements_root:AddChild(Text(HEADERFONT, 28, STRINGS.UI.ACHIEVEMENTS.SCREENTITLE, self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD))
+		title:SetPosition(0, 222)
+	end
 
 	local unlocked, total = EventAchievements:GetNumAchievementsUnlocked(festival_key)
 
-    local completed = self.achievements_root:AddChild(Text(HEADERFONT, 24, subfmt(STRINGS.UI.XPUTILS.XPPROGRESS, {num=unlocked, max=total}), UICOLOURS.HIGHLIGHT_GOLD))
-	completed:SetHAlign(ANCHOR_RIGHT)
+    local completed = self.achievements_root:AddChild(Text(HEADERFONT, 24, subfmt(STRINGS.UI.XPUTILS.XPPROGRESS, {num=unlocked, max=total}), self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD))
+	if not self.overrides.no_title then
+		completed:SetHAlign(ANCHOR_RIGHT)
+	end
 	completed:SetPosition(330, 222)
 
-    self.focus_forward = self.grid
+    self.focus_forward = grid
+    self.default_focus = grid
+
+	self.parent_default_focus = self
 end)
 
 function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
@@ -48,6 +91,7 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
     
     local function ScrollWidgetsCtor(context, index)
         local w = Widget("achievement-cell-".. index)
+        w.ongainfocusfn = function() self.grid:OnWidgetFocus(w) end
 
         local function OnPortraitFocused(is_enabled)
         end
@@ -61,17 +105,17 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
         w.frame:SetPosition(0,0)
         
         w.title = w:AddChild(Text(HEADERFONT, 22, ""))
-        w.title:SetColour(UICOLOURS.HIGHLIGHT_GOLD)
+        w.title:SetColour(self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD)
         w.title:SetRegionSize(row_w, 24)
         w.title:SetHAlign(ANCHOR_LEFT)
         w.title:SetPosition(0,-row_h/2+20)
         w.count = w:AddChild(Text(HEADERFONT, 22, ""))
-        w.count:SetColour(UICOLOURS.HIGHLIGHT_GOLD)
+        w.count:SetColour(self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD)
         w.count:SetRegionSize(row_w, 24)
         w.count:SetHAlign(ANCHOR_RIGHT)
         w.count:SetPosition(0,-row_h/2+20)
-        w.divider = w:AddChild(Image("images/global_redux.xml", "item_divider.tex"))
-        w.divider:ScaleToSize(row_w,5)
+        w.divider = w:AddChild(Image(self.overrides.divider_atlas or "images/global_redux.xml", self.overrides.divider_tex or "item_divider.tex"))
+        w.divider:ScaleToSize(row_w,self.overrides.divider_h or 5)
         w.divider:SetPosition(0,-row_h/2+5)
         
         w.reward_num = w:AddChild(Text(HEADERFONT, 25, "")) 
@@ -162,7 +206,7 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
     for _,categories in ipairs(EventAchievements:GetAchievementsCategoryList(current_eventid)) do
         local num_completed = 0
         for _,achievement in ipairs(categories.data) do
-            if EventAchievements:IsAchievementUnlocked(achievement.achievementid) then
+            if EventAchievements:IsAchievementUnlocked(current_eventid, achievement.achievementid) then
                 num_completed = num_completed + 1
             end
         end
@@ -175,7 +219,7 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
                 achievement_title = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].TITLE, 
                 achievement_desc = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].DESC, 
                 wxp = achievement.wxp, 
-                completed = EventAchievements:IsAchievementUnlocked(achievement.achievementid),
+                completed = EventAchievements:IsAchievementUnlocked(current_eventid, achievement.achievementid),
                 icon = achievement.achievementid,
             })
         end
@@ -191,8 +235,9 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
             num_columns      = 1,
             item_ctor_fn = ScrollWidgetsCtor,
             apply_fn     = ScrollWidgetApply,
-            scrollbar_offset = 0,
+            scrollbar_offset = self.overrides.scrollbar_offset or 0,
             scrollbar_height_offset = -60,
+			scroll_per_click = .5,
         })
     
     return grid

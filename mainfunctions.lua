@@ -70,6 +70,9 @@ function ShouldIgnoreResolve( filename, assettype )
     if assettype == "MINIMAP_IMAGE" then
         return true
     end
+    if filename:find(".dyn") and assettype == "PKGREF" then
+        return true
+    end
 
     if TheNet:IsDedicated() then
         if assettype == "SOUNDPACKAGE" then
@@ -993,26 +996,23 @@ function JapaneseOnPS4()
 end
 
 function StartNextInstance(in_params)
-	local match_results = {}
-	match_results.mvp_cards = (TheWorld ~= nil and TheWorld.GetMvpAwards ~= nil) and TheWorld:GetMvpAwards() or TheFrontEnd.match_results.mvp_cards
-	match_results.wxp_data = (TheWorld ~= nil and TheWorld.GetAwardedWxp ~= nil) and TheWorld:GetAwardedWxp() or TheFrontEnd.match_results.wxp_data
-	match_results.player_stats = (TheWorld ~= nil and TheWorld.GetPlayerStatistics ~= nil) and TheWorld:GetPlayerStatistics() or TheFrontEnd.match_results.player_stats
-	match_results.outcome = (TheWorld ~= nil and TheWorld.GetMatchOutcome ~= nil) and TheWorld:GetMatchOutcome() or TheFrontEnd.match_results.outcome
+    local match_results =
+    {
+        mvp_cards = TheWorld ~= nil and TheWorld.GetMvpAwards ~= nil and TheWorld:GetMvpAwards() or TheFrontEnd.match_results.mvp_cards,
+        wxp_data = TheWorld ~= nil and TheWorld.GetAwardedWxp ~= nil and TheWorld:GetAwardedWxp() or TheFrontEnd.match_results.wxp_data,
+        player_stats = TheWorld ~= nil and TheWorld.GetPlayerStatistics ~= nil and TheWorld:GetPlayerStatistics() or TheFrontEnd.match_results.player_stats,
+        outcome = TheWorld ~= nil and TheWorld.GetMatchOutcome ~= nil and TheWorld:GetMatchOutcome() or TheFrontEnd.match_results.outcome,
+    }
 
     if TheNet:GetIsServer() then
-        NotifyLoadingState(LoadingStates.Loading, match_results )
+        NotifyLoadingState(LoadingStates.Loading, match_results)
     end
 
     local params = in_params or {}
     params.last_reset_action = Settings.reset_action
-	params.match_results = match_results
+    params.match_results = match_results
     params.load_screen_image = global_loading_widget.image_random
     params.loading_screen_keys = BuildListOfSelectedItems(Profile, "loading")
-
-    if LOADED_CHARACTER then
-        TheSim:UnloadPrefabs(LOADED_CHARACTER)
-        LOADED_CHARACTER = nil
-    end
 
     SimReset(params)
 end
@@ -1027,11 +1027,13 @@ function SimReset(instanceparameters)
 
     ModManager:UnloadPrefabs()
 
-    if not instanceparameters then
+    if instanceparameters == nil then
         instanceparameters = {}
     end
     instanceparameters.last_asset_set = Settings.current_asset_set
     instanceparameters.last_world_asset = Settings.current_world_asset
+    instanceparameters.loaded_characters = Settings.loaded_characters
+
     local params = json.encode(instanceparameters)
     TheSim:SetInstanceParameters(params)
     TheSim:Reset()
@@ -1501,7 +1503,7 @@ function NotifyLoadingState(loading_state, match_results)
         --
         if GetGameModeProperty("hide_worldgen_loading_screen") then
 			if loading_state == LoadingStates.Loading then
-				TheFrontEnd:Fade(FADE_OUT, 1,
+				TheFrontEnd:Fade(FADE_OUT, TheFrontEnd:GetFadeLevel() < 1 and 1 or 0,
 					function()
 						TheFrontEnd:PopScreen()
 					end)
@@ -1552,16 +1554,15 @@ function BuildTagsStringCommon(tagsTable)
     for i, mod_tag in ipairs(KnownModIndex:GetEnabledModTags()) do
         table.insert(tagsTable, mod_tag)
     end
-
-    -- Language tag (forced to front of list)
-    local lang_code = TheNet:GetLanguageCode()
-    table.insert(tagsTable, 1, SERVER_LANGUAGES_TAGS[lang_code] or lang_code)
-
+    
     -- Beta tag (forced to front of list)
     if BRANCH == "staging" and CURRENT_BETA > 0 then
         table.insert(tagsTable, 1, BETA_INFO[CURRENT_BETA].SERVERTAG)
         table.insert(tagsTable, 1, BETA_INFO[PUBLIC_BETA].SERVERTAG)
     end
+    
+    -- Language tag (forced to front of list, don't put anything else at slot 1, or language detection will fail!)
+    table.insert(tagsTable, 1, STRINGS.PRETRANSLATED.LANGUAGES[GetLanguage()] or "")
 
     -- Concat unique tags
     local tagged = {}

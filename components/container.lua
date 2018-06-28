@@ -140,6 +140,7 @@ function Container:CanTakeItemInSlot(item, slot)
         and item.components.inventoryitem ~= nil
         and item.components.inventoryitem.cangoincontainer
         and (slot == nil or (slot >= 1 and slot <= self.numslots))
+        and not (GetGameModeProperty("non_item_equips") and item.components.equippable ~= nil)
         and (self.itemtestfn == nil or self:itemtestfn(item, slot))
 end
 
@@ -313,7 +314,7 @@ function Container:Open(doer)
         self.inst:PushEvent("onopen", { doer = doer })
 
         if self.onopenfn ~= nil then
-            self.onopenfn(self.inst)
+            self.onopenfn(self.inst, { doer = doer })
         end
     end
 end
@@ -342,7 +343,7 @@ function Container:Close()
             self.onclosefn(self.inst, doer)
         end
 
-        self.inst:PushEvent("onclose")
+        self.inst:PushEvent("onclose", { doer = doer })
     end
 end
 

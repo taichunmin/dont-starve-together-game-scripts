@@ -21,6 +21,7 @@ else
 	PLATFORM = "WIN32_STEAM"
 end
 
+POT_GENERATION = true
 require "strings"
 require "io"
 

@@ -64,6 +64,7 @@ GAME_MODES =
         invalid_recipes = nil,
         --
         override_item_slots = 0,
+        drop_everything_on_despawn = true,
         no_air_attack = true,
         no_crafting = true,
         no_minimap = true,
@@ -85,6 +86,46 @@ GAME_MODES =
         hide_worldgen_loading_screen = true,
         hide_received_gifts = true,
         skin_tag = "LAVA",
+    },
+    quagmire =
+    {
+        internal = true,
+        text = "",
+        description = "",
+        level_type = LEVELTYPE.QUAGMIRE,
+        mod_game_mode = false,
+        spawn_mode = "fixed",
+        resource_renewal = false,
+        ghost_sanity_drain = false,
+        ghost_enabled = false,
+        revivable_corpse = true, 
+        portal_rez = true,
+        reset_time = nil,
+        invalid_recipes = nil,
+        --
+        max_players = 3,
+        override_item_slots = 4,
+        drop_everything_on_despawn = true,
+        non_item_equips = true,
+        no_air_attack = true,
+        no_minimap = false, -- the minimap gets hijacked for the recipe book
+        no_hunger = true,
+        no_eating = true,
+        no_sanity = true,
+        no_temperature = true,
+        no_avatar_popup = true,
+        no_morgue_record = true,
+        override_normal_mix = "lavaarena_normal",
+        override_lobby_music = "dontstarve/quagmire/music/FE",
+        lobbywaitforallplayers = true,
+        hide_worldgen_loading_screen = true,
+        hide_received_gifts = true,
+        skin_tag = "VICTORIAN",
+        disable_transplanting = true,
+        disable_bird_mercy_items = true,
+        icons_use_cc = true,
+		hud_atlas = "images/quagmire_hud.xml",
+		eventannouncer_offset = -40,
     },
 }
 
@@ -260,3 +301,9 @@ function GetMaxItemSlots(game_mode)
     return GetGameMode(game_mode).override_item_slots or MAXITEMSLOTS
 end
 
+function GetGameModeMaxPlayers(game_mode)
+	print("GetGameModeMaxPlayers", game_mode, GAME_MODES[game_mode].max_players)
+
+    local data = GAME_MODES[game_mode]
+    return data ~= nil and data.max_players or nil
+end

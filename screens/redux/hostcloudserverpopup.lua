@@ -34,28 +34,32 @@ local HostCloudServerPopup = Class(GenericWaitingPopup, function(self, name, des
 
     --V2C: admin flag is ignored for cloud servers
     local sessionid = "" -- If we want to load a previous session then we need to fill this out
-    TheNet:StartCloudServerRequestProcess(sessionid, name, description, password, claninfo.id, claninfo.only, claninfo.admin)
+    TheNet:StartCloudServerRequestProcess(sessionid, name, description, GetLocaleCode(), password, claninfo.id, claninfo.only, claninfo.admin)
 end)
 
 function HostCloudServerPopup:OnUpdate(dt)
     HostCloudServerPopup._base.OnUpdate(self, dt)
 
     local cloudServerRequestState = TheNet:GetCloudServerRequestState()
-    if cloudServerRequestState == 8 then -- eFailed
+    if cloudServerRequestState == 8 then -- eServerFailed
         self:OnError()
+    elseif cloudServerRequestState == 9 then -- eNoServersAvailable
+        self:OnError(STRINGS.UI.FESTIVALEVENTSCREEN.HOST_NO_SERVERS_BODY)
+    elseif cloudServerRequestState == 10 then -- ePingsFailed
+        self:OnError(STRINGS.UI.FESTIVALEVENTSCREEN.HOST_PINGS_FAILED_BODY)
     else
         self.status_msg:SetString(phases[cloudServerRequestState] or "")
     end
 end
 
-function HostCloudServerPopup:OnError()
+function HostCloudServerPopup:OnError(body)
     self:Disable()
     self:StopUpdating()
 
     --push screen b4 popping so parent screen doesn't regain focus momentarily
     TheFrontEnd:PushScreen(PopupDialogScreen(
         STRINGS.UI.FESTIVALEVENTSCREEN.HOST_FAILED,
-        STRINGS.UI.FESTIVALEVENTSCREEN.HOST_FAILED_BODY,
+        body or STRINGS.UI.FESTIVALEVENTSCREEN.HOST_FAILED_BODY,
         { { text = STRINGS.UI.POPUPDIALOG.OK, cb = function() TheFrontEnd:PopScreen() end } }
     ))
     TheFrontEnd:PopScreen(self)

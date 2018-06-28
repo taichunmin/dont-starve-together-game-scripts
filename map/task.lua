@@ -22,10 +22,12 @@ Task = Class(function(self, id, data)
 	self.background_room = data.background_room
 	self.colour = data.colour
 	self.maze_tiles = data.maze_tiles
+	self.maze_tile_size = data.maze_tile_size
 	self.crosslink_factor = data.crosslink_factor
 	self.make_loop = data.make_loop
     self.room_tags = data.room_tags
     self.required_prefabs = data.required_prefabs
+    self.hub_room = data.hub_room
 end)
 
 function Task:__tostring()

@@ -43,6 +43,7 @@ TESTING_NETWORK = 1
 AUTOSPAWN_MASTER_SLAVE = false
 DEBUGRENDER_ENABLED = true
 SHOWLOG_ENABLED = true
+POT_GENERATION = false
 
 -- Networking related configuration
 DEFAULT_JOIN_IP				= "127.0.0.1"
@@ -138,17 +139,17 @@ require("preloadsounds")
 require("mods")
 require("json")
 require("tuning")
+
+Profile = require("playerprofile")() --profile needs to be loaded before language
+Profile:Load( nil, true ) --true to indicate minimal load required for language.lua to read the profile.
 require("languages/language")
 require("strings")
 
-if IsConsole() or PLATFORM == "WIN32_RAIL" then
-	--Apply a baseline set of translations so that lua in the boot flow can access the correct strings, after the mods are loaded, main.lua will run this again
-	--Ideally we wouldn't need to do this, but stuff like maps/levels/forest loads in the boot flow and it caches strings before they've been translated.
-	--Doing an early translate here is less risky than changing all the cases of early string access. Downside is that it doesn't address the issue for mod transations.
-	TranslateStringTable( STRINGS )
-end
+--Apply a baseline set of translations so that lua in the boot flow can access the correct strings, after the mods are loaded, main.lua will run this again
+--Ideally we wouldn't need to do this, but stuff like maps/levels/forest loads in the boot flow and it caches strings before they've been translated.
+--Doing an early translate here is less risky than changing all the cases of early string access. Downside is that it doesn't address the issue for mod transations.
+TranslateStringTable( STRINGS )
 
-require("languages/server_language_strings")
 require("stringutil")
 require("dlcsupport_strings")
 require("constants")
@@ -267,9 +268,10 @@ global("SERVER_TERMINATION_TIMER")
 SERVER_TERMINATION_TIMER = -1
 global("EventAchievements")
 EventAchievements = nil
+global("TheRecipeBook")
+TheRecipeBook = nil
 
 require("globalvariableoverrides")
-
 
 --world setup
 require("map/levels")
@@ -305,6 +307,9 @@ local function ModSafeStartup()
     LoadAchievements("achievements.lua")
     EventAchievements = require("eventachievements")()
     EventAchievements:LoadAchievementsForEvent(require("lavaarena_achievements"))
+    EventAchievements:LoadAchievementsForEvent(require("quagmire_achievements"))
+	TheRecipeBook = require("quagmire_recipebook")()
+	TheRecipeBook:Load()
 
     local FollowCamera = require("cameras/followcamera")
     TheCamera = FollowCamera()

@@ -101,7 +101,7 @@ end
 function RecipePopup:BuildWithSpinner(horizontal)
     self:KillAllChildren()
 
-    local hud_atlas = resolvefilepath( "images/hud.xml" )
+    local hud_atlas = GetGameModeProperty("hud_atlas") or resolvefilepath(HUD_ATLAS)
 
     self.bg = self:AddChild(Image())
     local img = horizontal and "craftingsubmenu_fullvertical.tex" or "craftingsubmenu_fullhorizontal.tex"
@@ -190,7 +190,7 @@ function RecipePopup:BuildNoSpinner(horizontal)
 
     self.skins_spinner = nil
 
-    local hud_atlas = resolvefilepath( "images/hud.xml" )
+    local hud_atlas = GetGameModeProperty("hud_atlas") or resolvefilepath(HUD_ATLAS)
 
     self.bg = self:AddChild(Image())
     local img = horizontal and "craftingsubmenu_fullvertical.tex" or "craftingsubmenu_fullhorizontal.tex"
@@ -285,8 +285,8 @@ function RecipePopup:Refresh()
         end
     end
 
-    self.name:SetTruncatedString(STRINGS.NAMES[string.upper(self.recipe.name)], TEXT_WIDTH, self.smallfonts and 51 or 41, true)
-    self.desc:SetMultilineTruncatedString(STRINGS.RECIPE_DESC[string.upper(self.recipe.name)], 2, TEXT_WIDTH, self.smallfonts and 40 or 33, true)
+    self.name:SetTruncatedString(STRINGS.NAMES[string.upper(self.recipe.product)], TEXT_WIDTH, self.smallfonts and 51 or 41, true)
+    self.desc:SetMultilineTruncatedString(STRINGS.RECIPE_DESC[string.upper(self.recipe.product)], 2, TEXT_WIDTH, self.smallfonts and 40 or 33, true)
 
     for i, v in ipairs(self.ing) do
         v:Kill()
@@ -312,6 +312,9 @@ function RecipePopup:Refresh()
         if v.type:sub(-9) == "_material" then
             local has, level = builder:HasTechIngredient(v)
             local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", nil, nil, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+            if GetGameModeProperty("icons_use_cc") then
+                ing.ing:SetEffect("shaders/ui_cc.ksh")
+            end
             if num > 1 and #self.ing > 0 then
                 offset = offset + half_div
             end
@@ -327,6 +330,9 @@ function RecipePopup:Refresh()
     for i, v in ipairs(recipe.ingredients) do
         local has, num_found = inventory:Has(v.type, RoundBiasedUp(v.amount * builder:IngredientMod()))
         local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        if GetGameModeProperty("icons_use_cc") then
+            ing.ing:SetEffect("shaders/ui_cc.ksh")
+        end
         if num > 1 and #self.ing > 0 then
             offset = offset + half_div
         end
@@ -340,6 +346,9 @@ function RecipePopup:Refresh()
         --V2C: yes, but the entire craft tabs does. (will be added there)
         local has, amount = builder:HasCharacterIngredient(v)
         local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        if GetGameModeProperty("icons_use_cc") then
+            ing.ing:SetEffect("shaders/ui_cc.ksh")
+        end
         if num > 1 and #self.ing > 0 then
             offset = offset + half_div
         end
@@ -391,7 +400,7 @@ function RecipePopup:Refresh()
                 self.teaser:SetTruncatedString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_ACCEPT).." "..buttonstr, TEASER_BTN_WIDTH, 26, true)
             else
                 self.teaser:SetScale(TEASER_SCALE_TEXT)
-                self.teaser:SetMultilineTruncatedString(STRINGS.UI.CRAFTING.NEEDSTUFF, 3, TEASER_TEXT_WIDTH, 38, true)
+                self.teaser:SetMultilineTruncatedString((STRINGS.UI.CRAFTING.TABNEEDSTUFF or {})[recipe.tab.str] or STRINGS.UI.CRAFTING.NEEDSTUFF, 3, TEASER_TEXT_WIDTH, 38, true)
             end
         else
             self.button:Show()
@@ -449,8 +458,8 @@ function RecipePopup:GetSkinsList()
     --Note(Peter): This could get a speed improvement by passing in self.recipe.name into a c-side inventory check, and then add the PREFAB_SKINS data to c-side
     -- so that we don't have to walk the whole inventory for each prefab for each item_type in PREFAB_SKINS[self.recipe.name]
     self.skins_list = {}
-    if self.recipe and PREFAB_SKINS[self.recipe.name] then
-        for _,item_type in pairs(PREFAB_SKINS[self.recipe.name]) do
+    if self.recipe and PREFAB_SKINS[self.recipe.product] then
+        for _,item_type in pairs(PREFAB_SKINS[self.recipe.product]) do
             local has_item, modified_time = TheInventory:CheckOwnershipGetLatest(item_type)
             if has_item then
                 local data  = {}
@@ -478,12 +487,12 @@ function RecipePopup:GetSkinOptions()
         data = nil,
         colour = DEFAULT_SKIN_COLOR,
         new_indicator = false,
-        image = {"images/inventoryimages.xml", self.recipe.name..".tex", "default.tex"},
+        image = {"images/inventoryimages.xml", self.recipe.product..".tex", "default.tex"},
     })
 
-    local recipe_timestamp = Profile:GetRecipeTimestamp(self.recipe.name)
-    --print(self.recipe.name, "Recipe timestamp is ", recipe_timestamp)
-    if self.skins_list and TheNet:IsOnlineMode() then
+    local recipe_timestamp = Profile:GetRecipeTimestamp(self.recipe.product)
+    --print(self.recipe.product, "Recipe timestamp is ", recipe_timestamp)
+    if self.skins_list ~= nil and self.recipe.chooseskin == nil and TheNet:IsOnlineMode() then
         for which = 1, #self.skins_list do
             local item = self.skins_list[which].item
 
