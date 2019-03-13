@@ -243,35 +243,35 @@ end
 function Wardrobe:ApplySkins(doer, diff)
     if doer.components.skinner ~= nil then
         if diff.base ~= nil then
-            if Prefabs[diff.base] ~= nil and not Prefabs[diff.base].disabled then
+            if Prefabs[diff.base] ~= nil then
                 doer.components.skinner:SetSkinName(diff.base)
             end
         end
 
         if diff.body ~= nil then
             doer.components.skinner:ClearClothing("body")
-            if CLOTHING[diff.body] ~= nil and not CLOTHING[diff.body].disabled then
+            if CLOTHING[diff.body] ~= nil then
                 doer.components.skinner:SetClothing(diff.body)
             end
         end
 
         if diff.hand ~= nil then
             doer.components.skinner:ClearClothing("hand")
-            if CLOTHING[diff.hand] ~= nil and not CLOTHING[diff.hand].disabled then
+            if CLOTHING[diff.hand] ~= nil then
                 doer.components.skinner:SetClothing(diff.hand)
             end
         end
 
         if diff.legs ~= nil then
             doer.components.skinner:ClearClothing("legs")
-            if CLOTHING[diff.legs] ~= nil and not CLOTHING[diff.legs].disabled then
+            if CLOTHING[diff.legs] ~= nil then
                 doer.components.skinner:SetClothing(diff.legs)
             end
         end
 
         if diff.feet ~= nil then
             doer.components.skinner:ClearClothing("feet")
-            if CLOTHING[diff.feet] ~= nil and not CLOTHING[diff.feet].disabled then
+            if CLOTHING[diff.feet] ~= nil then
                 doer.components.skinner:SetClothing(diff.feet)
             end
         end

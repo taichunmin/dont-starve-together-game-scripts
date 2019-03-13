@@ -1,13 +1,10 @@
-local assets =
-{
-    Asset("ANIM", "anim/winter_ornaments.zip"),
-}
 
 local BLINK_PERIOD = 1.2
 
 local NUM_BASIC_ORNAMENT = 12
 local NUM_FANCY_ORNAMENT = 8
 local NUM_LIGHT_ORNAMENT = 8
+local NUM_FESTIVALEVENTS_ORNAMENT = 5
 
 --NOTE: update mushroom_light.lua when adding coloured light bulbs!
 
@@ -51,6 +48,9 @@ function GetAllWinterOrnamentPrefabs()
     for i = 1, NUM_LIGHT_ORNAMENT do
         table.insert(decor, "winter_ornament_light" .. tostring(i))
     end
+    for i = 1, NUM_FESTIVALEVENTS_ORNAMENT do
+        table.insert(decor, "winter_ornament_festivalevents" .. tostring(i))
+    end
     return decor
 end
 
@@ -64,6 +64,10 @@ end
 
 function GetRandomLightWinterOrnament()
     return "winter_ornament_light"..math.random(NUM_LIGHT_ORNAMENT)
+end
+
+function GetRandomFestivalEventWinterOrnament()
+	return "winter_ornament_festivalevents"..math.random(NUM_FESTIVALEVENTS_ORNAMENT)
 end
 
 local function updatelight(inst, data)
@@ -151,7 +155,14 @@ local function onload(inst, data)
     end
 end
 
-local function MakeOrnament(ornamentid, overridename, lightdata)
+local function MakeOrnament(ornamentid, overridename, lightdata, build)
+	build = build or "winter_ornaments"
+
+	local assets =
+	{
+		Asset("ANIM", "anim/"..build..".zip"),
+	}
+
     local function fn()
         local inst = CreateEntity()
 
@@ -161,14 +172,15 @@ local function MakeOrnament(ornamentid, overridename, lightdata)
 
         MakeInventoryPhysics(inst, 0.1)
 
-        inst.AnimState:SetBank("winter_ornaments")
-        inst.AnimState:SetBuild("winter_ornaments")
+        inst.AnimState:SetBank(build)
+        inst.AnimState:SetBuild(build)
 
         inst:AddTag("winter_ornament")
         inst:AddTag("molebait")
         inst:AddTag("cattoy")
 
         inst.winter_ornamentid = ornamentid
+		inst.winter_ornament_build = build
 
         inst:SetPrefabNameOverride(overridename)
 
@@ -249,6 +261,12 @@ end
 for i = 1, NUM_LIGHT_ORNAMENT do
     table.insert(ornament, MakeOrnament("light"..i, "winter_ornamentlight", LIGHT_DATA[((i - 1) % 4) + 1]))
 end
+
+table.insert(ornament, MakeOrnament("festivalevents1", "winter_ornamentforge", nil, "winter_ornaments2018"))
+table.insert(ornament, MakeOrnament("festivalevents2", "winter_ornamentforge", nil, "winter_ornaments2018"))
+table.insert(ornament, MakeOrnament("festivalevents3", "winter_ornamentforge", nil, "winter_ornaments2018"))
+table.insert(ornament, MakeOrnament("festivalevents4", "winter_ornamentgorge", nil, "winter_ornaments2018"))
+table.insert(ornament, MakeOrnament("festivalevents5", "winter_ornamentgorge", nil, "winter_ornaments2018"))
 
 table.insert(ornament, MakeOrnament("boss_antlion", "winter_ornamentboss"))
 table.insert(ornament, MakeOrnament("boss_bearger", "winter_ornamentboss"))

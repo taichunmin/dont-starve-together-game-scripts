@@ -16,6 +16,7 @@ local function Retarget(inst)
                 and inst.components.combat:CanTarget(guy)
                 and (guy.components.combat.target == inst._playerlink or
                     inst._playerlink.components.combat.target == guy)
+				and guy.components.minigame_participator == nil
         end,
         { "_combat", "_health" },
         { "INLIMBO", "noauradamage" }
@@ -40,6 +41,10 @@ local function auratest(inst, target)
     if target == inst._playerlink then
         return false
     end
+
+	if target.components.minigame_participator ~= nil then
+		return false
+	end
 
     if inst.components.combat.target == target then
         return true
@@ -179,6 +184,7 @@ local function fn()
     inst.components.combat.defaultdamage = TUNING.ABIGAIL_DAMAGE_PER_SECOND
     inst.components.combat.playerdamagepercent = TUNING.ABIGAIL_DMG_PLAYER_PERCENT
     inst.components.combat:SetRetargetFunction(3, Retarget)
+	inst.components.combat:SetKeepTargetFunction(auratest)
 
     inst:AddComponent("aura")
     inst.components.aura.radius = 3
@@ -197,6 +203,7 @@ local function fn()
     inst:AddComponent("follower")
     inst.components.follower:KeepLeaderOnAttacked()
     inst.components.follower.keepdeadleader = true
+	inst.components.follower.keepleaderduringminigame = true
 
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("death", OnDeath)

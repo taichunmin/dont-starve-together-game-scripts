@@ -308,6 +308,7 @@ local function master_postinit(inst)
     inst:ListenForEvent("ms_respawnedfromghost", onbecamerobot)
     inst:ListenForEvent("ms_becameghost", onbecameghost)
     inst:ListenForEvent("death", ondeath)
+    inst:ListenForEvent("ms_playerreroll", ondeath) --delevel, give back some gears
 
     inst.components.playerlightningtarget:SetHitChance(1)
     inst.components.playerlightningtarget:SetOnStrikeFn(onlightingstrike)

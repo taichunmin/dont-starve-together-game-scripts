@@ -531,6 +531,11 @@ function CloudServerSettingsPopup:ValidateSettings()
         TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.INVALIDCLANSETTINGS_TITLE, STRINGS.UI.SERVERCREATIONSCREEN.INVALIDCLANSETTINGS_BODY,
                     {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self.clan_id:SetFocus() self.clan_id.textbox:SetEditing(true) end}}))
         return false
+    elseif not self:VerifyValidPassword() then
+        self:Hide()
+        TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.INVALIDPASSWORD_TITLE, STRINGS.UI.SERVERCREATIONSCREEN.INVALIDPASSWORD_BODY,
+                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self.server_pw:SetFocus() self.server_pw.textbox:SetEditing(true) end}}))
+        return false
     end
 
     return true
@@ -546,6 +551,11 @@ end
 
 function CloudServerSettingsPopup:VerifyValidServerIntention()
     return self:GetServerIntention() ~= nil
+end
+
+function CloudServerSettingsPopup:VerifyValidPassword()
+    local pw = self.server_pw.textbox:GetLineEditString()
+    return pw == "" or pw:match("^%s*(.-%S)%s*$") == pw
 end
 
 function CloudServerSettingsPopup:SetEditingTextboxes(edit)

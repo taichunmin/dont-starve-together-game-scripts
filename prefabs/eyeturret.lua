@@ -95,9 +95,14 @@ end
 
 local function OnAttacked(inst, data)
     local attacker = data ~= nil and data.attacker or nil
-    if attacker ~= nil and not attacker:HasTag("player") then
-        inst.components.combat:SetTarget(attacker)
-        inst.components.combat:ShareTarget(attacker, 15, ShareTargetFn, 10)
+    if attacker ~= nil then
+        if not attacker:HasTag("player") then
+            inst.components.combat:SetTarget(attacker)
+            inst.components.combat:ShareTarget(attacker, 15, ShareTargetFn, 10)
+        elseif data.damage == 0 and inst.components.combat:TargetIs(attacker) then
+            --V2C: prevent targeting players when using fire/ice staff on the catapult
+            inst.components.combat:DropTarget()
+        end
     end
 end
 

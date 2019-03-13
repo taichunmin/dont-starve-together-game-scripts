@@ -53,9 +53,9 @@ function Prototyper:GetTechTrees()
     return deepcopy(self.trees)
 end
 
-function Prototyper:Activate(doer)
+function Prototyper:Activate(doer, recipe)
     if self.onactivate ~= nil then
-        self.onactivate(self.inst, doer)
+        self.onactivate(self.inst, doer, recipe)
     end
 end
 

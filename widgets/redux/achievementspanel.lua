@@ -10,9 +10,8 @@ require("misc_items")
 require("util")
 
 
-local AchievementsPanel = Class(Widget, function(self, user_profile, festival_key, overrides)
+local AchievementsPanel = Class(Widget, function(self, festival_key, season, overrides)
     Widget._ctor(self, "AchievementsPanel")
-    self.user_profile = user_profile
 
 	self.overrides = overrides or {}
 
@@ -21,7 +20,7 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
 	
 	local grid = nil
 	if self.overrides.quagmire_gridframe then
-		grid = self.achievements_root:AddChild( self:_BuildAchievementsExplorer(festival_key) )
+		grid = self.achievements_root:AddChild( self:_BuildAchievementsExplorer(festival_key, season) )
 		grid:SetPosition(-10,0)
 
 		local boarder_scale = .73
@@ -49,6 +48,13 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
 			local notice = self.achievements_root:AddChild(Text(CHATFONT, 20, STRINGS.UI.ACHIEVEMENTS.INGAME_NOTICE, self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD))
 			notice:SetPosition(0, -225)
 		end
+	elseif self.overrides.lavaarena2_gridframe then
+		self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(700, 403))
+		self.dialog:HideBackground()
+		self.dialog.top:Hide() -- top crown would be behind our title.
+    
+		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key, season) )
+		grid:SetPosition(-10,0)
 	else
 		self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(736, 406))
 		local r,g,b = unpack(UICOLOURS.BROWN_DARK)
@@ -56,7 +62,7 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
 		self.dialog:SetPosition(0, -5)
 		self.dialog.top:Hide() -- top crown would be behind our title.
     
-		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key) )
+		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key, season) )
 		grid:SetPosition(-10,0)
 	end
     self.grid = grid
@@ -66,7 +72,7 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
 		title:SetPosition(0, 222)
 	end
 
-	local unlocked, total = EventAchievements:GetNumAchievementsUnlocked(festival_key)
+	local unlocked, total = EventAchievements:GetNumAchievementsUnlocked(festival_key, season)
 
     local completed = self.achievements_root:AddChild(Text(HEADERFONT, 24, subfmt(STRINGS.UI.XPUTILS.XPPROGRESS, {num=unlocked, max=total}), self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD))
 	if not self.overrides.no_title then
@@ -80,7 +86,7 @@ local AchievementsPanel = Class(Widget, function(self, user_profile, festival_ke
 	self.parent_default_focus = self
 end)
 
-function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
+function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
     
     local row_w = 720;
     local row_h = 60;
@@ -203,10 +209,10 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
     end
 
     local scrollitems = {}
-    for _,categories in ipairs(EventAchievements:GetAchievementsCategoryList(current_eventid)) do
+    for _,categories in ipairs(EventAchievements:GetAchievementsCategoryList(current_eventid, season)) do
         local num_completed = 0
         for _,achievement in ipairs(categories.data) do
-            if EventAchievements:IsAchievementUnlocked(current_eventid, achievement.achievementid) then
+            if EventAchievements:IsAchievementUnlocked(current_eventid, season, achievement.achievementid) then
                 num_completed = num_completed + 1
             end
         end
@@ -219,7 +225,7 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid)
                 achievement_title = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].TITLE, 
                 achievement_desc = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].DESC, 
                 wxp = achievement.wxp, 
-                completed = EventAchievements:IsAchievementUnlocked(current_eventid, achievement.achievementid),
+                completed = EventAchievements:IsAchievementUnlocked(current_eventid, season, achievement.achievementid),
                 icon = achievement.achievementid,
             })
         end

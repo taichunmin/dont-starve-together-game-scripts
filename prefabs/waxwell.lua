@@ -73,6 +73,18 @@ local function OnDeath(inst)
     end
 end
 
+local function OnReroll(inst)
+    local todespawn = {}
+    for k, v in pairs(inst.components.petleash:GetPets()) do
+        if v:HasTag("shadowminion") then
+            table.insert(todespawn, v)
+        end
+    end
+    for i, v in ipairs(todespawn) do
+        inst.components.petleash:DespawnPet(v)
+    end
+end
+
 local function common_postinit(inst)
     inst:AddTag("shadowmagic")
     inst:AddTag("dappereffects")
@@ -108,7 +120,8 @@ local function master_postinit(inst)
     inst._onpetlost = function(pet) inst.components.sanity:RemoveSanityPenalty(pet) end
 
     inst:ListenForEvent("death", OnDeath)
-    inst:ListenForEvent("ms_becomeghost", OnDeath)
+    inst:ListenForEvent("ms_becameghost", OnDeath)
+    inst:ListenForEvent("ms_playerreroll", OnReroll)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         event_server_data("lavaarena", "prefabs/waxwell").master_postinit(inst)

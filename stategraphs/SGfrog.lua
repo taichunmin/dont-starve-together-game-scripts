@@ -65,21 +65,10 @@ local states=
             if inst.components.locomotor:WantsToMoveForward() then
                 inst.sg:GoToState("hop")
             else
-                
-                
-                local num_frogs = 0
                 local x,y,z = inst.Transform:GetWorldPosition()
-                local ents = TheSim:FindEntities(x,y,z, 10, "frog")
+                local ents = TheSim:FindEntities(x,y,z, 10, {"frog"})
                 
-                local volume = 1
-                for k,v in pairs(ents) do
-                    if volume > .5 and v ~= inst then
-                        volume = volume - .1
-                        if volume <= .5 then
-                            break
-                        end
-                    end
-                end
+                local volume = math.max(0.5, 1 - (#ents - 1)*0.1)
                 inst.SoundEmitter:PlaySound("dontstarve/frog/grunt", nil, volume)
                 inst.sg:GoToState("idle")
             end

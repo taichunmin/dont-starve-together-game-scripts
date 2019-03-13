@@ -117,6 +117,13 @@ local function onpickup(inst, picker)
 
     inst:PushEvent("detachchild")
 
+	if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+		if math.random() < TUNING.HALLOWEEN_ORNAMENT_TUMBLEWEED_CHANCE then
+            table.insert(inst.loot, "halloween_ornament_" ..tostring(math.random(NUM_HALLOWEEN_ORNAMENTS)))
+            table.insert(inst.lootaggro, false)
+		end
+	end
+
     local item = nil
     for i, v in ipairs(inst.loot) do
         item = SpawnPrefab(v)
@@ -446,7 +453,7 @@ local function fn()
         inst.angle = math.clamp(GetRandomWithVariance(inst.angle, ANGLE_VARIANCE), 0, 360)
         inst.components.blowinwind:Start(inst.angle)
     else
-        inst.SoundEmitter:PlaySound("dontstarve_DLC001/common/tumbleweed_roll", "tumbleweed_roll")
+        inst.components.blowinwind:StartSoundLoop()
     end
 
     ---local color = 0.5 + math.random() * 0.5

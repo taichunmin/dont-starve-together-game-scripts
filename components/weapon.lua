@@ -15,6 +15,7 @@ local Weapon = Class(function(self, inst)
     self.onprojectilelaunch = nil
     self.projectile = nil
     self.stimuli = nil
+    --self.overridestimulifn = nil
 
     self.inst:AddTag("weapon")
 end,
@@ -52,6 +53,10 @@ end
 
 function Weapon:SetElectric()
     self.stimuli = "electric"
+end
+
+function Weapon:SetOverrideStimuliFn(fn)
+    self.overridestimulifn = fn
 end
 
 function Weapon:CanRangedAttack()

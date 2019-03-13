@@ -38,6 +38,21 @@ function BlowInWind:OnEntityWake()
 	self:Start(self.windAngle, self.velocMult)
 end
 
+function BlowInWind:StartSoundLoop()
+    if self.inst.SoundEmitter ~= nil and
+        self.soundPath ~= nil and
+        self.soundName ~= nil and
+        not (self.inst.SoundEmitter:PlayingSound(self.soundName) or self.inst:IsAsleep()) then
+        self.inst.SoundEmitter:PlaySound(self.soundPath, self.soundName)
+    end
+end
+
+function BlowInWind:StopSoundLoop()
+    if self.inst.SoundEmitter ~= nil and self.soundName ~= nil then
+        self.inst.SoundEmitter:KillSound(self.soundName)
+    end
+end
+
 function BlowInWind:Start(ang, vel)
 	if ang then
 		self.windAngle = ang
@@ -47,14 +62,12 @@ function BlowInWind:Start(ang, vel)
 		self.inst.Transform:SetRotation(self.currentAngle)
 	end
 	if vel then self.velocMult = vel end
-	if self.inst.SoundEmitter and self.soundPath and self.soundName then
-		self.inst.SoundEmitter:PlaySound(self.soundPath, self.soundName)
-	end
+    self:StartSoundLoop()
 	self.inst:StartUpdatingComponent(self)
 end
 
 function BlowInWind:Stop()
-	if self.inst.SoundEmitter and self.soundName then self.inst.SoundEmitter:KillSound(self.soundName) end
+    self:StopSoundLoop()
 	self.inst:StopUpdatingComponent(self)
 end
 
@@ -125,7 +138,9 @@ function BlowInWind:OnUpdate(dt)
 	if self.soundName and self.soundParameter and self.inst.SoundEmitter then
 		-- Might just be able to use self.velocity:Length() here?
 		self.soundspeed = Remap(self.speed, 0, curr_speed*self.maxSpeedMult, 0, 1)
-		self.inst.SoundEmitter:SetParameter(self.soundName, self.soundParameter, self.soundspeed)
+        if self.inst.SoundEmitter:PlayingSound(self.soundName) then
+            self.inst.SoundEmitter:SetParameter(self.soundName, self.soundParameter, self.soundspeed)
+        end
 	end
 
 	-- Walk!

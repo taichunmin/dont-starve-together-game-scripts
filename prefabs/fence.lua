@@ -137,12 +137,31 @@ local function SetOrientation(inst, rotation)
     end
 
     if inst.builds.narrow then
+        
         if IsNarrow(inst) then
-            GetAnimState(inst):SetBuild(inst.builds.narrow)
-            GetAnimState(inst):SetBank(inst.builds.narrow)
+            if not inst.bank_narrow_set then
+                inst.bank_narrow_set = true
+                inst.bank_wide_set = nil
+                local skin_build = inst:GetSkinBuild()
+                if skin_build then
+					GetAnimState(inst):OverrideSkinSymbol("fence_posts", skin_build, "fence_posts_thin" )
+                else
+                    GetAnimState(inst):SetBuild(inst.builds.narrow)
+                end
+                GetAnimState(inst):SetBank(inst.builds.narrow)
+            end
         else
-            GetAnimState(inst):SetBuild(inst.builds.wide)
-            GetAnimState(inst):SetBank(inst.builds.wide)
+            if not inst.bank_wide_set then
+                inst.bank_wide_set = true
+                inst.bank_narrow_set = nil
+                local skin_build = inst:GetSkinBuild()
+                if skin_build then
+					GetAnimState(inst):OverrideSkinSymbol("fence_posts", skin_build, "fence_posts" )
+                else
+                    GetAnimState(inst):SetBuild(inst.builds.wide)
+                end
+                GetAnimState(inst):SetBank(inst.builds.wide)
+            end
         end
 
         if inst.isdoor then
@@ -500,6 +519,8 @@ local function MakeWall(name, builds, isdoor, klaussackkeyid)
         --but we don't to handle it until after our position is set
         inst:DoTaskInTime(0, InitializePathFinding)
 
+        inst.OnRemoveEntity = onremove
+
         -----------------------------------------------------------------------
         inst.entity:SetPristine()
         if not TheWorld.ismastersim then
@@ -569,8 +590,6 @@ local function MakeWall(name, builds, isdoor, klaussackkeyid)
         else
             MakeSnowCovered(inst)
         end
-
-        inst.OnRemoveEntity = onremove
 
         inst.OnSave = onsave
         inst.OnLoad = onload
@@ -647,9 +666,9 @@ local function MakeInvItem(name, placement, animdata, isdoor)
         placement,
     }
 
-    local function ondeploywall(inst, pt, deployer, rot)
-        local wall = SpawnPrefab(placement) 
-        if wall ~= nil then 
+    local function ondeploywall(inst, pt, deployer, rot )
+        local wall = SpawnPrefab(placement, inst.linked_skinname, inst.skin_id ) 
+        if wall ~= nil then
             local x = math.floor(pt.x) + .5
             local z = math.floor(pt.z) + .5
 

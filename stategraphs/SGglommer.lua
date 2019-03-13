@@ -83,21 +83,17 @@ local states=
 		timeline = 
 		{
 			TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/vomit_voice") end),
-			TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/vomit_liquid") end)
-		},
-
-		events = 
-		{
-			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
-		},
-
-		timeline = 
-		{
+			TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/vomit_liquid") end),
 			TimeEvent(30*FRAMES, function(inst)
 				if inst.sg.statemem.fuel then
 					inst.sg.statemem.fuel:Show()
 				end
 			end)
+		},
+
+		events = 
+		{
+			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
 		},
 	},
 

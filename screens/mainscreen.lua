@@ -13,7 +13,6 @@ require "os"
 local PopupDialogScreen = require "screens/popupdialog"
 local EmailSignupScreen = require "screens/emailsignupscreen"
 local MovieDialog = require "screens/moviedialog"
-local Countdown = require "widgets/countdown"
 local MultiplayerMainScreen = require "screens/multiplayermainscreen"
 
 local NoAuthenticationPopupDialogScreen = require "screens/noauthenticationpopupdialogscreen"
@@ -90,11 +89,6 @@ function MainScreen:DoInit()
     self.legalese_image:SetScale(.7)
     self.legalese_image:SetTint(unpack(FRONTEND_TITLE_COLOUR))
     
-	self.countdown = self.fixed_root:AddChild(Countdown())
-    self.countdown:SetScale(1)
-    self.countdown:SetPosition(-575, -330, 0)
-    self.countdown:Hide()
-    
     --RIGHT COLUMN
     self.right_col = self.fixed_root:AddChild(Widget("right"))
     self.right_col:SetPosition(rcol, 0)
@@ -169,9 +163,7 @@ function MainScreen:DoInit()
 
     self.onlinestatus = self.fixed_root:AddChild(OnlineStatus())
 
-	-- self:UpdateMOTD()
 	self:UpdateCurrentVersion()
-	--self:UpdateCountdown()
 
 	self.filter_settings = nil
 
@@ -252,7 +244,6 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
     local function onLogin(forceOffline)
 	    local account_manager = TheFrontEnd:GetAccountManager()
 	    local is_banned = (account_manager:IsBanned() == true)
-	    local failed_email = account_manager:MustValidateEmail()
 	    local must_upgrade = account_manager:MustUpgradeClient()
 	    local communication_succeeded = account_manager:CommunicationSucceeded()
 	    local inventory_succeeded = TheInventory:HasDownloadedInventory()
@@ -335,7 +326,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
             print ( "[Warning] Failed to download local inventory" )
         else -- We haven't created an account yet
             TheFrontEnd:PopScreen()
-            TheFrontEnd:PushScreen(NoAuthenticationPopupDialogScreen(true, failed_email))
+            TheFrontEnd:PushScreen(NoAuthenticationPopupDialogScreen())
             TheNet:NotifyAuthenticationFailure()
         end
     end
@@ -483,82 +474,6 @@ function MainScreen:SetTargetGameVersion(ver)
     self.targetversion = ver
 end
 
-function MainScreen:OnGetMOTDImageQueryComplete( is_successful )
-	if is_successful then
-		self.motd.motdimage:SetTexture( "images/motd.xml", "motd.tex" )
-		self.motd.motdimage:Show()
-	end	
-end
-
-function MainScreen:SetMOTD(str, cache)
-	--print("MainScreen:SetMOTD", str, cache)
-
-	local status, motd = pcall( function() return json.decode(str) end )
-	--print("decode:", status, motd)
-	if status and motd then
-	    if cache then
-	 		SavePersistentString("motd", str)
-	    end
-
-		local platform_motd = motd.dststeam
-		--Uncomment these to test Image MOTD
-		--platform_motd.image_url = "http://forums.kleientertainment.com/public/DST/motd.tex"
-		--platform_motd.motd_body = ""
-		
-		--print("platform_motd")
-		--dumptable(platform_motd)
-		
-		if platform_motd then
-			self.motd:Show()
-		    if platform_motd.motd_title and string.len(platform_motd.motd_title) > 0 and
-			    	platform_motd.motd_body and string.len(platform_motd.motd_body) > 0 then
-
-				self.motd.motdtitle:SetString(platform_motd.motd_title)
-				self.motd.motdtext:SetString(platform_motd.motd_body)
-				self.motd.motdimage:Hide()
-
-			    if platform_motd.link_title and string.len(platform_motd.link_title) > 0 and
-				    	platform_motd.link_url and string.len(platform_motd.link_url) > 0 then
-				    self.motd.button:SetText(platform_motd.link_title)
-				    self.motd.button:SetOnClick( function() VisitURL(platform_motd.link_url) end )
-				else
-					self.motd.button:Hide()
-				end
-			elseif platform_motd.motd_title and string.len(platform_motd.motd_title) > 0 and
-			    	platform_motd.image_url and string.len(platform_motd.image_url) > 0 then
-
-				self.motd.motdtitle:SetString(platform_motd.motd_title)
-				self.motd.motdtext:Hide()
-				
-				local use_disk_file = not cache
-				if use_disk_file then
-					self.motd.motdimage:Hide()
-				end
-				TheSim:GetMOTDImage( platform_motd.image_url, use_disk_file, function(...) self:OnGetMOTDImageQueryComplete(...) end )
-		    else
-				self.motd:Hide()
-		    end
-	    else
-			self.motd:Hide()
-		end
-	end
-end
-
-function MainScreen:OnMOTDQueryComplete( result, isSuccessful, resultCode )
-	--print( "MainScreen:OnMOTDQueryComplete", result, isSuccessful, resultCode )
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
- 		self:SetMOTD(result, true)
-	end
-end
-
-function MainScreen:OnCachedMOTDLoad(load_success, str)
-	--print("MainScreen:OnCachedMOTDLoad", load_success, str)
-	if load_success and string.len(str) > 1 then
-		self:SetMOTD(str, false)
-	end
-	TheSim:QueryServer( "https://s3-us-west-2.amazonaws.com/kleifiles/external/ds_motd.json", function(...) self:OnMOTDQueryComplete(...) end, "GET" )
-end
-
 function MainScreen:OnCurrentVersionQueryComplete( result, isSuccessful, resultCode )
  	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
  		self:SetCurrentVersion(result, true)
@@ -569,61 +484,6 @@ end
 
 function MainScreen:UpdateCurrentVersion()
 	TheSim:QueryServer( "https://s3.amazonaws.com/dstbuilds/builds.json", function(...) self:OnCurrentVersionQueryComplete(...) end, "GET" )
-end
-
-function MainScreen:UpdateMOTD()
-	TheSim:GetPersistentString("motd", function(...) self:OnCachedMOTDLoad(...) end)
-end
-
-function MainScreen:SetCountdown(str, cache)
-	local status, ud = pcall( function() return json.decode(str) end )
-	--print("decode:", status, ud)
-	if status and ud then
-	    if cache then
-	 		SavePersistentString("updatecountdown", str)
-	    end
-
-	    local update_date = nil
-		if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
-			if IsDLCInstalled(REIGN_OF_GIANTS) then
-				update_date = {year = ud.rogsteam.update_year, day = ud.rogsteam.update_day, month = ud.rogsteam.update_month, hour = 13}
-			else
-				update_date = {year = ud.steam.update_year, day = ud.steam.update_day, month = ud.steam.update_month, hour = 13}
-			end
-		else
-			if IsDLCInstalled(REIGN_OF_GIANTS) then
-				update_date = {year = ud.rogstandalone.update_year, day = ud.rogstandalone.update_day, month = ud.rogstandalone.update_month, hour = 13}
-			else
-				update_date = {year = ud.standalone.update_year, day = ud.standalone.update_day, month = ud.standalone.update_month, hour = 13}
-			end
-		end
-
-		if update_date and self.countdown:ShouldShowCountdown(update_date) then
-		    self.countdown:Show()
-	    else
-			self.countdown:Hide()
-		end
-	end	
-end
-
-function MainScreen:OnCountdownQueryComplete( result, isSuccessful, resultCode )
-	--print( "MainScreen:OnMOTDQueryComplete", result, isSuccessful, resultCode )
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
- 		self:SetCountdown(result, true)
-	end
-end
-
-function MainScreen:OnCachedCountdownLoad(load_success, str)
-	--print("MainScreen:OnCachedMOTDLoad", load_success, str)
-	if load_success and string.len(str) > 1 then
-		self:SetCountdown(str, false)
-	end
-	TheSim:QueryServer( "https://s3-us-west-2.amazonaws.com/kleifiles/external/ds_update.json", function(...) self:OnCountdownQueryComplete(...) end, "GET" )
-end
-
-function MainScreen:UpdateCountdown()
-	--print("MainScreen:UpdateMOTD()")
-	TheSim:GetPersistentString("updatecountdown", function(...) self:OnCachedCountdownLoad(...) end)
 end
 
 return MainScreen

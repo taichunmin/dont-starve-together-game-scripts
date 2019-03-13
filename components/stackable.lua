@@ -60,7 +60,7 @@ function Stackable:Get(num)
     local num_to_get = num or 1
     -- If we have more than one item in the stack
     if self.stacksize > num_to_get then
-        local instance = SpawnPrefab(self.inst.prefab)
+        local instance = SpawnPrefab( self.inst.prefab, self.inst.skinname, self.inst.skin_id, nil )
 
         self:SetStackSize(self.stacksize - num_to_get)
         instance.components.stackable:SetStackSize(num_to_get)
@@ -90,7 +90,7 @@ end
 function Stackable:Put(item, source_pos)
     assert(item ~= self, "cant stack on self" )
     local ret
-    if item.prefab == self.inst.prefab then
+    if item.prefab == self.inst.prefab and item.skinname == self.inst.skinname then
         
         local num_to_add = item.components.stackable.stacksize
         local newtotal = self.stacksize + num_to_add

@@ -15,6 +15,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀜",
 		},
+		release_group = 43,
 	},
 	emoji_alchemyengine =
 	{
@@ -29,6 +30,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀝",
 		},
+		release_group = 43,
 	},
 	emoji_arcane =
 	{
@@ -43,6 +45,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀀",
 		},
+		release_group = 32,
 	},
 	emoji_backpack =
 	{
@@ -57,6 +60,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀞",
 		},
+		release_group = 43,
 	},
 	emoji_battle =
 	{
@@ -71,6 +75,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀘",
 		},
+		release_group = 40,
 	},
 	emoji_beefalo =
 	{
@@ -85,6 +90,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀁",
 		},
+		release_group = 32,
 	},
 	emoji_beehive =
 	{
@@ -99,6 +105,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀟",
 		},
+		release_group = 43,
 	},
 	emoji_berry_bush =
 	{
@@ -113,6 +120,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀠",
 		},
+		release_group = 43,
 	},
 	emoji_carrot =
 	{
@@ -127,6 +135,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀡",
 		},
+		release_group = 43,
 	},
 	emoji_chest =
 	{
@@ -141,6 +150,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀂",
 		},
+		release_group = 32,
 	},
 	emoji_chester =
 	{
@@ -155,6 +165,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀃",
 		},
+		release_group = 32,
 	},
 	emoji_crockpot =
 	{
@@ -169,6 +180,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀄",
 		},
+		release_group = 32,
 	},
 	emoji_egg =
 	{
@@ -183,6 +195,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀢",
 		},
+		release_group = 43,
 	},
 	emoji_eyeball =
 	{
@@ -197,6 +210,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀅",
 		},
+		release_group = 32,
 	},
 	emoji_eyeplant =
 	{
@@ -211,6 +225,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀣",
 		},
+		release_group = 43,
 	},
 	emoji_faketeeth =
 	{
@@ -225,6 +240,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀆",
 		},
+		release_group = 32,
 	},
 	emoji_farm =
 	{
@@ -239,6 +255,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀇",
 		},
+		release_group = 32,
 	},
 	emoji_fire =
 	{
@@ -253,6 +270,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀈",
 		},
+		release_group = 32,
 	},
 	emoji_firepit =
 	{
@@ -267,6 +285,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀤",
 		},
+		release_group = 43,
 	},
 	emoji_flex =
 	{
@@ -281,6 +300,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀙",
 		},
+		release_group = 40,
 	},
 	emoji_ghost =
 	{
@@ -295,6 +315,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀉",
 		},
+		release_group = 32,
 	},
 	emoji_gold =
 	{
@@ -309,6 +330,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀚",
 		},
+		release_group = 40,
 	},
 	emoji_grave =
 	{
@@ -323,6 +345,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀊",
 		},
+		release_group = 32,
 	},
 	emoji_hambat =
 	{
@@ -337,6 +360,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀋",
 		},
+		release_group = 32,
 	},
 	emoji_hammer =
 	{
@@ -351,6 +375,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀌",
 		},
+		release_group = 32,
 	},
 	emoji_heart =
 	{
@@ -365,6 +390,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀍",
 		},
+		release_group = 32,
 	},
 	emoji_horn =
 	{
@@ -379,6 +405,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀥",
 		},
+		release_group = 43,
 	},
 	emoji_hunger =
 	{
@@ -393,6 +420,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀎",
 		},
+		release_group = 32,
 	},
 	emoji_lightbulb =
 	{
@@ -407,6 +435,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀏",
 		},
+		release_group = 32,
 	},
 	emoji_meat_big =
 	{
@@ -421,6 +450,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀦",
 		},
+		release_group = 43,
 	},
 	emoji_pig =
 	{
@@ -435,6 +465,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀐",
 		},
+		release_group = 32,
 	},
 	emoji_poop =
 	{
@@ -449,6 +480,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀑",
 		},
+		release_group = 32,
 	},
 	emoji_redgem =
 	{
@@ -463,6 +495,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀒",
 		},
+		release_group = 32,
 	},
 	emoji_refine =
 	{
@@ -477,6 +510,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀧",
 		},
+		release_group = 43,
 	},
 	emoji_salt =
 	{
@@ -491,6 +525,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀨",
 		},
+		release_group = 43,
 	},
 	emoji_sanity =
 	{
@@ -505,6 +540,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀓",
 		},
+		release_group = 32,
 	},
 	emoji_sciencemachine =
 	{
@@ -519,6 +555,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀔",
 		},
+		release_group = 32,
 	},
 	emoji_shadowmanipulator =
 	{
@@ -533,6 +570,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀩",
 		},
+		release_group = 43,
 	},
 	emoji_shovel =
 	{
@@ -547,6 +585,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀪",
 		},
+		release_group = 43,
 	},
 	emoji_skull =
 	{
@@ -561,6 +600,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀕",
 		},
+		release_group = 32,
 	},
 	emoji_thumbsup =
 	{
@@ -575,6 +615,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀫",
 		},
+		release_group = 43,
 	},
 	emoji_tophat =
 	{
@@ -589,6 +630,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀖",
 		},
+		release_group = 32,
 	},
 	emoji_torch =
 	{
@@ -603,6 +645,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀛",
 		},
+		release_group = 40,
 	},
 	emoji_trap =
 	{
@@ -617,6 +660,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀬",
 		},
+		release_group = 43,
 	},
 	emoji_trophy =
 	{
@@ -631,6 +675,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀭",
 		},
+		release_group = 43,
 	},
 	emoji_wave =
 	{
@@ -645,6 +690,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀮",
 		},
+		release_group = 43,
 	},
 	emoji_web =
 	{
@@ -659,6 +705,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀗",
 		},
+		release_group = 32,
 	},
 	emoji_wormhole =
 	{
@@ -673,6 +720,7 @@ EMOJI_ITEMS =
 			requires_validation = true,
 			utf8_str = "󰀯",
 		},
+		release_group = 43,
 	},
 }
 

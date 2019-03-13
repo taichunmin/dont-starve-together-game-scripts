@@ -49,18 +49,11 @@ local function CreateDropShadow(parent)
     return inst
 end
 
-local function OnFocusCamera(inst)
-    TheFocalPoint:PushTempFocus(inst, 30, 30, 1)
-end
-
 local function OnCameraFocusDirty(inst)
     if inst._camerafocus:value() then
-        if inst._camerafocustask == nil then
-            inst._camerafocustask = inst:DoPeriodicTask(0, OnFocusCamera)
-        end
-    elseif inst._camerafocustask ~= nil then
-        inst._camerafocustask:Cancel()
-        inst._camerafocustask = nil
+        TheFocalPoint.components.focalpoint:StartFocusSource(inst, nil, nil, 30, 30, 1)
+    else
+        TheFocalPoint.components.focalpoint:StopFocusSource(inst)
     end
 end
 
@@ -91,7 +84,6 @@ local function fn()
     inst:AddTag("blocker")
 
     inst._camerafocus = net_bool(inst.GUID, "quagmire_portal._camerafocus", "camerafocusdirty")
-    inst._camerafocustask = nil
     inst:ListenForEvent("camerafocusdirty", OnCameraFocusDirty)
 
     inst.entity:SetPristine()

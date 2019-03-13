@@ -84,7 +84,7 @@ local states =
         name = "run",
         tags = { "moving", "running", "canrotate", "autopredict" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.components.locomotor:RunForward()
             if not inst.AnimState:IsCurrentAnimation("idle") then
                 inst.AnimState:PlayAnimation("idle", true)

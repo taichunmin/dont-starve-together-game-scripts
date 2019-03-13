@@ -120,9 +120,32 @@ local function ShouldKite(target, inst)
         and not target.components.health:IsDead()
 end
 
+local function ShouldWatchMinigame(inst)
+	if inst.components.follower.leader ~= nil and inst.components.follower.leader.components.minigame_participator ~= nil then
+		if inst.components.combat.target == nil or inst.components.combat.target.components.minigame_participator ~= nil then
+			return true
+		end
+	end
+	return false
+end
+
+local function WatchingMinigame(inst)
+	return (inst.components.follower.leader ~= nil and inst.components.follower.leader.components.minigame_participator ~= nil) and inst.components.follower.leader.components.minigame_participator:GetMinigame() or nil
+end
+
 function ShadowWaxwellBrain:OnStart()
+
+	local watch_game = WhileNode( function() return ShouldWatchMinigame(self.inst) end, "Watching Game",
+        PriorityNode({
+            Follow(self.inst, WatchingMinigame, TUNING.MINIGAME_CROWD_DIST_MIN, TUNING.MINIGAME_CROWD_DIST_TARGET, TUNING.MINIGAME_CROWD_DIST_MAX),
+            RunAway(self.inst, "minigame_participator", 5, 7),
+            FaceEntity(self.inst, WatchingMinigame, WatchingMinigame),
+		}, 0.25))
+
     local root = PriorityNode(
     {
+		watch_game,
+
         --#1 priority is dancing beside your leader. Obviously.
         WhileNode(function() return ShouldDanceParty(self.inst) end, "Dance Party",
             PriorityNode({

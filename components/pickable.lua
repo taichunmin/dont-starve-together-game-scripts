@@ -408,7 +408,7 @@ function Pickable:Pick(picker)
 
         if self.protected_cycles ~= nil then
             self.protected_cycles = self.protected_cycles - 1
-            if self.protected_cycles < 0 then
+            if self.protected_cycles <= 0 then
                 self.protected_cycles = nil
                 if self.inst.components.witherable ~= nil then
                     self.inst.components.witherable:Enable(true)

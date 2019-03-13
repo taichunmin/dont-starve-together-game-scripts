@@ -9,16 +9,30 @@ local function onnear(inst)
 end
 
 local function onfar(inst)
-    inst.SoundEmitter:PlaySound("dontstarve/common/flies", "flies")
+    if not inst:IsAsleep() then
+        inst.SoundEmitter:PlaySound("dontstarve/common/flies", "flies")
+    end
     inst.AnimState:PlayAnimation("swarm_pre")
     inst.AnimState:PushAnimation("swarm_loop", true)
 end
 
-local function oninit(inst)
-    inst.components.playerprox:ForceUpdate()
+local function OnWake(inst)
     if not inst.components.playerprox:IsPlayerClose() then
         inst.SoundEmitter:PlaySound("dontstarve/common/flies", "flies")
     end
+end
+
+local function OnSleep(inst)
+    inst.SoundEmitter:KillSound("flies")
+end
+
+local function oninit(inst)
+    inst.components.playerprox:ForceUpdate()
+    if not inst:IsAsleep() then
+        OnWake(inst)
+    end
+    inst.OnEntityWake = OnWake
+    inst.OnEntitySleep = OnSleep
 end
 
 local function fn()
@@ -33,7 +47,6 @@ local function fn()
     inst.AnimState:SetBuild("flies")
 
     inst.AnimState:PlayAnimation("swarm_pre")
-    inst.AnimState:PushAnimation("swarm_loop", true)
 
     inst:AddTag("NOCLICK")
     inst:AddTag("FX")
@@ -43,6 +56,8 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst.AnimState:PushAnimation("swarm_loop", true)
 
     inst:AddComponent("playerprox")
     inst.components.playerprox:SetDist(2,3)

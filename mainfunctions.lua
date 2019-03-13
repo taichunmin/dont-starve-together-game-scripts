@@ -1020,19 +1020,20 @@ end
 function ForceAssetReset()
     Settings.current_asset_set = "FORCERESET"
     Settings.current_world_asset = nil
+    Settings.current_world_specialevent = nil
 end
 
 function SimReset(instanceparameters)
     SimTearingDown = true
-
-    ModManager:UnloadPrefabs()
 
     if instanceparameters == nil then
         instanceparameters = {}
     end
     instanceparameters.last_asset_set = Settings.current_asset_set
     instanceparameters.last_world_asset = Settings.current_world_asset
+    instanceparameters.last_world_specialevent = Settings.current_world_specialevent
     instanceparameters.loaded_characters = Settings.loaded_characters
+    instanceparameters.loaded_mods = ModManager:GetUnloadPrefabsData()
 
     local params = json.encode(instanceparameters)
     TheSim:SetInstanceParameters(params)
@@ -1063,12 +1064,13 @@ function Shutdown()
 
     Print(VERBOSITY.DEBUG, 'Ending the sim now!')
 
-    UnloadFonts()
+    --V2C: Assets will be unloaded when the C++ subsystems are deconstructed
+    --UnloadFonts()
 
     -- warning, we don't want to run much code here. We're in a strange mix of loaded assets and mapped paths
     -- as a bonus, the fonts are unloaded, so no asserting...
-    TheSim:UnloadAllPrefabs()
-    ModManager:UnloadPrefabs()
+    --TheSim:UnloadAllPrefabs()
+    --ModManager:UnloadPrefabs()
 
     TheSim:Quit()
 end
@@ -1562,7 +1564,7 @@ function BuildTagsStringCommon(tagsTable)
     end
     
     -- Language tag (forced to front of list, don't put anything else at slot 1, or language detection will fail!)
-    table.insert(tagsTable, 1, STRINGS.PRETRANSLATED.LANGUAGES[GetLanguage()] or "")
+    table.insert(tagsTable, 1, STRINGS.PRETRANSLATED.LANGUAGES[LOC.GetLanguage()] or "")
 
     -- Concat unique tags
     local tagged = {}

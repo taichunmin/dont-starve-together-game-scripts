@@ -633,6 +633,9 @@ function EntityScript:GetIsWet()
 end
 
 function EntityScript:GetSkinBuild()
+    if self.skin_build_name == nil then
+        self.skin_build_name = GetBuildForItem(self.skinname) --cache the build name so we don't need to search for it in the item tables.
+    end
     return self.skin_build_name
 end
 

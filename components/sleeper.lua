@@ -290,7 +290,7 @@ function Sleeper:GoToSleep(sleeptime)
             self.inst.components.combat:SetTarget(nil)
         end
 
-        if self.inst.components.locomotor ~= nil then
+        if self.inst.components.locomotor ~= nil and not (self.inst.sg ~= nil and self.inst.sg:HasStateTag("nosleep")) then
             self.inst.components.locomotor:Stop()
         end
 

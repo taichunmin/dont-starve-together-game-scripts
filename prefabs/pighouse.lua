@@ -139,6 +139,7 @@ local function onvacate(inst, child)
             if child.components.health ~= nil then
                 child.components.health:SetPercent(1)
             end
+			child:PushEvent("onvacatehome")
         end
     end
 end

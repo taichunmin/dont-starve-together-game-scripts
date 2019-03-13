@@ -176,7 +176,7 @@ function WorldOverseer:DumpIndividualPlayerStats(stat, event)
 
     --print("DUMP PLAYER STATS")
     --dumptable(sendstats)
-    local jsonstats = json.encode(sendstats)
+    local jsonstats = json.encode_compliant(sendstats)
     TheSim:SendProfileStats(jsonstats)
 end
 
@@ -203,7 +203,7 @@ function WorldOverseer:OnPlayerDeath(player, data)
     if BRANCH == "dev" and sendstats.playerdeath.cause == 0 then
         assert(false, "Ack! We got killed by '0', please let Graham know what killed you!")
     end
-	local jsonstats = json.encode(sendstats)
+	local jsonstats = json.encode_compliant(sendstats)
 	TheSim:SendProfileStats(jsonstats)
 end
 
@@ -316,7 +316,7 @@ function WorldOverseer:DumpSessionStats()
     --print("SENDING SESSION STATS VVVVVVVVVVVV")
     --dumptable(sendstats)
     --print("SENDING SESSION STATS ^^^^^^^^^^^^")
-	local jsonstats = json.encode(sendstats)
+	local jsonstats = json.encode_compliant(sendstats)
 	TheSim:SendProfileStats(jsonstats)
 end
 

@@ -12,15 +12,17 @@ function Explosive:SetOnExplodeFn(fn)
 end
 
 function Explosive:OnBurnt()
-    for i, v in ipairs(AllPlayers) do
-        local distSq = v:GetDistanceSqToInst(self.inst)
-        local k = math.max(0, math.min(1, distSq / 1600))
-        local intensity = k * (k - 2) + 1 --easing.outQuad(k, 1, -1, 1)
-        if intensity > 0 then
-            v:ScreenFlash(intensity)
-            v:ShakeCamera(CAMERASHAKE.FULL, .7, .02, intensity / 2)
-        end
-    end
+	if not self.skip_camera_flash then
+		for i, v in ipairs(AllPlayers) do
+			local distSq = v:GetDistanceSqToInst(self.inst)
+			local k = math.max(0, math.min(1, distSq / 1600))
+			local intensity = k * (k - 2) + 1 --easing.outQuad(k, 1, -1, 1)
+			if intensity > 0 then
+				v:ScreenFlash(intensity)
+				v:ShakeCamera(CAMERASHAKE.FULL, .7, .02, intensity / 2)
+			end
+		end
+	end
 
     if self.onexplodefn ~= nil then
         self.onexplodefn(self.inst)

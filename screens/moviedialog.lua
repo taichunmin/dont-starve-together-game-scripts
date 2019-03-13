@@ -2,10 +2,11 @@ local Screen = require "widgets/screen"
 local Widget = require "widgets/widget"
 local Video = require "widgets/video"
 
-local MovieDialog = Class(Screen, function(self, movie_path, callback)
+local MovieDialog = Class(Screen, function(self, movie_path, callback, do_fadeback)
     Screen._ctor(self, "MovieDialog")
 
     self.cb = callback
+	self.do_fadeback = do_fadeback
 
     self.fixed_root = self:AddChild(Widget("root"))
     self.fixed_root:SetVAnchor(ANCHOR_MIDDLE)
@@ -47,7 +48,11 @@ function MovieDialog:OnUpdate(dt)
     if not self.cancelled and self.end_delay > dt then
         self.end_delay = self.end_delay - dt
     else
-        TheFrontEnd:PopScreen()
+		if self.do_fadeback then
+			TheFrontEnd:FadeBack()
+		else
+	        TheFrontEnd:PopScreen()
+		end
         if self.cb ~= nil then
             self.cb()
         end

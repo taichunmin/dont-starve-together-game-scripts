@@ -864,6 +864,7 @@ local function OnDespawn(inst)
     inst.components.debuffable:RemoveOnDespawn()
     inst.components.rider:ActualDismount()
     inst.components.bundler:StopBundling()
+    inst.components.constructionbuilder:StopConstruction()
     if GetGameModeProperty("drop_everything_on_despawn") then
         inst.components.inventory:DropEverything()
     else
@@ -912,6 +913,7 @@ local function OnNewSpawn(inst)
     end
     inst.OnNewSpawn = nil
     inst.starting_inventory = nil
+    TheWorld:PushEvent("ms_newplayerspawned", inst)
 end
 
 --------------------------------------------------------------------------
@@ -1081,6 +1083,36 @@ local function ApplyScale(inst, source, scale)
 end
 
 --------------------------------------------------------------------------
+--V2C: Used by multiplayer_portal_moon for saving certain character traits
+--     when rerolling a new character.
+local function SaveForReroll(inst)
+    --NOTE: ignoring returned refs, should be ok
+    local data =
+    {
+        age = inst.components.age ~= nil and inst.components.age:OnSave() or nil,
+        builder = inst.components.builder ~= nil and inst.components.builder:OnSave() or nil,
+        petleash = inst.components.petleash ~= nil and inst.components.petleash:OnSave() or nil,
+        maps = inst.player_classified ~= nil and inst.player_classified.MapExplorer ~= nil and inst.player_classified.MapExplorer:RecordAllMaps() or nil,
+    }
+    return next(data) ~= nil and data or nil
+end
+
+local function LoadForReroll(inst, data)
+    if data.age ~= nil and inst.components.age ~= nil then
+        inst.components.age:OnLoad(data.age)
+    end
+    if data.builder ~= nil and inst.components.builder ~= nil then
+        inst.components.builder:OnLoad(data.builder)
+    end
+    if data.petleash ~= nil and inst.components.petleash ~= nil then
+        inst.components.petleash:OnLoad(data.petleash)
+    end
+    if data.maps ~= nil and inst.player_classified ~= nil and inst.player_classified.MapExplorer ~= nil then
+        inst.player_classified.MapExplorer:LearnAllMaps(data.maps)
+    end
+end
+
+--------------------------------------------------------------------------
 
 --V2C: starting_inventory passed as a parameter here is now deprecated
 --     set .starting_inventory property during master_postinit instead
@@ -1122,6 +1154,8 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         Asset("ANIM", "anim/player_superjump.zip"),
         Asset("ANIM", "anim/player_attack_leap.zip"),
         Asset("ANIM", "anim/player_book_attack.zip"),
+        Asset("ANIM", "anim/player_parryblock.zip"),
+        Asset("ANIM", "anim/player_attack_prop.zip"),
 
         Asset("ANIM", "anim/player_frozen.zip"),
         Asset("ANIM", "anim/player_shock.zip"),
@@ -1138,6 +1172,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         Asset("ANIM", "anim/shadow_skinchangefx.zip"),
         Asset("ANIM", "anim/player_townportal.zip"),
         Asset("ANIM", "anim/player_channel.zip"),
+        Asset("ANIM", "anim/player_construct.zip"),
 
         Asset("SOUND", "sound/sfx.fsb"),
         Asset("SOUND", "sound/wilson.fsb"),
@@ -1199,11 +1234,6 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
 
         Asset("SCRIPT", "scripts/prefabs/player_common_extensions.lua"),
     }
-
-    local clothing_assets = require("clothing_assets")
-    for _, clothing_asset in pairs(clothing_assets) do
-        table.insert(assets, clothing_asset)
-    end
 
     local prefabs =
     {
@@ -1306,6 +1336,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.AnimState:AddOverrideBuild("player_attack_leap")
         inst.AnimState:AddOverrideBuild("player_superjump")
         inst.AnimState:AddOverrideBuild("player_multithrust")
+        inst.AnimState:AddOverrideBuild("player_parryblock")
         inst.AnimState:AddOverrideBuild("player_emote_extra")
 
         inst.DynamicShadow:SetSize(1.3, .6)
@@ -1380,6 +1411,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         --attuner server listeners are not registered until after "ms_playerjoined" has been pushed
 
         inst:AddComponent("playeravatardata")
+        inst:AddComponent("constructionbuilderuidata")
 
         if TheNet:GetServerGameMode() == "lavaarena" then
             inst:AddComponent("healthsyncer")
@@ -1486,6 +1518,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.components.inventory:DisableDropOnDeath()
 
         inst:AddComponent("bundler")
+        inst:AddComponent("constructionbuilder")
 
         -- Player labeling stuff
         inst:AddComponent("inspectable")
@@ -1506,6 +1539,14 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst:AddComponent("stormwatcher")
         inst:AddComponent("carefulwalker")
 
+        if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+            inst:AddComponent("spooked")
+            inst:ListenForEvent("spooked", ex_fns.OnSpooked)
+        end
+		if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
+            inst:AddComponent("wintertreegiftable")
+		end
+
         -------
 
         inst:AddComponent("health")
@@ -1515,7 +1556,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst:AddComponent("hunger")
         inst.components.hunger:SetMax(TUNING.WILSON_HUNGER)
         inst.components.hunger:SetRate(TUNING.WILSON_HUNGER_RATE)
-        inst.components.hunger:SetKillRate(TUNING.WILSON_HEALTH/TUNING.STARVE_KILL_TIME)
+        inst.components.hunger:SetKillRate(TUNING.WILSON_HEALTH / TUNING.STARVE_KILL_TIME)
         if GetGameModeProperty("no_hunger") then
             inst.components.hunger:Pause()
         end
@@ -1620,6 +1661,10 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.OnLoad = OnLoad
         inst.OnNewSpawn = OnNewSpawn
         inst.OnDespawn = OnDespawn
+
+        --V2C: used by multiplayer_portal_moon
+        inst.SaveForReroll = SaveForReroll
+        inst.LoadForReroll = LoadForReroll
 
         inst:ListenForEvent("startfiredamage", OnStartFireDamage)
         inst:ListenForEvent("stopfiredamage", OnStopFireDamage)

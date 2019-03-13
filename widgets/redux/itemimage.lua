@@ -171,19 +171,17 @@ function ItemImage:ApplyDataToWidget(context, widget_data, data_index)
     local list_widget = self
     local screen = context.screen
 	if widget_data then
-        local item_blob = widget_data.item_blob
-        assert(item_blob, "Missing item_blob for ".. widget_data.item_key)
-		list_widget:SetItem(item_blob.type, widget_data.item_key, widget_data.item_id, widget_data.acquire_timestamp)
+		list_widget:SetItem(GetTypeForItem(widget_data.item_key), widget_data.item_key, widget_data.item_id, widget_data.acquire_timestamp)
 
         list_widget.owned_count:SetString(GetCountText(widget_data.owned_count))
         
-        list_widget.frame:SetWeavable( IsUserCommerceAllowedOnItem( widget_data.item_key ) )
+        list_widget.frame:SetWeavable( IsUserCommerceAllowedOnItemType( widget_data.item_key ) )
         
 		list_widget:Show()
 
 		if screen and screen.show_hover_text then
-			local rarity_str = GetModifiedRarityStringForItem(item_blob.item)
-			local hover_text = rarity_str .. "\n" .. GetSkinName(item_blob.item)
+			local rarity_str = GetModifiedRarityStringForItem(widget_data.item_key)
+			local hover_text = rarity_str .. "\n" .. GetSkinName(widget_data.item_key)
 			list_widget:SetHoverText( hover_text, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 60, colour = {1,1,1,1}})
 			if list_widget.focus then --make sure we force the hover text to appear on the default focused item
 				list_widget:_GainFocus_Internal()

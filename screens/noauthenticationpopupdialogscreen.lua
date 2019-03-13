@@ -10,7 +10,7 @@ local TEMPLATES = require "widgets/templates"
 
 local ServerListingScreen = require "screens/serverlistingscreen"
 
-local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy, failedEmail)
+local NoAuthenticationPopupDialogScreen = Class(Screen, function(self)
 	Screen._ctor(self, "NoAuthenticationPopupDialogScreen")
 
 	--darken everything behind the dialog
@@ -38,15 +38,7 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
     self.title = self.proot:AddChild(Text(BUTTONFONT, 50))
     self.title:SetPosition(8, 90, 0)
     
-    if legitCopy then
-        if failedEmail then
-            self.title:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE_FAILEDEMAIL)
-        else
-            self.title:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE)
-        end
-    else
-        self.title:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_TITLE)
-    end
+    self.title:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE)
     self.title:SetColour(0,0,0,1)
 
 	--text
@@ -64,17 +56,7 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
         self.text:SetRegionSize(500, 100)
     end
 
-    if legitCopy then
-        if failedEmail then
-            self.text:SetRegionSize(500, 200)    
-            self.text:SetPosition(8, 0, 0)
-            self.text:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY_FAILEDEMAIL)
-        else
-            self.text:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY)
-        end
-    else
-        self.text:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_BODY)
-    end
+    self.text:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY)
     self.text:SetColour(0,0,0,1)
     self.text:EnableWordWrap(true)
 
@@ -86,14 +68,7 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
     end
 
     self.text2:SetPosition(8, -55, 0)
-    if legitCopy then
-        if failedEmail then
-            self.text2:SetPosition(8, -82, 0)
-            self.text2:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2_FAILEDEMAIL)
-        else
-            self.text2:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2)
-        end
-    end
+    self.text2:SetString(STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2)
     self.text2:EnableWordWrap(true)
     if JapaneseOnPS4() then
         self.text2:SetRegionSize(500, 100)
@@ -111,14 +86,11 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
     local spacing = 250
 
     local go_button_text = STRINGS.UI.NOAUTHENTICATIONSCREEN.CREATEBUTTON
-    if failedEmail then
-        go_button_text = STRINGS.UI.NOAUTHENTICATIONSCREEN.FAILEDEMAILBUTTON
-    end
     local buttons = 
     {
         {text=go_button_text, cb = function() 
             local prefer_to_embed = true
-            VisitURL(TheFrontEnd:GetAccountManager():GetSteamLoginURL(failedEmail), prefer_to_embed )
+            VisitURL(TheFrontEnd:GetAccountManager():GetAccountURL(), prefer_to_embed )
             TheFrontEnd:PopScreen()
         end},
         {text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function() 
@@ -126,15 +98,6 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
             TheFrontEnd:PopScreen()             
         end}
     }
-    if not legitCopy then
-        buttons = 
-        {
-            {text=STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_BUTTON, cb = function() 
-                self:Disable()
-                TheFrontEnd:PopScreen() 
-            end}
-        }
-    end
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
 	self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 30, -130, 0) 
     self.menu:SetScale(.8)

@@ -27,6 +27,17 @@ local events =
             inst.sg:GoToState("knockback", data)
         end
     end),
+    EventHandler("updatepetmastery", function(inst, data)
+        if inst._pet_level ~= nil and data ~= nil and inst._pet_level == data.newlevel then
+            --cancel change
+            inst.sg.mem.queuelevelchange = nil
+        else
+            inst.sg.mem.queuelevelchange = true
+            if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) and inst.sg.currentstate.name ~= "appear" then
+                inst.sg:GoToState("levelup")
+            end
+        end
+    end),
     EventHandler("death", function(inst)
         inst.sg:GoToState("dissipate")
     end),
@@ -46,7 +57,11 @@ local states =
         tags = { "idle", "canrotate", "canslide" },
 
         onenter = function(inst)
-            inst.AnimState:PlayAnimation(getidleanim(inst), true)
+            if inst.sg.mem.queuelevelchange then
+                inst.sg:GoToState("levelup")
+            else
+                inst.AnimState:PlayAnimation(getidleanim(inst), true)
+            end
         end,
     },
 
@@ -199,6 +214,40 @@ local states =
         onexit = function(inst)
             if inst.sg.statemem.speed ~= nil then
                 inst.Physics:Stop()
+            end
+        end,
+    },
+
+    State{
+        name = "levelup",
+        tags = { "busy", "noattack" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("dissipate")
+            inst.SoundEmitter:PlaySound(inst:HasTag("girl") and "dontstarve/ghost/ghost_girl_howl" or "dontstarve/ghost/ghost_howl")
+
+            inst.components.health:SetInvincible(true)
+            inst.components.aura:Enable(false)
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    if inst.sg.mem.queuelevelchange then
+                        inst.sg.mem.queuelevelchange = nil
+                        inst:PushEvent("petbuff_dolevelchange")
+                    end
+                    inst.sg:GoToState("appear")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            inst.components.health:SetInvincible(false)
+            if not inst.components.health:IsDead() then
+                inst.components.aura:Enable(true)
             end
         end,
     },

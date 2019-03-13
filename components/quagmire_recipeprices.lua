@@ -78,11 +78,13 @@ local function OnRecipeDirty()
     if _recipename:value():len() > 0 then
         print("Appraised: ".._recipename:value()..(_snackpenalty:value() and " (snack penalty)" or ""))
 
-        if _klumpkey:value():len() > 0 then
-            LoadKlumpFile("images/quagmire_food_inv_images_".._recipename:value()..".tex", _klumpkey:value())
-            LoadKlumpFile("images/quagmire_food_inv_images_hires_".._recipename:value()..".tex", _klumpkey:value())
-            LoadKlumpFile("anim/dynamic/".._recipename:value()..".dyn", _klumpkey:value())
-            LoadKlumpString("STRINGS.NAMES."..string.upper(_recipename:value()), _klumpkey:value())
+        if QUAGMIRE_USE_KLUMP then
+            if _klumpkey:value():len() > 0 then
+                LoadKlumpFile("images/quagmire_food_inv_images_".._recipename:value()..".tex", _klumpkey:value())
+                LoadKlumpFile("images/quagmire_food_inv_images_hires_".._recipename:value()..".tex", _klumpkey:value())
+                LoadKlumpFile("anim/dynamic/".._recipename:value()..".dyn", _klumpkey:value())
+                LoadKlumpString("STRINGS.NAMES."..string.upper(_recipename:value()), _klumpkey:value())
+            end
         end
 
         local matchedcraving = CRAVING_NAMES[_matchedcraving:value()]

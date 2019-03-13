@@ -116,7 +116,7 @@ local function fn()
 end
 
 local function GetVerb()
-    return STRINGS.ACTIONS.ACTIVATE.TOUCH
+    return "TOUCH"
 end
 
 local function burnt_fn()

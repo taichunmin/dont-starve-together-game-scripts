@@ -1,6 +1,7 @@
 local START_DRAG_TIME = 8 * FRAMES
 local BUTTON_REPEAT_COOLDOWN = .5
 local BUFFERED_CASTAOE_TIME = .5
+local CONTROLLER_TARGETING_LOCK_TIME = 1.0
 
 local function OnPlayerActivated(inst)
     inst.components.playercontroller:Activate()
@@ -88,6 +89,12 @@ local PlayerController = Class(function(self, inst)
     self.controller_attack_target = nil
     self.controller_attack_target_ally_cd = nil
     --self.controller_attack_target_age = math.huge
+
+	self.controller_targeting_modifier_down = false
+	self.controller_targeting_lock_timer = nil
+	self.controller_targeting_lock_target = false
+	self.controller_targeting_targets = {}
+	self.controller_targeting_target_index = nil
 
     self.reticule = nil
     self.terraformer = nil
@@ -402,6 +409,17 @@ function PlayerController:RemotePausePrediction(frames)
 end
 
 function PlayerController:OnControl(control, down)
+
+	-- do this first in order to not lose an up/down and get out of sync
+	if control == CONTROL_TARGET_MODIFIER then
+		self.controller_targeting_modifier_down = down		
+		if down then			
+			self.controller_targeting_lock_timer = 0.0
+		else
+			self.controller_targeting_lock_timer = nil
+		end
+	end
+
     if not self:IsEnabled() or IsPaused() then
         return
     elseif control == CONTROL_PRIMARY then
@@ -414,6 +432,7 @@ function PlayerController:OnControl(control, down)
         end
     elseif control == CONTROL_CANCEL then
         self:CancelPlacement()
+		self:ControllerTargetLock(false)
     elseif control == CONTROL_INSPECT then
         self:DoInspectButton()
     elseif control == CONTROL_ACTION then
@@ -434,6 +453,12 @@ function PlayerController:OnControl(control, down)
         else
             self:DoControllerAttackButton()
         end
+	elseif self.controller_targeting_modifier_down then
+		if control == CONTROL_TARGET_CYCLE_BACK then
+			self:CycleControllerAttackTargetBack()
+		elseif control == CONTROL_TARGET_CYCLE_FORWARD then
+			self:CycleControllerAttackTargetForward()
+		end
     elseif self.inst.replica.inventory:IsVisible() then
         local inv_obj = self:GetCursorInventoryObject()
         if inv_obj ~= nil then
@@ -706,6 +731,9 @@ function PlayerController:DoControllerAltActionButton()
     elseif self:IsAOETargeting() then
         self:CancelAOETargeting()
         return
+	elseif self:IsControllerTargetLockEnabled() then
+		self:ControllerTargetLock(false)
+		return
     end
 
     local lmb, act = self:GetGroundUseAction()
@@ -1177,6 +1205,10 @@ function PlayerController:GetAttackTarget(force_attack, force_target, isretarget
         if tool ~= nil then
             local inventoryitem = tool.replica.inventoryitem
             has_weapon = inventoryitem ~= nil and inventoryitem:IsWeapon()
+            if has_weapon and not force_attack and tool:HasTag("propweapon") then
+                --don't require pressing force_attack when using prop weapons
+                force_attack = true
+            end
         end
     end
 
@@ -1376,6 +1408,7 @@ function PlayerController:GetActionButtonAction(force_target)
     --Also check if force_target is still valid
     if (not self.ismastersim and (self.remote_controls[CONTROL_ACTION] or 0) > 0) or
         not self:IsEnabled() or
+        self:IsBusy() or
         (force_target ~= nil and (not force_target.entity:IsVisible() or force_target:HasTag("INLIMBO") or force_target:HasTag("NOCLICK"))) then
         --"DECOR" should never change, should be safe to skip that check
         return
@@ -1689,6 +1722,23 @@ end
 function PlayerController:OnUpdate(dt)
     self.predictionsent = false
 
+	if self:IsControllerTargetingModifierDown() and self.controller_targeting_lock_timer then
+		-- check whether the controller targeting modifier has been held long enough to toggle locking
+		self.controller_targeting_lock_timer = self.controller_targeting_lock_timer + dt		
+		if CONTROLLER_TARGETING_LOCK_TIME < self.controller_targeting_lock_timer then		
+			self:ControllerTargetLock(true)						
+			-- Use the block below if you want to both lock and unlock the target by holding down the modifier button
+			--[[ 
+			if self:IsControllerTargetLockEnabled() then
+				self:ControllerTargetLock(false)
+			else
+				self:ControllerTargetLock(true)
+			end
+			--]]
+			self.controller_targeting_lock_timer = nil
+		end
+	end
+
     if self.draggingonground and not (self:IsEnabled() and TheInput:IsControlPressed(CONTROL_PRIMARY)) then
         if self.locomotor ~= nil then
             self.locomotor:Stop()
@@ -1868,13 +1918,14 @@ function PlayerController:OnUpdate(dt)
             placer_item ~= nil and
             placer_item.replica.inventoryitem ~= nil and
             placer_item.replica.inventoryitem:IsDeployable() then
+
             local placer_name = placer_item.replica.inventoryitem:GetDeployPlacerName()
-            if self.deployplacer ~= nil and self.deployplacer.prefab ~= placer_name then
+            local placer_skin = placer_item.AnimState:GetSkinBuild() --hack that relies on the build name to match the linked skinname
+            if self.deployplacer ~= nil and (self.deployplacer.prefab ~= placer_name or (self.deployplacer.skinname or "") ~= placer_skin) then
                 self:CancelDeployPlacement()
             end
-
             if self.deployplacer == nil then
-                self.deployplacer = SpawnPrefab(placer_name)
+                self.deployplacer = SpawnPrefab(placer_name, placer_skin, nil, self.inst.userid )
                 if self.deployplacer ~= nil then
                     self.deployplacer.components.placer:SetBuilder(self.inst, nil, placer_item)
                     self.deployplacer.components.placer.testfn = function(pt)
@@ -2066,6 +2117,9 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
     if self.inst:HasTag("playerghost") or self.inst.replica.inventory:IsHeavyLifting() then
         self.controller_attack_target = nil
         self.controller_attack_target_ally_cd = nil
+
+		-- we can't target right now; disable target locking
+		self.controller_targeting_lock_target = false
         return
     end
 
@@ -2077,6 +2131,9 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
         not (combat:CanTarget(self.controller_attack_target) and
             CanEntitySeeTarget(self.inst, self.controller_attack_target)) then
         self.controller_attack_target = nil
+
+		-- target is no longer valid; disable target locking
+		self.controller_targeting_lock_target = false
         --it went invalid, but we're not resetting the age yet
     end
 
@@ -2108,6 +2165,8 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
         combat:GetTarget() or
         nil
 
+	local current_controller_targeting_targets = {}
+	local selected_target_index = 0
     for i, v in ipairs(nearby_ents) do
         if v ~= self.inst and (v ~= self.controller_attack_target or i == 1) then
             local isally = combat:IsAlly(v)
@@ -2141,17 +2200,52 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
                         if v == preferred_target then
                             score = score * 10
                         end
-
+						
+						table.insert(current_controller_targeting_targets, v)
                         if score > target_score then
+							selected_target_index = #current_controller_targeting_targets
                             target = v
                             target_score = score
                             target_isally = isally
-                        end
+                        end						
                     end
                 end
             end
         end
     end
+	
+	if self.controller_attack_target ~= nil and self.controller_targeting_lock_target then
+		-- we have a target and target locking is enabled so only update the list of valid targets, ie. check for targets that have appeared or disappeared
+
+		-- first check if any targets should be removed
+		for idx_outer = #self.controller_targeting_targets, 1, -1 do
+			local found = false
+			local existing_target = self.controller_targeting_targets[idx_outer]
+			for idx_inner = #current_controller_targeting_targets, 1, -1 do
+				if existing_target == current_controller_targeting_targets[idx_inner] then
+					-- we found the existing target in the list of current nearby entities so remove it from the current entity list to 
+					-- make later addition of new entities more straightforward
+					table.remove(current_controller_targeting_targets, idx_inner)
+					found = true
+					break
+				end
+			end
+			
+			-- if the existing target isn't found in the nearby entities then remove it from the targets
+			if not found then
+				table.remove(self.controller_targeting_targets, idx_outer)
+			end
+		end
+
+		-- now add new targets; check everything left in the nearby_ents table as we've been 
+		-- removing existing targets from it as we checked for targets that were no longer valid
+		for i, v in ipairs(current_controller_targeting_targets) do
+			table.insert(self.controller_targeting_targets, v)
+		end
+
+		-- fin
+		return
+	end
 
     if self.controller_target ~= nil and self.controller_target:IsValid() then
         if target ~= nil then
@@ -2177,6 +2271,7 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
 
     if target ~= self.controller_attack_target then
         self.controller_attack_target = target
+		self.controller_targeting_target_index = selected_target_index
         --self.controller_attack_target_age = 0
     end
 
@@ -2187,6 +2282,13 @@ local function UpdateControllerAttackTarget(self, dt, x, y, z, dirx, dirz)
 end
 
 local function UpdateControllerInteractionTarget(self, dt, x, y, z, dirx, dirz)
+
+	local attack_target = self:GetControllerAttackTarget()
+	if self.controller_targeting_lock_target and attack_target then
+		self.controller_target = attack_target
+		return 
+	end
+
     if self.placer ~= nil or (self.deployplacer ~= nil and self.deploy_mode) then
         self.controller_target = nil
         self.controller_target_age = 0
@@ -2247,6 +2349,12 @@ local function UpdateControllerInteractionTarget(self, dt, x, y, z, dirx, dirz)
     for i, v in ipairs(nearby_ents) do
         --Only handle controller_target if it's the one we added at the front
         if v ~= self.inst and (v ~= self.controller_target or i == 1) and v.entity:IsVisible() then
+            if v.entity:GetParent() == self.inst and v:HasTag("bundle") then
+                --bundling or constructing
+                target = v
+                break
+            end
+
             --Check distance including y value
             local x1, y1, z1 = v.Transform:GetWorldPosition()
             local dx, dy, dz = x1 - x, y1 - y, z1 - z
@@ -2331,6 +2439,7 @@ function PlayerController:UpdateControllerTargets(dt)
         self.controller_target_age = 0
         self.controller_attack_target = nil
         self.controller_attack_target_ally_cd = nil
+		self.controller_targeting_lock_target = nil
         return
     end
     local x, y, z = self.inst.Transform:GetWorldPosition()
@@ -2348,6 +2457,53 @@ end
 function PlayerController:GetControllerAttackTarget()
     return self.controller_attack_target ~= nil and self.controller_attack_target:IsValid() and self.controller_attack_target or nil
 end
+
+function PlayerController:IsControllerTargetingModifierDown()
+	return self.controller_targeting_modifier_down
+end
+
+function PlayerController:IsControllerTargetLockEnabled()
+	return self.controller_targeting_lock_target
+end
+
+function PlayerController:IsControllerTargetLocked()
+	return self.controller_targeting_lock_target and self.controller_attack_target
+end
+
+function PlayerController:ControllerTargetLock(enable)
+	if enable then
+		-- only enable locking if there's a target
+		if self.controller_attack_target then
+			self.controller_targeting_lock_target = enable
+		end
+	else	
+		-- disable locking at any time
+		self.controller_targeting_lock_target = enable
+	end
+end
+
+function PlayerController:CycleControllerAttackTargetForward()
+	local num_targets = #self.controller_targeting_targets
+	if self.controller_targeting_lock_target and num_targets > 0 then
+		self.controller_targeting_target_index = self.controller_targeting_target_index + 1
+		if self.controller_targeting_target_index > num_targets then
+			self.controller_targeting_target_index = 1
+		end
+		self.controller_attack_target = self.controller_targeting_targets[self.controller_targeting_target_index]
+	end
+end
+
+function PlayerController:CycleControllerAttackTargetBack()
+	local num_targets = #self.controller_targeting_targets
+	if self.controller_targeting_lock_target and num_targets > 0 then
+		self.controller_targeting_target_index = self.controller_targeting_target_index - 1
+		if self.controller_targeting_target_index < 1 then
+			self.controller_targeting_target_index = num_targets
+		end		
+		self.controller_attack_target = self.controller_targeting_targets[self.controller_targeting_target_index]
+	end
+end
+
 
 --------------------------------------------------------------------------
 --remote_vector.y is used as a flag for stop/direct/drag walking
@@ -2648,7 +2804,7 @@ function PlayerController:DoCameraControl()
 
     local time = GetTime()
 
-    if self.lastrottime == nil or time - self.lastrottime > ROT_REPEAT then
+    if not self:IsControllerTargetingModifierDown() and (self.lastrottime == nil or time - self.lastrottime > ROT_REPEAT) then
         if TheInput:IsControlPressed(CONTROL_ROTATE_LEFT) then
             self:RotLeft()
             self.lastrottime = time
@@ -2756,7 +2912,8 @@ function PlayerController:DoActionAutoEquip(buffaction)
         buffaction.action ~= ACTIONS.GIVEALLTOPLAYER and
         buffaction.action ~= ACTIONS.GIVE and
         buffaction.action ~= ACTIONS.ADDFUEL and
-        buffaction.action ~= ACTIONS.ADDWETFUEL then
+        buffaction.action ~= ACTIONS.ADDWETFUEL and
+        buffaction.action ~= ACTIONS.CONSTRUCT then
         self.inst.replica.inventory:EquipActionItem(buffaction.invobject)
         buffaction.autoequipped = true
     end

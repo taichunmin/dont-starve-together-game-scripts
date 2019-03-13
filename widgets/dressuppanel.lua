@@ -341,7 +341,9 @@ function DressupPanel:MakeSpinner(slot)
 	spinner_group.glow:SetClickable(false)
 	spinner_group.glow:Hide()
 
-	spinner_group.spinner = spinner_group:AddChild(AnimSpinner( self:GetSkinOptionsForSlot(slot), spinner_width, nil, {font=NEWFONT_OUTLINE, size=20}, nil, nil, textures, true, 104, 80 ))
+	local t_w = 150
+	local t_h = 80
+	spinner_group.spinner = spinner_group:AddChild(AnimSpinner( self:GetSkinOptionsForSlot(slot), spinner_width, nil, {font=NEWFONT_OUTLINE, size=20}, nil, nil, textures, true, t_w, t_h ))
 	spinner_group.spinner:SetAnim("frames_comp", "fr", "icon", "SWAP_ICON", true)
 	spinner_group.spinner.fganim:GetAnimState():Hide("frame")
 	spinner_group.spinner.fganim:GetAnimState():Hide("NEW")
@@ -435,14 +437,14 @@ function DressupPanel:MakeSpinner(slot)
 						end)
 	end
 
-	spinner_group.GetIndexForSkin = function(this, skin)
+	spinner_group.GetIndexForSkin = function(this, skin_name)
 
 		local slot = this.slot
 		--print("looking for ", skin, "for ", slot)
 		local skin_options = self:GetSkinOptionsForSlot(slot)
 		
 		for i=1, #skin_options do
-			if skin_options[i].build == skin then 
+			if skin_options[i].item == skin_name then 
 				return i
 			end
 		end
@@ -463,21 +465,18 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 
 	local skin_options = {}
 
-	local dressup_timestamp = self.profile:GetDressupTimestamp()
+	local dressup_timestamp = self.profile:GetCollectionTimestamp()
 
-	local function IsInList(list, build)
-		for k,v in pairs(list) do 
-			--print("Checking for ", build, "in", dumptable(v))
-			if v.build == build then 
+	local function IsInList(list, item)
+		for k,v in pairs(list) do
+			if v.item == item then 
 				return k
 			end
 		end
 
 		return nil
 	end
-
-		
-	--print("Default string is ", default, " for ", slot)
+	
 
 	local default_build = nil 
 	if slot == "body" then 
@@ -489,7 +488,7 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 	elseif slot == "feet" then 
 		default_build = "feet_default1"
 	else
-		default_build = self.currentcharacter
+		default_build = self.currentcharacter  --fallback for scarecrow, for skins we'd just want to do GetBuildForItem(self.currentcharacter.."_none") but scarecrow is a bit of a legacy hack.
 	end
 
 	local colour = DEFAULT_SKIN_COLOR
@@ -503,38 +502,34 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 		colour = colour,
 		new_indicator = false,
 	})
-
-	--print("Building skin_options")
 	
 	local skin_options_items = {}
 	for which = 1, #self.skins_list do
 		if self.skins_list[which].type == slot then
-			if slot == "base" and string.find( self.skins_list[which].item, self.currentcharacter ) == nil then
+			local skin_data = GetSkinData(self.skins_list[which].item)
+			if slot == "base" and ((skin_data.base_prefab ~= self.currentcharacter) or (IsDefaultCharacterSkin(self.skins_list[which].item)) ) then
 				--print( "skipping ", self.skins_list[which].item  )
 			else
-				--print(self.skins_list[which].item or "?", "Got timestamp", self.skins_list[which].timestamp or "nil", dressup_timestamp)
 				local item = self.skins_list[which].item
-				if (Prefabs[item] ~= nil and not Prefabs[item].disabled) or (CLOTHING[item] ~= nil and (CLOTHING[item].limited_to_prefab == nil or CLOTHING[item].limited_to_prefab == self.currentcharacter) and not CLOTHING[item].disabled) then --check if this clothing is available for this character and it's not disabled
-					local new_indicator = not self.skins_list[which].timestamp or (self.skins_list[which].timestamp > dressup_timestamp)
-					local colour = GetColorForItem(item)
-					local text_name = GetSkinName(self.skins_list[which].item)
-					local key = IsInList(skin_options_items, item)
+				local new_indicator = not self.skins_list[which].timestamp or (self.skins_list[which].timestamp > dressup_timestamp)
+				local colour = GetColorForItem(item)
+				local text_name = GetSkinName(self.skins_list[which].item)
+				local key = IsInList(skin_options_items, item)
 
-					if new_indicator and key then 
-						skin_options_items[key].new_indicator = true
+				if new_indicator and key then 
+					skin_options_items[key].new_indicator = true
 						
-					elseif new_indicator or not key then
-						table.insert(skin_options_items,
-						{
-							text = text_name, 
-							data = nil,
-							build = GetBuildForItem(item),
-							item = item,
-							symbol = "SWAP_ICON",
-							colour = colour,
-							new_indicator = new_indicator,
-						})
-					end
+				elseif new_indicator or not key then
+					table.insert(skin_options_items,
+					{
+						text = text_name, 
+						data = nil,
+						build = GetBuildForItem(item),
+						item = item,
+						symbol = "SWAP_ICON",
+						colour = colour,
+						new_indicator = new_indicator,
+					})
 				end
 			end
 		end
@@ -543,8 +538,6 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 	for _,v in pairs( skin_options_items ) do
 		table.insert( skin_options, v ) 
 	end
-	
-	--print("done building skin options")
 	
 	if self.include_random_options and (#skin_options > 1) then 
 		table.insert(skin_options,  
@@ -562,10 +555,7 @@ function DressupPanel:GetSkinOptionsForSlot(slot)
 end
 
 function DressupPanel:SetDefaultSkinsForBase()
-	local base, random_base = self.base_spinner.GetItem()
-	if not base or base == "" then 
-		base = self.currentcharacter.."_none"
-	end
+	local _, random_base = self.base_spinner.GetItem()
 
 	if random_base then 
 		self.body_spinner.spinner:SetSelectedIndex(1)
@@ -573,7 +563,7 @@ function DressupPanel:SetDefaultSkinsForBase()
 		self.legs_spinner.spinner:SetSelectedIndex(1)
 		self.feet_spinner.spinner:SetSelectedIndex(1)
 	else
-		local skins = self.profile:GetSkinsForCharacter(self.currentcharacter, base)
+		local skins = self.profile:GetSkinsForCharacter(self.currentcharacter)
 
 		self.body_spinner.spinner:SetSelectedIndex(self.body_spinner:GetIndexForSkin(skins.body))
 		self.hand_spinner.spinner:SetSelectedIndex(self.hand_spinner:GetIndexForSkin(skins.hand))
@@ -653,11 +643,7 @@ function DressupPanel:DoFocusHookups()
 end
 
 function DressupPanel:Reset(set_spinner_to_new_item)
-	local savedBaseForCharacter = self.profile:GetBaseForCharacter(self.currentcharacter)
-	if not savedBaseForCharacter or savedBaseForCharacter == "" then -- checking == "" is for legacy profiles
-		savedBaseForCharacter = self.currentcharacter.."_none"
-	end
-	local savedSkinsForCharacter = self.profile:GetSkinsForCharacter(self.currentcharacter, savedBaseForCharacter)
+	local savedSkinsForCharacter = self.profile:GetSkinsForCharacter(self.currentcharacter)
 
 	local recent_item_type = self.recent_item_types and GetTypeForItem(self.recent_item_types[1]) or nil
 
@@ -673,8 +659,8 @@ function DressupPanel:Reset(set_spinner_to_new_item)
 			self.base_spinner.spinner:SetSelectedIndex(self.base_spinner:GetIndexForSkin(self.recent_item_types[1]))
 		elseif self.playerdata then 
 			self.base_spinner.spinner:SetSelectedIndex(self.base_spinner:GetIndexForSkin(self.playerdata.base_skin or self.currentcharacter))
-		elseif savedSkinsForCharacter.base and savedSkinsForCharacter.base ~= "" then 
-			self.base_spinner.spinner:SetSelectedIndex(self.base_spinner:GetIndexForSkin(savedBaseForCharacter))
+		elseif savedSkinsForCharacter.base and savedSkinsForCharacter.base ~= "" then
+            self.base_spinner.spinner:SetSelectedIndex(self.base_spinner:GetIndexForSkin(savedSkinsForCharacter.base))
 		else
 			self.base_spinner.spinner:SetSelectedIndex(1)
 		end
@@ -817,14 +803,10 @@ function DressupPanel:GetSkinsForGameStart()
 		self.currentcharacter = all_chars[math.random(#all_chars)]
 		currentcharacter_skins = self.profile:GetSkinsForPrefab(self.currentcharacter)
 		if self.dressup_frame then
-			local previous_base = self.profile:GetBaseForCharacter(self.currentcharacter)
-			if not previous_base or previous_base == "" then --checking == "" is for legacy profiles
-				previous_base = self.currentcharacter.."_none"
-			end
-			local previous_skins = self.profile:GetSkinsForCharacter(self.currentcharacter, previous_base)
+			local previous_skins = self.profile:GetSkinsForCharacter(self.currentcharacter)
 
 			if self.base_spinner and self.base_spinner.spinner:GetSelectedIndex() == 1 then 
-				skins.base = previous_base
+				skins.base = previous_skins.base
 			else
 				skins.base = GetRandomItem(currentcharacter_skins)
 			end
@@ -902,7 +884,7 @@ function DressupPanel:GetSkinsForGameStart()
 			if not IsValidClothing( skins.legs ) then skins.legs = "" end
 			if not IsValidClothing( skins.feet ) then skins.feet = "" end
 			
-			self.profile:SetSkinsForCharacter(self.currentcharacter, skins.base, skins)
+			self.profile:SetSkinsForCharacter(self.currentcharacter, skins)
 		else
 			--offline here, leave skins as default
 			if TheNet:IsOnlineMode() then
@@ -923,14 +905,13 @@ function DressupPanel:SetPuppetSkins(skip_change_emote)
 		return
 	end 
 
-	local base_skin = nil
+	local base_skin_build = nil
 	local skin_item_name = self.base_spinner.GetItem()
-	
-	local skin_prefab = Prefabs[skin_item_name]
-	if skin_prefab then
-		if skin_prefab.skins then
-			base_skin = skin_prefab.skins.normal_skin
-		end
+	local skin_data = GetSkinData(skin_item_name)
+	if skin_data.skins then
+		base_skin_build = skin_data.skins.normal_skin
+	else
+		base_skin_build = self.currentcharacter --fallback for scarecrow
 	end
 	
 	local clothing_names = {}
@@ -952,7 +933,7 @@ function DressupPanel:SetPuppetSkins(skip_change_emote)
 		clothing_names["feet"] = self.feet_spinner.GetItem()
 	end
 
-	self.puppet:SetSkins(self.currentcharacter, base_skin, clothing_names, skip_change_emote)
+	self.puppet:SetSkins(self.currentcharacter, base_skin_build, clothing_names, skip_change_emote)
 end
 
 function DressupPanel:SetCurrentCharacter(character)
@@ -1064,7 +1045,7 @@ end
 
 function DressupPanel:OnClose()
 	--print("Setting dressup timestamp from dressuppanel:OnClose", self.timestamp)
-	self.profile:SetDressupTimestamp(self.timestamp)
+	self.profile:SetCollectionTimestamp(self.timestamp)
 end
 
 

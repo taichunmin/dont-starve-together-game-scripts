@@ -408,7 +408,7 @@ function ModIndex:LoadModInfo(modname)
 end
 
 function ModIndex:InitializeModInfo(modname)
-	local env = {}
+	local env = {folder_name = modname}
 	local fn = kleiloadlua(MODS_ROOT..modname.."/modinfo.lua")
 	local modinfo_message = ""
 	if type(fn) == "string" then

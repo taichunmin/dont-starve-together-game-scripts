@@ -14,6 +14,7 @@ local assets =
     Asset("ANIM", "anim/beefalo_personality_pudgy.zip"),
 
     Asset("ANIM", "anim/beefalo_fx.zip"),
+    Asset("ANIM", "anim/poop_cloud.zip"),
 
     Asset("SOUND", "sound/beefalo.fsb"),
 }
@@ -393,6 +394,8 @@ local function OnObedienceDelta(inst, data)
 end
 
 local function OnDeath(inst, data)
+    inst.persists = false
+    inst:AddTag("NOCLICK")
     if inst.components.rideable:IsBeingRidden() then
         --SG won't handle "death" event while we're being ridden
         --SG is forced into death state AFTER dismounting (OnRiderChanged)
@@ -569,6 +572,7 @@ local function beefalo()
 
     inst.AnimState:SetBank("beefalo")
     inst.AnimState:SetBuild("beefalo_build")
+    inst.AnimState:AddOverrideBuild("poop_cloud")
     inst.AnimState:PlayAnimation("idle_loop", true)
     inst.AnimState:Hide("HEAT")
 

@@ -121,20 +121,26 @@ function WaitingForPlayers:IsServerFull()
 end
 
 function WaitingForPlayers:GetPlayerTable()
-    local ClientObjs = TheNet:GetClientTable()
-    if ClientObjs == nil then
-        return {}
-    elseif TheNet:GetServerIsClientHosted() then
-        return ClientObjs
-    end
+	local ClientObjs = TheNet:GetClientTable()
+	if ClientObjs == nil then
+		return {}
+	end
 
-    --remove dedicate host from player list
-    for i, v in ipairs(ClientObjs) do
-        if v.performance ~= nil then
-            table.remove(ClientObjs, i)
-            break
-        end
-    end
+	if not TheNet:GetServerIsClientHosted() then
+		--remove dedicate host from player list
+		for i, v in ipairs(ClientObjs) do
+			if v.performance ~= nil then
+				table.remove(ClientObjs, i)
+				break
+			end
+		end
+	end
+
+	if self.show_local_player_first then
+		local local_user_id = TheNet:GetUserID()
+		table.sort(ClientObjs, function(a, b) return (a.userid == local_user_id) and (b.userid ~= local_user_id) end)
+	end
+
     return ClientObjs 
 end
 

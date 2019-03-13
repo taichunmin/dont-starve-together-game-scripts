@@ -4,12 +4,8 @@ local Text = require "widgets/text"
 
 local phases =
 {
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_GETTINGREGIONS,         -- eRequestingPingServers,
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_DETERMININGREGION,      -- eWaitingForPingEndpoints,
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_DETERMININGREGION,      -- eReadyToPing,
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_REQUESTINGSERVER,       -- eWaitingForPingResults,
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_REQUESTINGSERVER,       -- eReadyToRequestServer,
-    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_WAITINGFORWORLD,        -- eWaitingForServer,
+    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_DETERMININGREGION,      -- eReadyToRequestServer,
+    STRINGS.UI.FESTIVALEVENTSCREEN.HOST_REQUESTINGSERVER,       -- eWaitingForServer,
     STRINGS.UI.FESTIVALEVENTSCREEN.HOST_CONNECTINGTOSERVER,     -- eServerReady,
 }
 
@@ -34,18 +30,18 @@ local HostCloudServerPopup = Class(GenericWaitingPopup, function(self, name, des
 
     --V2C: admin flag is ignored for cloud servers
     local sessionid = "" -- If we want to load a previous session then we need to fill this out
-    TheNet:StartCloudServerRequestProcess(sessionid, name, description, GetLocaleCode(), password, claninfo.id, claninfo.only, claninfo.admin)
+    TheNet:StartCloudServerRequestProcess(sessionid, name, description, LOC.GetLocaleCode(), password, claninfo.id, claninfo.only, claninfo.admin, GetFestivalEventInfo().GAME_MODE)
 end)
 
 function HostCloudServerPopup:OnUpdate(dt)
     HostCloudServerPopup._base.OnUpdate(self, dt)
 
     local cloudServerRequestState = TheNet:GetCloudServerRequestState()
-    if cloudServerRequestState == 8 then -- eServerFailed
+    if cloudServerRequestState == 4 then -- eServerFailed
         self:OnError()
-    elseif cloudServerRequestState == 9 then -- eNoServersAvailable
+    elseif cloudServerRequestState == 5 then -- eNoServersAvailable
         self:OnError(STRINGS.UI.FESTIVALEVENTSCREEN.HOST_NO_SERVERS_BODY)
-    elseif cloudServerRequestState == 10 then -- ePingsFailed
+    elseif cloudServerRequestState == 6 then -- ePingsFailed
         self:OnError(STRINGS.UI.FESTIVALEVENTSCREEN.HOST_PINGS_FAILED_BODY)
     else
         self.status_msg:SetString(phases[cloudServerRequestState] or "")

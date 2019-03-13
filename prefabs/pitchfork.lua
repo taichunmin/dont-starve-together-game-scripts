@@ -79,9 +79,9 @@ end
 
 --local function onequipgold(inst, owner) 
     --owner.AnimState:OverrideSymbol("swap_object", "swap_goldenpitchfork", "swap_goldenpitchfork")
-    --owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")     
-    --owner.AnimState:Show("ARM_carry") 
-    --owner.AnimState:Hide("ARM_normal") 
+    --owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")
+    --owner.AnimState:Show("ARM_carry")
+    --owner.AnimState:Hide("ARM_normal")
 --end
 
 --local function normal()
@@ -98,9 +98,9 @@ end
     --inst.components.finiteuses:SetConsumption(ACTIONS.TERRAFORM, .125 / TUNING.GOLDENTOOLFACTOR)
     --inst.components.weapon.attackwear = 1 / TUNING.GOLDENTOOLFACTOR
     --inst.components.researchvalue.basevalue = TUNING.RESEARCH_VALUE_GOLD_TOOL
-    
+
     --inst.components.equippable:SetOnEquip(onequipgold)
-    
+
     --return inst
 --end
 

@@ -8,13 +8,14 @@ end)
 
 local clothing_order = { "legs", "body", "feet", "hand" }
 
-function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, default_build )
+function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype, default_build )
 	skintype = skintype or "normal_skin"
 	default_build = default_build or ""
 	base_skin = base_skin or ""
 	
 	--print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 	--print(prefab, base_skin)
+	--dumptable(clothing_names)
 	
 	if skintype ~= "NO_BASE" then
 		anim_state:SetSkin(base_skin, default_build)
@@ -126,18 +127,19 @@ function SetSkinMode( anim_state, prefab, base_skin, clothing_names, skintype, d
 							--print("skip symbol and leave it at base:", sym)
 						else
 							--Slight cheat here, we know that name is the item name and the build for clothing, quicker than calling GetBuildForItem(name)
-							if sym == "torso" then torso_build = name end
-							if sym == "torso_pelvis" then pelvis_build = name end
-							if sym == "skirt" then skirt_build = name end
-							if sym == "leg" then leg_build = name end
-							if sym == "foot" then foot_build = name end
+							local real_build = GetBuildForItem(name)
+							if sym == "torso" then torso_build = real_build end
+							if sym == "torso_pelvis" then pelvis_build = real_build end
+							if sym == "skirt" then skirt_build = real_build end
+							if sym == "leg" then leg_build = real_build end
+							if sym == "foot" then foot_build = real_build end
 							
 							local src_sym = sym
 							if src_symbols then
 								src_sym = src_symbols[sym] or sym
 							end
 							anim_state:ShowSymbol(sym)
-							anim_state:OverrideSkinSymbol(sym, name, src_sym )
+							anim_state:OverrideSkinSymbol(sym, real_build, src_sym )
 							--print("setting skin", sym, name )
 							
 							if sym == "leg" then
@@ -274,7 +276,7 @@ function Skinner:SetSkinMode(skintype, default_build)
 		base_skin = self.skin_data[skintype] or default_build or self.inst.prefab
 	end
 	
-	SetSkinMode( self.inst.AnimState, self.inst.prefab, base_skin, self.clothing, skintype, default_build )
+	SetSkinsOnAnim( self.inst.AnimState, self.inst.prefab, base_skin, self.clothing, skintype, default_build )
 	
 	self.inst.Network:SetPlayerSkin( self.skin_name or "", self.clothing["body"] or "", self.clothing["hand"] or "", self.clothing["legs"] or "", self.clothing["feet"] or "" )
 end
@@ -286,6 +288,10 @@ function Skinner:SetupNonPlayerData()
 end
 
 function Skinner:SetSkinName(skin_name)
+    if skin_name == "" then
+        skin_name = self.inst.prefab.."_none"
+    end
+
 	self.skin_name = skin_name
 	self.skin_data = {}
 	if self.skin_name ~= nil and self.skin_name ~= "" then
@@ -296,6 +302,11 @@ function Skinner:SetSkinName(skin_name)
 			end
 		end
 	end
+
+    if self.skin_data.normal_skin == nil then
+        print("ERROR!!! Invisible werebeaver is probably about to happen!!!")
+    end
+
 	self:SetSkinMode()
 end
 
@@ -314,10 +325,6 @@ local function _InternalSetClothing(self, type, name, set_skin_mode)
 	if set_skin_mode then
 		self:SetSkinMode()
 	end
-end
-
-function IsValidClothing( name )
-	return name ~= nil and name ~= "" and CLOTHING[name] ~= nil
 end
 
 function Skinner:SetClothing( name )
@@ -378,7 +385,7 @@ function Skinner:OnLoad(data)
         if InGamePlay() then
             --it's possible that the clothing was traded away. Check to see if the player still owns it on load.
             for type,clothing in pairs( self.clothing ) do
-                if clothing ~= "" and not TheInventory:CheckClientOwnership(self.inst.userid, clothing) or (CLOTHING[clothing] and CLOTHING[clothing].disabled) then
+                if clothing ~= "" and not TheInventory:CheckClientOwnership(self.inst.userid, clothing) then
                     self.clothing[type] = ""
                 end
             end

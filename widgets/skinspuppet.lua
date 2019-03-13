@@ -116,11 +116,14 @@ function SkinsPuppet:SetCharacter(character)
 end
 
 
-function SkinsPuppet:SetSkins(prefabname, base_skin, clothing_names, skip_change_emote)
-	local base_skin = base_skin or prefabname
-	base_skin = string.gsub(base_skin, "_none", "")	
+function SkinsPuppet:SetSkins(prefabname, base_item, clothing_names, skip_change_emote)
+	local base_skin = prefabname
+	if IsPrefabSkinned(prefabname) then
+		base_item = base_item or (prefabname .."_none")
+		base_skin = GetBuildForItem(base_item)
+	end
 
-	SetSkinMode( self.animstate, prefabname, base_skin, clothing_names )
+	SetSkinsOnAnim( self.animstate, prefabname, base_skin, clothing_names )
 	
 	if not skip_change_emote then 
         --the logic here checking queued_change_slot and time_to_change_emote

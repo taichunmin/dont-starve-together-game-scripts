@@ -47,12 +47,10 @@ OUTRO
 local PP_ON_TINT = {r=.6,g=.6,b=.6,a=1}
 local PP_OFF_TINT = {r=1,g=1,b=1,a=0}
 
-local ItemBoxOpenerPopup = Class(Screen, function(self, parent_screen, options, open_box_fn, completed_cb)
+local ItemBoxOpenerPopup = Class(Screen, function(self, options, open_box_fn, completed_cb)
     Screen._ctor(self, "ItemBoxOpenerPopup")
 
-    self.parent_screen = parent_screen
     self.allow_cancel = options.allow_cancel
-    self.use_bigportraits = options.use_bigportraits
     self.open_box_fn = open_box_fn
 	self.completed_cb = completed_cb
 
@@ -193,12 +191,7 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
 
         local item_widget = self:GetItem(self.active_item_idx)
         assert(item_widget)
-        -- We use bigportaits when there's tons of items, so probably don't
-        -- want to show each item either. Also the item icons won't be the
-        -- bigportait.
-        if not self.use_bigportraits then
-            item_widget:Show()
-        end
+        item_widget:Show()
 
         local item_key = self.items[self.active_item_idx]
         self.current_item_summary:UpdateSummary(item_key)
@@ -212,6 +205,10 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
         if self.resize_root then
             self.bundle_root:SetPosition(0,90)
             self.bundle_root:SetScale(0.9,0.9)
+        end
+        if self.resize_root_small then
+            self.bundle_root:SetPosition(0,150)
+            self.bundle_root:SetScale(0.7,0.7)
         end
 
         -- update the background size
@@ -261,12 +258,13 @@ function ItemBoxOpenerPopup:_UpdateSwapIcon(index)
     local item_key = self.items[index]
     local desired_symbol = "SWAP_ICON"
     local build = GetBuildForItem(item_key)
-    if self.use_bigportraits then
-        local portrait = GetBigPortraitForItem(item_key)
-        if portrait and portrait.build then
-            build, desired_symbol = portrait.build, portrait.symbol
-        end
+    
+    --if there's a portrait we can use it, otherwise we'll just use the SWAP_ICON
+    local portrait = GetBigPortraitAnimForItem(item_key)
+    if portrait and portrait.build then
+        build, desired_symbol = portrait.build, portrait.symbol
     end
+
     self.bundle:GetAnimState():OverrideSkinSymbol("SWAP_ICON", build, desired_symbol)
     self.active_item_idx = index
 end
@@ -290,17 +288,23 @@ function ItemBoxOpenerPopup:_OpenItemBox()
             columns = 1
         elseif #item_types == 2 or #item_types == 4 then
             columns = 2
-        elseif #item_types == 3 or #item_types == 6 or #item_types == 9 then
+        elseif #item_types == 3 or #item_types == 6 then
             columns = 3
         elseif #item_types == 7 or #item_types == 8 then
             columns = 4
-        elseif #item_types == 5 or #item_types == 10 then
+        elseif #item_types == 5 or #item_types == 10 or #item_types == 9 then
             columns = 5
-        elseif #item_types == 12 then
+        elseif #item_types == 12 or #item_types == 11 then
 			columns = 6
+        elseif #item_types == 16 then
+			columns = 6
+            self.resize_root = true
         elseif #item_types == 19 then
 			columns = 7
             self.resize_root = true
+        elseif #item_types == 35 then
+			columns = 9
+            self.resize_root_small = true
         else
             print("Warning: Found an unexpected number of items in a box.", #item_types)
         end

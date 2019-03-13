@@ -33,10 +33,6 @@ local function MakeFx(t)
             inst.Transform:SetRotation(parent.Transform:GetRotation())
         end
 
-        if type(t.anim) ~= "string" then
-            t.anim = t.anim[math.random(#t.anim)]
-        end
-
         if t.sound ~= nil then
             inst.entity:AddSoundEmitter()
             inst:DoTaskInTime(t.sounddelay or 0, PlaySound, t.sound)

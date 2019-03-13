@@ -92,6 +92,8 @@ local prefabs =
     "purpleamulet",
     "monkey",
     "livingtree",
+	"livingtree_halloween",
+	"livingtree_root",
     "tumbleweed",
     "rock_ice",
     "catcoonden",
@@ -240,6 +242,7 @@ local function master_postinit(inst)
     inst:AddComponent("specialeventsetup")
     inst:AddComponent("townportalregistry")
     inst:AddComponent("sandstorms")
+    inst:AddComponent("worldmeteorshower")
 
     if METRICS_ENABLED then
         inst:AddComponent("worldoverseer")

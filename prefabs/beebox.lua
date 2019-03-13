@@ -180,8 +180,10 @@ end
 
 local function GetStatus(inst)
     return inst.components.harvestable ~= nil
-        and inst.components.harvestable:CanBeHarvested()
-        and "READY"
+        and (   (inst.components.harvestable.produce >= inst.components.harvestable.maxproduce and "READY") or
+                (inst.components.harvestable:CanBeHarvested() and "SOMEHONEY") or
+                ((inst.components.childspawner == nil or inst.components.childspawner:NumChildren() <= 0) and "NOHONEY")
+            )
         or nil
 end
 

@@ -54,7 +54,7 @@ local function onunequip(inst, owner)
     end
 
     inst.components.burnable:Extinguish()
-    owner.AnimState:Hide("ARM_carry") 
+    owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
 end
 

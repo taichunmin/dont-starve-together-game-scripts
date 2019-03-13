@@ -46,6 +46,7 @@ end)
 
 function MainScreen:DoInit()
     TheNet:LoadPermissionLists()
+	TheFrontEnd.MotdManager:Initialize()
 
 	TheFrontEnd:GetGraphicsOptions():DisableStencil()
 	TheFrontEnd:GetGraphicsOptions():DisableLightMapComponent()
@@ -232,7 +233,6 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
     local function onLogin(forceOffline)
 	    local account_manager = TheFrontEnd:GetAccountManager()
 	    local is_banned = (account_manager:IsBanned() == true)
-	    local failed_email = account_manager:MustValidateEmail()
 	    local must_upgrade = account_manager:MustUpgradeClient()
 	    local communication_succeeded = account_manager:CommunicationSucceeded()
 	    local inventory_succeeded = TheInventory:HasDownloadedInventory()
@@ -274,7 +274,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
             print ( "[Warning] Failed to download local inventory" )
         else -- We haven't created an account yet
             TheFrontEnd:PopScreen()
-            TheFrontEnd:PushScreen(NoAuthenticationPopupDialogScreen(true, failed_email))
+            TheFrontEnd:PushScreen(NoAuthenticationPopupDialogScreen())
             TheNet:NotifyAuthenticationFailure()
         end
     end

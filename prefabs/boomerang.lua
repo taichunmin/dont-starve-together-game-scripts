@@ -9,10 +9,16 @@ local function OnFinished(inst)
     inst:ListenForEvent("animover", inst.Remove)
 end
 
-local function OnEquip(inst, owner) 
-    owner.AnimState:OverrideSymbol("swap_object", "swap_boomerang", "swap_boomerang")
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+local function OnEquip(inst, owner)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_boomerang", inst.GUID, "swap_boomerang")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_boomerang", "swap_boomerang")
+    end
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
 local function OnDropped(inst)
@@ -22,6 +28,10 @@ end
 local function OnUnequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function OnThrown(inst, owner, target)

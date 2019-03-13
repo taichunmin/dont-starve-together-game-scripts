@@ -155,7 +155,13 @@ end
 local function OnFuelSectionChange(new, old, inst)
     if inst._fuellevel ~= new then
         inst._fuellevel = new
-        inst.AnimState:OverrideSymbol("swap_meter", "firefighter_meter", tostring(new))
+
+        local skin_build = inst:GetSkinBuild()
+        if skin_build ~= nil then
+            inst.AnimState:OverrideItemSkinSymbol("swap_meter", skin_build, tostring(new), inst.GUID, "firefighter_meter")
+        else
+            inst.AnimState:OverrideSymbol("swap_meter", "firefighter_meter", tostring(new))
+        end
     end
 end
 

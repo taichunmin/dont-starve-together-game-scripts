@@ -23,6 +23,13 @@ return {
 			NOTALLOWED = "That can't go in there.",
 			INUSE = "I should wait my turn.",
 		},
+        CONSTRUCT =
+        {
+            INUSE = "Someone beat me to it.",
+            NOTALLOWED = "It won't fit.",
+            EMPTY = "I need something to build with.",
+            MISMATCH = "Whoops! Wrong plans.",
+        },
 		RUMMAGE =
 		{	
 			GENERIC = "I can't do that.",
@@ -65,6 +72,10 @@ return {
             NOTATRIUMKEY = "It's not quite the right shape.",
             CANTSHADOWREVIVE = "It won't resurrect.",
             WRONGSHADOWFORM = "It's not put together right.",
+            NOMOON = "I need to see the moon for that to work.",
+			PIGKINGGAME_MESSY = "I need to clean up first.",
+			PIGKINGGAME_DANGER = "It's too dangerous for that right now.",
+			PIGKINGGAME_TOOLATE = "It's too late for that now.",
         },
         GIVETOPLAYER =
         {
@@ -251,12 +262,17 @@ return {
 	ANNOUNCE_WETTER = "Water way to go!",
 	ANNOUNCE_SOAKED = "I've nearly reached my saturation point.",
 
+    ANNOUNCE_DESPAWN = "I can see the light!",
 	ANNOUNCE_BECOMEGHOST = "oOooOooo!!",
 	ANNOUNCE_GHOSTDRAIN = "My humanity is about to start slipping away...",
 	ANNOUNCE_PETRIFED_TREES = "Did I just hear trees screaming?",
 	ANNOUNCE_KLAUS_ENRAGE = "There's no way to beat it now!!",
 	ANNOUNCE_KLAUS_UNCHAINED = "Its chains came off!",
 	ANNOUNCE_KLAUS_CALLFORHELP = "It called for help!",
+
+    --hallowed nights
+    ANNOUNCE_SPOOKED = "Did you see that?!",
+	ANNOUNCE_BRAVERY_POTION = "Those trees don't seem so spooky anymore.",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Let me help you.",
@@ -295,7 +311,11 @@ return {
 	DESCRIBE =
 	{
 		MULTIPLAYER_PORTAL = "This ought to be a scientific impossibility.",
-		ANTLION = 
+        MULTIPLAYER_PORTAL_MOONROCK = "I'm sure there's some scientific explanation for this.",
+        MOONROCKIDOL = "I only worship science.",
+        CONSTRUCTION_PLANS = "Stuff for science!",
+
+       	ANTLION = 
 		{
 			GENERIC = "It wants something from me.",
 			VERYHAPPY = "I think we're on good terms.",
@@ -1918,6 +1938,21 @@ return {
         HALLOWEENCANDY_14 = "I don't do well with spice.", --Hot Lava pepper candy
         CANDYBAG = "It's some sort of delicious pocket dimension for sugary treats.",
 
+		HALLOWEEN_ORNAMENT_1 = "A spectornament I could hang in a tree.",
+		HALLOWEEN_ORNAMENT_2 = "Completely batty decoration.",
+		HALLOWEEN_ORNAMENT_3 = "This wood look good hanging somewhere.", 
+		HALLOWEEN_ORNAMENT_4 = "Almost i-tentacle to the real ones.",
+		HALLOWEEN_ORNAMENT_5 = "Eight-armed adornment.",
+		HALLOWEEN_ORNAMENT_6 = "Everyone's raven about tree decorations these days.", 
+
+		HALLOWEENPOTION_DRINKS_WEAK = "I was hoping for something bigger.",
+		HALLOWEENPOTION_DRINKS_POTENT = "A potent potion.",
+        HALLOWEENPOTION_BRAVERY = "Full of grit.",
+		HALLOWEENPOTION_FIRE_FX = "Crystallized inferno.", 
+		MADSCIENCE_LAB = "Sanity is a small price to pay for science!",
+		LIVINGTREE_ROOT = "Something's in there! I'll have to root it out.", 
+		LIVINGTREE_SAPLING = "It'll grow up big and horrifying.",
+
         DRAGONHEADHAT = "So who gets to be the head?",
         DRAGONBODYHAT = "I'm middling on this middle piece.",
         DRAGONTAILHAT = "Someone has to bring up the rear.",
@@ -1951,6 +1986,22 @@ return {
         HOUNDWHISTLE = "This'd stop a dog in its tracks.",
         CHESSPIECE_CLAYHOUND = "That thing's the leashed of my worries.",
         CHESSPIECE_CLAYWARG = "And I didn't even get eaten!",
+
+		PIGSHRINE =
+		{
+            GENERIC = "More stuff to make.",
+            EMPTY = "It's hungry for meat.",
+            BURNT = "Burnt out.",
+		},
+		PIG_TOKEN = "This looks important.",
+		YOTP_FOOD1 = "A feast fit for me.",
+		YOTP_FOOD2 = "A meal only a beast would love.",
+		YOTP_FOOD3 = "Nothing fancy.",
+
+		PIGELITE1 = "What are you looking at?", --BLUE
+		PIGELITE2 = "He's got gold fever!", --RED
+		PIGELITE3 = "Here's mud in your eye!", --WHITE
+		PIGELITE4 = "Wouldn't you rather hit someone else?", --GREEN
 
 		BISHOP_CHARGE_HIT = "Ow!",
 		TRUNKVEST_SUMMER = "Wilderness casual.",
@@ -2032,6 +2083,8 @@ return {
         WINTER_ORNAMENT = "Every scientist appreciates a good bauble.",
         WINTER_ORNAMENTLIGHT = "A tree's not complete without some electricity.",
         WINTER_ORNAMENTBOSS = "This one is especially impressive.",
+		WINTER_ORNAMENTFORGE = "I should hang this one over a fire.",
+		WINTER_ORNAMENTGORGE = "For some reason it makes me hungry.",
 
         WINTER_FOOD1 = "The anatomy's not right, but I'll overlook it.", --gingerbread cookie
         WINTER_FOOD2 = "I'm going to eat forty. For science.", --sugar cookie
@@ -2094,6 +2147,7 @@ return {
 		ROCK_MOON = "That rock came from the moon.",
 		MOONROCKNUGGET = "That rock came from the moon.",
 		MOONROCKCRATER = "I should stick something shiny in it. For research.",
+		MOONROCKSEED = "There's science inside!",
 
         REDMOONEYE = "It can see and be seen for miles!",
         PURPLEMOONEYE = "Makes a good marker, but I wish it'd stop looking at me.",
@@ -2110,7 +2164,9 @@ return {
         TRAILS = "He's got a strong arm on him.",
         TURTILLUS = "Its shell is so spiky!",
         SNAPPER = "This one's got bite.",
-        
+		RHINODRILL = "He's got a nose for this kind of work.",
+		BEETLETAUR = "I can smell him from here!",
+
         LAVAARENA_PORTAL = 
         {
             ON = "I'll just be going now.",
@@ -2152,6 +2208,11 @@ return {
         LAVAARENA_RECHARGERHAT = "Those crystals will quickened my abilities.",
         LAVAARENA_HEALINGGARLANDHAT = "This garland will restore a bit of my vitality.",
         LAVAARENA_CROWNDAMAGERHAT = "That could cause some major destruction.",
+
+		LAVAARENA_ARMOR_HP = "That should keep me safe.",
+
+		LAVAARENA_FIREBOMB = "It smells like brimstone.",
+		LAVAARENA_HEAVYBLADE = "A sharp looking instrument.",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2365,6 +2426,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "Enlightening.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "She's made a sort of automatic defense system.",
+        	OFF = "It needs some electricity.",
+        	BURNING = "It's on fire!",
+        	BURNT = "Science couldn't save it.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "What an ingenious idea!",
+        	OFF = "It needs some electricity.",
+        	BURNING = "It's on fire!",
+        	BURNT = "Science couldn't save it.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "Looks science-y. How does it work?",
+        	LOWPOWER = "It's getting low on power.",
+        	OFF = "I could get it working, if Winona's busy.",
+        	BURNING = "It's on fire!",
+        	BURNT = "Science couldn't save it.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "Hey! That's not science!",
+        	LOWPOWER = "It'll turn off soon.",
+        	OFF = "Science beats magic, every time.",
+        	BURNING = "It's on fire!",
+        	BURNT = "Science couldn't save it.",
+        },
     },
     DESCRIBE_GENERIC = "It's a... thing.",
     DESCRIBE_TOODARK = "It's too dark to see!",

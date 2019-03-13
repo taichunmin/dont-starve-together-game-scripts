@@ -29,6 +29,13 @@ function Subscreener:WardrobeButton(text, key, tooltip_text, tooltip_widget)
     return btn
 end
 
+function Subscreener:WardrobeButtonMinimal(key)
+	local btn = TEMPLATES.WardrobeButtonMinimal(function() self:OnMenuButtonSelected(key) end)
+
+    self.buttons[key] = btn
+    return btn
+end
+
 -- Interop with a custom Menu container. Must include an additional
 -- item in each element of menu_items: key. Matches the value passed to
 -- OnMenuButtonSelected.

@@ -59,7 +59,7 @@ function ItemSelector:BuildInventoryList()
 end
 
 function ItemSelector:UpdateData( selections, filters_list )
-    self.full_skins_list = GetSortedSkinsList()
+    self.full_skins_list = GetInventorySkinsList( true )
     self.skins_list = ApplyFilters( self.full_skins_list, filters_list )
 	
 	--Remove selected items from the list so we can't select them twice

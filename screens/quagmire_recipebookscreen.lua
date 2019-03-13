@@ -2,7 +2,7 @@ local Screen = require "widgets/screen"
 local MapWidget = require("widgets/mapwidget")
 local Widget = require "widgets/widget"
 local ImageButton = require "widgets/imagebutton"
-local BookWidget = require "widgets/redux/quagmire_book"
+local QuagmireBookWidget = require "widgets/redux/quagmire_book"
 local TEMPLATES = require "widgets/redux/templates"
 local MapControls = require "widgets/mapcontrols"
 
@@ -26,7 +26,7 @@ local QuagmireRecipeBookScreen = Class(Screen, function(self, owner)
     root:SetVAnchor(ANCHOR_MIDDLE)
 	root:SetPosition(0, -25)
 
-	self.book = root:AddChild(BookWidget(owner, self))
+	self.book = root:AddChild(QuagmireBookWidget( owner, nil, GetFestivalEventSeasons(FESTIVAL_EVENTS.QUAGMIRE)))
 
     if not TheInput:ControllerAttached() then
 		self.bottomright_root = self:AddChild(Widget("br_root"))

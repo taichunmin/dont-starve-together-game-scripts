@@ -14,6 +14,8 @@ local TEXT_COLUMN = 42
 local TEXT_WIDTH = 100
 local REFRESH_INTERVAL = .5
 
+local ITEM_TEXT_SIZE = 32
+
 local PlayerAvatarPopup = Class(Widget, function(self, owner, player_name, data, show_net_profile)
     Widget._ctor(self, "PlayerAvatarPopupScreen")
 
@@ -82,7 +84,7 @@ function PlayerAvatarPopup:Layout(data, show_net_profile)
         --title
         --could be skeleton with no player colour
         self.title = self.proot:AddChild(Text(data.colour ~= nil and TALKINGFONT or BUTTONFONT, 32))
-        self.title:SetPosition(left_column + 15, 280, 0)
+        self.title:SetPosition(left_column + 15, 287, 0)
         self:UpdateDisplayName()
 
         if data.playerage ~= nil then
@@ -146,15 +148,6 @@ function PlayerAvatarPopup:Layout(data, show_net_profile)
         self.feet_image = self.proot:AddChild(self:CreateSkinWidgetForSlot())
         self.feet_image:SetPosition(left_column, body_offset - 3 * widget_height)
         self:UpdateSkinWidgetForSlot(self.feet_image, "feet", data.feet_skin or "none")
-
-        --[[if self.currentcharacter == "unknownmod" then 
-            self.heroportrait = self.proot:AddChild(Image("bigportraits/unknownmod.xml", "unknownmod.tex" ))
-        else 
-            self.heroportrait = self.proot:AddChild(Image("bigportraits/"..self.currentcharacter..".xml", self.currentcharacter.."_none.tex" )) -- TODO: get correct character skin here
-        end
-        self.heroportrait:SetPosition(right_column + 15, body_offset - 335)
-        self.heroportrait:SetScale(.36)
-        ]]
 
         local equip_offset = 10
 
@@ -233,22 +226,7 @@ function PlayerAvatarPopup:UpdateData(data)
     end
 
     if self.portrait ~= nil then
-        if data.base_skin ~= nil then
-            if softresolvefilepath("bigportraits/"..data.base_skin..".xml") then
-                self.portrait:SetTexture("bigportraits/"..data.base_skin..".xml", data.base_skin.."_oval.tex", self.currentcharacter.."_none.tex")
-                self.portrait:SetPosition(94, 170)
-            else
-                -- Shouldn't actually be possible:
-                self.portrait:SetTexture("bigportraits/"..self.currentcharacter..".xml", self.currentcharacter..".tex")
-                self.portrait:SetPosition(94, 180)
-            end
-        elseif softresolvefilepath("bigportraits/"..self.currentcharacter.."_none.xml") then 
-            self.portrait:SetTexture("bigportraits/"..self.currentcharacter.."_none.xml", self.currentcharacter.."_none_oval.tex")
-            self.portrait:SetPosition(94, 170)
-        else
-            self.portrait:SetTexture("bigportraits/"..self.currentcharacter..".xml", self.currentcharacter..".tex")
-            self.portrait:SetPosition(94, 180)
-        end
+        SetSkinnedOvalPortraitTexture( self.portrait, self.currentcharacter, data.base_skin or self.currentcharacter.."_none")
     end
 
     if self.body_image ~= nil then
@@ -263,10 +241,10 @@ function PlayerAvatarPopup:UpdateData(data)
     if self.feet_image ~= nil then
         self:UpdateSkinWidgetForSlot(self.feet_image, "feet", data.feet_skin or "none")
     end
+
     if self.base_image ~= nil then
         self:UpdateSkinWidgetForSlot(self.base_image, "base", data.base_skin or self.currentcharacter.."_none")
     end
-
     if self.head_equip_image ~= nil then
         self:UpdateEquipWidgetForSlot(self.head_equip_image, EQUIPSLOTS.HEAD, data.equip)
     end
@@ -288,14 +266,6 @@ end
 
 function PlayerAvatarPopup:OnControl(control, down)
     if PlayerAvatarPopup._base.OnControl(self,control, down) then return true end
-
-    --[[if control == CONTROL_CANCEL and not down then
-        if #self.buttons > 1 and self.buttons[#self.buttons] then
-            self.buttons[#self.buttons].cb()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-            return true
-        end
-    end]]
 end
 
 function PlayerAvatarPopup:Start()
@@ -378,27 +348,10 @@ end
 function PlayerAvatarPopup:CreateSkinWidgetForSlot()
     local image_group = Widget("image_group")
 
-    -- text background
-    --local bg = image_group:AddChild(Image("images/ui.xml", "single_option_bg.tex"))
-    --bg:SetSize(150, 28)
-    --bg:SetPosition(0, 0, 0)
-
-    image_group._text = image_group:AddChild(Text(NEWFONT_OUTLINE, 22))
-    image_group._text:SetPosition(TEXT_COLUMN, 0, 0)
+    image_group._text = image_group:AddChild(Text(UIFONT, ITEM_TEXT_SIZE))
+    image_group._text:SetPosition(TEXT_COLUMN, -3, 0)
     image_group._text:SetHAlign(ANCHOR_LEFT)
-    image_group._text:SetVAlign(ANCHOR_MIDDLE)
-
-    --[[local shadow = image_group:AddChild(Image("images/frontend.xml", "char_shadow.tex"))
-
-    if slot == "base" then
-        shadow:SetPosition(0, 18)
-        shadow:SetScale(.12)
-    else
-        shadow:SetPosition(0, 18)
-        shadow:SetScale(.25)
-        shadow:SetFadeAlpha(.70)
-    end
-    ]]
+    image_group._text:SetVAlign(ANCHOR_BOTTOM)
 
     image_group._image = image_group:AddChild(UIAnim())
     image_group._image:GetAnimState():SetBuild("frames_comp")
@@ -412,22 +365,24 @@ function PlayerAvatarPopup:CreateSkinWidgetForSlot()
     return image_group
 end
 
-function PlayerAvatarPopup:UpdateSkinWidgetForSlot(image_group, slot, name)
-    image_group._text:SetColour(unpack(GetColorForItem(name)))
+function PlayerAvatarPopup:UpdateSkinWidgetForSlot(image_group, slot, skin_name)
+    image_group._text:SetColour(unpack(GetColorForItem(skin_name)))
+       
+    local namestr = STRINGS.NAMES[string.upper(skin_name)] or GetSkinName(skin_name)
 
-    local namestr = string.match(name, "_none") and "none" or name -- This version uses "Willow" for "willow_none": string.gsub(name, "_none", "")
-    image_group._text:SetMultilineTruncatedString(GetSkinName(namestr), 2, TEXT_WIDTH, 25, true)
-
-    local image_name = string.gsub(name, "_none", "")
-    if image_name == nil or image_name == "none" then
-        image_name =
+    image_group._text:SetMultilineTruncatedString(namestr, 2, TEXT_WIDTH, 25, true, true)
+    
+    local skin_build = GetBuildForItem(skin_name)
+    if skin_build == nil or skin_build == "none" then
+        skin_build =
             (slot == "body" and "body_default1") or
             (slot == "hand" and "hand_default1") or
             (slot == "legs" and "legs_default1") or
             (slot == "feet" and "feet_default1") or
             self.currentcharacter
     end
-    image_group._image:GetAnimState():OverrideSkinSymbol("SWAP_ICON", image_name, "SWAP_ICON")
+    
+    image_group._image:GetAnimState():OverrideSkinSymbol("SWAP_ICON", skin_build, "SWAP_ICON")
 end
 
 local DEFAULT_IMAGES =
@@ -440,15 +395,10 @@ local DEFAULT_IMAGES =
 function PlayerAvatarPopup:CreateEquipWidgetForSlot()
     local image_group = Widget("image_group")
 
-    -- text background
-    --local bg = image_group:AddChild(Image("images/ui.xml", "single_option_bg.tex"))
-    --bg:SetSize(150, 28)
-    --bg:SetPosition(0, 0, 0)
-
-    image_group._text = image_group:AddChild(Text(NEWFONT_OUTLINE, 24))
-    image_group._text:SetPosition(TEXT_COLUMN, 0, 0)
+    image_group._text = image_group:AddChild(Text(UIFONT, ITEM_TEXT_SIZE))
+    image_group._text:SetPosition(TEXT_COLUMN, -3, 0)
     image_group._text:SetHAlign(ANCHOR_LEFT)
-    image_group._text:SetVAlign(ANCHOR_MIDDLE)
+    image_group._text:SetVAlign(ANCHOR_BOTTOM)
 
     image_group._image = image_group:AddChild(Image())
     image_group._image:SetScale(1)
@@ -460,9 +410,10 @@ end
 function PlayerAvatarPopup:UpdateEquipWidgetForSlot(image_group, slot, equipdata)
     local name = equipdata ~= nil and equipdata[EquipSlot.ToID(slot)] or nil
     name = name ~= nil and #name > 0 and name or "none"
+    local namestr = STRINGS.NAMES[string.upper(name)] or GetSkinName(name)
 
     image_group._text:SetColour(unpack(GetColorForItem(name)))
-    image_group._text:SetMultilineTruncatedString(GetSkinName(name), 2, TEXT_WIDTH, 25, true)
+    image_group._text:SetMultilineTruncatedString(namestr, 2, TEXT_WIDTH, 25, true, true)
 
     local atlas = "images/inventoryimages.xml"
     local default = DEFAULT_IMAGES[slot] or "trinket_5.tex"

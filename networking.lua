@@ -114,7 +114,7 @@ function Networking_RollAnnouncement(userid, name, prefab, colour, rolls, max)
     end
 end
 
-function Networking_Say(guid, userid, name, prefab, message, colour, whisper, isemote)
+function Networking_Say(guid, userid, name, prefab, message, colour, whisper, isemote, user_vanity)
     if message ~= nil and message:utf8len() > MAX_CHAT_INPUT_LENGTH then
         return
     end
@@ -126,7 +126,7 @@ function Networking_Say(guid, userid, name, prefab, message, colour, whisper, is
         if not (whisper or isemote) then
             local screen = TheFrontEnd:GetActiveScreen()
             if screen ~= nil and screen.ReceiveChatMessage then
-                screen:ReceiveChatMessage(userid, name, prefab, message, colour, whisper)
+                screen:ReceiveChatMessage(name, prefab, message, colour, whisper)
             end
         end
         local hud = ThePlayer ~= nil and ThePlayer.HUD or nil
@@ -136,9 +136,10 @@ function Networking_Say(guid, userid, name, prefab, message, colour, whisper, is
                     and (hud:HasTargetIndicator(entity) or
                         entity.entity:FrustumCheck()))) then
             if isemote then
-                hud.controls.networkchatqueue:DisplayEmoteMessage(userid, name, prefab, message, colour, whisper)
+                hud.controls.networkchatqueue:DisplayEmoteMessage(name, prefab, message, colour, whisper)
             else
-                hud.controls.networkchatqueue:OnMessageReceived(userid, name, prefab, message, colour, whisper)
+                local profileflair = GetRemotePlayerVanityItem(user_vanity or {}, "profileflair")
+                hud.controls.networkchatqueue:OnMessageReceived(name, prefab, message, colour, whisper, profileflair)
             end
         end
     end
@@ -188,6 +189,15 @@ function ValidateRecipeSkinRequest(user_id, prefab_name, skin)
     return validated_skin
 end
 
+function VerifySpawnNewPlayerOnServerRequest(user_id)
+	if TheWorld == nil or TheWorld.net == nil or (TheWorld.net.components.worldcharacterselectlobby ~= nil and not TheWorld.net.components.worldcharacterselectlobby:CanPlayersSpawn()) then
+		TheNet:Kick(user_id)
+		return false
+	end
+
+	return true
+end
+
 function ValidateSpawnPrefabRequest(user_id, prefab_name, skin_base, clothing_body, clothing_hand, clothing_legs, clothing_feet)
     local in_mod_char_list = table.contains(MODCHARACTERLIST, prefab_name)
 
@@ -207,7 +217,7 @@ function ValidateSpawnPrefabRequest(user_id, prefab_name, skin_base, clothing_bo
             validated_skin_base = skin_base
         elseif TheInventory:CheckClientOwnership(user_id, skin_base) then
             --check if the skin_base actually belongs to the prefab
-            if table.contains( PREFAB_SKINS[prefab_name], skin_base ) and Prefabs[skin_base] and not Prefabs[skin_base].disabled then
+            if table.contains( PREFAB_SKINS[prefab_name], skin_base ) then
                 validated_skin_base = skin_base
             end
         end
@@ -219,16 +229,16 @@ function ValidateSpawnPrefabRequest(user_id, prefab_name, skin_base, clothing_bo
         validated_prefab = DST_CHARACTERLIST[1]
     end
 
-    if clothing_body ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_body) and CLOTHING[clothing_body] and not CLOTHING[clothing_body].disabled then
+    if clothing_body ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_body) and IsClothingItem(clothing_body) then
         validated_clothing_body = clothing_body 
     end
-    if clothing_hand ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_hand) and CLOTHING[clothing_hand] and not CLOTHING[clothing_hand].disabled then
+    if clothing_hand ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_hand) and IsClothingItem(clothing_hand) then
         validated_clothing_hand = clothing_hand 
     end
-    if clothing_legs ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_legs) and CLOTHING[clothing_legs] and not CLOTHING[clothing_legs].disabled then
+    if clothing_legs ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_legs) and IsClothingItem(clothing_legs) then
         validated_clothing_legs = clothing_legs 
     end
-    if clothing_feet ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_feet) and CLOTHING[clothing_feet] and not CLOTHING[clothing_feet].disabled then
+    if clothing_feet ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_feet) and IsClothingItem(clothing_feet) then
         validated_clothing_feet = clothing_feet 
     end
 	
@@ -450,7 +460,11 @@ function JoinServer(server_listing, optional_password_override)
     end
 
     local function on_cancelled()
-        TheNet:JoinServerResponse( true )
+        TheNet:JoinServerResponse(true)
+        local screen = TheFrontEnd:GetActiveScreen()
+        if screen ~= nil and screen.name == "ConnectingToGamePopup" then
+            screen:Close()
+        end
     end
 
     local function after_mod_warning()

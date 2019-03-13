@@ -15,6 +15,15 @@ local WXP_LEVEL3 = 10000
 local WXP_LEVEL4 = 20000
 local WXP_LEVEL5 = 30000
 
+local meat_ingredients = 
+{
+	"quagmire_salmon", "quagmire_salmon_cooked",
+	"quagmire_crabmeat", "quagmire_crabmeat_cooked",
+	"quagmire_smallmeat", "quagmire_cookedsmallmeat",
+	"meat", "cookedmeat",
+}
+
+
 local Quagmire_Achievements = 
 {
 --[[
@@ -40,6 +49,104 @@ local Quagmire_Achievements =
         },
     },
 ]]
+    {
+        category = "encore",
+        anycharacter = true,
+        data = 
+        {
+            {
+                achievementid = "quag_encore_nomatches",
+                wxp = WXP_LEVEL5,
+                endofmatchfn = function(user, data) 
+					return data.outcome.won and data.analytics:GetMatchStat("tributes_success") == 0
+				end,
+            },
+            {
+                achievementid = "quag_encore_notrees",
+                wxp = WXP_LEVEL4,
+                endofmatchfn = function(user, data) 
+					return data.outcome.won and data.statstracker:GetStatTotal("logs") == 0
+				end,
+			},
+            {
+                achievementid = "quag_encore_meaty",
+                wxp = WXP_LEVEL4,
+                shared_progress_fn = function(data, shared_scratchpad)
+					if not shared_scratchpad.quag_encore_meaty_failed and data.product ~= "quagmire_syrup" then
+						for _, ingredient in ipairs(data.ingredients) do
+							if table.contains(meat_ingredients, ingredient) then
+								return
+							end
+						end
+						shared_scratchpad.quag_encore_meaty_failed = true
+					end
+                end,
+                endofmatchfn = function(user, data, scratchpad, shared_scratchpad)
+					return data.outcome.won and not shared_scratchpad.quag_encore_meaty_failed
+				end,
+			},
+            {
+                achievementid = "quag_encore_veggie",
+                wxp = WXP_LEVEL4,
+                shared_progress_fn = function(data, shared_scratchpad)
+					if not shared_scratchpad.quag_encore_veggie_failed then
+						for _, ingredient in ipairs(data.ingredients) do
+							if table.contains(meat_ingredients, ingredient) then
+								shared_scratchpad.quag_encore_veggie_failed = true
+								return
+							end
+						end
+					end
+                end,
+                endofmatchfn = function(user, data, scratchpad, shared_scratchpad)
+					return data.outcome.won and not shared_scratchpad.quag_encore_veggie_failed
+				end,
+			},
+			{
+				achievementid = "quag_encore_allcooks",
+				wxp = WXP_LEVEL2_5,
+				endofmatchfn = function(user, data) 
+					if GetTableSize(data.statstracker._seenplayers) >= 3 then
+						for userid, player in pairs(data.statstracker._seenplayers) do
+							if data.statstracker:GetStatTotal("meals_made", userid) < 2 then
+								return false
+							end
+						end
+						return true
+					end
+					return false
+				end,
+			},
+			{
+				achievementid = "quag_encore_all_stations_large",
+				wxp = WXP_LEVEL2_5,
+				testfn = function(user, data, scratchpad)
+					if scratchpad.quag_encore_all_stations_large == nil then
+						scratchpad.quag_encore_all_stations_large = {}
+					end
+					if data.stewer ~= nil and data.stewer:IsValid() and data.stewer.components.container ~= nil and data.stewer.components.container:GetNumSlots() == 4 then
+						scratchpad.quag_encore_all_stations_large[data.recipe.station] = true
+					end
+					return GetTableSize(scratchpad.quag_encore_all_stations_large) == 3
+				end,
+			},
+			{
+				achievementid = "quag_encore_tribute_coin3",
+				wxp = WXP_LEVEL2_5,
+				endofmatchfn = function(user, data) 
+					return data.analytics:GetMatchStat("coins")[3] >= 3
+				end,
+			},
+			{
+				achievementid = "quag_encore_tribute_coin2",
+				wxp = WXP_LEVEL2,
+				endofmatchfn = function(user, data) 
+					return data.analytics:GetMatchStat("coins")[2] >= 3
+				end,
+			},
+		},
+	},
+
 
     {
         category = "victory",
@@ -341,6 +448,7 @@ end
 
 return 
 {
+    seasons = { 1 },
 	eventid = "quagmire",
 	achievements = Quagmire_Achievements,
 }

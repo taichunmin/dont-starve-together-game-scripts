@@ -102,7 +102,11 @@ function ComplexProjectile:Launch(targetPos, attacker, owningweapon)
         pos.z = pos.z - offset.x * math.sin(facing_angle)
         -- print("facing", facing_angle)
         -- print("offset", offset)
-        self.inst.Transform:SetPosition(pos:Get())
+        if self.inst.Physics ~= nil then
+            self.inst.Physics:Teleport(pos:Get())
+        else
+            self.inst.Transform:SetPosition(pos:Get())
+        end
     end
 
     -- use targetoffset height, otherwise hit when you hit the ground

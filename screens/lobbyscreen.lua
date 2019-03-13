@@ -661,7 +661,7 @@ end
 
 function LobbyScreen:StartSelection()
 	if not self:RequestResetLobbyCharacter() then
-		return  -- wait for responce
+		return  -- wait for response
 	end
 
 	self.in_readystate = false

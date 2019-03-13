@@ -35,7 +35,13 @@ function NotificationWidget:OnRecipeMade(data)
 	local params = {string = data.new_recipe and STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.DISCOVERED or STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.MADE}
 	params.sfx = data.new_recipe and "dontstarve/quagmire/HUD/new_recipe" or "dontstarve/quagmire/HUD/meal_cooked"
 	if data.dish ~= nil then
-		if IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..data.product..".tex") then
+		
+        local is_image_loaded = true
+        if QUAGMIRE_USE_KLUMP then
+            is_image_loaded = IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..data.product..".tex")
+        end
+
+        if is_image_loaded and #data.ingredients > 0 then
 			params.tint = TINT_GOOD
 			params.icons = { 
 				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..".tex"}, 
@@ -68,13 +74,11 @@ function NotificationWidget:OnRecipeAppraised(data)
 	params.tint = TINT_GOOD
 	params.sfx = "dontstarve/quagmire/HUD/recipe_sent"
 
-	if IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..data.product..".tex") then
-		params.icons = { 
-			{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..(data.silverdish and "_silver" or "")..".tex"}, 
-			{atlas = "images/quagmire_food_inv_images_hires_"..data.product..".xml", texture = data.product..".tex"}
-		}
-		params.coins = data.coins
-	end
+	params.icons = { 
+		{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..(data.silverdish and "_silver" or "")..".tex"}, 
+		{atlas = "images/quagmire_food_inv_images_hires_"..data.product..".xml", texture = data.product..".tex"}
+	}
+	params.coins = data.coins
 
     self.inst:DoTaskInTime(2, function() self:AddChild(self:BuildPopupWidget(params)) end)
 end

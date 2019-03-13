@@ -278,9 +278,9 @@ end
 function LootDropper:DropLoot(pt)
     local prefabs = self:GenerateLoot()
     if self.inst:HasTag("burnt")
-        or (self.inst.components.fueled == nil and
-            self.inst.components.burnable ~= nil and
-            self.inst.components.burnable:IsBurning()) then
+        or (self.inst.components.burnable ~= nil and
+            self.inst.components.burnable:IsBurning() and
+            (self.inst.components.fueled == nil or self.inst.components.burnable.ignorefuel)) then
 
         local isstructure = self.inst:HasTag("structure")
         for k, v in pairs(prefabs) do

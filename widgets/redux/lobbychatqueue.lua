@@ -80,8 +80,8 @@ function LobbyChatQueue:DebugDraw_AddSection(dbui, panel)
         end
 
         if dbui.Button("Refresh") then
-            local userid, name, prefab, colour = TheNet:GetUserID(), TheNet:GetLocalUserName(), nil, GOLD
-            self:OnMessageReceived(userid, name, prefab, "Dummy message to force refresh.", colour)
+            local name, prefab, colour = TheNet:GetLocalUserName(), nil, GOLD
+            self:OnMessageReceived(name, prefab, "Dummy message to force refresh.", colour)
         end
     end
     dbui.Unindent()
@@ -134,7 +134,7 @@ function LobbyChatQueue:_MessageConstructor(data)
     return list
 end
 
-function LobbyChatQueue:OnMessageReceived(userid, name, prefab, message, colour)
+function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
     self.list_items[#self.list_items + 1] =
     {
         message = message,

@@ -10,6 +10,8 @@ local UserCommandPickerScreen = require "screens/redux/usercommandpickerscreen"
 
 local UserCommands = require "usercommands"
 
+local TEMPLATES = require("widgets/redux/templates")
+
 local BAN_ENABLED = true
 
 local list_spacing = 82.5
@@ -43,6 +45,7 @@ local PlayerStatusScreen = Class(Screen, function(self, owner)
     self.owner = owner
     self.time_to_refresh = REFRESH_INTERVAL
     self.usercommandpickerscreen = nil
+    self.show_player_badge = not TheFrontEnd:GetIsOfflineMode() and TheNet:IsOnlineMode()
 end)
 
 function PlayerStatusScreen:OnBecomeActive()
@@ -155,7 +158,9 @@ function PlayerStatusScreen:OnUpdate(dt)
             -- Kill everything and re-init
             self:DoInit(ClientObjs)
         else
-            if self.serverstate and self.serverage and self.serverage ~= TheWorld.state.cycles + 1 then
+			if TheNet:GetServerGameMode() == "lavaarena" then
+                self.serverstate:SetString(subfmt(STRINGS.UI.PLAYERSTATUSSCREEN.LAVAARENA_SERVER_MODE, {mode=GetGameModeString(TheNet:GetServerGameMode()), num = TheWorld.net.components.lavaarenaeventstate:GetCurrentRound()}))
+            elseif self.serverstate and self.serverage and self.serverage ~= TheWorld.state.cycles + 1 then
                 self.serverage = TheWorld.state.cycles + 1
                 local modeStr = GetGameModeString(TheNet:GetServerGameMode()) ~= nil and GetGameModeString(TheNet:GetServerGameMode()).." - " or ""
                 self.serverstate:SetString(modeStr.." "..STRINGS.UI.PLAYERSTATUSSCREEN.AGE_PREFIX..self.serverage)
@@ -243,10 +248,9 @@ function PlayerStatusScreen:DoInit(ClientObjs)
 
     if not self.bg then
         self.bg = self.root:AddChild(Image( "images/scoreboard.xml", "scoreboard_frame.tex" ))
-        self.bg:SetScale(.95,.9)
+        self.bg:SetScale(.96,.9)
     end
 
-    local serverNameStr = TheNet:GetServerName()
     if not self.servertitle then
         self.servertitle = self.root:AddChild(Text(UIFONT,45))
         self.servertitle:SetColour(1,1,1,1)
@@ -256,9 +260,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         self.serverstate = self.root:AddChild(Text(UIFONT,30))
         self.serverstate:SetColour(1,1,1,1)
     end
-    self.serverage = TheWorld.state.cycles + 1
-    local modeStr = GetGameModeString(TheNet:GetServerGameMode()) ~= nil and GetGameModeString(TheNet:GetServerGameMode()).." - " or ""
-    self.serverstate:SetString(modeStr.." "..STRINGS.UI.PLAYERSTATUSSCREEN.AGE_PREFIX..self.serverage)
+
+	if TheNet:GetServerGameMode() == "lavaarena" then
+		self.serverstate:SetString(subfmt(STRINGS.UI.PLAYERSTATUSSCREEN.LAVAARENA_SERVER_MODE, {mode=GetGameModeString(TheNet:GetServerGameMode()), num = TheWorld.net.components.lavaarenaeventstate:GetCurrentRound()}))
+	else
+		self.serverage = TheWorld.state.cycles + 1
+		local modeStr = GetGameModeString(TheNet:GetServerGameMode()) ~= nil and GetGameModeString(TheNet:GetServerGameMode()).." - " or ""
+		self.serverstate:SetString(modeStr.." "..STRINGS.UI.PLAYERSTATUSSCREEN.AGE_PREFIX..self.serverage)
+	end
 
     local servermenunumbtns = 0
 
@@ -297,14 +306,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
 
     if not self.players_number then
         self.players_number = self.root:AddChild(Text(UIFONT, 25))
-        self.players_number:SetPosition(303,170) 
+        self.players_number:SetPosition(318,170) 
         self.players_number:SetRegionSize(100,30)
         self.players_number:SetHAlign(ANCHOR_RIGHT)
         self.players_number:SetColour(1,1,1,1)
     end
     self.players_number:SetString(tostring(not TheNet:GetServerIsClientHosted() and self.numPlayers - 1 or self.numPlayers).."/"..(TheNet:GetServerMaxPlayers() or "?"))
 
-    local serverDescStr = TheNet:GetServerDescription()
+    local serverDescStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_NAME or TheNet:GetServerDescription()
     if not self.serverdesc then
         self.serverdesc = self.root:AddChild(Text(UIFONT,30))
         self.serverdesc:SetColour(1,1,1,1)
@@ -335,11 +344,12 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         self.serverdesc:SetSize(23)
         self.serverstate:SetPosition(0,163)
         self.serverstate:SetSize(23)
-        self.players_number:SetPosition(303,160)
+        self.players_number:SetPosition(318,160)
         self.players_number:SetSize(20)
         self.divider:SetPosition(0,149)
     end
 
+    local serverNameStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_NAME or TheNet:GetServerName()
     if serverNameStr == "" then
         self.servertitle:SetString(serverNameStr)
     elseif servermenunumbtns > 1 then
@@ -401,6 +411,12 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.highlight:SetPosition(22, 5)
         playerListing.highlight:Hide()
 
+        if self.show_player_badge then
+            playerListing.profileFlair = playerListing:AddChild(TEMPLATES.RankBadge())
+            playerListing.profileFlair:SetPosition(-388,-14,0)
+            playerListing.profileFlair:SetScale(.6)
+        end
+
         playerListing.characterBadge = nil
         playerListing.characterBadge = playerListing:AddChild(PlayerBadge("", DEFAULT_PLAYER_COLOUR, false, 0))
         playerListing.characterBadge:SetScale(.8)
@@ -408,14 +424,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.characterBadge:Hide()
 
         playerListing.number = playerListing:AddChild(Text(UIFONT, 35))
-        playerListing.number:SetPosition(-385,0,0)
+        playerListing.number:SetPosition(-422,0,0)
         playerListing.number:SetHAlign(ANCHOR_MIDDLE)
         playerListing.number:SetColour(1,1,1,1)
         playerListing.number:Hide()
 
         playerListing.adminBadge = playerListing:AddChild(ImageButton("images/avatars.xml", "avatar_admin.tex", "avatar_admin.tex", "avatar_admin.tex", nil, nil, {1,1}, {0,0}))
         playerListing.adminBadge:Disable()
-        playerListing.adminBadge:SetPosition(-359,-13,0)
+        playerListing.adminBadge:SetPosition(-355,-13,0)
         playerListing.adminBadge.image:SetScale(.3)
         playerListing.adminBadge.scale_on_focus = false
         playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
@@ -431,6 +447,9 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.age = playerListing:AddChild(Text(UIFONT, 35, ""))
         playerListing.age:SetPosition(-20,0,0)
         playerListing.age:SetHAlign(ANCHOR_MIDDLE)
+		if TheNet:GetServerGameMode() == "lavaarena" then
+			playerListing.age:Hide()
+		end
 
         playerListing.viewprofile = playerListing:AddChild(ImageButton("images/scoreboard.xml", "addfriend.tex", "addfriend.tex", "addfriend.tex", "addfriend.tex", nil, {1,1}, {0,0}))
         playerListing.viewprofile:SetPosition(120,3,0)
@@ -584,6 +603,16 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.displayName = self:GetDisplayName(client)
 
         playerListing.userid = client.userid
+        
+        if self.show_player_badge then
+            if client.netid ~= nil then
+                local _, _, _, profileflair, rank = GetSkinsDataFromClientTableData(client)
+                playerListing.profileFlair:SetRank(profileflair, rank)
+                playerListing.profileFlair:Show()
+            else
+                playerListing.profileFlair:Hide()
+            end
+        end
 
         playerListing.characterBadge:Set(client.prefab or "", client.colour or DEFAULT_PLAYER_COLOUR, client.performance ~= nil, client.userflags or 0)
         playerListing.characterBadge:Show()
@@ -730,10 +759,10 @@ function PlayerStatusScreen:DoInit(ClientObjs)
 
     if not self.scroll_list then
         self.list_root = self.root:AddChild(Widget("list_root"))
-        self.list_root:SetPosition(190, -35)
+        self.list_root:SetPosition(210, -35)
 
         self.row_root = self.root:AddChild(Widget("row_root"))
-        self.row_root:SetPosition(190, -35)
+        self.row_root:SetPosition(210, -35)
 
         self.player_widgets = {}
         for i=1,6 do

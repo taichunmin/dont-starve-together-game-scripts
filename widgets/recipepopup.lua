@@ -34,24 +34,16 @@ local function GetHintTextForRecipe(player, recipe)
     local validmachines = {}
     local adjusted_level = deepcopy(recipe.level)
 
-    for k, v in pairs(TUNING.PROTOTYPER_TREES) do
-        -- Adjust level for bonus so that the hint gives the right message
-        if player.replica.builder ~= nil then
-            if k == "SCIENCEMACHINE" or k == "ALCHEMYMACHINE" then
-                adjusted_level.SCIENCE = adjusted_level.SCIENCE - player.replica.builder:ScienceBonus()
-            elseif k == "PRESTIHATITATOR" or k == "SHADOWMANIPULATOR" then
-                adjusted_level.MAGIC = adjusted_level.MAGIC - player.replica.builder:MagicBonus()
-            elseif k == "ANCIENTALTAR_LOW" or k == "ANCIENTALTAR_HIGH" then
-                adjusted_level.ANCIENT = adjusted_level.ANCIENT - player.replica.builder:AncientBonus()
-            elseif k == "WAXWELLJOURNAL" then
-                adjusted_level.SHADOW = adjusted_level.SHADOW - player.replica.builder:ShadowBonus()
-            end
-        end
+    -- Adjust recipe's level for bonus so that the hint gives the right message
+    adjusted_level.SCIENCE = adjusted_level.SCIENCE - player.replica.builder:ScienceBonus()
+    adjusted_level.MAGIC = adjusted_level.MAGIC - player.replica.builder:MagicBonus()
+    adjusted_level.ANCIENT = adjusted_level.ANCIENT - player.replica.builder:AncientBonus()
+    adjusted_level.SHADOW = adjusted_level.SHADOW - player.replica.builder:ShadowBonus()
 
+    for k, v in pairs(TUNING.PROTOTYPER_TREES) do
         local canbuild = CanPrototypeRecipe(adjusted_level, v)
         if canbuild then
             table.insert(validmachines, {TREE = tostring(k), SCORE = 0})
-            --return tostring(k)
         end
     end
 
@@ -81,15 +73,6 @@ local function GetHintTextForRecipe(player, recipe)
             end
         end
 
-        -- local bestmachine = nil
-        -- for each req in recipe.level do
-        --     for m in validmachines do
-        --         if req > 0 and m[req] >= req and m[req] < bestmachine[req] then
-        --             bestmachine = m
-        --         end
-        --     end
-        -- end
-
         table.sort(validmachines, function(a,b) return (a.SCORE) > (b.SCORE) end)
 
         return validmachines[1].TREE
@@ -118,7 +101,7 @@ function RecipePopup:BuildWithSpinner(horizontal)
 
     --
 
-    self.contents = self:AddChild(Widget(""))
+    self.contents = self:AddChild(Widget("contents"))
     self.contents:SetPosition(-75,0 + y_offset,0)
 
     self.lines = self.contents:AddChild(Widget("separators"))
@@ -155,16 +138,10 @@ function RecipePopup:BuildWithSpinner(horizontal)
                                 Profile:SetLastUsedSkinForItem(self.recipe.name, self.skins_spinner.GetItem())
                             end)
     self.button:SetPosition(320, -155, 0)
-
     self.button:SetScale(.7,.7,.7)
     self.button.image:SetScale(.45, .7)
-
-    --self.skinbuttons = {}
-    self.build_title = self.contents:AddChild(Text(BODYTEXTFONT, 33))
-    self.build_title:SetPosition(330, -60, 0)
-
+    
     self.skins_spinner = self.contents:AddChild(self:MakeSpinner())
-    -- self.skins_spinner:SetScale(.3)
     self.skins_spinner:SetPosition(307, -100)
 
     if horizontal and TheInput:ControllerAttached() then

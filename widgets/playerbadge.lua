@@ -31,6 +31,10 @@ local PlayerBadge = Class(Widget, function(self, prefab, colour, ishost, userfla
 
     self.headbg = self.icon:AddChild(Image(DEFAULT_ATLAS, self:GetBG()))
     self.head = self.icon:AddChild(Image( self:GetAvatarAtlas(), self:GetAvatar(), DEFAULT_AVATAR ))
+
+	self.loading_icon = self.icon:AddChild(Image(DEFAULT_ATLAS, "loading_indicator.tex"))
+	self.loading_icon:Hide()
+
     self.headframe = self.icon:AddChild(Image(DEFAULT_ATLAS, "avatar_frame_white.tex"))
     self.headframe:SetTint(unpack(colour))
 end)
@@ -69,6 +73,22 @@ function PlayerBadge:Set(prefab, colour, ishost, userflags)
         self.headbg:SetTexture(DEFAULT_ATLAS, self:GetBG())
         self.head:SetTexture(self:GetAvatarAtlas(), self:GetAvatar(), DEFAULT_AVATAR)
     end
+
+	if self:IsLoading() then
+		if not self.loading_icon.shown then
+			self.loading_icon:Show()
+			local function dorotate() self.loading_icon:RotateTo(0, -360, 1, dorotate) end
+			self.loading_icon:CancelRotateTo()
+			dorotate()
+			self.head:SetTint(0,0,0,1)
+		end
+	else
+		if self.loading_icon.shown then
+			self.loading_icon:Hide()
+			self.loading_icon:CancelRotateTo()
+			self.head:SetTint(1,1,1,1)
+		end
+	end
 end
 
 function PlayerBadge:IsGhost()
@@ -85,6 +105,10 @@ end
 
 function PlayerBadge:IsCharacterState2()
     return checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_2)
+end
+
+function PlayerBadge:IsLoading()
+    return checkbit(self.userflags, USERFLAGS.IS_LOADING)
 end
 
 function PlayerBadge:GetBG()

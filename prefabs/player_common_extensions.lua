@@ -96,11 +96,11 @@ local function OnPlayerDeath(inst, data)
 
     inst:ClearBufferedAction()
 
-    inst.components.age:PauseAging()
     if inst.components.revivablecorpse ~= nil then
         inst.components.inventory:Hide()
     else
         inst.components.inventory:Close()
+        inst.components.age:PauseAging()
     end
     inst:PushEvent("ms_closepopups")
 
@@ -144,6 +144,7 @@ local function CommonActualRez(inst)
         inst.components.inventory:Show()
     else
         inst.components.inventory:Open()
+        inst.components.age:ResumeAging()
     end
 
     inst.components.health.canheal = true
@@ -175,8 +176,6 @@ local function CommonActualRez(inst)
 
     --don't ignore sanity any more
     inst.components.sanity.ignore = GetGameModeProperty("no_sanity")
-
-    inst.components.age:ResumeAging()
 
     ConfigurePlayerLocomotor(inst)
     ConfigurePlayerActions(inst)
@@ -241,7 +240,7 @@ local function DoActualRez(inst, source, item)
             inst.sg:GoToState("wakeup")
         elseif source.prefab == "resurrectionstatue" then
             inst.sg:GoToState("rebirth")
-        elseif source.prefab == "multiplayer_portal" then
+        elseif source:HasTag("multiplayer_portal") then
             inst.components.health:DeltaPenalty(TUNING.PORTAL_HEALTH_PENALTY)
 
             source:PushEvent("rez_player")
@@ -399,7 +398,7 @@ local function OnRespawnFromGhost(inst, data)
     elseif data.source.prefab == "amulet"
         or data.source.prefab == "resurrectionstone"
         or data.source.prefab == "resurrectionstatue"
-        or data.source.prefab == "multiplayer_portal" then
+        or data.source:HasTag("multiplayer_portal") then
         inst:DoTaskInTime(9 * FRAMES, DoMoveToRezSource, data.source, --[[60-9]] 51 * FRAMES)
     else
         --unsupported rez source...
@@ -408,7 +407,7 @@ local function OnRespawnFromGhost(inst, data)
 
     inst.rezsource =
         data ~= nil and (
-            (data.source ~= nil and data.source.prefab ~= "reviver" and data.source.name) or
+            (data.source ~= nil and data.source.prefab ~= "reviver" and data.source:GetBasicDisplayName()) or
             (data.user ~= nil and data.user:GetDisplayName())
         ) or
         STRINGS.NAMES.SHENANIGANS
@@ -437,7 +436,9 @@ local function CommonPlayerDeath(inst)
 
     inst.components.debuffable:Enable(false)
 
-    inst.components.age:PauseAging()
+    if inst.components.revivablecorpse == nil then
+        inst.components.age:PauseAging()
+    end
 
     inst.components.health:SetInvincible(true)
     inst.components.health.canheal = false
@@ -593,6 +594,19 @@ end
 
 --------------------------------------------------------------------------
 
+local function DoSpookedSanity(inst)
+    inst.components.sanity:DoDelta(-TUNING.SANITY_SMALL)
+end
+
+local function OnSpooked(inst)
+    if not GetGameModeProperty("no_sanity") then
+        --Delay to match bat overlay timing
+        inst:DoTaskInTime(1.35, DoSpookedSanity)
+    end
+end
+
+--------------------------------------------------------------------------
+
 return
 {
     ShouldKnockout              = ShouldKnockout,
@@ -606,4 +620,5 @@ return
     OnMakePlayerCorpse          = OnMakePlayerCorpse,
     OnRespawnFromGhost          = OnRespawnFromGhost,
     OnRespawnFromPlayerCorpse   = OnRespawnFromPlayerCorpse,
+    OnSpooked                   = OnSpooked,
 }

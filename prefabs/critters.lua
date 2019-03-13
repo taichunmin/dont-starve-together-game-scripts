@@ -183,6 +183,7 @@ local function MakeCritter(name, animname, face, diet, flying, data)
         inst:AddComponent("follower")
         inst.components.follower:KeepLeaderOnAttacked()
         inst.components.follower.keepdeadleader = true
+        inst.components.follower.keepleaderduringminigame = true
 
         inst:AddComponent("knownlocations")
 
@@ -234,7 +235,7 @@ local function builder_onbuilt(inst, builder)
         pt.x = pt.x + offset.x
         pt.z = pt.z + offset.z
     end
-    builder.components.petleash:SpawnPetAt(pt.x, 0, pt.z, inst.pettype, inst.skin_name)
+    builder.components.petleash:SpawnPetAt(pt.x, 0, pt.z, inst.pettype, inst.linked_skinname)
     inst:Remove()
 end
 

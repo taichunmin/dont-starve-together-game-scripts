@@ -324,3 +324,36 @@ function str_seconds(time)
 	end
 	
 end
+
+function str_date(os_time)
+	local os_date = os.date("*t", os_time)
+	
+	return subfmt(STRINGS.UI.DATE_FORMAT.MDY, {month = STRINGS.UI.DATE.MONTH_ABBR[os_date.month], day = tostring(os_date.day), year = tostring(os_date.year)})
+end
+
+function str_play_time(time)
+	local minutes = 0
+	local hours = 0
+	local days = 0
+	
+	time = math.floor(time / 60) -- drop the seconds, we dont want to display them
+	if time > 0  then
+		minutes = time % 60
+		time = math.floor((time - minutes) / 60)
+	end
+	if time > 0  then
+		hours = time % 24
+		time = math.floor((time - hours) / 24)
+	end
+	if time > 0  then
+		days = time
+	end
+
+	if days > 0 then
+		return subfmt(STRINGS.UI.DAYS_FORMAT.DHM, {days=days, hours=hours, minutes=minutes})
+	elseif hours > 0 then
+		return subfmt(STRINGS.UI.DAYS_FORMAT.HM, {hours=hours, minutes=minutes})
+	else
+		return subfmt(STRINGS.UI.DAYS_FORMAT.M, {minutes=minutes or 1})
+	end
+end

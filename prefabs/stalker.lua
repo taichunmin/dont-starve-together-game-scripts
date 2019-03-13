@@ -93,21 +93,27 @@ end
 local function OnFocusCamera(inst)
     local player = TheFocalPoint.entity:GetParent()
     if player ~= nil then
-        TheFocalPoint:PushTempFocus(inst, 6, 22, 6)
         --Also push a priority 5 focus to block the gate (priority 4)
         --from grabbing focus in case we are out of range of stalker.
-        TheFocalPoint:PushTempFocus(player, math.huge, math.huge, 5)
+        TheFocalPoint.components.focalpoint:StartFocusSource(inst, "blockgatefocus", player, math.huge, math.huge, 5)
+    else
+        TheFocalPoint.components.focalpoint:StopFocusSource(inst, "blockgatefocus")
     end
 end
 
 local function OnCameraFocusDirty(inst)
     if inst._camerafocus:value() then
+        TheFocalPoint.components.focalpoint:StartFocusSource(inst, nil, nil, 6, 22, 6)
         if inst._camerafocustask == nil then
             inst._camerafocustask = inst:DoPeriodicTask(0, OnFocusCamera)
+            OnFocusCamera(inst)
         end
-    elseif inst._camerafocustask ~= nil then
-        inst._camerafocustask:Cancel()
-        inst._camerafocustask = nil
+    else
+        if inst._camerafocustask ~= nil then
+            inst._camerafocustask:Cancel()
+            inst._camerafocustask = nil
+        end
+        TheFocalPoint.components.focalpoint:StopFocusSource(inst)
     end
 end
 

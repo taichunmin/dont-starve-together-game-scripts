@@ -234,6 +234,10 @@ function Combat:OnEntityWake()
     if self.retargetperiod ~= nil then
         self.retargettask = self.inst:DoPeriodicTask(self.retargetperiod, dotryretarget, nil, self)
     end
+
+    if self.target ~= nil and self.keeptargetfn ~= nil then
+        self.inst:StartUpdatingComponent(self)
+    end
 end
 
 function Combat:OnUpdate(dt)
@@ -406,6 +410,9 @@ function Combat:GetAttacked(attacker, damage, weapon, stimuli)
     self.lastwasattackedtime = GetTime()
 
     --print ("ATTACKED", self.inst, attacker, damage)
+    --V2C: redirectdamagefn is currently only used by either mounting or parrying,
+    --     but not both at the same time.  If we use it more, then it really needs
+    --     to be refactored.
     local blocked = false
     local damageredirecttarget = self.redirectdamagefn ~= nil and self.redirectdamagefn(self.inst, attacker, damage, weapon, stimuli) or nil
     local damageresolved = 0
@@ -760,9 +767,11 @@ function Combat:CanLightTarget(target, weapon)
         and target.components.burnable.canlight
         and not target.components.burnable:IsBurning()
         and not target:HasTag("burnt")
-        and (target.components.fueled == nil or
+        --[[and (target.components.fueled == nil or
+            not target.components.fueled.accepting or
             target.components.fueled.fueltype == FUELTYPE.BURNABLE or
-            target.components.fueled.secondaryfueltype == FUELTYPE.BURNABLE)
+            target.components.fueled.secondaryfueltype == FUELTYPE.BURNABLE)]]
+        --V2C: fueled or fueltype should not really matter. if we can burn it, should still allow lighting.
 end
 
 function Combat:CanHitTarget(target, weapon)
@@ -791,9 +800,16 @@ function Combat:CanHitTarget(target, weapon)
     return false
 end
 
-function Combat:DoAttack(target_override, weapon, projectile, stimuli, instancemult)
-    local targ = target_override or self.target
-    local weapon = weapon or self:GetWeapon()
+function Combat:DoAttack(targ, weapon, projectile, stimuli, instancemult)
+    if targ == nil then
+        targ = self.target
+    end
+    if weapon == nil then
+        weapon = self:GetWeapon()
+    end
+    if stimuli == nil and weapon ~= nil and weapon.components.weapon ~= nil and weapon.components.weapon.overridestimulifn ~= nil then
+        stimuli = weapon.components.weapon.overridestimulifn(weapon, self.inst, targ)
+    end
 
     if not self:CanHitTarget(targ, weapon) then
         self.inst:PushEvent("onmissother", { target = targ, weapon = weapon })

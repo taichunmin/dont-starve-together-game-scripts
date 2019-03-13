@@ -187,10 +187,10 @@ end
 -------------------------------------------------------------------------------
 -- Pipe Dart (Damage)
 -------------------------------------------------------------------------------
-local function pipeequip(inst, owner) 
+local function pipeequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_blowdart_pipe", "swap_blowdart_pipe")
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
 local function pipethrown(inst)

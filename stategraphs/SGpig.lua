@@ -10,6 +10,7 @@ local actionhandlers =
     ActionHandler(ACTIONS.ADDFUEL, "pickup"),
     ActionHandler(ACTIONS.TAKEITEM, "pickup"),
     ActionHandler(ACTIONS.UNPIN, "pickup"),
+    ActionHandler(ACTIONS.DROP, "dropitem"),
 }
 
 local events =
@@ -221,6 +222,30 @@ local states =
             inst.AnimState:PlayAnimation("hit")
             inst.Physics:Stop()
         end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
+
+    State{
+        name = "dropitem",
+        tags = { "busy" },
+
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("pig_pickup")
+        end,
+
+        timeline =
+        {
+            TimeEvent(10 * FRAMES, function(inst)
+                inst:PerformBufferedAction()
+            end),
+        },
 
         events =
         {

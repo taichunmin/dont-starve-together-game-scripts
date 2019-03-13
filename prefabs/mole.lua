@@ -48,6 +48,13 @@ local function OnWentHome(inst)
     inst.sg:GoToState("idle")
 end
 
+local function OnHomeDugUp(inst)
+    inst.components.inventory:DropEverything(false, true)
+    if inst.components.health ~= nil and not inst.components.health:IsDead() then
+        inst.sg:GoToState("stunned", false)
+    end
+end
+
 local function OnCookedFn(inst)
     if inst.components.health then
         inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/mole/death")
@@ -242,6 +249,7 @@ local function fn()
 
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("onwenthome", OnWentHome)
+    inst:ListenForEvent("molehill_dug_up", OnHomeDugUp)
 
     MakeFeedableSmallLivestock(inst, TUNING.TOTAL_DAY_TIME*2, onpickup, ondrop)
 

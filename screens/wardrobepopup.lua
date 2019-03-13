@@ -42,16 +42,14 @@ local WardrobePopupScreen = Class(Screen, function(self, owner_player, profile, 
     self.heroportrait:SetPosition(-185, 30)
 
     self.dressup = self.proot:AddChild(DressupPanel(self, profile, TheNet:GetClientTableForUser(self.owner_player.userid), function() self:SetPortrait() end, recent_item_types, recent_item_ids))
-    self.dressup:SetPosition(140, 30)
     self.dressup:SetCurrentCharacter(self.owner_player.prefab)
 
     self:SetPortrait()
 
-    local spacing = 225
-    local buttons = {}
 
     local offline = not TheNet:IsOnlineMode()
 
+    local buttons = {}
     if offline then 
     	buttons = {{text = STRINGS.UI.POPUPDIALOG.OK, cb = function() self:Close() end}}
     else
@@ -61,11 +59,15 @@ local WardrobePopupScreen = Class(Screen, function(self, owner_player, profile, 
                   }
     end
 
+    local spacing = 225
     self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-    self.menu:SetPosition(-230, -280, 0) 
 
-    if offline then 
+    if offline then
+        self.dressup:SetPosition(0, 30)
 		self.menu:SetPosition(0, -280, 0)
+    else
+        self.dressup:SetPosition(140, 30)
+        self.menu:SetPosition(-230, -280, 0) 
     end
    
 	self.default_focus = self.menu
@@ -151,19 +153,22 @@ function WardrobePopupScreen:Close()
 end
 
 function WardrobePopupScreen:SetPortrait()
-	local herocharacter = self.dressup.currentcharacter
-	local name = self.dressup:GetBaseSkin()
-	
-	if name and name ~= "" then
-		self.heroportrait:SetTexture("bigportraits/"..name..".xml", name.."_oval.tex", herocharacter.."_none.tex")
-	else
-		if softresolvefilepath("bigportraits/"..herocharacter.."_none.xml") then 
-			self.heroportrait:SetTexture("bigportraits/"..herocharacter.."_none.xml", herocharacter.."_none_oval.tex")
-		else
-			-- mod characters
-			self.heroportrait:SetTexture("bigportraits/"..herocharacter..".xml", herocharacter..".tex")
-		end
-	end
+    if TheNet:IsOnlineMode() then
+        local herocharacter = self.dressup.currentcharacter
+        local portrait_name = GetPortraitNameForItem(self.dressup:GetBaseSkin())
+        
+        
+        if portrait_name and portrait_name ~= "" then
+            self.heroportrait:SetTexture("bigportraits/"..portrait_name..".xml", portrait_name.."_oval.tex", herocharacter.."_none.tex")
+        else
+            if softresolvefilepath("bigportraits/"..herocharacter.."_none.xml") then 
+                self.heroportrait:SetTexture("bigportraits/"..herocharacter.."_none.xml", herocharacter.."_none_oval.tex")
+            else
+                -- mod characters
+                self.heroportrait:SetTexture("bigportraits/"..herocharacter..".xml", herocharacter..".tex")
+            end
+        end
+    end
 end
 
 function WardrobePopupScreen:GetHelpText()

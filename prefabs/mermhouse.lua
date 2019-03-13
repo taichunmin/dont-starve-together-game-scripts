@@ -1,6 +1,6 @@
 local assets =
 {
-    Asset("ANIM", "anim/pig_house.zip"),
+    Asset("ANIM", "anim/merm_house.zip"),
 }
 
 local prefabs =
@@ -38,8 +38,8 @@ local function onhit(inst, worker)
         if inst.components.childspawner ~= nil then
             inst.components.childspawner:ReleaseAllChildren(worker)
         end
-        inst.AnimState:PlayAnimation("hit_rundown")
-        inst.AnimState:PushAnimation("rundown")
+        inst.AnimState:PlayAnimation("hit")
+        inst.AnimState:PushAnimation("idle")
     end
 end
 
@@ -98,7 +98,7 @@ local function onignite(inst)
 end
 
 local function onburntup(inst)
-    inst.AnimState:PlayAnimation("burnt_rundown")
+    inst.AnimState:PlayAnimation("burnt")
 end
 
 local function OnIsDay(inst, isday)
@@ -141,9 +141,9 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("mermhouse.png")
 
-    inst.AnimState:SetBank("pig_house")
-    inst.AnimState:SetBuild("pig_house")
-    inst.AnimState:PlayAnimation("rundown")
+    inst.AnimState:SetBank("merm_house")
+    inst.AnimState:SetBuild("merm_house")
+    inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("structure")
 

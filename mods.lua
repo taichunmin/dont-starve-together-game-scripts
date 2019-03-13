@@ -336,7 +336,7 @@ function ModWrangler:LoadServerModsFile()
 	TheNet:BeginServerModSetup()
 	
 	local filename = MODS_ROOT
-	if PLATFORM == "WIN32_RAIL" then
+	if DIST_PLATFORM == "Rail" then
 		filename = filename.."dedicated_server_mods_setup_rail.lua"
 	else
 		filename = filename.."dedicated_server_mods_setup.lua"
@@ -357,7 +357,7 @@ function ModWrangler:LoadServerModsFile()
 			setfenv(fn, env)
 			xpcall( fn, mods_err_fn )
 		end
-	end
+    end
 	
 	TheNet:DownloadServerMods()
 end
@@ -627,10 +627,26 @@ function ModWrangler:RegisterPrefabs()
 end
 
 function ModWrangler:UnloadPrefabs()
-	for i, modname in ipairs( self.loadedprefabs ) do
-		print("unloading prefabs for mod "..ModInfoname(modname))
-		TheSim:UnloadPrefabs({modname})
-	end
+    self:UnloadPrefabsFromData(self:GetUnloadPrefabsData())
+end
+
+--This is so we can defer unloading till after sim reset
+function ModWrangler:GetUnloadPrefabsData()
+    local data = {}
+    for i, modname in ipairs(self.loadedprefabs) do
+        table.insert(data, {
+            infoname = ModInfoname(modname),
+            name = modname,
+        })
+    end
+    return data
+end
+
+function ModWrangler:UnloadPrefabsFromData(data)
+    for i, v in ipairs(data) do
+        print("unloading prefabs for mod "..v.infoname)
+        TheSim:UnloadPrefabs({ v.name })
+    end
 end
 
 function ModWrangler:SetPostEnv()

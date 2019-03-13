@@ -9,7 +9,7 @@ local WIDGET_WIDTH = 90
 local WIDGET_HEIGHT = 90
 
 
-local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, item_type, activity_checker_fn, activity_writer_fn)
+local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, item_type, activity_checker_fn, activity_writer_fn, filter_options)
     Widget._ctor(self, "ClothingExplorerPanel")
     self.owner = owner
     self.user_profile = user_profile
@@ -21,9 +21,15 @@ local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, 
     self.picker:SetPosition(310, 130)
 
     self.filter_bar = self:AddChild(FilterBar(self.picker, "wardrobescreen"))
-    self.filter_btn = self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_HERO_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_ALL_CLOTHING, "heroFilter", GetAffinityFilterForHero(self.owner.currentcharacter)) )
-    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
-    if self.item_type == "base" then
+    local hero_filter = GetAffinityFilterForHero(self.owner.currentcharacter)
+    if filter_options ~= nil and filter_options.ignore_hero then
+        hero_filter = GetNullFilter()
+    end
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SURVIVOR_FILTER_FMT, "survivor_filter_on.tex", "survivor_filter_off.tex", "heroFilter", hero_filter) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddSorter() )
+    if self.item_type == "base" or (filter_options ~= nil and filter_options.ignore_hero) then
         self.filter_bar:HideFilter("heroFilter")
     end
 
@@ -41,9 +47,7 @@ function ClothingExplorerPanel:_GetCurrentClothing()
 end
 
 function ClothingExplorerPanel:OnClickedItem(item_data, is_selected)
-    -- Handle writing from OnClickedItem to ensure we can differentiate
-    -- deselected items and items that were unselected due to another item
-    -- being selected.
+    -- Handle writing from OnClickedItem to ensure we can differentiate deselected items and items that were unselected due to another item being selected.
     self.activity_writer_fn(item_data)
 end
 
@@ -53,7 +57,6 @@ function ClothingExplorerPanel:OnShow()
 end
 
 function ClothingExplorerPanel:_BuildItemExplorer()
-    local title_text = "" -- filter_btn instead of text
     local list_options = {
         scroll_context = {
             owner = self.owner,
@@ -73,13 +76,17 @@ function ClothingExplorerPanel:_BuildItemExplorer()
     if self.item_type == "base" then
         item_table = GetCharacterSkinBases(self.owner.currentcharacter)
     end
-    return ItemExplorer(title_text, self.item_type, item_table, list_options)
+
+    return ItemExplorer("", self.item_type, item_table, list_options)
+end
+
+
+function ClothingExplorerPanel:ClearSelection()
+    self.picker:ClearSelection()
 end
 
 function ClothingExplorerPanel:RefreshInventory()
-    -- Ensure we apply the current filter state to new data. We could use
-    -- picker:RefreshItems() but we'd lose our current filter state and the
-    -- button might not match the current state.
+    -- Ensure we apply the current filter state to new data. We could use picker:RefreshItems() but we'd lose our current filter state and the button might not match the current state.
     self.filter_bar:RefreshFilterState()
 end
 

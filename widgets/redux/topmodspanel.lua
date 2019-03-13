@@ -94,7 +94,7 @@ function TopModsPanel:OnStatsQueried( success, json_body )
     if not success or string.len(json_body) <= 1 then return end
     local status, jsonresult = pcall( function() return json.decode(json_body) end )
     
-    if not jsonresult or type(jsonresult) ~= "table" or  not status or jsonresult["modnames"] == nil then return end
+    if not jsonresult or type(jsonresult) ~= "table" or not status or jsonresult["modnames"] == nil then return end
     
     if next(jsonresult["modnames"]) == nil then return end 
 

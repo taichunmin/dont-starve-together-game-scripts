@@ -381,7 +381,7 @@ function self:GetDebugString()
     local str = {}
     
     table.insert(str, string.format("AMBIENT SOUNDS: raining:%s heavy:%s season:%s", tostring(_rainmix), tostring(_heavyrainmix), _seasonmix))
-    table.insert(str, string.format("atten=%2.2f, day=%2.2f, waves=%2.2f", _ambientvolume, _daytimeparam, _wavesvolume))
+    table.insert(str, string.format("    atten=%2.2f, day=%2.2f, waves=%2.2f", _ambientvolume, _daytimeparam, _wavesvolume))
     
     for k, v in pairs(_soundvolumes) do
         table.insert(str, string.format("\t%s = %2.2f", k, v))

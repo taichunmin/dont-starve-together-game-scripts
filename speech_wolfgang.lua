@@ -32,6 +32,13 @@ return {
             NOTALLOWED = "Bah! Useless.",
             INUSE = "Wolfgang can share!",
         },
+        CONSTRUCT =
+        {
+            INUSE = "Wolfgang can share?",
+            NOTALLOWED = "Is not right place for that.",
+            EMPTY = "Wolfgang needs something to put here.",
+            MISMATCH = "Wolfgang have wrong plans.",
+        },
         WRITE =
         {
             GENERIC = "Wolfgang not good with tiny letters.",
@@ -77,6 +84,10 @@ return {
             NOTSCULPTABLE = "Material is not mighty enough for strong statues!",
             CANTSHADOWREVIVE = "Is not working.",
             WRONGSHADOWFORM = "Bones is wrong shape.",
+            NOMOON = "Is too scary in here for funny man to work.",
+            PIGKINGGAME_MESSY = "Wolfgang clean first.",
+            PIGKINGGAME_DANGER = "Is too scary for that now!",
+            PIGKINGGAME_TOOLATE = "Is dark. No games now.",
         },
         GIVETOPLAYER = 
         {
@@ -199,6 +210,7 @@ return {
     },
     ANNOUNCE_RUINS_RESET = "Monsters is back!",
 
+    ANNOUNCE_DESPAWN = "Wolfgang is scared!",
     ANNOUNCE_BECOMEGHOST = "oOooOOoo!!",
     ANNOUNCE_GHOSTDRAIN = "They are coming... for Wolfgang!",
     ANNOUNCE_PETRIFED_TREES = "Trees! Getting! STRONG!",
@@ -254,6 +266,10 @@ return {
     ANNOUNCE_NOMOUNTEDGIFT = "Wolfgang will fall if try to open on top of hair cow!",
     ANNOUNCE_NOWARDROBEONFIRE = "Ehh, Wolfgang do that later...",
     ANNOUNCE_WORMS = "Earth is tremble beneath Wolfgang's mighty feet!",
+
+    --hallowed nights
+    ANNOUNCE_SPOOKED = "Wolfgang's eyes is playing tricky!",
+    ANNOUNCE_BRAVERY_POTION = "Wolfgang is brave! Not scared of spooky tree!",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Up now, friend!",
@@ -405,6 +421,10 @@ return {
         },
 
         MULTIPLAYER_PORTAL = "Why door not crumble under mighty Wolfgang punches?!",
+        MULTIPLAYER_PORTAL_MOONROCK = "Is strong like Wolfgang.",
+        CONSTRUCTION_PLANS = "If Wolfgang build it, they will come.",
+        MOONROCKIDOL = "Hehe. Is funny little moon man.",
+        MOONROCKSEED = "Is ball not for throwing.",
 
         BERNIE_INACTIVE =
         {
@@ -1904,6 +1924,21 @@ return {
         HALLOWEENCANDY_14 = "Is too hot for Wolfgang!!", --Hot Lava pepper candy
         CANDYBAG = "Is little bag for scary goodies!",
 
+        HALLOWEEN_ORNAMENT_1 = "Wolfgang should be hanging it somewhere.", 
+        HALLOWEEN_ORNAMENT_2 = "Is real bat?! Is not real bat.",
+        HALLOWEEN_ORNAMENT_3 = "Is for decorating.",
+        HALLOWEEN_ORNAMENT_4 = "Wolfgang needs to be decorating.", 
+        HALLOWEEN_ORNAMENT_5 = "Wolfgang could hang somewheres.",
+        HALLOWEEN_ORNAMENT_6 = "Little fake birdy is needing tree!",
+
+        HALLOWEENPOTION_DRINKS_WEAK = "Is okay, but big Wolfgang need big drink!",
+        HALLOWEENPOTION_DRINKS_POTENT = "Is strong like Wolfgang!", 
+        HALLOWEENPOTION_FIRE_FX = "Is making fire go boom boom!", 
+        HALLOWEENPOTION_BRAVERY = "Wolfgang is brave. Is making Wolfgang braver.",
+        MADSCIENCE_LAB = "Is making Wolfgang brain hurt.",
+        LIVINGTREE_ROOT = "Hello little sticky!",
+        LIVINGTREE_SAPLING = "Grow big and strong so Wolfgang can decorate!", 
+
         DRAGONHEADHAT = "Wolfgang will be mighty beast!",
         DRAGONBODYHAT = "Is tums of big scarebeast.",
         DRAGONTAILHAT = "Mighty rear!",
@@ -1937,6 +1972,22 @@ return {
         HOUNDWHISTLE = "Tiny whistle stick makes no noise!",
         CHESSPIECE_CLAYHOUND = "Is nice little doggy.",
         CHESSPIECE_CLAYWARG = "It looks like scary monster!",
+
+        PIGSHRINE =
+        {
+            GENERIC = "Is pretty piggy.",
+            EMPTY = "Wolfgang give it meat.",
+            BURNT = "Poor little piggy.",
+        },
+        PIG_TOKEN = "Is not fitting Wolfgang.",
+        YOTP_FOOD1 = "Make Wolfgang mighty!",
+        YOTP_FOOD2 = "Is not for Wolfgang.",
+        YOTP_FOOD3 = "Is for making Wolfgang little bit mighty.",
+
+        PIGELITE1 = "Wolfgang wave to little piggy!", --BLUE
+        PIGELITE2 = "He is having nasty temper.", --RED
+        PIGELITE3 = "Is dirty fighter.", --WHITE
+        PIGELITE4 = "Is mighty. Wolfgang mightier.", --GREEN
 
         TRUNKVEST_SUMMER = "Is warm fuzzy nose.",
         TRUNKVEST_WINTER = "Cozy nosy!",
@@ -2007,6 +2058,8 @@ return {
         WINTER_ORNAMENT = "Is so small in Wolfgang's hand.",
         WINTER_ORNAMENTLIGHT = "Glass ball of twinkly light!",
         WINTER_ORNAMENTBOSS = "Pretty little token of mightiness!",
+        WINTER_ORNAMENTFORGE = "Decoration of mighty enemy.",
+        WINTER_ORNAMENTGORGE = "Hello, little friend!",
 
         WINTER_FOOD1 = "Little man will crumble under my mighty teeth!", --gingerbread cookie
         WINTER_FOOD2 = "Does Wolfgang have sugar in moustache?", --sugar cookie
@@ -2091,6 +2144,8 @@ return {
         TRAILS = "Wolfgang is stronger than you!",
         TURTILLUS = "Armor is for tiny men!",
         SNAPPER = "I will smush lizard man!",
+        RHINODRILL = "Wolfgang is more macho.",
+        BEETLETAUR = "Is not scaring Wolfgang.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2133,6 +2188,11 @@ return {
         LAVAARENA_RECHARGERHAT = "Nice little head rocks.",
         LAVAARENA_HEALINGGARLANDHAT = "Is many little fast flowers.",
         LAVAARENA_CROWNDAMAGERHAT = "Is so mighty!",
+
+        LAVAARENA_ARMOR_HP = "Is mighty like Wolfgang.",
+
+        LAVAARENA_FIREBOMB = "Wolfgang doesn't like.",
+        LAVAARENA_HEAVYBLADE = "Is might sword for mighty Wolfgang!",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2347,6 +2407,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "Wolfgang loves lamp.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+            GENERIC = "Little fixing lady has very big brainmeats.",
+            OFF = "Is not working.",
+            BURNING = "Is burning!",
+            BURNT = "Is all burned up.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+            GENERIC = "Fixing lady knows Wolfgang not like dark.",
+            OFF = "Is not working.",
+            BURNING = "Is burning!",
+            BURNT = "Is all burned up.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+            GENERIC = "Thingamabob made by fixing lady.",
+            LOWPOWER = "Is supposed to look like that?",
+            OFF = "Thingamabob is dead!",
+            BURNING = "Is burning!",
+            BURNT = "Is all burned up.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+            GENERIC = "Fixing lady doohickeys.",
+            LOWPOWER = "It does not look so good.",
+            OFF = "Fixing lady, quick, come fix!",
+            BURNING = "Is burning!",
+            BURNT = "Is all burned up.",
+        },
     },
     DESCRIBE_GENERIC = "What is this thing?",
     DESCRIBE_TOODARK = "Help friends! Save Wolfgang from dark!",

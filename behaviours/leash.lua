@@ -8,12 +8,10 @@ Leash = Class(BehaviourNode, function(self, inst, homelocation, max_dist, inner_
 end)
 
 function Leash:Visit()
+    --V2C: legacy code may still be returning "false" instead of nil
     if not self:GetHomePos() then
         self.status = FAILED
-        return
-    end
-
-    if self.status == READY then
+    elseif self.status == READY then
         if self:IsInsideLeash() then
             self.status = FAILED
         else
@@ -30,18 +28,18 @@ function Leash:Visit()
 end
 
 function Leash:DBString()
-    return string.format("%s, %2.2f", tostring(self:GetHomePos()), math.sqrt(self:GetDistFromHomeSq() or 0) )
+    return string.format("%s, %2.2f", tostring(self:GetHomePos()), math.sqrt(self:GetDistFromHomeSq() or 0))
 end
 
 function Leash:GetHomePos()
     if type(self.homepos) == "function" then 
         return self.homepos(self.inst)
     end
-
     return self.homepos
 end
 
 function Leash:GetDistFromHomeSq()
+    --V2C: legacy code may still be returning "false" instead of nil
     local homepos = self:GetHomePos()
     return homepos and distsq(homepos, self.inst:GetPosition()) or nil
 end
@@ -57,17 +55,15 @@ end
 function Leash:GetMaxDistSq()
     if type(self.maxdist) == "function" then
         local dist = self.maxdist(self.inst)
-        return dist*dist
+        return dist * dist
     end
-
-    return self.maxdist*self.maxdist
+    return self.maxdist * self.maxdist
 end
 
 function Leash:GetReturnDistSq()
     if type(self.returndist) == "function" then
         local dist = self.returndist(self.inst)
-        return dist*dist
+        return dist * dist
     end
-
     return self.returndist*self.returndist
 end

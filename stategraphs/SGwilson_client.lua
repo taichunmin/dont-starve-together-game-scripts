@@ -179,6 +179,7 @@ local actionhandlers =
         function(inst, action)
             local rec = GetValidRecipe(action.recipe)
             return (rec ~= nil and rec.tab.shop and "give")
+                or (inst:HasTag("hungrybuilder") and "dohungrybuild")
                 or (inst:HasTag("fastbuilder") and "domediumaction")
                 or "dolongaction"
         end),
@@ -213,10 +214,10 @@ local actionhandlers =
     ActionHandler(ACTIONS.GIVE,
         function(inst, action)
             return action.invobject ~= nil
-                and action.invobject.prefab == "quagmire_portal_key"
                 and action.target ~= nil
-                and action.target:HasTag("quagmire_altar")
-                and "dolongaction"
+                and (   (action.target:HasTag("moonportal") and action.invobject:HasTag("moonportalkey") and "dochannelaction") or
+                        (action.invobject.prefab == "quagmire_portal_key" and action.target:HasTag("quagmire_altar") and "dolongaction")
+                    )
                 or "give"
         end),
     ActionHandler(ACTIONS.GIVETOPLAYER, "give"),
@@ -250,7 +251,8 @@ local actionhandlers =
                         (action.invobject:HasTag("aoeweapon_leap") and (action.invobject:HasTag("superjump") and "combat_superjump_start" or "combat_leap_start")) or
                         (action.invobject:HasTag("blowdart") and "blowdart_special") or
                         (action.invobject:HasTag("throw_line") and "throw_line") or
-                        (action.invobject:HasTag("tome") and "book")
+                        (action.invobject:HasTag("book") and "book") or
+                        (action.invobject:HasTag("parryweapon") and "parry_pre")
                     )
                 or "castspell"
         end),
@@ -268,6 +270,7 @@ local actionhandlers =
                 return (not (inventoryitem ~= nil and inventoryitem:IsWeapon()) and "attack")
                     or (equip:HasTag("blowdart") and "blowdart")
                     or (equip:HasTag("thrown") and "throw")
+                    or (equip:HasTag("propweapon") and "attack_prop_pre")
                     or "attack"
             end
         end),
@@ -289,6 +292,10 @@ local actionhandlers =
     ActionHandler(ACTIONS.UNWRAP,
         function(inst, action)
             return inst:HasTag("quagmire_fasthands") and "domediumaction" or "dolongaction"
+        end),
+    ActionHandler(ACTIONS.CONSTRUCT,
+        function(inst, action)
+            return (action.target == nil or not action.target:HasTag("constructionsite")) and "startconstruct" or "construct"
         end),
     ActionHandler(ACTIONS.STARTCHANNELING, "startchanneling"),
     ActionHandler(ACTIONS.REVIVE_CORPSE, "dolongaction"),
@@ -807,6 +814,37 @@ local states =
         ontimeout = function(inst)
             inst:ClearBufferedAction()
             inst.sg:GoToState("idle")
+        end,
+    },
+
+    State{
+        name = "parry_pre",
+        tags = { "preparrying", "busy" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("parry_pre")
+            inst.AnimState:PushAnimation("parry_loop", true)
+
+            inst:PerformPreviewBufferedAction()
+            inst.sg:SetTimeout(TIMEOUT)
+        end,
+
+        onupdate = function(inst)
+            if inst:HasTag("busy") then
+                if inst.entity:FlattenMovementPrediction() then
+                    inst.sg:GoToState("idle", "noanim")
+                end
+            elseif inst.bufferedaction == nil then
+                inst.AnimState:PlayAnimation("parry_pst")
+                inst.sg:GoToState("idle")
+            end
+        end,
+
+        ontimeout = function(inst)
+            inst:ClearBufferedAction()
+            inst.AnimState:PlayAnimation("parry_pst")
+            inst.sg:GoToState("idle", true)
         end,
     },
 
@@ -1414,6 +1452,15 @@ local states =
 
     State
     {
+        name = "dohungrybuild",
+
+        onenter = function(inst)
+            inst.sg:GoToState("dolongaction")
+        end,
+    },
+
+    State
+    {
         name = "domediumaction",
 
         onenter = function(inst)
@@ -1545,6 +1592,45 @@ local states =
         ontimeout = function(inst)
             inst:ClearBufferedAction()
             inst.sg:GoToState("idle")
+        end,
+    },
+
+    State
+    {
+        name = "dochannelaction",
+        tags = { "doing", "busy" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("channel_pre")
+            inst.AnimState:PushAnimation("channel_loop", true)
+
+            inst:PerformPreviewBufferedAction()
+            inst.sg:SetTimeout(TIMEOUT)
+        end,
+
+        timeline =
+        {
+            TimeEvent(7 * FRAMES, function(inst)
+                inst.sg:RemoveStateTag("busy")
+            end),
+        },
+
+        onupdate = function(inst)
+            if inst:HasTag("doing") then
+                if inst.entity:FlattenMovementPrediction() then
+                    inst.sg:GoToState("idle", "noanim")
+                end
+            elseif inst.bufferedaction == nil then
+                inst.AnimState:PlayAnimation("channel_pst")
+                inst.sg:GoToState("idle", true)
+            end
+        end,
+
+        ontimeout = function(inst)
+            inst:ClearBufferedAction()
+            inst.AnimState:PlayAnimation("channel_pst")
+            inst.sg:GoToState("idle", true)
         end,
     },
 
@@ -1707,7 +1793,7 @@ local states =
             inst.AnimState:PushAnimation("action_uniqueitem_lag", false)
 
             local item = inst.replica.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
-            if item ~= nil and item:HasTag("tome") then
+            if item ~= nil and item.components.aoetargeting ~= nil then
                 inst.sg:AddStateTag("busy")
             end
 
@@ -1942,7 +2028,7 @@ local states =
         onenter = function(inst)
             inst.components.locomotor:Stop()
             inst.AnimState:PlayAnimation("superjump_pre")
-            inst.AnimState:PlayAnimation("superjump_lag", false)
+            inst.AnimState:PushAnimation("superjump_lag", false)
 
             inst:PerformPreviewBufferedAction()
             inst.sg:SetTimeout(TIMEOUT)
@@ -2280,6 +2366,36 @@ local states =
 
     State
     {
+        name = "attack_prop_pre",
+        tags = { "propattack", "doing", "busy" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("atk_prop_pre")
+            inst.AnimState:PushAnimation("atk_prop_lag", false)
+
+            inst:PerformPreviewBufferedAction()
+            inst.sg:SetTimeout(TIMEOUT)
+        end,
+
+        onupdate = function(inst)
+            if inst:HasTag("busy") then
+                if inst.entity:FlattenMovementPrediction() then
+                    inst.sg:GoToState("idle", "noanim")
+                end
+            elseif inst.bufferedaction == nil then
+                inst.sg:GoToState("idle")
+            end
+        end,
+
+        ontimeout = function(inst)
+            inst:ClearBufferedAction()
+            inst.sg:GoToState("idle")
+        end,
+    },
+
+    State
+    {
         name = "throw",
         tags = { "attack", "notalking", "abouttoattack" },
 
@@ -2505,6 +2621,72 @@ local states =
         ontimeout = function(inst)
             inst:ClearBufferedAction()
             inst.AnimState:PlayAnimation("wrap_pst")
+            inst.sg:GoToState("idle", true)
+        end,
+
+        onexit = function(inst)
+            inst.SoundEmitter:KillSound("make_preview")
+        end,
+    },
+
+    State
+    {
+        name = "startconstruct",
+
+        onenter = function(inst)
+            inst.sg:GoToState("construct", true)
+        end,
+    },
+
+    State
+    {
+        name = "construct",
+        tags = { "doing", "busy" },
+
+        onenter = function(inst, start)
+            inst.components.locomotor:Stop()
+            inst.SoundEmitter:PlaySound("dontstarve/wilson/make_trap", "make_preview")
+            if start then
+                inst.sg.statemem.start = true
+                inst.AnimState:PlayAnimation("build_pre")
+                inst.AnimState:PushAnimation("build_loop", true)
+            else
+                inst.AnimState:PlayAnimation("construct_pre")
+                inst.AnimState:PushAnimation("construct_loop", true)
+            end
+
+            inst:PerformPreviewBufferedAction()
+            inst.sg:SetTimeout(TIMEOUT)
+        end,
+
+        timeline =
+        {
+            TimeEvent(4 * FRAMES, function(inst)
+                if inst.sg.statemem.start then
+                    inst.sg:RemoveStateTag("busy")
+                end
+            end),
+            TimeEvent(10 * FRAMES, function(inst)
+                if not inst.sg.statemem.start then
+                    inst.sg:RemoveStateTag("busy")
+                end
+            end),
+        },
+
+        onupdate = function(inst)
+            if inst:HasTag("doing") then
+                if inst.entity:FlattenMovementPrediction() then
+                    inst.sg:GoToState("idle", "noanim")
+                end
+            elseif inst.bufferedaction == nil then
+                inst.AnimState:PlayAnimation(inst.sg.statemem.start and "build_pst" or "construct_pst")
+                inst.sg:GoToState("idle", true)
+            end
+        end,
+
+        ontimeout = function(inst)
+            inst:ClearBufferedAction()
+            inst.AnimState:PlayAnimation(inst.sg.statemem.start and "build_pst" or "construct_pst")
             inst.sg:GoToState("idle", true)
         end,
 

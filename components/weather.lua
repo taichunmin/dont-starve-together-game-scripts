@@ -164,7 +164,7 @@ local SEASON_DYNRANGE_DAY = {
     autumn = .4,
     winter = .05,
     spring = .4,
-    summer = .7,
+    summer = .65,
 }
 
 local SEASON_DYNRANGE_NIGHT = {

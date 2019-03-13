@@ -594,7 +594,7 @@ function TradeScreen:Trade(done_warning)
 		        local rarity = GetRarityForItem(self.frames_single[i].name)
 
 		        widg.frame:GetAnimState():OverrideSkinSymbol("SWAP_ICON",  GetBuildForItem(self.frames_single[i].name), "SWAP_ICON")
-		        widg.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", rarity)
+		        widg.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(rarity))
 
 		        widg.frame:GetAnimState():PlayAnimation("icon", true)
 		        widg.frame:GetAnimState():Hide("NEW")
@@ -723,7 +723,7 @@ function TradeScreen:GiveItem(item)
 	self.gift_name = item
 	
 	self.claw_machine:GetAnimState():OverrideSkinSymbol("SWAP_ICON", name, "SWAP_ICON")
-	self.claw_machine:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetRarityForItem(item))
+	self.claw_machine:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(GetRarityForItem(item)))
 	self:PlayMachineAnim("skin_in", false)
 	self:PushMachineAnim("idle_skin", true)
 

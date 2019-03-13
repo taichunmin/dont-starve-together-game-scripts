@@ -157,7 +157,10 @@ local function onload(inst, data)
     end
 end
 
-local function OnHaunt(inst, haunter)
+--V2C: Don't do this anymore, spoiltime and product_spoilage aren't updated properly
+--     when switching to "wetgoop". Switching while "jellybean" is cooking will even
+--     cause a crash when harvested later, since it has no perishtime.
+--[[local function OnHaunt(inst, haunter)
     local ret = false
     --#HAUNTFIX
     --if math.random() <= TUNING.HAUNT_CHANCE_OFTEN then
@@ -182,7 +185,7 @@ local function OnHaunt(inst, haunter)
         end
     end
     return ret
-end
+end]]
 
 local function fn()
     local inst = CreateEntity()
@@ -243,7 +246,8 @@ local function fn()
     inst.components.workable:SetOnWorkCallback(onhit)
 
     inst:AddComponent("hauntable")
-    inst.components.hauntable:SetOnHauntFn(OnHaunt)
+    inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+    --inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
     MakeSnowCovered(inst)
     inst:ListenForEvent("onbuilt", onbuilt)

@@ -63,7 +63,7 @@ end
 
 local function OnDrawnFn(inst, image, src)
     if image ~= nil then
-        inst.AnimState:OverrideSymbol("SWAP_SIGN", "images/inventoryimages.xml", image..".tex")
+        inst.AnimState:OverrideSymbol("SWAP_SIGN", src ~= nil and src.replica.inventoryitem ~= nil and src.replica.inventoryitem:GetAtlas() or "images/inventoryimages.xml", image..".tex")
         if inst:HasTag("sign") then
             inst.components.drawable:SetCanDraw(false)
             inst._imagename:set(src ~= nil and (src.drawnameoverride or src:GetBasicDisplayName()) or "")

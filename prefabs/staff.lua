@@ -57,15 +57,18 @@ local function onattack_red(inst, attacker, target, skipsanity)
     if not target:IsValid() then
         --target killed or removed in combat damage phase
         return
-    end
-
-    if target.components.burnable ~= nil and not target.components.burnable:IsBurning() then
+    elseif target.components.burnable ~= nil and not target.components.burnable:IsBurning() then
         if target.components.freezable ~= nil and target.components.freezable:IsFrozen() then
             target.components.freezable:Unfreeze()
-        elseif target.components.fueled == nil then
-            target.components.burnable:Ignite(true)
-        elseif target.components.fueled.fueltype == FUELTYPE.BURNABLE
-            or target.components.fueled.secondaryfueltype == FUELTYPE.BURNABLE then
+        elseif target.components.fueled == nil
+            or (target.components.fueled.fueltype ~= FUELTYPE.BURNABLE and
+                target.components.fueled.secondaryfueltype ~= FUELTYPE.BURNABLE) then
+            --does not take burnable fuel, so just burn it
+            if target.components.burnable.canlight or target.components.combat ~= nil then
+                target.components.burnable:Ignite(true)
+            end
+        elseif target.components.fueled.accepting then
+            --takes burnable fuel, so fuel it
             local fuel = SpawnPrefab("cutgrass")
             if fuel ~= nil then
                 if fuel.components.fuel ~= nil and
@@ -76,7 +79,6 @@ local function onattack_red(inst, attacker, target, skipsanity)
                 end
             end
         end
-        --V2C: don't ignite if it doens't accespt burnable fuel!
     end
 
     if target.components.freezable ~= nil then
@@ -230,6 +232,7 @@ local function teleport_end(teleportee, locpos, loctarget)
         if teleportee.components.health ~= nil then
             teleportee.components.health:SetInvincible(false)
         end
+        teleportee:PushEvent("teleported")
     end
 end
 
@@ -253,7 +256,9 @@ local function teleport_start(teleportee, staff, caster, loctarget)
     local ground = TheWorld
 
     --V2C: Gotta do this RIGHT AWAY in case anything happens to loctarget or caster
-    local locpos = loctarget ~= nil and loctarget:GetPosition() or getrandomposition(caster)
+    local locpos = loctarget == nil and getrandomposition(caster)
+				or loctarget.teletopos ~= nil and loctarget:teletopos()
+				or loctarget:GetPosition() 
 
     if teleportee.components.locomotor ~= nil then
         teleportee.components.locomotor:StopMoving()
@@ -313,7 +318,8 @@ local function teleport_func(inst, target)
         target = caster
     end
     local x, y, z = target.Transform:GetWorldPosition()
-    teleport_start(target, inst, caster, FindNearestActiveTelebase(x, y, z, nil, 1))
+    local loctarget = target.components.minigame_participator ~= nil and target.components.minigame_participator:GetMinigame() or FindNearestActiveTelebase(x, y, z, nil, 1)
+    teleport_start(target, inst, caster, loctarget)
 end
 
 local function onhauntpurple(inst)

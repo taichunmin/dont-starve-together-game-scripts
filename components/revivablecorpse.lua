@@ -10,6 +10,7 @@ local RevivableCorpse = Class(function(self, inst)
     if self.ismastersim then
         self.revive_health_percet = .5
         self.revivespeedmult = 1
+        --self.tagmults = nil
     end
 end)
 
@@ -34,8 +35,31 @@ function RevivableCorpse:SetReviveSpeedMult(mult)
     end
 end
 
-function RevivableCorpse:GetReviveSpeedMult()
-    return self.revivespeedmult
+function RevivableCorpse:SetReviveSpeedMultForTag(tag, mult)
+    if mult ~= nil and mult ~= 1 then
+        if self.tagmults ~= nil then
+            self.tagmults[tag] = mult
+        else
+            self.tagmults = { [tag] = mult }
+        end
+    elseif self.tagmults ~= nil then
+        self.tagmults[tag] = nil
+        if next(self.tagmults) == nil then
+            self.tagmults = nil
+        end
+    end
+end
+
+function RevivableCorpse:GetReviveSpeedMult(reviver)
+    local mult = self.revivespeedmult
+    if self.tagmults ~= nil then
+        for k, v in pairs(self.tagmults) do
+            if reviver:HasTag(k) then
+                mult = mult * v
+            end
+        end
+    end
+    return mult
 end
 
 function RevivableCorpse:SetCorpse(corpse)

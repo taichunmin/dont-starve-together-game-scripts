@@ -77,7 +77,7 @@ function ItemImage:SetItem(type, name, item_id, timestamp)
 
 		-- Reset the stuff that just got cleared to an empty frame state
 		self.frame:GetAnimState():SetBuild("frames_comp")
-		self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", self.rarity)
+		self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(self.rarity))
 		self.frame:GetAnimState():PlayAnimation("icon", true)
 		return
 	end
@@ -97,7 +97,7 @@ function ItemImage:SetItem(type, name, item_id, timestamp)
 
 	if self.frame and name and name ~= "" then 
 		self.frame:GetAnimState():OverrideSkinSymbol("SWAP_ICON", name, "SWAP_ICON")
-		self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", self.rarity)
+		self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(self.rarity))
 	end
 
 	local collection_timestamp = self.screen and self.screen.profile:GetCollectionTimestamp() or timestamp
@@ -123,14 +123,14 @@ function ItemImage:ClearFrame()
 
 	-- Reset the stuff that just got cleared to an empty frame state
 	self.frame:GetAnimState():SetBuild("frames_comp")
-	self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", self.rarity)
+	self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(self.rarity))
 	self.frame:GetAnimState():PlayAnimation("icon", true)
 	return
 end
 
 function ItemImage:SetItemRarity(rarity)
 	self.rarity = rarity or "common"
-	self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", self.rarity)
+	self.frame:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(self.rarity))
 end
 
 function ItemImage:Mark(value)

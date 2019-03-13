@@ -161,7 +161,7 @@ end
 ------------ skins functions --------------------
 ---------------------------------------------------
 
-local TEST_ITEM_NAME = "backpack_buckle_grey_pewter"
+local TEST_ITEM_NAME = "birdcage_pirate"
 function d_test_thank_you(param)
 	local ThankYouPopup = require "screens/thankyoupopup"
 	local SkinGifts = require("skin_gifts")
@@ -248,8 +248,8 @@ function d_halloween()
 	local spacing = 2
 	local num_wide = math.ceil(math.sqrt(NUM_TRINKETS))
 
-	for y = 0, num_wide do
-		for x = 0, num_wide do
+	for y = 0, num_wide-1 do
+		for x = 0, num_wide-1 do
 			local inst = SpawnPrefab("trinket_"..(y*num_wide + x + 1))
 			if inst ~= nil then
 				print(x*spacing,  y*spacing)
@@ -259,8 +259,8 @@ function d_halloween()
 	end
 
 	local candy_wide = math.ceil(math.sqrt(NUM_HALLOWEENCANDY))
-	for y = 0, candy_wide do
-		for x = 0, candy_wide do
+	for y = 0, candy_wide-1 do
+		for x = 0, candy_wide-1 do
 			local inst = SpawnPrefab("halloweencandy_"..(y*candy_wide + x + 1))
 			if inst ~= nil then
 				print(x*spacing,  y*spacing)
@@ -270,12 +270,49 @@ function d_halloween()
 	end
 end
 
-function d_startlavaarena()
-	local stage_info = (TheWorld ~= nil and TheWorld.components.lavaarenaevent ~= nil) and TheWorld.components.lavaarenaevent:GetStageInfo() or nil
-	
-	if stage_info ~= nil and stage_info.prefab == "lavaarenastage_allplayersspawned" then
-		TheWorld:PushEvent("ms_lavaarena_endofstage", {reason="debug triggered"})
+function d_potions()
+	local all_potions = {"halloweenpotion_bravery_small", "halloweenpotion_bravery_large", "halloweenpotion_health_small",  "halloweenpotion_health_large",
+						 "halloweenpotion_sanity_small", "halloweenpotion_sanity_large", "halloweenpotion_embers",  "halloweenpotion_sparks",  "livingtree_root"}
+
+	local spacing = 2
+	local num_wide = math.ceil(math.sqrt(#all_potions))
+
+	for y = 0, num_wide-1 do
+		for x = 0, num_wide-1 do
+			local inst = SpawnPrefab(all_potions[(y*num_wide + x + 1)])
+			if inst ~= nil then
+				inst.Transform:SetPosition((ConsoleWorldPosition() + Vector3(x*spacing, 0, y*spacing)):Get())
+			end
+		end
 	end
+end
+
+function d_wintersfeast()
+	local all_items = GetAllWinterOrnamentPrefabs()
+	local spacing = 2
+	local num_wide = math.ceil(math.sqrt(#all_items))
+
+	for y = 0, num_wide-1 do
+		for x = 0, num_wide-1 do
+			local inst = SpawnPrefab(all_items[(y*num_wide + x + 1)])
+			if inst ~= nil then
+				inst.Transform:SetPosition((ConsoleWorldPosition() + Vector3(x*spacing, 0, y*spacing)):Get())
+			end
+		end
+	end
+end
+
+function d_madsciencemats()
+	c_mat("halloween_experiment_bravery")
+	c_mat("halloween_experiment_health")
+	c_mat("halloween_experiment_hunger") 
+	c_mat("halloween_experiment_sanity") 
+	c_mat("halloween_experiment_volatile")
+	c_mat("halloween_experiment_root")
+end
+
+function d_showalleventservers()
+	TheFrontEnd._showalleventservers = not TheFrontEnd._showalleventservers
 end
 
 function d_lavaarena_skip()
@@ -304,11 +341,11 @@ end
 
 function d_unlockallachievements()
 	local achievements = {}
-	for k, _ in pairs(EventAchievements:GetAchievementsIdList("quagmire")) do
+	for k, _ in pairs(EventAchievements:GetActiveAchievementsIdList()) do
 		table.insert(achievements, k)
 	end
 	
-	TheItems:ReportEventProgress(json.encode(
+	TheItems:ReportEventProgress(json.encode_compliant(
 		{
 			WorldID = "dev_"..tostring(math.random(9999999))..tostring(math.random(9999999)),
 			Teams =
@@ -338,7 +375,7 @@ function d_unlockfoodachievements()
 	    "food_syrup",
     }
 	
-	TheItems:ReportEventProgress(json.encode(
+	TheItems:ReportEventProgress(json.encode_compliant(
 		{
 			WorldID = "dev_"..tostring(math.random(9999999))..tostring(math.random(9999999)),
 			Teams =
@@ -357,7 +394,7 @@ function d_unlockfoodachievements()
 end
 
 function d_reportevent(other_ku)
-	TheItems:ReportEventProgress(json.encode(
+	TheItems:ReportEventProgress(json.encode_compliant(
 		{
 			WorldID = "dev_"..tostring(math.random(9999999))..tostring(math.random(9999999)),
 			Teams =
@@ -367,7 +404,7 @@ function d_reportevent(other_ku)
 					Points=5,
 					PlayerStats=
 					{
-						{KU = TheNet:GetUserID(), PlaytimeMs = 100000, Custom = { UnlockAchievements = {"nodeaths_self", "wintime_30", "wilson_reviver"} }},
+						{KU = TheNet:GetUserID(), PlaytimeMs = 100000, Custom = { UnlockAchievements = {"scotttestdaily_d1", "wintime_30"} }},
 						--{KU = other_ku or "KU_test", PlaytimeMs = 60000}
 					}
 				},

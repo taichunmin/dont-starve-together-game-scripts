@@ -1,9 +1,11 @@
-ChattyNode = Class(BehaviourNode, function(self, inst, chatlines, child)
+ChattyNode = Class(BehaviourNode, function(self, inst, chatlines, child, delay, rand_delay)
     BehaviourNode._ctor(self, "ChattyNode", {child})
 
     self.inst = inst
     self.chatlines = chatlines
     self.nextchattime = nil
+	self.delay = delay
+	self.rand_delay = rand_delay
 end)
 
 function ChattyNode:Visit()
@@ -27,7 +29,7 @@ function ChattyNode:Visit()
                     self.inst.components.talker:Chatter(self.chatlines, strid)
                 end
             end
-            self.nextchattime = t + 10 + math.random() * 10
+            self.nextchattime = t + (self.delay or 10) + math.random() * (self.rand_delay or 10)
         end
         if self.nextchattime ~= nil then
             self:Sleep(self.nextchattime - t)

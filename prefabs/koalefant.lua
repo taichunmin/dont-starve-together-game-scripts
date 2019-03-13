@@ -20,6 +20,8 @@ local prefabs =
 
 local loot_summer = {"meat","meat","meat","meat","meat","meat","meat","meat","trunk_summer"}
 local loot_winter = {"meat","meat","meat","meat","meat","meat","meat","meat","trunk_winter"}
+local loot_fire = {"meat","meat","meat","meat","meat","meat","meat","meat","trunk"}
+--V2C: "trunk" is a dummy loot prefab that should be converted to "trunk_cooked"
 
 local WAKE_TO_RUN_DISTANCE = 10
 local SLEEP_NEAR_ENEMY_DISTANCE = 14
@@ -45,6 +47,12 @@ end
 local function OnAttacked(inst, data)
     inst.components.combat:SetTarget(data.attacker)
     inst.components.combat:ShareTarget(data.attacker, 30, ShareTargetFn, 5)
+end
+
+local function lootsetfn(lootdropper)
+    if lootdropper.inst.components.burnable ~= nil and lootdropper.inst.components.burnable:IsBurning() or lootdropper.inst:HasTag("burnt") then
+        lootdropper:SetLoot(loot_fire)
+    end
 end
 
 local function create_base(build)
@@ -91,6 +99,7 @@ local function create_base(build)
     inst.components.health:SetMaxHealth(TUNING.KOALEFANT_HEALTH)
 
     inst:AddComponent("lootdropper")
+    inst.components.lootdropper:SetLootSetupFn(lootsetfn)
 
     inst:AddComponent("inspectable")
 

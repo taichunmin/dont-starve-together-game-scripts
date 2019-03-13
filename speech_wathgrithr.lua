@@ -32,6 +32,13 @@ return {
             NOTALLOWED = "I fear that does not go there.",
             INUSE = "My stalwart companion currently has use of that.",
         },
+        CONSTRUCT =
+        {
+            INUSE = "'Tis in use, and not by me.",
+            NOTALLOWED = "Alas! It doth not go there!",
+            EMPTY = "It requireth materials.",
+            MISMATCH = "Alas! 'Tis the wrong plans.",
+        },
         RUMMAGE =
         {   
             GENERIC = "That is not a job for a warrior!",
@@ -77,6 +84,10 @@ return {
             NOTSCULPTABLE = "That material is not befitting a work of art.",
             CANTSHADOWREVIVE = "T'will not raise from death, it seems.",
             WRONGSHADOWFORM = "We must rearrange the bones of the beast.",
+            NOMOON = "Needs the gaze of Mani to work.",
+            PIGKINGGAME_MESSY = "I must clear the battlefield first!",
+            PIGKINGGAME_DANGER = "Danger is near! 'tis no time for games.",
+            PIGKINGGAME_TOOLATE = "'tis too late for revelry!",
         },
         GIVETOPLAYER = 
         {
@@ -190,6 +201,7 @@ return {
     },
     ANNOUNCE_RUINS_RESET = "I will fight my way out!",
 
+    ANNOUNCE_DESPAWN = "'Tis the lights of Valhalla?",
     ANNOUNCE_BECOMEGHOST = "oOooOOOo!!",
     ANNOUNCE_GHOSTDRAIN = "They're driving me mad...!",
     ANNOUNCE_PETRIFED_TREES = "I sense Loki's mischievous hand in the shadows.",
@@ -249,12 +261,20 @@ return {
     ANNOUNCE_WETTER = "Does this count as a bath?",
     ANNOUNCE_SOAKED = "I'm nearly drowned!",
 
+    --YOTP ---
+    ANNOUNCE_LEAVE_MINIGAME = "These weapons belong on the battlefield.",
+
+    --hallowed nights
+    ANNOUNCE_SPOOKED = "Doth mine eyes deceive me?",
+    ANNOUNCE_BRAVERY_POTION = "Fear! I hath bested you!",
+
+
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Rise, my ally!",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "To battle!",
     ANNOUNCE_REVIVED_FROM_CORPSE = "I am restored!",
     --quagmire event
-    QUAGMIRE_ANNOUNCE_NOTRECIPE = "Twere not meant to be a meal.",
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "T'were not meant to be a meal.",
     QUAGMIRE_ANNOUNCE_MEALBURNT = "Alas! If I'd only grabbed it sooner.",
     QUAGMIRE_ANNOUNCE_LOSE = "The god of the sky has been angered!",
     QUAGMIRE_ANNOUNCE_WIN = "We shall live to fight another day!",
@@ -409,6 +429,11 @@ return {
         LAVA_POND_ROCK = "Stone belched forth by the earth's fiery heart!",
 
         MULTIPLAYER_PORTAL = "It makes me long for the stage!",
+        MULTIPLAYER_PORTAL_MOONROCK = "It hath a glow about it.",
+        CONSTRUCTION_PLANS = "Portal! Prepare to be built!",
+        MOONROCKIDOL = "I shall make an offering!",
+        MOONROCKSEED = "It hath knowledge within!",
+
         BERNIE_INACTIVE =
         {
             BROKEN = "He has gone to Valhalla.",
@@ -1920,6 +1945,21 @@ return {
         HALLOWEENCANDY_14 = "Wretched Hel's fire!", --Hot Lava pepper candy
         CANDYBAG = "That we might carry our sweetest plunders!",
 
+        HALLOWEEN_ORNAMENT_1 = "Meant to hang from Yggdrasil's kin!",
+        HALLOWEEN_ORNAMENT_2 = "Decoration! Prepare to be hung from something!",
+        HALLOWEEN_ORNAMENT_3 = "It shall strike fear unto the hearts of mine foes!",
+        HALLOWEEN_ORNAMENT_4 = "'tis but a decoration!",
+        HALLOWEEN_ORNAMENT_5 = "It shalt be hung from the highest branch!",
+        HALLOWEEN_ORNAMENT_6 = "Huginn? Or Muninn?",
+
+        HALLOWEENPOTION_DRINKS_WEAK = "A meager reward for my troubles.",
+        HALLOWEENPOTION_DRINKS_POTENT = "Fortune hath smiled upon me today!", 
+        HALLOWEENPOTION_FIRE_FX = "Hel's fuel.",
+        HALLOWEENPOTION_BRAVERY = "'tis Berserker magic.",
+        MADSCIENCE_LAB = "Be there method to this madness?",
+        LIVINGTREE_ROOT = "I hath birthed the root of terror!",
+        LIVINGTREE_SAPLING = "It bears the promise of horridness!",
+
         DRAGONHEADHAT = "The head of a great and merciful beast!",
         DRAGONBODYHAT = "It's the beast's back.",
         DRAGONTAILHAT = "A beast is no beast without a tail.",
@@ -1953,6 +1993,22 @@ return {
         HOUNDWHISTLE = "It casts a spell upon the dogged beasts.",
         CHESSPIECE_CLAYHOUND = "A hound of the hunt!",
         CHESSPIECE_CLAYWARG = "A testament to a worthy foe.",
+
+        PIGSHRINE =
+        {
+            GENERIC = "'Tis a tribute worthy of the Pig Gods.",
+            EMPTY = "Like me, it hungers only for meat.",
+            BURNT = "Laid to waste.",
+        },
+        PIG_TOKEN = "The belt of a mighty pig warrior.",
+        YOTP_FOOD1 = "A meaty feast!",
+        YOTP_FOOD2 = "'Tis fit only for the beasts.",
+        YOTP_FOOD3 = "I shall consume it!",
+
+        PIGELITE1 = "The warrior spirit runs deep within him.", --BLUE
+        PIGELITE2 = "He rages with berserker fury.", --RED
+        PIGELITE3 = "He shall not soil mine warrior reputation!", --WHITE
+        PIGELITE4 = "Hath the strength of Yggdrasil.", --GREEN
 
         TRUNKVEST_SUMMER = "It will not suffice in the frozen wastes.",
         TRUNKVEST_WINTER = "The warm pelt of a bested creature. A fine garment.",
@@ -2033,6 +2089,8 @@ return {
         WINTER_ORNAMENT = "A fragile beauty that must be protected.",
         WINTER_ORNAMENTLIGHT = "Tis a light enchantment, trapped inside a glass ball.",
         WINTER_ORNAMENTBOSS = "Tis not a celebration without a good battle!",
+        WINTER_ORNAMENTFORGE = "Hath been forged in fires.",
+        WINTER_ORNAMENTGORGE = "It feeds the festive spirit.",
 
         WINTER_FOOD1 = "How dost I free you from the bread, man of ginger??", --gingerbread cookie
         WINTER_FOOD2 = "Like a snowflake, it is a gift from the heavens!", --sugar cookie
@@ -2107,6 +2165,9 @@ return {
         TRAILS = "Let us battle with honor!",
         TURTILLUS = "Your armor shalln't stop my spear.",
         SNAPPER = "I shall best you, foe!",
+        RHINODRILL = "Thy machismo frighten me not!",
+        BEETLETAUR = "You shall be chained again, foe!",
+
         
         LAVAARENA_PORTAL = 
         {
@@ -2149,6 +2210,11 @@ return {
         LAVAARENA_RECHARGERHAT = "Magic stone, empower my spirit!",
         LAVAARENA_HEALINGGARLANDHAT = "Tis heavily laden with Freya's blessings.",
         LAVAARENA_CROWNDAMAGERHAT = "Be still my heart! Tis the king of battle helms!",
+
+        LAVAARENA_ARMOR_HP = "I shall armor myself for battle!",
+
+        LAVAARENA_FIREBOMB = "A barrage of Hel's fire.",
+        LAVAARENA_HEAVYBLADE = "A mighty blade for a mighty battle!",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2365,6 +2431,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "'Tis a magic light of short stature.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+            GENERIC = "Reinforcements hath arrived! To battle!",
+            OFF = "It has no fighting spirit.",
+            BURNING = "Tis engulfed in flame!",
+            BURNT = "Twas devoured by Hel's fire!",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+            GENERIC = "It can't get enough of me!",
+            OFF = "It has no fighting spirit.",
+            BURNING = "Tis engulfed in flame!",
+            BURNT = "Twas devoured by Hel's fire!",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+            GENERIC = "The tinkerer hath many tricks.",
+            LOWPOWER = "T'will not hold out much longer!",
+            OFF = "It hath lost its incredible power!",
+            BURNING = "Tis engulfed in flame!",
+            BURNT = "Twas devoured by Hel's fire!",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+            GENERIC = "Tis fueled by glorious magic.",
+            LOWPOWER = "T'will not hold out much longer!",
+            OFF = "It hath lost its incredible power!",
+            BURNING = "Tis engulfed in flame!",
+            BURNT = "Twas devoured by Hel's fire!",
+        },
     },
     DESCRIBE_GENERIC = "It is an artifact of this realm.",
     DESCRIBE_TOODARK = "Too dark, even for battle.",

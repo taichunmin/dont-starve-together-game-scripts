@@ -87,11 +87,15 @@ local function SetTeen(inst)
 end
 
 local function SetFullyGrown(inst)
+    local herd = inst.components.herdmember ~= nil and inst.components.herdmember:GetHerd() or nil
     local grown = SpawnPrefab("beefalo")
-    grown.Transform:SetPosition(inst.Transform:GetWorldPosition() )
-    grown.Transform:SetRotation(inst.Transform:GetRotation() )
+    grown.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    grown.Transform:SetRotation(inst.Transform:GetRotation())
     grown.sg:GoToState("grow_up_pop")
     inst:Remove()
+    if herd ~= nil and herd.components.herd ~= nil and herd:IsValid() then
+        herd.components.herd:AddMember(grown)
+    end
 end
 
 local growth_stages =

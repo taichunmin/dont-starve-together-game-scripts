@@ -15,6 +15,8 @@ local TEMPLATES = require "widgets/templates"
 
 require "constants"
 
+local MotdManager = require "motdmanager"
+
 local REPEAT_TIME = .15
 local SCROLL_REPEAT_TIME = .05
 local MOUSE_SCROLL_REPEAT_TIME = 0
@@ -26,6 +28,8 @@ FrontEnd = Class(function(self, name)
 	self.screenstack = {}
 
 	self.screenroot = Widget("screenroot")
+    self.screenroot.is_screen = true
+
 	self.overlayroot = Widget("overlayroot")
 
 	------ CONSOLE -----------	
@@ -205,6 +209,8 @@ FrontEnd = Class(function(self, name)
     -- data from the current game that is to be passed back to the game when the server resets (used for showing results in events when back in the lobby)
     -- Never set this to nil or people will crash. If needed, test for empty list if needed to control flow.
     self.match_results = {}
+
+	self.MotdManager = MotdManager()
 end)
 
 function FrontEnd:ShowSavingIndicator()

@@ -61,6 +61,10 @@ function IsSteam()
 	return PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM"
 end
 
+function IsLinux()
+	return PLATFORM == "LINUX_STEAM"
+end
+
 function IsRail()
 	return PLATFORM == "WIN32_RAIL"
 end

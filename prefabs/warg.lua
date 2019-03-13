@@ -220,11 +220,13 @@ local function OnEyeFlamesDirty(inst)
     if inst._eyeflames:value() then
         if inst.eyefxl == nil then
             inst.eyefxl = SpawnPrefab("eyeflame")
+            inst.eyefxl.entity:SetParent(inst.entity) --prevent 1st frame sleep on clients
             inst.eyefxl.entity:AddFollower()
             inst.eyefxl.Follower:FollowSymbol(inst.GUID, "warg_eye_left", 0, 0, 0)
         end
         if inst.eyefxr == nil then
             inst.eyefxr = SpawnPrefab("eyeflame")
+            inst.eyefxr.entity:SetParent(inst.entity) --prevent 1st frame sleep on clients
             inst.eyefxr.entity:AddFollower()
             inst.eyefxr.Follower:FollowSymbol(inst.GUID, "warg_eye_right", 0, 0, 0)
         end
@@ -237,17 +239,6 @@ local function OnEyeFlamesDirty(inst)
             inst.eyefxr:Remove()
             inst.eyefxr = nil
         end
-    end
-end
-
-local function OnRemoveEntity(inst)
-    if inst.eyefxl ~= nil then
-        inst.eyefxl:Remove()
-        inst.eyefxl = nil
-    end
-    if inst.eyefxr ~= nil then
-        inst.eyefxr:Remove()
-        inst.eyefxr = nil
     end
 end
 
@@ -373,9 +364,6 @@ local function MakeWarg(name, bank, build, prefabs, tag)
             if tag == "clay" then
                 inst._eyeflames = net_bool(inst.GUID, "claywarg._eyeflames", "eyeflamesdirty")
                 inst:ListenForEvent("eyeflamesdirty", OnEyeFlamesDirty)
-                if not TheNet:IsDedicated() then
-                    inst.OnRemoveEntity = OnRemoveEntity
-                end
             end
         end
 

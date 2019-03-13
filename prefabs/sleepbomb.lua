@@ -20,15 +20,15 @@ local function OnHit(inst, attacker, target)
     SpawnPrefab("sleepcloud").Transform:SetPosition(x, y, z)
 end
 
-local function onequip(inst, owner) 
+local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_sleepbomb", "swap_sleepbomb")
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
-local function onunequip(inst, owner) 
-    owner.AnimState:Hide("ARM_carry") 
-    owner.AnimState:Show("ARM_normal") 
+local function onunequip(inst, owner)
+    owner.AnimState:Hide("ARM_carry")
+    owner.AnimState:Show("ARM_normal")
 end
 
 local function onthrown(inst)
@@ -38,7 +38,6 @@ local function onthrown(inst)
     inst.AnimState:PlayAnimation("spin_loop")
 
     inst.Physics:SetMass(1)
-    inst.Physics:SetCapsule(0.2, 0.2)
     inst.Physics:SetFriction(0)
     inst.Physics:SetDamping(0)
     inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
@@ -46,6 +45,7 @@ local function onthrown(inst)
     inst.Physics:CollidesWith(COLLISION.WORLD)
     inst.Physics:CollidesWith(COLLISION.OBSTACLES)
     inst.Physics:CollidesWith(COLLISION.ITEMS)
+    inst.Physics:SetCapsule(.2, .2)
 end
 
 local function ReticuleTargetFn()

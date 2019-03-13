@@ -32,6 +32,13 @@ return {
 			NOTALLOWED = "They won't let me.",
 			INUSE = "I'll use it after they're done.",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "Ugh. Someone's already using it.",
+            NOTALLOWED = "It won't go in there.",
+            EMPTY = "I need something to build with first!",
+            MISMATCH = "It's the wrong plans. Jeez!",
+        },
 		WRITE =
         {
             GENERIC = "I can't write on it.",
@@ -91,6 +98,10 @@ return {
             NOTSCULPTABLE = "I'd like to see someone try to sculpt with that!",
             CANTSHADOWREVIVE = "It's not working.",
             WRONGSHADOWFORM = "Nah. Skeleton's not right.",
+            NOMOON = "Jerk! It won't work in here!",
+            PIGKINGGAME_MESSY = "Aww... You mean I gotta clean up first?",
+			PIGKINGGAME_DANGER = "Not now! There's big jerks around.",
+			PIGKINGGAME_TOOLATE = "Naw. It's too late.",
         },
         GIVETOPLAYER = 
         {
@@ -228,6 +239,7 @@ return {
 		[6] = "I can't help myself!",
 	},
 	
+	ANNOUNCE_DESPAWN = "A burning light!",
 	ANNOUNCE_BECOMEGHOST = "oOoOooOo!!",
 	ANNOUNCE_GHOSTDRAIN = "Burn... It all must burn...",
 
@@ -261,6 +273,10 @@ return {
 	ANNOUNCE_LIGHTNING_DAMAGE_AVOIDED = "I'm safe from the sky-fire.",
 	ANNOUNCE_TOADESCAPING = "Don't even think about running, toad!",
 	ANNOUNCE_TOADESCAPED = "Ughh! But I was winning!",
+
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "Were those bats, or am I just seeing things.",
+    ANNOUNCE_BRAVERY_POTION = "Haha! Those bats don't scare me anymore!",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Hey! Get back up!",
@@ -412,6 +428,11 @@ return {
         },
 
         MULTIPLAYER_PORTAL = "The vines coil away from my lighter... weird!",
+        MULTIPLAYER_PORTAL_MOONROCK = "It's made of some kind of jerk rock I can't burn.",
+        CONSTRUCTION_PLANS = "I'd rather burn things down than build them up.",
+        MOONROCKIDOL = "Looks like a jerk.",
+        MOONROCKSEED = "Well I can't burn it.",
+
 		BERNIE_INACTIVE =
 		{
 			BROKEN = "I need to fix Bernie up.",
@@ -1968,6 +1989,21 @@ return {
         HALLOWEENCANDY_14 = "Mmm! It burns my mouth so good!",	--Hot Lava pepper candy
         CANDYBAG = "I'm gonna stuff so much candy in there!",
 
+        HALLOWEEN_ORNAMENT_1 = "Can I set it on fire?",
+		HALLOWEEN_ORNAMENT_2 = "I should decorate for Halloween.", 
+		HALLOWEEN_ORNAMENT_3 = "Ugh. I hate those jerks.",
+		HALLOWEEN_ORNAMENT_4 = "Wish it was flammable.", 
+		HALLOWEEN_ORNAMENT_5 = "I should hang it somewhere and scare people.",
+		HALLOWEEN_ORNAMENT_6 = "I'm gonna stick you in a tree.",
+
+		HALLOWEENPOTION_DRINKS_WEAK = "I wish it was a little stronger.",
+		HALLOWEENPOTION_DRINKS_POTENT = "Ah. The strong stuff.",
+		HALLOWEENPOTION_FIRE_FX = "I didn't think it was possible to make fire better.",
+		HALLOWEENPOTION_BRAVERY = "It's like there's a fire in my belly.",
+		MADSCIENCE_LAB = "I like the fire!",
+		LIVINGTREE_ROOT = "It's a stick. But I can't even set it on fire.", 
+		LIVINGTREE_SAPLING = "Should I wait until it gets bigger to set it on fire?",
+
         DRAGONHEADHAT = "Sooo ferocious!",
         DRAGONBODYHAT = "Aww, I always get caught in the middle!",
         DRAGONTAILHAT = "I wanna be the caboose!",
@@ -2002,6 +2038,22 @@ return {
         HOUNDWHISTLE = "Heh heh. STAY.",
         CHESSPIECE_CLAYHOUND = "It almost looks friendly.",
         CHESSPIECE_CLAYWARG = "It doesn't look so tough now.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "Where's the shrine to me?",
+            EMPTY = "Needs meat.",
+            BURNT = "Burnt. I like it.",
+		},
+		PIG_TOKEN = "I'd burn it, but it might be worth something.",
+		YOTP_FOOD1 = "I'm gonna eat it all!",
+		YOTP_FOOD2 = "Nah. I'll feed it to something.",
+		YOTP_FOOD3 = "A little snack to fill my belly.",
+
+		PIGELITE1 = "All washed up.", --BLUE
+        PIGELITE2 = "You, I like.", --RED
+        PIGELITE3 = "Eat dirt!", --WHITE
+        PIGELITE4 = "Sure does like using those signs.", --GREEN
 
         LAVA_POND_ROCK = "Oh great, another stinkin' rock!",
 
@@ -2056,6 +2108,8 @@ return {
         WINTER_ORNAMENT = "Bibble-ty bauble-ty boo!",
         WINTER_ORNAMENTLIGHT = "It's like a fire, but without the burning!",
         WINTER_ORNAMENTBOSS = "Woah, shiny! Nice!",
+        WINTER_ORNAMENTFORGE = "I should toast this over an open fire.",
+		WINTER_ORNAMENTGORGE = "So cute I don't even wanna burn it.",
 
         WINTER_FOOD1 = "Honestly, who DOESN'T eat the head first?", --gingerbread cookie
         WINTER_FOOD2 = "Doesn't look too bad, considering!", --sugar cookie
@@ -2111,6 +2165,8 @@ return {
         TRAILS = "You can't push me around.",
         TURTILLUS = "Hey! How am I s'pose to hit you with all that armor?",
         SNAPPER = "Jeez, what's his crocodeal?",
+        RHINODRILL = "Pfft. Whatever Rhinocebros.",
+		BEETLETAUR = "Bet you think you're safe in all that armor.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2153,6 +2209,11 @@ return {
         LAVAARENA_RECHARGERHAT = "Ohh, I want it!",
         LAVAARENA_HEALINGGARLANDHAT = "I don't even wanna burn it!",
         LAVAARENA_CROWNDAMAGERHAT = "Dibs!",
+
+        LAVAARENA_ARMOR_HP = "Woohoo! I should put that on.",
+
+		LAVAARENA_FIREBOMB = "FIRE! FIRE! FIRE!",
+		LAVAARENA_HEAVYBLADE = "No way I can use that!",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2367,6 +2428,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "Whatever. It's a lamp.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "It flings big stinkin' rocks.",
+        	OFF = "Is this thing on?",
+        	BURNING = "Hehehe!",
+        	BURNT = "Well, that was mildly entertaining.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "So no more night fires then?",
+        	OFF = "Is this thing on?",
+        	BURNING = "Hehehe!",
+        	BURNT = "Well, that was mildly entertaining.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "Iunno, it's Winona's junk.",
+        	LOWPOWER = "It's on its last legs.",
+        	OFF = "Oops. It broke.",
+        	BURNING = "Hehehe!",
+        	BURNT = "Well, that was mildly entertaining.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "More of Winona's weird junk.",
+        	LOWPOWER = "It's on its last legs.",
+        	OFF = "Oops. It broke.",
+        	BURNING = "Hehehe!",
+        	BURNT = "Well, that was mildly entertaining.",
+        },
     },
     DESCRIBE_GENERIC = "I have no idea what that is!",
     DESCRIBE_TOODARK = "I need more light!",

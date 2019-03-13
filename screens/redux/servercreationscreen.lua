@@ -27,7 +27,7 @@ local dialog_size_y = row_height*(num_rows + 0.25)
 local bottom_button_y = -310
 
 local ServerCreationScreen = Class(Screen, function(self, prev_screen)
-    Widget._ctor(self, "ServerCreationScreen")
+    Screen._ctor(self, "ServerCreationScreen")
 
     -- Defer accessing this table until screen creation to give mods a chance.
     -- Still not awesome, but mostly we require location indexes at this point
@@ -364,8 +364,26 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
 
             local serverdata = self.server_settings_tab:GetServerData()
             local worldoptions = {}
+            local specialeventoverride = nil
             for i,tab in ipairs(self.world_tabs) do
                 worldoptions[i] = tab:CollectOptions()
+
+                --V2C: copy special event override from master to slaves
+                if worldoptions[i] ~= nil then
+                    if i == 1 then
+                        if worldoptions[1].overrides ~= nil then
+                            specialeventoverride = worldoptions[1].overrides.specialevent
+                            if specialeventoverride == "default" then
+                                specialeventoverride = nil
+                            end
+                        end
+                    elseif specialeventoverride ~= nil then
+                        if worldoptions[i].overrides == nil then
+                            worldoptions[i].overrides = {}
+                        end
+                        worldoptions[i].overrides.specialevent = specialeventoverride
+                    end
+                end
             end
 
             local world1datastring = ""
@@ -403,7 +421,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
             cluster_info.settings.NETWORK.lan_only_cluster       = tostring(serverdata.privacy_type == PRIVACY_TYPE.LOCAL)
             cluster_info.settings.NETWORK.cluster_intention      = serverdata.intention
             cluster_info.settings.NETWORK.offline_cluster        = tostring(not serverdata.online_mode)
-            cluster_info.settings.NETWORK.cluster_language       = GetLocaleCode()
+            cluster_info.settings.NETWORK.cluster_language       = LOC.GetLocaleCode()
 
             cluster_info.settings.GAMEPLAY                       = {}
             cluster_info.settings.GAMEPLAY.game_mode             = serverdata.game_mode
@@ -618,6 +636,10 @@ function ServerCreationScreen:ValidateSettings()
         return false
     elseif not self.server_settings_tab:VerifyValidClanSettings() then
         TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.INVALIDCLANSETTINGS_TITLE, STRINGS.UI.SERVERCREATIONSCREEN.INVALIDCLANSETTINGS_BODY,
+                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab("settings") end}}))
+        return false
+    elseif not self.server_settings_tab:VerifyValidPassword() then
+        TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.INVALIDPASSWORD_TITLE, STRINGS.UI.SERVERCREATIONSCREEN.INVALIDPASSWORD_BODY,
                     {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab("settings") end}}))
         return false
     -- Check if our season settings are valid (i.e. at least one season has a duration)
@@ -1027,12 +1049,11 @@ end
 
 function ServerCreationScreen:_DoFocusHookups()
     -- This is for register focus change dir to return back to the current save slot
-    local getfocussaveslot = function() return self.default_focus end
     local getfocuscancelorsaveslot = function() return self.cancel_button ~= nil and self.cancel_button:IsVisible() and self.cancel_button or self.default_focus end
 
-    self.detail_panel:SetFocusChangeDir(MOVE_LEFT, getfocussaveslot)
+    self.detail_panel:SetFocusChangeDir(MOVE_LEFT, self.menu)
     self.detail_panel:SetFocusChangeDir(MOVE_DOWN, self.create_button)
-    self.bans_tab:SetFocusChangeDir(MOVE_LEFT, self.menu.items[1])
+    self.bans_tab:SetFocusChangeDir(MOVE_LEFT, self.menu)
 
     local toactivetab = function()
         if self.bans_tab:IsVisible() then

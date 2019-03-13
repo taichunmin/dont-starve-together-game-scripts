@@ -67,10 +67,16 @@ function Menu:GetSize()
 end 
 
 
+function Menu:SetMenuIndex(index)
+    self.last_focused_index = index
+end
+
 function Menu:SetFocus(index)
-    index = index or (self.reverse and -1 or 1)
-    if index < 0 then
-        index = index + #self.items +1 
+    if index == nil then
+        index = index or self.last_focused_index or (self.reverse and -1 or 1)
+        if index < 0 then
+            index = index + #self.items +1 
+        end
     end
 
     if self.items[index] then
@@ -105,6 +111,8 @@ function Menu:DoFocusHookups()
         if k < #self.items then
             self.items[k]:SetFocusChangeDir(fwd, self.items[k+1])
         end
+        
+        self.items[k]:SetOnGainFocus( function() self:SetMenuIndex(k) end )
     end
 
     --[[if #self.items > 1 then

@@ -113,7 +113,7 @@ STRINGS =
         woodie_canada = "*Has a lovely axe... \n*And a terrible secret \n*Celebrates Thanksgiving at the correct time",
         wathgrithr = "*Excels in battle \n*Absorbs the power of fallen foes \n*Only eats meat",
         webber = "*Is a monster \n*Can befriend spiders \n*Grows a silky smooth beard",
-        winona = "*Is a skilled builder\n*Gets one free hit from the dark\n*Brings her own tools",
+        winona = "*Is a skilled builder\n*Gets one free hit from the dark\n*Invents her own gadgets",
         random = "\nSelect a random character",
     },
 
@@ -189,6 +189,7 @@ STRINGS =
             NOTREADY = "Place",
             READY    = "Sacrifice",
             SOCKET   = "Socket",
+            CELESTIAL = "Offer",
             QUAGMIRE_POT_HANGER = "Hang {item}",
             QUAGMIRE_OVEN       = "Place {item}",
             QUAGMIRE_ALTAR =
@@ -209,7 +210,6 @@ STRINGS =
             SETMINE = "Set Mine",
             PLACELANTERN = "Place",
         },
-        BUILD = "Build",
         PICK = "Pick",
         REPAIR = "Repair",
         PICKUP =
@@ -224,6 +224,7 @@ STRINGS =
         EAT = "Eat", 
         BAIT = "Bait",
         COOK = "Cook",
+        MIX = "Mix",
         FILL = "Fill",
         ADDFUEL = "Add Fuel",
         ADDWETFUEL = "Add Wet Fuel",
@@ -239,6 +240,7 @@ STRINGS =
             RANGEDSMOTHER = "Extinguish",
             RANGEDLIGHT = "Light",
             WHACK = "Whack",
+            PROP = "Smack",
         },
         WALKTO = "Walk To",
         CHECKTRAP = "Check",
@@ -399,9 +401,25 @@ STRINGS =
         DRAW = "Draw On",
         DRAWITEM = "Draw {item}",
         BUNDLE = "Use",
-        BUNDLESTORE = "Store",
+        BUNDLESTORE =
+        {
+            GENERIC = "Store",
+            CONSTRUCT = "Add Material",
+        },
         WRAPBUNDLE = "Wrap",
         UNWRAP = "Unwrap",
+        CONSTRUCT =
+        {
+            GENERIC = "Build",
+            GENERIC_FMT = "Build {name}",
+            STORE = "Add Material",
+        },
+        STOPCONSTRUCTION =
+        {
+            GENERIC = "Stop Building",
+            GENERIC_FMT = "Stop Building {name}",
+        },
+        APPLYCONSTRUCTION = "Build",
         STARTCHANNELING = "Touch",
         STOPCHANNELING = "Stop Channeling",
         CASTAOE =
@@ -417,6 +435,8 @@ STRINGS =
             BLOWDART_LAVA = "Barrage",
             BLOWDART_LAVA2 = "Molten Bolt",
             LAVAARENA_LUCY = "Chuck Lucy",
+            LAVAARENA_FIREBOMB = "Hearthsfire Bomb",
+            LAVAARENA_HEAVYBLADE = "Parry",
         },
 
         --Quagmire
@@ -539,6 +559,10 @@ STRINGS =
         MANRABBIT_TAIL = "Bunny Puff",
         BUNNYMAN = "Bunnyman",
         PIGGUARD = "Guard Pig",
+        PIGELITE1 = "Wade", --BLUE
+		PIGELITE2 = "Ignatius", --RED
+		PIGELITE3 = "Dmitri", --WHITE
+		PIGELITE4 = "Sawyer", --GREEN
         NITRE = "Nitre",
         GUNPOWDER = "Gunpowder",
         BIRD_EGG = "Egg",
@@ -728,6 +752,7 @@ STRINGS =
         ROCK1 = "Boulder",
         ROCK2 = "Boulder",
         ROCK_MOON = "Boulder",
+        ROCK_MOON_SHELL = "Suspicious Boulder",
         ROCK_FLINTLESS = "Boulder",
         ROCK_FLINTLESS_MED = "Boulder",
         ROCK_FLINTLESS_LOW = "Boulder",
@@ -919,11 +944,17 @@ STRINGS =
         FIRECRACKERS = "Red Firecrackers",
         PERDFAN = "Lucky Fan",
         WARGSHRINE = "Varg Shrine",
+        PIGSHRINE = "Pig Shrine",
         CLAYWARG = "Clay Varg",
         CLAYHOUND = "Clay Hound",
         HOUNDWHISTLE = "Lucky Whistle",
         CHESSPIECE_CLAYHOUND_SKETCH = "Clay Hound Figure Sketch",
         CHESSPIECE_CLAYWARG_SKETCH = "Clay Varg Figure Sketch",
+
+		PIG_TOKEN = "Golden Belt",
+		YOTP_FOOD1 = "Tribute Roast", -- tribute roast
+		YOTP_FOOD2 = "Eight Treasure Mud Pie", -- mud pie
+		YOTP_FOOD3 = "Fish Heads on a Stick", -- fish head skewers
 
         TELEPORTATO_RING = "Ring Thing",
         TELEPORTATO_BOX = "Box Thing",
@@ -1238,6 +1269,8 @@ STRINGS =
 
         MOSQUITOSACK = "Mosquito Sack",
         LIVINGTREE = "Totally Normal Tree",
+        LIVINGTREE_ROOT = "Totally Normal Root",
+		LIVINGTREE_SAPLING = "Totally Normal Sapling",
 
         WAXWELLJOURNAL = "Codex Umbra",
         SHADOWWAXWELL = "Shadow",
@@ -1387,6 +1420,7 @@ STRINGS =
 
         MOONROCKNUGGET = "Moon Rock",
         MOONROCKCRATER = "Cratered Moonrock",
+		MOONROCKSEED = "Celestial Orb",
 
         REDMOONEYE ="Red Moonlens",
         PURPLEMOONEYE = "Purple Moonlens",
@@ -1487,6 +1521,10 @@ STRINGS =
         SHADOW_KNIGHT = "Shadow Knight",
         SHADOW_BISHOP = "Shadow Bishop",
 
+        MULTIPLAYER_PORTAL_MOONROCK = "Celestial Portal",
+        MULTIPLAYER_PORTAL_MOONROCK_CONSTR_PLANS = "Portal Paraphernalia",
+        MOONROCKIDOL = "Moon Rock Idol",
+
         HALLOWEENCANDY_1 = "Candy Apple",
         HALLOWEENCANDY_2 = "Candy Corn",
         HALLOWEENCANDY_3 = "Not-So-Candy Corn",
@@ -1503,11 +1541,20 @@ STRINGS =
         HALLOWEENCANDY_14 = "Lava Pepper",
         CANDYBAG = "Candy Bag",
 
+		MADSCIENCE_LAB = "Mad Scientist Lab", 
+		HALLOWEEN_EXPERIMENT_BRAVERY = "Phobic Experiment",
+		HALLOWEEN_EXPERIMENT_HEALTH = "Sanguine Experiment",  
+		HALLOWEEN_EXPERIMENT_SANITY = "Psychosis Experiment",  
+		HALLOWEEN_EXPERIMENT_VOLATILE = "Sulfuric Experiment",  
+		HALLOWEEN_EXPERIMENT_ROOT = "Arboretum Experiment",
+
         WINTER_TREESTAND = "Festive Tree Planter",
         WINTER_TREE = "Winter's Feast Tree",
         WINTER_ORNAMENT = "Festive Bauble",
         WINTER_ORNAMENTLIGHT = "Festive Light",
         WINTER_ORNAMENTBOSS = "Magnificent Adornment",
+		WINTER_ORNAMENTFORGE = "Champion Adornment",
+		WINTER_ORNAMENTGORGE = "Appeasing Adornment",
 
         WINTER_FOOD1 = "Gingerbread Cookie",
         WINTER_FOOD2 = "Sugar Cookie",
@@ -1518,6 +1565,22 @@ STRINGS =
         WINTER_FOOD7 = "Apple Cider",
         WINTER_FOOD8 = "Hot Cocoa",
         WINTER_FOOD9 = "Heavenly Eggnog",
+
+		HALLOWEEN_ORNAMENT_1 = "Ghost Decoration",
+		HALLOWEEN_ORNAMENT_2 = "Bat Decoration",
+		HALLOWEEN_ORNAMENT_3 = "Spider Decoration",
+		HALLOWEEN_ORNAMENT_4 = "Tentacle Decoration",
+		HALLOWEEN_ORNAMENT_5 = "Dangling Depth Dweller Decoration",
+		HALLOWEEN_ORNAMENT_6 = "Crow Decoration",
+
+		HALLOWEENPOTION_BRAVERY_SMALL = "Brew of Phobic Abatement",
+		HALLOWEENPOTION_BRAVERY_LARGE = "Brew of Phobic Abrogation",
+		HALLOWEENPOTION_SANITY_SMALL = "Dram of Psychic Fortitude",
+		HALLOWEENPOTION_SANITY_LARGE = "Tumblerful of Psychic Fortitude",
+		HALLOWEENPOTION_HEALTH_SMALL = "Flask of Sanguine Mixture",
+		HALLOWEENPOTION_HEALTH_LARGE = "Canteen of Sanguine Mixture",
+		HALLOWEENPOTION_EMBERS = "Sulfuric Crystals of Lime",
+		HALLOWEENPOTION_SPARKS = "Sulfuric Crystals of Saltpeter",
 
         --Arena Event
         LAVAARENA_BOARLORD = "Battlemaster Pugna",
@@ -1530,6 +1593,9 @@ STRINGS =
         TRAILS = "Boarilla",
         TURTILLUS = "Snortoise",
         SNAPPER = "Crocommander",
+        RHINODRILL = "Rhinocebro Snapback",
+        RHINODRILL2 = "Rhinocebro Flatbrim",
+        BEETLETAUR = "Infernal Swineclops",
 
         LAVAARENA_PORTAL = "Ancient Gateway",
         LAVAARENA_KEYHOLE = "Ancient Anchor",
@@ -1571,6 +1637,16 @@ STRINGS =
         LAVAARENA_HEALINGGARLANDHAT = "Blossomed Wreath",
         LAVAARENA_CROWNDAMAGERHAT = "Resplendent Nox Helm",
 
+		-- Lavaarena Season 2
+		LAVAARENA_ARMOR_HPEXTRAHEAVY = "Steadfast Grand Armor",
+		LAVAARENA_ARMOR_HPPETMASTERY = "Whispering Grand Armor",
+		LAVAARENA_ARMOR_HPRECHARGER = "Silken Grand Armor",
+		LAVAARENA_ARMOR_HPDAMAGER = "Jagged Grand Armor",
+
+		LAVAARENA_FIREBOMB = "Hearthsfire Crystals",
+		LAVAARENA_HEAVYBLADE = "Blacksmith's Edge",
+
+		-- Quagmire
         QUAGMIRE_CRATE_POT_HANGER = "Cookpot Kit",
         QUAGMIRE_CRATE_OVEN = "Oven Kit",
         QUAGMIRE_CRATE_GRILL_SMALL = "Grill Kit",
@@ -1735,6 +1811,82 @@ STRINGS =
 		QUAGMIRE_SLAUGHTERTOOL = "Slaughter Tools",
 
 		QUAGMIRE_GOATMILK = "Goat Milk",
+
+        QUAGMIRE_FOOD_001 = "Loaf of Bread",
+        QUAGMIRE_FOOD_002 = "Potato Chips",
+        QUAGMIRE_FOOD_003 = "Vegetable Soup",
+        QUAGMIRE_FOOD_004 = "Jelly Sandwich",
+        QUAGMIRE_FOOD_005 = "Fish Stew",
+        QUAGMIRE_FOOD_006 = "Turnip Cake",
+        QUAGMIRE_FOOD_007 = "Potato Pancakes",
+        QUAGMIRE_FOOD_008 = "Potato Soup",
+        QUAGMIRE_FOOD_009 = "Fishball Skewers",
+        QUAGMIRE_FOOD_010 = "Meatballs",
+        QUAGMIRE_FOOD_011 = "Meat Skewers",
+        QUAGMIRE_FOOD_012 = "Stone Soup",
+        QUAGMIRE_FOOD_013 = "Croquette",
+        QUAGMIRE_FOOD_014 = "Roast Vegetables",
+        QUAGMIRE_FOOD_015 = "Meatloaf",
+        QUAGMIRE_FOOD_016 = "Carrot Soup",
+        QUAGMIRE_FOOD_017 = "Fish Pie",
+        QUAGMIRE_FOOD_018 = "Fish and Chips",
+        QUAGMIRE_FOOD_019 = "Meat Pie",
+        QUAGMIRE_FOOD_020 = "Sliders",
+        QUAGMIRE_FOOD_021 = "Fist Full of Jam",
+        QUAGMIRE_FOOD_022 = "Jelly Roll",
+        QUAGMIRE_FOOD_023 = "Carrot Cake",
+        QUAGMIRE_FOOD_024 = "Garlic Mashed Potatoes",
+        QUAGMIRE_FOOD_025 = "Garlic Bread",
+        QUAGMIRE_FOOD_026 = "Tomato Soup",
+        QUAGMIRE_FOOD_027 = "Sausage",
+        QUAGMIRE_FOOD_028 = "Candied Fish",
+        QUAGMIRE_FOOD_029 = "Stuffed Mushroom",
+        QUAGMIRE_FOOD_030 = "Ratatouille",
+        QUAGMIRE_FOOD_031 = "Bruschetta",
+        QUAGMIRE_FOOD_032 = "Meat Stew",
+        QUAGMIRE_FOOD_033 = "Hamburger",
+        QUAGMIRE_FOOD_034 = "Fish Burger",
+        QUAGMIRE_FOOD_035 = "Mushroom Burger",
+        QUAGMIRE_FOOD_036 = "Fish Steak",
+        QUAGMIRE_FOOD_037 = "Curry",
+        QUAGMIRE_FOOD_038 = "Spaghetti and Meatball",
+        QUAGMIRE_FOOD_039 = "Lasagna",
+        QUAGMIRE_FOOD_040 = "Poached Fish",
+        QUAGMIRE_FOOD_041 = "Shepherd's Pie",
+        QUAGMIRE_FOOD_042 = "Candy",
+        QUAGMIRE_FOOD_043 = "Bread Pudding",
+        QUAGMIRE_FOOD_044 = "Waffles",
+        QUAGMIRE_FOOD_045 = "Berry Tart",
+        QUAGMIRE_FOOD_046 = "Macaroni and Cheese",
+        QUAGMIRE_FOOD_047 = "Bagel and Fish",
+        QUAGMIRE_FOOD_048 = "Grilled Cheese",
+        QUAGMIRE_FOOD_049 = "Cream of Mushroom Soup",
+        QUAGMIRE_FOOD_050 = "Pierogi",
+        QUAGMIRE_FOOD_051 = "Manicotti",
+        QUAGMIRE_FOOD_052 = "Cheeseburger",
+        QUAGMIRE_FOOD_053 = "Creamy Fettuccine",
+        QUAGMIRE_FOOD_054 = "Onion Soup",
+        QUAGMIRE_FOOD_055 = "Breaded Cutlet",
+        QUAGMIRE_FOOD_056 = "Creamy Fish",
+        QUAGMIRE_FOOD_057 = "Pizza",
+        QUAGMIRE_FOOD_058 = "Pot Roast",
+        QUAGMIRE_FOOD_059 = "Crab Cake",
+        QUAGMIRE_FOOD_060 = "Steak Frites",
+        QUAGMIRE_FOOD_061 = "Shooter Sandwich",
+        QUAGMIRE_FOOD_062 = "Bacon Wrapped Meat",
+        QUAGMIRE_FOOD_063 = "Crab Roll",
+        QUAGMIRE_FOOD_064 = "Meat Wellington",
+        QUAGMIRE_FOOD_065 = "Crab Ravioli",
+        QUAGMIRE_FOOD_066 = "Caramel Cube",
+        QUAGMIRE_FOOD_067 = "Scone",
+        QUAGMIRE_FOOD_068 = "Trifle",
+        QUAGMIRE_FOOD_069 = "Cheesecake",
+
+        --v2 Winona
+        WINONA_CATAPULT = "Winona's Catapult",
+        WINONA_SPOTLIGHT = "Winona's Spotlight",
+        WINONA_BATTERY_LOW = "Winona's Generator",
+        WINONA_BATTERY_HIGH = "Winona's G.E.M.erator",
     },
 
     NAME_DETAIL_EXTENTION =
@@ -1756,6 +1908,13 @@ STRINGS =
         LAVAARENA_HEALINGGARLANDHAT = "+2 HP/s (80% HP Max)\n+10% Faster Cooldown\n+10% Move Speed",
         LAVAARENA_CROWNDAMAGERHAT = "+15% Physical Damage\n+10% Faster Cooldown\n+10% Move Speed",
         LAVAARENA_EYECIRCLETHAT = "+25% Magic Damage\n+10% Faster Cooldown\n+10% Move Speed",
+
+		-- Lavaarena Season 2
+		LAVAARENA_ARMOR_HPEXTRAHEAVY = "90% Protection\n+100 Max Health\nKnockback Resistance",
+		LAVAARENA_ARMOR_HPPETMASTERY = "80% Protection\n+75 Max Health\nCompanion Buff",
+		LAVAARENA_ARMOR_HPRECHARGER = "80% Protection\n+50 Max Health\n+15% Faster Cooldown",
+		LAVAARENA_ARMOR_HPDAMAGER = "80% Protection\n+50 Max Health\n+20% Physical Damage",
+
     },
 
     DIRECTIONS =
@@ -1982,9 +2141,13 @@ STRINGS =
         FIRECRACKERS = "Celebrate with a BANG!",
         PERDFAN = "Extra lucky, extra large.",
         WARGSHRINE = "Make offerings to the earthen Varg.",
+        PIGSHRINE = "Make offerings to the affluent Pig.",
         HOUNDWHISTLE = "Blow the whistle on wild hounds.",
         CHESSPIECE_CLAYHOUND_SKETCH = "A sculpture sketch of the Clay Hound.",
         CHESSPIECE_CLAYWARG_SKETCH = "A sculpture sketch of the Clay Varg.",
+		YOTP_FOOD1 = "A roasted tribute to the Pig King.", -- tribute roast
+		YOTP_FOOD2 = "What's hiding in there?", -- mud pie
+		YOTP_FOOD3 = "Prosperity on a stick.", -- fish head skewers
 
         SCULPTINGTABLE = "Marble will be like clay in your hands!",
 
@@ -2019,6 +2182,9 @@ STRINGS =
         MUSHROOM_LIGHT = "The perfect addition to any mush-Room.",
         SLEEPBOMB = "A throwable pouch full of sleep.",
 
+        MULTIPLAYER_PORTAL_MOONROCK_CONSTR_PLANS = "The best laid plans.",
+        MOONROCKIDOL = "A key figure.",
+
         CHESSPIECE_PAWN_BUILDER = "It takes a village to raise an army.",
         CHESSPIECE_ROOK_BUILDER = "Next best thing to an actual castle.",
         CHESSPIECE_KNIGHT_BUILDER = "Shining armor not included.",
@@ -2042,6 +2208,14 @@ STRINGS =
         CRITTER_LAMB_BUILDER = "Befriend a fluffy Ewelet.",
 
         CANDYBAG = "Only carries Hallowed Nights goodies.",
+
+		MADSCIENCE_LAB = "Mad science has no limits. Except sanity.",
+		HALLOWEEN_EXPERIMENT_BRAVERY = "Liquid courage.",
+		HALLOWEEN_EXPERIMENT_HEALTH = "Good for your heart.",
+		HALLOWEEN_EXPERIMENT_SANITY = "Put your mind at ease.", 
+		HALLOWEEN_EXPERIMENT_VOLATILE = "Crystallized incandescence.",
+		HALLOWEEN_EXPERIMENT_ROOT = "Spine-chilling saplings.",  
+
         WINTER_TREESTAND = "Plant and decorate a Winter's Feast tree!",
 
         --Quagmire
@@ -2080,6 +2254,12 @@ STRINGS =
         QUAGMIRE_SEEDPACKET_MIX = "Unusual crop seeds. Plant in tilled soil.",
 
         QUAGMIRE_GOATMILK = "Fresh from the source.",
+
+        --v2 Winona
+        WINONA_CATAPULT = "Lob big rocks at fearful foes.",
+        WINONA_SPOTLIGHT = "Shine a light both day and night.",
+        WINONA_BATTERY_LOW = "Someone's gotta keep the juice flowing.",
+        WINONA_BATTERY_HIGH = "This one uses gems, so you know it's good.",
     },
 
     -- MAXWELL_TEST = {"Say pal, you don't look so good.", "You better find something to eat before night comes!"},
@@ -2262,10 +2442,32 @@ STRINGS =
     PIG_TALK_EAT_MEAT = { "NOM NOM NOM", "YUM!" },
     PIG_TALK_GO_HOME = { "HOME TIME!", "HOME! HOME!" },
     PIG_TALK_RESCUE = { "I HELP YOU!", "OOH! OOH!", "ME HELP!" },
+    PIG_TALK_GIVE_GIFT = { "YOU HAVE THIS", "FOR FRIEND" },
+    PIG_TALK_GAME_GOTO = { "IT STARTING!", "THIS MY FAVORITE!", "YAY!"},
+    PIG_TALK_GAME_CHEER = { "SMASH! SMASH!", "BASH!", "GO PIGS!", "RAAAWR!", "YOU STINK!", "GET GOLD!", "BASH 'EM IN HEAD!"},
     PIG_GUARD_TALK_TORCH = { "TORCH GET LOW", "MAKE TORCH BRIGHT", "MORE BURNING" },
     PIG_GUARD_TALK_FIGHT = { "FOR KING!", "DEFEND!", "SAVE KING!" },
     PIG_GUARD_TALK_GOHOME = { "MUST DEFEND!", "I PROTECT", "KING! KING!" },
     PIG_GUARD_TALK_LOOKATWILSON = { "YOU LEAVE NOW", "YOU GO AWAY", "YOU NO STAY" },
+    PIG_ELITE_SMACK = { "YOU GO SMASH!", "I BASH YOU!", "STAY AWAY!", "FUN!" },
+    PIG_ELITE_GOLD = { "MINE!", "MY GOLD!", "I TAKE GOLD!" },
+    PIG_ELITE_SALTY = { "CHEATER!", "NO FAIR", "NOT ALLOWED DO THAT!" },
+    PIG_ELITE_INTRO =
+    {
+        "FOR KING!",
+        "GET GOLD!",
+    },
+    PIG_ELITE_POST_MATCH =
+    {
+        --[[UGLY =]] "YOU BAD AT THIS. GET BETTER", -- horrible tier
+        --[[BAD =]] "TRY AGAIN SOMETIME?", -- average tier
+        --[[GOOD =]] "YOU WORTHY OPPONENT", -- pretty good tier
+        --[[GREAT =]] "YOU HUMBLE US", -- highest tier
+        --
+        --[[TOOLATE =]] "GOOD MATCH. WE GO BED NOW", -- match ends after dusk
+        --[[CHEATER =]] "YOU CHEATER. WE NO LIKE CHEATERS", -- cheated during match
+    },
+
 
     --NOTE: Limit to 7 strings per table! (Using net_tinybyte for NPC chatter)
     RABBIT_BATTLECRY = { "HOP!", "KILL!", "DIE!" },
@@ -2349,11 +2551,10 @@ STRINGS =
     },
 
     --Arena Event
-    BOARLORD_WELCOME_INTRO =					-- 10 second delay before the round 1 intro 
+    BOARLORD_ROUND1_START =					-- 10 second delay before the round 1 intro 
     {
         "What have we here?",
-        "Gatekeepers? Have you come to return us to the Throne?",
-        "Ha! Laughable.",
+        "Gatekeepers? Ha! Have you come to return us to the Throne?",
         "I am Battlemaster Pugna, and I protect what is mine.",
         "Warriors. Release the pigs!",
     },
@@ -2361,10 +2562,10 @@ STRINGS =
     {
         "It's good to have a challenge once again!",
         "This should be fun.",
-		"More! Overwhelm them!",
+		"More pigs! Overwhelm them!",
         "More pigs!",
     },
-    BOARLORD_ROUND1_END =						-- healing staff dropped, 15 second delay follows
+    BOARLORD_ROUND2_START =						-- 15 second delay follows
     {
         "Impressive. You handled our foot soldiers with ease.",
         "But our battalions are trained to work together.",
@@ -2376,20 +2577,18 @@ STRINGS =
         "Give the Gatekeepers no quarter!",
         "Fly your banners proudly, warriors!",
     },
-    BOARLORD_ROUND2_END =						-- 15 second delay until round 3 intro
+    BOARLORD_ROUND3_START =						-- 15 second delay until round 3 intro
     {
         "We've endured more here than you know.",
         "And as forging fires temper steel,",
         "Hardship has only made us stronger.", 
         "Now, Snortoises. Attack!",
     },
-    BOARLORD_ROUND3_END =						-- Fireball Staff just dropped, 15 second delay follows
+    BOARLORD_ROUND4_START =						-- 15 second delay follows
     {
         "...Do you understand the forces you serve?",
-        "We were severed from the Throne!",
-        "Trapped in a realm of stone and fire, with no scepter to provide.",
-        "Why serve a power that deserted my people?",
         "They destroy all They touch...",
+        "We were severed from the Throne, trapped in a realm of stone and fire!",
         "That is why we cannot let you win.",
     },
     BOARLORD_ROUND4_FIGHT_BANTER =				-- Banter
@@ -2397,11 +2596,17 @@ STRINGS =
         "End this now my warriors!",
         "We... cannot lose the Forge...",
     },
-    BOARLORD_TRAILS_INTRO =						-- Trails intro
+    BOARLORD_ROUND4_TRAILS_INTRO =				-- Trails intro
     {
         "Send in the Boarilla.", 
     },
-    BOARLORD_ROUND4_END =						-- 15 second delay
+    BOARLORD_ROUND4_PLAYER_VICTORY =				-- Players win - This is actually round5-boarrior-locked victory
+    {
+        "No! How can this be?!",
+        "You have defeated the mighty Boarilla!",
+        "You may have won the battle, Gatekeepers... but not the war!",
+    },
+    BOARLORD_ROUND5_START =						-- 15 second delay
     {
         "Know this, Gatekeepers:",
         "Once you are dead, we will activate the Gateway.",
@@ -2420,12 +2625,36 @@ STRINGS =
         "Destroy them!!",
         "We will not live in the Throne's shadow!",
     },
-    BOARLORD_BOARRIOR_INTRO =					-- Boarrior as an add to the remaining trails
+    BOARLORD_ROUND5_BOARRIOR_INTRO =			-- Boarrior as an add to the remaining trails
     {
         "Grand Forge Boarrior!",
         "The ring is yours! Destroy them, my champion!",
     },
-    BOARLORD_DEFEATED_BATTLECRY =				-- Players win
+    BOARLORD_ROUND5_PLAYER_VICTORY =			-- Players win - round5-boarrior-unlocked victory
+    {
+        "What?! My champion!?!",
+        "I see. You've demonstrated your might.",
+        "...But we will live to fight again!!",
+    },
+    BOARLORD_ROUND6_START =						-- ? second delay
+    {
+        "We do not fear you.",
+        "But you will fear us!",
+        "Fear my new champions! Fear the Rhinocebros!",
+    },
+    BOARLORD_ROUND6_PLAYER_VICTORY =			-- Players win
+    {
+        "You have won the battle,",
+        "But the war rages on eternally.",
+        "We are not ready to give up yet.",
+    },
+    BOARLORD_ROUND7_START =						-- ?? second delay until round 3 intro
+    {
+        "You have had many victories, Gatekeepers...",
+        "...but from our dungeons comes our most brutal warrior.",
+        "Behold: The Infernal Swineclops!",
+    },
+    BOARLORD_ROUND7_PLAYER_VICTORY =			-- Players win
     {
         "No! My Forge, felled by the Throne's lapdogs!",
         "Please. No more, Gatekeepers. We surrender.",
@@ -2447,6 +2676,24 @@ STRINGS =
         "We are stronger.",
         "Well struck!",
 	},
+    --unused rhinobro barks
+    --[[RHINOCERBRO_ONEDOWN =
+    {
+        "Bro!",
+        "BRO!",
+        "No, BRO!",
+    }, 
+    RHINOCEBRO_REVIVING = 
+    {
+        "Like, get back up, bro.",
+        "I, like, need you bro!",
+        "You, like, okay bro?",
+    },
+    RHINOCERBRO_WHOOP = "Bro! Bro! Bro! Bro!",
+    RHINOCERBRO_DEFEAT = "Dang... bro...",
+    SNAPBACK_WIN = "Hehe, SNAPPED.", --either the snapback win bark fires or the flatbrim win bark fires, never both
+    FLATBRIM_WIN = "Like, FLATTENED.",]]
+
 
 	-- gameplay WIP
     MERM2_TALK_GREETING = --Pipton
@@ -2801,7 +3048,9 @@ STRINGS =
         BOOKS = "Books",
         GEMOLOGY = "Gemology",
         ANCIENT = "Ancient",
+        CELESTIAL = "Celestial",
         SHADOW = "Shadow",
+        ENGINEERING = "Engineering",
         CARTOGRAPHY = "Cartography",
         SCULPTING = "Sculptures",
         ORPHANAGE = "Critters",
@@ -2812,6 +3061,7 @@ STRINGS =
         QUAGMIRE_TRADER_MERM2 = "Pipton",
 		QUAGMIRE_TRADER_MUM = "Mumsy",
 		QUAGMIRE_TRADER_KID = "Billy",
+		MADSCIENCE = "Mad Science",
     },
     GREENAMULET_TOOLTIP = "Reduced Material Cost",
 }
@@ -3081,7 +3331,23 @@ STRINGS.UI =
 		HHMMSS = "{hours}:{minutes}:{seconds}",
 		MMSS = "{minutes}:{seconds}",
 	},
+	DAYS_FORMAT =
+	{
+		DHM = "{days}d {hours}h {minutes}m",
+		HM = "{hours}h {minutes}m",
+		M = "{minutes}m",
+	},
+
+	DATE_FORMAT = 
+	{
+		MDY = "{month} {day}, {year}", 
+	},
 	
+	DATE =
+	{
+		MONTH_ABBR = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
+	},
+
     HELP =
     {
         SCROLLBACK = "Scroll Up",
@@ -3132,6 +3398,7 @@ STRINGS.UI =
         PLACE = "Place",
         BUILD = "Build",
         PROTOTYPE = "Prototype",
+        RESEARCH = "Research",
         TABACTION =
         {
             CARTOGRAPHY = "Scribe",
@@ -3144,6 +3411,7 @@ STRINGS.UI =
 			QUAGMIRE_TRADER_MERM2 = "Purchase",
 			QUAGMIRE_TRADER_MUM = "Purchase",
 			QUAGMIRE_TRADER_KID = "Purchase",
+			MADSCIENCE = "Mix",
         },
         TABNEEDSTUFF =
         {
@@ -3155,8 +3423,6 @@ STRINGS.UI =
             QUAGMIRE_TRADER_KID = "Earn coins to trade!",
         },
         NEEDSTUFF = "Find ingredients \nto craft!",
-        BUILD = "Build",
-        RESEARCH = "Research",
         NEEDSCIENCEMACHINE = "Use a science machine to build a prototype!",
         NEEDALCHEMYENGINE = "Use an alchemy engine to build a prototype!",
         NEEDSHADOWMANIPULATOR = "Use a shadow manipulator to build a prototype!",
@@ -3230,6 +3496,8 @@ STRINGS.UI =
             "Xiaowen Lin",
             "Leira Zamfirescu",
             "Scott Hansen",
+			"Philippe Donati",
+			"Yorman Arias",
         },
 
         ALTGAMES =
@@ -3397,24 +3665,30 @@ STRINGS.UI =
         LOCALEXECUTE = "Local:",
     },
 
-    BUGREPORTSCREEN =
-    {
+    BUGREPORTSCREEN = {
         YES = "Yes",
         NO = "No",
         OK = "OK",
 
-        SUBMIT_TITLE = "Upload files?",
-        SUBMIT_TEXT = "Would you like to upload your logs and data files to Klei?",
-
         SUBMIT_SUCCESS_TITLE = "Success",
-        SUBMIT_SUCCESS_TEXT = "Files successfully uploaded. Code: ",
+        SUBMIT_SUCCESS = "Files successfully uploaded. Thanks for the report!",
 
         SUBMIT_FAILURE_TITLE = "Error",
         SUBMIT_FAILURE_TEXT = "There was a problem uploading your files.",
 
-        DESCRIPTION_LABEL = "Please enter a description of your issue.",
+        DESCRIPTION_LABEL = "Please describe your issue.",
         SUBMIT = "Submit",
         SUBMITTING_TEXT = "Submitting files, please wait",
+
+        SUBMIT_DIALOG_HEADER = "Submit Bug Report?",
+        SUBMIT_DIALOG_BODY = "Submitting a bug report will upload your game information and saved worlds to Klei to help us analyze the issue.\n\nThis may take several minutes.",
+        SUBMIT_TEXT_PLACEHOLDER = "Please enter a description of the bug you are experiencing and any details that you feel may aid us in fixing it.",
+
+        CANCEL_SUBMIT_HEADER = "Cancel Bug Report?",
+        CANCEL_SUBMIT_BODY = "You have not submitted your report.\nAre you sure you want to cancel?",
+
+        ENTER_BUG_DESCRIPTION = "Enter Bug Description",
+        CHANGE_BUG_DESCRIPTION = "Change Bug Description",
     },
 
     EMAILSCREEN =
@@ -3559,6 +3833,11 @@ STRINGS.UI =
         ASKQUITDESC = "Charlie will miss you.",
         QUIT = "Quit",
 
+        DYNAMICCONTENT_TITLE = "Dynamic Content",
+        DYNAMICCONTENT_DESC = "Due to an error, dynamic content loading has been disabled.",
+        DYNAMICCONTENT_RE_ENABLE = "Re-enable",
+        DYNAMICCONTENT_OK = "I understand",
+
         FRESHBUILD = "Fresh Build!",
         UPDATERELEASED = "Now Playing:",
         LASTBUILDDAYS = "Last build %d days ago",
@@ -3573,6 +3852,10 @@ STRINGS.UI =
         MOTDTITLE = "Klei Store",
         MOTD = "Check out the latest items in the Klei Store!",
         MOTDBUTTON = "Klei Store",
+
+		MOTD_SYNCING = "Syncing Notifications",
+        MOTD_ALERT_DETAILS = "View Details",
+        MOTD_NEW_UPDATE = "New Update Available!",
 
         EXIT = "Exit",
         LOGOUT = "Log Out",
@@ -3736,6 +4019,75 @@ STRINGS.UI =
         UNKNOWN_DATA = "???", --used for bad data
 	},
 
+	LAVAARENA_COMMUNITY_UNLOCKS =
+	{
+		TAB_TITLE = "Community Unlocks",
+		URL_LABEL = "Community Unlocks & Leaderboards",
+		DESCRIPTION = "Contribute to the community's progression by defeating the {boss}.",
+		EVERYTHING_UNLOCKED = "The {boss} has arrived. Now you can forge your way to a true victory!",
+		UNKNOWN = "Unknown",
+		SYNCING_DATA = "Syncing Data...",
+        XP_LABEL = "XP",
+
+		LOCKED =
+		{
+			ITEM = "Locked Item",
+			CREATURE = "Locked Creature",
+			BOSS = "Locked Creature",
+		},
+
+		UNLOCKED_TITLE =
+		{
+			BOOK_ELEMENTAL = "Tome of Beckoning & Spiral Spear",
+			RHINODRILL = "Rhinocebros, Snapback and Flatbrim",
+		},
+
+		UNLOCKED_DESC =
+		{
+			BOOK_ELEMENTAL = "Summon a Magma Golem or divebomb opponents with a powerful Sky Lunge", -- adds: BOOK_ELEMENTAL + SPEAR_LANCE
+			LAVAARENA_FIREBOMB = "Bombard your opponents with searing Hearthsfire",
+			LAVAARENA_HEAVYBLADE = "Hinder your opponents with the almighty Blacksmith's Edge",
+			LAVAARENA_ARMOR_HPDAMAGER = "80% Protection, +50 Max Health,\n+20% Physical Damage",
+			LAVAARENA_ARMOR_HPRECHARGER = "80% Protection, +50 Max Health,\n+15% Faster Cooldown",
+			LAVAARENA_ARMOR_HPEXTRAHEAVY = "90% Protection, +100 Max Health,\nKnockback Resistance",
+			LAVAARENA_ARMOR_HPPETMASTERY = "80% Protection, +75 Max Health, Increases effectiveness of Baby Spiders, Abigail or Bernie",
+			BOARRIOR = "Summoned to the arena while defeating the Boarillas",
+			RHINODRILL = "Summoned to the arena when the Grand Forge Boarrior is defeated",
+			BEETLETAUR = "Summoned to the arena for the final round!",
+		},
+
+		AVAILABLE_QUESTS = "Posted Quests",
+		DAILY_RESET = "Daily bonuses reset in: {hours}h {minutes}m",
+		DAILY_RESET_SOON = "Daily bonuses will reset soon.",
+		DAILY_RESET_SOON_INGAME = "Daily bonuses will reset after the next match.",
+		QUEST_RESET = "Posting new quests in: {hours}h {minutes}m",
+		QUEST_RESET_SOON = "New quests will be posted soon.",
+		QUEST_RESET_SOON_INGAME = "New quests will be posted after the next match.",
+
+		QUEST_TYPE_CHARACTER_FMT = "{character}'s {quest_type}",
+		QUEST_TYPE_PERSONAL = "Personal Quest",
+		QUEST_TYPE_TEAM = "Teamwork Quest",
+
+		COMPLETED_QUESTS_FMT = "{num} Quests Completed",
+		DAILY_WINS_FMT = "{num} Daily Victory Bonuses",
+		DAILY_MATCHES_FMT = "{num} Daily Match Bonuses",
+
+		QUEST_QUERY_FAILURE = "Failed to retrieve your quests.",
+		PROGRESSION_QUERY_FAILURE = "Failed to retrieve community progression data.",
+	},
+	
+	LAVAARENA_SUMMARY_PANEL =
+	{
+		TAB_TITLE = "The Forge",
+		LAQ_DAILYWIN = "Daily Victory Bonus",
+		LAQ_DAILYMATCH = "Daily Match Bonus",
+	},
+
+	LAVAARENA_QUESTS_HISTORY_PANEL =
+	{
+		TAB_TITLE = "Completed Quests",
+	},
+
     HUD =
     {
         MAP = "Show Map\n",
@@ -3750,7 +4102,6 @@ STRINGS.UI =
         WORLD_CLOCKDAY_V2 = "Day {day_count}",
         SAVING = "SAVING...",
         WORLD = "World",
-        BUILD = "Build",
         HERE = "here",
         STALE = "Stale",
         STALE_FROZEN = "Melting",
@@ -3803,6 +4154,7 @@ STRINGS.UI =
             PLAYFUL = "Peppy",
             CRAFTY = "Crafty",
         },
+		UNLOCK_TARGET = "Unlock Target",
 
         LAVAARENA_WIN_TITLE = "Victory!",
         LAVAARENA_WIN_BODY = "You have bested Battlemaster Pugna's champions in battle.",
@@ -3902,12 +4254,14 @@ STRINGS.UI =
         CONTROLS = "Controls",
         LANGUAGES = "Languages",
         LANG_TITLE = "Language Options",
+		CINEMATICS = "Cinematics",
         MORE = "More",
         TOOLTIP_SETTINGS = "Modify features of the game and user interface",
         TOOLTIP_CONTROLS = "Rebind which input does which in-game action",
         TOOLTIP_LANGUAGES = "Select display language",
 		TOOLTIP_CONTROLS_CONSOLE = "Check which control does which in-game action",
 		TOOLTIP_MORE = "View additional options",
+		TOOLTIP_CINEMATICS = "Sit back and watch a video",
         OPTIONS = "Options",
         BACK = "Back",
         YES = "Yes",
@@ -3958,10 +4312,16 @@ STRINGS.UI =
         REDEEM = "Redeem a Code",
         EULA = "Review the EULA",
         EULA_RESPONSE_CHANGED_TITLE = "Login Required",
-        EULA_RESPONSE_CHANGED_BODY = "Your settings have changed and you must log in again to continue.",
+        EULA_RESPONSE_CHANGED_BODY = "Your settings have changed and you must log in again to continue.",		
+		BUGREPORT = "Submit a Bug Report",
+        DYNAMICCONTENT_ENABLE = "Re-enable Dynamic Content",
         OFFLINE_MODE_TITLE = "Offline Mode",
         OFFLINE_MODE_BODY = "Your selection is not available in offline mode. Please log in and try again.",
-        KLEI_ID_PREFIX = "Klei ID: "
+        KLEI_ID_PREFIX = "Klei ID: ",
+
+		INTRO_MOVIE = "Intro Movie",
+		CREDITS = "Credits",
+		VIDEO_CHANNEL = "More Klei Videos",
     },
 
     NOTIFICATION =
@@ -4002,6 +4362,7 @@ STRINGS.UI =
     
     ITEM_SCREEN =
     {
+        THANKS_POPUP_DAILY = "Welcome back!\nPlease enjoy this daily gift.",
         THANKS_POPUP_TITLE_DEFAULT = "Thanks for playing",
         THANKS_POPUP_SWR = "Thank you for buying the ShipWrecked DLC",
         THANKS_POPUP_ROGR = "Thank you for buying the Reign of Giants DLC",
@@ -4058,6 +4419,10 @@ STRINGS.UI =
     	ALREADY_REDEEMED = "This code has already been redeemed. Maybe by you?",
     	FAILED_TO_CONTACT = "Sorry, it looks like the server's not answering right now. Please try again later.",
     	LEGALESE = "Delivery time may vary due to temporal portal anomalies. Wilson is not responsible for emotional injuries caused by waiting. Gifts may result in bragging, unexpected delight, and/or enhanced gameplay experiences.",
+
+		MENU_BUTTON_TITLE = "Redeem Codes",
+		MENU_BUTTON_DESC = "Transmute some codes into something useful.",
+
 	},
 
     EULADIALOG = 
@@ -4097,6 +4462,7 @@ STRINGS.UI =
             ID_NAT_TARGET_NOT_CONNECTED = "Could Not Connect",
             ID_NAT_TARGET_UNRESPONSIVE = "Could Not Connect",
             ID_NAT_CONNECTION_TO_TARGET_LOST = "Could Not Connect",
+            PLATFORM_MISMATCH = "Version Mismatch",
             VERSION_MISMATCH_OLD_SERVER = "Version Mismatch",
             VERSION_MISMATCH_OLD_CLIENT = "Version Mismatch",
             VERSION_MISMATCH_PUBLIC_BETA = "Public Beta Server",
@@ -4157,14 +4523,15 @@ STRINGS.UI =
             ID_NAT_TARGET_NOT_CONNECTED = "Unable to connect to the server.",
             ID_NAT_TARGET_UNRESPONSIVE = "Unable to connect to the server.",
             ID_NAT_CONNECTION_TO_TARGET_LOST = "Unable to connect to the server.",
+            PLATFORM_MISMATCH = "This server is incompatible with your version. Please try another server.",
             VERSION_MISMATCH_OLD_SERVER = "This server is on an older version than you and cannot connect.",
             VERSION_MISMATCH_OLD_CLIENT = "This server is on a newer version than you. Please download the latest update to connect.",
             VERSION_MISMATCH_PUBLIC_BETA = "The server is running a public beta world. You'll need to opt into the beta to play on this server.",
             VERSION_MISMATCH_ARNBETA = "The server is running the A New Reign Beta version. You'll need to opt into the beta to play on this server.",
-            VERSION_HANDSHAKE_FAILED    = "The server is on a different version than you. Please check that your game version is up-to-date.",
+            VERSION_HANDSHAKE_FAILED = "The server is on a different version than you. Please check that your game version is up-to-date.",
             ID_INCOMPATIBLE_PROTOCOL_VERSION = "The server has a different version than you do. Please check that your game version is up-to-date.",
             ID_DST_INCOMPATIBLE_PROTOCOL_VERSION = "The server has a different version than you do. Please check that your game version is up-to-date.",
-            FORCE_DISCONNECTION         = "The connection has been forcibly closed by the engine.",
+            FORCE_DISCONNECTION = "The connection has been forcibly closed by the engine.",
             E_BANNED = "Your account has been banned for violating the terms of use.",
             E_UPGRADE = "A new version is available.\nPlease update Don't Starve Together.",
             INVALID_CLIENT_TOKEN = "A token error occurred. Please try again.",
@@ -4231,6 +4598,7 @@ STRINGS.UI =
 
     PLAYERSTATUSSCREEN =
     {
+		LAVAARENA_SERVER_MODE = "{mode} - Round {num}",
         AGE_PREFIX = "Day ",
         AGE_DAY = " Day",
         AGE_DAYS = " Days",
@@ -4298,6 +4666,8 @@ STRINGS.UI =
         CONFIRMTITLE = "Really %s?",
         CONFIRMTITLE_TARGET = "Really %s %s?",
         CONFIRMBODY = "Are you sure?",
+		HIDE_SERVERNAME = "Hide Server Name",
+		SHOW_SERVERNAME = "Show Server Name",
     },
 
     WORLDRESETDIALOG =
@@ -4328,7 +4698,6 @@ STRINGS.UI =
         WHISPER_DESIGNATOR = "[W]",
         HELP_WHISPER = "Whisper",
         HELP_SAY = "Say",
-        SYSTEMNAME = "[S] system",
     },
 
     USERCOMMANDS =
@@ -4822,6 +5191,7 @@ STRINGS.UI =
         NOTAGS = "No Tags",
         VIEWTAGS = "View Tags",
         MODSENABLED = "Mods Enabled:",
+		TOGGLE_SERVER_NAME = "Toggle Server Name",
         MODSTITLE = "Mods",
         TAGSTITLE = "Tags",
         MOD_WARNING_TITLE = "Mods Enabled",
@@ -4829,7 +5199,8 @@ STRINGS.UI =
         CLIENT_MODS_DISABLED_TITLE = "Client Mods Disabled",
         CLIENT_MODS_DISABLED_BODY = "Your client mods will be temporarily disabled while playing on this server.",
         PASSWORD_ICON_HOVER = "Passworded",
-        DEDICATED_ICON_HOVER = "Dedicated",
+        DEDICATED_ICON_HOVER = "Dedicated Server",
+		DEDICATED_KLEI_ICON_HOVER = "Klei Official Server",
         FRIEND_ICON_HOVER = "Friends Playing",
         FRIEND_SERVER_ICON_HOVER = "Friend-Hosted",
         CLAN_OTHER_ICON_HOVER = "Group Server",
@@ -4914,6 +5285,8 @@ STRINGS.UI =
         MISSINGDATABODY = "This server is not up to date. We cannot display its world settings.",
         SERVER_LANGUAGE_WARNING_TITLE = "Server Language Mismatch",
         SERVER_LANGUAGE_WARNING_BODY = "Your language option doesn't match the language set by this server, do want to join anyways?",
+		HIDDEN_NAME = "*****",
+		HIDDEN_DESCRIPTION = "*****",
     },
     
 	DEMOOVERDIALOG =
@@ -5018,16 +5391,18 @@ STRINGS.UI =
         CANCEL_BODY = "Do you want to abandon your changes?",
         INVALIDSERVERNAME_TITLE = "Missing Server Name",
         INVALIDSERVERNAME_BODY = "No one will be able to find you if you don't have a name!",
+        INVALIDPASSWORD_TITLE = "Bad Password",
+        INVALIDPASSWORD_BODY = "Password cannot have spaces at the beginning or at the end!",
         INVALIDCLANSETTINGS_TITLE = "Bad Group ID",
         INVALIDCLANSETTINGS_BODY = "You have to specify the Steam Group you belong to! Please verify the group number.",
         INVALIDINTENTIONSETTINGS_TITLE = "Missing Server Intention",
         INVALIDINTENTIONSETTINGS_BODY = "You forgot to choose a playstyle for your server!",
         INVALIDNEWHOST_TITLE = "Creating your first world?",
         INVALIDNEWHOST_BODY = "We recommend trying the game alone in a private world while you learn the ropes and get the hang of not starving. But it's totally up to you!",
-		UGC_BLOCKED_DESCRIPTION_PREFIX = "Use of user-generated media is not allowed for your account.\nOnline players will see your server name as \"",
-		UGC_BLOCKED_DESCRIPTION_POSTFIX = "'s World\" with a blank description.",
-		UGC_BLOCKED_DESCRIPTION_PREFIX_SPLITSCREEN = "Use of user-generated media is not allowed for the signed in accounts.\nOnline players will see your server name as \"",
-		OFFLINE_WORLD = "Offline",
+        UGC_BLOCKED_DESCRIPTION_PREFIX = "Use of user-generated media is not allowed for your account.\nOnline players will see your server name as \"",
+        UGC_BLOCKED_DESCRIPTION_POSTFIX = "'s World\" with a blank description.",
+        UGC_BLOCKED_DESCRIPTION_PREFIX_SPLITSCREEN = "Use of user-generated media is not allowed for the signed in accounts.\nOnline players will see your server name as \"",
+        OFFLINE_WORLD = "Offline",
     },
 
     CLOUDSERVERCREATIONSCREEN =
@@ -5097,23 +5472,17 @@ STRINGS.UI =
     NOAUTHENTICATIONSCREEN =
     {
         TITLE = "Create an Account",
-        TITLE_FAILEDEMAIL = "Email Not Validated",
         BODY = "It looks like this is your first time playing Don't Starve Together.\nPlease click below to create an account and start playing.",
-        BODY_FAILEDEMAIL = "The email associated with your account has not been validated.\nPlease check your inbox for a validation request.\nIf you think your email was entered incorrectly,\nclick below to try again.",
         BODY2 = "Account creation will temporarily minimize your game and open your web browser.\nIf this doesn't work, try enabling your Steam overlay.",
-        BODY2_FAILEDEMAIL = "Trying again will temporarily minimize your game and open your web browser.",
         CREATEBUTTON = "Create Account",
-        FAILEDEMAILBUTTON = "Try Again",
         CANCELBUTTON = "Cancel",
-        BAD_TITLE = "Ownership Not Confirmed",
-        BAD_BODY = "We can't verify that you own a copy of Don't Starve Together on Steam right now. Please try again later.",
-        BAD_BUTTON = "OK",
     },
 
     LOBBYSCREEN =
     {
         SELECT = "Select",
         START = "Go!",
+		NEXT = "Next",
         APPLY = "Apply",
         CANCEL = "Cancel",
         BACK = "Back",
@@ -5149,11 +5518,17 @@ STRINGS.UI =
         WAITING_FOR_PLAYERS_TITLE = "Waiting For Other Players",
         EMPTY_SLOT = "Available Slot",
         READY = "Ready!",
+        TOGGLE_PORTRAIT = "Toggle Portrait",
         
         SERVER_SHUTDOWN_TITLE = "Server is Shutting Down",
         SERVER_SHUTDOWN_BODY = "This server is about to shut down.",
     },
 
+    SKIN_PRESETS =
+    {
+        TITLE = "Clothing Presets",
+    },
+    
     LOBBY_WAITING_FOR_PLAYERS_SCREEN =
     {
         SPAWN_DELAY = "Match starts in {time}",
@@ -5217,6 +5592,7 @@ STRINGS.UI =
     {
         TITLE =
         {
+            LAVAARENA2 = "The Forge - Season 2",
             LAVAARENA = "The Forge",
             QUAGMIRE = "The Gorge",
         },
@@ -5237,7 +5613,7 @@ STRINGS.UI =
         HOST_CONNECTINGTOSERVER = "Connecting to server",
         HOST_FAILED = "Network Error",
         HOST_FAILED_BODY = "Failed to connect to event server.",
-        HOST_NO_SERVERS_BODY = "No servers are currently available for your game version.",
+        HOST_NO_SERVERS_BODY = "No servers are currently available for your game version. Please update and try again.",
         HOST_PINGS_FAILED_BODY = "Unable to contact Klei servers.\nPlease check your network connection and try again.",
         
         OFFLINE_POPUP_TITLE = "Offline",
@@ -5262,6 +5638,8 @@ STRINGS.UI =
         MODS_POPUP_CONTINUE = "Continue",
         MODS_POPUP_DISABLE_MODS = "Disable All Mods",
         MODS_POPUP_CANCEL = "Cancel",
+		
+		TOGGLE_PLAYER = "Toggle player",
     },
 
 	PORTRAIT =
@@ -5290,17 +5668,24 @@ STRINGS.UI =
         SCORE = "Appeasement Points: {score}",
 		TRIBUTES = "Gnaw's Cravings: {success} fulfilled and {failed} failed",
 
+		LEADERBOARD_ERROR = "Unable to connect to leaderboard server.",
+		
+		STEAM = 
+		{ 
+			TOURNAMENTS_NO_ACCOUNT_SHARING = "Family Sharing accounts are not eligible for tournaments",
+		},
+
         SKIP = "Skip",
         CONTINUE = "Continue",
-        NEWBOX_TITLE = 
-        { 
+        NEWBOX_TITLE =
+        {
             lavaarena = "Forge Chest Earned!",
-            quagmire = "Victorian Chest Earned!",
+            quagmire = "Victorian Chest Earned!", --"Gnaw's Chest Earned!"
         },
-        NEWBOXES_TITLE = 
-        { 
+        NEWBOXES_TITLE =
+        {
             lavaarena = "{num} Forge Chests Earned!",
-            quagmire = "{num} Victorian Chests Earned!",
+            quagmire = "{num} Victorian Chests Earned!", --"{num} Gnaw's Chests Earned!"
         },
         NEWBOX_BODY = "Visit the Treasury to open your chest",
         NEWBOXES_BODY = "Visit the Treasury to open your chests",
@@ -5312,6 +5697,7 @@ STRINGS.UI =
         LEVEL_UP = "LEVEL UP!",
         ACHIEVEMENT_UNLOCKED = "Achievement: {name}",
 		FOOD_DISCOVERY = "Recipe: {name}",
+		ADD_XP_VAL = "{name}, {val} XP",
     },
 
 	WXP_DETAILS =
@@ -5337,15 +5723,30 @@ STRINGS.UI =
 		LAVA_UNIQUE_CHARACTERS = "No Doubles Bonus",
 		UNIQUE_CHARACTERS = "No Doubles Bonus",
 
+		-- lavaarena2
+		LAB_WIN = "Victory",
+		LAB_DURATION = "Time",
+		LAB_FRIENDS_BONUS = "Playing with Friends",
+		LAB_CONSECUTIVE = "Consecutive Match Bonus",
+		LAB_UNIQUE_CHARACTERS = "No Doubles Bonus",
+		LAB_NO_DEATHS_PLAYER = "No Deaths",
+		LAB_NO_DEATHS_TEAM = "No Deaths (Team)",
+		LAB_MILESTONE_1 = "Pit Pigs Defeated",
+		LAB_MILESTONE_2 = "Crocommanders Defeated",
+		LAB_MILESTONE_3 = "Snortoises Defeated",
+		LAB_MILESTONE_4 = "Formidable Team",
+		LAB_MILESTONE_5 = "Grand Forge Boarrior Defeated",
+		LAB_MILESTONE_6 = "Rhinocebros Defeated",
+
 		-- quagmire --
 		QUAGMIRE_MILESTONE_1 = "Sapphire Medallion Earned",
 		QUAGMIRE_MILESTONE_2 = "Red Mark Earned",
 		QUAGMIRE_MILESTONE_3 = "Gnaw's Favor Earned",
         QUAGMIRE_NO_TRIBUTES_FAILED = "No Failed Offerings",
-		QUAGMIRE_NO_DUPLICATE_TRIUBUTES = "Unique Offerings",
         QUAGMIRE_UNIQUE_CHARACTERS = "No Duplicate Survivors",
         QUAGMIRE_NO_DUPLICATE_TRIUBUTES = "No Repeat Meals",
         QUAGMIRE_TRIBUTE_SCORE = "Appeasement Point Bonus",
+        QUAGMIRE_CHALLENGE = "Tournament Entry",
 	},
 
 	XPUTILS = 
@@ -5491,6 +5892,7 @@ STRINGS.UI =
 			},
 			ACHIEVEMENT =
 			{
+				-- The Forge
 				encore_boarons = 
 				{
 				   TITLE = "Down But Not Snout",
@@ -5741,12 +6143,260 @@ STRINGS.UI =
 					TITLE = "Jill of All Trades",
 					DESC  = "Perform a special attack using a melee weapon, a dart, and a staff in a single match",
 				},
+
+				-- Reforge
+				laq_dailywin =
+				{
+					TITLE = "Daily Victory Bonus",
+					DESC  = "",
+				},
+				laq_dailymatch =
+				{
+					TITLE = "Daily Match Bonus",
+					DESC  = "",
+				},
+				laq_battlestandards =
+				{
+					TITLE = "Triple Standard",
+					DESC  = "Destroy 3 or more battle standards in a single match",
+				},
+				laq_reviver =
+				{
+					TITLE = "Modern Prometheus",
+					DESC  = "Revive a fallen friend",
+				},
+				laq_specials_veryfast =
+				{
+					TITLE = "Rapid Try Movement",
+					DESC  = "Perform 4 special attacks in under 20 seconds (excludes chucking Riled Lucy)",
+				},
+				laq_outofharmsway =
+				{
+					TITLE = "Scorpeons Position",
+					DESC  = "Survive until the Scorpeons arrive, taking under 200 damage",
+				},
+				laq_specials_somany =
+				{
+					TITLE = "Super Special",
+					DESC  = "Use 40 or more special attacks in a single match",
+				},
+				laq_nodashhounds =
+				{
+					TITLE = "Dash Their Hopes",
+					DESC  = "Avoid being hit by a dashing Pit Pig before the Snortoises arrive",
+				},
+				laq_nodeath_solo_easy =
+				{
+					TITLE = "Live To See the Fray",
+					DESC  = "Avoid death before the Boarilla arrives",
+				},
+				laq_rhinodrill1 =
+				{
+					TITLE = "No the Drill",
+					DESC  = "Avoid death by the Rhinocebros",
+				},
+				laq_spinners_easy =
+				{
+					TITLE = "Spin Docker",
+					DESC  = "Defeat the Snortoise round without allowing Snortoises to perform more than 4 spin attacks",
+				},
+				laq_boarons =
+				{
+					TITLE = "Acceptable Casualties",
+					DESC  = "Defeat the Pit Pigs round with less then 800 player damage take by the team",
+				},
+				laq_nopoisondeath =
+				{
+					TITLE = "Acid Redux",
+					DESC  = "Defeat the initial Scorpeon wave without anyone dying from Scorpeon Acid",
+				},
+				laq_beetle1 =
+				{
+					TITLE = "name_laq_beetle1",
+					DESC  = "desc_laq_beetle1",
+				},
+				laq_nodeath_r2 =
+				{
+					TITLE = "Rigor Snortoise",
+					DESC  = "Survive with no team deaths before the Snortoises arrive",
+				},
+				laq_nodeath_r3 =
+				{
+					TITLE = "Scorpeon Denizens",
+					DESC  = "Survive with no team deaths before the Scorpeons arrive",
+				},
+				laq_nodeath_r4 =
+				{
+					TITLE = "Mindless Violence",
+					DESC  = "Survive with no team deaths until a Boarilla is defeated",
+				},
+				laq_nodeath_r5 =
+				{
+					TITLE = "On the Boarrior Path",
+					DESC  = "Survive with no team deaths until the Grand Forge Boarrior is defeated",
+				},
+				laq_nodeath_r6 =
+				{
+					TITLE = "Drill Down",
+					DESC  = "Survive with no team deaths until both Rhinocebros are defeated",
+				},
+				laq_wintime_30 =
+				{
+					TITLE = "Bronze Speed Run",
+					DESC  = "Win a match in under 30 minutes",
+				},
+				laq_wintime_25 =
+				{
+					TITLE = "Silver Speed Run",
+					DESC  = "Win a match in under 25 minutes",
+				},
+				laq_wintime_20 =
+				{
+					TITLE = "Gold Speed Run",
+					DESC  = "Win a match in under 20 minutes",
+				},
+				laq_spinners_hard =
+				{
+					TITLE = "Unspun Hero",
+					DESC  = "Defeat the Snortoise round without allowing Snortoises to perform any spin attacks",
+				},
+				laq_rhinodrill_hard =
+				{
+					TITLE = "Night of the Drilling Dead",
+					DESC  = "Defeat the Rhinocebros without allowing either of them to be revived",
+				},
+				laq_guardsbroken =
+				{
+					TITLE = "Drop Your Guard",
+					DESC  = "Interrupt 5 or more guarded enemies in a single match",
+				},
+				laq_hammer =
+				{
+					TITLE = "Strike A Match",
+					DESC  = "Land Anvil Strikes on 25 or more targets in a single match",
+				},
+				laq_petrify =
+				{
+					TITLE = "Stone Cold",
+					DESC  = "Petrify 25 or more enemies before the Infernal Staff drops",
+				},
+				laq_meteorkill =
+				{
+					TITLE = "Death From Above",
+					DESC  = "Land a killing blow with a Cataclysm Meteor",
+				},
+				laq_fasthealing =
+				{
+					TITLE = "Fight Four Their Life",
+					DESC  = "Cast 4 Life Blossoms within 60 seconds",
+				},
+				laq_stronghealing =
+				{
+					TITLE = "Spell It Out",
+					DESC  = "Cast 3 amplified Life Blossoms within 60 seconds",
+				},
+				laq_distraction =
+				{
+					TITLE = "Welcome Distraction",
+					DESC  = "Achieve the Distraction or Expert Decoy card at the end of the match",
+				},
+				laq_killingblows_lots =
+				{
+					TITLE = "Blow It Wide Open",
+					DESC  = "Land 10 or more killing blows in a single match",
+				},
+				laq_axethrow =
+				{
+					TITLE = "Chuck It Overboard",
+					DESC  = "Land 20 Lucy Chucks in a single match",
+				},
+				laq_flip =
+				{
+					TITLE = "Flip It Real Good",
+					DESC  = "Flip 20 or more Snortoises in a single match",
+				},
+				laq_shock =
+				{
+					TITLE = "Shell Shocked",
+					DESC  = "Stop a spinning Snortoise with a shock",
+				},
+				laq_spinstopper =
+				{
+					TITLE = "Spinning In Their Grave",
+					DESC  = "Stop a spinning Snortoise, by any means necessary.",
+				},
+				laq_battlecry =
+				{
+					TITLE = "Standing Ovation",
+					DESC  = "Trigger the Battle Cry buff on at least 3 friends, 10 times in a single match",
+				},
+				laq_meteors =
+				{
+					TITLE = "Meteor Your Match",
+					DESC  = "Land Cataclysm Meteors on 40 or more targets in a single match",
+				},
+				laq_decoy =
+				{
+					TITLE = "Bundle of Decoy",
+					DESC  = "Achieve the Expert Decoy card at the end of the match",
+				},
+				laq_doctor =
+				{
+					TITLE = "Win Doctor",
+					DESC  = "Achieve the Doctor card at the end of the match",
+				},
+				laq_merciless =
+				{
+					TITLE = "Cry Mercy",
+					DESC  = "Achieve the Merciless card at the end of the match",
+				},
+				laq_shadowkill =
+				{
+					TITLE = "From The Shadows",
+					DESC  = "Deal a killing blow using Maxwell's shadow minions",
+				},
+				laq_fullhands =
+				{
+					TITLE = "Many Hands Make Fight Work",
+					DESC  = "Perform a special attack using a melee weapon, dart and staff all in a single match",
+				},
+				laq_nodeath_solo_hard =
+				{
+					TITLE = "Delusions of Grand Forge",
+					DESC  = "Survive until the Grand Forge Boarrior is defeated",
+				},
+				laq_heavyblade_special =
+				{
+					TITLE = "Best Blade Plans",
+					DESC  = "Parry 15 special attacks in a single match using the Blacksmith's Edge",
+				},
+				laq_defeat_snapper =
+				{
+					TITLE = "Crocommand the Room",
+					DESC  = "Complete the Crocommander round",
+				},
+				laq_defeat_trails =
+				{
+					TITLE = "Boarilla'd To Death",
+					DESC  = "Defeat the Boarilla",
+				},
+				laq_defeat_boarrior =
+				{
+					TITLE = "Boarrior Victorior",
+					DESC  = "Defeat the Grand Forge Boarrior",
+				},
+				laq_defeat_rhinodrill =
+				{
+					TITLE = "Way To Go, Bro",
+					DESC  = "Defeat the Rhinocebro round",
+				},
 			},
 		},	
 		QUAGMIRE =
 		{
 			CATEGORIES =
 			{
+				encore = "Gorge Mastery",
 				victory = "Victory",
 				tributes = "Offerings",
 				chef = "Cooking",
@@ -5858,12 +6508,12 @@ STRINGS.UI =
 				cook_large = 
 				{
 					TITLE = "Big Meal",
-					DESC  ="Cook and complete at least one meal using a Large Grill, Large Pot or Large Casserole Dish",
+					DESC  ="Cook and complete at least one meal using a Large Grill, Large Cookpot or Large Casserole Dish",
 				},
 				cook_all_stations = 
 				{
 					TITLE = "Bake Boss",
-					DESC  ="Cook and complete at least one meal using an oven, a pot, and a grill, respectively",
+					DESC  ="Cook and complete at least one meal using an oven, a cookpot, and a grill, respectively",
 				},
 				cook_silver = 
 				{
@@ -5916,6 +6566,47 @@ STRINGS.UI =
 					TITLE = "Finders, Keepers",
 					DESC  ="Unlock at least one safe",
 				},
+
+				quag_encore_nomatches =
+				{
+					TITLE = "Never Satisfied",
+					DESC  = "Escape without satisfying any cravings",
+				},
+				quag_encore_notrees =
+				{
+					TITLE = "Tree Hugger",
+					DESC  = "Escape without harvesting any logs",
+				},
+				quag_encore_meaty =
+				{
+					TITLE = "Killing Spree",
+					DESC  = "Escape with all cooked meals having one or more meat ingredients (Meat Scraps, Salmon, Meat, or Crab Meat)",
+				},
+				quag_encore_veggie =
+				{
+					TITLE = "Meaty Neglect",
+					DESC  = "Escape without any meals cooked with meat ingredients (Meat Scraps, Salmon, Meat, or Crab Meat)",
+				},
+				quag_encore_allcooks =
+				{
+					TITLE = "Three Many Cooks",
+					DESC  = "Play a 3-player match where everyone has a turn to cook and complete at least two meals",
+				},
+				quag_encore_all_stations_large =
+				{
+					TITLE = "Snack of All Trades",
+					DESC  = "Cook and complete at least one meal using a Large Grill, a Large Cookpot, and a Large Casserole Dish, respectively",
+				},
+				quag_encore_tribute_coin3 =
+				{
+					TITLE = "Marked For Red",
+					DESC  = "Find or earn 3 or more Red Marks in one match",
+				},
+				quag_encore_tribute_coin2 =
+				{
+					TITLE = "Gather ‘Round the Sapphire",
+					DESC  = "Find or earn 3 or more Sapphire Medallions in one match",
+				},
 			},
 		},
 	},
@@ -5934,10 +6625,15 @@ STRINGS.UI =
         NEW_STUFF = "Recent Discoveries",
         LOADING_STUFF = "Loading Discoveries...",
         NO_ITEMS = "Start playing to earn items!",
+		OFFLINE_NO_ITEMS = "Log in to starting earning items.",
         UNOPENED_BOXES_FMT = "{num_boxes} unopened Chests",
         MOST_COMMON_DEATH = "Often Killed By",
         MOST_COMMON_FRIEND = "Friendliest Friend",
-        ENCOUNTER_COUNT_FMT = "{num_games} encounters",
+        MOST_COMMON_FRIENDS = "Friendliest Friends",
+        ENCOUNTER_COUNT_FMT = "Time played with: {time}",
+
+		NO_DEATHS = "No survivor deaths on record.",
+		NO_FRIENDS = "Play online and make some friends.",
 
         TOOLTIP_TRADE = "Trade your old items in for something new!",
         TOOLTIP_SKINS = "View and equip your curios",
@@ -5992,7 +6688,7 @@ STRINGS.UI =
         OK = "OK",
         
         UNRAVEL_WARNING_TITLE = "Warning!",
-        UNRAVEL_WARNING_BODY = "Unravelling this item will break your {ensemble_name} and cause you to lose access to the Reward item, {reward_name}.",
+        UNRAVEL_WARNING_BODY = "Unraveling this item will break your {ensemble_name} and cause you to lose access to the Reward item, {reward_name}.",
         
         FAILED_TITLE = "Connection failure",
         FAILED_BODY = "Sorry!\nFailed to contact Klei Servers. Please try again.",
@@ -6010,11 +6706,16 @@ STRINGS.UI =
         LEGS = "Legs",
         FEET = "Feet",
 
-        SHOW_HERO_CLOTHING = "Survivor Filter On",
-        SHOW_ALL_CLOTHING = "Survivor Filter Off",
-
-        SHOW_UNOWNED_CLOTHING = "Owned Filter On",
-        SHOW_UNOWNEDANDOWNED_CLOTHING = "Owned Filter Off",
+        SURVIVOR_FILTER_FMT  = "Survivor Filter: {mode}",
+        OWNED_FILTER_FMT     = "Owned Filter: {mode}",
+        WEAVEABLE_FILTER_FMT = "Weaveable Filter: {mode}",
+        SORT_MODE_FMT        = "Sort Mode: {mode}",
+        
+        FILTER_ON       = "On",
+        FILTER_OFF      = "Off",
+        SORT_NAME       = "Name",
+        SORT_RARITY     = "Rarity",
+        SORT_RELEASE    = "Release Date",
 
         TOOLTIP_BASE = "Equip a head item",
         TOOLTIP_BODY = "Equip a body item",
@@ -6053,15 +6754,30 @@ STRINGS.UI =
         PURCHASE_WARNING_OK = "Continue Purchase",
         PURCHASE_WARNING_CANCEL = "Nevermind!",
 
-        PURCHASE_BTN = "Purchase: {price}",
+        PACK_SAVINGS = "-{savings}%",
+
+        PACK_SHORT_DESC = "Includes {total_items} skin items!",
+        MEGAPACK_SHORT_DESC = "Includes {total_sets} skin sets! {total_items} total skin items!",
+
+        INFO_BTN = "?",
+        PURCHASE_BTN = "Buy Now",
         PURCHASE_GIFT = "Gift to a Friend",
+        PURCHASE_CLOSE = "Close",
         
 		GIFT_RECEIVED_TITLE = "You got a chest!",
 		GIFT_RECEIVED_BODY = "Open it to receive your curios.",
         
         PURCHASE_GIFT_INFO_TITLE = "Purchase Gift",
         PURCHASE_GIFT_INFO_BODY = "To purchase the {pack_name} as a gift for your friend, click on \"Add to Cart\", then \"Purchase as a gift\".",
+        
+        FILTERS = "Filters",
 
+        OWNED_FILTER = "Owned:",
+        TYPE_FILTER = "Type:",
+        FILTER_ALL = "All",
+        FILTER_UNOWNED = "Unowned",
+        FILTER_ITEMS = "Belongings",
+        
         OK = "OK",
     },
 
@@ -6081,6 +6797,8 @@ STRINGS.UI =
     {
         OK = "OK",
         REWARD = "Reward:",
+        PREV_SET = "Previous Set",
+        NEXT_SET = "Next Set",
     },
 
     -- Rarity and colour tables are to allow translation of item properties. Keys are the names as returned by the item server.
@@ -6091,6 +6809,11 @@ STRINGS.UI =
         Spiffy          = "Spiffy",
         Distinguished   = "Distinguished",
         Elegant         = "Elegant",
+        Character       = "Character",
+        HeirloomClassy = "Heirloom Classy",
+        HeirloomSpiffy = "Heirloom Spiffy",
+        HeirloomDistinguished = "Heirloom Distinguished",
+        HeirloomElegant = "Heirloom Elegant",
         Timeless        = "Timeless",
         Loyal           = "Loyal",
         ProofOfPurchase = "Proof Of Purchase",
@@ -6100,6 +6823,9 @@ STRINGS.UI =
         Lustrous        = "Lustrous",
 		EventModifier	= "Event - ",
 		Seasonal		= "Seasonal - ",
+
+        CharacterModifier = "",
+		Classic			= "Classic - ",
     },
     
     COLOUR =
@@ -6307,7 +7033,7 @@ STRINGS.UI =
         OK = "OK",
         PLAYER_NAME = "Player",
         PLAYER_CHAR = "Face",
-		PLAYER_CHAR_PS4 = "Character",
+        PLAYER_CHAR_PS4 = "Character",
         SERVER_NAME = "Server",
         DECEASED = "Deceased",
         CAUSE = "Killed By",
@@ -6315,7 +7041,7 @@ STRINGS.UI =
         DECEASED_PS4 = "Character",
         CAUSE = "Cause of Death",
         MODE = "World",
-		MODE_PS4 = "Date",
+        MODE_PS4 = "Date",
         SEEN_DATE = "Date",
         PLAYER_AGE = "Age",
         DIED_AGE = "Survived",
@@ -6324,6 +7050,12 @@ STRINGS.UI =
         DAY = "Day",
         DAYS = "Days",
         UNKNOWN_DAYS = "?",
+
+        ENCOUNTERS =
+        {
+            DESC = "Last seen {date}, on {server_name}",
+            PLAYTIME_LABEL = "Play Time",
+        },
     },
 
     CONTROLSSCREEN =
@@ -7062,11 +7794,15 @@ STRINGS.UI =
         DARKSTART = "Dark",
         CAVESTART = "Caves",
 
-        EVENT_DEFAULT = "Auto",
-        EVENT_HALLOWEDNIGHTS_2016 = "Hallowed Nights",
-        EVENT_WINTERSFEAST_2016 = "Winters Feast",
-        EVENT_YEAR_OF_THE_GOBBLER_2017 = "Year of the Gobbler",
-        EVENT_YEAR_OF_THE_VARG_2018 = "Year of the Varg",
+        SPECIAL_EVENTS =
+        {
+            DEFAULT = "Auto",
+            HALLOWED_NIGHTS = "Hallowed Nights",
+            WINTERS_FEAST = "Winters Feast",
+            YOTG = "Year of the Gobbler",
+            YOTV = "Year of the Varg",
+            YOTP = "Year of the Pig King",
+        },
     },
 
     SAVELOAD =
@@ -7116,6 +7852,7 @@ STRINGS.UI =
 		HELPTEXTPREFIX = "Emote:  ",
         EMOTIONS = "Emotions",
         ACTIONS = "Actions",
+		UNLOCKABLES = "Extras",
 
 		ANGRY = "Angry",
 		NO = "Annoyed",
@@ -7134,6 +7871,17 @@ STRINGS.UI =
         YAWN = "Yawn", 
         SLEEPY = "Sleepy", 
         SWOON = "Swoon", 
+        CAROL = "Carol", 
+        FISTSHAKE = "Fist Shake",
+        CHEER = "Cheer",
+        CHICKEN = "Chicken Dance",
+        FLEX = "Flex",
+        IMPATIENT = "Impatient",
+        LAUGH = "Laugh",
+        ROBOT = "Robot Dance",
+        SHRUG = "Shrug",
+        SLOWCLAP = "Slow Clap",
+        STEP = "Step Dance",
     },
 
     PRESENCE = 
@@ -7504,21 +8252,21 @@ STRINGS.TAGS =
     GAMEMODE =
     {
         LAVAARENA = "the_forge",
-        QUAGMIRE = "quagmire",
+        QUAGMIRE = "the_gorge",
     },
 }
 
 STRINGS.SIGNS =
 {
-	MENU = 
-	{
-		PROMPT = "Write on the sign",
-		CANCEL = "Cancel",
-		ACCEPT = "Write it!",
-		RANDOM = "Random",
-		FILTERING = "Validating Message...",
-	},
-	
+    MENU =
+    {
+        PROMPT = "Write on the sign",
+        CANCEL = "Cancel",
+        ACCEPT = "Write it!",
+        RANDOM = "Random",
+        FILTERING = "Validating Message...",
+    },
+
     ADJ_NOUN_FMT = "{adjective} {noun}",
     ADJ_NOUN_ADD_FMT = "{adjective} {noun} {addition}",
     QUANT_ADJ_NOUN_FMT = "{quantifier} {adjective} {noun}",
@@ -7868,4 +8616,30 @@ if PLATFORM == "WIN32_RAIL" then
     STRINGS.UI.DATACOLLECTION_POPUP.PRIVACY_PORTAL = nil
     STRINGS.UI.DATACOLLECTION_POPUP.TITLE = nil
     STRINGS.UI.DATACOLLECTION_POPUP.BODY = nil
+	
+    STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_TITLE = nil
+    STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_DESC = nil
+    STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_RE_ENABLE = nil
+    STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_OK = nil
+	
+	STRINGS.UI.OPTIONS.BUGREPORT = nil
+    STRINGS.UI.OPTIONS.DYNAMICCONTENT_ENABLE = nil
+
+    STRINGS.UI.BUGREPORTSCREEN.YES = nil
+    STRINGS.UI.BUGREPORTSCREEN.NO = nil
+    STRINGS.UI.BUGREPORTSCREEN.OK = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_SUCCESS_TITLE = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_SUCCESS = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_FAILURE_TITLE = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_FAILURE_TEXT = nil
+    STRINGS.UI.BUGREPORTSCREEN.DESCRIPTION_LABEL = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMITTING_TEXT = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_DIALOG_HEADER = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_DIALOG_BODY = nil
+    STRINGS.UI.BUGREPORTSCREEN.SUBMIT_TEXT_PLACEHOLDER = nil
+    STRINGS.UI.BUGREPORTSCREEN.CANCEL_SUBMIT_HEADER = nil
+    STRINGS.UI.BUGREPORTSCREEN.CANCEL_SUBMIT_BODY = nil
+    STRINGS.UI.BUGREPORTSCREEN.ENTER_BUG_DESCRIPTION = nil
+    STRINGS.UI.BUGREPORTSCREEN.CHANGE_BUG_DESCRIPTION = nil
 end

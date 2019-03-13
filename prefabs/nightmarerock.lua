@@ -79,126 +79,100 @@ local function InitializePathFinding(inst, isready)
     end
 end
 
-local function turnonpathfinding(inst)
-    _ispathfinding:set(true)
-end
-
-local function turnoffpathfinding(inst)
-    _ispathfinding:set(false)
-end
-
-local function setactivephysics(inst)
+local function updatephysics(inst)
     inst.Physics:SetCollisionGroup(COLLISION.OBSTACLES)
     inst.Physics:ClearCollisionMask()
     inst.Physics:CollidesWith(COLLISION.WORLD)
-    inst.Physics:CollidesWith(COLLISION.ITEMS)
-    inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+	if not inst.conceal then
+		inst.Physics:CollidesWith(COLLISION.ITEMS)
+		if inst.active then
+			inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+		end
+	end
 end
 
-local function setinactivephysics(inst)
-    inst.Physics:SetCollisionGroup(COLLISION.OBSTACLES)
-    inst.Physics:ClearCollisionMask()
-    inst.Physics:CollidesWith(COLLISION.WORLD)
-    inst.Physics:CollidesWith(COLLISION.ITEMS)
+local function OnActiveStateChanged(inst)
+	inst.active = inst.active_queue
+	inst._ispathfinding:set(inst.active_queue and not inst.conceal)
+	updatephysics(inst)
 end
 
-local function transitionactive(inst)
-    inst.active = true
-    inst.AnimState:PlayAnimation("raise")
-    inst.AnimState:PushAnimation("idle_active", true)
-    setactivephysics(inst)
-    inst._ispathfinding:set(true)
-    inst.SoundEmitter:PlaySound("dontstarve/sanity/shadowrock_up")
-    SpawnPrefab("sanity_raise").Transform:SetPosition(inst.Transform:GetWorldPosition())
+local function OnConcealStateChanged(inst)
+	inst.conceal = inst.conceal_queued
+	if not inst.conceal then
+		LaunchAndClearArea(inst, COLLISION_SIZE, 0.5, 0.5, .2, COLLISION_SIZE, false)
+	end
+
+	OnActiveStateChanged(inst)
 end
 
-local function transitioninactive(inst)
-    inst.active = false
-    inst.AnimState:PlayAnimation("lower")
-    inst.AnimState:PushAnimation("idle_inactive", true)
-    setinactivephysics(inst)
-    inst._ispathfinding:set(false)
-    inst.SoundEmitter:PlaySound("dontstarve/sanity/shadowrock_down")
-    SpawnPrefab("sanity_lower").Transform:SetPosition(inst.Transform:GetWorldPosition())
-end
-
-local function setactive(inst, force)
-    if not force and (inst.active or inst.activatetask ~= nil) then
-        return
-    end
-
-    if inst.deactivatetask ~= nil then
-        inst.deactivatetask:Cancel()
-        inst.deactivatetask = nil
-    end
-
-    if force then
-        if inst.activatetask ~= nil then
-            inst.activatetask:Cancel()
-            inst.activatetask = nil
-        end
-
-        inst.active = true
-        inst.AnimState:PlayAnimation("idle_active")
-        setactivephysics(inst)
-        inst._ispathfinding:set(true)
-    else
-        inst.activatetask = inst:DoTaskInTime(math.random(), transitionactive) 
-    end
-end
-
-local function setinactive(inst, force)
-    if not force and (not inst.active or inst.deactivatetask ~= nil) then
-        return
-    end
-
-    if inst.activatetask ~= nil then
-        inst.activatetask:Cancel()
-        inst.activatetask = nil
-    end
-
-    if force then
-        if inst.deactivatetask ~= nil then
-            inst.deactivatetask:Cancel()
-            inst.deactivatetask = nil
-        end
-
-        inst.active = false
-        inst.AnimState:PlayAnimation("idle_inactive")
-        setinactivephysics(inst)
-        inst._ispathfinding:set(false)
-    else
-        inst.deactivatetask = inst:DoTaskInTime(math.random(), transitioninactive)  
-    end
+local function dotransition(inst)
+	inst.transition_task = nil
+	if inst.conceal ~= inst.conceal_queued then
+		if not inst.sg:HasStateTag("busy") then
+			if inst.conceal_queued then
+				inst.sg:GoToState("conceal", inst.active)
+			else
+				inst.sg:GoToState("reveal")
+			end
+		end
+	elseif inst.active ~= inst.active_queue and not inst.conceal_queued then
+		inst.sg:GoToState(inst.active_queue and "raise" or "lower")
+	end
 end
 
 local function refresh(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    if inst.active then
+	if inst.conceal or inst.conceal_queued then
+		-- nothing to do here
+    elseif inst.active then
+        inst.active_queue = false
         for i, v in ipairs(AllPlayers) do
             if not v:HasTag("notarget") and
                 v.components.sanity ~= nil and
                 v.components.sanity:IsSane() == inst.activeonsane then
                 local p1x, p1y, p1z = v.Transform:GetWorldPosition()
                 if distsq(x, z, p1x, p1z) < FAR_DIST_SQ then
-                    return
+			        inst.active_queue = true
+                    break
                 end
             end
         end
-        setinactive(inst)
     else
+		inst.active_queue = false
         for i, v in ipairs(AllPlayers) do
             if not v:HasTag("notarget") and
                 v.components.sanity ~= nil and
                 v.components.sanity:IsSane() == inst.activeonsane then
                 local p1x, p1y, p1z = v.Transform:GetWorldPosition()
                 if distsq(x, z, p1x, p1z) < NEAR_DIST_SQ then
-                    setactive(inst)
-                    return
+			        inst.active_queue = true
+                    break
                 end
             end
         end
     end
+
+	if (inst.conceal ~= inst.conceal_queued or inst.active_queue ~= inst.active) and inst.transition_task == nil then
+        inst.transition_task = inst:DoTaskInTime(math.random(), dotransition) 
+	end
+end
+
+local function AddRefreshTask(inst)
+	if inst._refreshtask == nil then
+		inst._refreshtask = inst:DoPeriodicTask(UPDATE_INTERVAL, refresh, UPDATE_OFFSET)
+
+		--Stagger updates for next spawned entity
+		UPDATE_OFFSET = UPDATE_OFFSET + FRAMES
+		if UPDATE_OFFSET > UPDATE_INTERVAL then
+			UPDATE_OFFSET = 0
+		end
+	end
+end
+
+local function ConcealForMinigame(inst, conceal)
+	inst.conceal_queued = conceal or nil
+	inst.active_queue = false
 end
 
 local function getstatus(inst)
@@ -210,7 +184,7 @@ local function onremove(inst)
     OnIsPathFindingDirty(inst)
 end
 
-local function commonfn()
+local function commonfn(tags)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -228,8 +202,11 @@ local function commonfn()
     inst.AnimState:PlayAnimation("idle_inactive")
 
     inst:AddTag("antlion_sinkhole_blocker")
+	for _, v in ipairs(tags) do
+		inst:AddTag(v)
+	end
 
-    setinactivephysics(inst)
+	updatephysics(inst)
 
     inst._pftable = nil
     inst._ispathfinding = net_bool(inst.GUID, "_ispathfinding", "onispathfindingdirty")
@@ -244,25 +221,28 @@ local function commonfn()
     end
 
     inst.active = false
-    inst.activatetask = nil
-    inst.deactivatetask = nil
-
-    inst:DoPeriodicTask(UPDATE_INTERVAL, refresh, UPDATE_OFFSET)
-
-    --Stagger updates for next spawned entity
-    UPDATE_OFFSET = UPDATE_OFFSET + FRAMES
-    if UPDATE_OFFSET > UPDATE_INTERVAL then
-        UPDATE_OFFSET = 0
-    end
+	inst.active_queue = false
+--    inst.conceal = nil
+--    inst.conceal_queued = nil
+	
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
+
+    inst:SetStateGraph("SGnightmarerock")
+
+	AddRefreshTask(inst)
+
+	inst.OnActiveStateChanged = OnActiveStateChanged
+	inst.OnConcealStateChanged = OnConcealStateChanged
+
+	inst.ConcealForMinigame = ConcealForMinigame
 
     return inst
 end
 
 local function insanityrock()
-    local inst = commonfn()
+    local inst = commonfn({"insanityrock"})
 
     inst.activeonsane = false
 
@@ -270,7 +250,7 @@ local function insanityrock()
 end
 
 local function sanityrock()
-    local inst = commonfn()
+    local inst = commonfn({"sanityrock"})
 
     inst.activeonsane = true
 

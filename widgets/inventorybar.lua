@@ -829,7 +829,7 @@ function Inv:UpdateCursorText()
                 local can_take_active_item = active_item ~= nil and self.active_slot.container.CanTakeItemInSlot == nil or self.active_slot.container:CanTakeItemInSlot(active_item, self.active_slot.num)
 
                 if active_item ~= nil and active_item.replica.stackable ~= nil and
-                    ((inv_item ~= nil and inv_item.prefab == active_item.prefab) or (inv_item == nil and can_take_active_item)) then
+                    ((inv_item ~= nil and inv_item.prefab == active_item.prefab and inv_item.skinname == active_item.skinname) or (inv_item == nil and can_take_active_item)) then
                     table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_PUTSTACK) .. " " .. STRINGS.UI.HUD.PUTONE)
                 end
 
@@ -841,7 +841,7 @@ function Inv:UpdateCursorText()
                     table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.SELECT)
                     table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. STRINGS.UI.HUD.DROP)
                 elseif inv_item ~= nil and active_item ~= nil then
-                    if inv_item.prefab == active_item.prefab and active_item.replica.stackable ~= nil then
+                    if inv_item.prefab == active_item.prefab and inv_item.skinname == active_item.skinname and active_item.replica.stackable ~= nil then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.PUT)
                     elseif can_take_active_item then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.SWAP)

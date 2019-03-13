@@ -5,6 +5,7 @@ local Screen = require "widgets/screen"
 local Subscreener = require "screens/redux/subscreener"
 local Text = require "widgets/text"
 local Widget = require "widgets/widget"
+local SkinPresetsPopup = require "screens/redux/skinpresetspopup"
 
 local TEMPLATES = require("widgets/redux/templates")
 
@@ -49,15 +50,15 @@ function WardrobeScreen:_DoInit()
     self.puppet:SetScale(4)
     self.puppet:SetClickable(false)
 
-    self.characterquote = self.puppet_root:AddChild(Text(CHATFONT, 21))
+    self.characterquote = self.puppet_root:AddChild(Text(TALKINGFONT, 28))
     self.characterquote:SetHAlign(ANCHOR_MIDDLE)
     self.characterquote:SetVAlign(ANCHOR_TOP)
     self.characterquote:SetPosition(0,-20)
     self.characterquote:SetRegionSize(300, 60)
     self.characterquote:EnableWordWrap(true)
+    self.characterquote:SetColour(UICOLOURS.IVORY)
 
-    -- Can't load skins until above widgets exist. Can't create
-    -- ClothingExplorerPanel until skins are loaded.
+    -- Can't load skins until above widgets exist. Can't create ClothingExplorerPanel until skins are loaded.
 	self:_LoadSavedSkins()
 
     local reader = function(item_key)
@@ -80,6 +81,17 @@ function WardrobeScreen:_DoInit()
         })
 
     if not TheInput:ControllerAttached() then
+        self.presetsbutton = self.root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "save.tex", STRINGS.UI.SKIN_PRESETS.TITLE, false, false, function()
+			    self:_LoadSkinPresetsScreen()
+		    end
+	    ))
+	    self.presetsbutton:SetPosition(-480, 212)
+        self.presetsbutton:SetScale(0.77)
+        self.menu:SetFocusChangeDir(MOVE_UP, self.presetsbutton)
+        self.presetsbutton:SetFocusChangeDir(MOVE_DOWN, self.menu)
+        self.presetsbutton:SetFocusChangeDir(MOVE_RIGHT, self.subscreener:GetActiveSubscreenFn())
+        
+
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
                     self:_CloseScreen()
@@ -119,7 +131,8 @@ function WardrobeScreen:_MakeMenu(subscreener)
 
     self:_UpdateMenu(self.selected_skins)
     
-    return self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 65, nil, nil, true))
+    self.menu = self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 65, nil, nil, false))
+    return self.menu
 end
 
 function WardrobeScreen:_CloseScreen()
@@ -127,43 +140,62 @@ function WardrobeScreen:_CloseScreen()
 
     TheFrontEnd:FadeBack()
 end
-
-function WardrobeScreen:_ValidateSkins()
-    for key,item_key in pairs(self.selected_skins) do
-        if not TheInventory:CheckOwnership(self.selected_skins[key])
-            or (key ~= "base" and not IsValidClothing(self.selected_skins[key]))
-            then
-            self.selected_skins[key] = nil
-        end
-    end
-    if not self.selected_skins.base
-        or self.selected_skins.base == self.currentcharacter
-        or self.selected_skins.base == ""
-        then
-        self.selected_skins.base = self.currentcharacter.."_none"
-    end
-end
 			
 function WardrobeScreen:_SaveLoadout()
-    self:_ValidateSkins()
-    self.user_profile:SetSkinsForCharacter(self.currentcharacter, self.selected_skins.base, self.selected_skins)
+    self.user_profile:SetSkinsForCharacter(self.currentcharacter, self.selected_skins)
+end
+
+function WardrobeScreen:_LoadSkinPresetsScreen()
+    TheFrontEnd:PushScreen( SkinPresetsPopup( self.user_profile, self.currentcharacter, self.selected_skins, function(skins) self:ApplySkinPresets(skins) end ) )
+end
+
+function WardrobeScreen:ApplySkinPresets(skins) 
+    if skins.base == nil then
+        skins.base = self.currentcharacter.."_none"
+    end
+    
+    if skins.body == nil then
+        skins.body = "body_default1"
+    end
+
+    if skins.hand == nil then
+        skins.hand = "hand_default1"
+    end
+
+    if skins.legs == nil then
+        skins.legs = "legs_default1"
+    end
+
+    if skins.feet == nil then
+        skins.feet = "feet_default1"
+    end
+    
+    self.selected_skins = shallowcopy(skins)
+    self.preview_skins = shallowcopy(skins)
+
+    ValidateItemsLocal(self.currentcharacter, self.selected_skins)
+    ValidatePreviewItems(self.currentcharacter, self.preview_skins)
+    
+    for _,screen in pairs(self.subscreener.sub_screens) do
+        screen:ClearSelection() --we need to clear the selection, so that the refresh will apply without re-selection of previously selected items overriding
+    end
+
+    self:_RefreshAfterSkinsLoad()
 end
 
 function WardrobeScreen:_LoadSavedSkins()
-	local saved_base = self.user_profile:GetBaseForCharacter(self.currentcharacter)
-	if not saved_base or saved_base == "" then -- checking == "" is for legacy profiles
-		saved_base = self.currentcharacter.."_none"
-	end
-    self.selected_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter, saved_base)
-
-    self.selected_skins.base = saved_base
+    self.selected_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter)
     self.preview_skins = shallowcopy(self.selected_skins)
 
-    -- Creating the subscreens requires skins to be loaded, so we might not
-    -- have subscreener yet.
+    self:_RefreshAfterSkinsLoad()
+end
+
+function WardrobeScreen:_RefreshAfterSkinsLoad()
+    -- Creating the subscreens requires skins to be loaded, so we might not have subscreener yet.
     if self.subscreener then
-        for key,item in pairs(self.preview_skins) do
-            self.subscreener.sub_screens[key]:RefreshInventory()
+        for _,sub_screen in pairs(self.subscreener.sub_screens) do
+            sub_screen.filter_bar.picker.last_interaction_target = nil --this is to ensure that the refresh doesn't invalidate any undo action that is being done.
+            sub_screen:RefreshInventory()
         end
     end
 
@@ -176,14 +208,9 @@ function WardrobeScreen:_CheckDirty()
         return
     end
 
-    local saved_base = self.user_profile:GetBaseForCharacter(self.currentcharacter)
-    if not saved_base or saved_base == "" then -- checking == "" is for legacy profiles
-        saved_base = self.currentcharacter.."_none"
-    end
-    local saved_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter, saved_base)
+    local saved_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter)
 
-    -- Either table may have missing entries for defaults (except
-    -- base), so check all keys.
+    -- Either table may have missing entries for defaults (except base), so check all keys.
     local all_keys = ArrayUnion(table.getkeys(saved_skins), table.getkeys(self.selected_skins))
     local dirty = false
     for i,key in ipairs(all_keys) do
@@ -204,52 +231,20 @@ function WardrobeScreen:_SelectSkin(item_type, item_key, is_selected, is_owned)
     if is_previewing then
         --selecting the item or previewing an item
         self.preview_skins[item_type] = item_key
-    else
-        --deselecting an item
-        self.preview_skins[item_type] = nil
+    end
+    if is_owned and is_selected then
+        self.selected_skins[item_type] = item_key
     end
 
-    local skins_from_head = nil
-    if item_type == "base" then
-        local head = item_key
-        if not is_previewing then
-            head = self.currentcharacter .."_none"
-        end
-        local saved_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter, head)
-        if saved_skins.base then
-            -- Have data to load. (Slots may be empty to show default items.)
-            skins_from_head = saved_skins
-        end
-        if skins_from_head then
-            self.preview_skins = skins_from_head
-        end
-    end
-
-    if is_owned then
-        if skins_from_head then
-            self.selected_skins = {}
-            for key,val in pairs(skins_from_head) do
-                if TheInventory:CheckOwnership(val) then
-                    self.selected_skins[key] = skins_from_head[key]
-                else
-                    -- Most likely this was a _none head.
-                    self.selected_skins[key] = nil
-                end
-            end
-        elseif is_selected then
-            self.selected_skins[item_type] = item_key
-        else
-            self.selected_skins[item_type] = nil
-        end
-    end
     self:_ApplySkins(self.preview_skins)
     self:_UpdateMenu(self.selected_skins)
 end
 
 function WardrobeScreen:_ApplySkins(skins)
-    self:_ValidateSkins()
-    local skin_base = skins.base or self.currentcharacter.."_none"
-    self.puppet:SetSkins(self.currentcharacter, skin_base, skins)
+    ValidateItemsLocal(self.currentcharacter, self.selected_skins)
+    ValidatePreviewItems(self.currentcharacter, skins)
+
+    self.puppet:SetSkins(self.currentcharacter, skins.base, skins)
 	self:_SetPortrait()
     self:_CheckDirty()
 end
@@ -258,8 +253,8 @@ function WardrobeScreen:_UpdateMenu(skins)
     if self.button_base then
         if skins["base"] then
             self.button_base:SetItem(skins["base"])
-        else      
-            print("Base should never be nil in skins")
+        else
+            self.button_base:SetItem(self.currentcharacter.."_none")
         end
     end
     if self.button_body then
@@ -312,6 +307,15 @@ function WardrobeScreen:_SetPortrait()
     self.characterquote:SetString(STRINGS.SKIN_QUOTES[skin] or STRINGS.CHARACTER_QUOTES[herocharacter] or "")
 end
 
+function WardrobeScreen:OnBecomeActive()
+    self._base.OnBecomeActive(self)
+    if self.subscreener then
+        for key,sub_screen in pairs(self.subscreener.sub_screens) do
+            sub_screen:RefreshInventory()
+        end
+    end
+end
+
 function WardrobeScreen:RefreshInventory(animateDoodad)
     self.doodad_count:SetCount(TheInventory:GetCurrencyAmount(),animateDoodad)
 end
@@ -320,7 +324,8 @@ function WardrobeScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.WARDROBESCREEN.ACCEPT)
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1 ) .. " " .. STRINGS.UI.WARDROBESCREEN.RESET)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE ) .. " " .. STRINGS.UI.WARDROBESCREEN.RESET)
+	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SKIN_PRESETS.TITLE)
 
 	return table.concat(t, "  ")
 end
@@ -333,8 +338,12 @@ function WardrobeScreen:OnControl(control, down)
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
 
-    elseif not down and control == CONTROL_MENU_MISC_1 then
+    elseif not down and control == CONTROL_PAUSE then
         self:_LoadSavedSkins()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        return true
+    elseif not down and control == CONTROL_MENU_MISC_1 then
+        self:_LoadSkinPresetsScreen()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
     end

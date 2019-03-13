@@ -10,35 +10,21 @@ local TEMPLATES = require "widgets/redux/templates"
 
 local ServerListingScreen = require "screens/serverlistingscreen"
 
-local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy, failedEmail)
+local NoAuthenticationPopupDialogScreen = Class(Screen, function(self)
 	Screen._ctor(self, "NoAuthenticationPopupDialogScreen")
 
     self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
 
-	local title_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_TITLE
-	local body_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_BODY
-	if legitCopy then
-        if failedEmail then
-            title_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE_FAILEDEMAIL
-            body_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY_FAILEDEMAIL
-            body_str = body_str .. "\n\n" .. STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2_FAILEDEMAIL
-        else
-            title_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE
-            body_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY
-            body_str = body_str .. "\n\n" .. STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2
-        end
-    end
+	local title_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.TITLE
+	local body_str = STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY .. "\n\n" .. STRINGS.UI.NOAUTHENTICATIONSCREEN.BODY2
 
     local go_button_text = STRINGS.UI.NOAUTHENTICATIONSCREEN.CREATEBUTTON
-    if failedEmail then
-        go_button_text = STRINGS.UI.NOAUTHENTICATIONSCREEN.FAILEDEMAILBUTTON
-    end
     local buttons = 
     {
         {text=go_button_text, cb = function() 
             local prefer_to_embed = true
-            VisitURL(TheFrontEnd:GetAccountManager():GetSteamLoginURL(failedEmail), prefer_to_embed )
+            VisitURL(TheFrontEnd:GetAccountManager():GetAccountURL(), prefer_to_embed )
             TheFrontEnd:PopScreen()
         end},
         {text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function() 
@@ -46,15 +32,6 @@ local NoAuthenticationPopupDialogScreen = Class(Screen, function(self, legitCopy
             TheFrontEnd:PopScreen()             
         end}
     }
-    if not legitCopy then
-        buttons = 
-        {
-            {text=STRINGS.UI.NOAUTHENTICATIONSCREEN.BAD_BUTTON, cb = function() 
-                self:Disable()
-                TheFrontEnd:PopScreen() 
-            end}
-        }
-    end
     	
     self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(800, 260, title_str, buttons, nil, body_str))
 

@@ -621,7 +621,7 @@ local RPC_HANDLERS =
             return
         end
         local container = srccontainer.components.container
-        if container ~= nil then
+        if container ~= nil and container:IsOpenedBy(player) then
             container:MoveItemFromAllOfSlot(slot, destcontainer or player)
         end
     end,
@@ -634,7 +634,7 @@ local RPC_HANDLERS =
             return
         end
         local container = srccontainer.components.container
-        if container ~= nil then
+        if container ~= nil and container:IsOpenedBy(player) then
             container:MoveItemFromHalfOfSlot(slot, destcontainer or player)
         end
     end,

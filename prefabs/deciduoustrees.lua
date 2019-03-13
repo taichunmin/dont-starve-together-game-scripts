@@ -401,7 +401,7 @@ local growth_stages =
     --{ name = "old", time = function(inst) return GetRandomWithVariance(TUNING.DECIDUOUS_GROW_TIME[4].base, TUNING.DECIDUOUS_GROW_TIME[4].random) end, fn = SetOld, growfn = GrowOld },
 }
 
-local function chop_tree(inst, chopper, chops)
+local function chop_tree(inst, chopper, chopsleft, numchops)
     if not (chopper ~= nil and chopper:HasTag("playerghost")) then
         inst.SoundEmitter:PlaySound(
             chopper ~= nil and chopper:HasTag("beaver") and

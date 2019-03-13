@@ -11,6 +11,8 @@ local CharacterSelect = require "widgets/redux/characterselect"
 local WaitingForPlayers = require "widgets/waitingforplayers"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 
+local LavaarenaBookWidget = require "widgets/redux/lavaarena_book"
+
 local TEMPLATES = require "widgets/redux/templates"
 
 
@@ -69,6 +71,25 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
     self.wxp:SetPosition(0, show_mvp_cards and -145 or 70)
 
 	local info_y = 285
+	if outcome.lb_submit == false then
+		local score = self:AddChild(Text(CHATFONT, 18, STRINGS.UI.WXPLOBBYPANEL.LEADERBOARD_ERROR .. " ("..tostring(outcome.lb_response)..")"))
+		score:SetPosition(190, info_y)
+		score:SetColour(UICOLOURS.RED)
+		score:SetRegionSize(500, 20)
+		score:SetHAlign(ANCHOR_RIGHT)
+		info_y = info_y - 20
+	end
+	if outcome.tournament_ticket ~= nil and Client_IsTournamentActive() and TheSim:IsBorrowed() then
+		local score = self:AddChild(Text(CHATFONT, 18, STRINGS.UI.WXPLOBBYPANEL.STEAM.TOURNAMENTS_NO_ACCOUNT_SHARING))
+		score:SetPosition(190, info_y)
+		score:SetColour(UICOLOURS.RED)
+		score:SetRegionSize(500, 20)
+		score:SetHAlign(ANCHOR_RIGHT)
+		info_y = info_y - 20
+	end
+
+
+	info_y = 285
 
 	if outcome.score ~= nil then
 		local score = self:AddChild(Text(CHATFONT, 18, subfmt(STRINGS.UI.WXPLOBBYPANEL.SCORE, {score = outcome.score})))
@@ -92,6 +113,7 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 		match_time:SetColour(UICOLOURS.GOLD)
 		match_time:SetRegionSize(400, 20)
 		match_time:SetHAlign(ANCHOR_LEFT)
+		info_y = info_y - 20
 	end		
 	if outcome.total_deaths ~= nil then
 		local text = outcome.total_deaths == 0 and STRINGS.UI.WXPLOBBYPANEL.NO_DEATHS or subfmt(STRINGS.UI.WXPLOBBYPANEL.DEATHS, {deaths = outcome.total_deaths})
@@ -156,11 +178,7 @@ local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
             OnCharacterClick,
             {"random"}
         ))
-	if TheNet:GetServerGameMode() == "lavaarena" then
-	    self:SetPosition(300, 170)
-	else
-	    self:SetPosition(300, 100)
-	end
+    self:SetPosition(300, 100)
     
     self.focus_forward = self.character_scroll_list
     
@@ -174,11 +192,7 @@ local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
 		if Widget.OnControl(self, control, down) then return true end
 
 		if TheInput:ControllerAttached() then
-			if down and control == CONTROL_MENU_MISC_2 then
-				OnCharacterClick("random")
-				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-				return true
-			elseif (not down) and control == CONTROL_PAUSE then
+			if (not down) and control == CONTROL_PAUSE then
 				OnCharacterClick(self.character_scroll_list.selectedportrait.currentcharacter)
 				return true
 			end
@@ -190,25 +204,27 @@ local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
 		return true
 	end
 
-	function self:GetHelpText()
+	--[[function self:GetHelpText()
 	    local controller_id = TheInput:GetControllerID()
 		local t = {}
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. "  " .. STRINGS.UI.LOBBYSCREEN.RANDOMCHAR)
 	    return table.concat(t, "  ")
-	end
+	end]]
 end)
 
 local LoadoutPanel = Class(LobbyPanel, function(self, owner)
     LobbyPanel._ctor(self, "LoadoutPanel")
-
+    
     self:SetPosition(-160, 0)
 
 	self.title = STRINGS.UI.COLLECTIONSCREEN.SKINS
 	self.next_button_title = GetGameModeProperty("lobbywaitforallplayers") and STRINGS.UI.LOBBYSCREEN.SELECT or STRINGS.UI.LOBBYSCREEN.START
 
-	self.loadout = self:AddChild(LoadoutSelect(owner.profile))
-    self.loadout:SelectPortrait(owner.lobbycharacter)
-    self.loadout:StartLoadout()
+	self.loadout = self:AddChild(LoadoutSelect(owner.profile, owner.lobbycharacter))
+
+    function self:OnShow()
+		self.loadout:SetDefaultMenuOption()
+    end
 
     self.focus_forward = self.loadout
 
@@ -233,11 +249,33 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. "  " .. self.next_button_title)
 	    return table.concat(t, "  ")
 	end
+    
+    function self:OnBecomeActive()
+        if self.loadout and self.loadout.subscreener then
+            for key,sub_screen in pairs(self.loadout.subscreener.sub_screens) do
+                sub_screen:RefreshInventory()
+            end
+        end
+    end
 
 	function self:OnNextButton()
-        self.loadout.dressup:OnClose()
-		owner.currentskins = self.loadout.dressup:GetSkinsForGameStart()
-		owner.character_for_game = self.loadout.dressup.currentcharacter
+        --self.loadout.dressup:OnClose()
+		owner.currentskins = self.loadout.selected_skins
+		owner.character_for_game = self.loadout.currentcharacter
+        
+	    owner.profile:SetCollectionTimestamp(GetInventoryTimestamp())
+
+        --We can't be random character at this point
+        if owner.character_for_game == "random" then
+		    local all_chars = ExceptionArrays(GetActiveCharacterList(), MODCHARACTEREXCEPTIONS_DST)
+		    owner.character_for_game = all_chars[math.random(#all_chars)]
+            
+            local bases = owner.profile:GetSkinsForPrefab(owner.character_for_game)
+            dumptable(bases)
+            owner.currentskins.base = GetRandomItem(bases)
+        else
+            self.loadout:_SaveLoadout() --only save the loadout when it's not a random character
+        end
 
 		if GetGameModeProperty("lobbywaitforallplayers") then
 			if owner.lobbycharacter == "random" then
@@ -254,7 +292,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 	end
 end)
 
-local WaitingPanel = Class(LobbyPanel, function(self, owner, profile)
+local WaitingPanel = Class(LobbyPanel, function(self, owner)
     LobbyPanel._ctor(self, "WaitingPanel")
 
 	self.title = STRINGS.UI.LOBBYSCREEN.WAITING_FOR_PLAYERS_TITLE
@@ -294,6 +332,69 @@ local WaitingPanel = Class(LobbyPanel, function(self, owner, profile)
 	end
 end)
 
+local LavaarenaFestivalBookPannel = Class(LobbyPanel, function(self, owner)
+    LobbyPanel._ctor(self, "LavaarenaFestivalBookPannel")
+
+	self.title = ""
+	self.next_button_title = STRINGS.UI.LOBBYSCREEN.NEXT
+
+	self.eventbook = self:AddChild(LavaarenaBookWidget(owner.chat_sidebar.chatbox, nil, GetFestivalEventSeasons(FESTIVAL_EVENTS.LAVAARENA)))
+	self.eventbook:SetPosition(0, 0)
+	
+	self.focus_forward = self.eventbook
+
+	function self:OnControl(control, down)
+		if self.eventbook:OnControlTabs(control, down) then
+			return true 
+		end
+
+		if Widget.OnControl(self, control, down) then return true end
+	end
+
+	function self:OnNextButton()
+		return true
+	end
+
+	function self:OnUpdate(dt)
+		self.eventbook:OnUpdate(dt)
+	end
+
+	function self:OnControl(control, down)
+		if Widget.OnControl(self, control, down) then return true end
+
+        if TheInput:ControllerAttached() and (not down) and (control == CONTROL_PAUSE or control == CONTROL_ACCEPT) and owner.next_button:IsEnabled() then
+			owner.next_button:onclick()
+			return true
+        end
+	end
+
+	function self:GetHelpText()
+	    local controller_id = TheInput:GetControllerID()
+		local t = {}
+		if owner.next_button:IsEnabled() then
+			table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. "  " .. owner.next_button.text:GetString())
+		end
+--		if not self.eventbook.focus then
+--			table.insert(t, self.eventbook:GetHelpText())
+--		end
+	    return table.concat(t, "  ")
+	end
+
+	owner.next_button:Disable()
+	local function OnRecievedData() 
+		owner.next_button:Enable()
+	end
+
+	if not Lavaarena_CommunityProgression:IsQueryActive() then
+		self.inst:DoTaskInTime(0, OnRecievedData)
+	end
+	self.inst:ListenForEvent("community_clientdata_updated", OnRecievedData, TheGlobalInstance)
+
+
+end)
+
+
+
 
 local LobbyScreen = Class(Screen, function(self, profile, cb)
     Screen._ctor(self, "LobbyScreen")
@@ -310,8 +411,11 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 	-- lavaarena
 --	Settings.match_results.mvp_cards = json.decode('[{"user":{"name":"ScqTTFyott","prefab":"wickerbottom","userid":"FU_229530977","base":"wickerbottom_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["kills2",234]},{"user":{"name":"Scott","prefab":"wilson","userid":"FU_229530977","base":"wilson_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken2",546]},{"user":{"name":"Scott","prefab":"wes","userid":"FU_229530977","base":"wes_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["blowdarts",5203]},{"user":{"name":"ThisIsAVeryLongName","prefab":"wolfgang","userid":"FU_229530977","base":"wolfgang_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["standards",65]},{"user":{"name":"Scott","prefab":"waxwell","userid":"FU_229530977","base":"waxwell_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken",87]},{"user":{"name":"Scott","prefab":"webber","userid":"FU_229530977","base":"webber_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["aggroheld",34]}]')
 --	Settings.match_results.wxp_data = {}
---	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="DAILY_FIRST_WIN", val=2000}, {desc="WIN", val=1000}, {desc="DURATION", val=500}, {desc="webber_victory", val=1000}, {desc="webber_merciless", val=500}, {desc="webber_darts", val=500}, {desc="nodeaths_self", val=1000}, {desc="nodeaths_team", val=3000}, {desc="nodeaths_uniqueteam", val=5500}, {desc="wintime_30", val=1500}, {desc="wintime_25", val=3500}, {desc="wintime_20", val=5500}} }
+--	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="MILESTONE_6", val=600}, {desc="DURATION", val=235}, {desc="CONSECUTIVE", val=456}, {desc="FRIENDS_BONUS", val=456}, {desc="UNIQUE_CHARACTERS", val=250}, {desc="NO_DEATHS_PLAYER", val=750}, {desc="NO_DEATHS_TEAM", val=750}, {desc="laq_dailywin-dev-001", val=5000}, {desc="laq_dailymatch-dev-001", val=500}, {desc="laq_reviver-dev-001", val=500}} }
 --	Settings.match_results.outcome = {won = true, time = 333}
+--	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="MILESTONE_1", val=601}, {desc="MILESTONE_2", val=602}, {desc="MILESTONE_3", val=603}, {desc="MILESTONE_4", val=604}, {desc="MILESTONE_5", val=605}, {desc="MILESTONE_6", val=606}, {desc="DURATION", val=235}, {desc="CONSECUTIVE", val=456}, {desc="FRIENDS_BONUS", val=456}, {desc="UNIQUE_CHARACTERS", val=250}, {desc="NO_DEATHS_PLAYER", val=750}, {desc="NO_DEATHS_TEAM", val=750}, {desc="laq_dailywin-dev-001", val=5000}, {desc="laq_dailymatch-dev-001", val=500}, {desc="laq_reviver-dev-001", val=500}} }
+--	Settings.match_results.wxp_data[TheNet:GetUserID()] = { new_xp = 7998, match_xp = 5998+500, earned_boxes = 2, details = {{desc="DURATION", val=235}, {desc="MILESTONE_4", val=200}, {desc="laq_dailywin-dev-001", val=5000}, {desc="laq_dailymatch-dev-001", val=500}, {desc="laq_reviver-dev-001", val=500}} }
+--	Settings.match_results.outcome = {won = false, time = 333}
 
 	-- quagmire
 --	Settings.match_results.mvp_cards = json.decode('[{"user":{"name":"ScqTTFyott","prefab":"wickerbottom","userid":"FU_229530977","base":"wickerbottom_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["kills2",234]},{"user":{"name":"Scott","prefab":"wilson","userid":"FU_229530977","base":"wilson_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["damagetaken2",546]},{"user":{"name":"Scott","prefab":"wes","userid":"FU_229530977","base":"wes_none","colour":[0.80392156862745,0.30980392156863,0.22352941176471,1]},"beststat":["blowdarts",5203]}]')
@@ -326,7 +430,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
     self.time_to_refresh = REFRESH_INTERVAL
     self.current_panel_index = 0
 
-    self.root = self:AddChild(TEMPLATES.ScreenRoot("screenroot"))
+    self.root = self:AddChild(TEMPLATES.ScreenRoot("lobbyscreen root"))
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
     self.root:AddChild(TEMPLATES.LeftSideBarBackground())	
 
@@ -349,6 +453,9 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 		if server_shutting_down then
 			table.insert(self.panels, {panelfn = ServerLockedPanel})
 		else
+			if TheNet:GetServerGameMode() == "lavaarena" then
+				table.insert(self.panels, {panelfn = LavaarenaFestivalBookPannel})
+			end
 			table.insert(self.panels, {panelfn = CharacterSelectPanel})
 			table.insert(self.panels, {panelfn = LoadoutPanel})
 			table.insert(self.panels, {panelfn = WaitingPanel})
@@ -388,17 +495,27 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 	if not TheNet:IsDedicated() then
 		local player_stats = Settings.match_results.player_stats or TheFrontEnd.match_results.player_stats
 		if player_stats ~= nil and #player_stats.data > 0 then
-			local str = "\nstats_type,"..player_stats.gametype
-			str = str .."\nclient_date," .. os.date("%c")
+			local str = "\nstats_type,".. tostring(player_stats.gametype)
+			str = str .. "\nsession," .. tostring(player_stats.session)
+			str = str .. "\nclient_date," .. os.date("%c")
 			
 			local outcome = Settings.match_results.outcome or TheFrontEnd.match_results.outcome
 			if outcome ~= nil then
-				str = str .. "\nwon," .. (outcome.won and "true" or "false") 
-				str = str .. "\nround," .. tostring(outcome.round)
-				str = str .. "\ntime," .. tostring(math.floor(outcome.time))
-				str = str .. "\nscore," .. tostring(outcome.score)
-				str = str .. "\ntributes_success," .. tostring(outcome.tributes_success)
-				str = str .. "\ntributes_failed," .. tostring(outcome.tributes_failed)
+				if TheNet:GetServerGameMode() == "quagmire" then
+					str = str .. "\nlb_submit," .. tostring(outcome.lb_submit) .. ", " .. tostring(outcome.lb_response)
+					str = str .. "\nwon," .. (outcome.won and "true" or "false") 
+					str = str .. "\nround," .. tostring(outcome.round)
+					str = str .. "\ntime," .. tostring(math.floor(outcome.time))
+					str = str .. "\nscore," .. tostring(outcome.score)
+					str = str .. "\ntributes_success," .. tostring(outcome.tributes_success)
+					str = str .. "\ntributes_failed," .. tostring(outcome.tributes_failed)
+				else
+					str = str .. "\nwon," .. (outcome.won and "true" or "false") 
+					str = str .. "\nround," .. tostring(outcome.round)
+					str = str .. "\ntime," .. tostring(math.floor(outcome.time))
+					str = str .. "\ntotal_deaths," .. tostring(outcome.total_deaths)
+					str = str .. "\nprogression," .. tostring(outcome.progression)
+				end
 			end
 			
 			local userid_index = 0
@@ -441,6 +558,12 @@ end)
 function LobbyScreen:OnBecomeActive()
     self._base.OnBecomeActive(self)
     self:StartLobbyMusic()
+
+    if self.panel ~= nil and self.panel.OnBecomeActive ~= nil then
+		self.panel:OnBecomeActive()
+	end
+
+	--lavaarena_soaktest(self.cb)
 end
 
 function LobbyScreen:OnDestroy()

@@ -22,7 +22,7 @@ end
 
 
 -------------------------------------------------------------------------------------------------------
-local QuagmireRecipeBook = Class(Widget, function(self, parent_screen)
+local QuagmireRecipeBook = Class(Widget, function(self, parent_screen, season)
     Widget._ctor(self, "QuagmireRecipeBook")
 
     self.parent_screen = parent_screen
@@ -381,10 +381,9 @@ function QuagmireRecipeBook:CreateRecipeDetailPanel(data)
 	y = y - 8
 	y = y - body_font_size/2
 	if num_cravings > 0 then
-		local tag_str = table.concat(data.recipe.tags, ", ")
-		local str = STRINGS.UI.RECIPE_BOOK.CRAVINGS[string.upper(data.recipe.tags[1])] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA
+		local str = STRINGS.UI.RECIPE_BOOK.CRAVINGS[string.upper(tostring(data.recipe.tags[1]))] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA
 		for i = 2, num_cravings do
-			str = str..", "..STRINGS.UI.RECIPE_BOOK.CRAVINGS[string.upper(data.recipe.tags[i])] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA
+			str = str..", "..(STRINGS.UI.RECIPE_BOOK.CRAVINGS[string.upper(tostring(data.recipe.tags[i]))] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA)
 		end
 		local tags = details_root:AddChild(Text(HEADERFONT, body_font_size, str, UICOLOURS.BROWN_DARK))
 		tags:SetPosition(0, y)
@@ -413,7 +412,7 @@ function QuagmireRecipeBook:CreateRecipeDetailPanel(data)
 	if num_stations > 0 then
 		local str = STRINGS.UI.RECIPE_BOOK.STATIONS[string.upper(data.recipe.station[1])] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA
 		for i = 2, num_stations do
-			str = str .. ", " .. STRINGS.UI.RECIPE_BOOK.STATIONS[string.upper(data.recipe.station[i])] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA
+			str = str .. ", " .. (STRINGS.UI.RECIPE_BOOK.STATIONS[string.upper(data.recipe.station[i])] or STRINGS.UI.RECIPE_BOOK.UNKNOWN_DATA)
 		end
 		local body = details_root:AddChild(Text(HEADERFONT, body_font_size, str, UICOLOURS.BROWN_DARK))
 		body:SetPosition(0, y)
@@ -610,14 +609,17 @@ function QuagmireRecipeBook:BuildRecipeBook()
 			self.all_recipes[id].id_str = STRINGS.UI.RECIPE_BOOK.SYRUP_RECIPE_ID
 		end
 
-		local is_klump_loaded = IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..client_name..".tex")
+		local is_image_loaded = true
+        if QUAGMIRE_USE_KLUMP then
+            is_image_loaded = IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..client_name..".tex")
+        end
 
 		self.all_recipes[id].name = client_name
 		self.all_recipes[id].recipe = recipe
 		self.all_recipes[id].icon = client_name..".tex"
 		if recipe.dish == nil then
 			self.all_recipes[id].atlas = "images/inventoryimages.xml"
-		elseif not is_klump_loaded then
+		elseif not is_image_loaded then
 			self.all_recipes[id].atlas = "images/quagmire_food_common_inv_images_hires.xml"
 			self.all_recipes[id].icon = (recipe.station[1]=="pot" and "goop_" or "burnt_") .. recipe.dish .. ".tex"
 		else

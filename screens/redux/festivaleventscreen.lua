@@ -5,8 +5,10 @@ local QuickJoinScreen = require "screens/redux/quickjoinscreen"
 local Screen = require "widgets/screen"
 local ServerListingScreen = require "screens/redux/serverlistingscreen"
 local PopupDialogScreen = require "screens/redux/popupdialog"
-local AchievementsPanel = require "widgets/redux/achievementspanel"
-local BookWidget = require "widgets/redux/quagmire_book"
+local QuagmireBookWidget = require "widgets/redux/quagmire_book"
+local LavaarenaBookWidget = require "widgets/redux/lavaarena_book"
+
+local FestivalEventScreenInfo = require "widgets/redux/festivaleventscreeninfo"
 
 local TEMPLATES = require("widgets/redux/templates")
 
@@ -32,15 +34,10 @@ function FestivalEventScreen:DoInit()
     if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
         self.bg_anim = self.root:AddChild(TEMPLATES.QuagmireAnim())
     elseif IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
-        self.bg = self.root:AddChild(TEMPLATES.BoarriorBackground())
-        self.bg_anim = self.root:AddChild(TEMPLATES.BoarriorAnim())
+		self.bg = self.root:AddChild(TEMPLATES.PlainBackground())	
+        --self.bg = self.root:AddChild(TEMPLATES.BoarriorBackground())
     end
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(WORLD_FESTIVAL_EVENT)]))
-
-    if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
-		self.achievements = self.root:AddChild(AchievementsPanel(self.user_profile, WORLD_FESTIVAL_EVENT))
-		self.achievements:SetPosition(120,-60)
-	end
 
     self.onlinestatus = self.root:AddChild(OnlineStatus(true))
     self.userprogress = self.root:AddChild(TEMPLATES.UserProgress(function()
@@ -51,15 +48,29 @@ function FestivalEventScreen:DoInit()
     self.menu = self.root:AddChild(self:_MakeMenu())
 	self.menu.reverse = true
 
+	if Client_IsTournamentActive() then
+		self.event_details = self.root:AddChild(FestivalEventScreenInfo("images/quagmire_frontend.xml", "gorge_tournament_info.tex", nil, "https://forums.kleientertainment.com/topic/93336-the-gorge-tournament-has-begun/"))
+		local menu_pos = self.menu:GetPosition()
+		self.event_details:SetPosition(menu_pos.x - 40, menu_pos.y + 280)
+	else 
+		self.event_details = self.root:AddChild(FestivalEventScreenInfo("images/lavaarena_unlocks.xml", "community_unlock_info.tex", STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.URL_LABEL, "https://forums.kleientertainment.com/forge2018/"))
+		local menu_pos = self.menu:GetPosition()
+		self.event_details:SetPosition(menu_pos.x - 20, menu_pos.y + 280)
+	end
+
 	if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
-		self.recipebook = self.root:AddChild(BookWidget(self.user_profile, self.menu))
-		self.recipebook:SetPosition(120, -40)
-		self.recipebook:MoveToFront()
+		self.eventbook = self.root:AddChild(QuagmireBookWidget(self.menu, self.event_details, GetFestivalEventSeasons(FESTIVAL_EVENTS.QUAGMIRE)))
+		self.eventbook:SetPosition(120, -40)
+		self.eventbook:MoveToFront()
 
         PostProcessor:SetColourCubeData(0, "images/colour_cubes/quagmire_cc.tex", "images/colour_cubes/quagmire_cc.tex")
         PostProcessor:SetColourCubeData(1, "images/colour_cubes/quagmire_cc.tex", "images/colour_cubes/quagmire_cc.tex")
         PostProcessor:SetColourCubeLerp(0, 1)
         PostProcessor:SetColourCubeLerp(1, 0)
+	elseif IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
+		self.eventbook = self.root:AddChild(LavaarenaBookWidget(self.menu, self.event_details, GetFestivalEventSeasons(FESTIVAL_EVENTS.LAVAARENA)))
+		self.eventbook:SetPosition(120, -40)
+		self.eventbook:MoveToFront()
 	end
 
     if not TheInput:ControllerAttached() then
@@ -70,6 +81,12 @@ function FestivalEventScreen:DoInit()
                 end
             ))
     end
+
+	if self.event_details ~= nil then
+		self.menu:SetFocusChangeDir(MOVE_UP, self.event_details)
+		self.event_details:SetFocusChangeDir(MOVE_DOWN, self.menu)
+	end
+		
 end
 
 function FestivalEventScreen:_MakeMenu()
@@ -138,23 +155,26 @@ function FestivalEventScreen:OnHostButton()
     }
     TheFrontEnd:PushScreen(CloudServerSettingsPopup(self, self.user_profile, forced_settings))
 end
+
 function FestivalEventScreen:OnBrowseButton()
+	local FORCE_FILTERS = not TheFrontEnd._showalleventservers
+
     local filter_settings = {
-        { is_forced = true, name = "ISDEDICATED",  data = (BRANCH == "dev" and "ANY" or true) },
-        { is_forced = true, name = "GAMEMODE",     data = "ANY" },
-        { is_forced = true, name = "HASPVP",       data = false },
-        { is_forced = true, name = "ISEMPTY",      data = false },
-        { is_forced = true, name = "SEASON",       data = "ANY" },
-        { is_forced = true, name = "MODSENABLED",  data = false },
+        { is_forced = FORCE_FILTERS, name = "ISDEDICATED",  data = (BRANCH == "dev" and "ANY" or true) },
+        { is_forced = FORCE_FILTERS, name = "GAMEMODE",     data = "ANY" },
+        { is_forced = FORCE_FILTERS, name = "HASPVP",       data = false },
+        { is_forced = FORCE_FILTERS, name = "ISEMPTY",      data = not FORCE_FILTERS },
+        { is_forced = FORCE_FILTERS, name = "SEASON",       data = "ANY" },
+        { is_forced = FORCE_FILTERS, name = "MODSENABLED",  data = false },
     }
     if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
         table.insert(filter_settings, { is_forced = true, name = "MINOPENSLOTS", data = "ANY" })
 	end
 
-    local forced_settings = {
+    local forced_settings = not FORCE_FILTERS and {} or {
         intention = "any",
         online = true,
-        isempty = false, --non-nil forced isempty will exclude from total count as well
+        isempty = not FORCE_FILTERS, --non-nil forced isempty will exclude from total count as well
     }
     local cb = nil
     local is_offline = false
@@ -237,7 +257,7 @@ function FestivalEventScreen:OnBecomeActive()
 end
 
 function FestivalEventScreen:OnControl(control, down)
-	if self.recipebook ~= nil and self.recipebook:OnControlTabs(control, down) then
+	if self.eventbook ~= nil and self.eventbook:OnControlTabs(control, down) then
 		return true 
 	end
 
@@ -248,21 +268,11 @@ function FestivalEventScreen:OnControl(control, down)
         TheFrontEnd:FadeBack()
         return true
     end
+end
 
-	if self.achievements ~= nil then
-		if down then
-			if control == CONTROL_SCROLLBACK then
-				if self.achievements.grid:Scroll(-.66) then
-					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
-				end
-				return true
-			elseif control == CONTROL_SCROLLFWD then
-				if self.achievements.grid:Scroll(.66) then
-					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
-				end
-				return true
-			end
-		end
+function FestivalEventScreen:OnUpdate(dt)
+	if self.eventbook ~= nil and self.eventbook.OnUpdate ~= nil then
+		self.eventbook:OnUpdate(dt)
 	end
 end
 
@@ -272,12 +282,8 @@ function FestivalEventScreen:GetHelpText()
 
     table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
-	if self.achievements ~= nil and not self.achievements.grid.focus and self.achievements.grid:CanScroll() then
-	    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK) .. "/" .. TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD) .. " " .. STRINGS.UI.HELP.SCROLL)
-	end
-
-	if self.recipebook ~= nil and not self.recipebook.focus then
-		table.insert(t, self.recipebook:GetHelpText())
+	if self.eventbook ~= nil and not self.eventbook.focus then
+		table.insert(t, self.eventbook:GetHelpText())
 	end
 
     return table.concat(t, "  ")

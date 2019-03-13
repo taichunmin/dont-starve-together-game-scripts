@@ -35,7 +35,7 @@ function Leader:IsFollower(guy)
 end
 
 function Leader:OnAttacked(attacker)
-    if not self:IsFollower(attacker) and self.inst ~= attacker then
+    if attacker ~= nil and not self:IsFollower(attacker) and self.inst ~= attacker and (attacker.components.minigame_participator == nil or (attacker:HasTag("player") and TheNet:GetPVPEnabled())) then
         for k,v in pairs(self.followers) do
             if k.components.combat ~= nil and k.components.follower ~= nil and k.components.follower.canaccepttarget then
                 k.components.combat:SuggestTarget(attacker)
@@ -59,11 +59,13 @@ function Leader:CountFollowers(tag)
 end
 
 function Leader:OnNewTarget(target)
-    for k,v in pairs(self.followers) do
-        if k.components.combat ~= nil and k.components.follower ~= nil and k.components.follower.canaccepttarget then
-            k.components.combat:SuggestTarget(target)
-        end
-    end
+	if target == nil or (target.components.minigame_participator == nil or (target:HasTag("player") and TheNet:GetPVPEnabled())) then
+		for k,v in pairs(self.followers) do
+			if k.components.combat ~= nil and k.components.follower ~= nil and k.components.follower.canaccepttarget then
+				k.components.combat:SuggestTarget(target)
+			end
+		end
+	end
 end
 
 function Leader:RemoveFollower(follower, invalid)

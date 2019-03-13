@@ -35,11 +35,12 @@ local function OnFocusCamera(inst)
     if inst._camerafocusvalue > FRAMES then
         inst._camerafocusvalue = inst._camerafocusvalue - FRAMES
         local k = math.min(1, inst._camerafocusvalue) / 1
-        TheFocalPoint:PushTempFocus(inst, 10 * k, 28 * k, 4)
+        TheFocalPoint.components.focalpoint:StartFocusSource(inst, nil, nil, 10 * k, 28 * k, 4)
     else
         inst._camerafocustask:Cancel()
         inst._camerafocustask = nil
         inst._camerafocusvalue = nil
+        TheFocalPoint.components.focalpoint:StopFocusSource(inst)
     end
 end
 
@@ -49,14 +50,17 @@ local function OnCameraFocusDirty(inst)
             inst._camerafocusvalue = math.huge
             if inst._camerafocustask == nil then
                 inst._camerafocustask = inst:DoPeriodicTask(0, OnFocusCamera)
+                OnFocusCamera(inst)
             end
         elseif inst._camerafocustask ~= nil then
             inst._camerafocusvalue = 3
+            OnFocusCamera(inst)
         end
     elseif inst._camerafocustask ~= nil then
         inst._camerafocustask:Cancel()
         inst._camerafocustask = nil
         inst._camerafocusvalue = nil
+        TheFocalPoint.components.focalpoint:StopFocusSource(inst)
     end
 end
 

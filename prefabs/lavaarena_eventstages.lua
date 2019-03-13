@@ -13,7 +13,7 @@ for i, v in pairs({
     "startround",
 }) do
     table.insert(ret, Prefab("lavaarenastage_"..v, function()
-        return event_server_data("lavaarena", "prefabs/lavaarenastage_attack")[v.."fn"]()
+        return event_server_data("lavaarena", "prefabs/lavaarena_eventstages")[v.."fn"]()
     end))
 end
 return unpack(ret)

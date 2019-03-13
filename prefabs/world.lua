@@ -183,6 +183,7 @@ local prefabs =
     "inventoryitem_classified",
     "writeable_classified",
     "container_classified",
+    "constructionsite_classified",
 
     "dummytarget",
 }

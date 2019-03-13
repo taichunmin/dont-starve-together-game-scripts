@@ -9,10 +9,18 @@ local prefabs =
     "mole",
 }
 
+local function onvacatedig_up_vacate(inst, child)
+    if child ~= nil and child:IsValid() then
+        child:PushEvent("molehill_dug_up")
+    end
+end
+
 local function dig_up(inst)
     if inst.components.spawner.child ~= nil then
         inst.components.spawner.child.needs_home_time = GetTime()
         if inst.components.spawner:IsOccupied() then
+            inst.components.spawner:SetQueueSpawning(false)
+            inst.components.spawner:SetOnVacateFn(onvacatedig_up_vacate)
             inst.components.spawner:ReleaseChild()
         end
     end

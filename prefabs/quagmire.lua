@@ -98,6 +98,7 @@ local prefabs =
 	-- character specific
 	"quagmire_book_fertilizer",
     "quagmire_book_shadow",
+    "quagmire_cooking_buff",
 }
 
 local assets =

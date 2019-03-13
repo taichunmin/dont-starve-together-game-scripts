@@ -28,27 +28,52 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
     self.on_anim_done_fn = on_anim_done_fn
     
     self.current_eventid = TheNet:GetServerGameMode()
-    
+    self.levelup = false
+
 	self.wxp = (TheNet:IsOnlineMode() and Settings.match_results.wxp_data ~= nil) and Settings.match_results.wxp_data[TheNet:GetUserID()] or {}
 	local new_wxp = false
 	if next(self.wxp) ~= nil then
 		if self.wxp.match_xp ~= nil then
+			self.levelup = wxputils.GetLevelForWXP(self.wxp.new_xp - self.wxp.match_xp) ~= wxputils.GetLevelForWXP(self.wxp.new_xp)
+
+			if Client_IsTournamentActive() and Settings.match_results.outcome ~= nil and Settings.match_results.outcome.tournament_ticket ~= nil and not TheSim:IsBorrowed() then
+				table.insert(self.wxp.details, {desc = string.upper(Settings.match_results.outcome.tournament_ticket), val = 0})
+			end
+
 			self.wxp.achievements = {}
-			for k, detail in pairs(self.wxp.details) do
-				if EventAchievements:IsAnAchievement(self.current_eventid, detail.desc) then
+			for k, detail in ipairs(self.wxp.details) do
+				if Settings.match_results.outcome ~= nil and Settings.match_results.outcome.won and string.match(detail.desc, "MILESTONE_") then
+					detail.desc = "WIN"
+				end
+				local achievement_name = EventAchievements:ParseFullQuestName(detail.desc).quest_id
+				if EventAchievements:IsActiveAchievement(achievement_name) then
+					detail._has_icon = true
 					detail._is_achievement = true
+					detail._sort_value = string.match(achievement_name, "_daily") and 20000 or 50000
 					EventAchievements:SetAchievementTempUnlocked(detail.desc)
-					table.insert(self.wxp.achievements, detail.desc)
+					detail.desc = achievement_name
+					table.insert(self.wxp.achievements, deepcopy(detail))
 				elseif IsAFoodDiscovery(detail.desc) then
-					detail._is_achievement = true
+					detail._has_icon = true
 					detail._is_discovery = true
+					detail._sort_value = 100000
 
 					EventAchievements:SetAchievementTempUnlocked(detail.desc)
-					table.insert(self.wxp.achievements, detail.desc)
+					table.insert(self.wxp.achievements, deepcopy(detail))
+				else
+					if self.current_eventid == "lavaarena" then
+						detail.desc = "LAB_" .. tostring(detail.desc)
+					end
+					detail._has_icon = true
+					detail.is_match_goal = true
+					detail._sort_value = 0
+
+					table.insert(self.wxp.achievements, deepcopy(detail))
 				end
 			end
 
-			table.sort(self.wxp.details, function(a, b) return (a.val+(a._is_achievement and 99999 or 0)+(a._is_discovery and 999999 or 0)) < (b.val+(b._is_achievement and 99999 or 0)+(b._is_discovery and 999999 or 0)) end)
+			table.sort(self.wxp.details, function(a, b) return (a.val+(a._sort_value or 0)) < (b.val+(b._sort_value or 0)) end)
+			table.sort(self.wxp.achievements, function(a, b) return (a.val+(a._sort_value or 0)) < (b.val+(b._sort_value or 0)) end)
 			
 			self.wxp.old_xp = math.max(0, self.wxp.new_xp - self.wxp.match_xp)
 			self.wxp.old_level = wxputils.GetLevelForWXP(self.wxp.old_xp)
@@ -76,7 +101,14 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
 		self.wxp.achievements = {}
 	end
 
-	if #self.wxp.achievements > 18 then
+	if not self.levelup then
+		achievement_max_per_row = 15
+		if #self.wxp.achievements > 30 then
+			achievement_spacing = 30
+			achievement_image_size = 28
+			achievement_max_per_row = 19
+		end
+	elseif #self.wxp.achievements > 18 then
 		achievement_spacing = 30
 		achievement_image_size = 28
 		achievement_max_per_row = 11
@@ -121,20 +153,24 @@ function WxpLobbyPanel:DoInit(nosound)
     end
 end
 
-function WxpLobbyPanel:ShowAchievement(achievement_id, animate)
+function WxpLobbyPanel:ShowAchievement(achievement, animate)
 	local num_shown = #self.displayachievements
 	local img_width = achievement_image_size
 	local max_num_wide = achievement_max_per_row
 	
 	local img = nil
 
-	print("SDFSDF", achievement_id, IsAFoodDiscovery(achievement_id))
-	if IsAFoodDiscovery(achievement_id) then
+	--print("SDFSDF", achievement.desc, IsAFoodDiscovery(achievement.desc))
+
+	local hover_text = nil
+	local achievement_altas = self.current_eventid == "lavaarena" and "images/lavaarena_quests.xml" or "images/quagmire_achievements.xml"
+
+	if achievement._is_discovery then
 		img = self.achievement_root:AddChild(Image("images/quagmire_recipebook.xml", "recipe_known.tex"))
 
-		local split_desc = string.split(achievement_id, "_")
+		local split_desc = string.split(achievement.desc, "_")
 		local recipe_name = (tonumber(split_desc[#split_desc]) ~= nil and "quagmire_food_" or "quagmire_") .. tostring(split_desc[#split_desc])
-		img:SetHoverText(subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]}), {offset_y = 32, colour = UICOLOURS.EGGSHELL})
+		hover_text = subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]})
 
 		if TheRecipeBook.recipes[recipe_name] ~= nil then
 			local dish = TheRecipeBook.recipes[recipe_name].dish
@@ -153,11 +189,21 @@ function WxpLobbyPanel:ShowAchievement(achievement_id, animate)
 				food_img:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, LEVELUP_TIME)
 			end
 		end
+	elseif achievement.is_match_goal then
+		img = self.achievement_root:AddChild(Image(achievement_altas, string.lower(achievement.desc)..".tex"))
+		hover_text = STRINGS.UI.WXP_DETAILS[string.upper(achievement.desc)]
 	else
-		img = self.achievement_root:AddChild(Image("images/"..self.current_eventid.."_achievements.xml", achievement_id..".tex"))
+		img = self.achievement_root:AddChild(Image(achievement_altas, achievement.desc..".tex"))
 
 		local ach_str = GetActiveFestivalEventAchievementStrings()
-		img:SetHoverText(ach_str.ACHIEVEMENT[achievement_id].TITLE, {offset_y = 32, colour = UICOLOURS.EGGSHELL})
+		hover_text = ach_str.ACHIEVEMENT[achievement.desc].TITLE
+	end
+
+	if hover_text ~= nil then
+		if achievement.val ~= nil and achievement.val > 0 then
+			hover_text = subfmt(STRINGS.UI.WXPLOBBYPANEL.ADD_XP_VAL, {name = hover_text, val = tostring(achievement.val)})
+		end
+		img:SetHoverText(hover_text, {offset_y = 32, colour = UICOLOURS.EGGSHELL})
 	end
 
 	img:SetPosition(achievement_start + (achievement_spacing)*(num_shown%max_num_wide), (achievement_spacing*math.floor(1 + num_shown/max_num_wide)) + 3)
@@ -247,7 +293,7 @@ function WxpLobbyPanel:OnCompleteAnimation()
 	TheFrontEnd:GetSound():KillSound("fillsound")
 
     if self.wxp.earned_boxes > 0 then
-    	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/earned") --change to earned boxes
+    	--TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/earned") --change to earned boxes
 
         local newbox_title = self.wxpbar:AddChild(Text(HEADERFONT, 30, "", UICOLOURS.EGGSHELL))
 		newbox_title:SetPosition(0, -37)
@@ -274,8 +320,8 @@ function WxpLobbyPanel:OnCompleteAnimation()
 			end
 		elseif self.detail_index ~= nil and ((self.detail_index + 1) <= #self.wxp.details) then
 			for i = self.detail_index + 1, #self.wxp.details do
-				if self.wxp.details[i]._is_achievement then
-					self:ShowAchievement(self.wxp.details[i].desc)
+				if self.wxp.details[i]._has_icon then
+					self:ShowAchievement(self.wxp.details[i])
 				end
 			end
 		end
@@ -283,8 +329,7 @@ function WxpLobbyPanel:OnCompleteAnimation()
 	
 	local level = wxputils.GetLevelForWXP(self.wxp.new_xp)
 	local level_start_xp, next_level_xp = wxputils.GetWXPForLevel(level)
-	local levelup = self.wxp.match_xp ~= nil and (wxputils.GetLevelForWXP(self.wxp.new_xp - self.wxp.match_xp) ~= level) or false
-	self:SetRank(level, levelup, next_level_xp - level_start_xp)
+	self:SetRank(level, self.levelup, next_level_xp - level_start_xp)
 	self.wxpbar:UpdateExperience(self.wxp.new_xp - level_start_xp, next_level_xp - level_start_xp)
 	
 	self.is_animation_done = true
@@ -296,25 +341,30 @@ end
 function WxpLobbyPanel:RefreshWxpDetailWidgets()
 	if #self.wxp.details > 0 then
 		local name = STRINGS.UI.WXP_DETAILS[self.wxp.details[self.detail_index].desc]
-		if name == nil then
-			if self.wxp.details[self.detail_index]._is_achievement then
-				if self.wxp.details[self.detail_index]._is_discovery then
-					local split_desc = string.split(self.wxp.details[self.detail_index].desc, "_")
-					local recipe_name = (tonumber(split_desc[#split_desc]) ~= nil and "quagmire_food_" or "quagmire_") .. tostring(split_desc[#split_desc])
-					name = subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]})
-				else
-					local ach_str = GetActiveFestivalEventAchievementStrings()
-					local achievelemt_desc = ach_str.ACHIEVEMENT[self.wxp.details[self.detail_index].desc]
-					if achievelemt_desc ~= nil then
-						name = subfmt(STRINGS.UI.WXPLOBBYPANEL.ACHIEVEMENT_UNLOCKED, {name=achievelemt_desc.TITLE})
-					end
+		if self.wxp.details[self.detail_index]._has_icon then
+			if self.wxp.details[self.detail_index]._is_discovery then
+				local split_desc = string.split(self.wxp.details[self.detail_index].desc, "_")
+				local recipe_name = (tonumber(split_desc[#split_desc]) ~= nil and "quagmire_food_" or "quagmire_") .. tostring(split_desc[#split_desc])
+				name = subfmt(STRINGS.UI.WXPLOBBYPANEL.FOOD_DISCOVERY, {name = STRINGS.NAMES[string.upper(recipe_name)]})
+			elseif self.wxp.details[self.detail_index]._is_achievement then
+				local ach_str = GetActiveFestivalEventAchievementStrings()
+				local achievelemt_desc = ach_str.ACHIEVEMENT[self.wxp.details[self.detail_index].desc]
+				if achievelemt_desc ~= nil then
+					name = subfmt(STRINGS.UI.WXPLOBBYPANEL.ACHIEVEMENT_UNLOCKED, {name=achievelemt_desc.TITLE})
 				end
-				self:ShowAchievement(self.wxp.details[self.detail_index].desc, true)
 			end
+			self:ShowAchievement(self.wxp.details[self.detail_index], true)
 		end
 		
 		self.detail_name_textbox:SetString(name or "")
-		self.detail_wxp_textbox:SetString(subfmt(STRINGS.UI.WXPLOBBYPANEL.DETAILS_XP, {num = self.wxp.details[self.detail_index].val}))
+		if self.wxp.details[self.detail_index].val > 0 then
+			self.detail_wxp_textbox:SetString(subfmt(STRINGS.UI.WXPLOBBYPANEL.DETAILS_XP, {num = self.wxp.details[self.detail_index].val}))
+			self.detail_wxp_textbox:Show()
+			self.detail_wxplabel_textbox:Show()
+		else
+			self.detail_wxp_textbox:Hide()
+			self.detail_wxplabel_textbox:Hide()
+		end
 		
 		self.details_widget:SetScale(.8)
 		self.details_widget:ScaleTo(.8, 1, TIME_PER_DETAIL)

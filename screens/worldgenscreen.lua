@@ -57,8 +57,7 @@ local WorldGenScreen = Class(Screen, function(self, profile, cb, world_gen_data,
 		self.worldgentext:SetPosition(0, 200, 0)
 		self.worldgentext:SetColour(unpack(PORTAL_TEXT_COLOUR))
 
-		if world_gen_data and world_gen_data.level_type == "cave" then
-			-- todo: make this show the cave screen for modern DST worldgen...
+		if world_gen_data and world_gen_data.level_data and world_gen_data.level_data[1] and world_gen_data.level_data[1].location == "cave" then
 			self.bg:SetTint(unpack(BGCOLOURS.PURPLE))
 			self.worldanim:GetAnimState():SetBuild("generating_cave")
 			self.worldanim:GetAnimState():SetBank("generating_cave")

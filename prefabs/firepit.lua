@@ -118,6 +118,16 @@ local function OnRadiusDirty(inst)
     inst:SetPhysicsRadiusOverride(inst.radius:value() > 0 and inst.radius:value() / 100 or nil)
 end
 
+local function OnSave(inst, data)
+	data._has_debuffable = inst.components.debuffable ~= nil 
+end
+
+local function OnPreLoad(inst, data)
+	if data ~= nil and data._has_debuffable then
+		inst:AddComponent("debuffable")
+	end
+end
+
 --------------------------------------------------------------------------
 
 local function fn()
@@ -215,6 +225,9 @@ local function fn()
     inst:ListenForEvent("onbuilt", onbuilt)
 
     inst:DoTaskInTime(0, OnInit)
+
+	inst.OnSave = OnSave
+	inst.OnPreLoad = OnPreLoad
 
     return inst
 end

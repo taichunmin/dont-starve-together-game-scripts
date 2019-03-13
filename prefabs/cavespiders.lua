@@ -46,9 +46,11 @@ local function OnGetItemFromPlayer(inst, giver, item)
             inst.components.combat:SetTarget(nil)
         elseif giver.components.leader ~= nil and
             inst.components.follower ~= nil then
-            giver:PushEvent("makefriend")
-            playedfriendsfx = true
-            giver.components.leader:AddFollower(inst)
+			if giver.components.minigame_participator == nil then
+		        giver:PushEvent("makefriend")
+				giver.components.leader:AddFollower(inst)
+				playedfriendsfx = true
+			end
             inst.components.follower:AddLoyaltyTime(item.components.edible:GetHunger() * TUNING.SPIDER_LOYALTY_PER_HUNGER)
         end
 

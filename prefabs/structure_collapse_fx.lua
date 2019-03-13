@@ -11,6 +11,7 @@ local MATERIAL_NAMES =
     "stone",
     "straw",
     "pot",
+    "none",
 }
 local MATERIALS = table.invert(MATERIAL_NAMES)
 
@@ -39,11 +40,13 @@ local function playfx(proxy, anim)
     inst.AnimState:SetBuild("structure_collapse_fx")
     inst.AnimState:PlayAnimation(anim)
 
-    inst.SoundEmitter:PlaySound("dontstarve/common/destroy_smoke")
-
     local material = MATERIAL_NAMES[proxy.material:value()]
-    if material ~= nil then
-        inst.SoundEmitter:PlaySound(MATERIAL_SOUND_MAP[material] or ("dontstarve/common/destroy_"..material))
+    if material ~= "none" then
+        inst.SoundEmitter:PlaySound("dontstarve/common/destroy_smoke")
+
+        if material ~= nil then
+            inst.SoundEmitter:PlaySound(MATERIAL_SOUND_MAP[material] or ("dontstarve/common/destroy_"..material))
+        end
     end
 
     inst:ListenForEvent("animover", inst.Remove)

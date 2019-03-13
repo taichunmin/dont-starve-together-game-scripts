@@ -21,6 +21,7 @@ local Herd = Class(function(self, inst)
 
     self.gatherrange = nil
     self.updaterange = nil
+    --self.nomerging = false
 
     self.onempty = nil
     self.onfull = nil
@@ -147,17 +148,17 @@ function Herd:GatherNearbyMembers()
 end
 
 function Herd:MergeNearbyHerds()
-    if self.gatherrange == nil or self:IsFull() then
+    if self.nomerging or self.gatherrange == nil or self:IsFull() then
         return
     end
 
     local x, y, z = self.inst.Transform:GetWorldPosition()
     local ents = TheSim:FindEntities(x, y, z, self.gatherrange, { "herd" })
 
-    for i, v in ipairs(ents) do 
+    for i, v in ipairs(ents) do
         if v ~= self.inst and
             v.components.herd ~= nil and
-            v.components.herd.gathertag == self.membertag and
+            v.components.herd.membertag == self.membertag and
             v.components.herd.membercount < 4 and
             self.membercount + v.components.herd.membercount <= self.maxsize then
             for k2, v2 in pairs(v.components.herd.members) do

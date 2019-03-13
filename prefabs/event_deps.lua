@@ -21,9 +21,9 @@ LOADING_IMAGES =
 
     [SPECIAL_EVENTS.WINTERS_FEAST] =
     {
-
         { atlas = "images/bg_spiral_fill_christmas1.xml", tex = "bg_image1.tex" },
         { atlas = "images/bg_spiral_fill_christmas2.xml", tex = "bg_image2.tex" },
+        { atlas = "images/bg_loading_winters_feast.xml", tex = "bg_image1.tex" },
     },
 
     [SPECIAL_EVENTS.YOTG] =
@@ -53,6 +53,28 @@ LOADING_IMAGES =
 --------------------------------------------------------------------------
 local SPECIAL_EVENT_DEPS =
 {
+    [SPECIAL_EVENTS.HALLOWED_NIGHTS] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_halloween.zip"),
+            },
+        },
+        backend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/player_spooked.zip"),
+            },
+            prefabs =
+            {
+                "battreefx",
+            },
+        },
+    },
+
     [SPECIAL_EVENTS.WINTERS_FEAST] =
     {
         frontend =
@@ -91,13 +113,34 @@ local SPECIAL_EVENT_DEPS =
         },
     },
 
+    [SPECIAL_EVENTS.YOTP] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_pig_bg.zip"),
+                Asset("ANIM", "anim/dst_menu_pigs.zip"),
+                Asset("PKGREF", "sound/music_frontend_yotg.fsb"),
+            },
+        },
+        backend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/pig_king_elite_build.zip"),
+            },
+        },
+    },
+
     [SPECIAL_EVENTS.NONE] =
     {
         frontend =
         {
             assets =
             {
-                Asset("ANIM", "anim/dst_menu.zip"),
+                Asset("PKGREF", "anim/dst_menu.zip"),
+                Asset("ANIM", "anim/dst_menu_winona.zip"),
             },
         },
     },
@@ -112,10 +155,13 @@ local FESTIVAL_EVENT_DEPS =
         {
             assets =
             {
-                Asset("ANIM", "anim/main_menu1.zip"),
+                Asset("ANIM", "anim/main_menu1.zip"), -- old assets, keeping around for mods
                 Asset("ATLAS", "images/bg_redux_labg.xml"),
                 Asset("IMAGE", "images/bg_redux_labg.tex"),
+				Asset("ANIM", "anim/dst_menu_lavaarena_s2.zip"),
                 Asset("PKGREF", "sound/lava_arena.fsb"),
+                Asset("ATLAS", "images/lavaarena_frontend.xml"),
+                Asset("IMAGE", "images/lavaarena_frontend.tex"),
             },
         },
     },
@@ -125,7 +171,8 @@ local FESTIVAL_EVENT_DEPS =
         {
             assets =
             {
-                Asset("IMAGE", "images/colour_cubes/quagmire_cc.tex"),
+                Asset("ATLAS", "images/quagmire_frontend.xml"),
+                Asset("IMAGE", "images/quagmire_frontend.tex"),
                 Asset("ANIM", "anim/quagmire_menu.zip"),
                 Asset("ANIM", "anim/quagmire_menu_mid.zip"),
                 Asset("ANIM", "anim/quagmire_menu_bg.zip"),

@@ -93,3 +93,4 @@ return Prefab("explode_small", MakeExplosion(), assets),
     Prefab("explode_small_slurtle", MakeExplosion(extras.slurtle), assets),
     Prefab("explode_small_slurtlehole", MakeExplosion(extras.slurtlehole), assets),
     Prefab("explode_firecrackers", MakeExplosion(extras.firecrackers), assets)
+	

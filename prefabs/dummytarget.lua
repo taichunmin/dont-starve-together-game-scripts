@@ -56,6 +56,10 @@ local function fn()
     inst.components.health:StartRegen(1000, .1)
     inst:ListenForEvent("healthdelta", OnHealthDelta)
 
+	if TheNet:GetServerGameMode() == "lavaarena" then
+		TheWorld:PushEvent("ms_register_for_damage_tracking", { inst = inst })
+	end
+
     return inst
 end
 

@@ -1,12 +1,14 @@
+
+local SECONDS_PER_DAY = 60*60*24
+
 PlayerHistory = Class(function(self)
-    self.persistdata = {}
-    self.existing_map = {}
+	self.seen_players = {}
+	self.seen_players_updatetime = {}
 
     self.task = nil
     self.dirty = false
-    self.sort_function = function(a, b) return (a.days_survived or 1) > (b.days_survived or 1) end
 
-    self.max_history = 40
+	self.target_max_entries = 100
 end)
 
 function PlayerHistory:StartListening()
@@ -16,18 +18,33 @@ function PlayerHistory:StartListening()
 end
 
 function PlayerHistory:Reset()
-    self.persistdata = {}
-    self.existing_map = {}
+	self.seen_players = {}
+	self.seen_players_updatetime = {}
+
     self.dirty = true
     self:Save()
 end
 
-function PlayerHistory:DiscardDownToMaxForNew()
-    self:SortBackwards("sort_date")
-    for idx = #self.persistdata, self.max_history - 1, -1 do
-		self.existing_map[self.persistdata[idx].userid] = nil
-        table.remove(self.persistdata, idx)
-    end
+function PlayerHistory:DiscardOldData()
+    local current_date = os.time()
+
+	-- delete entries that are really old
+	for k, v in pairs(self.seen_players) do
+		local delta_time = os.difftime(current_date, v.last_seen_date)
+		if delta_time > USER_HISTORY_EXPIRY_TIME then
+			self.seen_players[k] = nil
+		    self.dirty = true
+		end
+	end
+
+	-- if there are still too many entries the get rid of some
+	if GetTableSize(self.seen_players) > self.target_max_entries then
+		local ordered = self:GetRows()
+		for i = self.target_max_entries + 1, #ordered do
+			self.seen_players[ordered[i].userid] = nil
+		    self.dirty = true
+		end
+	end
 end
 
 function PlayerHistory:UpdateHistoryFromClientTable()
@@ -35,165 +52,145 @@ function PlayerHistory:UpdateHistoryFromClientTable()
     if ClientObjs ~= nil and #ClientObjs > 0 then
         local my_userid = TheNet:GetUserID()
         local server_name = TheNet:GetServerName()
-        local current_date = os.date("%b %d, %y")
-        local sort_date = os.date("%Y%m%d")
+        local current_time = os.time()
 
         for i, v in ipairs(ClientObjs) do
-            -- Skip yourself
-            -- Skip dedicated server host
-            if v.userid ~= my_userid and not (v.performance ~= nil and not TheNet:GetServerIsClientHosted()) then
-                local seen_state =
-                {
-                    name = v.name,
-                    userid = v.userid,
-                    netid = v.netid,
-                    prefab = v.prefab,
-                    playerage = v.playerage,
-                    server_name = server_name,
-                    date = current_date,
-                    sort_date = sort_date,
-                    base_skin = v.base_skin,
-                    body_skin = v.body_skin,
-                    hand_skin = v.hand_skin,
-                    legs_skin = v.legs_skin,
-                    feet_skin = v.feet_skin,
-                }
+            if v.userid ~= my_userid and v.performance == nil then -- Skip yourself and dedicated server host
+				if self.seen_players[v.userid] == nil then
+					self.seen_players[v.userid] = 
+					{
+						userid = v.userid,
+						netid = v.netid,
+						time_played_with = 0,
+					}
+				end
+			
+				local stats = self.seen_players[v.userid]
 
-                -- Replace existing record if found
-                -- Otherwise add new record to the front
-                local existing_record = self.existing_map[v.userid]
-                if existing_record ~= nil then
-                    for k2, v2 in pairs(seen_state) do
-                        existing_record[k2] = v2
-                    end
-                else
-                    self:DiscardDownToMaxForNew()
-                    table.insert(self.persistdata, 1, seen_state)
-                    self.existing_map[v.userid] = seen_state
-                end
+				if self.seen_players_updatetime[v.userid] ~= nil then
+					local dt = current_time - self.seen_players_updatetime[v.userid]
+					stats.time_played_with = stats.time_played_with + dt
+				end
+
+				stats.name = v.name
+				stats.server_name = server_name
+				stats.prefab = v.prefab
+				stats.last_seen_date = current_time
+
+				self.seen_players_updatetime[v.userid] = current_time
 
                 self.dirty = true
             end
         end
+
+		-- removed last update time for players who have left the world
+		for k, v in pairs(self.seen_players_updatetime) do
+			if v ~= current_time then
+				self.seen_players_updatetime[k] = nil
+			end
+		end
 
         self:Save()
     end
 end
 
 function PlayerHistory:GetRows()
-    return self.persistdata
+	local history = {}
+	for k, v in pairs(self.seen_players) do
+		local data = deepcopy(v)
+		table.insert(history, data)
+	end
+	table.sort(history, function(a, b) 
+		if (a.last_seen_date or 0) > (b.last_seen_date or 0) then
+			return true
+		elseif (a.last_seen_date or 0) < (b.last_seen_date or 0) then
+			return false
+		end
+
+		if (a.time_played_with or 0) > (b.time_played_with or 0) then
+			return true
+		elseif (a.time_played_with or 0) < (b.time_played_with or 0) then
+			return false
+		end
+
+		return a.name < b.name
+	end)
+	return history
 end
 
 function PlayerHistory:RemoveUser(userid)	
-	self.existing_map[userid] = nil
-	
-	for k,v in pairs( self.persistdata ) do
-		if self.persistdata[k].userid == userid then
-			table.remove( self.persistdata, k )
-			break;
-		end
-	end
-	
+	self.seen_players[userid] = nil
 	self.dirty = true
 	self:Save()
 end
 
-function PlayerHistory:Sort(field_a, field_b, forwards)
-    if forwards == nil then
-        forwards = true
-    end
-    local sort_function = self.sort_function
-    if field_a ~= nil and field_b ~= nil and self.persistdata[1] ~= nil then
-        sort_function = function(a,b)
-			if a[field_a] ~= b[field_a] then
-				if forwards then
-					return a[field_a] < b[field_a]
-				else
-					return a[field_a] > b[field_a]
-				end
-			else
-				return a[field_b] < b[field_b]
-			end
-        end
-        table.sort(self.persistdata, sort_function)
-    end
-end
 
 function PlayerHistory:SortBackwards(field)
-    self:Sort(field, "name", false)
+	print("Warning: PlayerHistory:SortBackwards in playerhistory.lua is deprecated.")
 end
 
-----------------------------
-
 function PlayerHistory:GetSaveName()
-    return BRANCH == "release" and "player_history" or "player_history_"..BRANCH
+    return BRANCH == "release" and "player_history" or ("player_history_"..BRANCH)
 end
 
 function PlayerHistory:Save(callback)
     if self.dirty then
-        self:SortBackwards("sort_date")
-        for idx = #self.persistdata, self.max_history, -1 do
-			self.existing_map[self.persistdata[idx].userid] = nil
-            table.remove(self.persistdata, idx)
-        end
-        --print( "SAVING Player History", #self.persistdata )
-        local str = json.encode(self.persistdata)
+        local str = json.encode({version = 2, seen_players = self.seen_players})
         local insz, outsz = SavePersistentString(self:GetSaveName(), str, ENCODE_SAVES, callback)
-		self:OnUpdated()
-    elseif callback ~= nil then
-        callback(true)
-    end
+	end
+end
+
+function PlayerHistory:LoadDataVersion1(data)
+	self.seen_players = {}
+	for k, v in pairs(data) do
+		local last_seen_date = os.time({year = tonumber(string.sub(v.sort_date, 1, 4)), month = tonumber(string.sub(v.sort_date, 5, 6)), day = tonumber(string.sub(v.sort_date, 7, 8))})
+		if self.seen_players[v.userid] == nil then
+			self.seen_players[v.userid] = 
+			{
+				userid = v.userid,
+				netid = v.netid,
+				name = v.name,
+				time_played_with = 0,
+				prefab = v.prefab,
+				server_name = v.server_name,
+				last_seen_date = last_seen_date,
+			}
+		elseif last_seen_date > self.seen_players[v.userid].last_seen_date then
+			self.seen_players[v.userid].last_seen_date = last_seen_date
+			self.seen_players[v.userid].name = v.name
+			self.seen_players[v.userid].server_name = v.server_name
+			self.seen_players[v.userid].prefab = v.prefab
+		end
+	end
 end
 
 function PlayerHistory:Load(callback)
     TheSim:GetPersistentString(self:GetSaveName(),
         function(load_success, str)
-            -- Can ignore the successfulness cause we check the string
-            self:Set(str, callback)
+			local success = false
+		    if str == nil or string.len(str) == 0 then
+				print("PlayerHistory could not load "..self:GetSaveName())
+			else
+				local status, data = pcall( function() return json.decode(str) end )
+				if status and data then
+					print("PlayerHistory loaded " .. self:GetSaveName() .. " (v" .. tostring(data.version or 1) .. ") len:" .. tostring(#str))
+					if data.version == nil then
+						self:LoadDataVersion1(data)
+					elseif data.version == 2 then
+						self.seen_players = data.seen_players
+					end
+					self:DiscardOldData()
+
+					self.dirty = false
+					success = true
+				else
+					print("PlayerHistory failed to decode json "..self:GetSaveName(), #str)
+				end
+			end
+
+			if callback ~= nil then
+				callback(success)
+			end
         end, false)
 end
 
-function PlayerHistory:Set(str, callback)
-    if str == nil or string.len(str) == 0 then
-        print("PlayerHistory could not load "..self:GetSaveName())
-        if callback ~= nil then
-            callback(false)
-        end
-    else
-		local status, data = pcall( function() return json.decode(str) end )
-		if status and data then
-			print("PlayerHistory loaded "..self:GetSaveName(), #str)
-			self.persistdata = data
-
-			-- Create a map for existing user ids
-			-- NOTE: cannot map to index, because once we add new
-			--       records to the front, all these indices will
-			--       become invalid
-			self.existing_map = {}
-			for i, v in ipairs(self.persistdata) do
-				self.existing_map[v.userid] = v
-			end
-
-			self:SortBackwards("sort_date")
-
-			-- self.totals = {days_survived = 0, deaths = 0}
-			-- for i,v in ipairs(self.persistdata) do
-			--  self.totals.days_survived = self.totals.days_survived + (v.days_survived or 0)
-			-- end
-
-			self.dirty = false
-			if callback ~= nil then
-				callback(true)
-			end
-		else
-			print("PlayerHistory failed to decode json "..self:GetSaveName(), #str)
-			if callback ~= nil then
-				callback(false)
-			end
-		end
-    end
-end
-
-function PlayerHistory:OnUpdated()
-	TheNet:OnPlayerHistoryUpdated(self.persistdata)
-end

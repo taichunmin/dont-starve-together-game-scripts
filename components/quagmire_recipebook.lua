@@ -101,11 +101,13 @@ local function OnRecipeDirty()
         local station = STATION_NAMES[_station:value()]
         print("Discovered "..station.." recipe: ".._recipename:value())
 
-        if _klumpkey:value():len() > 0 then
-            LoadKlumpFile("images/quagmire_food_inv_images_".._recipename:value()..".tex", _klumpkey:value())
-            LoadKlumpFile("images/quagmire_food_inv_images_hires_".._recipename:value()..".tex", _klumpkey:value())
-            LoadKlumpFile("anim/dynamic/".._recipename:value()..".dyn", _klumpkey:value())
-            LoadKlumpString("STRINGS.NAMES."..string.upper(_recipename:value()), _klumpkey:value())
+        if QUAGMIRE_USE_KLUMP then
+            if _klumpkey:value():len() > 0 then
+                LoadKlumpFile("images/quagmire_food_inv_images_".._recipename:value()..".tex", _klumpkey:value())
+                LoadKlumpFile("images/quagmire_food_inv_images_hires_".._recipename:value()..".tex", _klumpkey:value())
+                LoadKlumpFile("anim/dynamic/".._recipename:value()..".dyn", _klumpkey:value())
+                LoadKlumpString("STRINGS.NAMES."..string.upper(_recipename:value()), _klumpkey:value())
+            end
         end
 
         local ingredients = {}

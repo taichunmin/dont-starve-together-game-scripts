@@ -42,6 +42,13 @@ return {
 			NOTALLOWED = "I must mind my manners.",
 			INUSE = "Can I use that after you?",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "No one wants to share with me.",
+            NOTALLOWED = "It doesn't go there. I know the feeling.",
+            EMPTY = "Nothing comes of nothing.",
+            MISMATCH = "I can't do anything right.",
+        },
 		RUMMAGE =
         {   
             GENERIC = "Must everything in life be hard?",
@@ -91,6 +98,10 @@ return {
             NOTSCULPTABLE = "I think that's... wrong...",
             CANTSHADOWREVIVE = "It has no will to live.",
             WRONGSHADOWFORM = "These bones are grimly misassembled...",
+            NOMOON = "I can't... not in here.",
+            PIGKINGGAME_MESSY = "Help me clean up, Abigail.",
+			PIGKINGGAME_DANGER = "Danger lurks. There's no time for games.",
+			PIGKINGGAME_TOOLATE = "It's much too late for games.",
         },
         GIVETOPLAYER = 
         {
@@ -175,6 +186,7 @@ return {
     },
     ANNOUNCE_RUINS_RESET = "The dead are risen.",
 
+	ANNOUNCE_DESPAWN = "Abigail?",
 	ANNOUNCE_BECOMEGHOST = "oOoooooO!!",
 	ANNOUNCE_GHOSTDRAIN = "The ghosts... Want to play...",
 	ANNOUNCE_PETRIFED_TREES = "A wave of sadness just washed over me...?",
@@ -249,6 +261,10 @@ return {
 	ANNOUNCE_WETTER = "An eternity of moisture and sorrow.",
 	ANNOUNCE_SOAKED = "A veritable apocalypse of water.",
 
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "Did you see that, Abigail?",
+    ANNOUNCE_BRAVERY_POTION = "Bats can't scare me anymore. I can return to my melancholy.",
+
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "You'll not glimpse death today...",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "All done.",
@@ -258,7 +274,7 @@ return {
     QUAGMIRE_ANNOUNCE_MEALBURNT = "It's ruined.",
     QUAGMIRE_ANNOUNCE_LOSE = "What a horrible place to have a curse.",
     QUAGMIRE_ANNOUNCE_WIN = "Let us depart this terrible place.",
-
+   
 	BATTLECRY =
 	{
 		GENERIC = "Death will find you!",
@@ -279,6 +295,10 @@ return {
 	DESCRIBE =
 	{
         MULTIPLAYER_PORTAL = "Its beauty is tinged with a heartbreaking sadness.",
+        MULTIPLAYER_PORTAL_MOONROCK = "Cold and beautiful like death.",
+        CONSTRUCTION_PLANS = "Shall I even bother building this?",
+        MOONROCKIDOL = "A lifeless sacrifice.",
+        MOONROCKSEED = "Its pallor reminds me of Abigail.",
 
 		BERNIE_INACTIVE =
 		{
@@ -1912,6 +1932,21 @@ return {
         HALLOWEENCANDY_14 = "What is this eternal burning?!", --Hot Lava pepper candy
         CANDYBAG = "It's for putting nice things in...",
 
+        HALLOWEEN_ORNAMENT_1 = "It reminds me of Abigail. I'll hang it somewhere.",
+		HALLOWEEN_ORNAMENT_2 = "It longs to be hung somewhere.",
+		HALLOWEEN_ORNAMENT_3 = "Decoration for a devilish day.",
+		HALLOWEEN_ORNAMENT_4 = "A memorial for a monster.",
+		HALLOWEEN_ORNAMENT_5 = "It descends into darkness.",
+		HALLOWEEN_ORNAMENT_6 = "Crows in trees mean souls trapped between worlds.",
+
+		HALLOWEENPOTION_DRINKS_WEAK = "Like life, it's a bit disappointing.",
+		HALLOWEENPOTION_DRINKS_POTENT = "If only life was so potent.", 
+		HALLOWEENPOTION_FIRE_FX = "I wish I possessed such burning within my heart.",
+		HALLOWEENPOTION_BRAVERY = "Things seem less horrifying with this.",
+		MADSCIENCE_LAB = "Madness lies within.",
+		LIVINGTREE_ROOT = "Potential horror.",
+		LIVINGTREE_SAPLING = "It'll grow up big and abhorrent.",
+
         DRAGONHEADHAT = "What big eyes you have.",
         DRAGONBODYHAT = "The belly of the beast.",
         DRAGONTAILHAT = "That's just a tall tail.",
@@ -1945,6 +1980,22 @@ return {
         HOUNDWHISTLE = "That I cannot hear it does not mean it is silent.",
         CHESSPIECE_CLAYHOUND = "Happiness is a warm puppy... but this one is cold.",
         CHESSPIECE_CLAYWARG = "It knows only fury.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "A tribute to gluttony.",
+            EMPTY = "It needs a sacrifice of flesh.",
+            BURNT = "Ashes to ashes.",
+		},
+		PIG_TOKEN = "Yet another unnecessary plaything.",
+		YOTP_FOOD1 = "Something died for that feast.",
+		YOTP_FOOD2 = "I don't want to eat that.",
+		YOTP_FOOD3 = "It'll keep me alive a little longer.",
+
+		PIGELITE1 = "A storm rages within him.", --BLUE
+		PIGELITE2 = "Furious.", --RED
+		PIGELITE3 = "His whole career is grounded in violence.", --WHITE
+		PIGELITE4 = "Petrifying.", --GREEN
 
 		TRUNKVEST_SUMMER = "Skin to wear over your skin.",
 		TRUNKVEST_WINTER = "It may warm the body, but what of the spirit?",
@@ -2015,6 +2066,8 @@ return {
         WINTER_ORNAMENT = "Do you like this one, Abigail?",
         WINTER_ORNAMENTLIGHT = "Bright lights... Cold nights...",
         WINTER_ORNAMENTBOSS = "This is one of my favorites.",
+        WINTER_ORNAMENTFORGE = "A remembrance of past carnage.",
+		WINTER_ORNAMENTGORGE = "Should old acquaintance be forgot.",
 
         WINTER_FOOD1 = "I'm going to eat you.", --gingerbread cookie
         WINTER_FOOD2 = "Not nearly sweet enough to balance out this bitter world.", --sugar cookie
@@ -2083,6 +2136,8 @@ return {
         TRAILS = "You shall fall.",
         TURTILLUS = "You cannot shield yourself from this world.",
         SNAPPER = "Death will be a blessing.",
+        RHINODRILL = "Brotherly camaraderie will not save you.",
+		BEETLETAUR = "You are a prisoner of your own doomed destiny.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2124,6 +2179,11 @@ return {
         LAVAARENA_RECHARGERHAT = "I'll be able to attack so often...",
         LAVAARENA_HEALINGGARLANDHAT = "But will it heal my soul?",
         LAVAARENA_CROWNDAMAGERHAT = "I forsee a wave of death.",
+
+        LAVAARENA_ARMOR_HP = "It protects from damage, but not from sorrow.",
+
+		LAVAARENA_FIREBOMB = "A bombardment of pain.",
+		LAVAARENA_HEAVYBLADE = "It's too heavy. Like my soul.",
         
         WEBBER_SPIDER_MINION = "Webber seems proud of them.",
 
@@ -2340,8 +2400,39 @@ return {
         QUAGMIRE_ALTAR_BOLLARD = "A post. Not very exciting.",
         QUAGMIRE_ALTAR_IVY = "Like death, it creeps everywhere.",
 
-        QUAGMIRE_LAMP_SHORT = "The only light in my light is Abigail.",
+        QUAGMIRE_LAMP_SHORT = "The only light in my life is Abigail.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "It visits death upon intruders.",
+        	OFF = "It's dead...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "But what if I liked the dark?",
+        	OFF = "It's dead...",
+			BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "It's a kind of electrical box.",
+        	LOWPOWER = "It's not long for this world.",
+        	OFF = "What did Winona put in it again? Oh...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "This one looks odd.",
+        	LOWPOWER = "It's slowly dying.",
+        	OFF = "I think it wants... gems...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
+        },
     },
     DESCRIBE_GENERIC = "Sigh... I don't know.",
     DESCRIBE_TOODARK = "The darkness! It is too dark!",

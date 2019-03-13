@@ -38,6 +38,13 @@ return
             NOTALLOWED = "Nonsense.",
             INUSE = "I do hope you're keeping organized, my dear.",
         },
+        CONSTRUCT =
+        {
+            INUSE = "Someone's already using this.",
+            NOTALLOWED = "That was erroneous.",
+            EMPTY = "I need something to build with first.",
+            MISMATCH = "Those are the wrong plans.",
+        },
         WRITE =
         {
             GENERIC = "I'd rather write in my own books.",
@@ -97,6 +104,10 @@ return
             NOTSCULPTABLE = "No one ought to sculpt with that, dear.",
             CANTSHADOWREVIVE = "Conditions are not right.",
             WRONGSHADOWFORM = "The skeletal anatomy is incorrect.",
+            NOMOON = "It needs a lunar influence.",
+            PIGKINGGAME_MESSY = "I'll need to do some tidying up first.",
+            PIGKINGGAME_DANGER = "This is no time for fun and games!",
+            PIGKINGGAME_TOOLATE = "No time for that now. It'll be dark soon.",
         },
         GIVETOPLAYER = 
         {
@@ -175,6 +186,7 @@ return
     ANNOUNCE_COMPASS_OUT = "My compass has become demagnetized.",
     ANNOUNCE_DUSK = "Night will be here soon.",
 
+    ANNOUNCE_DESPAWN = "I've never read anything describing this!",
     ANNOUNCE_BECOMEGHOST = "oOoooOoO!!",
     ANNOUNCE_GHOSTDRAIN = "My humanity... it's slipping.",
     ANNOUNCE_PETRIFED_TREES = "The chemical reaction has been catalyzed...",
@@ -268,6 +280,10 @@ return
     ANNOUNCE_KLAUS_ENRAGE = "No sense throwing one's life away. Fall back!",
     ANNOUNCE_KLAUS_UNCHAINED = "Whatever enchantment restrained it has been undone.",
     ANNOUNCE_KLAUS_CALLFORHELP = "Careful! It has summoned lesser Krampii.",
+
+    --hallowed nights
+    ANNOUNCE_SPOOKED = "Curious. I seem to be hallucinating.",
+    ANNOUNCE_BRAVERY_POTION = "My intestinal fortitude has returned!",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Hold on a moment, dear.",
@@ -421,6 +437,11 @@ return
         },
 
         MULTIPLAYER_PORTAL = "Hmm... This may require further reading.",
+        MULTIPLAYER_PORTAL_MOONROCK = "Its design is decidedly otherworldly.",
+        CONSTRUCTION_PLANS = "Oh, I do like the look of this.",
+        MOONROCKIDOL = "Curious. It rather looks like a key.",
+        MOONROCKSEED = "A floating orb of knowledge.",
+
         BERNIE_INACTIVE =
         {
             BROKEN = "That bear is in need of repair.",
@@ -1348,6 +1369,8 @@ return
         WINTER_ORNAMENT = "Careful with it now, dear.",
         WINTER_ORNAMENTLIGHT = "Electrical currents do have a certain appeal, don't they?",
         WINTER_ORNAMENTBOSS = "I'm of the opinion that one can never overdecorate.",
+        WINTER_ORNAMENTFORGE = "A harrowing handicraft.",
+        WINTER_ORNAMENTGORGE = "The needlework on this is quite intricate.",
 
         WINTER_FOOD1 = "What a delightful little individual.", --gingerbread cookie
         WINTER_FOOD2 = "Just like holidays at the library!", --sugar cookie
@@ -1846,6 +1869,22 @@ return
         HALLOWEENCANDY_14 = "A delightful ten on the Scoville scale.", --Hot Lava pepper candy
         CANDYBAG = "A festive bag for seasonal treats.",
 
+        HALLOWEEN_ORNAMENT_1 = "An ornamental poltergeist meant to be hung somewhere.",
+        HALLOWEEN_ORNAMENT_2 = "A flourish of flying mammal.", 
+        HALLOWEEN_ORNAMENT_3 = "An arborator adornment of the arachnid variety.", 
+        HALLOWEEN_ORNAMENT_4 = "I really should decorate.", 
+        HALLOWEEN_ORNAMENT_5 = "An ornament such as this should be hung up.",
+        HALLOWEEN_ORNAMENT_6 = "A corvus such as this would do better in a tree.", 
+
+        HALLOWEENPOTION_DRINKS_WEAK = "Not as potent as I would have liked.",
+        HALLOWEENPOTION_DRINKS_POTENT = "An impressive elixir.", 
+        HALLOWEENPOTION_FIRE_FX = "It appears combustible.", 
+        HALLOWEENPOTION_BRAVERY = "Bottled valor.",
+        MADSCIENCE_LAB = "Mad science indeed!",
+        LIVINGTREE_ROOT = "The root cutting of a beastly tree.",
+        LIVINGTREE_SAPLING = "Ah. Its horror has taken root.",
+
+
         DRAGONHEADHAT = "This is the head to the dragon costume.",
         DRAGONBODYHAT = "The longer the dragon, the better the luck.",
         DRAGONTAILHAT = "This is the back of the dragon costume.",
@@ -1879,6 +1918,22 @@ return
         HOUNDWHISTLE = "It emits a frequency undetectable to the human ear.",
         CHESSPIECE_CLAYHOUND = "A replica of Canis lupis.",
         CHESSPIECE_CLAYWARG = "The sculptor clearly studied the creature closely.",
+
+        PIGSHRINE =
+        {
+            GENERIC = "A Porcine tribute.",
+            EMPTY = "It needs a sacrifice of meat.",
+            BURNT = "No use to me like this.",
+        },
+        PIG_TOKEN = "How did they could achieve such detail using pig hooves?",
+        YOTP_FOOD1 = "A feast fit for a festival!",
+        YOTP_FOOD2 = "Not fit for human consumption.",
+        YOTP_FOOD3 = "I do enjoy a snack now and then.",
+
+        PIGELITE1 = "He's saturated with markings.", --BLUE
+        PIGELITE2 = "Rather hot-tempered.", --RED
+        PIGELITE3 = "Has an earthy musk to him.", --WHITE
+        PIGELITE4 = "I wonder what those green markings signify.", --GREEN
 
         SKULLCHEST = "A container resembling a cranium.",
         PANDORASCHEST = "An artifact which may contain other artifacts.",
@@ -2137,6 +2192,8 @@ return
         TRAILS = "All brawn and no brain, I'm afraid.",
         TURTILLUS = "Best steer clear of those spikes, dear.",
         SNAPPER = "What a ruffian!",
+        RHINODRILL = "Prone to unnecessary displays of masculinity.",
+        BEETLETAUR = "That lock must be heavy on its snout.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2179,6 +2236,11 @@ return
         LAVAARENA_RECHARGERHAT = "A focal point for magical energies.",
         LAVAARENA_HEALINGGARLANDHAT = "Proximity to the blossoms produces a restorative effect for the user.",
         LAVAARENA_CROWNDAMAGERHAT = "Goodness, I've no desire to wear such a thing.",
+
+        LAVAARENA_ARMOR_HP = "Safety first.",
+
+        LAVAARENA_FIREBOMB = "I prefer my books.",
+        LAVAARENA_HEAVYBLADE = "Goodness. I could never lift that!",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2282,7 +2344,7 @@ return
         QUAGMIRE_RUBBLE_CATHEDRAL = "Interesting. It appears they didn't worship Gnaw.",
         QUAGMIRE_RUBBLE_PUBDOOR = "The door to a public house.",
         QUAGMIRE_RUBBLE_ROOF = "It has collapsed.",
-        QUAGMIRE_RUBBLE_CLOCKTOWER = "The clockwork has siezed as well.",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "The clockwork has seized as well.",
         QUAGMIRE_RUBBLE_BIKE = "Beyond repair.",
         QUAGMIRE_RUBBLE_HOUSE = {"What creatures once lived here?", "There's nothing left of the inhabitants.", "What caused this city to crumble?",},
         QUAGMIRE_RUBBLE_CHIMNEY = "Something must have knocked it down.",
@@ -2390,10 +2452,42 @@ return
 
         QUAGMIRE_ALTAR_STATUE2 = "A gruesome gargoyle.",
         QUAGMIRE_ALTAR_QUEEN = "Impressive in scope.",
-        QUAGMIRE_ALTAR_BOLLARD = "A nice enough bullard.",
+        QUAGMIRE_ALTAR_BOLLARD = "A nice enough bollard.",
         QUAGMIRE_ALTAR_IVY = "Something in the Hedera family.",
 
         QUAGMIRE_LAMP_SHORT = "It's a nice enough light.",
+
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+            GENERIC = "That Winona is quite resourceful.",
+            OFF = "It requires a power source.",
+            BURNING = "Oh dear, who did this?",
+            BURNT = "I do hope she'll build another.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+            GENERIC = "A sensible safety precaution.",
+            OFF = "It requires a power source.",
+            BURNING = "Oh dear, who did this?",
+            BURNT = "I do hope she'll build another.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+            GENERIC = "An electrical power supply for her lovely inventions.",
+            LOWPOWER = "Hm, her invention is starting to run down.",
+            OFF = "I'll grab the nitre, yes?",
+            BURNING = "Oh dear, who did this?",
+            BURNT = "I do hope she'll build another.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+            GENERIC = "It's good to see her keeping an open mind.",
+            LOWPOWER = "The magical focus will wear out soon.",
+            OFF = "It needs a new magic focus.",
+            BURNING = "Oh dear, who did this?",
+            BURNT = "I do hope she'll build another.",
+        },
    },
 
     EAT_FOOD =

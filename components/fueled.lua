@@ -1,5 +1,7 @@
 --Sewing should be redone without using the fueled component... it's kind of weird.
 
+local SourceModifierList = require("util/sourcemodifierlist")
+
 local function onfueltype(self, fueltype, old_fueltype)
     if old_fueltype ~= nil and old_fueltype ~= self.secondaryfueltype then
         self.inst:RemoveTag(old_fueltype == FUELTYPE.USAGE and "needssewing" or (old_fueltype.."_fueled"))
@@ -83,6 +85,7 @@ local Fueled = Class(function(self, inst)
     self.maxfuel = 0
     self.currentfuel = 0
     self.rate = 1
+	self.rate_modifiers = SourceModifierList(self.inst)
 
     self.no_sewing = nil --V2C: HACK COLON RIGHT PARANTHESIS, I mean, what choice do I have if I don't want to break mods -_ -
     self.accepting = false
@@ -198,7 +201,7 @@ end
 function Fueled:GetDebugString()
     local section = self:GetCurrentSection()
 
-    return string.format("%s %2.2f/%2.2f (-%2.2f) : section %d/%d %2.2f", self.consuming and "ON" or "OFF", self.currentfuel, self.maxfuel, self.rate, section, self.sections, self:GetSectionPercent())
+    return string.format("%s %2.2f/%2.2f (-%2.2f) : section %d/%d %2.2f", self.consuming and "ON" or "OFF", self.currentfuel, self.maxfuel, self.rate * self.rate_modifiers:Get(), section, self.sections, self:GetSectionPercent())
 end
 
 function Fueled:AddThreshold(percent, fn)
@@ -253,6 +256,7 @@ function Fueled:InitializeFuelLevel(fuel)
     local newsection = self:GetCurrentSection()
     if oldsection ~= newsection and self.sectionfn then
         self.sectionfn(newsection, oldsection, self.inst)
+		self.inst:PushEvent("onfueldsectionchanged", {newsection = newsection, oldsection = oldsection})
     end
 end
 
@@ -267,6 +271,7 @@ function Fueled:DoDelta(amount, doer)
         if self.sectionfn then
             self.sectionfn(newsection, oldsection, self.inst, doer)
         end
+		self.inst:PushEvent("onfueldsectionchanged", {newsection = newsection, oldsection = oldsection, doer = doer})
         if self.currentfuel <= 0 and self.depleted then
             self.depleted(self.inst)
         end
@@ -277,7 +282,7 @@ end
 
 function Fueled:DoUpdate(dt)
     if self.consuming then
-        self:DoDelta(-dt*self.rate)
+        self:DoDelta(-dt*self.rate*self.rate_modifiers:Get())
     end
 
     if self:IsEmpty() then

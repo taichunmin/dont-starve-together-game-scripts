@@ -5,7 +5,6 @@ Panic = Class(BehaviourNode, function(self, inst)
 end)
 
 function Panic:Visit()
-
     if self.status == READY then
         self:PickNewDirection()
         self.status = RUNNING
@@ -18,9 +17,6 @@ function Panic:Visit()
 end
 
 function Panic:PickNewDirection()
-    self.inst.components.locomotor:RunInDirection(math.random()*360)
-    self.waittime = GetTime() + 0.25 + math.random()*0.25
+    self.inst.components.locomotor:RunInDirection(math.random() * 360)
+    self.waittime = GetTime() + .25 + math.random() * .25
 end
-
-
-

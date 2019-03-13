@@ -229,6 +229,20 @@ function Tune(overrides)
         PIG_LOYALTY_PER_HUNGER = total_day_time/25,
         PIG_MIN_POOP_PERIOD = seg_time * .5,
 
+        PIG_TOKEN_CHANCE = 0.05,
+        PIG_TOKEN_CHANCE_YOTP = .5,
+        PIG_MINIGAME_ARENA_RADIUS = 12,
+        PIG_MINIGAME_REQUIRED_TIME = seg_time * 4,
+		PIG_MINIGAME_SCORE_GREAT = 0.6,
+		PIG_MINIGAME_SCORE_GOOD = 0.3,
+		PIG_MINIGAME_SCORE_BAD = 0.1,
+
+        PIG_FULL_LOYALTY_PERCENT = 0.9,
+
+		MINIGAME_CROWD_DIST_MIN = 12,
+		MINIGAME_CROWD_DIST_TARGET = 14,
+		MINIGAME_CROWD_DIST_MAX = 20,
+
         SPIDER_LOYALTY_MAXTIME = 2.5*total_day_time,
         SPIDER_LOYALTY_PER_HUNGER = total_day_time/25,
 
@@ -247,6 +261,23 @@ function Tune(overrides)
 
         WEREPIG_RUN_SPEED = 7,
         WEREPIG_WALK_SPEED = 3,
+
+        PIG_ELITE_RUN_SPEED = 9,
+        PIG_ELITE_WALK_SPEED = 3,
+        PIG_ELITE_HIT_RECOVERY = 1,
+        PROP_WEAPON_RANGE = .5,
+
+        --for pig king gold minigame
+        --delay b4 pigs and players can pick up something recently knocked out of someone's inventory
+        --players are faster
+        --high is for stuff knocked out of the hand slot
+        --low is for stuff knocked out of pockets
+        KNOCKBACK_DROP_ITEM_HEIGHT_HIGH = 3,
+        KNOCKBACK_DROP_ITEM_HEIGHT_LOW = 1,
+        KNOCKBACK_DELAY_INTERACTION_HIGH = .6,
+        KNOCKBACK_DELAY_INTERACTION_LOW = .45,
+        KNOCKBACK_DELAY_PLAYER_INTERACTION_HIGH = .3,
+        KNOCKBACK_DELAY_PLAYER_INTERACTION_LOW = .15,
 
         WILSON_WALK_SPEED = 4,
         WILSON_RUN_SPEED = 6,
@@ -476,6 +507,9 @@ function Tune(overrides)
         STARVE_KILL_TIME = 120,
         HUNGRY_THRESH = .333,
         GHOST_THRESH = .125,
+
+        HUNGRY_BUILDER_DELTA = -5,
+        HUNGRY_BUILDER_RESET_TIME = seg_time * 2,
 
         GRUEDAMAGE = wilson_health*.667,
 
@@ -953,6 +987,10 @@ function Tune(overrides)
                 ANCIENT = 4,
             }),
 
+            MOONORB_LOW = TechTree.Create({
+                CELESTIAL = 1,
+            }),
+
             WAXWELLJOURNAL = TechTree.Create({
                 SHADOW = 4,
             }),
@@ -976,6 +1014,15 @@ function Tune(overrides)
             WARGSHRINE = TechTree.Create({
                 WARGOFFERING = 3,
                 PERDOFFERING = 1,
+            }),
+
+            PIGSHRINE = TechTree.Create({
+                PIGOFFERING = 3,
+                PERDOFFERING = 1,
+            }),
+
+            MADSCIENCE = TechTree.Create({
+                MADSCIENCE = 1,
             }),
         },
 
@@ -2087,6 +2134,14 @@ function Tune(overrides)
         },
 
         LIVINGTREE_CHANCE = 0.55,
+        LIVINGTREE_YOUNG_WORK = 15,
+        LIVINGTREE_YOUNG_GROW_TIME = 3 * day_time,
+        LIVINGTREE_WORK = 20,
+        LIVINGTREE_EXTRA_SPACING = 4,
+
+        HALLOWEEN_ORNAMENT_TUMBLEWEED_CHANCE = 0.1,
+        HALLOWEENPOTION_FIREFX_FUEL_MOD = .8,
+        HALLOWEENPOTION_FIREFX_DURATION = seg_time * 8,
 
         -- Birchnut monster chances have been reduced and tied to seasons instead of the number of days to balance things out for dedicated servers (which may be running for extremely long times)
         DECID_MONSTER_MIN_DAY = 3, -- No monsters during the first few days
@@ -2319,6 +2374,8 @@ function Tune(overrides)
         METEOR_SHOWER_LVL3_MEDMETEORS_MAX = 6,
         METEOR_SHOWER_LVL3_LRGMETEORS_MIN = 3,
         METEOR_SHOWER_LVL3_LRGMETEORS_MAX = 10,
+
+		MOONROCKSHELL_CHANCE = 0.34,
 
         GROGGINESS_DECAY_RATE = .01,
         GROGGINESS_WEAR_OFF_DURATION = .5,
@@ -2638,6 +2695,8 @@ function Tune(overrides)
             WINONA = 1,
         },
 
+	    LAVAARENA_BERNIE_SCALE = 1.2,
+
         REVIVE_CORPSE_ACTION_TIME = 6,
 
         VOTE_PASSED_SQUELCH_TIME = 0,
@@ -2690,6 +2749,30 @@ function Tune(overrides)
         PERDFAN_TORNADO_LIFETIME = 2,
         DRAGONHAT_PERISHTIME = total_day_time, --only consumes while dancing
         YOTG_PERD_SPAWNCHANCE = .3,
+
+        --v2 Winona
+        WINONA_ENGINEERING_SPACING = 3.2,
+        --this is just the default recipe spacing
+        --we still want to explicitly define it for engineering recipes because of the fixed range indicators
+
+        WINONA_CATAPULT_HEALTH = 400,
+        WINONA_CATAPULT_HEALTH_REGEN_PERIOD = 10,
+        WINONA_CATAPULT_HEALTH_REGEN = 400 * 10 / total_day_time,
+        WINONA_CATAPULT_DAMAGE = wilson_attack * 1.25,
+        WINONA_CATAPULT_MIN_RANGE = 6,
+        WINONA_CATAPULT_MAX_RANGE = 15,
+        WINONA_CATAPULT_ATTACK_PERIOD = 2.5,
+        WINONA_CATAPULT_AOE_RADIUS = 1.25,
+
+        WINONA_SPOTLIGHT_RADIUS = 2.4,
+        WINONA_SPOTLIGHT_MIN_RANGE = 4,
+        WINONA_SPOTLIGHT_MAX_RANGE = 20,
+
+        WINONA_BATTERY_LOW_MAX_FUEL_TIME = seg_time * 6,
+        WINONA_BATTERY_LOW_FUEL_RATE_MULT = .375, --changes max fuel to last 1 full day, while still only costing 2 nitre
+        WINONA_BATTERY_HIGH_MAX_FUEL_TIME = total_day_time * 6,
+        WINONA_BATTERY_RANGE = 5,
+        WINONA_BATTERY_MIN_LOAD = .2,
     }
 end
 

@@ -18,7 +18,7 @@ end
 
 local function fn()
     local inst = CreateEntity()
-    
+
     assert(TheWorld ~= nil and TheWorld.shard == nil and TheWorld.ismastersim)
     TheWorld.shard = inst
 

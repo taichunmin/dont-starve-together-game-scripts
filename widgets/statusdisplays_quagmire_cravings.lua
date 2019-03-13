@@ -156,7 +156,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
 end)
 
 function CravingsStatus:ShakeScreen(level)
-    DoCameraShake(self, CAMERASHAKE.HORIZONTAL, .8, .03, level >= 3 and .15 or .1)
+    DoCameraShake(self, CAMERASHAKE.SIDE, .8, .03, level >= 3 and .15 or .1)
 end
 
 function CravingsStatus:SetMeter(percent)

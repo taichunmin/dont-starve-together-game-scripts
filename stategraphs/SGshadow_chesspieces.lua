@@ -410,6 +410,30 @@ ShadowChess.States.AddDespawn = function(states, anim, timeline)
 end
 
 --------------------------------------------------------------------------
+ShadowChess.States.AddAppear = function(states, anim, timeline)
+    timeline = timeline or {}
+    table.insert(timeline, ExtendedSoundTimelineEvent(0, "disappear"))
+	
+    table.insert(states, State
+    {
+        name = "appear",
+        tags = { "busy" },
+
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("appear")
+            inst.Physics:Stop()
+        end,
+
+        timeline = timeline,
+
+        events =
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
+        },
+    })
+end
+
+--------------------------------------------------------------------------
 ShadowChess.CommonEventList =
 {
     ShadowChess.Events.LevelUp(),

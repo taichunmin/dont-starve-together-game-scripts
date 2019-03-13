@@ -13,6 +13,8 @@ local Widget = require "widgets/widget"
 local ScrollableList = require "widgets/scrollablelist"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local OnlineStatus = require "widgets/onlinestatus"
+local MovieDialog = require "screens/moviedialog"
+local CreditsScreen = require "screens/creditsscreen"
 local TEMPLATES = require "widgets/redux/templates"
 
 local controls_ui = {
@@ -200,8 +202,8 @@ local OptionsScreen = Class(Screen, function(self, prev_screen)
 	Screen._ctor(self, "OptionsScreen")
 
     self.show_language_options = (prev_screen ~= nil and prev_screen.name == "MultiplayerMainScreen") and IsConsole()
-
 	self.show_datacollection = IsSteam() and not InGamePlay()
+	self.show_cinematics = not InGamePlay()
 
 	local graphicsOptions = TheFrontEnd:GetGraphicsOptions()
 
@@ -277,6 +279,10 @@ local OptionsScreen = Class(Screen, function(self, prev_screen)
     if self.show_language_options then
         menu_items["languages"] = self.panel_root:AddChild(self:_BuildLanguages())
     end
+	if self.show_cinematics then
+	    menu_items.cinematics = self.panel_root:AddChild(self:_BuildCinematics())
+	end
+
     self.subscreener = Subscreener(self, self._BuildMenu, menu_items )
     self.subscreener:SetPostMenuSelectionAction(function(selection)
         self.selected_tab = selection
@@ -330,6 +336,9 @@ function OptionsScreen:_BuildMenu(subscreener)
     if self.show_language_options then
         table.insert( menu_items, 1, {widget = languages_button} )
     end
+	if self.show_cinematics then
+	    table.insert( menu_items, 1, {widget = subscreener:MenuButton(STRINGS.UI.OPTIONS.CINEMATICS, "cinematics", STRINGS.UI.OPTIONS.TOOLTIP_CINEMATICS, self.tooltip)} )
+	end
 
     return self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 38, nil, nil, true))
 end
@@ -892,7 +901,7 @@ function OptionsScreen:_BuildLanguages()
 
     self.lang_grid = languagesRoot:AddChild(Grid())
     self.lang_grid:SetPosition(-125, 90)
-    for _,id in pairs(GetLocalizationOptions()) do
+    for _,id in pairs(LOC.GetLanguages()) do
         table.insert(self.langButtons, self:_BuildLangButton(button_width, button_height, id))
     end
     self.lang_grid:FillGrid(2, button_width, button_height, self.langButtons)
@@ -902,6 +911,55 @@ function OptionsScreen:_BuildLanguages()
     return languagesRoot
 end
 
+function OptionsScreen:_BuildCinematics()
+    local root = Widget("ROOT")
+    
+    root:SetPosition(85,0)
+
+    local scale = 0.6
+    local button_width = 432 * scale
+    local button_height = 90 * scale
+
+    local title = root:AddChild(BuildSectionTitle(STRINGS.UI.OPTIONS.CINEMATICS, 200))
+    title:SetPosition(0, 160)
+
+    self.buttons = {}
+
+	local function OnMovieDone()
+		TheFrontEnd:GetSound():PlaySound(FE_MUSIC, "FEMusic")
+		TheFrontEnd:GetSound():SetParameter("FEMusic", "fade", 0)
+		TheFrontEnd:Fade(FADE_IN, 1)
+		self:Show()
+	end
+
+	table.insert(self.buttons, TEMPLATES.StandardButton(function()
+			TheFrontEnd:GetSound():KillSound("FEMusic")
+			if self.debug_menu then self.debug_menu:Disable() end
+			TheFrontEnd:FadeToScreen( self, function() return MovieDialog("movies/intro.ogv", OnMovieDone) end, nil )
+		end,
+		STRINGS.UI.OPTIONS.INTRO_MOVIE, {button_width, button_height})
+	)
+	table.insert(self.buttons, TEMPLATES.StandardButton(function()
+			TheFrontEnd:GetSound():KillSound("FEMusic")
+			if self.debug_menu then self.debug_menu:Disable() end
+			TheFrontEnd:FadeToScreen( self, function() return CreditsScreen() end, nil )
+		end,
+		STRINGS.UI.OPTIONS.CREDITS, {button_width, button_height})
+	)
+	
+	if IsSteam() then
+		table.insert(self.buttons, TEMPLATES.StandardButton(function() VisitURL("https://www.youtube.com/channel/UCzbYAkDCuQYdZ_fKz9MLrWA") end, STRINGS.UI.OPTIONS.VIDEO_CHANNEL, {button_width, button_height}))
+	end
+	
+    self.grid = root:AddChild(Grid())
+    self.grid:SetPosition(0, 90)
+
+    self.grid:FillGrid(1, button_width, button_height, self.buttons)
+    
+    root.focus_forward = self.grid
+
+    return root
+end
 
 -- This is the "settings" tab
 function OptionsScreen:_BuildSettings()

@@ -4,7 +4,7 @@ local assets =
     Asset("ANIM", "anim/armor_trunkvest_winter.zip"),
 }
 
-local function onequip_summer(inst, owner) 
+local function onequip_summer(inst, owner)
     owner.AnimState:OverrideSymbol("swap_body", "armor_trunkvest_summer", "swap_body")
     inst.components.fueled:StartConsuming()
 end
@@ -19,7 +19,7 @@ local function onunequip(inst, owner)
     inst.components.fueled:StopConsuming()
 end
 
-local function create_common(bankandbuild)
+local function create_common(bankandbuild, iswaterproofer)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -33,6 +33,11 @@ local function create_common(bankandbuild)
     inst.AnimState:PlayAnimation("anim")
 
     inst.foleysound = "dontstarve/movement/foley/trunksuit"
+
+    if iswaterproofer then
+        --waterproofer (from waterproofer component) added to pristine state for optimization
+        inst:AddTag("waterproofer")
+    end
 
     inst.entity:SetPristine()
 
@@ -48,7 +53,7 @@ local function create_common(bankandbuild)
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
 
-    inst.components.equippable:SetOnUnequip( onunequip )
+    inst.components.equippable:SetOnUnequip(onunequip)
 
     inst:AddComponent("insulator")
 
@@ -63,7 +68,7 @@ local function create_common(bankandbuild)
 end
 
 local function create_summer()
-    local inst = create_common("armor_trunkvest_summer")
+    local inst = create_common("armor_trunkvest_summer", true)
 
     if not TheWorld.ismastersim then
         return inst
@@ -71,13 +76,16 @@ local function create_summer()
 
     inst.components.equippable:SetOnEquip(onequip_summer)
 
-    inst.components.insulator:SetInsulation( TUNING.INSULATION_SMALL )
-    
+    inst.components.insulator:SetInsulation(TUNING.INSULATION_SMALL)
+
+    inst:AddComponent("waterproofer")
+    inst.components.waterproofer:SetEffectiveness(TUNING.WATERPROOFNESS_SMALL)
+
     return inst
 end
 
 local function create_winter()
-    local inst = create_common("armor_trunkvest_winter")
+    local inst = create_common("armor_trunkvest_winter", false)
 
     if not TheWorld.ismastersim then
         return inst
@@ -85,7 +93,7 @@ local function create_winter()
 
     inst.components.equippable:SetOnEquip(onequip_winter)
 
-    inst.components.insulator:SetInsulation( TUNING.INSULATION_LARGE )
+    inst.components.insulator:SetInsulation(TUNING.INSULATION_LARGE)
 
     return inst
 end

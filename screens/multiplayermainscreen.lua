@@ -348,7 +348,7 @@ function MultiplayerMainScreen:UpdatePuppets()
             table.insert(total_characters, v)
         end
     end
-	local player_characters = self.profile:GetAllRecentLoadouts()
+	local player_characters = {}--self.profile:GetAllRecentLoadouts()
     if #player_characters > 0 then
         table.insert(total_characters, player_characters[math.random(1, #player_characters)])
     end
@@ -832,7 +832,7 @@ function MultiplayerMainScreen:MakeSubMenu()
 
         if TheFrontEnd:GetAccountManager():HasSteamTicket() then
 
-            local manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() VisitURL(TheFrontEnd:GetAccountManager():GetViewAccountURL(), true ) end, {font=NEWFONT_OUTLINE, focus_colour={1,1,1,1}})
+            local manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() VisitURL(TheFrontEnd:GetAccountManager():GetAccountURL(), true ) end, {font=NEWFONT_OUTLINE, focus_colour={1,1,1,1}})
 
 			local online = TheNet:IsOnlineMode() and not TheFrontEnd:GetIsOfflineMode()
 			if online then

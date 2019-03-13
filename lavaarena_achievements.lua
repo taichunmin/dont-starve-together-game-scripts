@@ -505,6 +505,7 @@ end
 
 return 
 {
+    seasons = { 1 },
 	eventid = "lavaarena",
 	achievements = Lavaarena_Achievements,
 }

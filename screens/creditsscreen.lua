@@ -121,10 +121,7 @@ local CreditsScreen = Class(Screen, function(self)
         self.OK_button = self.back_button_root:AddChild(TEMPLATES.BackButton(function() 
             self.OK_button:Disable()
             self:Disable()
-            TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
-                TheFrontEnd:PopScreen()
-                TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
-            end)
+			TheFrontEnd:FadeBack()
         end , STRINGS.UI.MAINSCREEN.BACK))
 
         if PLATFORM ~= "PS4" and PLATFORM ~= "WIN32_RAIL" then
@@ -197,7 +194,6 @@ function CreditsScreen:OnBecomeInactive()
 
     TheFrontEnd:GetSound():KillSound("creditsscreenmusic")
     TheFrontEnd:GetSound():PlaySound(FE_MUSIC, "FEMusic")
-    TheFrontEnd:GetSound():PlaySound("dontstarve/together_FE/portal_idle_vines", "FEPortalSFX")
 end
 
 function CreditsScreen:OnControl(control, down)
@@ -205,12 +201,8 @@ function CreditsScreen:OnControl(control, down)
     if not down and control == CONTROL_CANCEL then
         if self.OK_button then self.OK_button:Disable() end
         self:Disable()
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
-            TheFrontEnd:PopScreen()
-            TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
-        end) 
-        return true
+		TheFrontEnd:FadeBack()
+     return true
     end
 end
 

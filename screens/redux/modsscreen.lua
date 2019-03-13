@@ -12,7 +12,7 @@ local dialog_size_y = 555
 local bottom_button_y = -310
 
 local ModsScreen = Class(Screen, function(self, prev_screen)
-    Widget._ctor(self, "ModsScreen")
+    Screen._ctor(self, "ModsScreen")
 
     self.dirty = false
 

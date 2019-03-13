@@ -29,6 +29,23 @@ local assets =
 
     Asset("DYNAMIC_ATLAS", "images/fepanels.xml"),
     Asset("PKGREF", "images/fepanels.tex"),
+    
+    --item explorer stuff in and out of game
+    Asset("ANIM", "anim/spool.zip"), -- doodads
+    Asset("ANIM", "anim/frame_bg.zip"),
+    Asset("ANIM", "anim/accountitem_frame.zip"),
+    Asset("ANIM", "anim/frames_comp.zip"), -- If we replace frames_comp with accountitem_frame, we can remove.
+
+    --IAP shop is accessible in FE and in in-game lobby
+    Asset("DYNAMIC_ATLAS", "images/fepanels_redux_shop_panel.xml"),
+    Asset("PKGREF", "images/fepanels_redux_shop_panel.tex"),
+    Asset("DYNAMIC_ATLAS", "images/fepanels_redux_shop_panel_wide.xml"),
+    Asset("PKGREF", "images/fepanels_redux_shop_panel_wide.tex"),
+
+    Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared_spiral.zip"),
+    Asset("PKGREF", "anim/dynamic/box_shared_spiral.dyn"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared.zip"), --needed for the mystery and purchase box opening animation (happens to contain the forge box build too)
+    Asset("PKGREF", "anim/dynamic/box_shared.dyn"),
 
     -- Used in event join flow and in-game victory.
     Asset("ATLAS", "images/dialogcurly_9slice.xml"),
@@ -40,6 +57,15 @@ local assets =
 
     Asset("DYNAMIC_ATLAS", "images/lavaarena_achievements.xml"),
     Asset("PKGREF", "images/lavaarena_achievements.tex"),
+
+	Asset("ATLAS", "images/lavaarena_unlocks.xml"),
+	Asset("IMAGE", "images/lavaarena_unlocks.tex"),
+
+	Asset("ATLAS", "images/lavaarena_unlocks2.xml"),
+	Asset("IMAGE", "images/lavaarena_unlocks2.tex"),
+
+	Asset("ATLAS", "images/lavaarena_quests.xml"),
+	Asset("IMAGE", "images/lavaarena_quests.tex"),
 
     Asset("DYNAMIC_ATLAS", "images/quagmire_food_common_inv_images_hires.xml"),
     Asset("PKGREF", "images/quagmire_food_common_inv_images_hires.tex"),
@@ -202,76 +228,41 @@ local assets =
     Asset("PKGREF", "anim/dynamic/random_skin.dyn"),
 }
 
--- Loading Screens from items
-require "skinsutils"
-require "misc_items"
-for item_key,item_blob in pairs(GetAllMiscItemsOfType("loading")) do
-    local atlas,tex = GetLoaderAtlasAndTexPkgref(item_key)
-    table.insert(assets, Asset("DYNAMIC_ATLAS", atlas))
-    table.insert(assets, Asset("PKGREF", tex))
-end
--- Player portrait backgrounds from items
-local playerportraits = GetAllMiscItemsOfType("playerportrait")
-playerportraits.playerportrait_bg_none = {} -- none is not a real item
-for item_key,item_blob in pairs(playerportraits) do
-    local atlas,tex = GetPlayerPortraitAtlasAndTexPkgref(item_key)
-    table.insert(assets, Asset("DYNAMIC_ATLAS", atlas))
-    table.insert(assets, Asset("PKGREF", tex))
-end
-
 require "fonts"
 for i, font in ipairs( FONTS ) do
     table.insert( assets, Asset( "FONT", font.filename ) )
 end
 
 -- Add all the characters by name
--- GetActiveCharacterList doesn't exist in the pipeline.
-local active_characters = GetActiveCharacterList and GetActiveCharacterList() or DST_CHARACTERLIST
-for i,char in ipairs(active_characters) do
-    if PREFAB_SKINS[char] then
-        for _,character in pairs(PREFAB_SKINS[char]) do
-            table.insert(assets, Asset("DYNAMIC_ATLAS", "bigportraits/"..character..".xml"))
-            table.insert(assets, Asset("PKGREF", "bigportraits/"..character..".tex"))
+-- GetOfficialCharacterList doesn't exist in the pipeline.
+local official_characters = GetOfficialCharacterList and GetOfficialCharacterList() or DST_CHARACTERLIST
+for _,char in ipairs(official_characters) do
+    table.insert(assets, Asset("DYNAMIC_ATLAS", "bigportraits/"..char..".xml"))
+    table.insert(assets, Asset("PKGREF", "bigportraits/"..char..".tex"))
+
+    table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_"..char..".xml"))
+    table.insert(assets, Asset("PKGREF", "images/names_"..char..".tex"))
+
+    table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_gold_"..char..".xml"))
+    table.insert(assets, Asset("PKGREF", "images/names_gold_"..char..".tex"))
+
+    --table.insert(assets, Asset("IMAGE", "images/selectscreen_portraits/"..char..".tex")) -- Not currently used, but likely to come back
+    --table.insert(assets, Asset("IMAGE", "images/selectscreen_portraits/"..char.."_silho.tex")) -- Not currently used, but likely to come back
+end
+
+--Skin assets
+for _, skin_asset in pairs(require("skin_assets")) do
+    table.insert(assets, skin_asset)
+end
+
+if QUAGMIRE_USE_KLUMP then
+    --Add the custom quagmire recipe images
+    for _,file in pairs(require("klump_files")) do
+        local klump_file = string.gsub(file, "klump/", "")
+        if klump_file:find(".tex") and klump_file:find("_hires") then --crappy assumption for now that _hires .tex klump files have a matching atlas that we need to load
+            local xml_file = string.gsub(klump_file, ".tex", ".xml")
+            table.insert(assets, Asset("DYNAMIC_ATLAS", xml_file)) --global because the recipe book is used in the frontend and backend
         end
-        table.insert(assets, Asset("DYNAMIC_ATLAS", "bigportraits/"..char..".xml"))
-        table.insert(assets, Asset("PKGREF", "bigportraits/"..char..".tex"))
-
-        table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_"..char..".xml"))
-        table.insert(assets, Asset("PKGREF", "images/names_"..char..".tex"))
-
-        table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_gold_"..char..".xml"))
-        table.insert(assets, Asset("PKGREF", "images/names_gold_"..char..".tex"))
-
-        --table.insert(assets, Asset("IMAGE", "images/selectscreen_portraits/"..char..".tex")) -- Not currently used, but likely to come back
-        --table.insert(assets, Asset("IMAGE", "images/selectscreen_portraits/"..char.."_silho.tex")) -- Not currently used, but likely to come back
-    end
-end
-
-for i, v in pairs(active_characters) do
-    if v ~= "" then
-        table.insert(assets, Asset("ANIM", "anim/"..v..".zip"))
-    end
-end
-
---Skins assets
-for _, clothing_asset in pairs(require("clothing_assets")) do
-    table.insert(assets, clothing_asset)
-end
-local skinprefabs = {require("prefabs/skinprefabs")}
-for _,skin_prefab in pairs(skinprefabs) do
-    if string.sub(skin_prefab.name, -5) ~= "_none" then
-        for k, v in pairs(skin_prefab.assets) do
-            table.insert(assets, v)
-        end
-    end
-end
-
---Add the custom quagmire recipe images
-for _,file in pairs(require("klump_files")) do
-    local klump_file = string.gsub(file, "klump/", "")
-    if klump_file:find(".tex") and klump_file:find("_hires") then --crappy assumption for now that _hires .tex klump files have a matching atlas that we need to load
-        local xml_file = string.gsub(klump_file, ".tex", ".xml")
-        table.insert(assets, Asset("DYNAMIC_ATLAS", xml_file)) --global because the recipe book is used in the frontend and backend
     end
 end
 

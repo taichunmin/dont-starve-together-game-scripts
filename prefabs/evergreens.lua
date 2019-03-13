@@ -407,7 +407,7 @@ local function WakeUpLeif(ent)
     ent.components.sleeper:WakeUp()
 end
 
-local function chop_tree(inst, chopper, chops)
+local function chop_tree(inst, chopper, chopsleft, numchops)
     if not (chopper ~= nil and chopper:HasTag("playerghost")) then
         inst.SoundEmitter:PlaySound(
             chopper ~= nil and chopper:HasTag("beaver") and

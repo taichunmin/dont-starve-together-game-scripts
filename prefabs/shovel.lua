@@ -13,7 +13,7 @@ local function onequip(inst, owner)
         owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_shovel", inst.GUID, "swap_shovel")
     else
         owner.AnimState:OverrideSymbol("swap_object", "swap_shovel", "swap_shovel")
-    end    
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -56,7 +56,7 @@ local function common_fn(bank, build)
         inst:AddComponent("finiteuses")
         inst.components.finiteuses:SetMaxUses(TUNING.SHOVEL_USES)
         inst.components.finiteuses:SetUses(TUNING.SHOVEL_USES)
-        inst.components.finiteuses:SetOnFinished(inst.Remove) 
+        inst.components.finiteuses:SetOnFinished(inst.Remove)
         inst.components.finiteuses:SetConsumption(ACTIONS.DIG, 1)
 
         -------
@@ -79,11 +79,11 @@ local function common_fn(bank, build)
     return inst
 end
 
-local function onequipgold(inst, owner) 
+local function onequipgold(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_goldenshovel", "swap_goldenshovel")
-    owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")     
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+    owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
 local function normal()

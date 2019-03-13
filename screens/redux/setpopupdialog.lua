@@ -52,10 +52,10 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 	self.horizontal_line:SetPosition( 5, 96, 0)
 	
 	
-	local num_sets = #SKIN_SET_ITEMS[self.set_item_type]
-	if num_sets > 1 then
+	self.num_sets = #SKIN_SET_ITEMS[self.set_item_type]
+	if self.num_sets > 1 then
 		local set_data = {}
-		for i = 1,num_sets do
+		for i = 1,self.num_sets do
 			set_data[i] = {
 				text = "",
 				data = {set=i},
@@ -152,10 +152,15 @@ function SetPopupDialog:OnControl(control, down)
     if SetPopupDialog._base.OnControl(self,control, down) then return true end
 
     if control == CONTROL_CANCEL and not down then
-        if #self.buttons > 1 and self.buttons[#self.buttons] then
-            self.buttons[#self.buttons].cb()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-            return true
+        self.buttons[#self.buttons].cb()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        return true
+    end
+    if self.set_selector then
+        if control == CONTROL_SCROLLBACK and not down then
+            self.set_selector:Prev()
+        elseif control == CONTROL_SCROLLFWD and not down then
+            self.set_selector:Next()
         end
     end
 end
@@ -167,8 +172,11 @@ end
 function SetPopupDialog:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
-	if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+    
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+    if self.num_sets > 1 then
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK) .. " " .. STRINGS.UI.SETPOPUP.PREV_SET)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD) .. " " .. STRINGS.UI.SETPOPUP.NEXT_SET)	
     end
 	return table.concat(t, "  ")
 end

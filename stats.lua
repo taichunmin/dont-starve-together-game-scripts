@@ -146,11 +146,6 @@ end
 local function BuildStartupContextTable() -- includes a bit more metadata about the user, should probably only be on startup
     local sendstats = BuildContextTable(TheNet:GetUserID())
 
-    local steamID = TheSim:GetSteamUserID()
-    if steamID ~= "" and steamID ~= "unknownID" then
-        sendstats.steamid = steamID
-    end
-
     sendstats.platform = PLATFORM
     sendstats.branch = BRANCH
 
@@ -218,7 +213,7 @@ local function RecordSessionStartStats()
 	
 	--print("_________________++++++ Sending sessions start stats...\n")
 	--dumptable(sendstats)
-	local jsonstats = json.encode( sendstats )
+	local jsonstats = json.encode_compliant( sendstats )
 	TheSim:SendProfileStats( jsonstats )
 end
 
@@ -243,7 +238,7 @@ local function RecordGameStartStats()
 	
 	--print("_________________++++++ Sending game start stats...\n")
 	--dumptable(sendstats)
-	local jsonstats = json.encode( sendstats )
+	local jsonstats = json.encode_compliant( sendstats )
 	TheSim:SendProfileStats( jsonstats, "is_only_local_users_data" )
 end
 
@@ -273,7 +268,7 @@ local function OnLaunchComplete()
 		sendstats.ownsds = TheSim:GetUserHasLicenseForApp(DONT_STARVE_APPID)
 		sendstats.ownsrog = TheSim:GetUserHasLicenseForApp(REIGN_OF_GIANTS_APPID)
 		sendstats.betabranch = TheSim:GetSteamBetaBranchName()
-		local jsonstats = json.encode( sendstats )
+		local jsonstats = json.encode_compliant( sendstats )
 	   	TheSim:SendProfileStats( jsonstats )
 	end
 end
@@ -296,7 +291,7 @@ local function InitStats()
 	RegisterOnAccountEventListener(statsEventListener)
 end
 
-local function PushMetricsEvent(event_id, player, values)
+local function PushMetricsEvent(event_id, player, values, is_only_local_users_data)
 
     local sendstats = BuildContextTable(player)
     sendstats.event = event_id
@@ -310,8 +305,8 @@ local function PushMetricsEvent(event_id, player, values)
     --print("PUSH METRICS EVENT")
     --dumptable(sendstats)
     --print("^^^^^^^^^^^^^^^^^^")
-    local jsonstats = json.encode(sendstats)
-    TheSim:SendProfileStats(jsonstats)
+    local jsonstats = json.encode_compliant(sendstats)
+    TheSim:SendProfileStats(jsonstats, is_only_local_users_data)
 end
 
 ------------------------------------------------------------------------------------------------

@@ -81,16 +81,18 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     end
 
     if IsAnyFestivalEventActive() then
-        self.rank = self:AddChild(TEMPLATES.FestivalNumberBadge())
+        self.rank = self:AddChild(TEMPLATES.FestivalNumberBadge("lavaarena"))
         self.rank:SetPosition(x + 16, -4)  
         self.rank:SetScale(.5)
         x = x + 16*2 + nudge_x
     else
-        -- Ensure there's enough space for "Admin" hover text.
-        x = x + 20
+        self.rankBadge = self:AddChild(TEMPLATES.RankBadge())
+        self.rankBadge:SetPosition(x + 15, -15)  
+        self.rankBadge:SetScale(.5)
+
+       x = x + 16*2 + nudge_x
     end
 
-    self.characterBadge = nil
     if empty then
         self.characterBadge = self:AddChild(PlayerBadge("", DEFAULT_PLAYER_COLOUR, false, 0))
         self.characterBadge:Hide()
@@ -101,6 +103,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     end
     self.characterBadge:SetScale(.45)
     self.characterBadge:SetPosition(x + 16, 0)
+
 
     self.adminBadge = self:AddChild(ImageButton("images/avatars.xml", "avatar_admin.tex"))
     self.adminBadge:Disable()
@@ -260,7 +263,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self:doButtonFocusHookups(nextWidgets)
 end
 
-local function UpdatePlayerListing(context, widget, data, index)
+local function UpdatePlayerListing(context, widget, data, index)   
     local empty = data == nil or next(data) == nil
 
     widget.userid = not empty and data.userid or nil
@@ -269,6 +272,17 @@ local function UpdatePlayerListing(context, widget, data, index)
         widget.bg:Hide()
     else
         widget.bg:Show()
+    end
+    
+    if widget.rankBadge then
+        if empty then
+            widget.rankBadge:Hide()
+        else
+            widget.rankBadge:Show()
+        
+            local profileflair = GetRemotePlayerVanityItem(data.vanity or {}, "profileflair")
+            widget.rankBadge:SetRank(profileflair, data.eventlevel, true)
+        end
     end
 
     if empty then

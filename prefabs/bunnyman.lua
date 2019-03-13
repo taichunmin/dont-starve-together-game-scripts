@@ -83,8 +83,10 @@ local function OnGetItemFromPlayer(inst, giver, item)
             if inst.components.combat:TargetIs(giver) then
                 inst.components.combat:SetTarget(nil)
             elseif giver.components.leader ~= nil then
-                giver:PushEvent("makefriend")
-                giver.components.leader:AddFollower(inst)
+				if giver.components.minigame_participator == nil then
+	                giver:PushEvent("makefriend")
+		            giver.components.leader:AddFollower(inst)
+				end
                 inst.components.follower:AddLoyaltyTime(
                     giver:HasTag("polite")
                     and TUNING.RABBIT_CARROT_LOYALTY + TUNING.RABBIT_POLITENESS_LOYALTY_BONUS
@@ -129,17 +131,22 @@ local function is_meat(item)
 end
 
 local function NormalRetargetFn(inst)
-    return FindEntity(inst, TUNING.PIG_TARGET_DIST,
-        function(guy)
-            return inst.components.combat:CanTarget(guy)
-                and (guy:HasTag("monster")
-                    or (guy.components.inventory ~= nil and
-                        guy:IsNear(inst, TUNING.BUNNYMAN_SEE_MEAT_DIST) and
-                        guy.components.inventory:FindItem(is_meat) ~= nil))
-        end,
-        { "_combat", "_health" }, -- see entityreplica.lua
-        nil,
-        { "monster", "player" })
+    return not inst:IsInLimbo()
+        and FindEntity(
+                inst,
+                TUNING.PIG_TARGET_DIST,
+                function(guy)
+                    return inst.components.combat:CanTarget(guy)
+                        and (guy:HasTag("monster")
+                            or (guy.components.inventory ~= nil and
+                                guy:IsNear(inst, TUNING.BUNNYMAN_SEE_MEAT_DIST) and
+                                guy.components.inventory:FindItem(is_meat) ~= nil))
+                end,
+                { "_combat", "_health" }, -- see entityreplica.lua
+                nil,
+                { "monster", "player" }
+            )
+        or nil
 end
 
 local function NormalKeepTargetFn(inst, target)

@@ -10,7 +10,13 @@ local prefabs =
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_ruins_bat", "swap_ruins_bat")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_ruins_bat", inst.GUID, "swap_ruins_bat")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_ruins_bat", "swap_ruins_bat")
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -18,6 +24,10 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function NoHoles(pt)
@@ -57,8 +67,7 @@ local function fn()
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank("ruins_bat")
-    inst.AnimState:SetBank("ruins_bat")
-    inst.AnimState:SetBuild("ruins_bat")
+    inst.AnimState:SetBuild("swap_ruins_bat")
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("sharp")

@@ -120,13 +120,20 @@ local function pickup(inst, owner)
         return
     end
     local x, y, z = owner.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.ORANGEAMULET_RANGE, { "_inventoryitem" }, { "INLIMBO", "NOCLICK", "catchable", "fire", "minesprung", "mineactive" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.ORANGEAMULET_RANGE, { "_inventoryitem" }, { "INLIMBO", "NOCLICK", "knockbackdelayinteraction", "catchable", "fire", "minesprung", "mineactive" })
     for i, v in ipairs(ents) do
         if v.components.inventoryitem ~= nil and
             v.components.inventoryitem.canbepickedup and
             v.components.inventoryitem.cangoincontainer and
             not v.components.inventoryitem:IsHeld() and
             owner.components.inventory:CanAcceptCount(v, 1) > 0 then
+
+            if owner.components.minigame_participator ~= nil then
+                local minigame = owner.components.minigame_participator:GetMinigame()
+                if minigame ~= nil then
+                    minigame:PushEvent("pickupcheat", { cheater = owner, item = v })
+                end
+            end
 
             --Amulet will only ever pick up items one at a time. Even from stacks.
             SpawnPrefab("sand_puff").Transform:SetPosition(v.Transform:GetWorldPosition())

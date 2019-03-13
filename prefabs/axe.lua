@@ -68,7 +68,7 @@ local function common_fn(bank, build)
     end
 
     inst:AddComponent("inspectable")
-    
+
     inst:AddComponent("equippable")
 
     inst.components.equippable:SetOnEquip(onequip)
@@ -80,11 +80,11 @@ local function common_fn(bank, build)
     return inst
 end
 
-local function onequipgold(inst, owner) 
+local function onequipgold(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_goldenaxe", "swap_goldenaxe")
     owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
 local function normal()

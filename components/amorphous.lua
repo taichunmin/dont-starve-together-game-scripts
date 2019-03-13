@@ -14,12 +14,14 @@ local Amorphous = Class(function(self, inst)
     self.currentform = nil
     inst:ListenForEvent("onclose", CheckForMorph)
     if not POPULATING then
-        self:OnLoadPostPass()
+        self:LoadPostPass()
     end
 end)
 
 function Amorphous:OnRemoveFromEntity()
-    inst:RemoveEventCallback("onclose", CheckForMorph)
+    self.inst:RemoveEventCallback("onclose", CheckForMorph)
+    self.inst:RemoveEventCallback("itemget", CheckForMorphIfClosed)
+    self.inst:RemoveEventCallback("itemlose", CheckForMorphIfClosed)
 end
 
 function Amorphous:OnSave()
@@ -42,7 +44,7 @@ function Amorphous:OnLoad(data)
     end
 end
 
-function Amorphous:OnLoadPostPass()
+function Amorphous:LoadPostPass()
     self.inst:ListenForEvent("itemget", CheckForMorphIfClosed)
     self.inst:ListenForEvent("itemlose", CheckForMorphIfClosed)
     if POPULATING then

@@ -4,11 +4,13 @@ local assets =
 }
 
 local function OnCanBuild(inst, mouse_blocked)
-    if mouse_blocked then
-        inst:Hide()
-    else
-        inst:Show()
-    end
+    inst.AnimState:SetMultColour(1, 1, 1, 1)
+    inst:Show()
+end
+
+local function OnCannotBuild(inst, mouse_blocked)
+    inst.AnimState:SetMultColour(.75, .25, .25, 1)
+    inst:Show()
 end
 
 local function fn()
@@ -32,7 +34,7 @@ local function fn()
     inst:AddComponent("placer")
     inst.components.placer.snap_to_tile = true
     inst.components.placer.oncanbuild = OnCanBuild
-    inst.components.placer.oncannotbuild = inst.Hide
+    inst.components.placer.oncannotbuild = OnCannotBuild
 
     return inst
 end

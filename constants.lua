@@ -37,10 +37,10 @@ ANCHOR_TOP = 1
 ANCHOR_BOTTOM = 2
 
 SCALEMODE_NONE = 0
-SCALEMODE_FILLSCREEN = 1
-SCALEMODE_PROPORTIONAL = 2
-SCALEMODE_FIXEDPROPORTIONAL = 3
-SCALEMODE_FIXEDSCREEN_NONDYNAMIC = 4
+SCALEMODE_FILLSCREEN = 1 --stretch art to fit/fill window
+SCALEMODE_PROPORTIONAL = 2 --preserve aspect ratio (picks the smaller of horizontal/vertical scale)
+SCALEMODE_FIXEDPROPORTIONAL = 3 --same as SCALEMODE_FIXEDSCREEN_NONDYNAMIC, except for safe area on consoles
+SCALEMODE_FIXEDSCREEN_NONDYNAMIC = 4 --scale same amount as window scaling from 1280x720
 
 PHYSICS_TYPE_ANIMATION_CONTROLLED = 0
 PHYSICS_TYPE_PHYSICS_CONTROLLED = 1
@@ -157,7 +157,11 @@ CONTROL_CUSTOM_START = 100
 
 XBOX_CONTROLLER_ID = 17
 
-
+-- controller targetting er... controls
+CONTROL_TARGET_MODIFIER = CONTROL_MENU_MISC_2
+CONTROL_TARGET_LOCK = CONTROL_MENU_MISC_2
+CONTROL_TARGET_CYCLE_BACK = CONTROL_ROTATE_LEFT
+CONTROL_TARGET_CYCLE_FORWARD = CONTROL_ROTATE_RIGHT
 
 KEY_TAB = 9
 KEY_KP_PERIOD		= 266
@@ -307,6 +311,35 @@ require("clothing")
 require("misc_items")
 require("emote_items")
 require("item_blacklist")
+
+CLOTHING.body_default1 =
+{
+	type = "body",
+    skin_tags = {},
+    is_default = true,
+	release_group = 999,
+}        
+CLOTHING.hand_default1 =
+{
+	type = "hand",
+    skin_tags = {},
+    is_default = true,
+	release_group = 999,
+}        
+CLOTHING.legs_default1 =
+{
+	type = "legs",
+    skin_tags = {},
+    is_default = true,
+	release_group = 999,
+}
+CLOTHING.feet_default1 =
+{
+	type = "feet",
+    skin_tags = {},
+    is_default = true,
+	release_group = 999,
+}
 
 MAINSCREEN_TOOL_LIST = 
 {
@@ -477,6 +510,7 @@ SPECIAL_EVENTS =
     WINTERS_FEAST = "winters_feast",
     YOTG = "year_of_the_gobbler",
     YOTV = "year_of_the_varg",
+    YOTP = "year_of_the_pig",
 }
 WORLD_SPECIAL_EVENT = SPECIAL_EVENTS.NONE
 
@@ -486,8 +520,14 @@ FESTIVAL_EVENTS =
     LAVAARENA = "lavaarena",
     QUAGMIRE = "quagmire",
 }
-WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.QUAGMIRE
-PREVIOUS_FESTIVAL_EVENTS = { FESTIVAL_EVENTS.LAVAARENA } --this is an array now, not a single event key
+WORLD_FESTIVAL_EVENT = FESTIVAL_EVENTS.NONE
+PREVIOUS_FESTIVAL_EVENTS = { FESTIVAL_EVENTS.LAVAARENA, FESTIVAL_EVENTS.QUAGMIRE } --deprecated, use PREVIOUS_FESTIVAL_EVENTS_ORDER
+PREVIOUS_FESTIVAL_EVENTS_ORDER =
+{
+    { id = FESTIVAL_EVENTS.LAVAARENA, season = 2 },
+    { id = FESTIVAL_EVENTS.QUAGMIRE, season = 1 },
+    { id = FESTIVAL_EVENTS.LAVAARENA, season = 1 },
+}
 
 
 ---------------------------------------------------------
@@ -528,6 +568,13 @@ SPECIAL_EVENT_MUSIC =
         bank = "music_frontend_yotg.fsb",
         sound = "dontstarve/music/music_FE_yotg",
     },
+
+    --year of the pig
+    [SPECIAL_EVENTS.YOTP] =
+    {
+        bank = "music_frontend_yotg.fsb",
+        sound = "dontstarve/music/music_FE_yotg",
+    },
 }
 
 FESTIVAL_EVENT_MUSIC =
@@ -538,7 +585,7 @@ FESTIVAL_EVENT_MUSIC =
         bank = "lava_arena.fsb",
         sound = "dontstarve/music/lava_arena/FE_1_2",
     },
-    --the ??
+    --the gorge
     [FESTIVAL_EVENTS.QUAGMIRE] =
     {
         bank = "quagmire.fsb",
@@ -566,13 +613,16 @@ local FESTIVAL_EVENT_INFO =
         SERVER_NAME = "LavaArena",
         FEMUSIC = "dontstarve/music/lava_arena/FE2",
 		STATS_FILE_PREFIX = "forge_stats",
+        LATEST_SEASON = 2,
     },
+    --the gorge
     [FESTIVAL_EVENTS.QUAGMIRE] =
     {
         GAME_MODE = "quagmire",
         SERVER_NAME = "Quagmire",
         FEMUSIC = nil, --no special FE music for the festival event screen
 		STATS_FILE_PREFIX = "thegorge_stats",
+        LATEST_SEASON = 1,
     },
 }
 
@@ -599,8 +649,8 @@ function IsFestivalEventActive(event)
 end
 
 function IsPreviousFestivalEvent(event)
-    for _,prev_event in pairs(PREVIOUS_FESTIVAL_EVENTS) do
-        if prev_event == event then
+    for _,prev_event in ipairs(PREVIOUS_FESTIVAL_EVENTS_ORDER) do
+        if prev_event.id == event then
             return true
         end
     end
@@ -619,14 +669,27 @@ function GetFestivalEventInfo()
     return FESTIVAL_EVENT_INFO[WORLD_FESTIVAL_EVENT]
 end
 
+function GetFestivalEventSeasons(festival)
+    return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].LATEST_SEASON or 0
+end
+
 -- Used by C side. Do NOT rename without editing simulation.cpp
 function GetActiveFestivalEventServerName()
     local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT
-    return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
+    return FESTIVAL_EVENT_INFO[festival] ~= nil and (string.format( "%s_s%d", FESTIVAL_EVENT_INFO[festival].SERVER_NAME, FESTIVAL_EVENT_INFO[festival].LATEST_SEASON )) or ""
 end
 
-function GetFestivalEventServerName(festival)
-    return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
+-- Used by C side. Do NOT rename without editing simulation.cpp
+function GetActiveFestivalProductName()
+	return FESTIVAL_EVENT_INFO[WORLD_FESTIVAL_EVENT] ~= nil and FESTIVAL_EVENT_INFO[WORLD_FESTIVAL_EVENT].SERVER_NAME or ""
+end
+
+function GetFestivalEventServerName(festival, season)
+    if season == 1 then
+        return FESTIVAL_EVENT_INFO[festival] ~= nil and FESTIVAL_EVENT_INFO[festival].SERVER_NAME or ""
+    else
+        return FESTIVAL_EVENT_INFO[festival] ~= nil and (string.format( "%s_s%d", FESTIVAL_EVENT_INFO[festival].SERVER_NAME, season )) or ""
+    end
 end
 
 function GetActiveFestivalEventStatsFilePrefix()
@@ -638,6 +701,16 @@ function GetActiveFestivalEventAchievementStrings()
     --Note, this requires the festival name to have the same spelling at the name in the STRINGS.UI.ACHIEVEMENTS string table
     local festival = IsAnyFestivalEventActive() and WORLD_FESTIVAL_EVENT
     return STRINGS.UI.ACHIEVEMENTS[festival:upper()]
+end
+
+-- To enable/disable the tournament, change the return value of Server_IsTournamentActive()
+function Server_IsTournamentActive()
+	-- for internal server use only
+	return false
+end
+
+function Client_IsTournamentActive() -- ticket_name is optional
+	return Server_IsTournamentActive() and IsSteam()
 end
 
 ---------------------------------------------------------
@@ -653,6 +726,7 @@ FE_MUSIC =
 
 ---------------------------------------------------------
 NUM_HALLOWEENCANDY = 14
+NUM_HALLOWEEN_ORNAMENTS = 6
 NUM_WINTERFOOD = 9
 
 TECH =
@@ -670,6 +744,8 @@ TECH =
     ANCIENT_THREE = { ANCIENT = 3 },
     ANCIENT_FOUR = { ANCIENT = 4 },
 
+    CELESTIAL_ONE = { CELESTIAL = 1 },
+
     SHADOW_TWO = { SHADOW = 3 },
 
     CARTOGRAPHY_TWO = { CARTOGRAPHY = 2 },
@@ -681,11 +757,14 @@ TECH =
     PERDOFFERING_ONE = { PERDOFFERING = 1 },
     PERDOFFERING_THREE = { PERDOFFERING = 3 },
     WARGOFFERING_THREE = { WARGOFFERING = 3 },
+    PIGOFFERING_THREE = { PIGOFFERING = 3 },
+    MADSCIENCE_ONE = { MADSCIENCE = 1 },
 
     HALLOWED_NIGHTS = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
     WINTERS_FEAST = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
     YOTG = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
     YOTV = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
+    YOTP = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
 
     LOST = { MAGIC = 10, SCIENCE = 10, ANCIENT = 10 },
 }
@@ -876,16 +955,19 @@ RECIPETABS =
 
     --Crafting stations
     ANCIENT =       { str = "ANCIENT",      sort = 10,  icon = "tab_crafting_table.tex",    crafting_station = true },
+    CELESTIAL =     { str = "CELESTIAL",    sort = 10,  icon = "tab_celestial.tex",         crafting_station = true },
     CARTOGRAPHY =   { str = "CARTOGRAPHY",  sort = 10,  icon = "tab_cartography.tex",       crafting_station = true },
     SCULPTING =     { str = "SCULPTING",    sort = 10,  icon = "tab_sculpt.tex",            crafting_station = true },
     ORPHANAGE =     { str = "ORPHANAGE",    sort = 10,  icon = "tab_orphanage.tex",         crafting_station = true },
     PERDOFFERING =  { str = "PERDOFFERING", sort = 10,  icon = "tab_perd_offering.tex",     crafting_station = true },
+    MADSCIENCE =    { str = "MADSCIENCE",   sort = 10,  icon = "tab_madscience_lab.tex",	crafting_station = true, manufacturing_station = true },
 }
 
 CUSTOM_RECIPETABS =
 {
-    BOOKS =         { str = "BOOKS",        sort = 999, icon = "tab_book.tex",      owner_tag = "bookbuilder" },
-    SHADOW =        { str = "SHADOW",       sort = 999, icon = "tab_shadow.tex",    owner_tag = "shadowmagic" },
+    BOOKS =         { str = "BOOKS",        sort = 999, icon = "tab_book.tex",          owner_tag = "bookbuilder" },
+    SHADOW =        { str = "SHADOW",       sort = 999, icon = "tab_shadow.tex",        owner_tag = "shadowmagic" },
+    ENGINEERING =   { str = "ENGINEERING",  sort = 999, icon = "tab_engineering.tex",   owner_tag = "handyperson" },
 }
 
 QUAGMIRE_RECIPETABS =
@@ -1140,6 +1222,8 @@ VIBRATION_CAMERA_SHAKE = 0
 VIBRATION_BLOOD_FLASH = 1
 VIBRATION_BLOOD_OVER = 2
 
+NUM_SKIN_PRESET_SLOTS = 10
+
 --V2C: NUM_DST_SAVE_SLOTS is totally redundant...
 --     Not sure why it was added, but keeping it around in case mods are using it
 --     SaveGameIndex:GetNumSlots() for ALL save data, e.g. maintain session cache
@@ -1200,7 +1284,7 @@ FUELTYPE =
 {
     BURNABLE = "BURNABLE",
     USAGE = "USAGE",
-    MAGIC = "MAGIC",
+    MAGIC = "MAGIC", --V2C: use this one if u don't want there to be any associated fuel
     CAVE = "CAVE",
     NIGHTMARE = "NIGHTMARE",
     ONEMANBAND = "ONEMANBAND",
@@ -1413,6 +1497,7 @@ UICOLOURS = {
     BRONZE = RGB(180, 116, 36, 1),
     EGGSHELL = RGB(252, 230, 201),
     IVORY = RGB(236, 232, 223, 1),
+    IVORY_70 = RGB(165, 162, 156, 1),
     PURPLE = RGB(152, 86, 232, 1),
     RED = RGB(207, 61, 61, 1),
     SLATE = RGB(155, 170, 177, 1),
@@ -1427,13 +1512,14 @@ MAX_WRITEABLE_LENGTH = 200
 --Server may use these for things that clients need to know about
 --other clients whose player entities may or may not be available
 --e.g. Stuff that shows on the scoreboard
+-- NOTE: Keep this up to date with USERFLAGS::Enum in PlayerListingData.h
 USERFLAGS =
 {
     IS_GHOST			= 1,
     IS_AFK				= 2,
     CHARACTER_STATE_1	= 4,
     CHARACTER_STATE_2	= 8,
-    -- = 16,
+    IS_LOADING			= 16,
     -- = 32,
     -- = 64,
     -- = 128,
@@ -1560,6 +1646,8 @@ COMMAND_RESULT = {
 
 MAX_VOTE_OPTIONS = 6
 
+USER_HISTORY_EXPIRY_TIME = 60*60*24*30 -- 30 days
+
 -- Mirrors enum in SystemService.h
 LANGUAGE = 
 {
@@ -1621,6 +1709,7 @@ LANGUAGE_STEAMCODE_TO_ID =
 
 QUAGMIRE_NUM_FOOD_PREFABS = 69
 QUAGMIRE_NUM_SEEDS_PREFABS = 7
+QUAGMIRE_USE_KLUMP = false
 
 CURRENT_BETA = 0 -- set to 0 if there is no beta. Note: release builds wont use this so only staging and dev really care
 BETA_INFO =

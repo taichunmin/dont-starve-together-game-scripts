@@ -419,7 +419,7 @@ local states =
         name = "walk_stop",
         tags = { "canrotate" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.components.locomotor:StopMoving()
             inst.AnimState:PlayAnimation("walk_pst")
         end,

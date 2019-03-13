@@ -15,7 +15,7 @@ local ContainerWidget = Class(Widget, function(self, owner)
     self.owner = owner
     self:SetPosition(0, 0, 0)
     self.slotsperrow = 3
-   
+
     self.bganim = self:AddChild(UIAnim())
     self.bgimage = self:AddChild(Image())
     self.isopen = false
@@ -115,14 +115,25 @@ function ContainerWidget:Open(container, doer)
     self.onrefreshfn = function(inst, data) self:Refresh() end
     self.inst:ListenForEvent("refresh", self.onrefreshfn, container)
 
+    local constructionsite = doer.components.constructionbuilderuidata ~= nil and doer.components.constructionbuilderuidata:GetContainer() == container and doer.components.constructionbuilderuidata:GetConstructionSite() or nil
+    local constructionmats = constructionsite ~= nil and constructionsite:GetIngredients() or nil
+
     for i, v in ipairs(widget.slotpos or {}) do
-        local slot = InvSlot(i, "images/hud.xml", "inv_slot.tex", self.owner, container.replica.container)
+        local slot = InvSlot(i, "images/hud.xml", constructionmats ~= nil and "inv_slot_construction.tex" or "inv_slot.tex", self.owner, container.replica.container)
         self.inv[i] = self:AddChild(slot)
 
         slot:SetPosition(v)
 
         if not container.replica.container:IsSideWidget() then
-            slot.side_align_tip = (widget.side_align_tip or 0) - v.x
+            if widget.top_align_tip ~= nil then
+                slot.top_align_tip = widget.top_align_tip
+            else
+                slot.side_align_tip = (widget.side_align_tip or 0) - v.x
+            end
+        end
+
+        if constructionmats ~= nil then
+            slot:ConvertToConstructionSlot(constructionmats[i], constructionsite:GetSlotCount(i))
         end
     end
 

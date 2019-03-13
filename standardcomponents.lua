@@ -1053,3 +1053,100 @@ function AddHauntableDropItemOrWork(inst)
         return ret
     end)
 end
+
+--------------------------------------------------------------------------
+--V2C: new for DST, useful for allowing creatures to jump or dash through things
+--     (taken from lavaarena)
+--NOTE: -prefab must call inst:SetPhysicsRadiusOverride(r) during construction
+--      -must set inst.sg.mem.radius = inst.physicsradiusoverride after adding stategraph
+
+local function OnUpdatePhysicsRadius(inst)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local mindist = math.huge
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+        if v ~= inst and v.entity:IsVisible() then
+            local d = v:GetDistanceSqToPoint(x, y, z)
+            d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0
+            if d < mindist then
+                if d <= 0 then
+                    mindist = 0
+                    break
+                end
+                mindist = d
+            end
+        end
+    end
+    local radius = math.clamp(mindist, 0, inst.physicsradiusoverride)
+    if radius > 0 then
+        if radius ~= inst.sg.mem.radius then
+            inst.sg.mem.radius = radius
+            inst.Physics:SetCapsule(radius, 1)
+            inst.Physics:Teleport(x, y, z)
+            if inst.sg:HasStateTag("idle") then
+                inst.Physics:Stop()
+            end
+        end
+        if inst.sg.mem.ischaracterpassthrough then
+            inst.sg.mem.ischaracterpassthrough = nil
+            inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+        end
+        if radius >= inst.physicsradiusoverride then
+            inst.sg.mem.physicstask:Cancel()
+            inst.sg.mem.physicstask = nil
+        end
+    end
+end
+
+function ToggleOffCharacterCollisions(inst)
+    if not inst.sg.mem.ischaracterpassthrough then
+        inst.sg.mem.ischaracterpassthrough = true
+        inst.Physics:ClearCollisionMask()
+        inst.Physics:CollidesWith(COLLISION.WORLD)
+        inst.Physics:CollidesWith(COLLISION.OBSTACLES)
+        inst.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+        inst.Physics:CollidesWith(COLLISION.GIANTS)
+    end
+    if inst.sg.mem.physicstask ~= nil then
+        inst.sg.mem.physicstask:Cancel()
+        inst.sg.mem.physicstask = nil
+        inst.sg.mem.radius = inst.physicsradiusoverride
+        inst.Physics:SetCapsule(inst.physicsradiusoverride, 1)
+        inst.Physics:Teleport(inst.Transform:GetWorldPosition())
+    end
+end
+
+function ToggleOnCharacterCollisions(inst)
+    if inst.sg.mem.ischaracterpassthrough and inst.sg.mem.physicstask == nil then
+        inst.sg.mem.physicstask = inst:DoPeriodicTask(.5, OnUpdatePhysicsRadius)
+        OnUpdatePhysicsRadius(inst)
+    end
+end
+
+function ToggleOffAllObjectCollisions(inst)
+    if not (inst.sg.mem.isobstaclepassthrough and inst.sg.mem.ischaracterpassthrough) then
+        inst.sg.mem.isobstaclepassthrough = true
+        inst.sg.mem.ischaracterpassthrough = true
+        inst.Physics:ClearCollisionMask()
+        inst.Physics:CollidesWith(COLLISION.WORLD)
+    end
+    if inst.sg.mem.physicstask ~= nil then
+        inst.sg.mem.physicstask:Cancel()
+        inst.sg.mem.physicstask = nil
+        inst.sg.mem.radius = inst.physicsradiusoverride
+        inst.Physics:SetCapsule(inst.physicsradiusoverride, 1)
+        inst.Physics:Teleport(inst.Transform:GetWorldPosition())
+    end
+end
+
+function ToggleOnAllObjectCollisionsAt(inst, x, z)
+    if inst.sg.mem.isobstaclepassthrough then
+        inst.sg.mem.isobstaclepassthrough = nil
+        inst.Physics:CollidesWith(COLLISION.OBSTACLES)
+        inst.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+        inst.Physics:CollidesWith(COLLISION.GIANTS)
+    end
+    inst.Physics:Teleport(x, 0, z)
+    ToggleOnCharacterCollisions(inst)
+end
+
+--------------------------------------------------------------------------

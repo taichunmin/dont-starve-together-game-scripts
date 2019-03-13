@@ -829,7 +829,6 @@ function shallowcopy(orig, dest)
     return copy
 end
 
-
 -- if next(table) == nil, then the table is empty
 function IsTableEmpty(t)
     -- https://stackoverflow.com/a/1252776/79125

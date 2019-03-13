@@ -1,46 +1,19 @@
 --This component runs on client as well
 
-local function OnUpdateFocus(inst, self)
-    if TheFocalPoint.entity:GetParent() == inst then
-        if self.str < self.maxrange then
-            self.str = math.min(self.maxrange, self.str + self.startspeed)
-        end
-        local x, y, z = inst.Transform:GetWorldPosition()
-        local rangesq = self.maxrange * self.maxrange
-        local target = nil
-        for i, v in ipairs(AllPlayers) do
-            if v ~= inst and not (v.replica.health:IsDead() or v:HasTag("playerghost")) and v.entity:IsVisible() then
-                local distsq = v:GetDistanceSqToPoint(x, y, z)
-                if v == self.lasttarget then
-                    distsq = math.sqrt(distsq) - 4
-                    distsq = distsq > 0 and distsq * distsq or 0
-                end
-                if distsq < rangesq then
-                    rangesq = distsq
-                    target = v
-                end
-            end
-        end
-        if target ~= nil then
-            TheFocalPoint:PushTempFocus(target, 0, self.str, self.priority)
-        end
-        self.lasttarget = target
-    end
-end
-
 local function OnIsSpectatingDirty(inst)
     local self = inst.components.spectatorcorpse
     if self._isspectating:value() then
-        if self.task == nil then
-            self.task = inst:DoPeriodicTask(0, OnUpdateFocus, nil, self)
+        if not self.updating then
+            self.updating = true
             self.lasttarget = nil
             self.str = 0
+            self.inst:StartUpdatingComponent(self)
         end
-    elseif self.task ~= nil then
-        self.task:Cancel()
-        self.task = nil
+    elseif self.updating then
+        self.updating = false
         self.lasttarget = nil
         self.str = nil
+        self.inst:StopUpdatingComponent(self)
     end
 end
 
@@ -79,11 +52,11 @@ local function OnPlayerDeactivated(inst)
     local self = inst.components.spectatorcorpse
     if self.active then
         self.active = false
-        if self.task ~= nil then
-            self.task:Cancel()
-            self.task = nil
+        if self.updating then
+            self.updating = false
             self.lasttarget = nil
             self.str = nil
+            self.inst:StopUpdatingComponent(self)
         end
         if not TheWorld.ismastersim then
             inst:RemoveEventCallback("isspectatingdirty", OnIsSpectatingDirty)
@@ -93,13 +66,13 @@ end
 
 local SpectatorCorpse = Class(function(self, inst)
     self.inst = inst
-    self.task = nil
     self.lasttarget = nil
     self.str = nil
     self.maxrange = 40
     self.startspeed = .5
     self.priority = 1
     self.active = false
+    self.updating = false
 
     --Networking
     self._isspectating = net_bool(inst.GUID, "spectatorcorpse._isspectating", "isspectatingdirty")
@@ -112,5 +85,33 @@ local SpectatorCorpse = Class(function(self, inst)
     inst:ListenForEvent("playeractivated", OnPlayerActivated)
     inst:ListenForEvent("playerdeactivated", OnPlayerDeactivated)
 end)
+
+function SpectatorCorpse:OnUpdate()
+    if TheFocalPoint.entity:GetParent() == self.inst then
+        if self.str < self.maxrange then
+            self.str = math.min(self.maxrange, self.str + self.startspeed)
+        end
+        local x, y, z = self.inst.Transform:GetWorldPosition()
+        local rangesq = self.maxrange * self.maxrange
+        local target = nil
+        for i, v in ipairs(AllPlayers) do
+            if v ~= self.inst and not (v.replica.health:IsDead() or v:HasTag("playerghost")) and v.entity:IsVisible() then
+                local distsq = v:GetDistanceSqToPoint(x, y, z)
+                if v == self.lasttarget then
+                    distsq = math.sqrt(distsq) - 4
+                    distsq = distsq > 0 and distsq * distsq or 0
+                end
+                if distsq < rangesq then
+                    rangesq = distsq
+                    target = v
+                end
+            end
+        end
+        if target ~= nil then
+            TheFocalPoint.components.focalpoint:PushTempFocus(target, 0, self.str, self.priority)
+        end
+        self.lasttarget = target
+    end
+end
 
 return SpectatorCorpse

@@ -32,6 +32,13 @@ return {
 			NOTALLOWED = "That's against the rules.",
 			INUSE = "Are you finding everything okay in there?",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "Aw, we don't wanna mess up someone else's stuff.",
+            NOTALLOWED = "It doesn't go there.",
+            EMPTY = "We need stuff to build with.",
+            MISMATCH = "I don't think these are the right plans.",
+        },
 		WRITE =
         {
             GENERIC = "We can't write on that now.",
@@ -77,6 +84,10 @@ return {
             NOTSCULPTABLE = "Eight legs isn't nearly enough to sculpt with THAT.",
             CANTSHADOWREVIVE = "It's not waking up.",
             WRONGSHADOWFORM = "We put the bones together wrong.",
+            NOMOON = "Doesn't work. We probably need to see the moon or something.",
+            PIGKINGGAME_MESSY = "We need to clean up before we can play.",
+			PIGKINGGAME_DANGER = "Lets wait until the danger passes before we play.",
+			PIGKINGGAME_TOOLATE = "It's too close to bedtime to start another game.",
         },
         GIVETOPLAYER = 
         {
@@ -196,6 +207,7 @@ return {
     },
     ANNOUNCE_RUINS_RESET = "Everything's back!",
 
+	ANNOUNCE_DESPAWN = "Everything's getting fuzzy!",
 	ANNOUNCE_BECOMEGHOST = "oOooOooO!!",
 	ANNOUNCE_GHOSTDRAIN = "We're becoming... even more monstrous!",
 	ANNOUNCE_PETRIFED_TREES = "The trees are yelling at us!!",
@@ -256,11 +268,18 @@ return {
 	ANNOUNCE_WETTER = "Wet as a bathtub we can't crawl out of.",
 	ANNOUNCE_SOAKED = "We're drenched!",
 
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "Are we seeing things?!",
+    ANNOUNCE_BRAVERY_POTION = "Hey, those trees aren't so scary anymore!",
+
     --quagmire event
     QUAGMIRE_ANNOUNCE_NOTRECIPE = "Oh no! That wasn't a recipe!",
     QUAGMIRE_ANNOUNCE_MEALBURNT = "Oh no! We burnt it!",
     QUAGMIRE_ANNOUNCE_LOSE = "Don't eat us!",
     QUAGMIRE_ANNOUNCE_WIN = "I'm ready to go home now!",
+
+    --YOTP--
+    ANNOUNCE_LEAVE_MINIGAME = "We'll leave this sign for someone else.",
 
 	BATTLECRY =
 	{
@@ -402,6 +421,10 @@ return {
         },
 
         MULTIPLAYER_PORTAL = "It's pretty... pretty scary!",
+        MULTIPLAYER_PORTAL_MOONROCK = "Gosh. It's so sparkly!",
+        CONSTRUCTION_PLANS = "We should build this.",
+        MOONROCKIDOL = "It looks kinda like an alien.",
+        MOONROCKSEED = "Neat, it's a ball that floats by itself!",
 
 		BERNIE_INACTIVE =
 		{
@@ -1903,6 +1926,21 @@ return {
         HALLOWEENCANDY_14 = "Gosh, it's spicy.", --Hot Lava pepper candy
         CANDYBAG = "Treats, treats, treats!",
 
+        HALLOWEEN_ORNAMENT_1 = "Oooh. Spooky. We should decorate!",
+		HALLOWEEN_ORNAMENT_2 = "Gosh. That almost looks real.",
+		HALLOWEEN_ORNAMENT_3 = "Aw. It's not real. Let's hang it somewhere.",
+		HALLOWEEN_ORNAMENT_4 = "Let's hang it somewhere for Halloween!",
+		HALLOWEEN_ORNAMENT_5 = "We should put this guy in a tree!",
+		HALLOWEEN_ORNAMENT_6 = "If we put it in a tree it'd look almost real.",
+
+		HALLOWEENPOTION_DRINKS_WEAK = "It's only a little powerful.",
+		HALLOWEENPOTION_DRINKS_POTENT = "It's pretty powerful.",
+		HALLOWEENPOTION_FIRE_FX = "Neat! It's like firecrackers.",
+		HALLOWEENPOTION_BRAVERY = "Makes us feel big and strong!",
+		MADSCIENCE_LAB = "Wow. Look at it bubble.",
+		LIVINGTREE_ROOT = "We should plant this somewhere.",
+		LIVINGTREE_SAPLING = "It's a monster kid. Like me!",
+
         DRAGONHEADHAT = "The front part's sort of scary.",
         DRAGONBODYHAT = "I'm not sure I want to be in *another* belly.",
         DRAGONTAILHAT = "We like the tail!",
@@ -1936,6 +1974,22 @@ return {
         HOUNDWHISTLE = "Our head buzzes when we blow it.",
         CHESSPIECE_CLAYHOUND = "Puppy!",
         CHESSPIECE_CLAYWARG = "That's a big, bad dog.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "We can make some fun stuff now!",
+            EMPTY = "We should find some meat for it.",
+            BURNT = "Aww... that's too bad.",
+		},
+		PIG_TOKEN = "Neat! The Pig King would like that.",
+		YOTP_FOOD1 = "Yummy!",
+		YOTP_FOOD2 = "Mmmmmm.",
+		YOTP_FOOD3 = "Smells good.",
+
+		PIGELITE1 = "Cool tattoos!", --BLUE
+		PIGELITE2 = "Yikes! He's angry.", --RED
+		PIGELITE3 = "Leave us alone!", --WHITE
+		PIGELITE4 = "Wish he wouldn't hit us so much.", --GREEN
 
 		TRUNKVEST_SUMMER = "It's so puffy!",
 		TRUNKVEST_WINTER = "You're always supposed to wear a jacket!",
@@ -2050,6 +2104,8 @@ return {
         WINTER_ORNAMENT = "Can we get a boost? We can't reach the treetop.",
         WINTER_ORNAMENTLIGHT = "We want to keep one for ourselves.",
         WINTER_ORNAMENTBOSS = "Wow, that one looks great!",
+        WINTER_ORNAMENTFORGE = "Not so scary when they're like this.",
+		WINTER_ORNAMENTGORGE = "Huh. It kinda looks...goaty!",
 
         WINTER_FOOD1 = "I won't eat it. It's our friend now.", --gingerbread cookie
         WINTER_FOOD2 = "Icy icy icing!", --sugar cookie
@@ -2107,6 +2163,8 @@ return {
         TRAILS = "No monkey business, mister!",
         TURTILLUS = "That turtle's huge!",
         SNAPPER = "Don't bite us!",
+        RHINODRILL = "Looks like a big bully!",
+		BEETLETAUR = "All that armor must be heavy.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2149,6 +2207,11 @@ return {
         LAVAARENA_RECHARGERHAT = "It sure is sparkly.",
         LAVAARENA_HEALINGGARLANDHAT = "It makes you feel a little better when you wear it.",
         LAVAARENA_CROWNDAMAGERHAT = "That helmet is really something!",
+
+        LAVAARENA_ARMOR_HP = "We should armor up to be safe.",
+
+		LAVAARENA_FIREBOMB = "It's like fiery spit balls.",
+		LAVAARENA_HEAVYBLADE = "That sword is too big for us to carry!",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2321,7 +2384,7 @@ return {
         QUAGMIRE_CASSEROLEDISH = "We can cooks stuff in it.",
         QUAGMIRE_CASSEROLEDISH_SMALL = "It's kinda small.",
         QUAGMIRE_PLATE_SILVER = "Now we don't have to eat off the floor.",
-        QUAGMIRE_BOWL_SILVER = "Now we don't have somewhere to put food.",
+        QUAGMIRE_BOWL_SILVER = "Now we have somewhere to put food.",
         ---
         QUAGMIRE_MERM_CART1 = "Do they have any toys?", --sammy's wagon
         QUAGMIRE_MERM_CART2 = "That's full of good stuff.", --pipton's cart
@@ -2364,6 +2427,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "We're almost as tall as this lamp.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "We feel safer already!",
+        	OFF = "How come it's not on?",
+        	BURNING = "Oh, oh!",
+        	BURNT = "Oh no! It got burnt!",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "She made us a nightlight!",
+        	OFF = "How come it's not on?",
+        	BURNING = "Oh, oh!",
+        	BURNT = "Oh no! It got burnt!",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "It feeds hungry machines.",
+        	LOWPOWER = "We think it's running low.",
+            OFF = "Hey Winona! How do we fix it?",
+            BURNING = "Oh, oh!",
+            BURNT = "Oh no! It got burnt!",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "Machines think gem power is really tasty.",
+        	LOWPOWER = "We think it's running low.",
+            OFF = "Winoooona! The thing broke!",
+            BURNING = "Oh, oh!",
+            BURNT = "Oh no! It got burnt!",
+        },
     },
     DESCRIBE_GENERIC = "Can we play with it?",
     DESCRIBE_TOODARK = "All our eyes stopped working!",

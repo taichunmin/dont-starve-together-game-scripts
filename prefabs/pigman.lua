@@ -9,8 +9,11 @@ local assets =
     Asset("ANIM", "anim/werepig_build.zip"),
     Asset("ANIM", "anim/werepig_basic.zip"),
     Asset("ANIM", "anim/werepig_actions.zip"),
+    Asset("ANIM", "anim/pig_token.zip"),
     Asset("SOUND", "sound/pig.fsb"),
 }
+
+local PIG_TOKEN_PREFAB = "pig_token"
 
 local prefabs =
 {
@@ -20,10 +23,16 @@ local prefabs =
     "tophat",
     "strawhat",
     "pigskin",
+    PIG_TOKEN_PREFAB,
 }
 
 local MAX_TARGET_SHARES = 5
 local SHARE_TARGET_DIST = 30
+
+local function GetPigToken(inst)
+	local token = next(inst.components.inventory:GetItemByName(PIG_TOKEN_PREFAB, 1))
+	return token
+end
 
 local function ontalk(inst, script)
     inst.SoundEmitter:PlaySound("dontstarve/pig/grunt")
@@ -42,7 +51,7 @@ local function ShouldAcceptItem(inst, item)
     elseif item.components.edible ~= nil then
         local foodtype = item.components.edible.foodtype
         if foodtype == FOODTYPE.MEAT or foodtype == FOODTYPE.HORRIBLE then
-            return inst.components.follower.leader == nil or inst.components.follower:GetLoyaltyPercent() <= 0.9
+            return inst.components.follower.leader == nil or inst.components.follower:GetLoyaltyPercent() <= TUNING.PIG_FULL_LOYALTY_PERCENT
         elseif foodtype == FOODTYPE.VEGGIE or foodtype == FOODTYPE.RAW then
             local last_eat_time = inst.components.eater:TimeSinceLastEating()
             return (last_eat_time == nil or
@@ -62,8 +71,10 @@ local function OnGetItemFromPlayer(inst, giver, item)
             if inst.components.combat:TargetIs(giver) then
                 inst.components.combat:SetTarget(nil)
             elseif giver.components.leader ~= nil and not (inst:HasTag("guard") or giver:HasTag("monster")) then
-                giver:PushEvent("makefriend")
-                giver.components.leader:AddFollower(inst)
+				if giver.components.minigame_participator == nil then
+	                giver:PushEvent("makefriend")
+	                giver.components.leader:AddFollower(inst)
+				end
                 inst.components.follower:AddLoyaltyTime(item.components.edible:GetHunger() * TUNING.PIG_LOYALTY_PER_HUNGER)
                 inst.components.follower.maxfollowtime =
                     giver:HasTag("polite")
@@ -145,7 +156,7 @@ local function OnAttacked(inst, data)
 
     if attacker.prefab == "deciduous_root" and attacker.owner ~= nil then 
         OnAttackedByDecidRoot(inst, attacker.owner)
-    elseif attacker.prefab ~= "deciduous_root" then
+    elseif attacker.prefab ~= "deciduous_root" and not attacker:HasTag("pigelite") then
         inst.components.combat:SetTarget(attacker)
 
         if inst:HasTag("werepig") then
@@ -168,18 +179,26 @@ local builds = { "pig_build", "pigspotted_build" }
 local guardbuilds = { "pig_guard_build" }
 
 local function NormalRetargetFn(inst)
-    return FindEntity(
-        inst,
-        TUNING.PIG_TARGET_DIST,
-        function(guy)
-            return (guy.LightWatcher == nil or guy.LightWatcher:IsInLight())
-                and inst.components.combat:CanTarget(guy)
-        end,
-        { "monster", "_combat" }, -- see entityreplica.lua
-        inst.components.follower.leader ~= nil and
-        { "playerghost", "INLIMBO", "abigail" } or
-        { "playerghost", "INLIMBO" }
-    )
+	local exclude_tags = { "playerghost", "INLIMBO" }
+	if inst.components.follower.leader ~= nil then
+		table.insert(exclude_tags, "abigail")
+	end
+	if inst.components.minigame_spectator ~= nil then
+		table.insert(exclude_tags, "player") -- prevent spectators from auto-targeting webber
+	end
+
+    return not inst:IsInLimbo()
+        and FindEntity(
+                inst,
+                TUNING.PIG_TARGET_DIST,
+                function(guy)
+                    return (guy.LightWatcher == nil or guy.LightWatcher:IsInLight())
+                        and inst.components.combat:CanTarget(guy)
+                end,
+                { "monster", "_combat" }, -- see entityreplica.lua
+                exclude_tags
+            )
+        or nil
 end
 
 local function NormalKeepTargetFn(inst, target)
@@ -202,6 +221,50 @@ local function SuggestTreeTarget(inst, data)
     if data ~= nil and data.tree ~= nil and inst:GetBufferedAction() ~= ACTIONS.CHOP then
         inst.tree_target = data.tree
     end
+end
+
+local function OnItemGet(inst, data)
+	if data.item ~= nil and data.item.prefab == PIG_TOKEN_PREFAB then
+        inst.AnimState:OverrideSymbol("pig_belt", "pig_token", "pig_belt")
+		--inst.AnimState:Show("belt")
+	end
+end
+
+local function OnItemLose(inst, data)
+	if not inst.components.inventory:Has(PIG_TOKEN_PREFAB, 1) then
+		inst.AnimState:ClearOverrideSymbol("pig_belt")
+		--inst.AnimState:Hide("belt")
+	end
+end
+
+local function SetupPigToken(inst)
+	if not IsSpecialEventActive(SPECIAL_EVENTS.YOTP) then
+		return -- todo: remove this once post-yotp gameplay is done
+	end
+
+	if not inst._pigtokeninitialized then
+		inst._pigtokeninitialized = true
+		if math.random() <= (IsSpecialEventActive(SPECIAL_EVENTS.YOTP) and TUNING.PIG_TOKEN_CHANCE_YOTP or TUNING.PIG_TOKEN_CHANCE) then
+			inst.components.inventory:GiveItem(SpawnPrefab(PIG_TOKEN_PREFAB))
+		end
+	end
+end
+
+local function ReplacePigToken(inst)
+	if not IsSpecialEventActive(SPECIAL_EVENTS.YOTP) then
+		return -- todo: remove this once post-yotp gameplay is done
+	end
+
+	if inst._pigtokeninitialized then
+		local item = GetPigToken(inst)
+		local should_get_item = math.random() <= (IsSpecialEventActive(SPECIAL_EVENTS.YOTP) and TUNING.PIG_TOKEN_CHANCE_YOTP or TUNING.PIG_TOKEN_CHANCE)
+		if item ~= nil and not should_get_item then
+			inst.components.inventory:RemoveItem(item, true)
+			item:Remove()
+		elseif item == nil and should_get_item then
+			inst.components.inventory:GiveItem(SpawnPrefab(PIG_TOKEN_PREFAB))
+		end
+	end
 end
 
 local function SetNormalPig(inst)
@@ -432,6 +495,7 @@ end
 
 local function OnSave(inst, data)
     data.build = inst.build
+	data._pigtokeninitialized = inst._pigtokeninitialized
 end
 
 local function OnLoad(inst, data)
@@ -440,6 +504,7 @@ local function OnLoad(inst, data)
         if not inst.components.werebeast:IsInWereState() then
             inst.AnimState:SetBuild(inst.build)
         end
+		inst._pigtokeninitialized = data._pigtokeninitialized
     end
 end
 
@@ -511,6 +576,11 @@ local function common(moonbeast)
 
     if not moonbeast then
         inst.components.talker.ontalk = ontalk
+
+		inst._pig_token_prefab = PIG_TOKEN_PREFAB
+		inst:ListenForEvent("onvacatehome", ReplacePigToken)
+		inst:ListenForEvent("itemget", OnItemGet)
+		inst:ListenForEvent("itemlose", OnItemLose)
     end
 
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
@@ -613,6 +683,8 @@ local function normal()
     inst.AnimState:SetBuild(inst.build)
     inst.components.werebeast:SetOnNormalFn(SetNormalPig)
     SetNormalPig(inst)
+
+	inst:DoTaskInTime(0, SetupPigToken)
     return inst
 end
 

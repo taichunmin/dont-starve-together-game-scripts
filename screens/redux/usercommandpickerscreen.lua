@@ -43,27 +43,14 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
     local bg_root = self.proot:AddChild(Widget("bg_root"))
     bg_root:SetScale(.8, .8)
     
-	local subtitle = self.targetuserid ~= nil and STRINGS.UI.COMMANDSSCREEN.USERSUBTITLE or STRINGS.UI.COMMANDSSCREEN.SERVERSUBTITLE
-    self.bg = bg_root:AddChild(TEMPLATES.CurlyWindow(225, 380, subtitle, nil, nil, STRINGS.UI.COMMANDSSCREEN.SERVERTITLE))
-    self.bg:SetPosition(0, -10)
-    self.bg.body:SetVAlign(ANCHOR_TOP)
-    self.bg.body:SetSize(30)
-
-    if self.targetuserid ~= nil then
-	    self.bg.body:Hide()
-
-        local client = TheNet:GetClientTableForUser(self.targetuserid)
-        local body = self.bg.title.parent:AddChild(Text(CHATFONT, 45, "", UICOLOURS.WHITE))
-        local pos = self.bg.title:GetLocalPosition() + Vector3(0, -45, 0)
-        body:SetTruncatedString(client ~= nil and client.name or "", 226, 50, true)
-	    body:SetPosition(pos)
-    end
-
     self:UpdateActions()
 
     local height = MIN_HEIGHT + SUBTITLE_HEIGHT + TITLE_HEIGHT
     local max_height = MIN_HEIGHT + SUBTITLE_HEIGHT + TITLE_HEIGHT
     local list_height = 0
+	local spacing = 5
+
+	--self.actions = JoinArrays(self.actions, JoinArrays(self.actions, self.actions))
 
     self.buttons = {}
     for i,action in ipairs(self.actions) do
@@ -89,18 +76,36 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
 
         table.insert(self.buttons, button)
 
-        list_height = list_height + BUTTON_HEIGHT
+        list_height = list_height + BUTTON_HEIGHT + spacing
     end
 
-    local shown_buttons = 7
-    local max_list_height = BUTTON_HEIGHT * shown_buttons
+    local shown_buttons = 6
+    local max_list_height = (BUTTON_HEIGHT + spacing) * shown_buttons
     list_height = math.min(list_height, max_list_height)
 
     height = height + list_height
     max_height = max_height + max_list_height
 
-    self.scroll_list = self.proot:AddChild(ScrollableList(self.buttons, 210, list_height, BUTTON_HEIGHT, 0, nil, nil, #self.buttons > shown_buttons and 95 or 105, nil, nil, 8))
+	local x_offset = #self.buttons > shown_buttons and 15 or 0
+
+    self.scroll_list = self.proot:AddChild(ScrollableList(self.buttons, 210, list_height, BUTTON_HEIGHT + spacing, 0, nil, nil, 105 - x_offset, nil, nil, 0, nil, .9, "GOLD"))
     self.default_focus = self.scroll_list
+
+	local subtitle = self.targetuserid ~= nil and STRINGS.UI.COMMANDSSCREEN.USERSUBTITLE or STRINGS.UI.COMMANDSSCREEN.SERVERSUBTITLE
+    self.bg = bg_root:AddChild(TEMPLATES.CurlyWindow( #self.buttons > shown_buttons and 275 or 225, 380, subtitle, nil, nil, STRINGS.UI.COMMANDSSCREEN.SERVERTITLE))
+    self.bg:SetPosition(0, -10)
+    self.bg.body:SetVAlign(ANCHOR_TOP)
+    self.bg.body:SetSize(30)
+
+    if self.targetuserid ~= nil then
+	    self.bg.body:Hide()
+
+        local client = TheNet:GetClientTableForUser(self.targetuserid)
+        local body = self.bg.title.parent:AddChild(Text(CHATFONT, 45, "", UICOLOURS.WHITE))
+        local pos = self.bg.title:GetLocalPosition() + Vector3(0, -45, 0)
+        body:SetTruncatedString(client ~= nil and client.name or "", 226, 50, true)
+	    body:SetPosition(pos)
+    end
 
     if not TheInput:ControllerAttached() then
         self.cancelbutton = self.proot:AddChild(ImageButton("images/global_redux.xml", "button_carny_long_normal.tex", "button_carny_long_hover.tex", "button_carny_long_disabled.tex", "button_carny_long_down.tex"))
@@ -121,7 +126,7 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
     --self.title:SetPosition(0, top - TITLE_HEIGHT/2, 0)
     top = top - TITLE_HEIGHT
 
-    self.scroll_list:SetPosition(#self.buttons > shown_buttons and -5 or 0, top - (list_height/2))
+    self.scroll_list:SetPosition(x_offset, top - (list_height/2))
     top = top - list_height
     if self.cancelbutton then
         local bottom = (-max_height/2)+BUTTON_HEIGHT
@@ -154,6 +159,8 @@ function UserCommandPickerScreen:UpdateActions()
     end
 
     table.sort(self.actions, function(a,b) return a.prettyname < b.prettyname end)
+
+	table.insert(self.actions, {commandname = "toggle_servername", prettyname = STRINGS.UI.COMMANDSSCREEN[ServerPreferences:IsNameAndDescriptionHidden() and "SHOW_SERVERNAME" or "HIDE_SERVERNAME"]})
 end
 
 function UserCommandPickerScreen:OnControl(control, down)
@@ -230,7 +237,12 @@ function UserCommandPickerScreen:RefreshButtons()
 end
 
 function UserCommandPickerScreen:RunAction(name)
-    if self.actions == nil then
+    if name == "toggle_servername" then
+		ServerPreferences:ToggleNameAndDescriptionFilter()
+		return
+	end
+
+	if self.actions == nil then
         return
     end
 

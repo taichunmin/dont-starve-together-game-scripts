@@ -26,7 +26,10 @@ local BeefBloodOver =  Class(Widget, function(self, owner)
 
     self.inst:ListenForEvent("attacked", function(owner, data)
         if data.redirected then
-            self:Flash()
+            local rider = owner.replica.rider
+            if rider ~= nil and rider:IsRiding() then
+                self:Flash()
+            end
         end
     end, owner)
     self.inst:ListenForEvent("mounthurt", _UpdateState, owner) --hp low

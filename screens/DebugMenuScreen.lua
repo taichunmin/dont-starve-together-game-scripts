@@ -155,17 +155,17 @@ function DebugMenuScreen:OnBecomeActive()
     
     local languages = 
     {
-		menus.DoAction("French", function() SwapLanguage(LANGUAGE.FRENCH) self:Close() end),	
-        menus.DoAction("Spanish", function() SwapLanguage(LANGUAGE.SPANISH) self:Close() end),
-        menus.DoAction("Mexican", function() SwapLanguage(LANGUAGE.SPANISH_LA) self:Close() end),
-        menus.DoAction("German", function() SwapLanguage(LANGUAGE.GERMAN) self:Close() end),	
-		menus.DoAction("Italian", function() SwapLanguage(LANGUAGE.ITALIAN) self:Close() end),
-        menus.DoAction("Brazilian", function() SwapLanguage(LANGUAGE.PORTUGUESE_BR) self:Close() end),
-        menus.DoAction("Polish", function() SwapLanguage(LANGUAGE.POLISH) self:Close() end),
-        menus.DoAction("Korean", function() SwapLanguage(LANGUAGE.KOREAN) self:Close() end),
-        menus.DoAction("Japanese", function() SwapLanguage(LANGUAGE.JAPANESE) self:Close() end),
-        menus.DoAction("Chinese (T)", function() SwapLanguage(LANGUAGE.CHINESE_T) self:Close() end),
-        menus.DoAction("Chinese (S)", function() SwapLanguage(LANGUAGE.CHINESE_S) self:Close() end),
+		menus.DoAction("French", function() LOC.SwapLanguage(LANGUAGE.FRENCH) self:Close() end),	
+        menus.DoAction("Spanish", function() LOC.SwapLanguage(LANGUAGE.SPANISH) self:Close() end),
+        menus.DoAction("Mexican", function() LOC.SwapLanguage(LANGUAGE.SPANISH_LA) self:Close() end),
+        menus.DoAction("German", function() LOC.SwapLanguage(LANGUAGE.GERMAN) self:Close() end),	
+		menus.DoAction("Italian", function() LOC.SwapLanguage(LANGUAGE.ITALIAN) self:Close() end),
+        menus.DoAction("Brazilian", function() LOC.SwapLanguage(LANGUAGE.PORTUGUESE_BR) self:Close() end),
+        menus.DoAction("Polish", function() LOC.SwapLanguage(LANGUAGE.POLISH) self:Close() end),
+        menus.DoAction("Korean", function() LOC.SwapLanguage(LANGUAGE.KOREAN) self:Close() end),
+        menus.DoAction("Japanese", function() LOC.SwapLanguage(LANGUAGE.JAPANESE) self:Close() end),
+        menus.DoAction("Chinese (T)", function() LOC.SwapLanguage(LANGUAGE.CHINESE_T) self:Close() end),
+        menus.DoAction("Chinese (S)", function() LOC.SwapLanguage(LANGUAGE.CHINESE_S) self:Close() end),
     }
     
 	if InGamePlay() then

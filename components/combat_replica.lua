@@ -186,7 +186,7 @@ function Combat:CanExtinguishTarget(target, weapon)
 end
 
 function Combat:CanLightTarget(target, weapon)
-    if self.inst.components.combat ~= nil then
+    --[[if self.inst.components.combat ~= nil then
         return self.inst.components.combat:CanLightTarget(target, weapon)
     elseif weapon == nil or
         not (weapon:HasTag("rangedlighter") and
@@ -205,6 +205,15 @@ function Combat:CanLightTarget(target, weapon)
     end
     --Generic burnable
     return true
+    ]]
+    --V2C: fueled or fueltype should not really matter. if we can burn it, should still allow lighting.
+    if self.inst.components.combat ~= nil then
+        return self.inst.components.combat:CanLightTarget(target, weapon)
+    end
+    return weapon ~= nil
+        and weapon:HasTag("rangedlighter")
+        and target:HasTag("canlight")
+        and not (target:HasTag("fire") or target:HasTag("burnt"))
 end
 
 function Combat:CanHitTarget(target)
@@ -250,7 +259,7 @@ function Combat:IsValidTarget(target)
             -- gjans: Some specific logic so the birchnutter doesn't attack it's spawn with it's AOE
             -- This could possibly be made more generic so that "things" don't attack other things in their "group" or something
             (not self.inst:HasTag("birchnutroot") or not (target:HasTag("birchnutroot") or target:HasTag("birchnut") or target:HasTag("birchnutdrake"))) and 
-            (TheNet:GetPVPEnabled() or not (self.inst:HasTag("player") and target:HasTag("player"))) and
+            (TheNet:GetPVPEnabled() or not (self.inst:HasTag("player") and target:HasTag("player")) or (weapon ~= nil and weapon:HasTag("propweapon"))) and
             target:GetPosition().y <= self._attackrange:value())
 end
 
@@ -310,8 +319,14 @@ function Combat:CanBeAttacked(attacker)
             --Player target check
             if not TheNet:GetPVPEnabled() and attacker:HasTag("player") then
                 --PVP check
-                return false
-            elseif self._target:value() ~= attacker then
+                local combat = attacker.replica.combat
+                local weapon = combat ~= nil and combat:GetWeapon() or nil
+                if weapon == nil or not weapon:HasTag("propweapon") then
+                    --Allow friendly fire with props
+                    return false
+                end
+            end
+            if self._target:value() ~= attacker then
                 local follower = attacker.replica.follower
                 if follower ~= nil then
                     local leader = follower:GetLeader()

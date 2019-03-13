@@ -17,6 +17,7 @@ local ItemTile = Class(Widget, function(self, invitem)
     self.ispreviewing = false
     self.movinganim = nil
     self.ignore_stacksize_anim = nil
+    self.onquantitychangedfn = nil
 
     -- NOT SURE WAHT YOU WANT HERE
     if invitem.replica.inventoryitem == nil then
@@ -286,7 +287,7 @@ function ItemTile:GetDescriptionString()
             end
         elseif active_item:IsValid() then
             if not (self.item.replica.equippable ~= nil and self.item.replica.equippable:IsEquipped()) then
-                if active_item.replica.stackable ~= nil and active_item.prefab == self.item.prefab then
+                if active_item.replica.stackable ~= nil and active_item.prefab == self.item.prefab and active_item.skinname == self.item.skinname then
                     str = str.."\n"..STRINGS.LMB..": "..STRINGS.UI.HUD.PUT
                 else
                     str = str.."\n"..STRINGS.LMB..": "..STRINGS.UI.HUD.SWAP
@@ -306,10 +307,21 @@ function ItemTile:OnGainFocus()
     self:UpdateTooltip()
 end
 
+--Callback for overriding quantity display handler (used by construction site containers)
+--return true to skip default handler code
+function ItemTile:SetOnQuantityChangedFn(fn)
+    self.onquantitychangedfn = fn
+end
+
 function ItemTile:SetQuantity(quantity)
-    if not self.quantity then
+    if self.onquantitychangedfn ~= nil and self:onquantitychangedfn(quantity) then
+        if self.quantity ~= nil then
+            self.quantity = self.quantity:Kill()
+        end
+        return
+    elseif not self.quantity then
         self.quantity = self:AddChild(Text(NUMBERFONT, 42))
-        self.quantity:SetPosition(2,16,0)
+        self.quantity:SetPosition(2, 16, 0)
     end
     self.quantity:SetString(tostring(quantity))
 end

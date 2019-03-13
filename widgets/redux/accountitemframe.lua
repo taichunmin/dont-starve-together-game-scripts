@@ -33,7 +33,7 @@ function AccountItemFrame:_SetBuild(build)
 end
 
 function AccountItemFrame:_SetRarity(rarity)
-    self:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", rarity)
+    self:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(rarity))
 end
 
 function AccountItemFrame:_SetEventIcon(item_key)
@@ -136,6 +136,22 @@ end
 
 function AccountItemFrame:SetStyle_Normal()
     self:GetAnimState():PlayAnimation("icon", true)
+end
+
+--Special case functions for lobby screen menu items
+function AccountItemFrame:ShowFocus(f)
+    if f then
+        self:GetAnimState():Show("FOCUS")
+    else
+        self:GetAnimState():Hide("FOCUS")
+    end
+end
+function AccountItemFrame:ShowSelect(s)
+    if s then
+        self:SetStyle_Highlight()
+    else
+        self:SetStyle_Normal()
+    end
 end
 
 return AccountItemFrame

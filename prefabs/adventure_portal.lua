@@ -6,10 +6,6 @@ local assets =
 	Asset("MINIMAP_IMAGE", "portal"),
 }
 
-local function GetVerb()
-	return STRINGS.ACTIONS.ACTIVATE.GENERIC
-end
-
 local function OnActivate(inst)
 	--do popup confirmation
 	--do portal presentation 
@@ -66,8 +62,6 @@ local function fn()
     inst.AnimState:SetBank("portal_adventure")
     inst.AnimState:SetBuild("portal_adventure")
     inst.AnimState:PlayAnimation("idle_off", true)
-
-    inst.GetActivateVerb = GetVerb
 
     inst.entity:SetPristine()
 

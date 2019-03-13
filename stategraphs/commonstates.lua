@@ -325,7 +325,7 @@ CommonStates.AddRunStates = function(states, timelines, anims, softstop)
         name = "run_stop",
         tags = { "idle" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.components.locomotor:StopMoving()
             if softstop == true or (type(softstop) == "function" and softstop(inst)) then
                 inst.AnimState:PushAnimation(get_loco_anim(inst, anims ~= nil and anims.stoprun or nil, "run_pst"), false)

@@ -33,6 +33,13 @@ return {
 			NOTALLOWED = "I could probably find a better place to put that.",
 			INUSE = "Oh, sorry. I didn't mean to hover over your shoulder.",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "Oops, sorry. Someone's using it already.",
+            NOTALLOWED = "Well, it doesn't go there.",
+            EMPTY = "I need to put something there.",
+            MISMATCH = "Sorry. Wrong plans.",
+        },
 		WRITE =
         {
             GENERIC = "No thanks. I have terrible writing.",
@@ -78,6 +85,10 @@ return {
             NOTSCULPTABLE = "I'd prefer wood, personally.",
             CANTSHADOWREVIVE = "Didn't work. Probably for the best.",
             WRONGSHADOWFORM = "That's gotta be rebuilt, eh?",
+            NOMOON = "Looks like it doesn't work in the caves, eh.",
+            PIGKINGGAME_MESSY = "Could use a cleaning first.",
+			PIGKINGGAME_DANGER = "I'll wait until the danger's passed.",
+			PIGKINGGAME_TOOLATE = "Can't do that now. It'll be dark soon.",
         },
         GIVETOPLAYER = 
         {
@@ -205,6 +216,7 @@ return {
     },
     ANNOUNCE_RUINS_RESET = "All that hard work gone to waste.",
 
+	ANNOUNCE_DESPAWN = "This feels strangely familiar...",
 	ANNOUNCE_BECOMEGHOST = "oOooOOOO!!",
 	ANNOUNCE_GHOSTDRAIN = "I'm goin', like, nutso over here...",
 
@@ -253,6 +265,10 @@ return {
 	ANNOUNCE_RESEARCH = "Learnin' keeps your mind sharp. Like an axe.",
 	ANNOUNCE_UNIMPLEMENTED = "Ouch! That wasn't very polite.",
 	ANNOUNCE_WORMS = "Oh geez. I hope you're ready, Lucy.",
+
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "You see that, Lucy?",
+    ANNOUNCE_BRAVERY_POTION = "Glad that's over. Never thought I'd be scared of trees.",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "You fell like a tree, eh?",
@@ -404,6 +420,11 @@ return {
         },
 
 		MULTIPLAYER_PORTAL = "That'd be the thing I fell through, eh.",
+		MULTIPLAYER_PORTAL_MOONROCK = "Wonder where it goes.",
+        CONSTRUCTION_PLANS = "Well, better get building.",
+        MOONROCKIDOL = "Looks kinda loonie.",
+        MOONROCKSEED = "I should probably put this down somewhere, eh?",
+
 		GLOMMER = "Keep flapping, little guy!",
         GLOMMERFLOWER = 
         {
@@ -753,7 +774,7 @@ return {
 			NIGHT_FULL = "Not a good night to have a curse, but then when's it ever?",
 			NIGHT_WANE = "The moon's waning. Time for some peace and quiet.",
 			CAVE = "We're free from the moon's reach down here.",
-			WEREBEAVER = "Just about time again, Lucy.",
+			WEREBEAVER = "Just aboot time again, Lucy.",
         },
 		THULECITE = "It's the wood of the caves!",
 		ARMORRUINS = "That'll stop the hurt.",
@@ -1318,7 +1339,7 @@ return {
 			GENERIC = "A little bit of nature makes everything nicer.",
 			EMPTY = "Such a beaut of a wood table shouldn't be hidden by a cloth.",
 			WILTED = "Well, that's that.",
-			FRESHLIGHT = "About time we brightened this place up, eh?",
+			FRESHLIGHT = "Aboot time we brightened this place up, eh?",
 			OLDLIGHT = "We need bulbs, eh.",
 		},
 		ACORN = "I should grow it and then chop it down!",
@@ -1851,7 +1872,7 @@ return {
 		TREASURECHEST_TRAP = "Something is not quite right aboot that chest.",
 		MOOSE_NESTING_GROUND = "Where's the pyromaniac? This needs to burn.",
 		TRINKET_1 = "I used to play that game.", --Melted Marbles
-		TRINKET_2 = "Much kazoo about nothing.", --Fake Kazoo
+		TRINKET_2 = "Much kazoo aboot nothing.", --Fake Kazoo
 		TRINKET_3 = "Reminds me of a story I heard once.", --Gord's Knot
 		TRINKET_4 = "Wolfgang would appreciate that moustache.", --Gnome
 		TRINKET_5 = "It needs a robot arm, eh?", --Toy Rocketship
@@ -1913,6 +1934,21 @@ return {
         HALLOWEENCANDY_14 = "Lucy doesn't like it when I eat spice.", --Hot Lava pepper candy
         CANDYBAG = "That there bag could hold a whole heap of candy.",
 
+        HALLOWEEN_ORNAMENT_1 = "It's just fake, eh.",
+		HALLOWEEN_ORNAMENT_2 = "That's nice. I should hang it somewhere.",
+		HALLOWEEN_ORNAMENT_3 = "This would look good in a tree somewhere.",
+		HALLOWEEN_ORNAMENT_4 = "You wanna decorate, Lucy?",
+		HALLOWEEN_ORNAMENT_5 = "Hang in there, eh.",
+		HALLOWEEN_ORNAMENT_6 = "Argh! I'd sure like to hang a real one like that.", 
+
+		HALLOWEENPOTION_DRINKS_WEAK = "Not bad.", 
+		HALLOWEENPOTION_DRINKS_POTENT = "That's a lot, eh.",
+		HALLOWEENPOTION_FIRE_FX = "It'll never replace a good hunk of wood.",
+		HALLOWEENPOTION_BRAVERY = "A good hardy drink.",
+		MADSCIENCE_LAB = "I prefer simpler things.",
+		LIVINGTREE_ROOT = "Hey there's a piece of wood in there.",
+		LIVINGTREE_SAPLING = "Yep. That'll be a fine tree one day.", 
+
         DRAGONHEADHAT = "That's a sight, eh?",
         DRAGONBODYHAT = "Nice needlework.",
         DRAGONTAILHAT = "Well, somebody's gotta do it.",
@@ -1946,6 +1982,22 @@ return {
         HOUNDWHISTLE = "I usually do my own animal calls.",
         CHESSPIECE_CLAYHOUND = "All the dog, none of the smell.",
         CHESSPIECE_CLAYWARG = "Not a wood sculpture, but it'll do.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "Would ya look at that.",
+            EMPTY = "I think it needs meat, Lucy.",
+            BURNT = "Burnt.",
+		},
+		PIG_TOKEN = "Looks like something those pigs would make.",
+		YOTP_FOOD1 = "Want some, Lucy?",
+		YOTP_FOOD2 = "Doesn't look to appetizing. Sorry.",
+		YOTP_FOOD3 = "I don't need nothin' fancy.",
+
+		PIGELITE1 = "Looks a little blue.", --BLUE
+		PIGELITE2 = "Too hot-headed if you ask me.", --RED
+		PIGELITE3 = "Sure likes that gold.", --WHITE
+		PIGELITE4 = "Something about that guy I like.", --GREEN
 
 		TRUNKVEST_SUMMER = "Nice and breezy.",
 		TRUNKVEST_WINTER = "This could stand up to the winters back home, eh?",
@@ -2033,13 +2085,15 @@ return {
         WINTER_ORNAMENT = "For hanging on the unchopped tree with care.",
         WINTER_ORNAMENTLIGHT = "What do you think, Lucy? Decorate, or chop?",
         WINTER_ORNAMENTBOSS = "Y'know, I do believe that was worth it.",
+        WINTER_ORNAMENTFORGE = "Kinda familiar eh, Lucy?",
+		WINTER_ORNAMENTGORGE = "That's nice.",
 
         WINTER_FOOD1 = "It's a gingerbread lumberjack.", --gingerbread cookie
         WINTER_FOOD2 = "Always had a soft spot for a good holiday cookie.", --sugar cookie
         WINTER_FOOD3 = "Satisfies the sweet tooth.", --candy cane
         WINTER_FOOD4 = "That thing just ain't right.", --fruitcake
         WINTER_FOOD5 = "All the taste and none of the splinters!", --yule log cake
-        WINTER_FOOD6 = "Hard to complain about this whole \"Feast\" business.", --plum pudding
+        WINTER_FOOD6 = "Hard to complain aboot this whole \"Feast\" business.", --plum pudding
         WINTER_FOOD7 = "Doesn't fall far from the cider tree.", --apple cider
         WINTER_FOOD8 = "Perfect for drinking next to a good fire, eh?", --hot cocoa
         WINTER_FOOD9 = "Psst, Lucy. Do I have a 'nog moustache?", --eggnog
@@ -2104,6 +2158,8 @@ return {
         TRAILS = "Mighty powerful right hook on that hoser.",
         TURTILLUS = "Gotta keep that one from hiding, eh?",
         SNAPPER = "Keep them chompers to yourself.",
+        RHINODRILL = "They really like bumping chests like that, eh?",
+		BEETLETAUR = "Gotta chop that armor up.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2146,6 +2202,11 @@ return {
         LAVAARENA_RECHARGERHAT = "They're reinvigorating rocks.",
         LAVAARENA_HEALINGGARLANDHAT = "That'll make ya quick on yer feet.",
         LAVAARENA_CROWNDAMAGERHAT = "Get a loada that hat!",
+
+        LAVAARENA_ARMOR_HP = "Better armor up.",
+
+		LAVAARENA_FIREBOMB = "I'll leave that for someone else.",
+		LAVAARENA_HEAVYBLADE = "I could use that.",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2362,6 +2423,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "Just wastes electricity.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "Looks kinda fun if I'm honest.",
+        	OFF = "Does it look like it's working, Lucy?",
+        	BURNING = "Woah! Careful, Lucy!",
+        	BURNT = "That's a right shame.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "Fine, as long as it don't start no forest fires.",
+        	OFF = "Does it look like it's working, Lucy?",
+        	BURNING = "Woah! Careful, Lucy!",
+        	BURNT = "That's a right shame.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "Looks like Winona's work.",
+        	LOWPOWER = "Just about dead.",
+            OFF = "Plum tuckered.",
+            BURNING = "Woah! Careful, Lucy!",
+            BURNT = "That's a right shame.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "Pretty odd looking gadget there.",
+        	LOWPOWER = "Just about dead.",
+            OFF = "Plum tuckered.",
+            BURNING = "Woah! Careful, Lucy!",
+            BURNT = "That's a right shame.",
+        },
     },
     DESCRIBE_GENERIC = "What's that, eh?",
     DESCRIBE_TOODARK = "It's too dark, eh!",

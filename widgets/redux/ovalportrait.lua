@@ -23,8 +23,8 @@ function OvalPortrait:_BuildCharacterDetails()
 
     -- Everything is anchored around heroportrait.
     self.heroportrait = portrait_root:AddChild(Image())
-    self.heroportrait:SetPosition(0, -20)
-    self.heroportrait:SetScale(.43)
+    self.heroportrait:SetPosition(0, -25)
+    self.heroportrait:SetScale(.5)
 
     self.heroname = portrait_root:AddChild(Image())
     self.heroname:SetScale(.28)
@@ -32,11 +32,6 @@ function OvalPortrait:_BuildCharacterDetails()
 
     self.character_text = portrait_root:AddChild(Widget("character details"))
     self.character_text:SetPosition(0, -170)
-
-    --self.charactername = self.character_text:AddChild(Text(TITLEFONT, 42))
-    --self.charactername:SetHAlign(ANCHOR_MIDDLE)
-    --self.charactername:SetRegionSize(300, 70)
-    --self.charactername:SetColour(GOLD)
 
     self.charactertitle = self.character_text:AddChild(Text(HEADERFONT, 25))
     self.charactertitle:SetHAlign(ANCHOR_MIDDLE)
@@ -52,9 +47,9 @@ function OvalPortrait:_BuildCharacterDetails()
     self.characterdetails:EnableWordWrap(true)
     self.characterdetails:SetColour(UICOLOURS.GREY)
 	
-	if TheNet:GetServerEvent() == FESTIVAL_EVENTS.LAVAARENA then 
-		self.eventid = TheNet:GetServerGameMode() --Note(Peter):Ahhhhh! we're mixing game mode and event id and server event name, it works though because it's all "lavarena" due to the c-side being case-insensitive
-		portrait_root:SetPosition(0, -50)
+	if TheNet:GetServerEvent() and TheNet:GetServerGameMode() == FESTIVAL_EVENTS.LAVAARENA then 
+		self.eventid = TheNet:GetServerGameMode() --Note(Peter):Ahhhhh! we're mixing game mode and event id and server event name, it works though because it's all "lavaarena" due to the c-side being case-insensitive
+		portrait_root:SetPosition(0, 20)
 	
 	    self.character_text:SetPosition(0, -150)
 
@@ -119,9 +114,6 @@ function OvalPortrait:SetPortrait(herocharacter)
 
     SetOvalPortraitTexture(self.heroportrait, herocharacter)
 
-    if self.charactername then
-        self.charactername:SetString(STRINGS.CHARACTER_NAMES[herocharacter] or "")
-    end
     if self.charactertitle then
         self.charactertitle:SetString(STRINGS.CHARACTER_TITLES[herocharacter] or "")
     end
@@ -162,12 +154,13 @@ function OvalPortrait:SetPortrait(herocharacter)
 	
 	if self.la_achievements then
 		self.achievements_root:Hide()
-		for _, cat in pairs(EventAchievements:GetAchievementsCategoryList(self.eventid)) do
+		local season = GetFestivalEventSeasons(self.eventid)
+		for _, cat in pairs(EventAchievements:GetAchievementsCategoryList(self.eventid, season)) do
 			if cat.category == herocharacter then
 				self.achievements_root:Show()
 				for i, v in ipairs(cat.data) do
 					local achievementid = cat.data[3-(i-1)].achievementid
-					local image = EventAchievements:IsAchievementUnlocked(FESTIVAL_EVENTS.LAVAARENA, achievementid) and (achievementid..".tex") or "achievement_locked.tex"
+					local image = EventAchievements:IsAchievementUnlocked(self.eventid, season, achievementid) and (achievementid..".tex") or "achievement_locked.tex"
 					self.la_achievements[i].image:SetTexture("images/"..self.eventid.."_achievements.xml", image)
 
 					self.la_achievements[i].name:SetString(STRINGS.UI.ACHIEVEMENTS[string.upper(self.eventid)].ACHIEVEMENT[achievementid].TITLE)

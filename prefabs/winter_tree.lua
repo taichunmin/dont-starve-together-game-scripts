@@ -143,7 +143,7 @@ local function UpdateLights(inst, light)
     if light ~= nil then
         local slot = inst.components.container:GetItemSlot(light)
         if slot ~= nil then
-            inst.AnimState:OverrideSymbol("plain"..slot, "winter_ornaments", light.winter_ornamentid..(light.ornamentlighton and "_on" or "_off"))
+            inst.AnimState:OverrideSymbol("plain"..slot, light.winter_ornament_build or "winter_ornaments", light.winter_ornamentid..(light.ornamentlighton and "_on" or "_off"))
         end
     end
 
@@ -182,7 +182,7 @@ local function AddDecor(inst, data)
     if data.item.ornamentlighton ~= nil then
         UpdateLights(inst, data.item)
     else
-        inst.AnimState:OverrideSymbol("plain"..data.slot, "winter_ornaments", data.item.winter_ornamentid)
+        inst.AnimState:OverrideSymbol("plain"..data.slot, data.item.winter_ornament_build or "winter_ornaments", data.item.winter_ornamentid)
     end
     
 end
@@ -192,17 +192,14 @@ local GIFTING_PLAYER_RADIUS_SQ = 25 * 25
 
 local random_gift1 =
 {
-    flint = 1,
-    moonrocknugget = 1,
-    silk = 1,
-    nitre = 1,
-    gears = .5,
-    compass = .5,
-    sewing_kit = .5,
+    moonrocknugget = 2,
+    gears = 1,
+    compass = .3,
+    sewing_kit = .2,
 
     --gems
-    redgem = .5,
-    bluegem = .5,
+    redgem = .2,
+    bluegem = .2,
     greengem = .1,
     orangegem = .1,
     yellowgem = .1,
@@ -217,26 +214,19 @@ local random_gift1 =
 
 local random_gift2 =
 {
-    gears = .4,
-    sewing_kit = .4,
+    gears = .2,
+    moonrocknugget = .2,
 
     --gems
-    redgem = .2,
-    bluegem = .2,
-    greengem = .2,
-    orangegem = .2,
-    yellowgem = .2,
-
-    --hats
-    beefalohat = .5,
-    winterhat = .5,
-    earmuffshat = .5,
-    catcoonhat = .5,
-    molehat = .5,
-    walrushat = .5,
+    redgem = .1,
+    bluegem = .1,
+    greengem = .1,
+    orangegem = .1,
+    yellowgem = .1,
 
     --special
-    cane = .1,
+    walrushat = .2,
+    cane = .2,
     panflute = .1,
 }
 
@@ -274,28 +264,30 @@ local function dogifting(inst)
         end
 
         if #players > 0 then
-            local days_since_last_gift = inst.previousgiftday == nil and 100 or (TheWorld.state.cycles - inst.previousgiftday)
-            inst.previousgiftday = TheWorld.state.cycles
-
             local fully_decorated = inst.components.container:IsFull()
-            local random_gift_table = fully_decorated and random_gift2 or random_gift1
-            local ornament_gift_fn = fully_decorated and GetRandomFancyWinterOrnament or GetRandomBasicWinterOrnament
-
-            --print("dogifting! ", num_players, days_since_last_gift, TheWorld.state.cycles, inst.components.container:NumItems())
-
             for _, player in ipairs(players) do
                 local loot = {}
-                if days_since_last_gift > 4 then
-                    table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD), stack = 4 })
-                    table.insert(loot, { prefab = PickRandomTrinket() })
-                    table.insert(loot, { prefab = weighted_random_choice(random_gift_table) })
-                    if math.random() < .25 then
-                        table.insert(loot, { prefab = ornament_gift_fn() })
-                    end
+
+                if player.components.wintertreegiftable ~= nil and player.components.wintertreegiftable:GetDaysSinceLastGift() >= 4 then
+					player.components.wintertreegiftable:OnGiftGiven()
+                    table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD), stack = math.random(3) + (fully_decorated and 3 or 0)})
+                    table.insert(loot, { prefab = not fully_decorated and GetRandomBasicWinterOrnament()
+											or math.random() < 0.5 and GetRandomFancyWinterOrnament() 
+											or GetRandomFestivalEventWinterOrnament() })
+                    
+					table.insert(loot, { prefab = weighted_random_choice(random_gift1) })
+
+					if fully_decorated then
+						table.insert(loot, { prefab = weighted_random_choice(random_gift2) })
+					else
+	                    table.insert(loot, { prefab = PickRandomTrinket() })
+					end						
                 else
-                    table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD) })
+                    table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD), stack = math.random(3) })
                     table.insert(loot, { prefab = "charcoal" })
                 end
+
+				dumptable(loot)
 
                 local items = {}
                 for i, v in ipairs(loot) do
@@ -843,6 +835,7 @@ local function AddWinterTree(treetype)
         MakeSnowCoveredPristine(inst)
 
         inst:AddTag("winter_tree")
+		inst:AddTag("decoratable")
         inst:AddTag("structure")
         inst:AddTag("event_trigger")
 

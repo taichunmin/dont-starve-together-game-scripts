@@ -21,17 +21,10 @@ end
 
 local prefabs = FlattenTree(start_inv, true)
 
-for k, v in pairs(start_inv) do
-    for i1, v1 in ipairs(v) do
-        if not table.contains(prefabs, v1) then
-            table.insert(prefabs, v1)
-        end
-    end
-end
-
 local function common_postinit(inst)
     inst:AddTag("handyperson")
     inst:AddTag("fastbuilder")
+    inst:AddTag("hungrybuilder")
 
     if TheNet:GetServerGameMode() == "quagmire" then
         inst:AddTag("quagmire_fasthands")

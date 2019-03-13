@@ -63,7 +63,7 @@ local function SpawnScion(pos, friendly, style, player)
         if player ~= nil then
             if not friendly and scion.components.combat ~= nil then
                 scion.components.combat:SetTarget(player)
-            elseif scion.components.follower ~= nil then
+            elseif scion.components.follower ~= nil and player.components.minigame_participator == nil then
                 player:PushEvent("makefriend")
                 scion.components.follower:SetLeader(player)
             end

@@ -1,38 +1,40 @@
 local assets =
 {
-	Asset("ANIM", "anim/tentacle_spike.zip"),
-	Asset("ANIM", "anim/swap_spike.zip"),
+    Asset("ANIM", "anim/tentacle_spike.zip"),
+    Asset("ANIM", "anim/swap_spike.zip"),
 }
 
-local function onequip(inst, owner) 
+local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_spike", "swap_spike")
-    owner.AnimState:Show("ARM_carry") 
-    owner.AnimState:Hide("ARM_normal") 
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
 end
 
-local function onunequip(inst, owner) 
-    owner.AnimState:Hide("ARM_carry") 
-    owner.AnimState:Show("ARM_normal") 
+local function onunequip(inst, owner)
+    owner.AnimState:Hide("ARM_carry")
+    owner.AnimState:Show("ARM_normal")
 end
 
 local function fn()
-	local inst = CreateEntity()
+    local inst = CreateEntity()
 
-	inst.entity:AddTransform()
-	inst.entity:AddAnimState()
+    inst.entity:AddTransform()
+    inst.entity:AddAnimState()
     inst.entity:AddNetwork()
-
-    MakeInventoryPhysics(inst)
-
-    if not TheWorld.ismastersim then
-        return inst
-    end
 
     inst.AnimState:SetBank("spike")
     inst.AnimState:SetBuild("tentacle_spike")
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("sharp")
+
+    MakeInventoryPhysics(inst)
+
+    inst.entity:SetPristine()
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
 
     inst:AddComponent("weapon")
     inst.components.weapon:SetDamage(TUNING.SPIKE_DAMAGE)

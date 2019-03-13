@@ -158,7 +158,7 @@ function ChatInputScreen:DoInit()
     self.root:SetVAnchor(ANCHOR_BOTTOM)
     self.root = self.root:AddChild(Widget(""))
 
-    self.root:SetPosition(10, 100, 0)
+    self.root:SetPosition(45.2, 100, 0)
 
 	if not TheInput:PlatformUsesVirtualKeyboard() then
 	    self.chat_type = self.root:AddChild(Text(TALKINGFONT, fontsize))

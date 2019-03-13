@@ -24,6 +24,7 @@ local ProfileFlairExplorerPanel = Class(Widget, function(self, owner, user_profi
     self.puppet_root:SetPosition(-160, -210)
 
     self.puppet = self.puppet_root:AddChild(PlayerAvatarPortrait())
+    self.puppet:HideHoverText()
     self.puppet:SetScale(1.8)
     -- Positioning the puppet relative to the spinner to make it easy for
     -- spinners on different screens to line up.
@@ -39,7 +40,9 @@ local ProfileFlairExplorerPanel = Class(Widget, function(self, owner, user_profi
     self.picker:SetPosition(310, 140)
 
     self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
-    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddSorter() )
    
     self:_DoFocusHookups()
     self.focus_forward = self.heroselector

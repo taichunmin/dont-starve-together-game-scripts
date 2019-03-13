@@ -20,9 +20,30 @@ local function KeepFaceTargetFn(inst, target)
 end
 ]]
 
+local function ShouldWatchMinigame(inst)
+	if inst.components.follower.leader ~= nil and inst.components.follower.leader.components.minigame_participator ~= nil then
+		if inst.components.combat.target == nil or inst.components.combat.target.components.minigame_participator ~= nil then
+			return true
+		end
+	end
+	return false
+end
+
+local function WatchingMinigame(inst)
+	return (inst.components.follower.leader ~= nil and inst.components.follower.leader.components.minigame_participator ~= nil) and inst.components.follower.leader.components.minigame_participator:GetMinigame() or nil
+end
+
 function AbigailBrain:OnStart()
+	local watch_game = WhileNode( function() return ShouldWatchMinigame(self.inst) end, "Watching Game",
+        PriorityNode({
+            Follow(self.inst, WatchingMinigame, TUNING.MINIGAME_CROWD_DIST_MIN, TUNING.MINIGAME_CROWD_DIST_TARGET, TUNING.MINIGAME_CROWD_DIST_MAX),
+            RunAway(self.inst, "minigame_participator", 5, 7),
+            FaceEntity(self.inst, WatchingMinigame, WatchingMinigame),
+		}, 0.25))
+
     local root = PriorityNode(
     {
+		watch_game,
         ChaseAndAttack(self.inst, MAX_CHASE_TIME),
         Follow(self.inst, function() return self.inst.components.follower.leader end, MIN_FOLLOW, MED_FOLLOW, MAX_FOLLOW, true),
         --FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),

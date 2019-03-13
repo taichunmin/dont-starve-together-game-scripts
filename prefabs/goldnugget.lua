@@ -53,6 +53,42 @@ local function fn()
     return inst
 end
 
+local function OnDelayInteraction(inst)
+    inst._knockbacktask = nil
+    inst:RemoveTag("knockbackdelayinteraction")
+end
+
+local function OnDelayPlayerInteraction(inst)
+    inst._playerknockbacktask = nil
+    inst:RemoveTag("NOCLICK")
+end
+
+local function OnKnockbackDropped(inst, data)
+    if data ~= nil and (data.delayinteraction or 0) > 0 then
+        if inst._knockbacktask ~= nil then
+            inst._knockbacktask:Cancel()
+        else
+            inst:AddTag("knockbackdelayinteraction")
+        end
+        inst._knockbacktask = inst:DoTaskInTime(data.delayinteraction, OnDelayInteraction)
+    elseif inst._knockbacktask ~= nil then
+        inst._knockbacktask:Cancel()
+        OnDelayInteraction(inst)
+    end
+
+    if data ~= nil and (data.delayplayerinteraction or 0) > 0 then
+        if inst._playerknockbacktask ~= nil then
+            inst._playerknockbacktask:Cancel()
+        else
+            inst:AddTag("NOCLICK")
+        end
+        inst._playerknockbacktask = inst:DoTaskInTime(data.delayplayerinteraction, OnDelayPlayerInteraction)
+    elseif inst._playerknockbacktask ~= nil then
+        inst._playerknockbacktask:Cancel()
+        OnDelayPlayerInteraction(inst)
+    end
+end
+
 local function luckyfn()
     local inst = CreateEntity()
 
@@ -68,6 +104,8 @@ local function luckyfn()
     inst.AnimState:SetBuild("gold_nugget")
     inst.AnimState:PlayAnimation("idle")
     inst.AnimState:OverrideSymbol("nugget", "gold_nugget", "lucky_goldnugget")
+
+    inst:AddTag("minigameitem")
 
     inst.entity:SetPristine()
 
@@ -89,6 +127,8 @@ local function luckyfn()
     MakeHauntableLaunch(inst)
 
     shine(inst)
+
+    inst:ListenForEvent("knockbackdropped", OnKnockbackDropped)
 
     return inst
 end

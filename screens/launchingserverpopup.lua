@@ -10,7 +10,7 @@ local TEMPLATES = require "widgets/templates"
 
 local WorldGenScreen = require "screens/worldgenscreen"
 
-local ENABLE_CANCEL_BUTTON = InNotConsole()
+local ENABLE_CANCEL_BUTTON = IsNotConsole()
 
 local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCallback, errorCallback)
     Screen._ctor(self, "LaunchingServerPopup")

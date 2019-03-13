@@ -9,7 +9,8 @@ local function OnSetVisibleMode(inst, self)
     if self.onhealthdelta == nil then
         self.onhealthdelta = function(owner, data) self:HealthDelta(data) end
         inst:ListenForEvent("healthdelta", self.onhealthdelta, self.owner)
-        self:SetHealthPercent(self.owner.replica.health:GetPercent())
+        self.healthmax = self:SetHealthPercent(self.owner.replica.health:GetPercent())
+        self.queuedhealthmax = self.healthmax
 
         self.onpethealthdirty = function() self:RefreshPetHealth() end
         inst:ListenForEvent("clientpethealthdirty", self.onpethealthdirty, self.owner)
@@ -29,6 +30,8 @@ local function OnSetHiddenMode(inst, self)
         self.inst:RemoveEventCallback("healthdelta", self.onhealthdelta, self.owner)
         self.onhealthdelta = nil
     end
+
+    self:StopUpdating()
 end
 
 local StatusDisplays = Class(Widget, function(self, owner)
@@ -48,6 +51,8 @@ local StatusDisplays = Class(Widget, function(self, owner)
 
     self.onhealthdelta = nil
     self.healthpenalty = 0
+    self.healthmax = 0
+    self.queuedhealthmax = 0
 
     self.modetask = nil
     self.isghostmode = false
@@ -127,20 +132,30 @@ end
 
 function StatusDisplays:SetHealthPercent(pct)
     local health = self.owner.replica.health
+    local max = health:Max()
     self.healthpenalty = health:GetPenaltyPercent()
-    self.heart:SetPercent(pct, health:Max(), self.healthpenalty)
+    self.heart:SetPercent(pct, max, self.healthpenalty)
 
     if pct <= .3 then
         self.heart:StartWarning()
     else
         self.heart:StopWarning()
     end
+
+    return max
 end
 
 function StatusDisplays:HealthDelta(data)
     local oldpenalty = self.healthpenalty
     local percent = data.newpercent == 0 and 0 or math.max(data.newpercent, 0.001)
-    self:SetHealthPercent(percent)
+    self.queuedhealthmax = self:SetHealthPercent(percent)
+
+    --max health pulses are queued since multiple events fire when swapping equipment
+    if self.queuedhealthmax ~= self.healthmax then
+        self:StartUpdating()
+    else
+        self:StopUpdating()
+    end
 
     --health penalty pulse takes priority
     if oldpenalty > self.healthpenalty then
@@ -158,6 +173,18 @@ function StatusDisplays:HealthDelta(data)
         self.heart:PulseRed()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_down")
     end
+end
+
+function StatusDisplays:OnUpdate(dt)
+    if self.queuedhealthmax > self.healthmax then
+        self.heart:PulseGreen()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
+    elseif self.queuedhealthmax < self.healthmax then
+        self.heart:PulseRed()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_down")
+    end
+    self.healthmax = self.queuedhealthmax
+    self:StopUpdating()
 end
 
 function StatusDisplays:RefreshPetHealth()

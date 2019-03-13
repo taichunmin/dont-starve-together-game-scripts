@@ -46,6 +46,7 @@ local function keeptargetfn(inst, target)
     --Match KEEP_WORKING_DIST in brain
     return inst.components.follower:IsNearLeader(14)
         and inst.components.combat:CanTarget(target)
+		and target.components.minigame_participator == nil
 end
 
 local function spearfn(inst)
@@ -58,6 +59,14 @@ local function spearfn(inst)
     inst.components.combat:SetKeepTargetFunction(keeptargetfn) --Keep attacking while leader is near.
 
     return inst
+end
+
+local function nokeeptargetfn(inst)
+    return false
+end
+
+local function noncombatantfn(inst)
+    inst.components.combat:SetKeepTargetFunction(nokeeptargetfn)
 end
 
 local function nodebrisdmg(inst, amount, overtime, cause, ignore_invincible, afflicter, ignore_absorb)
@@ -134,6 +143,7 @@ local function MakeMinion(prefab, tool, hat, master_postinit)
         inst:AddComponent("follower")
         inst.components.follower:KeepLeaderOnAttacked()
         inst.components.follower.keepdeadleader = true
+        inst.components.follower.keepleaderduringminigame = true
 
         inst:SetBrain(brain)
         inst:SetStateGraph("SGshadowwaxwell")
@@ -200,9 +210,9 @@ end
 
 --------------------------------------------------------------------------
 
-return MakeMinion("shadowlumber", "swap_axe"),
-    MakeMinion("shadowminer", "swap_pickaxe"),
-    MakeMinion("shadowdigger", "swap_shovel"),
+return MakeMinion("shadowlumber", "swap_axe", nil, noncombatantfn),
+    MakeMinion("shadowminer", "swap_pickaxe", nil, noncombatantfn),
+    MakeMinion("shadowdigger", "swap_shovel", nil, noncombatantfn),
     MakeMinion("shadowduelist", "swap_nightmaresword_shadow", nil, spearfn),
     MakeBuilder("shadowlumber"),
     MakeBuilder("shadowminer"),

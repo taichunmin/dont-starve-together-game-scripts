@@ -1,5 +1,5 @@
 require "behaviours/chaseandattack"
-require "behaviours/stalkerchaseandattack"
+require "behaviours/chaseandattackandavoid"
 require "behaviours/findclosest"
 require "behaviours/leash"
 require "behaviours/faceentity"
@@ -21,6 +21,8 @@ local LOITER_GATE_RANGE = 1.5
 local IDLE_GATE_TIME = 10
 local IDLE_GATE_MAX_DIST = 4
 local IDLE_GATE_DIST = 3
+
+local AVOID_GATE_DIST = 6 --stargate radius + stalker radius + some breathing room
 
 local StalkerBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
@@ -193,7 +195,7 @@ function StalkerBrain:OnStart()
                 end)),
             WhileNode(function() return ShouldFeast(self) end, "FossilFeast",
                 ActionNode(function() self.inst:PushEvent("fossilfeast") end)),
-            StalkerChaseAndAttack(self.inst, GetStargate),
+            ChaseAndAttackAndAvoid(self.inst, GetStargate, AVOID_GATE_DIST),
             SequenceNode{
                 ParallelNodeAny{
                     SequenceNode{

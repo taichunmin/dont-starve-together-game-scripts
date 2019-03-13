@@ -26,7 +26,7 @@ local function fn()
     MakeCharacterPhysics(inst, 50, inst.physicsradiusoverride)
     inst.DynamicShadow:SetSize(1.1, .55)
 
-    inst.Transform:SetScale(1.4, 1.4, 1.4)
+    inst.Transform:SetScale(TUNING.LAVAARENA_BERNIE_SCALE, TUNING.LAVAARENA_BERNIE_SCALE, TUNING.LAVAARENA_BERNIE_SCALE)
     inst.Transform:SetFourFaced()
 
     inst.AnimState:SetBank("bernie")

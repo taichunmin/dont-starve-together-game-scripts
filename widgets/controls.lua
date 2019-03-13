@@ -344,14 +344,9 @@ function Controls:OnUpdate(dt)
                 self.groundactionhint:SetTarget(self.owner.components.playercontroller.deployplacer)
 
                 if self.owner.components.playercontroller.deployplacer.components.placer.can_build then
-                    if TheInput:ControllerAttached() then
-                        self.groundactionhint.text:SetString(TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ACTION) .. " " .. self.owner.components.playercontroller.deployplacer.components.placer:GetDeployAction():GetActionString().."\n"..TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION).." "..STRINGS.UI.HUD.CANCEL)
-                    else
-                        self.groundactionhint.text:SetString(TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ACTION) .. " " .. self.owner.components.playercontroller.deployplacer.components.placer:GetDeployAction():GetActionString())
-                    end
-
+                    self.groundactionhint.text:SetString(TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ACTION) .. " " .. self.owner.components.playercontroller.deployplacer.components.placer:GetDeployAction():GetActionString().."\n"..TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION).." "..STRINGS.UI.HUD.CANCEL)
                 else
-                    self.groundactionhint.text:SetString("")
+                    self.groundactionhint.text:SetString(TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION).." "..STRINGS.UI.HUD.CANCEL)
                 end
 
             elseif self.owner.components.playercontroller.placer ~= nil then
@@ -422,6 +417,9 @@ function Controls:OnUpdate(dt)
             if r ~= nil and ground_r == nil then
                 table.insert(cmds, TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION) .. " " .. r:GetActionString())
             end
+			if self.owner.components.playercontroller:IsControllerTargetLocked() then
+                table.insert(cmds, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HUD.UNLOCK_TARGET)
+			end
             if controller_target.quagmire_shoptab ~= nil then
                 for k, v in pairs(self.crafttabs.tabs.shown) do
                     if k.filter == controller_target.quagmire_shoptab then

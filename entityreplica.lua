@@ -7,6 +7,7 @@ local REPLICATABLE_COMPONENTS =
     builder = true,
     combat = true,
     container = true,
+    constructionsite = true,
     equippable = true,
     fishingrod = true,
     follower = true,

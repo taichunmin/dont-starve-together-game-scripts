@@ -104,20 +104,18 @@ local function ReleaseHassler(targetPlayer)
 end
 
 local function SpawnBearger()
-
-	--print("BeargerSpawner detected autumn", TheWorld.state.cycles, _numSpawned)
-	local shouldSpawn = TheWorld.state.cycles > TUNING.NO_BOSS_TIME and TheWorld.state.isautumn == true and _numSpawned < _targetNum
-
-	if shouldSpawn then 
-		local spawndelay = .25 * ((TheWorld.state.remainingdaysinseason * TUNING.TOTAL_DAY_TIME) / _targetNum)
-		local spawnrandom = .25 * spawndelay
-		_timetospawn = GetRandomWithVariance(spawndelay, spawnrandom or 0)
-		--print("Spawning Bearger ", _timetospawn)
-		self.inst:StartUpdatingComponent(self)
-	else
-		_timetospawn = nil
-	end
-
+    if _numSpawned < _targetNum and TheWorld.state.isautumn and TheWorld.state.cycles > TUNING.NO_BOSS_TIME then
+        local spawndelay = .25 * TheWorld.state.remainingdaysinseason * TUNING.TOTAL_DAY_TIME / _targetNum
+        local spawnrandom = .25 * spawndelay
+        if _timetospawn == nil or _timetospawn > spawndelay + spawnrandom then
+            _timetospawn = GetRandomWithVariance(spawndelay, spawnrandom)
+        end
+        --print("Spawning Bearger ", _timetospawn)
+        self.inst:StartUpdatingComponent(self)
+    else
+        _timetospawn = nil
+        self.inst:StopUpdatingComponent(self)
+    end
 end
 
 --------------------------------------------------------------------------

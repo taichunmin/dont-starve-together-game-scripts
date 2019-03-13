@@ -1,6 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/evergreen_living_wood.zip"),
+    Asset("MINIMAP_IMAGE", "livingtree"),
     Asset("MINIMAP_IMAGE", "livingtree_burnt"),
     Asset("MINIMAP_IMAGE", "livingtree_stump"),
 }
@@ -115,6 +116,18 @@ local function onworkfinish(inst, chopper)
     makestump(inst)
 end
 
+local function OnHalloweenSetup(inst)
+	if not inst:HasTag("burnt") and not inst:HasTag("stump") then
+		local x, y, z = inst.Transform:GetWorldPosition()
+		inst:Remove()
+		local new_tree = SpawnPrefab("livingtree_halloween")
+		new_tree.Transform:SetPosition(x, y, z)
+		if new_tree.components.growable ~= nil then
+			new_tree.components.growable:SetStage(#new_tree.components.growable.stages)
+		end
+	end
+end
+
 local function onsave(inst, data)
     if inst:HasTag("stump") then
         data.stump = true
@@ -183,6 +196,10 @@ local function fn()
     MakeHauntableWorkAndIgnite(inst)
 
     MakeSnowCovered(inst)
+
+	if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+		inst:DoTaskInTime(0, OnHalloweenSetup)
+	end
 
     inst.OnSave = onsave
     inst.OnLoad = onload

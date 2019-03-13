@@ -1246,7 +1246,7 @@ TEMPLATES = {
         local rarity = GetRarityForItem(name)
 
         widg:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(name), "SWAP_ICON")
-        widg:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", rarity)
+        widg:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(rarity))
 
         widg:GetAnimState():PlayAnimation("icon", true)
         widg:GetAnimState():Hide("NEW")
@@ -1322,13 +1322,15 @@ TEMPLATES = {
     --------------
     --------------
     -- Main menu snowfall
-    Snowfall = function()
+    Snowfall = function(fade_y_threshold, snowflake_chance, max_snowball_size, max_snowflake_size)
+		-- defaults
+		snowflake_chance = snowflake_chance or 0.5
+		max_snowball_size = max_snowball_size or 5
+		max_snowflake_size = max_snowflake_size or 20
+
         local num_wintersnow = 4
         local num_specialsnow = 5
-        local max_snowflake_size = 20
-        local max_snowball_size = 5
         local padding = max_snowflake_size * .5
-        local fade_y_threshold = -.75 * RESOLUTION_Y
         local remove_y_threshold = -RESOLUTION_Y - padding
         local superprettycounter = math.random(20, 30)
         local snowflake_pool = {}
@@ -1337,7 +1339,7 @@ TEMPLATES = {
             local pos = snowflake:GetPosition()
             if pos.y > remove_y_threshold then
                 if pos.y < fade_y_threshold then
-                    snowflake.alpha = snowflake.alpha - .01
+                    snowflake.alpha = snowflake.alpha - .022
                     if snowflake.alpha <= 0 then
                         snowflake:Recycle()
                         return
@@ -1414,7 +1416,7 @@ TEMPLATES = {
 
         local widg = Widget("Snowfall")
         widg.OnUpdate = function(widg)
-            if math.random() < .5 then
+            if math.random() < snowflake_chance then
                 widg:AddChild(CreateSnowFlake((math.random() - .5) * (RESOLUTION_X + max_snowflake_size), padding))
             end
         end

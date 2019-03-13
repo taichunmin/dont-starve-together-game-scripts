@@ -557,12 +557,24 @@ AddGameDebugKey(KEY_X, function()
 end)
 
 AddGlobalDebugKey(KEY_LEFTBRACKET, function()
-    TheSim:SetTimeScale(TheSim:GetTimeScale() - .25)
+    if TheInput:IsKeyDown(KEY_CTRL) then
+        TheSim:SetTimeScale(1)
+    elseif TheInput:IsKeyDown(KEY_SHIFT) then
+        TheSim:SetTimeScale(0)
+    else
+        TheSim:SetTimeScale(TheSim:GetTimeScale() - .25)
+    end
     return true
 end)
 
 AddGlobalDebugKey(KEY_RIGHTBRACKET, function()
-    TheSim:SetTimeScale(TheSim:GetTimeScale() + .25)
+    if TheInput:IsKeyDown(KEY_CTRL) then
+        TheSim:SetTimeScale(1)
+    elseif TheInput:IsKeyDown(KEY_SHIFT) then
+        TheSim:SetTimeScale(4)
+    else
+        TheSim:SetTimeScale(TheSim:GetTimeScale() + .25)
+    end
     return true
 end)
 

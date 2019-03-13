@@ -542,7 +542,7 @@ local function ReturnActiveItemToSlot(inst, slot)
         if item == nil then
             local giveitem = SlotItem(inst._activeitem, slot)
             PushItemGet(inst, giveitem, true)
-        elseif item.replica.stackable ~= nil and item.prefab == inst._activeitem.prefab then
+        elseif item.replica.stackable ~= nil and item.prefab == inst._activeitem.prefab and item.skinname == inst._activeitem.skinname then
             local stacksize = item.replica.stackable:StackSize() + inst._activeitem.replica.stackable:StackSize()
             local maxsize = item.replica.stackable:MaxSize()
             PushStackSize(inst, item, math.min(stacksize, maxsize), true)
@@ -597,7 +597,7 @@ end
 local function AddOneOfActiveItemToSlot(inst, slot)
     if not IsBusy(inst) and inst._activeitem ~= nil then
         local item = inst:GetItemInSlot(slot)
-        if item ~= nil and item.prefab == inst._activeitem.prefab then
+        if item ~= nil and item.prefab == inst._activeitem.prefab and item.skinname == inst._activeitem.skinname then
             PushStackSize(inst, item, item.replica.stackable:StackSize() + 1, true)
             PushStackSize(inst, inst._activeitem, nil, nil, inst._activeitem.replica.stackable:StackSize() - 1, true)
             SendRPCToServer(RPC.AddOneOfActiveItemToSlot, slot)
@@ -608,7 +608,7 @@ end
 local function AddAllOfActiveItemToSlot(inst, slot)
     if not IsBusy(inst) and inst._activeitem ~= nil then
         local item = inst:GetItemInSlot(slot)
-        if item ~= nil and item.prefab == inst._activeitem.prefab then
+        if item ~= nil and item.prefab == inst._activeitem.prefab and item.skinname == inst._activeitem.skinname then
             local stacksize = item.replica.stackable:StackSize() + inst._activeitem.replica.stackable:StackSize()
             local maxsize = item.replica.stackable:MaxSize()
             if stacksize <= maxsize then
@@ -862,7 +862,15 @@ local function MoveItemFromAllOfSlot(inst, slot, container)
         if container_classified ~= nil and not container_classified:IsBusy() then
             local item = inst:GetItemInSlot(slot)
             if item ~= nil then
-                local remainder = container_classified:ReceiveItem(item)
+                local remainder = nil
+                if inst._parent.components.constructionbuilderuidata ~= nil and inst._parent.components.constructionbuilderuidata:GetContainer() == container then
+                    local targetslot = inst._parent.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab)
+                    if targetslot ~= nil then
+                        remainder = container_classified:ReceiveItem(item, nil, targetslot)
+                    end
+                else
+                    remainder = container_classified:ReceiveItem(item)
+                end
                 if remainder ~= nil then
                     if remainder > 0 then
                         PushStackSize(inst, item, nil, nil, remainder, false, true)
@@ -883,7 +891,15 @@ local function MoveItemFromHalfOfSlot(inst, slot, container)
         if container_classified ~= nil and not container_classified:IsBusy() then
             local item = inst:GetItemInSlot(slot)
             if item ~= nil and item.replica.stackable ~= nil and item.replica.stackable:IsStack() then
-                local remainder = container_classified:ReceiveItem(item, math.floor(item.replica.stackable:StackSize() / 2))
+                local remainder = nil
+                if inst._parent.components.constructionbuilderuidata ~= nil and inst._parent.components.constructionbuilderuidata:GetContainer() == container then
+                    local targetslot = inst._parent.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab)
+                    if targetslot ~= nil then
+                        remainder = container_classified:ReceiveItem(item, math.floor(item.replica.stackable:StackSize() / 2), targetslot)
+                    end
+                else
+                    remainder = container_classified:ReceiveItem(item, math.floor(item.replica.stackable:StackSize() / 2))
+                end
                 if remainder ~= nil then
                     if remainder > 0 then
                         PushStackSize(inst, item, nil, nil, remainder, true, true)
@@ -898,7 +914,9 @@ local function MoveItemFromHalfOfSlot(inst, slot, container)
     end
 end
 
-local function ReceiveItem(inst, item, count)
+--V2C: forceslot should never be used for inventory_classified,
+--     but it is there to match container_classified interface.
+local function ReceiveItem(inst, item, count)--, forceslot)
     if IsBusy(inst) then
         return
     end
@@ -932,7 +950,7 @@ local function ReceiveItem(inst, item, count)
             local eslot = item.replica.equippable:EquipSlot()
             local equip = inst:GetEquippedItem(eslot)
             if equip ~= nil and
-                equip.prefab == item.prefab and
+                equip.prefab == item.prefab and equip.skinname == item.skinname and
                 equip.replica.stackable ~= nil and
                 not equip.replica.stackable:IsFull() then
                 local stacksize = equip.replica.stackable:StackSize() + count
@@ -954,7 +972,7 @@ local function ReceiveItem(inst, item, count)
                     if emptyslot == nil then
                         emptyslot = i
                     end
-                elseif slotitem.prefab == item.prefab and
+                elseif slotitem.prefab == item.prefab and slotitem.skinname == item.skinname and
                     slotitem.replica.stackable ~= nil and
                     not slotitem.replica.stackable:IsFull() then
                     local stacksize = slotitem.replica.stackable:StackSize() + count

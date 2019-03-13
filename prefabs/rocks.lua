@@ -22,6 +22,12 @@ local rock_moon_assets =
     Asset("MINIMAP_IMAGE", "rock_moon"),
 }
 
+local rock_moon_shell_assets =
+{
+    Asset("ANIM", "anim/moonrock_shell.zip"),
+    Asset("MINIMAP_IMAGE", "rock_moon"),
+}
+
 local rock_petrified_tree_assets =
 {
     Asset("ANIM", "anim/petrified_tree.zip"),
@@ -38,6 +44,7 @@ local prefabs =
     "flint",
     "goldnugget",
     "moonrocknugget",
+	"moonrockseed",
     "rock_break_fx",
     "collapse_small",
 }
@@ -93,7 +100,18 @@ SetSharedLootTable( 'rock_moon',
     {'rocks',           1.00},
     {'flint',           1.00},
     {'moonrocknugget',  1.00},
+    {'moonrocknugget',  1.00},
     {'moonrocknugget',  0.6},
+    {'moonrocknugget',  0.3},
+})
+
+SetSharedLootTable( 'rock_moon_shell',
+{
+    {'rocks',           1.00},
+    {'flint',           1.00},
+    {'moonrocknugget',  1.00},
+    {'moonrocknugget',  1.00},
+    {'moonrocknugget',  1.00},
     {'moonrocknugget',  0.3},
 })
 
@@ -139,7 +157,9 @@ local function OnWork(inst, worker, workleft)
             fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
         end
 
-        inst:Remove()
+		if not inst.doNotRemoveOnWorkDone then
+	        inst:Remove()
+		end
     else
         inst.AnimState:PlayAnimation(
             (workleft < TUNING.ROCKS_MINE / 3 and "low") or
@@ -207,6 +227,7 @@ local function baserock_fn(bank, build, anim, icon, tag)
 
     inst.AnimState:SetBank(bank)
     inst.AnimState:SetBuild(build)
+
     if type(anim) == "table" then
         for i, v in ipairs(anim) do
             if i == 1 then
@@ -321,7 +342,40 @@ local function rock_moon()
         return inst
     end
 
+    inst.components.inspectable.nameoverride = "ROCK_MOON"
     inst.components.lootdropper:SetChanceLootTable('rock_moon')
+
+    return inst
+end
+
+local function OnRockMoonCapsuleWorkFinished(inst)
+    RemovePhysicsColliders(inst)
+
+	local seed = SpawnPrefab("moonrockseed")
+	seed.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    if seed.OnSpawned ~= nil then
+        seed:OnSpawned()
+    end
+
+	inst.persists = false
+    inst:AddTag("NOCLICK")
+
+	inst.AnimState:PlayAnimation("break")
+	inst:DoTaskInTime(2, ErodeAway)
+end
+
+local function rock_moon_shell()
+    local inst = baserock_fn("moonrock_shell", "moonrock_shell", "full", "rock_moon.png", "meteor_protection")
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.inspectable.nameoverride = "ROCK_MOON"
+    inst.components.lootdropper:SetChanceLootTable('rock_moon_shell')
+
+	inst.doNotRemoveOnWorkDone = true
+	inst:ListenForEvent("workfinished", OnRockMoonCapsuleWorkFinished)
 
     return inst
 end
@@ -388,6 +442,7 @@ return Prefab("rock1", rock1_fn, rock1_assets, prefabs),
     Prefab("rock_flintless_med", rock_flintless_med, rock_flintless_assets, prefabs),
     Prefab("rock_flintless_low", rock_flintless_low, rock_flintless_assets, prefabs),
     Prefab("rock_moon", rock_moon, rock_moon_assets, prefabs),
+    Prefab("rock_moon_shell", rock_moon_shell, rock_moon_shell_assets, prefabs),
     Prefab("rock_petrified_tree", rock_petrified_tree, rock_petrified_tree_assets, prefabs),
     Prefab("rock_petrified_tree_med", rock_petrified_tree_med, rock_petrified_tree_assets, prefabs),
     Prefab("rock_petrified_tree_tall", rock_petrified_tree_tall, rock_petrified_tree_assets, prefabs),

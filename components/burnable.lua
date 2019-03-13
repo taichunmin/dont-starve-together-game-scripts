@@ -49,6 +49,7 @@ local Burnable = Class(function(self, inst)
 
     self.lightningimmune = false
     --self.nocharring = false --default almost everything chars
+    --self.ignorefuel = false --set true if igniting/extinguishing should not start/stop fuel consumption
 
     self.task = nil
     self.smolder_task = nil
@@ -283,7 +284,7 @@ function Burnable:Ignite(immediate, source, doer)
             self.onignite(self.inst)
         end
 
-        if self.inst.components.fueled ~= nil then
+        if self.inst.components.fueled ~= nil and not self.ignorefuel then
             self.inst.components.fueled:StartConsuming()
         end
 
@@ -375,7 +376,7 @@ function Burnable:Extinguish(resetpropagator, heatpct, smotherer)
 
         self.burning = false
         self:KillFX()
-        if self.inst.components.fueled ~= nil then
+        if self.inst.components.fueled ~= nil and not self.ignorefuel then
             self.inst.components.fueled:StopConsuming()
         end
         if self.onextinguish ~= nil then

@@ -29,8 +29,8 @@ end
 local function backpack_decay_fn(inst, backpack_dropped)
     inst.decay_task = nil
     if not inst.decayed then
-        inst.AnimState:SetSkin("swap_backpack_mushy", "swap_backpack")
-        inst.skin_build_name = "swap_backpack_mushy"
+        inst.AnimState:SetSkin("backpack_mushy", "swap_backpack")
+        inst.skin_build_name = "backpack_mushy"
         inst.override_skinname = "backpack_mushy"
         inst.components.inventoryitem:ChangeImageName("backpack_mushy")
         inst.decayed = true
@@ -104,20 +104,44 @@ end
 --------------------------------------------------------------------------
 --[[ Armor skin functions ]]
 --------------------------------------------------------------------------
-function armor_init_fn(inst, build_name)
+function armor_init_fn(inst, build_name, def_build)
     if not TheWorld.ismastersim then
         return
     end
 
-    inst.AnimState:SetSkin(build_name, "armor_wood") --needs to be the default for the specific prefab
+    inst.AnimState:SetSkin(build_name, def_build)
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 end
 
-armordragonfly_init_fn = armor_init_fn
-armorgrass_init_fn = armor_init_fn
-armormarble_init_fn = armor_init_fn
-armorwood_init_fn = armor_init_fn
+armordragonfly_init_fn = function(inst, build_name) armor_init_fn(inst, build_name, "torso_dragonfly" ) end
+armorgrass_init_fn =  function(inst, build_name) armor_init_fn(inst, build_name, "armor_grass" ) end
+armormarble_init_fn =  function(inst, build_name) armor_init_fn(inst, build_name, "armor_marble" ) end
+armorwood_init_fn =  function(inst, build_name) armor_init_fn(inst, build_name, "armour_wood") end
+armorruins_init_fn =  function(inst, build_name) armor_init_fn(inst, build_name, "armor_ruins" ) end
 
+--------------------------------------------------------------------------
+--[[ Ruins Bat skin functions ]]
+--------------------------------------------------------------------------
+function ruins_bat_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_ruins_bat")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Hammer skin functions ]]
+--------------------------------------------------------------------------
+function hammer_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_hammer")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
 
 --------------------------------------------------------------------------
 --[[ Torch skin functions ]]
@@ -144,6 +168,18 @@ function spear_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Bug Net skin functions ]]
+--------------------------------------------------------------------------
+function bugnet_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_bugnet")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
 --[[ Axe skin functions ]]
 --------------------------------------------------------------------------
 function axe_init_fn(inst, build_name)
@@ -151,7 +187,43 @@ function axe_init_fn(inst, build_name)
         return
     end
 
-    inst.AnimState:SetSkin(build_name, "swap_axe")
+    inst.AnimState:SetSkin(build_name, "axe")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Boomerang skin functions ]]
+--------------------------------------------------------------------------
+function boomerang_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "boomerang")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Battle Spear skin functions ]]
+--------------------------------------------------------------------------
+function spear_wathgrithr_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_spear_wathgrithr")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Umbrella skin functions ]]
+--------------------------------------------------------------------------
+function umbrella_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "swap_umbrella")
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 end
 
@@ -176,6 +248,18 @@ function hambat_init_fn(inst, build_name)
     end
 
     inst.AnimState:SetSkin(build_name, "swap_ham_bat")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Batbat skin functions ]]
+--------------------------------------------------------------------------
+function batbat_init_fn(inst, build_name)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "batbat")
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 end
 
@@ -225,6 +309,10 @@ rainhat_init_fn = hat_init_fn
 minerhat_init_fn = hat_init_fn
 footballhat_init_fn = hat_init_fn
 featherhat_init_fn = hat_init_fn
+beehat_init_fn = hat_init_fn
+watermelonhat_init_fn = hat_init_fn
+wathgrithrhat_init_fn = hat_init_fn
+beefalohat_init_fn = hat_init_fn
 
 --------------------------------------------------------------------------
 --[[ Bedroll skin functions ]]
@@ -239,6 +327,20 @@ function bedroll_furry_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Beemine skin functions ]]
+--------------------------------------------------------------------------
+function beemine_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "bee_mine")
+    if inst.components.inventoryitem ~= nil then
+        inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+    end
+end
+
+--------------------------------------------------------------------------
 --[[ Crockpot skin functions ]]
 --------------------------------------------------------------------------
 function cookpot_init_fn(inst, build_name)
@@ -250,6 +352,50 @@ function cookpot_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Tent skin functions ]]
+--------------------------------------------------------------------------
+function tent_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "tent")
+end
+
+--------------------------------------------------------------------------
+--[[ Rainometer functions ]]
+--------------------------------------------------------------------------
+function rainometer_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "rain_meter")
+end
+
+--------------------------------------------------------------------------
+--[[ Winterometer functions ]]
+--------------------------------------------------------------------------
+function winterometer_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "winter_meter")
+end
+
+--------------------------------------------------------------------------
+--[[ Arrowsign_post functions ]]
+--------------------------------------------------------------------------
+function arrowsign_post_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "sign_arrow_post")
+end
+
+--------------------------------------------------------------------------
 --[[ Chest skin functions ]]
 --------------------------------------------------------------------------
 function treasurechest_init_fn(inst, build_name)
@@ -258,6 +404,71 @@ function treasurechest_init_fn(inst, build_name)
     end
 
     inst.AnimState:SetSkin(build_name, "treasure_chest")
+end
+
+--------------------------------------------------------------------------
+--[[ Firesuppressor skin functions ]]
+--------------------------------------------------------------------------
+function firesuppressor_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    if inst.prefab == "firesuppressor_placer" then
+        for _, v in pairs(inst.components.placer.linked) do
+            v.AnimState:SetSkin(build_name, "firefighter")
+        end
+    else
+        inst.AnimState:SetSkin(build_name, "firefighter")
+        inst.AnimState:OverrideItemSkinSymbol("swap_meter", build_name, "10", inst.GUID, "firefighter_meter")
+    end
+end
+
+--------------------------------------------------------------------------
+--[[ Wardrobe skin functions ]]
+--------------------------------------------------------------------------
+function wardrobe_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "wardrobe")
+end
+
+--------------------------------------------------------------------------
+--[[ Tooth Trap skin functions ]]
+--------------------------------------------------------------------------
+function trap_teeth_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "trap_teeth")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Trap skin functions ]]
+--------------------------------------------------------------------------
+function trap_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "trap")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+
+--------------------------------------------------------------------------
+--[[ Bird Trap skin functions ]]
+--------------------------------------------------------------------------
+function birdtrap_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "birdtrap")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
 end
 
 --------------------------------------------------------------------------
@@ -306,8 +517,8 @@ end
 --------------------------------------------------------------------------
 --[[ Pet skin functions ]]
 --------------------------------------------------------------------------
-function critter_builder_init_fn(inst, skin_name)
-    inst.skin_name = skin_name
+function critter_builder_init_fn(inst, build_name)
+    inst.linked_skinname = build_name --hack that relies on the build name to match the linked skinname
 end
 
 function pet_init_fn(inst, build_name, default_build)
@@ -339,6 +550,37 @@ function birdcage_init_fn(inst, build_name)
 end
 
 --------------------------------------------------------------------------
+--[[ Pighouse skin functions ]]
+--------------------------------------------------------------------------
+function pighouse_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "pig_house")
+    
+    if inst._window ~= nil then --check to make sure these entitys exist, they don't on dedis, and on placers.
+         inst._window.AnimState:SetSkin(build_name)
+         inst._windowsnow.AnimState:SetSkin(build_name)
+    end
+end
+
+--------------------------------------------------------------------------
+--[[ Fence skin functions ]]
+--------------------------------------------------------------------------
+function fence_item_init_fn(inst, build_name)
+    inst.linked_skinname = build_name --hack that relies on the build name to match the linked skinname
+    inst.AnimState:SetSkin(build_name, "fence") --same hack is used here by the deployable code in player controller
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+function fence_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+    inst.AnimState:SetSkin(build_name, "fence")
+end
+
+--------------------------------------------------------------------------
 --[[ Mushroomlight skin functions ]]
 --------------------------------------------------------------------------
 function mushroom_light_init_fn(inst, build_name)
@@ -355,17 +597,6 @@ function mushroom_light2_init_fn(inst, build_name)
     end
 
     inst.AnimState:SetSkin(build_name, "mushroom_light2")
-end
-
---------------------------------------------------------------------------
---[[ Lantern skin functions ]]
---------------------------------------------------------------------------
-function lantern_init_fn(inst, build_name)
-    if inst.components.placer == nil and not TheWorld.ismastersim then
-        return
-    end
-
-    inst.AnimState:SetSkin(build_name, "lantern")
 end
 
 --------------------------------------------------------------------------
@@ -502,7 +733,7 @@ function orangestaff_init_fn(inst, build_name)
         return
     end
 
-    local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for canes
+    local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for orangestaff
     if skin_fx ~= nil then
         inst.vfx_fx = skin_fx[1] ~= nil and skin_fx[1]:len() > 0 and skin_fx[1] or nil
         inst.trail_fx = skin_fx[2] ~= nil and skin_fx[2]:len() > 0 and skin_fx[2] or nil
@@ -523,6 +754,120 @@ end
 
 firestaff_init_fn = staff_init_fn
 icestaff_init_fn = staff_init_fn
+
+--------------------------------------------------------------------------
+--[[ Lantern skin functions ]]
+--------------------------------------------------------------------------
+local function lantern_onremovefx(fx)
+    fx._lantern._lit_fx_inst = nil
+end
+
+local function lantern_enterlimbo(inst)
+    --V2C: wow! superhacks!
+    --     we want to drop the FX behind when the item is picked up, but the transform
+    --     is cleared before lantern_off is reached, so we need to figure out where we
+    --     were just before.
+    if inst._lit_fx_inst ~= nil then
+        inst._lit_fx_inst._lastpos = inst._lit_fx_inst:GetPosition()
+        local parent = inst.entity:GetParent()
+        if parent ~= nil then
+            local x, y, z = parent.Transform:GetWorldPosition()
+            local angle = (360 - parent.Transform:GetRotation()) * DEGREES
+            local dx = inst._lit_fx_inst._lastpos.x - x
+            local dz = inst._lit_fx_inst._lastpos.z - z
+            local sinangle, cosangle = math.sin(angle), math.cos(angle)
+            inst._lit_fx_inst._lastpos.x = dx * cosangle + dz * sinangle
+            inst._lit_fx_inst._lastpos.y = inst._lit_fx_inst._lastpos.y - y
+            inst._lit_fx_inst._lastpos.z = dz * cosangle - dx * sinangle
+        end
+    end
+end
+
+local function lantern_off(inst)
+    local fx = inst._lit_fx_inst
+    if fx ~= nil then
+        if fx.KillFX ~= nil then
+            inst._lit_fx_inst = nil
+            inst:RemoveEventCallback("onremove", lantern_onremovefx, fx)
+            fx:RemoveEventCallback("enterlimbo", lantern_enterlimbo, inst)
+            fx._lastpos = fx._lastpos or fx:GetPosition()
+            fx.entity:SetParent(nil)
+            if fx.Follower ~= nil then
+                fx.Follower:FollowSymbol(0, "", 0, 0, 0)
+            end
+            fx.Transform:SetPosition(fx._lastpos:Get())
+            fx:KillFX()
+        else
+            fx:Remove()
+        end
+    end
+end
+
+local function lantern_on(inst)
+    local owner = inst.components.inventoryitem.owner
+    if owner ~= nil then
+        if inst._lit_fx_inst ~= nil and inst._lit_fx_inst.prefab ~= inst._heldfx then
+            lantern_off(inst)
+        end
+        if inst._heldfx ~= nil then
+            if inst._lit_fx_inst == nil then
+                inst._lit_fx_inst = SpawnPrefab(inst._heldfx)
+                inst._lit_fx_inst._lantern = inst
+                if inst._overridesymbols ~= nil and inst._lit_fx_inst.AnimState ~= nil then
+                    for i, v in ipairs(inst._overridesymbols) do
+                        inst._lit_fx_inst.AnimState:OverrideItemSkinSymbol(v, inst:GetSkinBuild(), v, inst.GUID, "lantern")
+                    end
+                end
+                inst._lit_fx_inst.entity:AddFollower()
+                inst:ListenForEvent("onremove", lantern_onremovefx, inst._lit_fx_inst)
+            end
+            inst._lit_fx_inst.entity:SetParent(owner.entity)
+            inst._lit_fx_inst.Follower:FollowSymbol(owner.GUID, "swap_object", inst._followoffset ~= nil and inst._followoffset.x or 0, inst._followoffset ~= nil and inst._followoffset.y or 0, inst._followoffset ~= nil and inst._followoffset.z or 0)
+        end
+    else
+        if inst._lit_fx_inst ~= nil and inst._lit_fx_inst.prefab ~= inst._groundfx then
+            lantern_off(inst)
+        end
+        if inst._groundfx ~= nil then
+            if inst._lit_fx_inst == nil then
+                inst._lit_fx_inst = SpawnPrefab(inst._groundfx)
+                inst._lit_fx_inst._lantern = inst
+                if inst._overridesymbols ~= nil and inst._lit_fx_inst.AnimState ~= nil then
+                    for i, v in ipairs(inst._overridesymbols) do
+                        inst._lit_fx_inst.AnimState:OverrideItemSkinSymbol(v, inst:GetSkinBuild(), v, inst.GUID, "lantern")
+                    end
+                end
+                inst:ListenForEvent("onremove", lantern_onremovefx, inst._lit_fx_inst)
+                if inst._lit_fx_inst.KillFX ~= nil then
+                    inst._lit_fx_inst:ListenForEvent("enterlimbo", lantern_enterlimbo, inst)
+                end
+            end
+            inst._lit_fx_inst.entity:SetParent(inst.entity)
+        end
+    end
+end
+
+function lantern_init_fn(inst, build_name, overridesymbols, followoffset)
+    if not TheWorld.ismastersim then
+        return
+    end
+
+    inst.AnimState:SetSkin(build_name, "lantern")
+
+    local skin_fx = SKIN_FX_PREFAB[build_name] --build_name is prefab name for lanterns
+    if skin_fx ~= nil then
+        inst._heldfx = skin_fx[1]
+        inst._groundfx = skin_fx[2]
+        if inst._heldfx ~= nil or inst._groundfx ~= nil then
+            inst._overridesymbols = overridesymbols
+            inst._followoffset = followoffset
+            inst:ListenForEvent("lantern_on", lantern_on)
+            inst:ListenForEvent("lantern_off", lantern_off)
+            inst:ListenForEvent("unequipped", lantern_off)
+            inst:ListenForEvent("onremove", lantern_off)
+        end
+    end
+end
 
 --------------------------------------------------------------------------
 --[[ ResearchLab2 skin functions ]]
@@ -650,10 +995,18 @@ end
 --[[ Icebox skin functions ]]
 --------------------------------------------------------------------------
 local function icebox_opened(inst)
-    if inst._frostfx == nil then
+    local x, y, z = inst.Transform:GetWorldPosition()
+    if inst.open_fx ~= nil then
+        local t = GetTime()
+        if t >= (inst._open_fx_time or 0) then
+            inst._open_fx_time = t + 1.3
+            SpawnPrefab(inst.open_fx).Transform:SetPosition(x, y, z)
+        end
+    end
+    if inst.frost_fx ~= nil and inst._frostfx == nil then
         inst._frostfx = SpawnPrefab(inst.frost_fx)
-        inst._frostfx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-        inst._frostfx.AnimState:OverrideItemSkinSymbol("cold_air", "icebox_victorian", "cold_air", inst.GUID, "ice_box")
+        inst._frostfx.Transform:SetPosition(x, y, z)
+        inst._frostfx.AnimState:OverrideItemSkinSymbol("cold_air", inst:GetSkinName(), "cold_air", inst.GUID, "ice_box")
     end
 end
 
@@ -677,11 +1030,14 @@ function icebox_init_fn(inst, build_name)
 
     local skin_fx = SKIN_FX_PREFAB[build_name]
     if skin_fx ~= nil then
-        inst.frost_fx = skin_fx[1]
-        if inst.frost_fx ~= nil then
+        inst.frost_fx = skin_fx[1] ~= nil and skin_fx[1]:len() > 0 and skin_fx[1] or nil
+        inst.open_fx = skin_fx[2]
+        if inst.frost_fx ~= nil or inst.open_fx ~= nil then
             inst:ListenForEvent("onopen", icebox_opened)
-            inst:ListenForEvent("onclose", icebox_closed)
-            inst:ListenForEvent("onremove", icebox_closed)
+            if inst.frost_fx ~= nil then
+                inst:ListenForEvent("onclose", icebox_closed)
+                inst:ListenForEvent("onremove", icebox_closed)
+            end
         end
     end
 end
@@ -696,12 +1052,12 @@ function CreatePrefabSkin(name, info)
     prefab_skin.type                = info.type
     prefab_skin.skin_tags           = info.skin_tags
     prefab_skin.init_fn             = info.init_fn
-    prefab_skin.build_name          = info.build_name
+    prefab_skin.build_name_override = info.build_name_override
     prefab_skin.bigportrait         = info.bigportrait
     prefab_skin.rarity              = info.rarity
     prefab_skin.rarity_modifier     = info.rarity_modifier
     prefab_skin.skins               = info.skins
-    prefab_skin.disabled            = info.disabled
+    prefab_skin.is_restricted       = info.is_restricted
     prefab_skin.granted_items       = info.granted_items
 	prefab_skin.marketable			= info.marketable
     prefab_skin.release_group       = info.release_group

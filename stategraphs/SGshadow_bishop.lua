@@ -235,7 +235,9 @@ ShadowChess.States.AddDespawn(states, "disappear",
 {
     ShadowChess.Functions.DeathSoundTimelineEvent(19 * FRAMES),
 })
+ShadowChess.States.AddAppear(states, "appear")
+
 
 CommonStates.AddWalkStates(states)
 
-return StateGraph("shadow_bishop", states, ShadowChess.CommonEventList, "idle")
+return StateGraph("shadow_bishop", states, ShadowChess.CommonEventList, "appear")

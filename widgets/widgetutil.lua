@@ -78,6 +78,9 @@ function DoRecipeClick(owner, recipe, skin)
             if can_build and CanPrototypeRecipe(recipe.level, tech_level) then
                 if recipe.placer == nil then
                     owner.replica.builder:MakeRecipeFromMenu(recipe, skin)
+                    if recipe.nounlock then
+                        return true
+                    end
                 elseif owner.components.playercontroller ~= nil then
                     owner.replica.builder:BufferBuild(recipe.name)
                     if not owner.replica.builder:IsBuildBuffered(recipe.name) then
@@ -85,11 +88,13 @@ function DoRecipeClick(owner, recipe, skin)
                     end
                     owner.components.playercontroller:StartBuildPlacementMode(recipe, skin)
                     if owner.components.builder ~= nil then
-                        owner.components.builder:ActivateCurrentResearchMachine()
+                        owner.components.builder:ActivateCurrentResearchMachine(recipe)
                         owner.components.builder:UnlockRecipe(recipe.name)
                     end
                 end
-                TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
+                if not recipe.nounlock then
+                    TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/research_unlock")
+                end
             else
                 return true
             end

@@ -18,7 +18,7 @@ function SelfStacker:CanSelfStack()
 end
 
 function SelfStacker:FindItemToStackWith()
-	self.stackpartner = FindEntity(self.inst, self.searchradius, function(item) return item.prefab == self.inst.prefab and item.components.selfstacker:CanSelfStack() end, {"selfstacker"})
+	self.stackpartner = FindEntity(self.inst, self.searchradius, function(item) return item.prefab == self.inst.prefab and item.skinname == self.inst.skinname and item.components.selfstacker:CanSelfStack() end, {"selfstacker"})
 	if self.stackpartner then
 		self.stackpartner.components.selfstacker.stackpartner = self.inst
 	end

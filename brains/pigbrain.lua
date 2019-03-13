@@ -69,6 +69,10 @@ local function FindFoodAction(inst)
         end
     end
 
+	if inst.components.minigame_spectator ~= nil then
+		return
+	end
+
     local time_since_eat = inst.components.eater:TimeSinceLastEating()
     if time_since_eat ~= nil and time_since_eat <= TUNING.PIG_MIN_POOP_PERIOD * 2 then
         return
@@ -199,6 +203,21 @@ local function RescueLeaderAction(inst)
     return BufferedAction(inst, GetLeader(inst), ACTIONS.UNPIN)
 end
 
+local function WantsToGivePlayerPigTokenAction(inst)
+	local leader = GetLeader(inst)
+	return leader ~= nil and inst.components.follower:GetLoyaltyPercent() >= TUNING.PIG_FULL_LOYALTY_PERCENT and inst.components.inventory:Has(inst._pig_token_prefab, 1)
+end
+
+local function GivePlayerPigTokenAction(inst)
+	local leader = GetLeader(inst)
+	if leader ~= nil then
+		local note = next(inst.components.inventory:GetItemByName(inst._pig_token_prefab, 1))
+		if note ~= nil then
+			return BufferedAction(inst, leader, ACTIONS.DROP, note)
+		end
+	end
+end
+
 local function GetFaceTargetFn(inst)
     return inst.components.follower.leader
 end
@@ -222,12 +241,57 @@ local function IsHomeOnFire(inst)
         and inst:GetDistanceSqToInst(inst.components.homeseeker.home) < SEE_BURNING_HOME_DIST_SQ
 end
 
+local function WatchingMinigame(inst)
+	return inst.components.minigame_spectator ~= nil and inst.components.minigame_spectator:GetMinigame()
+end
+
+local function WatchingCheaters(inst)
+    local minigame = WatchingMinigame(inst) or nil
+    if minigame ~= nil and minigame._minigame_elites ~= nil then
+        for k, v in pairs(minigame._minigame_elites) do
+            if k:WasCheated() then
+                return minigame
+            end
+        end
+    end
+end
+
+local function IsWatchingMinigameIntro(inst)
+	local minigame = inst.components.minigame_spectator ~= nil and inst.components.minigame_spectator:GetMinigame() or nil
+	return minigame ~= nil and minigame.sg ~= nil and minigame.sg:HasStateTag("intro")
+end
+
+local function GetGameLocation(inst)
+	return inst.components.knownlocations:GetLocation("pigking")
+end
+
 local PigBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
 end)
 
 function PigBrain:OnStart()
     --print(self.inst, "PigBrain:OnStart")
+	local watch_game = WhileNode( function() return WatchingMinigame(self.inst) end, "Watching Game",
+        PriorityNode({
+			IfNode(function() return IsWatchingMinigameIntro(self.inst) end, "Is Intro",
+		        PriorityNode({
+	                Follow(self.inst, WatchingMinigame, TUNING.MINIGAME_CROWD_DIST_MIN, TUNING.MINIGAME_CROWD_DIST_TARGET, TUNING.MINIGAME_CROWD_DIST_MAX),
+					RunAway(self.inst, "minigame_participator", 5, 7),
+					DoAction(self.inst, FindFoodAction),
+					FaceEntity(self.inst, WatchingMinigame, WatchingMinigame),
+				}, 0.1)),
+            ChattyNode(self.inst, "PIG_TALK_GAME_GOTO",
+                Follow(self.inst, WatchingMinigame, TUNING.MINIGAME_CROWD_DIST_MIN, TUNING.MINIGAME_CROWD_DIST_TARGET, TUNING.MINIGAME_CROWD_DIST_MAX)),
+            ChattyNode(self.inst, "PIG_TALK_GAME_CHEER",
+                RunAway(self.inst, "minigame_participator", 5, 7)),
+            ChattyNode(self.inst, "PIG_TALK_FIND_MEAT",
+                DoAction(self.inst, FindFoodAction )),
+            ChattyNode(self.inst, "PIG_ELITE_SALTY",
+                FaceEntity(self.inst, WatchingCheaters, WatchingCheaters ), 5, 15),
+            ChattyNode(self.inst, "PIG_TALK_GAME_CHEER",
+                FaceEntity(self.inst, WatchingMinigame, WatchingMinigame ), 5, 15),
+        }, 0.1))
+
     local day = WhileNode( function() return TheWorld.state.isday end, "IsDay",
         PriorityNode{
             ChattyNode(self.inst, "PIG_TALK_FIND_MEAT",
@@ -301,6 +365,10 @@ function PigBrain:OnStart()
             RunAway(self.inst, function(guy) return guy:HasTag("pig") and guy.components.combat and guy.components.combat.target == self.inst end, RUN_AWAY_DIST, STOP_RUN_AWAY_DIST ),
             ChattyNode(self.inst, "PIG_TALK_ATTEMPT_TRADE",
                 FaceEntity(self.inst, GetTraderFn, KeepTraderFn)),
+            ChattyNode(self.inst, "PIG_TALK_GIVE_GIFT",
+                WhileNode( function() return WantsToGivePlayerPigTokenAction(self.inst) end, "Wants To Give Token", -- todo: check for death and valid
+                    DoAction(self.inst, GivePlayerPigTokenAction, "Giving Token", true) )),
+			watch_game,
             day,
             night,
         }, .5)

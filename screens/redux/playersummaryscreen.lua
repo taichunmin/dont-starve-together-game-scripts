@@ -14,6 +14,7 @@ local TradeScreen = require "screens/tradescreen"
 local Widget = require "widgets/widget"
 local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 local PopupDialogScreen = require "screens/redux/popupdialog"
+local RedeemDialog = require "screens/redeemdialog"
 
 require("characterutil")
 require("skinsutils")
@@ -44,6 +45,7 @@ function PlayerSummaryScreen:DoInit()
     self.experience_root:SetPosition(-40,150)
 
     self.puppet = self.experience_root:AddChild(PlayerAvatarPortrait())
+    self.puppet:HideHoverText()
     self.puppet:SetPosition(-220, 40)
     if IsAnyFestivalEventActive() then
         -- Profileflair and rank are displayed on experiencebar when its visible.
@@ -71,10 +73,10 @@ function PlayerSummaryScreen:DoInit()
         self.festivals_divider_top:SetPosition(60,55)
         
         self.festivals_badges = {}
-        for i,event_name in pairs(PREVIOUS_FESTIVAL_EVENTS) do
-            self.festivals_badges[i] = self.festivals_root:AddChild(self:_BuildFestivalHistory(event_name))
-            self.festivals_badges[i]:SetPosition(-60,65 - i*80)
-        end
+		for i, eventinfo in ipairs(PREVIOUS_FESTIVAL_EVENTS_ORDER) do
+            table.insert(self.festivals_badges, self.festivals_root:AddChild(self:_BuildFestivalHistory(eventinfo.id, eventinfo.season)))
+            self.festivals_badges[#self.festivals_badges]:SetPosition(60, 55 - i*40)
+		end
     end
 
     self.doodad_root = self.root:AddChild(Widget("doodad_root"))
@@ -119,7 +121,7 @@ function PlayerSummaryScreen:DoInit()
     self.friend_divider_top = self.friend_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
     self.friend_divider_top:SetScale(0.5)
     self.friend_divider_top:SetPosition(60,55)
-    self.most_friend = self.friend_root:AddChild(self:_BuildMostCommonFriend(width))
+    self.most_friend = self.friend_root:AddChild(self:_BuildMostCommonFriend(width + 20))
 
     self.musicstopped = true
 
@@ -162,15 +164,15 @@ local function PushWaitingPopup()
     return event_wait_popup
 end
 
-function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
+function PlayerSummaryScreen:_BuildFestivalHistory(festival_key, season)
     local function onclick()
         local event_wait_popup = PushWaitingPopup()
-        wxputils.GetEventStatus(festival_key, function(success)
+        wxputils.GetEventStatus(festival_key, season, function(success)
             self.inst:DoTaskInTime(0, function() --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
                 event_wait_popup:Close()
 
                 if success then
-                    local screen = AchievementsPopup(self.prev_screen, self.user_profile, festival_key)
+                    local screen = AchievementsPopup(self.prev_screen, festival_key, season)
                     TheFrontEnd:PushScreen(screen)
                 else
                     local ok_scr = PopupDialogScreen( STRINGS.UI.PLAYERSUMMARYSCREEN.FESTIVAL_HISTORY, STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT,
@@ -184,38 +186,9 @@ function PlayerSummaryScreen:_BuildFestivalHistory(festival_key)
             end, self)
         end)
     end
-    -- Using ImageButton to get scaling on focus on image children.
-    local w = ImageButton("images/ui.xml", "blank.tex")
-    w:SetFont(UIFONT)
-    w:SetTextSize(30)
-    w:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-    w:SetTextFocusColour(UICOLOURS.GOLD_SELECTED)
-    w:SetOnClick(onclick)
 
-    local festival_title = STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(festival_key)]
-    w:SetText(festival_title)
-
-    local textwidth = 300
-    local text_offset = 50
-    local text_x = text_offset + .5*textwidth
-    local text_y = 15
-    local text_height = 40
-    w.text:SetRegionSize(textwidth, text_height)
-    w.text:SetPosition(text_x, text_y)
-    w.text:SetHAlign(ANCHOR_LEFT)
-    w.text:SetVAlign(ANCHOR_TOP)
-
-    -- Make text clickable too
-    w.bg = w.image:AddChild(Image("images/ui.xml", "blank.tex"))
-    w.bg:ScaleToSize(textwidth + 20, text_height)
-    w.bg:SetPosition(text_x - 20, text_y + 10)
-
-    -- Button to make interaction obvious.
-    w.btn = w.text:AddChild(TEMPLATES.StandardButton(onclick, STRINGS.UI.ACHIEVEMENTS.SCREENTITLE, {160,40}))
-    w.btn:SetPosition(-80, -25)
-
-    -- Ensure button is highlighted if text/badge are hovered.
-    w.focus_forward = w.btn
+    local festival_title = STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(festival_key) .. (season > 1 and tostring(season) or "")]
+	local w = TEMPLATES.StandardButton(onclick, festival_title, {225,40})
 
     return w
 end
@@ -247,7 +220,7 @@ function PlayerSummaryScreen:_BuildItemsSummary(width)
 
 	
     new_root.UpdateItems = function()
-        local inventory = GetSortedSkinsList()
+        local inventory = GetInventorySkinsList()
 
         table.sort(inventory, 
             function(a, b) 
@@ -303,7 +276,7 @@ function PlayerSummaryScreen:_BuildMostCommonDeath(width)
     end)
 
     local deaths = Widget("deaths")
-    local top_cause = causes[1]
+    local top_cause = causes[1] or STRINGS.UI.PLAYERSUMMARYSCREEN.NO_DEATHS
     if top_cause then
         deaths.name = deaths:AddChild(Text(UIFONT, 30, top_cause))
         deaths.name:SetRegionSize(width,30)
@@ -322,66 +295,44 @@ function PlayerSummaryScreen:_BuildMostCommonFriend(width)
     local friends = Widget("friends")
     friends.name = friends:AddChild(Text(UIFONT, 30))
     friends.name:SetRegionSize(width,30)
-    friends.name:SetPosition(70, 10)
+    friends.name:SetPosition(60, 10)
 
-    friends.count = friends:AddChild(Text(CHATFONT, 30))
+    friends.count = friends:AddChild(Text(CHATFONT, 25))
     friends.count:SetRegionSize(width,30)
-    friends.count:SetPosition(70, -20)
+    friends.count:SetPosition(60, -20)
 
     return friends
 end
 
 function PlayerSummaryScreen:_RefreshMostCommonFriend()
-    local friends_info = {}
-    local blackbook = PlayerHistory:GetRows()
-    for i, data in ipairs(blackbook) do
-        if data and data.name and data.server_name and data.prefab and data.sort_date then
-            local info = friends_info[data.name]
-            if info ~= nil then
-                info.count = info.count + 1
-                info.date = math.max(info.date, data.sort_date)
-            else
-                friends_info[data.name] = { row = i, count = 1, date = data.sort_date }
-            end
-        end
-    end
+	local top_friend = nil
+	for k, v in pairs(PlayerHistory.seen_players) do
+		if top_friend == nil or (v.time_played_with or 0) > (top_friend.time_played_with or 0) then
+			top_friend = v
+		end
+	end
 
-    local friendslist = table.getkeys(friends_info)
-    table.sort(friendslist, function(a, b)
-        a, b = friends_info[a], friends_info[b]
-        if a.count > b.count then
-            return true
-        elseif a.count < b.count then
-            return false
-        elseif a.date > b.date then
-            return true
-        elseif a.date < b.date then
-            return false
-        end
-        return a.row < b.row
-    end)
-
-    local top_friend = friendslist[1]
     if top_friend ~= nil then
-        self.most_friend.name:SetString(top_friend)
-        self.most_friend.count:SetString(subfmt(STRINGS.UI.PLAYERSUMMARYSCREEN.ENCOUNTER_COUNT_FMT, { num_games = friends_info[top_friend].count }))
+        self.most_friend.name:SetString(top_friend.name or "")
+		self.most_friend.name:SetPosition(60, 10)
+        self.most_friend.count:SetString(subfmt(STRINGS.UI.PLAYERSUMMARYSCREEN.ENCOUNTER_COUNT_FMT, {time = str_play_time(top_friend.time_played_with)}))
     else
-        self.most_friend.name:SetString("")
+        self.most_friend.name:SetString(STRINGS.UI.PLAYERSUMMARYSCREEN.NO_FRIENDS)
+		self.most_friend.name:SetPosition(60, 0)
         self.most_friend.count:SetString("")
     end
 end
 
 function PlayerSummaryScreen:_RefreshPuppet()
     local herocharacter = self.user_profile:GetLastSelectedCharacter()
-    local base_skin = self.user_profile:GetBaseForCharacter(herocharacter)
-    local clothing = self.user_profile:GetSkinsForCharacter(herocharacter, base_skin)
+    local clothing = self.user_profile:GetSkinsForCharacter(herocharacter)
     local playerportrait = GetMostRecentlySelectedItem(self.user_profile, "playerportrait")
     -- Profileflair and rank are displayed on experiencebar when its visible.
     local profileflair = nil
     if not IsAnyFestivalEventActive() then
         profileflair = GetMostRecentlySelectedItem(self.user_profile, "profileflair")
     end
-    self.puppet:UpdatePlayerListing(nil, nil, herocharacter, base_skin, clothing, playerportrait, profileflair)
+    self.puppet:UpdatePlayerListing(nil, nil, herocharacter, clothing.base, clothing, playerportrait, profileflair)
 end
 
 function PlayerSummaryScreen:_BuildMenu()
@@ -409,6 +360,7 @@ function PlayerSummaryScreen:_BuildMenu()
 						   STRINGS.UI.MORGUESCREEN.HISTORY, 
 						   STRINGS.UI.PLAYERSUMMARYSCREEN.TRADING, 
 						   shopStr,
+						   STRINGS.UI.REDEEMDIALOG.MENU_BUTTON_TITLE,
 						 }
 	for i, item in pairs(menu_strings) do
 		if item:utf8len() > menu_button_character_limit then
@@ -423,6 +375,7 @@ function PlayerSummaryScreen:_BuildMenu()
     local mysterybox_button = TEMPLATES.MenuButton(STRINGS.UI.MAINSCREEN.MYSTERYBOX, function() self:OnMysteryBoxButton() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_MYSTERYBOX, self.tooltip, menu_button_style)
     local history_button    = TEMPLATES.MenuButton(STRINGS.UI.MORGUESCREEN.HISTORY, function() self:OnHistoryButton() end,    STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_HISTORY,  self.tooltip, menu_button_style)
     local trading_button    = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.TRADING, function() self:_FadeToScreen(TradeScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_TRADE, self.tooltip, menu_button_style)
+    local redeem_button     = nil
 
     local menu_items = {
         {widget = trading_button},
@@ -440,6 +393,10 @@ function PlayerSummaryScreen:_BuildMenu()
         skins_button,
     }
 
+	local redeem_button = TEMPLATES.MenuButton(STRINGS.UI.REDEEMDIALOG.MENU_BUTTON_TITLE, function() self:_FadeToScreen(RedeemDialog, {}) end, STRINGS.UI.REDEEMDIALOG.MENU_BUTTON_DESC, self.tooltip, menu_button_style)
+    table.insert(menu_items, 1, {widget = redeem_button})
+    table.insert(self.waiting_for_inventory, 1, redeem_button)
+
 	if self.can_shop then
 		local purchase_button   = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() self:_FadeToScreen(PurchasePackScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip, menu_button_style)	
         table.insert(menu_items, 1, {widget = purchase_button})
@@ -449,7 +406,7 @@ function PlayerSummaryScreen:_BuildMenu()
         table.insert(menu_items, 1, {widget = purchase_button})
         table.insert(self.waiting_for_inventory, 1, purchase_button)
     end
-
+	
     for i,w in ipairs(self.waiting_for_inventory) do
         w:Disable()
     end
@@ -549,6 +506,7 @@ function PlayerSummaryScreen:_ScheduleRefresh()
         self.refresh_task = nil
     end
     self.refresh_task = self.inst:DoTaskInTime(2, function()
+		self.refresh_task = nil
         self:_RefreshClientData()
     end)
 end

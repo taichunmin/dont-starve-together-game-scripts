@@ -14,10 +14,12 @@ local DISH_NAMES =
 local DISH_IDS = table.invert(DISH_NAMES)
 
 local function LoadKeys(inst, name)
-    LoadKlumpFile("images/quagmire_food_inv_images_"..name..".tex", inst.klumpkey:value())
-    LoadKlumpFile("images/quagmire_food_inv_images_hires_"..name..".tex", inst.klumpkey:value())
-    LoadKlumpFile("anim/dynamic/"..name..".dyn", inst.klumpkey:value())
-    LoadKlumpString("STRINGS.NAMES."..string.upper(name), inst.klumpkey:value())
+    if QUAGMIRE_USE_KLUMP then
+        LoadKlumpFile("images/quagmire_food_inv_images_"..name..".tex", inst.klumpkey:value())
+        LoadKlumpFile("images/quagmire_food_inv_images_hires_"..name..".tex", inst.klumpkey:value())
+        LoadKlumpFile("anim/dynamic/"..name..".dyn", inst.klumpkey:value())
+        LoadKlumpString("STRINGS.NAMES."..string.upper(name), inst.klumpkey:value())
+    end
 end
 
 local function OnKeyDirty(inst)
@@ -44,15 +46,20 @@ local function MakeFood(name)
         Asset("ATLAS", "images/quagmire_food_common_inv_images.xml"),
         Asset("IMAGE", "images/quagmire_food_common_inv_images.tex"),
 
-        Asset("PKGREF", "klump/images/quagmire_food_inv_images_"..name..".tex"),
-        Asset("PKGREF", "klump/images/quagmire_food_inv_images_hires_"..name..".tex"),
-        Asset("PKGREF", "klump/anim/dynamic/"..name..".dyn"),
         Asset("DYNAMIC_ATLAS", "images/quagmire_food_inv_images_"..name..".xml"),
         Asset("DYNAMIC_ATLAS", "images/quagmire_food_inv_images_hires_"..name..".xml"),
         Asset("DYNAMIC_ANIM", "anim/dynamic/"..name..".zip"),
-
-        Asset("PKGREF", "klump/strings/STRINGS.NAMES."..string.upper(name)),
     }
+    if QUAGMIRE_USE_KLUMP then
+        table.insert( assets, Asset("PKGREF", "klump/images/quagmire_food_inv_images_"..name..".tex") )
+        table.insert( assets, Asset("PKGREF", "klump/images/quagmire_food_inv_images_hires_"..name..".tex") )
+        table.insert( assets, Asset("PKGREF", "klump/anim/dynamic/"..name..".dyn") )
+        table.insert( assets, Asset("PKGREF", "klump/strings/STRINGS.NAMES."..string.upper(name)) )
+    else
+        table.insert( assets, Asset("PKGREF", "images/quagmire_food_inv_images_"..name..".tex") )
+        table.insert( assets, Asset("PKGREF", "images/quagmire_food_inv_images_hires_"..name..".tex") )
+        table.insert( assets, Asset("PKGREF", "anim/dynamic/"..name..".dyn") )
+    end
 
     local function fn()
         local inst = CreateEntity()

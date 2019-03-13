@@ -77,6 +77,33 @@ local _totaltimeinphase = net_float(inst.GUID, "clock._totaltimeinphase")
 local _remainingtimeinphase = net_float(inst.GUID, "clock._remainingtimeinphase")
 
 --------------------------------------------------------------------------
+--[[ Public member functions ]]
+--------------------------------------------------------------------------
+function self:GetTimeUntilPhase(phase)
+	local target_phase = nil
+    for i, p in pairs(PHASE_NAMES) do
+        if p == phase then
+			target_phase = i
+			break
+		end
+	end
+	local cur_phase = _phase:value()
+	if target_phase ~= nil and target_phase ~= cur_phase then
+		local time = _remainingtimeinphase:value()
+		
+		cur_phase = (cur_phase % #PHASE_NAMES) + 1
+		while (cur_phase ~= target_phase) do
+			time = time + (_segs[cur_phase]:value() * TUNING.SEG_TIME)
+			cur_phase = (cur_phase % #PHASE_NAMES) + 1
+		end
+		
+		return time
+	end
+
+	return 0
+end
+
+--------------------------------------------------------------------------
 --[[ Private member functions ]]
 --------------------------------------------------------------------------
 
@@ -408,8 +435,27 @@ end end
 --[[ Debug ]]
 --------------------------------------------------------------------------
 
+function self:Dump()
+       print("segs in day   ",  _segs[1]:value())
+       print("segs in dusk  ",  _segs[2]:value())
+       print("segs in night ",  _segs[3]:value())
+
+       print("cycles ",  _cycles:value())
+       print("phase ",  PHASE_NAMES[_phase:value()])
+       print("moonphase2 ",  MOON_PHASE_NAMES[_moonphase:value()])
+       print("moonwaxing ",  _mooniswaxing:value())
+	   
+       print("totaltimeinphase ",  _totaltimeinphase:value())
+       print("remainingtimeinphase ",  _remainingtimeinphase:value())
+       print("total segs phase ",  _totaltimeinphase:value()/TUNING.SEG_TIME)
+       print("remaining segs inphase ",  _remainingtimeinphase:value()/TUNING.SEG_TIME)
+
+	   local to_night =  _remainingtimeinphase:value() + (PHASE_NAMES[_phase:value()] == "day" and _segs[2]:value() or 0) * TUNING.SEG_TIME
+	   print("Time Until Night:", to_night, to_night/TUNING.SEG_TIME)
+end
+
 function self:GetDebugString()
-    return string.format("%d %s: %2.2f ", _cycles:value() + 1, PHASE_NAMES[_phase:value()], _remainingtimeinphase:value())
+    return string.format("%d %s: %2.2f : %2.2f ", _cycles:value() + 1, PHASE_NAMES[_phase:value()], _remainingtimeinphase:value(), _segs[_phase:value()]:value())
 end
 
 --------------------------------------------------------------------------

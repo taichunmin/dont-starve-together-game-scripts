@@ -22,6 +22,13 @@ return {
 			NOTALLOWED = "That can't go in there.",
 			INUSE = "Worry not, pal. I've the patience of a saint.",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "I don't like sharing.",
+            NOTALLOWED = "That's the wrong part.",
+            EMPTY = "Well I need something to build with.",
+            MISMATCH = "It needs completely different plans.",
+        },
 		WRITE =
         {
             GENERIC = "I'm unable to do that right now.",
@@ -91,6 +98,10 @@ return {
             NOTSCULPTABLE = "That is certainly not for sculpting with.",
             CANTSHADOWREVIVE = "It refuses to bend to my will.",
             WRONGSHADOWFORM = "The bones were too amateurishly assembled.",
+            NOMOON = "It's not going to work in here.",
+            PIGKINGGAME_MESSY = "Ugh. I'm not doing anything in that mess.",
+			PIGKINGGAME_DANGER = "I have bigger things to worry about right now.",
+			PIGKINGGAME_TOOLATE = "It's much too late for that.",
         },
         GIVETOPLAYER = 
         {
@@ -131,6 +142,7 @@ return {
 	ANNOUNCE_DIG_DISEASE_WARNING = "That takes care of that.",
 	ANNOUNCE_PICK_DISEASE_WARNING = "How putrid!",
 	ANNOUNCE_MOUNT_LOWHEALTH = "Say, pal, you don't look so good.",
+	ANNOUNCE_DESPAWN = "Say, pal, I don't look so good...",
     ANNOUNCE_BECOMEGHOST = "oOooooOO!!",
 	ANNOUNCE_GHOSTDRAIN = "They're whispering through the core of my mind...!",
 	ANNOUNCE_PETRIFED_TREES = "Oh, this should be good.",
@@ -249,6 +261,10 @@ return {
 	ANNOUNCE_TOADESCAPING = "Now is the time to strike!",
 	ANNOUNCE_TOADESCAPED = "It fled back into the earth.",
 
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "Quite an expert illusion.",
+    ANNOUNCE_BRAVERY_POTION = "I was never really scared of those trees anyhow.",
+
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Allow me to assist.",
     ANNOUNCE_REVIVED_OTHER_CORPSE = "No need to thank me.",
@@ -259,6 +275,9 @@ return {
     QUAGMIRE_ANNOUNCE_MEALBURNT = "Curses! Too slow.",
     QUAGMIRE_ANNOUNCE_LOSE = "This may be the end.",
     QUAGMIRE_ANNOUNCE_WIN = "The Gateway is ready!",
+
+    --YOTP---
+    ANNOUNCE_LEAVE_MINIGAME = "I don't need this anymore.",
 
 	BATTLECRY =
 	{
@@ -1904,6 +1923,21 @@ return {
         HALLOWEENCANDY_14 = "Only ruffians enjoy torturing themselves like this.", --Hot Lava pepper candy
         CANDYBAG = "That's our sugar-sack.",
 
+        HALLOWEEN_ORNAMENT_1 = "Oh joy. Is there really need for decoration?",
+		HALLOWEEN_ORNAMENT_2 = "Such a burden to carry it. If only there were a place to leave it.",
+		HALLOWEEN_ORNAMENT_3 = "I like the real ones better.",
+		HALLOWEEN_ORNAMENT_4 = "Shouldn't it be hanging from somewhere.",
+		HALLOWEEN_ORNAMENT_5 = "Ugh. These guys again.",
+		HALLOWEEN_ORNAMENT_6 = "Why do I hear \"Nevermore\"?",
+
+		HALLOWEENPOTION_DRINKS_WEAK = "Could be a little stronger.",
+		HALLOWEENPOTION_DRINKS_POTENT = "Ah. This'll do the trick.",
+		HALLOWEENPOTION_FIRE_FX = "Might as well throw it in the fire.",
+		HALLOWEENPOTION_BRAVERY = "Takes away the horrors. But who would want that?",
+		MADSCIENCE_LAB = "How maddening.",
+		LIVINGTREE_ROOT = "Ah. A chance to grow something horrible.", 
+		LIVINGTREE_SAPLING = "Just days away from dreadful.",
+
         DRAGONHEADHAT = "Quite formidable looking.",
         DRAGONBODYHAT = "I'm no middleman.",
         DRAGONTAILHAT = "The back end of a terrible beast.",
@@ -1937,6 +1971,22 @@ return {
         HOUNDWHISTLE = "Howl I ever find a use for this?",
         CHESSPIECE_CLAYHOUND = "It's quite fetching.",
         CHESSPIECE_CLAYWARG = "What a gruesome maw.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "How quaint.",
+            EMPTY = "It needs some kind of meat.",
+            BURNT = "Not useful like this.",
+		},
+		PIG_TOKEN = "Those pigs are getting more and more clever.",
+		YOTP_FOOD1 = "Ah. I do enjoy a nice meal.",
+		YOTP_FOOD2 = "Ugh. More fit for a creature than for me.",
+		YOTP_FOOD3 = "Nothing fancy, but it will do.",
+
+		PIGELITE1 = "He's a slippery fellow.", --BLUE
+		PIGELITE2 = "A fiery one.", --RED
+		PIGELITE3 = "Filthy.", --WHITE
+		PIGELITE4 = "Rotten to the core.", --GREEN
 
 		TRUNKVEST_SUMMER = "It's more of a fall vest.",
 		TRUNKVEST_WINTER = "It's so hard to look fashionable in the winter.",
@@ -2023,6 +2073,8 @@ return {
         WINTER_ORNAMENT = "Gaudy, like the rest of this shindig.",
         WINTER_ORNAMENTLIGHT = "How frivolous.",
         WINTER_ORNAMENTBOSS = "What a thing to risk one's life for.",
+        WINTER_ORNAMENTFORGE = "A volatile decoration.",
+		WINTER_ORNAMENTGORGE = "There's something familiar about this...",
 
         WINTER_FOOD1 = "Stop looking at me, cookie fiend.", --gingerbread cookie
         WINTER_FOOD2 = "We're celebrating freezing to death, I see.", --sugar cookie
@@ -2073,7 +2125,7 @@ return {
         ROCK_MOON = "\"Moon\" rock.",
         MOONROCKNUGGET = "\"Moon\" rock.",
         MOONROCKCRATER = "This will make a decent magical vessel.",
-
+        
         REDMOONEYE = "Its aura can be felt from anywhere. Quite useful.",
         PURPLEMOONEYE = "A decent enough use of the gem's power, I suppose.",
         GREENMOONEYE = "It's useful for keeping in contact with my... acquaintances.",
@@ -2089,6 +2141,8 @@ return {
         TRAILS = "What a brute!",
         TURTILLUS = "He's rather thick-headed.",
         SNAPPER = "I don't fear you, scoundrel.",
+        RHINODRILL = "Brutish grotesquerie.",
+		BEETLETAUR = "Back to the dungeons with you!",
         
         LAVAARENA_PORTAL = 
         {
@@ -2132,7 +2186,17 @@ return {
         LAVAARENA_HEALINGGARLANDHAT = "Self sufficiency in wreath form.",
         LAVAARENA_CROWNDAMAGERHAT = "You'd need a thick neck to wear such a thing.",
 
+        LAVAARENA_ARMOR_HP = "A little extra armor never hurt.",
+
+		LAVAARENA_FIREBOMB = "Not really my style.",
+		LAVAARENA_HEAVYBLADE = "Too brutish for my tastes.",
+
         MULTIPLAYER_PORTAL = "Always did have a flair for the dramatic...",
+        MULTIPLAYER_PORTAL_MOONROCK = "A bit ominous looking.",
+        MOONROCKIDOL = "They always need an offering.",
+        CONSTRUCTION_PLANS = "I suppose I should build this.",
+        MOONROCKSEED = "Oooh, some new knowledge.",
+
         --...Make your jokes...I'll be seeing you soon...
 
         --Quagmire
@@ -2347,6 +2411,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "A little civility.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "I could have thought of that.",
+        	OFF = "It's useless out here without power.",
+        	BURNING = "I'm going to pretend I don't see it.",
+        	BURNT = "Oh. What a pity.",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "Well sure, if you want to take the easy way out.",
+        	OFF = "It's useless out here without power.",
+        	BURNING = "I'm going to pretend I don't see it.",
+        	BURNT = "Oh. What a pity.",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "Where does she find the time to build all this.",
+        	LOWPOWER = "I think it's losing power.",
+            OFF = "See? It wasn't so great after all.",
+            BURNING = "I'm going to pretend I don't see it.",
+            BURNT = "Oh. What a pity.",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "At least she has the sense to use gems.",
+        	LOWPOWER = "I think it's losing power.",
+            OFF = "Magic isn't so easy, is it?",
+            BURNING = "I'm going to pretend I don't see it.",
+            BURNT = "Oh. What a pity.",
+        },
     },
     DESCRIBE_GENERIC = "You tell me.",
     DESCRIBE_TOODARK = "I can't see in the dark!",

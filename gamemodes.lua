@@ -150,6 +150,7 @@ GAME_MODES_ORDER =
     wilderness = 2,
     endless = 3,
     lavaarena = 4,
+    quagmire = 5,
 }
 
 local function mode_cmp(a, b)
@@ -224,6 +225,7 @@ function GetGameModeTag(game_mode)
         or nil
 end
 
+-- Used by C side. Do NOT rename without editing simulation.cpp
 function GetGameModeString(game_mode)
     if game_mode == "" then
         return STRINGS.UI.GAMEMODES.UNKNOWN
@@ -302,8 +304,6 @@ function GetMaxItemSlots(game_mode)
 end
 
 function GetGameModeMaxPlayers(game_mode)
-	print("GetGameModeMaxPlayers", game_mode, GAME_MODES[game_mode].max_players)
-
     local data = GAME_MODES[game_mode]
     return data ~= nil and data.max_players or nil
 end

@@ -83,8 +83,8 @@ local function turnon(inst)
         end
 
         inst.components.machine.ison = true
-
-        inst.components.inventoryitem:ChangeImageName("lantern_lit")
+        inst.components.inventoryitem:ChangeImageName((inst:GetSkinName() or "lantern").."_lit")
+        inst:PushEvent("lantern_on")
     end
 end
 
@@ -105,8 +105,8 @@ local function turnoff(inst)
     end
 
     inst.components.machine.ison = false
-
-    inst.components.inventoryitem:ChangeImageName("lantern")
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName()) --nil if no skin
+    inst:PushEvent("lantern_off")
 end
 
 local function OnRemove(inst)
@@ -124,10 +124,18 @@ local function ondropped(inst)
 end
 
 local function onequip(inst, owner)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_lantern", inst.GUID, "swap_lantern")
+        owner.AnimState:OverrideItemSkinSymbol("lantern_overlay", skin_build, "lantern_overlay", inst.GUID, "swap_lantern")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_lantern", "swap_lantern")
+        owner.AnimState:OverrideSymbol("lantern_overlay", "swap_lantern", "lantern_overlay")
+    end
+
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
-    owner.AnimState:OverrideSymbol("swap_object", "swap_lantern", "swap_lantern")
-    owner.AnimState:OverrideSymbol("lantern_overlay", "swap_lantern", "lantern_overlay")
 
     if inst.components.fueled:IsEmpty() then
         owner.AnimState:Hide("LANTERN_OVERLAY")
@@ -138,6 +146,11 @@ local function onequip(inst, owner)
 end
 
 local function onunequip(inst, owner)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
+
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
     owner.AnimState:ClearOverrideSymbol("lantern_overlay")

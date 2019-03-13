@@ -24,6 +24,10 @@ function IsSteam()
 	return PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM"
 end
 
+function IsLinux()
+	return PLATFORM == "LINUX_STEAM"
+end
+
 function IsRail()
 	return PLATFORM == "WIN32_RAIL"
 end
@@ -142,6 +146,7 @@ require("tuning")
 
 Profile = require("playerprofile")() --profile needs to be loaded before language
 Profile:Load( nil, true ) --true to indicate minimal load required for language.lua to read the profile.
+LOC = require("languages/loc")
 require("languages/language")
 require("strings")
 
@@ -270,6 +275,8 @@ global("EventAchievements")
 EventAchievements = nil
 global("TheRecipeBook")
 TheRecipeBook = nil
+global("Lavaarena_CommunityProgression")
+Lavaarena_CommunityProgression = nil
 
 require("globalvariableoverrides")
 
@@ -308,8 +315,11 @@ local function ModSafeStartup()
     EventAchievements = require("eventachievements")()
     EventAchievements:LoadAchievementsForEvent(require("lavaarena_achievements"))
     EventAchievements:LoadAchievementsForEvent(require("quagmire_achievements"))
+    EventAchievements:LoadAchievementsForEvent(require("lavaarena_achievement_quest_defs"))
 	TheRecipeBook = require("quagmire_recipebook")()
 	TheRecipeBook:Load()
+	Lavaarena_CommunityProgression = require("lavaarena_communityprogression")()
+	Lavaarena_CommunityProgression:Load()
 
     local FollowCamera = require("cameras/followcamera")
     TheCamera = FollowCamera()
@@ -349,6 +359,11 @@ local function ModSafeStartup()
 end
 
 SetInstanceParameters(json_settings)
+
+if Settings.loaded_mods ~= nil then
+    ModManager:UnloadPrefabsFromData(Settings.loaded_mods)
+    Settings.loaded_mods = nil
+end
 
 if not MODS_ENABLED then
 	-- No mods in nacl, and the below functions are async in nacl

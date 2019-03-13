@@ -135,11 +135,12 @@ local complexity_descriptions = {
 
 local specialevent_descriptions = {
 	{ text = STRINGS.UI.SANDBOXMENU.SLIDENEVER, data = "none" },
-	{ text = STRINGS.UI.SANDBOXMENU.EVENT_DEFAULT, data = "default" },
-	{ text = STRINGS.UI.SANDBOXMENU.EVENT_HALLOWEDNIGHTS_2016, data = SPECIAL_EVENTS.HALLOWED_NIGHTS },
-	{ text = STRINGS.UI.SANDBOXMENU.EVENT_WINTERSFEAST_2016, data = SPECIAL_EVENTS.WINTERS_FEAST },
-	{ text = STRINGS.UI.SANDBOXMENU.EVENT_YEAR_OF_THE_GOBBLER_2017, data = SPECIAL_EVENTS.YOTG },
-    { text = STRINGS.UI.SANDBOXMENU.EVENT_YEAR_OF_THE_VARG_2018, data = SPECIAL_EVENTS.YOTV },
+	{ text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.DEFAULT, data = "default" },
+	{ text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.HALLOWED_NIGHTS, data = SPECIAL_EVENTS.HALLOWED_NIGHTS },
+	{ text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.WINTERS_FEAST, data = SPECIAL_EVENTS.WINTERS_FEAST },
+	{ text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.YOTG, data = SPECIAL_EVENTS.YOTG },
+    { text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.YOTV, data = SPECIAL_EVENTS.YOTV },
+    { text = STRINGS.UI.SANDBOXMENU.SPECIAL_EVENTS.YOTP, data = SPECIAL_EVENTS.YOTP },
 }
 
 -- TODO: Read this from the tasks.lua
@@ -149,9 +150,9 @@ local yesno_descriptions = {
 }
 
 local GROUP = {
-	["monsters"] = 	{	-- These guys come after you	
+	["monsters"] = 	{	-- These guys come after you
 						order = 5,
-						text = STRINGS.UI.SANDBOXMENU.CHOICEMONSTERS, 
+						text = STRINGS.UI.SANDBOXMENU.CHOICEMONSTERS,
 						desc = frequency_descriptions,
 						enable = false,
 						items={

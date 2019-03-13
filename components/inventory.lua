@@ -323,7 +323,7 @@ function Inventory:CombineActiveStackWithSlot(slot, stack_mod)
     end
 
     local handitem = self.activeitem
-    if handitem == nil or handitem.prefab ~= invitem.prefab or handitem.components.stackable == nil then
+    if handitem == nil or handitem.prefab ~= invitem.prefab or handitem.skinname ~= invitem.skinname or handitem.components.stackable == nil then
         return
     end
 
@@ -508,24 +508,26 @@ end
 --Returns the slot, and the container where the slot is (self.itemslots, self.equipslots or self:GetOverflowContainer())
 function Inventory:GetNextAvailableSlot(item)
     local prefabname = nil
+    local prefabskinname = nil
     if item.components.stackable ~= nil then
         prefabname = item.prefab
+        prefabskinname = item.skinname
 
         --check for stacks that aren't full
         for k, v in pairs(self.equipslots) do
-            if v.prefab == prefabname and v.components.equippable.equipstack and v.components.stackable and not v.components.stackable:IsFull() then
+            if v.prefab == prefabname and v.skinname == prefabskinname and v.components.equippable.equipstack and v.components.stackable and not v.components.stackable:IsFull() then
                 return k, self.equipslots
             end
         end
         for k, v in pairs(self.itemslots) do
-            if v.prefab == prefabname and v.components.stackable and not v.components.stackable:IsFull() then
+            if v.prefab == prefabname and v.skinname == prefabskinname and v.components.stackable and not v.components.stackable:IsFull() then
                 return k, self.itemslots
             end
         end
         local overflow = self:GetOverflowContainer()
         if overflow ~= nil then
             for k, v in pairs(overflow.slots) do
-                if v.prefab == prefabname and v.components.stackable and not v.components.stackable:IsFull() then
+                if v.prefab == prefabname and v.skinname == prefabskinname and v.components.stackable and not v.components.stackable:IsFull() then
                     return k, overflow
                 end
             end
@@ -561,7 +563,7 @@ function Inventory:CanAcceptCount(item, maxcount)
     for k = 1, self.maxslots do
         local v = self.itemslots[k]
         if v ~= nil then
-            if v.prefab == item.prefab and v.components.stackable ~= nil then
+            if v.prefab == item.prefab and v.skinname == item.skinname and v.components.stackable ~= nil then
                 acceptcount = acceptcount + v.components.stackable:RoomLeft()
                 if acceptcount >= stacksize then
                     return stacksize
@@ -584,7 +586,7 @@ function Inventory:CanAcceptCount(item, maxcount)
         for k = 1, overflow.numslots do
             local v = overflow.slots[k]
             if v ~= nil then
-                if v.prefab == item.prefab and v.components.stackable ~= nil then
+                if v.prefab == item.prefab and v.skinname == item.skinname and v.components.stackable ~= nil then
                     acceptcount = acceptcount + v.components.stackable:RoomLeft()
                     if acceptcount >= stacksize then
                         return stacksize
@@ -605,7 +607,7 @@ function Inventory:CanAcceptCount(item, maxcount)
     if item.components.stackable ~= nil then
         --check for equip stacks that aren't full
         for k, v in pairs(self.equipslots) do
-            if v.prefab == item.prefab and v.components.equippable.equipstack and v.components.stackable ~= nil then
+            if v.prefab == item.prefab and v.skinname == item.skinname and v.components.equippable.equipstack and v.components.stackable ~= nil then
                 acceptcount = acceptcount + v.components.stackable:RoomLeft()
                 if acceptcount >= stacksize then
                     return stacksize
@@ -678,7 +680,7 @@ function Inventory:GiveItem(inst, slot, src_pos)
                 if inst.prevcontainer:GiveItem(inst, inst.prevslot) then
                     return true
                 end
-            elseif item.prefab == inst.prefab and
+            elseif item.prefab == inst.prefab and item.skinname == inst.skinname and
                 item.components.stackable ~= nil and
                 inst.prevcontainer:AcceptsStacks() and
                 inst.prevcontainer:CanTakeItemInSlot(inst, inst.prevslot) and
@@ -693,7 +695,7 @@ function Inventory:GiveItem(inst, slot, src_pos)
 
     if slot then
         local olditem = self:GetItemInSlot(slot)
-        can_use_suggested_slot = slot ~= nil and slot <= self.maxslots and ( olditem == nil or (olditem and olditem.components.stackable and olditem.prefab == inst.prefab)) and self:CanTakeItemInSlot(inst,slot)
+        can_use_suggested_slot = slot ~= nil and slot <= self.maxslots and ( olditem == nil or (olditem and olditem.components.stackable and olditem.prefab == inst.prefab and olditem.skinname == inst.skinname)) and self:CanTakeItemInSlot(inst,slot)
     end
 
     local overflow = self:GetOverflowContainer()
@@ -958,7 +960,7 @@ function Inventory:GetOverflowContainer()
     return item ~= nil and item.components.container or nil
 end
 
-function Inventory:Has(item, amount)
+function Inventory:Has(item, amount) --Note(Peter): We don't care about v.skinname for inventory Has requests.
     local num_found = 0
     for k, v in pairs(self.itemslots) do
         if v and v.prefab == item then
@@ -987,7 +989,7 @@ function Inventory:Has(item, amount)
     return num_found >= amount, num_found
 end
 
-function Inventory:GetItemByName(item, amount)
+function Inventory:GetItemByName(item, amount) --Note(Peter): We don't care about v.skinname for inventory GetItemByName requests.
     local total_num_found = 0
     local items = {}
 
@@ -1050,7 +1052,7 @@ local function tryconsume(self, v, amount)
     return 0
 end
 
-function Inventory:ConsumeByName(item, amount)
+function Inventory:ConsumeByName(item, amount) --Note(Peter): We don't care about v.skinname for inventory ConsumeByName requests.
     if amount <= 0 then
         return
     end
@@ -1358,7 +1360,7 @@ function Inventory:AddOneOfActiveItemToSlot(slot)
     if active_item ~= nil and
         item ~= nil and
         self:CanTakeItemInSlot(active_item, slot) and
-        item.prefab == active_item.prefab and
+        item.prefab == active_item.prefab and item.skinname == active_item.skinname and
         item.components.stackable ~= nil and
         self:AcceptsStacks() and
         active_item.components.stackable ~= nil and
@@ -1375,7 +1377,7 @@ function Inventory:AddAllOfActiveItemToSlot(slot)
     if active_item ~= nil and
         item ~= nil and
         self:CanTakeItemInSlot(active_item, slot) and
-        item.prefab == active_item.prefab and
+        item.prefab == active_item.prefab and item.skinname == active_item.skinname and
         item.components.stackable ~= nil and
         self:AcceptsStacks() then
 
@@ -1390,7 +1392,7 @@ function Inventory:SwapActiveItemWithSlot(slot)
     if active_item ~= nil and
         item ~= nil and
         self:CanTakeItemInSlot(active_item, slot) and
-        not (item.prefab == active_item.prefab and
+        not (item.prefab == active_item.prefab and item.skinname == active_item.skinname and
             item.components.stackable ~= nil and
             self:AcceptsStacks()) and
         not (active_item.components.stackable ~= nil and
@@ -1604,17 +1606,22 @@ function Inventory:MoveItemFromAllOfSlot(slot, container)
     local item = self:GetItemInSlot(slot)
     if item ~= nil and container ~= nil then
         container = container.components.container
-        if container ~= nil and
-            container:IsOpenedBy(self.inst) and
-            container:CanTakeItemInSlot(item) then
+        if container ~= nil and container:IsOpenedBy(self.inst) then
+            local targetslot =
+                self.inst.components.constructionbuilderuidata ~= nil and
+                self.inst.components.constructionbuilderuidata:GetContainer() == container.inst and
+                self.inst.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
+                nil
 
-            item = self:RemoveItemBySlot(slot)
-            item.prevcontainer = nil
-            item.prevslot = nil
-            if not container:GiveItem(item) then
-                self.ignoresound = true
-                self:GiveItem(item, slot)
-                self.ignoresound = false
+            if container:CanTakeItemInSlot(item, targetslot) then
+                item = self:RemoveItemBySlot(slot)
+                item.prevcontainer = nil
+                item.prevslot = nil
+                if not container:GiveItem(item, targetslot) then
+                    self.ignoresound = true
+                    self:GiveItem(item, slot)
+                    self.ignoresound = false
+                end
             end
         end
     end
@@ -1626,17 +1633,24 @@ function Inventory:MoveItemFromHalfOfSlot(slot, container)
         container = container.components.container
         if container ~= nil and
             container:IsOpenedBy(self.inst) and
-            container:CanTakeItemInSlot(item) and
             item.components.stackable ~= nil and
             item.components.stackable:IsStack() then
 
-            local halfstack = item.components.stackable:Get(math.floor(item.components.stackable:StackSize() / 2))
-            halfstack.prevcontainer = nil
-            halfstack.prevslot = nil
-            if not container:GiveItem(halfstack) then
-                self.ignoresound = true
-                self:GiveItem(halfstack, slot)
-                self.ignoresound = false
+            local targetslot =
+                self.inst.components.constructionbuilderuidata ~= nil and
+                self.inst.components.constructionbuilderuidata:GetContainer() == container.inst and
+                self.inst.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
+                nil
+
+            if container:CanTakeItemInSlot(item, targetslot) then
+                local halfstack = item.components.stackable:Get(math.floor(item.components.stackable:StackSize() / 2))
+                halfstack.prevcontainer = nil
+                halfstack.prevslot = nil
+                if not container:GiveItem(halfstack, targetslot) then
+                    self.ignoresound = true
+                    self:GiveItem(halfstack, slot)
+                    self.ignoresound = false
+                end
             end
         end
     end

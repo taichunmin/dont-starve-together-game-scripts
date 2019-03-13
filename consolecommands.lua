@@ -301,7 +301,7 @@ function c_sethealth(n)
     local player = ConsoleCommandPlayer()
     if player ~= nil and player.components.health ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_sethealth", true)
-        player.components.health:SetPercent(n)
+        player.components.health:SetPercent(math.min(n, 1))
     end
 end
 
@@ -317,7 +317,7 @@ function c_setsanity(n)
     local player = ConsoleCommandPlayer()
     if player ~= nil and player.components.sanity ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_setsanity", true)
-        player.components.sanity:SetPercent(n)
+        player.components.sanity:SetPercent(math.min(n, 1))
     end
 end
 
@@ -325,7 +325,7 @@ function c_sethunger(n)
     local player = ConsoleCommandPlayer()
     if player ~= nil and player.components.hunger ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_sethunger", true)
-        player.components.hunger:SetPercent(n)
+        player.components.hunger:SetPercent(math.min(n, 1))
     end
 end
 
@@ -333,7 +333,7 @@ function c_setbeaverness(n)
     local player = ConsoleCommandPlayer()
     if player ~= nil and player.components.beaverness ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_setbeaverness", true)
-        player.components.beaverness:SetPercent(n)
+        player.components.beaverness:SetPercent(math.min(n, 1))
     end
 end
 
@@ -341,7 +341,7 @@ function c_setmoisture(n)
     local player = ConsoleCommandPlayer()
     if player ~= nil and player.components.moisture ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_setmoisture", true)
-        player.components.moisture:SetPercent(n)
+        player.components.moisture:SetPercent(math.min(n, 1))
     end
 end
 
@@ -778,7 +778,9 @@ function c_selectnear(prefab, rad)
     local closest = nil
     local closeness = nil
     for k,v in pairs(ents) do
+			print("found", v.prefab)
         if v.prefab == prefab then
+			print("found", v.prefab)
             if closest == nil or player:GetDistanceSqToInst(v) < closeness then
                 closest = v
                 closeness = player:GetDistanceSqToInst(v)

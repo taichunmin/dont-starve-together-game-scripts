@@ -10,13 +10,17 @@ local prefabs =
 
 local function OnInit(inst)
     inst.inittask = nil
-    inst.SoundEmitter:PlaySoundWithParams("dontstarve/creatures/together/stalker/fossil_spike", { level = .5 }, .75)
     inst.SoundEmitter:PlaySoundWithParams("dontstarve/creatures/together/antlion/sfx/ground_break", { size = .4 })
 end
 
-local function SetTarget(inst, target)
+local function SetTarget(inst, target, distance)
     local x, y, z = target.Transform:GetWorldPosition()
     local rot = target.Transform:GetRotation()
+    if distance ~= nil then
+        local theta = rot * DEGREES
+        x = x + distance * math.cos(theta)
+        z = z - distance * math.sin(theta)
+    end
 
     inst.Transform:SetPosition(x, y, z)
     inst.Transform:SetRotation(rot)
@@ -97,9 +101,6 @@ local function debrisfn()
     inst:ListenForEvent("animover", inst.Remove)
 
     inst.persists = false
-
-    inst.SetTarget = SetTarget
-    inst.inittask = inst:DoTaskInTime(0, OnInit)
 
     return inst
 end

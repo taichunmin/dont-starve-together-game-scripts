@@ -77,7 +77,7 @@ function LobbyChatQueue:GetDisplayName(name, prefab)
     return name ~= "" and name or STRINGS.UI.SERVERADMINSCREEN.UNKNOWN_USER_NAME
 end
 
-function LobbyChatQueue:OnMessageReceived(userid, name, prefab, message, colour)
+function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
     self.list_items[#self.list_items + 1] =
     {
         message = message,

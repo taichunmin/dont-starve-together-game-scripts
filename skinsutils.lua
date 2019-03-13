@@ -7,23 +7,34 @@ SKIN_RARITY_COLORS =
 	Spiffy			= { 0.408, 0.271, 0.486, 1 }, -- 68457C - a rare item (eg Trenchcoat)
 	Distinguished	= { 0.729, 0.455, 0.647, 1 }, -- BA74A5 - a very rare item (eg Tuxedo)
 	Elegant			= { 0.741, 0.275, 0.275, 1 }, -- BD4646 - an extremely rare item (eg rabbit pack, GoH base skins)
+
+	HeirloomElegant	= { 0.933, 0.365, 0.251, 1 }, -- EE5D40
+	Character		= { 0.718, 0.824, 0.851, 1 }, -- B7D2D9 - a character
 	Timeless		= { 0.424, 0.757, 0.482, 1 }, -- 6CC17B - not used
 	Loyal			= { 0.635, 0.769, 0.435, 1 }, -- A2C46F - a one-time giveaway (eg mini monument)
 	ProofOfPurchase = { 0.000, 0.478, 0.302, 1 }, -- 007A4D
 	Reward			= { 0.910, 0.592, 0.118, 1 }, -- E8971E - a set bonus reward
 	Event			= { 0.957, 0.769, 0.188, 1 }, -- F4C430 - an event item
-	
+
 	Lustrous		= { 1.000, 1.000, 0.298, 1 }, -- FFFF4C - rarity modifier
 	-- #40E0D0 reserved skin colour
 }
+--Share Heirloom colour
+SKIN_RARITY_COLORS.HeirloomClassy  = SKIN_RARITY_COLORS.HeirloomElegant
+SKIN_RARITY_COLORS.HeirloomSpiffy  = SKIN_RARITY_COLORS.HeirloomElegant
+SKIN_RARITY_COLORS.HeirloomDistinguished  = SKIN_RARITY_COLORS.HeirloomElegant
+
 DEFAULT_SKIN_COLOR = SKIN_RARITY_COLORS["Common"]
 
-EVENT_ICONS = 
+local SKIN_AFFINITY_INFO = require("skin_affinity_info")
+
+EVENT_ICONS =
 {
-	event_forge = "LAVA",
-	event_ice = "ICE",
-	event_yotv = "VARG",
-	event_quagmire = "VICTORIAN",
+	event_forge = {"LAVA"},
+	event_ice = {"ICE", "WINTER"},
+	event_yotv = {"VARG"},
+	event_quagmire = {"VICTORIAN"},
+	event_hallowed = {"HALLOWED"}
 }
 
 -- Also update GetBuildForItem!
@@ -42,20 +53,6 @@ local function GetAllItemCategories()
 	return { Prefabs, unpack(GetSpecialItemCategories()) }
 end
 
---[[
-Common #B7D2D9
-Classy #415078
-Spiffy #68457C
-Distinguished #BA74A5
-Elegant #BD4646
-Timeless #6CC17B
-Loyal #A2C46F
-ProofOfPurchase #007A4D
-Reward #E8971E
-Event #F4C430
-#40E0D0 reserved skin colour
-]]
-
 -- for use in sort functions
 -- return true if rarity1 should go first in the list
 local rarity_order =
@@ -65,22 +62,29 @@ local rarity_order =
 	Loyal = 3,
 	Reward = 4,
 	Event = 5,
-	Elegant = 6,
-	Distinguished = 7,
-	Spiffy = 8,
-	Classy = 9,
-	Common = 10
+	Character = 6,
+	HeirloomElegant = 7,
+	HeirloomDistinguished = 8,
+	HeirloomSpiffy = 9,
+	HeirloomClassy = 10,
+	Elegant = 11,
+	Distinguished = 12,
+	Spiffy = 13,
+	Classy = 14,
+	Common = 15
 }
 
-function CompareReleaseGroup(a, b)
-	return (a.release_group or 999) > (b.release_group or 999)
+function CompareReleaseGroup(item_key_a, item_key_b)
+    local release_group_a = GetReleaseGroup(item_key_a)
+    local release_group_b = GetReleaseGroup(item_key_b)
+	return release_group_a > release_group_b
 end
 
-function CompareRarities(a, b)
-	local rarity1 = type(a) == "string" and a or a.rarity
-	local rarity2 = type(b) == "string" and b or b.rarity
+function CompareRarities(item_key_a, item_key_b)
+	local rarity1 = GetRarityForItem(item_key_a)
+	local rarity2 = GetRarityForItem(item_key_b)
 
-	return rarity_order[rarity1 or "Common"] < rarity_order[rarity2 or "Common"] --look into removing this by always populating the rarity field for item data
+	return rarity_order[rarity1] < rarity_order[rarity2]
 end
 
 function GetNextRarity(rarity)
@@ -89,39 +93,163 @@ function GetNextRarity(rarity)
 					  Classy = "Spiffy",
 					  Spiffy = "Distinguished",
 					  Distinguished = "Elegant",
-					  Elegant = "Event",
-					  Event = "Reward",
-					  Reward = "Loyal",
-					  Loyal = "Timeless",
-					  Timeless = "ProofOfPurchase"
 					 }
 
-	return rarities[rarity] or nil
+	return rarities[rarity] or ""
 end
 
-function GetBuildForItem(name)
-	for i,item_category in ipairs(GetSpecialItemCategories()) do
-		if item_category[name] then
-			return name
-		end
+function GetFrameSymbolForRarity( rarity )
+	if rarity == "HeirloomElegant" or rarity == "HeirloomDistinguished" or rarity == "HeirloomSpiffy" or rarity == "HeirloomClassy" then
+		return "heirloom"
 	end
+	return string.lower( rarity )
+end
 
-	if Prefabs[name] ~= nil then
-		return Prefabs[name].build_name
+
+function GetBuildForItem(name)
+	local skin_data = GetSkinData(name)
+	if skin_data.build_name_override ~= nil then
+		return skin_data.build_name_override
 	end
 
 	return name
 end
 
--- Get the bigportrait UIAnim assets loaded by the prefab. Many prefabs don't
--- have this info (only necessary to animate a bigportrait like when you get
--- one in a mysterybox).
-function GetBigPortraitForItem(item_key)
+-- Get the bigportrait UIAnim assets loaded by the prefab. Many prefabs don't have this info (only necessary to animate a bigportrait like when you get one in a mysterybox).
+function GetBigPortraitAnimForItem(item_key)
 	if Prefabs[item_key] ~= nil then
 		return Prefabs[item_key].bigportrait
 	end
 
 	return nil
+end
+
+function GetPortraitNameForItem(item_key)
+	if IsDefaultCharacterSkin(item_key) then
+		return item_key
+	else
+		return GetBuildForItem(item_key)
+	end
+end
+
+
+function GetPackCollection(item_key)
+	local output_items = GetPurchasePackOutputItems(item_key)
+	local collection = nil
+    for _,item in pairs(output_items) do
+        local data = GetSkinData(item)
+        for _,skin_tag in pairs(data.skin_tags) do
+            if STRINGS.SKIN_TAG_CATEGORIES.COLLECTION[skin_tag] ~= nil then
+				if collection == nil then
+					collection = STRINGS.SKIN_TAG_CATEGORIES.COLLECTION[skin_tag]
+				end
+				if collection ~= STRINGS.SKIN_TAG_CATEGORIES.COLLECTION[skin_tag] then
+					return nil --if there's more than one collection, return none
+				end
+            end
+        end
+	end
+	return collection
+end
+
+function GetPackTotalItems(item_key)
+    local output_items = GetPurchasePackOutputItems(item_key)
+    return #output_items
+end
+
+function _GetSubPacks(item_key)
+    local sub_packs = {}
+	local output_items = GetPurchasePackOutputItems(item_key)
+	local pack_count = #output_items
+	
+	--Build a table of items to their pack, use the smallest pack size to indicate which pack an item belongs to
+	--If this is too slow, we could cache it in the pipeline, or on download of the iap
+	local item_to_packinfo = {}
+	local iap_defs = TheItems:GetIAPDefs()
+	for _,iap in ipairs(iap_defs) do
+		local iap_output_items = GetPurchasePackOutputItems(iap.item_type)
+		local pack_count = #iap_output_items
+		for _,item in ipairs(iap_output_items) do
+			if item_to_packinfo[item] == nil then
+				item_to_packinfo[item] = { pack = iap.item_type, pack_count = pack_count }
+			else
+				if item_to_packinfo[item].pack_count > #iap_output_items then
+					item_to_packinfo[item].pack = iap.item_type
+					item_to_packinfo[item].pack_count = pack_count
+				end
+			end
+		end
+	end
+
+
+
+	for _,item in pairs(output_items) do
+		if item_to_packinfo[item].pack ~= item_key then
+			sub_packs[item_to_packinfo[item].pack] = true
+		end
+	end
+	
+	return sub_packs
+end
+
+function IsItemInAnyPack(item_key)
+	local iap_defs = TheItems:GetIAPDefs()
+	for _,iap in ipairs(iap_defs) do
+		local output_items = GetPurchasePackOutputItems(iap.item_type)
+		for _,pack_item in pairs(output_items) do
+			if pack_item == item_key then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+
+function GetPackTotalSets(item_key)
+    local sub_packs = _GetSubPacks(item_key)
+    
+    local count = 0
+    for pack,_ in pairs(sub_packs) do
+        count = count + 1
+    end
+    return count
+end
+
+function GetPackTotalValue(item_key)
+    local sub_packs = _GetSubPacks(item_key)
+
+    local value = 0
+    
+    if IsSteam() then
+        local iap_defs = TheItems:GetIAPDefs()
+        for _,iap in pairs(iap_defs) do
+            if sub_packs[iap.item_type] then
+                value = value + iap.cents
+            end
+        end
+    elseif IsRail() then
+        local iap_defs = TheItems:GetIAPDefs()
+        for _,iap in pairs(iap_defs) do
+            if sub_packs[iap.item_type] then
+                value = value + tonumber(iap.rail_price)
+            end
+        end
+    else
+        print("Error!!! Figure out iap for this platform.")
+    end
+    
+    return value 
+end
+
+function GetPackSavings(iap_def, total_value)
+    if IsSteam() then
+        return math.floor(100 * (1 - (iap_def.cents / total_value)))
+    elseif IsRail() then
+        return math.floor(100 * (1 - (tonumber(iap_def.rail_price) / total_value)))
+    else
+        print("Error!!! Figure out iap for this platform.")
+    end
 end
 
 function IsPackFeatured(item_key)
@@ -139,13 +267,17 @@ function GetPackGiftDLCID(item_key)
     return pack_data.steam_dlc_id
 end
 
+function GetReleaseGroup(item_key)
+    local data = GetSkinData(item_key)
+    return data.release_group or 999
+end
 
 function GetPurchaseDisplayForItem(item_key)
 	local pack_data = GetSkinData(item_key)
 	if pack_data.display_atlas ~= nil and pack_data.display_tex ~= nil then
 		return { pack_data.display_atlas, pack_data.display_tex }
 	end
-	
+
 	return nil
 end
 
@@ -157,8 +289,69 @@ function GetBoxBuildForItem(item_key)
 	return "box_build undefined"
 end
 
+function OwnsSkinPack(item_key)
+	for _,v in pairs(GetPurchasePackOutputItems(item_key)) do
+		if not TheInventory:CheckOwnership(v) then
+			return false
+		end
+	end
+
+	return true
+end
+
+function GetPurchasePackDisplayItems(item_key)
+    return MISC_ITEMS[item_key] and MISC_ITEMS[item_key].display_items or {}
+end
+
+function GetPurchasePackOutputItems(item_key)
+    return MISC_ITEMS[item_key] and MISC_ITEMS[item_key].output_items or {}
+end
+
+
+function DoesPackHaveBelongings(pack_key)
+    local output_items = GetPurchasePackOutputItems(pack_key)
+    for _,output_item in pairs(output_items) do
+        if GetTypeForItem(output_item) == "item" then
+            return true
+        end
+    end
+    return false
+end
+
+function DoesPackHaveItem(pack_key, item_key)
+    local output_items = GetPurchasePackOutputItems(pack_key)
+    for _,output_item in pairs(output_items) do
+        if item_key == output_item then
+            return true
+        end
+    end
+    return false
+end
+
+function DoesPackHaveACharacter(pack_key)
+    local output_items = GetPurchasePackOutputItems(pack_key)
+	for _,output_item in pairs(output_items) do
+		if IsDefaultCharacterSkin( output_item ) then
+            return true
+        end
+    end
+    return false
+end
+
+function DoesPackHaveSkinsForCharacter(pack_key, character)
+    local output_items = GetPurchasePackOutputItems(pack_key)
+    for _,output_item in pairs(output_items) do
+        if table.contains(SKIN_AFFINITY_INFO[character], output_item) then
+            return true
+        end
+    end
+    return false
+end
+
+
+
 function IsClothingItem(name)
-	if CLOTHING[name] then 
+	if CLOTHING[name] then
 		return true
 	end
 	return false
@@ -220,20 +413,26 @@ end
 function GetRarityForItem(item)
 	local skin_data = GetSkinData(item)
 	local rarity = skin_data.rarity
-	
-	if not rarity then 
+
+	if not rarity then
 		rarity = "Common"
 	end
-	
+
+    if rarity == "Character" then --hack for restricted character rarity items
+		rarity = "Common"
+    end
+
 	return rarity
 end
 
 function GetEventIconForItem(item)
 	local skin_data = GetSkinData(item)
-	for k,v in pairs(EVENT_ICONS) do
-		if DoesItemHaveTag( item, v ) then
-			return k
-		end
+	for k,tags in pairs(EVENT_ICONS) do
+	    for _,tag in pairs(tags) do
+		    if DoesItemHaveTag( item, tag ) then
+			    return k
+		    end
+        end
 	end
 
 	return nil
@@ -241,9 +440,9 @@ end
 
 function GetSkinUsableOnString(item_type, popup_txt)
 	local skin_data = GetSkinData(item_type)
-	
+
 	local skin_str = GetSkinName(item_type)
-	
+
 	local usable_on_str = ""
 	if skin_data ~= nil and skin_data.base_prefab ~= nil then
 		if skin_data.granted_items == nil then
@@ -253,16 +452,16 @@ function GetSkinUsableOnString(item_type, popup_txt)
 			local item1_str = STRINGS.NAMES[string.upper(skin_data.base_prefab)]
 			local item2_str = nil
 			local item3_str = nil
-			
+
 			local granted_skin_data = GetSkinData(skin_data.granted_items[1])
 			if granted_skin_data ~= nil and granted_skin_data.base_prefab ~= nil then
-				item2_str = STRINGS.NAMES[string.upper(granted_skin_data.base_prefab)]	
+				item2_str = STRINGS.NAMES[string.upper(granted_skin_data.base_prefab)]
 			end
 			local granted_skin_data = GetSkinData(skin_data.granted_items[2])
 			if granted_skin_data ~= nil and granted_skin_data.base_prefab ~= nil then
-				item3_str = STRINGS.NAMES[string.upper(granted_skin_data.base_prefab)]	
+				item3_str = STRINGS.NAMES[string.upper(granted_skin_data.base_prefab)]
 			end
-			
+
 			if item3_str == nil then
 				usable_on_str = subfmt(popup_txt and STRINGS.UI.SKINSSCREEN.USABLE_ON_MULTIPLE_POPUP or STRINGS.UI.SKINSSCREEN.USABLE_ON_MULTIPLE, { skin = skin_str, item1 = item1_str, item2 = item2_str })
 			else
@@ -270,11 +469,18 @@ function GetSkinUsableOnString(item_type, popup_txt)
 			end
 		end
 	end
-	
+
 	return usable_on_str
 end
 
-function IsUserCommerceAllowedOnItem(item_key)
+function IsUserCommerceAllowedOnItemData(item_data)
+    if item_data.is_dlc_owned and item_data.owned_count == 1 then
+        return false
+    end
+    return IsUserCommerceAllowedOnItemType(item_data.item_key)
+    end
+
+function IsUserCommerceAllowedOnItemType(item_key)
 	if TheInventory:CheckOwnership(item_key) then
 		return IsUserCommerceSellAllowedOnItem(item_key)
 	else
@@ -289,16 +495,10 @@ end
 
 function IsUserCommerceBuyAllowedOnItem(item_type)
     local num_owned = TheInventory:GetOwnedItemCountForCommerce(item_type)
-	return num_owned == 0 and TheItems:GetBarterBuyPrice(item_type) ~= 0	
+	return num_owned == 0 and TheItems:GetBarterBuyPrice(item_type) ~= 0
 end
 
-function GetIsDLCOwned(item_type)
-    if GetRarityForItem(item_type) == "Event" or GetRarityForItem(item_type) == "Reward" then
-        return false
-    end
-	return TheInventory:GetIsDLCOwned(item_type)
-end
-	
+
 function GetTypeForItem(item)
 
 	local itemName = string.lower(item) -- they come back from the server in caps
@@ -316,33 +516,14 @@ function GetTypeForItem(item)
 	return type, itemName
 end
 
-function GetSortCategoryForItem(item)
-	for i,item_category in ipairs(GetSpecialItemCategories()) do
-		if item_category[item] then
-			return item_category[item].type
-		end
-	end
-
-	local skinsData = Prefabs[item]
-    if skinsData then
-        return skinsData.base_prefab
-    end
-    -- Likely cause: Player's inventory contained an unreleased item. Should
-    -- only happen in dev branch. (Also possible someone forgot to update
-    -- GetSpecialItemCategories().)
-    local DEBUG_MODE = BRANCH == "dev"
-    assert(DEBUG_MODE, "Unknown item: ".. item)
-    return ""
-end
-
 
 function DoesItemHaveTag(item, tag)
-	local tags = {}
-	if CLOTHING[item] then 
+	local tags = nil
+	if CLOTHING[item] then
 		tags = CLOTHING[item].skin_tags
-	elseif MISC_ITEMS[item] then 
+	elseif MISC_ITEMS[item] then
 		tags = MISC_ITEMS[item].skin_tags
-	elseif EMOTE_ITEMS[item] then 
+	elseif EMOTE_ITEMS[item] then
 		tags = EMOTE_ITEMS[item].skin_tags
 	else
 		if Prefabs[item] ~= nil then
@@ -350,12 +531,14 @@ function DoesItemHaveTag(item, tag)
 		end
 	end
 
-	for _,item_tag in pairs(tags) do
-		if item_tag == tag then
-			return true
+	if tags ~= nil then
+		for _,item_tag in pairs(tags) do
+			if item_tag == tag then
+				return true
+			end
 		end
 	end
-	
+
 	return false
 end
 
@@ -398,19 +581,26 @@ end]]
 	return s:sub(1,1):upper()..s:sub(2)
 end]]
 
-function GetSkinName(item)
-	if string.sub( item, -8 ) == "_builder" then
+local function _ItemStringRedirect(item)
+    if string.sub( item, -8 ) == "_builder" then
 		item = string.sub( item, 1, -9 )
 	end
-    if string.sub( item, -4) == "none" then
-        item = "none"
+    if IsDefaultCharacterSkin(item) then
+        local data = GetSkinData(item)
+        if not data.is_restricted then
+            item = "none"
+        end
     end
     if string.sub( item, -8) == "default1" then
         item = "none"
     end
-	local nameStr = STRINGS.SKIN_NAMES[item] or STRINGS.NAMES[string.upper(item)] or STRINGS.SKIN_NAMES["missing"]
+    return item
+end
+function GetSkinName(item)
+    item = _ItemStringRedirect(item)
+	local nameStr = STRINGS.SKIN_NAMES[item] or STRINGS.SKIN_NAMES["missing"]
 	local alt = STRINGS.SKIN_NAMES[item.."_alt"]
-	if alt then 
+	if alt then
 		nameStr = GetRandomItem({nameStr, alt})
 	end
 
@@ -418,6 +608,7 @@ function GetSkinName(item)
 end
 
 function GetSkinDescription(item)
+    item = _ItemStringRedirect(item)
 	return STRINGS.SKIN_DESCRIPTIONS[item] or STRINGS.SKIN_DESCRIPTIONS["missing"]
 end
 
@@ -426,7 +617,7 @@ function GetSkinInvIconName(item)
 
     if image_name == "" then
         image_name = "default"
-    else 
+    else
         if string.sub( image_name, -8 ) == "_builder" then
             image_name = string.sub( image_name, 1, -9 )
         end
@@ -447,40 +638,40 @@ function SkinGridListConstructor(context, parent, scroll_list)
 	local NUM_ROWS = 5
 	local NUM_COLUMNS = 4
 	local SPACING = 85
-	
+
 	local widgets = {}
-	
+
 	local x_offset = (NUM_COLUMNS/2) * SPACING + SPACING/2
 	local y_offset = (NUM_ROWS/2) * SPACING - 15
-	
+
 	for y = 1,NUM_ROWS do
 		for x = 1,NUM_COLUMNS do
 			local index = ((y-1) * NUM_COLUMNS) + x
-			
+
 			local itemimage = parent:AddChild(ItemImage(screen, "", "", 0, 0, nil ))
-			itemimage.clickFn = function(type, item, item_id) 
+			itemimage.clickFn = function(type, item, item_id)
 				screen:OnItemSelect(type, item, item_id, itemimage)
 			end
 
 			itemimage.ongainfocusfn = function()
                 scroll_list:OnWidgetFocus(itemimage)
             end
-		
+
 			itemimage:SetPosition( x * SPACING - x_offset, -y * SPACING + y_offset, 0)
-		
+
 			widgets[index] = itemimage
-			
-			if x > 1 then 
+
+			if x > 1 then
 				itemimage:SetFocusChangeDir(MOVE_LEFT, widgets[index-1])
 				widgets[index-1]:SetFocusChangeDir(MOVE_RIGHT, itemimage)
 			end
-			if y > 1 then 
+			if y > 1 then
 				itemimage:SetFocusChangeDir(MOVE_UP, widgets[index-NUM_COLUMNS])
 				widgets[index-NUM_COLUMNS]:SetFocusChangeDir(MOVE_DOWN, itemimage)
 			end
 		end
 	end
-	
+
 	--if disable_selecting then
 		for _,item_image in pairs(widgets) do
 			item_image:DisableSelecting()
@@ -488,7 +679,7 @@ function SkinGridListConstructor(context, parent, scroll_list)
 	--end
 	-- Send focus somewhere that does something with it.
     parent.focus_forward = widgets[1]
-	
+
 	return widgets, NUM_COLUMNS, SPACING, NUM_ROWS-2, 0.35
 end
 
@@ -528,25 +719,51 @@ function UpdateSkinGrid(context, list_widget, data, data_index)
 end
 
 local function GetLexicalSortLiteral(item_key)
-    return GetSortCategoryForItem(item_key)..GetSkinName(item_key)..item_key
+    return GetSkinName(item_key)..item_key
 end
 
--- Compare two keys from an item table for sorting purposes. Requires the item
--- table they come from (i.e., MISC_ITEMS) since that data is not always
--- contained within items.
+-- Compare two keys from an item table for sorting purposes. Requires the item table they come from (i.e., MISC_ITEMS) since that data is not always contained within items.
 --
 -- Useful for showing all extant items (no duplicates).
-function CompareItemDataForSort(item_key_a, item_key_b, item_table)
-    if item_key_a == item_key_b then 
+function CompareItemDataForSortByRelease(item_key_a, item_key_b)
+    if item_key_a == item_key_b then
         return false
-    elseif item_table[item_key_a].release_group ~= item_table[item_key_b].release_group then 
-    
-        return CompareReleaseGroup(item_table[item_key_a], item_table[item_key_b])
-    elseif item_table[item_key_a].rarity ~= item_table[item_key_b].rarity then
-	
-		return CompareRarities(item_table[item_key_a], item_table[item_key_b])
+    elseif IsDefaultSkin(item_key_a) then
+        return true
+    elseif IsDefaultSkin(item_key_b) then
+        return false
+    elseif GetReleaseGroup(item_key_a) ~= GetReleaseGroup(item_key_b) then
+        return CompareReleaseGroup(item_key_a, item_key_b)
+    elseif GetRarityForItem(item_key_a) ~= GetRarityForItem(item_key_b) then
+		return CompareRarities(item_key_a, item_key_b)
 	else
-        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b) 
+        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
+    end
+end
+
+function CompareItemDataForSortByName(item_key_a, item_key_b)
+    if item_key_a == item_key_b then
+        return false
+    elseif IsDefaultSkin(item_key_a) then
+        return true
+    elseif IsDefaultSkin(item_key_b) then
+        return false
+    else
+        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
+    end
+end
+
+function CompareItemDataForSortByRarity(item_key_a, item_key_b)
+    if item_key_a == item_key_b then
+        return false
+    elseif IsDefaultSkin(item_key_a) then
+        return true
+    elseif IsDefaultSkin(item_key_b) then
+        return false
+    elseif GetRarityForItem(item_key_a) ~= GetRarityForItem(item_key_b) then
+		return CompareRarities(item_key_a, item_key_b)
+	else
+        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
     end
 end
 
@@ -561,98 +778,39 @@ function GetInventoryTimestamp()
 	return timestamp
 end
 
+
+
+
+
 -- Sorted by rarity and name. Good for displaying duplicates.
-function GetSortedSkinsList()
+function GetInventorySkinsList( do_sort )
+
+    local skins_list = {}
+
 	local templist = TheInventory:GetFullInventory()
-	local skins_list = {}
-	local timestamp = 0
-
-	local listoflists = 
-	{
-		oddment = {},
-		emote = {},
-		emoji = {},
-		feet = {},
-		hand = {},
-		body = {},
-		legs = {},
-		base = {},
-		item = {},
-		misc = {},
-		mysterybox = {},
-		purchase = {},
-		loading = {},
-		playerportrait = {},
-		profileflair = {},
-		unknown = {},
-	}
-
-	for k,v in ipairs(templist) do
+    for _,v in ipairs(templist) do
 		local type, item = GetTypeForItem(v.item_type)
 		local rarity = GetRarityForItem(item)
 
-		--if type ~= "unknown" then
+		local data = {}
+		data.type = type
+		data.item = item
+		data.rarity = rarity
+		data.timestamp = v.modified_time
+		data.item_id = v.item_id
 
-			local data = {}
-			data.type = type
-			data.item = item
-			data.rarity = rarity
-			data.timestamp = v.modified_time
-			data.item_id = v.item_id
-		
-			if listoflists[type] == nil then
-				print("Missing sorted skin list type ", type)
-			else
-				table.insert(listoflists[type], data)
-			end
-			
-			if v.modified_time > timestamp then 
-				timestamp = v.modified_time
-			end
-		--end
+		table.insert(skins_list, data)
 	end
 
-	local compare = function(a, b) 
-						if a.rarity == b.rarity then 
-							if a.release_group == b.release_group then 
-								if a.item == b.item then 
-									return a.timestamp > b.timestamp
-								else
-									return GetLexicalSortLiteral(a.item) < GetLexicalSortLiteral(b.item)
-								end
-							else
-								return CompareReleaseGroup(a,b)
-							end
-						else 
-							return CompareRarities(a,b)
-						end
-					end
+	if do_sort then
+table.sort(skins_list, function(a,b)
+			return CompareItemDataForSortByRarity(a.item, b.item)
+			end)
+		end
 
-	for name,list in pairs(listoflists) do
-		table.sort(list, compare)
-	end
-
-	-- These must be inserted sequentially to ensure a specific order. Don't
-	-- trust lua table iteration order!
-	skins_list = JoinArrays(skins_list, listoflists.oddment)
-	skins_list = JoinArrays(skins_list, listoflists.emote)
-	skins_list = JoinArrays(skins_list, listoflists.emoji)
-	skins_list = JoinArrays(skins_list, listoflists.mysterybox)
-	skins_list = JoinArrays(skins_list, listoflists.purchase)
-	skins_list = JoinArrays(skins_list, listoflists.item)
-	skins_list = JoinArrays(skins_list, listoflists.base)
-	skins_list = JoinArrays(skins_list, listoflists.body)
-	skins_list = JoinArrays(skins_list, listoflists.hand)
-	skins_list = JoinArrays(skins_list, listoflists.legs)
-	skins_list = JoinArrays(skins_list, listoflists.feet)
-	skins_list = JoinArrays(skins_list, listoflists.loader)
-	skins_list = JoinArrays(skins_list, listoflists.playerportrait)
-	skins_list = JoinArrays(skins_list, listoflists.profileflair)
-	skins_list = JoinArrays(skins_list, listoflists.misc)
-	skins_list = JoinArrays(skins_list, listoflists.unknown)
-
-	return skins_list, timestamp
+    return skins_list
 end
+
 
 --This function is very expensive, don't use it more than once per frame!!!
 function GetOwnedItemCounts()
@@ -684,7 +842,7 @@ end
 
 function CopySkinsList(list)
 	local newList = {}
-	for k, skin in ipairs(list) do 
+	for k, skin in ipairs(list) do
 		newList[k] = {}
 		newList[k].type = skin.type
 		newList[k].item = skin.item
@@ -748,64 +906,20 @@ function _BonusItemRewarded(bonus_item, item_counts)
 end
 function WillUnravelBreakEnsemble(item_type)
 	local in_collection, bonus_item = IsItemInCollection(item_type)
-	
+
 	if not in_collection then
 		return false
 	end
-	
+
 	local item_counts = GetOwnedItemCounts()
 	if _BonusItemRewarded(bonus_item, item_counts) then
 		item_counts[item_type] = (item_counts[item_type] or 1) - 1 --subtract one if it exists, otherwise 0
 		return not _BonusItemRewarded(bonus_item, item_counts)
 	end
-	
+
 	return false --not rewarded already
 end
 
-
-
--- GetPackForItem only returns purchasable packs! We don't display historical
--- packs so if it's not for sale, it's not part of a pack. Pack information is
--- not the same as ensemble/sets.
-local PURCHASE_INFO = require("skin_purchase_packs")
-function GetPackForItem(item_key)
-    local pack = PURCHASE_INFO.CONTENTS[item_key]
-    if pack then
-        local iap_defs = TheItems:GetIAPDefs()
-        for i,iap in ipairs(iap_defs) do
-            if iap.item_type == pack then
-                return pack
-            end
-        end
-    end
-end
-
-function OwnsSkinPack(item_key)
-	for _,v in pairs(PURCHASE_INFO.PACKS[item_key]) do
-		if not TheInventory:CheckOwnership(v) then
-			return false
-		end
-	end
-
-	return true
-end
-
---[[function GetTotalItemCollectionCompletion()
-    local num_owned = 0
-    local num_need = 0
-    for i,item_category in ipairs(GetAllItemCategories()) do
-        for item_key,item_blob in pairs(item_category) do
-            if TheInventory:CheckOwnership(item_key) then
-                num_owned = num_owned + 1
-            else
-                num_need = num_need + 1
-            end
-        end
-    end
-    return num_owned, num_need
-end]]
-
-local SKIN_AFFINITY_INFO = require("skin_affinity_info")
 function GetSkinCollectionCompletionForHero(herocharacter)
     assert(herocharacter)
     local num_owned = 0
@@ -822,8 +936,19 @@ function GetSkinCollectionCompletionForHero(herocharacter)
     return num_owned, num_need
 end
 
+function GetNullFilter()
+    local function NullFilter(item_key)
+        return true
+    end
+    return NullFilter
+end
+
 function GetAffinityFilterForHero(herocharacter)
     local function AffinityFilter(item_key)
+        if IsDefaultSkin(item_key) then
+            return true
+        end
+
         return table.contains(SKIN_AFFINITY_INFO[herocharacter], item_key)
     end
     return AffinityFilter
@@ -831,14 +956,22 @@ end
 
 function GetLockedSkinFilter()
     local function LockedFilter(item_key)
-        return TheInventory:CheckOwnership(item_key)
+        return IsDefaultSkin(item_key) or TheInventory:CheckOwnership(item_key)
     end
     return LockedFilter
 end
 
+function GetWeaveableSkinFilter()
+    local function WeaveableFilter(item_key)
+        return TheItems:GetBarterBuyPrice(item_key) ~= 0
+    end
+    return WeaveableFilter
+end
+
+
 function GetMysteryBoxCounts()
 	local templist = TheInventory:GetFullInventory()
-	
+
 	local box_counts = {}
 	for _,item_info in pairs(templist) do
 		local item_type = item_info.item_type
@@ -847,16 +980,16 @@ function GetMysteryBoxCounts()
 				box_counts[item_type] = 1
 			else
 				box_counts[item_type] = box_counts[item_type] + 1
-			end			
+			end
 		end
 	end
-		
+
 	return box_counts
 end
 
 function GetTotalMysteryBoxCount()
 	local templist = TheInventory:GetFullInventory()
-	
+
 	local box_count = 0
 	for _,item_info in pairs(templist) do
 		local item_type = item_info.item_type
@@ -864,19 +997,19 @@ function GetTotalMysteryBoxCount()
 			box_count = box_count + 1
 		end
 	end
-		
+
 	return box_count
 end
 
 function GetMysteryBoxItemID(item_type)
 	local templist = TheInventory:GetFullInventory()
-	
+
 	for _,item_info in pairs(templist) do
 		if item_info.item_type == item_type then
 			return item_info.item_id
 		end
 	end
-	
+
 	return 0
 end
 
@@ -914,21 +1047,46 @@ function ShouldDisplayItemInCollection(item_type)
     return true
 end
 
-local function IsDefaultCharacterSkin(item_key)
-    return item_key:find("_none",-5,true) == nil
+function IsCharacterOwned( prefab )
+	return IsDefaultSkinOwned(prefab.."_none")
 end
 
--- Returns a table similar to MISC_ITEMS, but with character heads (skin
--- bases).
+function IsDefaultSkinOwned( item_key )
+    if IsDefaultCharacterSkin( item_key ) then
+		local data = GetSkinData(item_key)
+        if data.is_restricted then
+            return TheInventory:CheckOwnership(item_key)
+        end
+        return true
+    end
+    return IsDefaultClothing( item_key ) --all default clothing is owned.
+end
+
+function IsDefaultSkin( item_key )
+    return IsDefaultClothing( item_key ) or IsDefaultCharacterSkin( item_key )
+end
+
+function IsPrefabSkinned( prefab )
+	return PREFAB_SKINS[prefab] ~= nil
+end
+
+function IsDefaultCharacterSkin( item_key )
+    return string.sub( item_key, -5 ) == "_none"
+end
+
+function IsDefaultClothing( item_key )
+    return item_key ~= nil and item_key ~= "" and CLOTHING[item_key] ~= nil and CLOTHING[item_key].is_default
+end
+
+-- Returns a table similar to MISC_ITEMS, but with character heads (skin bases).
 function GetCharacterSkinBases(hero)
     local matches = {}
     local skins = PREFAB_SKINS[hero]
-    for i,item_key in ipairs(skins) do
-        -- We could allow default character skins (so you can pick them), but
-        -- they're not currently account items. If we did that, we'd want the
-        -- same for all vanity item types!
-        if not IsGameplayItem(item_key) and IsDefaultCharacterSkin(item_key) then
-            matches[item_key] = Prefabs[item_key]
+    if skins ~= nil then
+        for i,item_key in ipairs(skins) do
+            if not IsGameplayItem(item_key) then
+                matches[item_key] = Prefabs[item_key]
+            end
         end
     end
     return matches
@@ -945,18 +1103,37 @@ function GetAllGameplayItems()
             end
         end
     end
-    
+
     return matches
 end
 
-function GetAllMiscItemsOfType(item_type)
-    local matches = {}
-    for item_key,item_blob in pairs(MISC_ITEMS) do
-        if item_blob.type == item_type then
-            matches[item_key] = item_blob
+function IsValidClothing( name )
+	return name ~= nil and name ~= "" and CLOTHING[name] ~= nil and not CLOTHING[name].is_default
+end
+
+
+function ValidatePreviewItems(currentcharacter, preview_skins)
+    for key,item_key in pairs(preview_skins) do
+        if key ~= "base" and not IsValidClothing(preview_skins[key]) then
+            preview_skins[key] = nil
         end
     end
-    return matches
+end
+
+function ValidateItemsLocal(currentcharacter, selected_skins)
+    for key,item_key in pairs(selected_skins) do
+        if not TheInventory:CheckOwnership(selected_skins[key])
+            or (key ~= "base" and not IsValidClothing(selected_skins[key]))
+            then
+            selected_skins[key] = nil
+        end
+    end
+    --[[if not selected_skins.base
+        or selected_skins.base == currentcharacter
+        or selected_skins.base == ""
+        then
+        selected_skins.base = currentcharacter.."_none"
+    end]]
 end
 
 function ValidateItemsInProfile(user_profile)
@@ -965,8 +1142,7 @@ function ValidateItemsInProfile(user_profile)
         for i,item_type in ipairs(user_profile:GetStoredCustomizationItemTypes()) do
             for item_key,is_active in pairs(user_profile:GetCustomizationItemsForType(item_type)) do
                 if not TheInventory:CheckOwnership(item_key) then
-                    -- A user who sells/trades an item on the marketplace needs
-                    -- to have it locally revoked.
+                    -- A user who sells/trades an item on the marketplace needs to have it locally revoked.
                     user_profile:SetCustomizationItemState(item_type, item_key, false)
                 end
             end
@@ -974,8 +1150,7 @@ function ValidateItemsInProfile(user_profile)
     end
 end
 
--- We must cache vanity items before they can be used (caching pushes to c-code
--- which pushes to server).
+-- We must cache vanity items before they can be used (caching pushes to c-code which pushes to server).
 function CacheCurrentVanityItems(user_profile)
     local all_vanity = {}
     for i,item_type in ipairs({"playerportrait", "profileflair"}) do
@@ -989,11 +1164,8 @@ function CacheCurrentVanityItems(user_profile)
 end
 
 function GetRemotePlayerVanityItem(active_cosmetics, item_type)
-    -- Instead of GetTypeForItem (which loops over everything), we get the
-    -- types we want and find a match.
-    local all_items_of_type = GetAllMiscItemsOfType(item_type)
-    for i,item_key in ipairs(active_cosmetics) do
-        if all_items_of_type[item_key] then
+    for _,item_key in ipairs(active_cosmetics) do
+        if GetTypeForItem(item_key) == item_type then
             return item_key
         end
     end
@@ -1037,16 +1209,12 @@ local function GetOneAtlasPerImage_tex(atlas_fmt, item_key, defaults)
 end
 
 local LOADER_ATLAS_FMT = "images/bg_loading_%s.%s"
-function GetLoaderAtlasAndTexPkgref(item_key)
-    return GetOneAtlasPerImage_pkgref(LOADER_ATLAS_FMT, item_key)
-end
 function GetLoaderAtlasAndTex(item_key)
     local atlas, tex = GetOneAtlasPerImage_tex(LOADER_ATLAS_FMT, item_key)
-    if softresolvefilepath(atlas) then 
+    if softresolvefilepath(atlas) then
         return atlas, tex
     else
-        -- The selected loader doesn't exist! Use a simple spiral instead of
-        -- crashing.
+        -- The selected loader doesn't exist! Use a simple spiral instead of crashing.
         return "images/bg_spiral.xml", "bg_spiral.tex"
     end
 end
@@ -1062,19 +1230,31 @@ function GetProfileFlairAtlasAndTex(item_key)
 end
 
 local PLAYER_PORTRAIT_ATLAS_FMT = "images/playerportrait_%s.%s"
-function GetPlayerPortraitAtlasAndTexPkgref(item_key)
-    return GetOneAtlasPerImage_pkgref(PLAYER_PORTRAIT_ATLAS_FMT, item_key)
-end
 function GetPlayerPortraitAtlasAndTex(item_key)
     local DEFAULT_BACKGROUND = "playerportrait_bg_none"
     local atlas, tex = GetOneAtlasPerImage_tex(PLAYER_PORTRAIT_ATLAS_FMT, item_key or DEFAULT_BACKGROUND)
-    if softresolvefilepath(atlas) then 
+    if softresolvefilepath(atlas) then
         return atlas, tex
     else
         -- item_key was nil or not a real file.
         return GetOneAtlasPerImage_tex(PLAYER_PORTRAIT_ATLAS_FMT, DEFAULT_BACKGROUND)
     end
 end
+
+
+
+
+--Dail Gift Bonus
+local dailyGiftType = nil --to test daily gift popup, put a item type into this string
+function SetDailyGiftItem(item_type)
+	dailyGiftType = item_type
+end
+function GetDailyGiftItem()
+	local ret = dailyGiftType
+	dailyGiftType = nil
+	return ret
+end
+
 
 
 
@@ -1092,7 +1272,7 @@ function SetSkinDLCEntitlementOwned(entitlement)
 	Profile:SetEntitlementReceived(entitlement)
 end
 
-local newSkinDLCEntitlements = {}
+local newSkinDLCEntitlements = {} --to test DLC gifting popup, put a pack item type in this table
 function AddNewSkinDLCEntitlement(entitlement)
 	table.insert( newSkinDLCEntitlements, entitlement)
 end
@@ -1110,13 +1290,11 @@ function MakeSkinDLCPopup(_cb)
 	local pack_type = GetNewSkinDLCEntitlement()
 
 	if pack_type ~= nil then
-		local PURCHASE_INFO = require("skin_purchase_packs")
-		local display_items = PURCHASE_INFO.PACKS[pack_type]
+        local display_items = GetPurchasePackDisplayItems(pack_type)
         if display_items ~= nil then
 		    local options = {
 			    allow_cancel = false,
 			    box_build = GetBoxBuildForItem(pack_type),
-			    use_bigportraits = IsPackFeatured(pack_type),
 		    }
 
 		    if GetSkinData(pack_type).legacy_popup_category ~= nil then
@@ -1130,7 +1308,7 @@ function MakeSkinDLCPopup(_cb)
 			    TheFrontEnd:PushScreen(thankyou_popup)
 		    else
 			    local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
-			    local box_popup = ItemBoxOpenerPopup(nil, options, function(success_cb) success_cb(display_items) end, function() MakeSkinDLCPopup(_cb) end)
+			    local box_popup = ItemBoxOpenerPopup(options, function(success_cb) success_cb(display_items) end, function() MakeSkinDLCPopup(_cb) end)
 			    TheFrontEnd:PushScreen(box_popup)
 		    end
         else

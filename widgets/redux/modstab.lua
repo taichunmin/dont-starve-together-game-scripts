@@ -712,7 +712,7 @@ function ModsTab:UpdateForWorkshop( force_refresh )
             self.mods_page.focus_forward = self.mods_scroll_list
         end
 
-        self.subscreener:OnMenuButtonSelected(self.currentmodtype)
+        self:_SetModsList(self.currentmodtype)
 
         --update the text on Update All button to indicate how many mods are out of date
         if #self.modnames_client_dl > 0 or #self.modnames_server_dl > 0 then

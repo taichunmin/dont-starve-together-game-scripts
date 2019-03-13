@@ -28,9 +28,7 @@ local PlayerAvatarPortrait = Class(Widget, function(self)
     self.rank:SetPosition(-65, 20)
     self.rank:SetScale(0.6)
     self.should_show_rank_badge = true
-
-    self.should_show_level = IsAnyFestivalEventActive()
-    
+        
     if self:_ShouldHideRankBadge() then
         self:HideVanityItems()
 	end
@@ -38,7 +36,13 @@ local PlayerAvatarPortrait = Class(Widget, function(self)
     self.playername = self:AddChild(Text(CHATFONT_OUTLINE, 24))
     self.playername:SetPosition(0, -120)
     self.playername:SetHAlign(ANCHOR_MIDDLE)
+
+    self.show_hover_text = true
 end)
+
+function PlayerAvatarPortrait:HideHoverText()
+    self.show_hover_text = false
+end
 
 function PlayerAvatarPortrait:AlwaysHideRankBadge()
     self.should_show_rank_badge = false
@@ -55,15 +59,16 @@ function PlayerAvatarPortrait:HideVanityItems()
 end
 
 function PlayerAvatarPortrait:SetBackground(item_key)
+    if self.show_hover_text and IsItemId(item_key) then
+        self.frame.bg:SetHoverText( GetSkinName(item_key), { font = UIFONT, offset_x = 0, offset_y = 40, colour = GetColorForItem(item_key) } )
+    else
+        self.frame.bg:ClearHoverText()
+    end
     self.frame.bg:SetTexture(GetPlayerPortraitAtlasAndTex(item_key))
 end
 
 function PlayerAvatarPortrait:SetRank(profileflair, rank)
-    if not self.should_show_level then
-        -- Don't hide level manually, pass invalid so RankBadge handles hiding.
-        rank = nil
-    end
-    self.rank:SetRank(profileflair, rank)
+    self.rank:SetRank(profileflair, rank, not self.show_hover_text)
 	if self:_ShouldHideRankBadge() then
 		self.rank:Hide()
 	else
@@ -73,6 +78,7 @@ end
 
 function PlayerAvatarPortrait:ClearBackground()
     self.frame.bg:SetTexture(GetPlayerPortraitAtlasAndTex())
+    self.frame.bg:ClearHoverText()
 end
 
 function PlayerAvatarPortrait:SetEmpty()
@@ -93,6 +99,7 @@ function PlayerAvatarPortrait:UpdatePlayerListing(player_name, colour, prefab, b
     else
         self:ClearBackground()
     end
+
     -- profileflair may be null if user has none selected.
     -- rank may be null/invalid outside of events.
     self:SetRank(profileflair, rank)

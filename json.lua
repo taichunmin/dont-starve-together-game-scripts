@@ -85,6 +85,12 @@ local isEncodable
 -----------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS
 -----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+-- WARNING: encode() is not compliant with json standards, only use this for 
+-- game data. If you are sending data to another service (eg, analytics, 
+-- leaderboards, etc) then use encode_compliant()
+-----------------------------------------------------------------------------
 --- Encodes an arbitrary Lua object / variable.
 -- @param v The Lua object / variable to be JSON encoded.
 -- @return String containing the JSON encoding in internal Lua string format (i.e. not unicode)
@@ -138,6 +144,73 @@ function encode (v)
     base.tracked_assert(false,'encode attempt to encode unsupported type ' .. vtype .. ':' .. base.tostring(v))
   end
 end
+
+
+--- Encodes a string to be JSON-compliant, only use in encode_compliant(v).
+function encodeString_compliant(s)
+  s = string.gsub(s,'\\','\\\\')
+  s = string.gsub(s,'"','\\"')
+  --s = string.gsub(s,"'","\\'") -- json standards do not support escaping single quotes
+  s = string.gsub(s,'\n','\\n')
+  s = string.gsub(s,'\t','\\t')  
+  s = string.gsub(s,'\r','\\r')
+  return s 
+end
+
+-- Use this function only if you are sending data out to a web service or some other external system. The game will not be able to decode this data.
+-- The supplied encodeString/decodeString function does not produce valid json files. This is okay for the save/load system but not when sending data out to the internet.
+-- NOTE: Never add decode support from encode_compliant's returned string. This output may change without warning if new bugs in the original code are found.
+function encode_compliant(v)
+  -- Handle nil values
+  if v==nil then
+    return "null"
+  end
+  
+  local vtype = base.type(v)  
+
+  -- Handle strings
+  if vtype=='string' then    
+    return '"' .. encodeString_compliant(v) .. '"'	    -- Need to handle encoding in string
+  end
+  
+  -- Handle booleans
+  if vtype=='number' or vtype=='boolean' then
+    return base.tostring(v)
+  end
+  
+  -- Handle tables
+  if vtype=='table' then
+    local rval = {}
+    -- Consider arrays separately
+    local bArray, maxCount = isArray(v)
+    if bArray then
+      for i = 1,maxCount do
+        table.insert(rval, encode_compliant(v[i]))
+      end
+    else	-- An object, not an array
+      for i,j in base.pairs(v) do
+        if isEncodable(i) and isEncodable(j) then
+          table.insert(rval, '"' .. encodeString_compliant(i) .. '":' .. encode_compliant(j))
+        end
+      end
+    end
+    if bArray then
+      return '[' .. table.concat(rval,',') ..']'
+    else
+      return '{' .. table.concat(rval,',') .. '}'
+    end
+  end
+  
+  -- Handle null values
+  if vtype=='function' and v==null then
+    return 'null'
+  end
+  
+  if not (false) then
+    base.tracked_assert(false,'encode_compliant attempt to encode unsupported type ' .. vtype .. ':' .. base.tostring(v))
+  end
+end
+
 
 
 --- Decodes a JSON string and returns the decoded value as a Lua data structure / value.

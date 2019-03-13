@@ -56,12 +56,12 @@ local book_defs =
                     local theta = math.random() * 2 * PI
                     local radius = math.random(3, 8)
 
-                    -- we have to special case this one because birds can't land on creep
                     local result_offset = FindValidPositionByFan(theta, radius, 12, function(offset)
                         local pos = pt + offset
                         --NOTE: The first search includes invisible entities
                         return #TheSim:FindEntities(pos.x, 0, pos.z, 1, nil, { "INLIMBO", "FX" }) <= 0
-                            and TheWorld.Map:IsDeployPointClear(pos, nil, 1)
+                            and TheWorld.Map:IsPassableAtPoint(pos:Get())
+							and TheWorld.Map:IsDeployPointClear(pos, nil, 1)
                     end)
 
                     if result_offset ~= nil then

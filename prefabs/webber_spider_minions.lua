@@ -2,6 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/ds_spider_basic.zip"),
     Asset("ANIM", "anim/spider_build.zip"),
+    Asset("ANIM", "anim/spider_warrior_lavaarena_build.zip"),
     Asset("SOUND", "sound/spider.fsb"),
 }
 
@@ -31,6 +32,8 @@ local function fn()
     inst.AnimState:SetBank("spider")
     inst.AnimState:SetBuild("spider_build")
     inst.AnimState:PlayAnimation("idle", true)
+
+    inst.SoundEmitter:OverrideVolumeMultiplier(.3)
 
     inst.entity:SetPristine()
 

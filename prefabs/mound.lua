@@ -11,11 +11,16 @@ local prefabs =
     "gears",
     "bluegem",
     "nightmarefuel",
+	"bat",
 }
 
 for k = 1, NUM_TRINKETS do
     table.insert(prefabs, "trinket_"..tostring(k))
 end
+for k = 1, NUM_HALLOWEEN_ORNAMENTS do
+    table.insert(prefabs, "halloween_ornament_"..tostring(k))
+end
+
 
 local LOOTS =
 {
@@ -67,6 +72,34 @@ local function onfinishcallback(inst, worker)
             if item ~= nil then
                 inst.components.lootdropper:SpawnLootPrefab(item)
             end
+
+			if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+				local ornament = math.random(NUM_HALLOWEEN_ORNAMENTS * 4)
+				if ornament <= NUM_HALLOWEEN_ORNAMENTS then
+	                inst.components.lootdropper:SpawnLootPrefab("halloween_ornament_"..tostring(ornament))
+				end
+				if TheWorld.components.specialeventsetup ~= nil then
+					if math.random() < TheWorld.components.specialeventsetup.halloween_bat_grave_spawn_chance then
+						local num_bats = 3
+						for i = 1, num_bats do
+							inst:DoTaskInTime(0.2 * i + math.random() * 0.3, function()
+								local bat = SpawnPrefab("bat")
+								local pos = FindNearbyLand(inst:GetPosition(), 3)
+								bat.Transform:SetPosition(pos:Get())
+								bat:PushEvent("fly_back")
+							end)
+						end
+
+						TheWorld.components.specialeventsetup.halloween_bat_grave_spawn_chance = 0
+					else
+						TheWorld.components.specialeventsetup.halloween_bat_grave_spawn_chance = TheWorld.components.specialeventsetup.halloween_bat_grave_spawn_chance + 0.1 + (math.random() * 0.1)
+					end
+				end
+			end
+		else
+			if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+                inst.components.lootdropper:SpawnLootPrefab("halloween_ornament_1") -- ghost
+			end
         end
     end
 end

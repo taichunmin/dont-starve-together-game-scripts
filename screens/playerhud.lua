@@ -14,6 +14,7 @@ local SandOver = require "widgets/sandover"
 local SandDustOver = require "widgets/sanddustover"
 local MindControlOver = require "widgets/mindcontrolover"
 local GogglesOver = require "widgets/gogglesover"
+local BatOver = require "widgets/batover"
 local EndOfMatchPopup = require "widgets/redux/endofmatchpopup"
 local PopupNumber = require "widgets/popupnumber"
 local RingMeter = require "widgets/ringmeter"
@@ -94,6 +95,9 @@ function PlayerHud:CreateOverlays(owner)
 
     self.mindcontrolover = self.over_root:AddChild(MindControlOver(owner))
 
+    if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+        self.batover = self.overlayroot:AddChild(BatOver(owner))
+    end
     self.sandover = self.overlayroot:AddChild(SandOver(owner, self.sanddustover))
     self.gogglesover = self.overlayroot:AddChild(GogglesOver(owner, self.storm_overlays))
     self.bloodover = self.overlayroot:AddChild(BloodOver(owner))
@@ -283,14 +287,16 @@ end
 
 --ThePlayer.HUD:ShowEndOfMatchPopup({victory=true})	
 function PlayerHud:ShowEndOfMatchPopup(data)
-	if self.endofmatchpopup == nil then
-		local popupdata =
-		{
-			title = data.victory and STRINGS.UI.HUD.LAVAARENA_WIN_TITLE or STRINGS.UI.HUD.LAVAARENA_LOSE_TITLE,
-			body = data.victory and STRINGS.UI.HUD.LAVAARENA_WIN_BODY or STRINGS.UI.HUD.LAVAARENA_LOSE_BODY,
-		}
-		self.endofmatchpopup = self.root:AddChild(EndOfMatchPopup(self.owner, popupdata))
-	end
+	self.inst:DoTaskInTime(data.victory and 2.5 or 0, function()
+		if self.endofmatchpopup == nil then
+			local popupdata =
+			{
+				title = data.victory and STRINGS.UI.HUD.LAVAARENA_WIN_TITLE or STRINGS.UI.HUD.LAVAARENA_LOSE_TITLE,
+				body = data.victory and STRINGS.UI.HUD.LAVAARENA_WIN_BODY or STRINGS.UI.HUD.LAVAARENA_LOSE_BODY,
+			}
+			self.endofmatchpopup = self.root:AddChild(EndOfMatchPopup(self.owner, popupdata))
+		end
+	end)
 end
 
 function PlayerHud:OpenScreenUnderPause(screen)

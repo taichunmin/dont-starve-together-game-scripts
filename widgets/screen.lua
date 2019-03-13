@@ -7,6 +7,7 @@ local Screen = Class(Widget, function(self, name)
 	--self.focusindex = 0
 	self.handlers = {}
 	--self.inst:Hide()
+    self.is_screen = true
 end)
 
 function Screen:OnCreate()

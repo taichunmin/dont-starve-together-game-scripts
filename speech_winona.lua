@@ -23,6 +23,13 @@ return {
 			NOTALLOWED = "That's just impractical.",
 			INUSE = "No rush.",
 		},
+		CONSTRUCT =
+        {
+            INUSE = "Aw someone else is building it already.",
+            NOTALLOWED = "Square peg in a round hole.",
+            EMPTY = "I gotta have something to build with.",
+            MISMATCH = "Oops! Wrong plans.",
+        },
 		RUMMAGE =
 		{	
 			GENERIC = "I can't right now.",
@@ -54,6 +61,7 @@ return {
             SLEEPING = "They're off the clock.",
             BUSY = "They're busy working.",
             ABIGAILHEART = "No one should ever lose a sister.",
+            --...
             GHOSTHEART = "Some things even I can't fix.",
             NOTGEM = "What sort of worker do you take me for?",
             WRONGGEM = "Nn-nn. That doesn't go there.",
@@ -67,6 +75,10 @@ return {
             NOTSCULPTABLE = "That ain't for sculpting.",
             CANTSHADOWREVIVE = "Don't think that'll work.",
             WRONGSHADOWFORM = "I gotta disassemble it and try again.",
+            NOMOON = "Gonna have to make this under the influence of the moon.",
+            PIGKINGGAME_MESSY = "Gotta clean up first.",
+			PIGKINGGAME_DANGER = "Nah. It ain't safe for that now.",
+			PIGKINGGAME_TOOLATE = "Nah. I'll wait until morning.",
         },
         GIVETOPLAYER =
         {
@@ -142,8 +154,11 @@ return {
 	ANNOUNCE_BEES = "BEEEES!",
 	ANNOUNCE_BOOMERANG = "I'll catch you next time! Ow...",
 	ANNOUNCE_CHARLIE = "C-Charlie?",
-	ANNOUNCE_CHARLIE_MISSED = "Ha! I know all your moves!", --Winona gets one free hit from Charlie
+    --...I'm so sorry, I never meant for you to come here.
+	ANNOUNCE_CHARLIE_MISSED = "Ha! I know all your moves!",
+    --This wasn't a part of my plan, but as you're here now...
 	ANNOUNCE_CHARLIE_ATTACK = "Yeow! Rude!",
+    --...I suppose I'll have to make do.
 	ANNOUNCE_COLD = "Brr! Cold as frozen steel out here!",
 	ANNOUNCE_HOT = "It's hotter than a tin smelter in July!",
 	ANNOUNCE_CRAFTING_FAIL = "How did I junk that up?!",
@@ -233,12 +248,32 @@ return {
 	ANNOUNCE_WETTER = "This is just uncomfortable now.",
 	ANNOUNCE_SOAKED = "I'm DRENCHED!",
 
+	ANNOUNCE_DESPAWN = "Good thing I got all my affairs in order.",
 	ANNOUNCE_BECOMEGHOST = "ooOooooO!",
 	ANNOUNCE_GHOSTDRAIN = "My head's all fuzzy...",
 	ANNOUNCE_PETRIFED_TREES = "Do these trees seem shadier?",
 	ANNOUNCE_KLAUS_ENRAGE = "HOLY RIVETS! Time to make tracks!",
 	ANNOUNCE_KLAUS_UNCHAINED = "The mitts are coming off!",
 	ANNOUNCE_KLAUS_CALLFORHELP = "He called his goons!",
+
+    ANNOUNCE_HUNGRY_SLOWBUILD = 
+    {
+	    "My head's all clouded by hunger!",
+	    "Oof. I got the brainfog.",
+	    "Maybe I could take a snack break?",
+	    "I could sure go for some grub."
+    },
+    ANNOUNCE_HUNGRY_FASTBUILD = 
+    {
+    	"This's hungry work.",
+    	"I'm working up an appetite.",
+    	"That made me a lil hungry.",
+    	"I'll need some brainfood at this rate.",
+    },
+
+	--hallowed nights
+    ANNOUNCE_SPOOKED = "I'm seein' things!",
+    ANNOUNCE_BRAVERY_POTION = "I got my moxie back. Now to tackle those trees.",
 
     --lavaarena event
     ANNOUNCE_REVIVING_CORPSE = "Up'n'attem now.",
@@ -270,6 +305,10 @@ return {
 	DESCRIBE =
 	{
 		MULTIPLAYER_PORTAL = "That was a one-way ticket.",
+		MULTIPLAYER_PORTAL_MOONROCK = "Wow. Can't even see the weld joints.",
+        CONSTRUCTION_PLANS = "Let's get building.",
+        MOONROCKIDOL = "Do I gotta offer it up to something?",
+        MOONROCKSEED = "I could learn a thing or two from this.",
 		ANTLION = 
 		{
 			GENERIC = "How's the weather up there?",
@@ -937,6 +976,7 @@ return {
 			LOW = "Gonna go out soon.",
 			NORMAL = "About as cozy as it gets out here.",
 			OUT = "My sister was afraid of the dark.",
+            --You've changed so much.
 		},
 		CANE = "It's no Tin Lizzie.",
 		CATCOON = "She'll keep the rats outta the factory.",
@@ -1217,6 +1257,7 @@ return {
 			LOW = "It's gonna go out soon.",
 			NORMAL = "About as cozy as it gets out here.",
 			OUT = "My sister was afraid of the dark.",
+            --How much time has passed for you?
 		},
 		COLDFIREPIT =
 		{
@@ -1391,6 +1432,7 @@ return {
 		MALE_PUPPET = "He doesn't look none too happy.",
 
 		MANDRAKE_ACTIVE = "This is exactly what having a little sister's like.",
+        --I should like to speak, face to face.
 		MANDRAKE_PLANTED = "That's a weird shrub.",
 		MANDRAKE = "Dead as a doornail.",
 
@@ -1904,6 +1946,21 @@ return {
         HALLOWEENCANDY_14 = "Whew! That's the kick y'need!",	--Hot Lava pepper candy
         CANDYBAG = "It's a goodybag.",
 
+        HALLOWEEN_ORNAMENT_1 = "Ha! Ya almost fooled me.",
+		HALLOWEEN_ORNAMENT_2 = "I should hang this somewhere.",
+		HALLOWEEN_ORNAMENT_3 = "Time to decorate.",
+		HALLOWEEN_ORNAMENT_4 = "Time for decoratin'!", 
+		HALLOWEEN_ORNAMENT_5 = "Hey, it's them hanging guys.", 
+		HALLOWEEN_ORNAMENT_6 = "It needs to be in a tree.",
+
+		HALLOWEENPOTION_DRINKS_WEAK = "Aw, I was hoping for a little more.",
+		HALLOWEENPOTION_DRINKS_POTENT = "I got lucky and got the big bottle.",
+		HALLOWEENPOTION_FIRE_FX = "Ohh. This'll make a spark.", 
+		HALLOWEENPOTION_BRAVERY = "Makes ya plucky.",
+		MADSCIENCE_LAB = "I can do some experimentin' with that.",
+		LIVINGTREE_ROOT = "Oh hey! There's a little stick in there.",
+		LIVINGTREE_SAPLING = "Keep growin' little guy! I'm gonna decorate you.",
+
         DRAGONHEADHAT = "Front and center!",
         DRAGONBODYHAT = "It's the beast's tummy!",
         DRAGONTAILHAT = "That's the business end.",
@@ -1937,6 +1994,22 @@ return {
         HOUNDWHISTLE = "This oughta give them paws pause.",
         CHESSPIECE_CLAYHOUND = "A good boy if ever I saw one.",
         CHESSPIECE_CLAYWARG = "It's a sculpture of that mean mutt.",
+
+        PIGSHRINE =
+		{
+            GENERIC = "A bunch of things to build.",
+            EMPTY = "I gotta find some meat for it.",
+            BURNT = "No good now.",
+		},
+		PIG_TOKEN = "Too big for me to wear.",
+		YOTP_FOOD1 = "Now that's a feast!",
+		YOTP_FOOD2 = "I'll give it to a pig or somethin'.",
+		YOTP_FOOD3 = "Somethin' to chew on.",
+
+		PIGELITE1 = "Swell tattoos you got there.", --BLUE
+		PIGELITE2 = "Chill out, red.", --RED
+		PIGELITE3 = "He's giving me a dirty look.", --WHITE
+		PIGELITE4 = "Stand still so I can hit you with a sign.", --GREEN
 		
 		BISHOP_CHARGE_HIT = "Yeow!",
 		TRUNKVEST_SUMMER = "They weren't kidding about the breeze.",
@@ -2018,6 +2091,8 @@ return {
         WINTER_ORNAMENT = "Gotta be careful not to break it.",
         WINTER_ORNAMENTLIGHT = "Finally, something with wiring.",
         WINTER_ORNAMENTBOSS = "Fancy lil ornament.",
+        WINTER_ORNAMENTFORGE = "Reminds me of somthin'.",
+		WINTER_ORNAMENTGORGE = "Look at that fancy pants decoration.",
         
         WINTER_FOOD1 = "I love these things!", --gingerbread cookie
         WINTER_FOOD2 = "No thanks, I'm sweet enough.", --sugar cookie
@@ -2096,6 +2171,8 @@ return {
         TRAILS = "He's justa big meathead.",
         TURTILLUS = "Steel yourself, turtle.",
         SNAPPER = "You keep yer spit to yourself now, buddy.",
+        RHINODRILL = "Am I supposed to be impressed?",
+		BEETLETAUR = "Go back to your cage.",
         
         LAVAARENA_PORTAL = 
         {
@@ -2138,6 +2215,11 @@ return {
         LAVAARENA_RECHARGERHAT = "I'd be so efficient with that!",
         LAVAARENA_HEALINGGARLANDHAT = "That's fer a bit of self maintenance.",
         LAVAARENA_CROWNDAMAGERHAT = "You'd be a real heavy hitter with that.",
+
+        LAVAARENA_ARMOR_HP = "Can't go wrong with armor.",
+
+		LAVAARENA_FIREBOMB = "Here's fire in yer eye!",
+		LAVAARENA_HEAVYBLADE = "That'll do the trick.",
 
         --Quagmire
         QUAGMIRE_ALTAR = 
@@ -2349,6 +2431,37 @@ return {
 
         QUAGMIRE_LAMP_SHORT = "That's a light.",
 
+        --v2 Winona
+        WINONA_CATAPULT = 
+        {
+        	GENERIC = "Not a bad result considering the materials.",
+        	OFF = "Gotta hook it up to the generator.",
+        	BURNING = "Quick! Put it out!",
+        	BURNT = "Aw, nuts and bolts!",
+        },
+        WINONA_SPOTLIGHT = 
+        {
+        	GENERIC = "Sorry, Charlie.",
+        	OFF = "Gotta hook it up to the generator.",
+        	BURNING = "Quick! Put it out!",
+        	BURNT = "Criminy! My machine!",
+        },
+        WINONA_BATTERY_LOW = 
+        {
+        	GENERIC = "That oughta do it.",
+        	LOWPOWER = "Just about out of juice.",
+        	OFF = "Needs some more nitre.",
+        	BURNING = "Quick! Put it out!",
+        	BURNT = "Aw, nuts and bolts!",
+        },
+        WINONA_BATTERY_HIGH = 
+        {
+        	GENERIC = "I don't get how gems work, I just know they do.",
+        	LOWPOWER = "Gonna need a top up soon.",
+        	OFF = "Needs a few more'a those gem thingies.",
+        	BURNING = "Quick! Put it out!",
+        	BURNT = "Criminy! My machine!",
+        },
     },
     DESCRIBE_GENERIC = "Incredible! I have no idea what that is.",
     DESCRIBE_TOODARK = "Low visibility causes workplace accidents!",

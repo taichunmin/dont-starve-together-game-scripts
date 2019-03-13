@@ -35,7 +35,9 @@ local LoadersExplorerPanel = Class(Widget, function(self, owner, user_profile)
     self.picker:RepositionFooter(self.preview_root, -PREVIEW_HEIGHT/2 - 30, PREVIEW_WIDTH)
 
     self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
-    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddSorter() )
 
     self:_DoFocusHookups()
     self.focus_forward = self.filter_bar:BuildFocusFinder()

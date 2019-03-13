@@ -60,8 +60,10 @@ local function OnGetItemFromPlayer(inst, giver, item)
         if inst.components.combat:TargetIs(giver) then
             inst.components.combat:SetTarget(nil)
         elseif giver.components.leader ~= nil then
-            giver:PushEvent("makefriend")
-            giver.components.leader:AddFollower(inst)
+			if giver.components.minigame_participator == nil then
+	            giver:PushEvent("makefriend")
+		        giver.components.leader:AddFollower(inst)
+			end
             inst.components.follower:AddLoyaltyTime(
                 giver:HasTag("polite")
                 and TUNING.ROCKY_LOYALTY + TUNING.ROCKY_POLITENESS_LOYALTY_BONUS

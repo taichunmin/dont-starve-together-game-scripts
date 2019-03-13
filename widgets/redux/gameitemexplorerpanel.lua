@@ -18,7 +18,9 @@ local GameItemExplorerPanel = Class(Widget, function(self, owner, profile)
 	self:DoInit() 
 
     self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
-    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNED_CLOTHING, STRINGS.UI.WARDROBESCREEN.SHOW_UNOWNEDANDOWNED_CLOTHING, "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
+    self.picker.header:AddChild( self.filter_bar:AddSorter() )
 
     self:_DoFocusHookups()
     self.focus_forward = self.filter_bar:BuildFocusFinder()
@@ -38,10 +40,8 @@ end
 
 -- Update the details panel when an item is clicked
 function GameItemExplorerPanel:OnClickedItem(item_data, is_selected)
-    local type = item_data.item_blob.type
-    local item_type = item_data.item_key
-
-	--print( "OnClickedItem", type, item_type )
+    local type, item_type = GetTypeForItem(item_data.item_key)
+	--print( "GameItemExplorerPanel:OnClickedItem", type, item_type )
 
 	if type == nil or item_type == nil then 
 		return

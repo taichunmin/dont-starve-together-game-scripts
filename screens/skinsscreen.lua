@@ -351,7 +351,8 @@ end
 
 function SkinsScreen:GetSkinsList()
 
-	self.skins_list, self.timestamp = GetSortedSkinsList()
+    self.timestamp = 0 --legacy code unsupported
+	self.skins_list = GetInventorySkinsList( true )
 
 	-- Keep a copy so we can change the skins_list later (for filters)
 	self.full_skins_list = CopySkinsList(self.skins_list)

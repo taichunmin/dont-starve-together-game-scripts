@@ -2,14 +2,6 @@
 
 require("dlcsupport")
 
--- Load the shield portrait for input character into the input widget.
---
--- character is something like 'wilson'
-function SetShieldPortraitTexture(image_widget, character)
-    -- Official characters use _none for their shield portraits, but
-    -- many mods use bare character name.
-    image_widget:SetTexture("bigportraits/"..character..".xml", character.."_none.tex", character..".tex")
-end
 
 -- Load the oval portrait for input character into the input widget.
 --
@@ -17,13 +9,18 @@ end
 -- character is something like 'wilson'
 -- skin is something like 'wilson_formal'
 function SetSkinnedOvalPortraitTexture(image_widget, character, skin)
-    if softresolvefilepath("bigportraits/"..skin..".xml") then 
-        -- Try to load the oval and fall back to the unskinned shield if it's stored here.
-        image_widget:SetTexture("bigportraits/"..skin..".xml", skin.."_oval.tex", character.."_none.tex")
-        return true
+    if IsPrefabSkinned(character) then
+        local portrait_name = GetPortraitNameForItem(skin)
+        if softresolvefilepath("bigportraits/"..portrait_name..".xml") then 
+            -- Try to load the oval and fall back to the unskinned shield if it's stored here.
+            image_widget:SetTexture("bigportraits/"..portrait_name..".xml", portrait_name.."_oval.tex", character.."_none.tex")
+            return true
+        else
+            print("ERROR! ", portrait_name, "is not a valid portrait file for", character, skin )
+        end
     else
         -- No skinnable oval portrait. Load the shield portrait instead.
-        SetShieldPortraitTexture(image_widget, character)
+        image_widget:SetTexture("bigportraits/"..character..".xml", character..".tex")
         return false
     end
 end
@@ -32,7 +29,12 @@ end
 --
 -- character is something like 'wilson'
 function SetOvalPortraitTexture(image_widget, character)
-    return SetSkinnedOvalPortraitTexture(image_widget, character, character .."_none")
+    if IsPrefabSkinned(character) or character == "random" then --"random" hack, yuck
+        return SetSkinnedOvalPortraitTexture(image_widget, character, character .."_none")
+    else
+        image_widget:SetTexture("bigportraits/"..character..".xml", character..".tex")
+        return false
+    end
 end
 
 -- Load the oval portrait for input character into the input widget.

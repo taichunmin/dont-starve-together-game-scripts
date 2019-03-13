@@ -96,10 +96,9 @@ end
 
 function MysteryBoxScreen:_BuildBoxesPanel()
 	local boxes_ss = self.root:AddChild(Widget("boxes_ss"))
-
-    self.frame = boxes_ss:AddChild(Image("images/fepanels_redux_shop_panel.xml", "shop_panel.tex"))
-    self.frame:SetScale(0.9)
-    self.frame:SetPosition(0,10)
+        
+    boxes_ss.window  = boxes_ss:AddChild(TEMPLATES.RectangleWindow(450, 330))
+    boxes_ss.window:SetPosition(0,10)
     
     boxes_ss.spinner = boxes_ss:AddChild(TEMPLATES.StandardSpinner({}, 450, 40, HEADERFONT, 30))
 	boxes_ss.spinner.background:Hide()
@@ -136,7 +135,7 @@ function MysteryBoxScreen:_BuildBoxesPanel()
             allow_cancel = true,
             box_build = GetBoxBuildForItem( box_item_type ),
         }
-        local box_popup = ItemBoxOpenerPopup(self, options, function(success_cb)
+        local box_popup = ItemBoxOpenerPopup(options, function(success_cb)
             TheItems:OpenBox(box_item_id, function(success, item_types)
                 if not success or #item_types == 0 then
                     local body_txt = (not success) and STRINGS.UI.BOX_POPUP.SERVER_ERROR_BODY or STRINGS.UI.BOX_POPUP.SERVER_NO_ITEM_BODY

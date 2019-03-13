@@ -35,7 +35,7 @@ local function MakeArmour(name, data)
         return inst
     end
 
-    return Prefab(name, fn, assets)
+    return Prefab(name, fn, assets, data.prefabs)
 end
 
 local armors = {}
@@ -88,6 +88,37 @@ for k, v in pairs({
         tags = { "marble", "heavyarmor" },
         foleysound = "dontstarve/movement/foley/marblearmour",
     },
+
+	---------------------------------------------------------------------------
+	-- season 2
+    ["lavaarena_armor_hpextraheavy"] =
+    {
+        build = "armor_hpextraheavy",
+        tags = { "ruins", "metal" },
+        foleysound = "dontstarve/movement/foley/metalarmour",
+    },
+
+    ["lavaarena_armor_hppetmastery"] =
+    {
+        build = "armor_hppetmastery",
+        tags = { "ruins", "metal" },
+        foleysound = "dontstarve/movement/foley/metalarmour",
+    },
+
+    ["lavaarena_armor_hprecharger"] =
+    {
+        build = "armor_hprecharger",
+        tags = { "ruins", "metal" },
+        foleysound = "dontstarve/movement/foley/metalarmour",
+    },
+
+    ["lavaarena_armor_hpdamager"] =
+    {
+        build = "armor_hpdamager",
+        tags = { "ruins", "metal" },
+        foleysound = "dontstarve/movement/foley/metalarmour",
+    },
+
 }) do
     table.insert(armors, MakeArmour(k, v))
 end

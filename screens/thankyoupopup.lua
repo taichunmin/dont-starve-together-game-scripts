@@ -63,15 +63,15 @@ GIFT_TYPE = {
         title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE_DEFAULT,
         titleoffset={0, -20, 0},
     },
-    WINTER = {
-        atlas="images/thankyou_item_event.xml",
-        image={"thankyou_winter.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE_DEFAULT,
-        titleoffset={0, -30, 0},
+    DAILY_GIFT = {
+        atlas="images/thankyou_item_popup.xml",
+        image={"thankyou_gift.tex"},
+        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_DAILY,
+        titleoffset={0, -20, 0},
     },
 }
 
-TRANSITION_DURATION = 0.9
+TRANSITION_DURATION = 0.5
 DEFAULT_TITLE_SIZE = 55
 
 local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
@@ -145,11 +145,7 @@ local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     --self.banner:SetScale(.9)
 
     ---- Name of the received item, parented to the banner so they show and hide together
-    --self.item_name = self.banner:AddChild(Text(UIFONT, 55))
-    --self.item_name:SetString("Dragonfly Backpack")
-    --self.item_name:SetPosition(0, -10, 0)
     self.item_name = self.proot:AddChild(Text(UIFONT, 50))
-    self.item_name:SetString("Dragonfly Backpack")
     self.item_name:SetPosition(0, -205, 0)
 
     --self.banner:Hide()
@@ -214,13 +210,17 @@ function ThankYouPopup:OnUpdate(dt)
             self.reveal_skin = false
             self:EvaluateButtons()
             self:SetSkinName()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
+            if not TheFrontEnd:GetSound():PlayingSound("gift_idle") then
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
+            end
         -- We just navigated to an already revealed skin
         elseif self.transitioning then
             self.transitioning = false
             self:EvaluateButtons()
             self:SetSkinName()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
+            if not TheFrontEnd:GetSound():PlayingSound("gift_idle") then
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
+            end
         end
     -- We're closing the popup
     elseif self.spawn_portal:GetAnimState():IsCurrentAnimation("skin_out") and self.spawn_portal:GetAnimState():AnimDone() and not self.transitioning then
@@ -238,12 +238,11 @@ function ThankYouPopup:OnUpdate(dt)
     -- We just navigated to an unrevealed skin
     elseif self.spawn_portal:GetAnimState():IsCurrentAnimation("idle") and self.transitioning then
         self.transitioning = false
-        if TheInput:ControllerAttached() then
-            self.can_open = true
-        else
-            self.open_btn:Show()
+        self.can_open = true
+        self.open_btn:Show()
+        if not TheFrontEnd:GetSound():PlayingSound("gift_idle") then
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
         end
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_recieves_gift_idle", "gift_idle")
     end
 end
 
@@ -268,11 +267,8 @@ function ThankYouPopup:EvaluateButtons()
     end
 
     if revealed_items_size == #self.items and not self.transitioning then
-        if TheInput:ControllerAttached() then
-            self.can_close = true
-        else
-            self.close_btn:Show()
-        end
+        self.can_close = true
+        self.close_btn:Show()
     end
 
     if #self.items == 1 then
@@ -332,8 +328,10 @@ function ThankYouPopup:ChangeGift(offset)
         self.side_title:Hide()
     end
 
+    TheFrontEnd:GetSound():KillSound("gift_idle")
+    
     if not self.revealed_items[self.current_item] then -- Unopened item
-    	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_spin")
+    	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_spin", "ty_activate_sound")
         self.spawn_portal:GetAnimState():PlayAnimation("activate")
         self.spawn_portal:GetAnimState():PushAnimation("idle", true)
         self.open_btn:Hide()
@@ -345,7 +343,7 @@ function ThankYouPopup:ChangeGift(offset)
     else -- Already opened item
         local build = GetBuildForItem(self.items[self.current_item].item)
         self.spawn_portal:GetAnimState():OverrideSkinSymbol("SWAP_ICON", build, "SWAP_ICON")
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_spin")
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_spin", "ty_skin_in_sound")
         self.spawn_portal:GetAnimState():PlayAnimation("skin_in")
         self.spawn_portal:GetAnimState():PushAnimation("skin_loop", true)
         self.close_btn:Hide()
@@ -364,7 +362,7 @@ end
 function ThankYouPopup:GoAway()
     self.can_close = false
 	TheFrontEnd:GetSound():KillSound("gift_idle")
-	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_skinout")
+	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_skinout", "ty_close_sound")
     self.spawn_portal:GetAnimState():PlayAnimation("skin_out")
     
     --self.banner:Hide()
@@ -387,7 +385,7 @@ function ThankYouPopup:OpenGift()
 
     self.spawn_portal:GetAnimState():OverrideSkinSymbol("SWAP_ICON", build, "SWAP_ICON")
 
-    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation")
+    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation", "ty_open_sound")
     self.spawn_portal:GetAnimState():PlayAnimation("open")
     self.spawn_portal:GetAnimState():PushAnimation("skin_loop", true)
 
@@ -403,24 +401,52 @@ function ThankYouPopup:OnControl(control, down)
     if ThankYouPopup._base.OnControl(self,control, down) then 
         return true 
     end
-    
-    if TheInput:ControllerAttached() then
-		if not down and control == CONTROL_ACCEPT then
-			if self.can_open then
-				self:OpenGift()
-			elseif self.can_close then
-				self:GoAway()
-			end
-		end
 
-		if not down and self.can_left and control == CONTROL_SCROLLBACK then
-            self:ChangeGift(-1)
-            return true
-        elseif not down and self.can_right and control == CONTROL_SCROLLFWD then
-        	self:ChangeGift(1)
-            return true
-       	end
-	end
+    if not down and control == CONTROL_ACCEPT then
+        if self.can_open then
+            self:OpenGift()
+        elseif self.can_close then
+            self:GoAway()
+        else
+            local anim_state = self.spawn_portal:GetAnimState()
+            if anim_state:IsCurrentAnimation("activate") then
+                TheFrontEnd:GetSound():KillSound("ty_activate_sound")
+                anim_state:PlayAnimation("idle", true)
+
+            elseif anim_state:IsCurrentAnimation("open") then
+                TheFrontEnd:GetSound():KillSound("ty_open_sound")
+                anim_state:PlayAnimation("skin_loop", true)
+
+            elseif anim_state:IsCurrentAnimation("skin_in") then
+                TheFrontEnd:GetSound():KillSound("ty_skin_in_sound")
+                anim_state:PlayAnimation("skin_loop", true)
+
+            elseif anim_state:IsCurrentAnimation("skin_loop") then
+                --we can't close, so we must have a left or right to go to, move to the right then loop back
+                if self.can_right then
+                    self:ChangeGift(1)
+                else
+                    self.current_item = 1
+                    self:ChangeGift(0)
+                end
+
+            elseif anim_state:IsCurrentAnimation("skin_out") then
+                anim_state:SetTime(anim_state:GetCurrentAnimationLength())
+                TheFrontEnd:GetSound():KillSound("ty_close_sound")
+            else
+                print("I'm impatient! Can we speed up the popup anymore here?")
+            end
+        end
+        return true
+    end
+
+    if not down and self.can_left and control == CONTROL_SCROLLBACK then
+        self:ChangeGift(-1)
+        return true
+    elseif not down and self.can_right and control == CONTROL_SCROLLFWD then
+        self:ChangeGift(1)
+        return true
+    end
 end
 
 function ThankYouPopup:GetHelpText()

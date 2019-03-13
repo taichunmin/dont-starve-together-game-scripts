@@ -32,7 +32,7 @@ local RedeemDialog = Class(Screen, function(self)
 	end
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-    self.black = self.root:AddChild(TEMPLATES.BackgroundTint())
+    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())	
 	self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(480, 220, STRINGS.UI.REDEEMDIALOG.TITLE, buttons, nil, ""))
 
     self.proot = self.root:AddChild(Widget("proot"))
@@ -288,7 +288,7 @@ function RedeemDialog:DoSubmitCode()
 end
 
 function RedeemDialog:Close()
-	TheFrontEnd:PopScreen(self)
+    TheFrontEnd:FadeBack()
 end
 
 function RedeemDialog:GetHelpText()

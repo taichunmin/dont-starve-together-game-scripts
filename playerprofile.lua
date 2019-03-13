@@ -5,7 +5,7 @@ local PlayerProfile = Class(function(self)
     {
         -- TODO: Some of this data should be synced across computers
         -- so will need to be stored on a server somewhere
-        -- (In particular, collection_name, characterskins, and most_recent_item_skins)
+        -- (In particular, collection_name, character_skins, and most_recent_item_skins)
         unlocked_worldgen = {},
         render_quality = RENDER_QUALITY.DEFAULT,
         -- Controlls should be a seperate file
@@ -20,6 +20,7 @@ local PlayerProfile = Class(function(self)
         saw_new_host_picker = false,
         install_id = os.time(),
         play_instance = 0,
+        --characterskins = {} --legacy variable, don't use it.
     }
 
     --we should migrate the non-gameplay stuff to a separate file, so that we can save them whenever we want
@@ -161,94 +162,81 @@ function PlayerProfile:SetLastSelectedCharacter(character)
     end
 end
 
-function PlayerProfile:GetBaseForCharacter(character)
-	if not self.persistdata.characterskins then
-		self.persistdata.characterskins = {}
+function PlayerProfile:GetSkinPresetForCharacter(character, preset_index)
+	if not self.persistdata.skin_presets then
+		self.persistdata.skin_presets = {}
 	end
 
-	if not self.persistdata.characterskins[character] then
-		self.persistdata.characterskins[character] = {}
+	if not self.persistdata.skin_presets[character] then
+        self.persistdata.skin_presets[character] = {}
 	end
-
-	return self.persistdata.characterskins[character].last_base or nil
-end
-
-function PlayerProfile:GetSkinsForCharacter(character, base)
-	if not self.persistdata.characterskins then
-		self.persistdata.characterskins = {}
-	end
-
-	if not self.persistdata.characterskins[character] then
-		self.persistdata.characterskins[character] = {}
-	end
+    
+    --Do skins validation to ensure that the saved skins aren't available anymore
+    --ValidateItemsLocal(character, self.persistdata.skin_presets[character][preset_index])
 
     -- Never return internal data to prevent accidental profile modification.
     -- Modify via Set functions.
-	return shallowcopy(self.persistdata.characterskins[character][base]) or {}
+	return shallowcopy(self.persistdata.skin_presets[character][preset_index]) or {}
 end
 
-function PlayerProfile:GetAllEquippedSkins()
-	if not self.persistdata.characterskins then
-		return {}
+function PlayerProfile:SetSkinPresetForCharacter(character, preset_index, skin_list)
+	if not self.persistdata.skin_presets then
+		self.persistdata.skin_presets = {}
 	end
 
-	local skinslist = {}
-	for character,data in pairs(self.persistdata.characterskins) do
-		for base, skins in pairs(data) do
-			if type(skins) == "table" then
-				for slot, name in pairs(skins) do
-					if name ~= "" then
-						table.insert(skinslist, name)
-					end
-				end
-			end
-		end
-	end
-
-	return skinslist
-end
-
--- Returned as a table of tables, where each table matches the format of the data in PlayerHistory.
-function PlayerProfile:GetAllRecentLoadouts()
-	if not self.persistdata.characterskins then
-		return {}
-	end
-
-	local loadouts = {}
-	for character,data in pairs(self.persistdata.characterskins) do
-		if data["last_base"] then 
-			local character_base = data["last_base"]
-			local character_data = {}
-			character_data.name = TheNet:GetLocalUserName()
-			if data[character_base] ~= nil then
-				character_data.prefab = character
-				character_data.base_skin = data[character_base]["base"]
-				character_data.body_skin = data[character_base]["body"]
-				character_data.hand_skin = data[character_base]["hand"]
-				character_data.legs_skin = data[character_base]["legs"]
-				character_data.feet_skin = data[character_base]["feet"]
-			else
-				print("Error: unable to find character in profile", character)
-			end
-			table.insert(loadouts, character_data)
-		end
-	end
-
-	return loadouts
-end
-
-function PlayerProfile:SetSkinsForCharacter(character, base, skinList)
-	if not self.persistdata.characterskins then
-		self.persistdata.characterskins = {}
-	end
-
-	if not self.persistdata.characterskins[character] then
-		self.persistdata.characterskins[character] = {}
+	if not self.persistdata.skin_presets[character] then
+		self.persistdata.skin_presets[character] = {}
 	end
 
 	self.dirty = true
-	self.persistdata.characterskins[character].last_base = base
-	self.persistdata.characterskins[character][base] = skinList
+	self.persistdata.skin_presets[character][preset_index] = shallowcopy(skin_list)
+
+	self:Save()
+end
+
+function PlayerProfile:GetSkinsForCharacter(character)
+	if not self.persistdata.character_skins then
+		self.persistdata.character_skins = {}
+	end
+
+	if not self.persistdata.character_skins[character] then
+        if self.persistdata.characterskins ~= nil and self.persistdata.characterskins[character] ~= nil then
+            print("Read back legacy skins data from profile for character", character)
+		    self.persistdata.character_skins[character] = self.persistdata.characterskins[character][self.persistdata.characterskins[character].last_base]
+            --strip out old "" legacy items
+            if self.persistdata.character_skins[character] ~= nil then
+                for k,v in pairs(self.persistdata.character_skins[character]) do
+                    if v == "" then
+                        self.persistdata.character_skins[character][k] = nil
+                    end
+                end
+            else
+                self.persistdata.character_skins[character] = { base = character.."_none" }
+            end
+        else
+		    self.persistdata.character_skins[character] = { base = character.."_none" }
+        end
+	end
+    
+    --Do skins validation to ensure that the saved skins aren't available anymore
+    ValidateItemsLocal(character, self.persistdata.character_skins[character])
+
+    -- Never return internal data to prevent accidental profile modification.
+    -- Modify via Set functions.
+	return shallowcopy(self.persistdata.character_skins[character]) or {}
+end
+
+function PlayerProfile:SetSkinsForCharacter(character, skinList)
+	if not self.persistdata.character_skins then
+		self.persistdata.character_skins = {}
+	end
+
+	if not self.persistdata.character_skins[character] then
+		self.persistdata.character_skins[character] = {}
+	end
+
+	self.dirty = true
+	self.persistdata.character_skins[character] = shallowcopy(skinList)
 
 	self:Save()
 end
@@ -312,6 +300,16 @@ function PlayerProfile:GetStoredCustomizationItemTypes()
 	return table.getkeys(self.persistdata.customization_items)
 end
 
+
+function PlayerProfile:SetItemSortMode(sort_mode)
+    self.persistdata.item_explorer_sort_mode = sort_mode
+	self:Save()
+end
+
+function PlayerProfile:GetItemSortMode()
+    return self.persistdata.item_explorer_sort_mode
+end
+
 -- Filters that determine which customization items are displayed in the collection.
 function PlayerProfile:SetCustomizationFilterState(customize_screen, customize_filter, filter_state)
 	if not self.persistdata.customization_filters then
@@ -358,16 +356,6 @@ function PlayerProfile:GetShopHash()
 	return self.persistdata.purchase_screen_hash or 0
 end
 
-function PlayerProfile:SetDressupTimestamp(time)
-	self.persistdata.lobby_timestamp = time
-
-	self:Save()
-end
-
-function PlayerProfile:GetDressupTimestamp()
-	return self.persistdata.lobby_timestamp or -10000
-end
-
 function PlayerProfile:SetRecipeTimestamp(recipe, time)
 	self.persistdata.recipe_timestamps = self.persistdata.recipe_timestamps or {}
 
@@ -381,16 +369,6 @@ function PlayerProfile:GetRecipeTimestamp(recipe)
 	else 
 		return -10000
 	end
-end
-
-function PlayerProfile:IsSkinEquipped(name, type)
-	for character, data in pairs(self.persistdata.characterskins) do
-		if data[type] == name then
-			return true
-		end
-	end
-
-	return false
 end
 
 -- may return nil
@@ -1116,8 +1094,6 @@ function PlayerProfile:ShowedNewHostPicker()
         self.dirty = true
     end
 end
-
-
 
 function PlayerProfile:SaveKlumpCipher(file, cipher)
     if IsConsole() then

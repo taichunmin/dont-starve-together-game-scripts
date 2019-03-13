@@ -557,10 +557,15 @@ function ServerSettingsTab:VerifyValidNewHostType()
     return Profile:SawNewHostPicker()
 end
 
+function ServerSettingsTab:VerifyValidPassword()
+    local pw = self.server_pw.textbox:GetLineEditString()
+    return pw == "" or pw:match("^%s*(.-%S)%s*$") == pw
+end
+
 function ServerSettingsTab:SetEditingTextboxes(edit)
-	self.server_name.textbox:SetEditing(edit)
-	self.server_pw.textbox:SetEditing(edit)
-	self.server_desc.textbox:SetEditing(edit)
+    self.server_name.textbox:SetEditing(edit)
+    self.server_pw.textbox:SetEditing(edit)
+    self.server_desc.textbox:SetEditing(edit)
     self.clan_id.textbox:SetEditing(edit)
 end
 

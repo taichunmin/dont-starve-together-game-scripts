@@ -9,53 +9,36 @@ local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
 
 local TEMPLATES = require("widgets/redux/templates")
-local PURCHASE_INFO = require("skin_purchase_packs")
 require("misc_items")
 
+-------------------------------------------------------------------
 
-local PurchasePackScreen = Class(Screen, function(self)
-	Screen._ctor(self, "PurchasePackScreen")
-	self:DoInit()
+local FILTER_OWNED_INDEX = 1
+local FILTER_TYPE_INDEX = 2
 
-	Profile:SetShopHash( CalculateShopHash() )
+local build_price_str = function( value, currency_code )
+    if type(value) ~= "number" then
+        if IsSteam() then
+	        value = value.cents
+        elseif IsRail() then
+            value = value.rail_price
+        end
+    end
 
-	self.default_focus = self.purchase_root
-end)
-
-function PurchasePackScreen:DoInit()
-    self.root = self:AddChild(TEMPLATES.ScreenRoot())
-
-    self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
-
-    self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.PURCHASEPACKSCREEN.TITLE, ""))
-    self.onlinestatus = self.root:AddChild(OnlineStatus(true))
-
-    self.purchase_root = self:_BuildPurchasePanel()
-    
-    if not TheInput:ControllerAttached() then 
-        self.back_button = self.root:AddChild(TEMPLATES.BackButton(
-                function()
-                    TheFrontEnd:FadeBack()
-                end
-            ))
+	if IsSteam() then
+        local whole = tostring(value / 100)
+	    return currency_code .. " " .. whole
+    elseif IsRail() then
+        return tostring(value) .. " RMB"
+    else
+        print("Error!!! Figure out the pricing for the new platform.")
     end
 end
 
-local build_price = function( currency_code, cents )
-	local whole = tostring(cents / 100)
-	return currency_code .. " " .. whole
-end
-local PurchaseWidget = Class(Widget, function(self, screen_self)
-	Widget._ctor(self, "PurchaseWidget")
-
-	self.root  = self:AddChild(Widget("purchase_item_root"))
-    self.root:SetScale(0.90)
-    self.item_type = nil
+local add_details = function ( self, proot, fontsize )
         
-    self.frame = self.root:AddChild(Image("images/fepanels_redux_shop_panel.xml", "shop_panel.tex"))
-    self.frame:SetScale(0.55)
-    self.frame:SetPosition(-10,-7)
-    
+    self.root = proot:AddChild(Widget("purchase_dialog_root"))
+
     self.icon_root = self.root:AddChild(Widget("icon_root"))
 	self.icon_root:SetPosition(-150, 0)
 
@@ -67,93 +50,197 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
 	self.icon_anim:GetAnimState():PlayAnimation("icon")
 	self.icon_anim:SetScale(1.75)
 
+    self.icon_glow = self.icon_root:AddChild(Image("images/global_redux.xml", "shop_glow.tex"))
+    self.icon_glow2 = self.icon_root:AddChild(Image("images/global_redux.xml", "shop_glow.tex"))
+
+    self.icon_glow:RotateTo( 0, 0.8, 0.3, nil, true )
+    self.icon_glow2:RotateTo( 0, -0.35, 0.3, nil, true )
+
     self.icon_image = self.icon_root:AddChild(Image())
     self.icon_image:SetScale(0.35)
-	
+
     self.text_root = self.root:AddChild(Widget("text_root"))
-	self.text_root:SetPosition(60, 50)
-	self.title = self.text_root:AddChild(Text(HEADERFONT, 25, nil, UICOLOURS.GOLD_SELECTED))
-	self.title:SetPosition(0, 6)
-	self.text = self.text_root:AddChild(Text(CHATFONT, 22, nil, UICOLOURS.GREY))
-	self.text:SetPosition(0, -58)
-	self.text:SetRegionSize(245, 60)
-	self.text:EnableWordWrap(true)
+    self.title = self.text_root:AddChild(Text(HEADERFONT, 25*fontsize, nil, UICOLOURS.GOLD_SELECTED))
+    self.collection = self.text_root:AddChild(Text(CHATFONT, 17*fontsize, nil, UICOLOURS.BLUE))
+    self.text = self.text_root:AddChild(Text(HEADERFONT, 16*fontsize, nil, UICOLOURS.GOLD_UNIMPORTANT))
+    self.price = self.text_root:AddChild(Text(HEADERFONT, 28*fontsize, nil, UICOLOURS.GOLD_FOCUS))
+    self.oldprice = self.text_root:AddChild(Text(HEADERFONT, 15*fontsize, nil, { 123 / 255, 105 / 255, 61 / 255, 1 } ))
+    self.oldprice_line = self.text_root:AddChild(Image("images/global_redux.xml", "shop_crossed_price.tex"))
+    self.savings_frame = self.text_root:AddChild(Image("images/global_redux.xml", "shop_discount.tex"))
+    self.savings = self.text_root:AddChild(Text(HEADERFONT, 15*fontsize, nil, UICOLOURS.BLACK ))
 
-    local purchasefn = 
-        function()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/purchase")
+    return self.root
 
-            local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
-            TheFrontEnd:PushScreen(commerce_popup)
+end
 
-            TheItems:StartPurchase(self.item_type, function(success, message)
-                self.inst:DoTaskInTime(0, function()  --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
-                    commerce_popup:Close()
-                    if success then
-                        local display_items = PURCHASE_INFO.PACKS[self.item_type]
-                        local options = {
-                            allow_cancel = false,
-                            box_build = GetBoxBuildForItem(self.item_type),
-                            use_bigportraits = IsPackFeatured(self.item_type),
-                        }
+local purchasefn = 
+    function( self )
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/purchase")
+
+        local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
+        TheFrontEnd:PushScreen(commerce_popup)
+
+        local item_type_purchased = self.item_type --need to save a copy of this for the callback function because the UI could update on us, and item_type could change.
+        TheItems:StartPurchase(item_type_purchased, function(success, message)
+            self.inst:DoTaskInTime(0, function()  --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
+                commerce_popup:Close()
+                if success then
+                    local display_items = GetPurchasePackDisplayItems(item_type_purchased)
+                    local options = {
+                        allow_cancel = false,
+                        box_build = GetBoxBuildForItem(item_type_purchased),
+                    }
                         
-                        local box_popup = ItemBoxOpenerPopup(screen_self, options, function(success_cb)
-                            success_cb(display_items)
-                        end)
-                        TheFrontEnd:PushScreen(box_popup)
+                    local box_popup = ItemBoxOpenerPopup(options, function(success_cb)
+                        success_cb(display_items)
+                    end)
+                    TheFrontEnd:PushScreen(box_popup)
 
-                    elseif message == "CANCELLED" then
-                        -- If the user just cancelled, then everything's fine.
+                elseif message == "CANCELLED" then
+                    -- If the user just cancelled, then everything's fine.
 
-                    else
-                        local body_text = STRINGS.UI.ITEM_SERVER[message] or STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT
-                        local server_error = PopupDialogScreen(STRINGS.UI.ITEM_SERVER.FAILED_TITLE, body_text,
+                else
+                    local body_text = STRINGS.UI.ITEM_SERVER[message] or STRINGS.UI.ITEM_SERVER.FAILED_DEFAULT
+                    local server_error = PopupDialogScreen(STRINGS.UI.ITEM_SERVER.FAILED_TITLE, body_text,
+                        {
                             {
-                                {
-                                    text=STRINGS.UI.TRADESCREEN.OK,
-                                    cb = function()
-                                        print("ERROR: Failed to contact the item server.", message )
-                                        TheFrontEnd:PopScreen()
-                                        if message == "FAILED_DEFAULT" then
-                                            SimReset()
-                                        end
+                                text=STRINGS.UI.TRADESCREEN.OK,
+                                cb = function()
+                                    print("ERROR: Failed to contact the item server.", message )
+                                    TheFrontEnd:PopScreen()
+                                    if message == "FAILED_DEFAULT" then
+                                        SimReset()
                                     end
-                                }
+                                end
                             }
-                            )
-                        TheFrontEnd:PushScreen( server_error )
-                    end
-                end, self)
-            end)
-        end
+                        }
+                        )
+                    TheFrontEnd:PushScreen( server_error )
+                end
+            end, self)
+        end)
+    end
 
-    local onPurchaseClickFn = 
-        function()
-            if OwnsSkinPack(self.item_type) then
-                local warning = PopupDialogScreen(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_DESC, 
-                            {
-                                {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_OK, cb = function() 
-                                    TheFrontEnd:PopScreen()
-                                    purchasefn() 
-                                end },
-                                {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_CANCEL, cb = function() 
-                                    TheFrontEnd:PopScreen()
-                                end },
-                            })
-                TheFrontEnd:PushScreen( warning )    
-            else
-                purchasefn()
-            end
+local onPurchaseClickFn =
+    function( self )
+        if OwnsSkinPack(self.item_type) then
+            local warning = PopupDialogScreen(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_DESC, 
+                        {
+                            {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_OK, cb = function() 
+                                TheFrontEnd:PopScreen()
+                            purchasefn( self ) 
+                            end },
+                            {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_CANCEL, cb = function() 
+                                TheFrontEnd:PopScreen()
+                            end },
+                        })
+            TheFrontEnd:PushScreen( warning )    
+        else
+        purchasefn( self )
         end
+    end
 
-    self.button = self.text_root:AddChild(TEMPLATES.StandardButton(
-			onPurchaseClickFn,
-			nil,
-			{230, 50}
-		)
-	)
+local set_data =
+    function ( self, iap_def )
+        self.item_type = iap_def.item_type
+
+        local title = GetSkinName(self.item_type)
+        self.title:SetString(title)
+        
+        local collection = GetPackCollection(self.item_type)
+        self.collection:SetString(collection)
+
+        self.price:SetString( build_price_str( iap_def, iap_def.currency_code ) )
+
+        local total_value = GetPackTotalValue(self.item_type)
+        local total_value_str = build_price_str( total_value, iap_def.currency_code )
+        self.oldprice:SetString( total_value_str )
     
-    --second button for dlcid
+        local savings = GetPackSavings(iap_def, total_value)
+
+        self.savings:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PACK_SAVINGS, { savings = savings }) )
+        if savings > 0 then
+            self.savings:Show()
+            self.savings_frame:Show()
+
+            self.oldprice:Show()
+            self.oldprice_line:Show()
+        else
+            self.savings:Hide()
+            self.savings_frame:Hide()
+
+            self.oldprice:Hide()
+            self.oldprice_line:Hide()
+        end
+
+        local total_items = GetPackTotalItems(self.item_type)
+        local total_sets = GetPackTotalSets(self.item_type)
+        if total_sets > 1 then
+            -- megapack!
+            self.text:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.MEGAPACK_SHORT_DESC, { total_items = total_items, total_sets = total_sets }) )
+        else
+            self.text:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PACK_SHORT_DESC, { total_items = total_items }) )
+        end
+
+        self.icon_image:Hide()
+        self.icon_anim:Hide()
+        local image = GetPurchaseDisplayForItem(self.item_type)
+        if image then
+            self.icon_image:SetTexture(unpack(image))
+            self.icon_image:Show()
+        else
+            self.icon_anim:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(self.item_type), "SWAP_ICON")
+            self.icon_anim:Show()
+        end
+
+        self.title:SetHAlign(ANCHOR_LEFT)
+        self.title:SetVAlign(ANCHOR_MIDDLE)
+        self.text:SetHAlign(ANCHOR_LEFT)
+        self.text:SetVAlign(ANCHOR_MIDDLE)
+        self.collection:SetHAlign(ANCHOR_LEFT)
+        self.collection:SetVAlign(ANCHOR_TOP)
+        self.price:SetHAlign(ANCHOR_LEFT)
+        self.price:SetVAlign(ANCHOR_BOTTOM)
+        self.oldprice:SetHAlign(ANCHOR_LEFT)
+        self.oldprice:SetVAlign(ANCHOR_BOTTOM)
+    end
+
+-------------------------------------------------------------------
+
+local PurchasePackPopup = Class(Screen, function(self, iap_def)
+    Screen._ctor(self, "PurchasePackPopup")
+
+    self.black = self:AddChild( TEMPLATES.BackgroundTint() )
+    self.proot = self:AddChild( TEMPLATES.ScreenRoot() )
+
+    add_details( self, self.proot, 1.8 )
+    self.root:SetScale(0.75)
+
+    self.dialog = self.root:AddChild( TEMPLATES.CurlyWindow( 1200, 800 ) )
+    self.dialog:MoveToBack()
+
+    self.default_focus = self.dialog
+
+    self.desc = self.text_root:AddChild(Text(CHATFONT, 26, nil, UICOLOURS.GREY))
+    
+    self.collection:SetSize(22)
+
+    self.divider = self.root:AddChild(Image("images/global_redux.xml", "shop_dialog_divider.tex"))
+    self.divider:SetScale(1.315)
+
+    self.buy_button = self.text_root:AddChild(TEMPLATES.StandardButton(
+            nil,
+            STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN,
+            {250, 80}
+        )
+    )
+    self.close_button = self.root:AddChild(TEMPLATES.StandardButton(
+            function() self:Close() end,
+            STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_CLOSE,
+            {250, 60}
+        )
+    )
+
 	local onDLCGiftClickFn = 
         function()
 			local body_text = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_GIFT_INFO_BODY, {pack_name=GetSkinName(self.button_dlc.item_type) })
@@ -171,10 +258,186 @@ local PurchaseWidget = Class(Widget, function(self, screen_self)
     self.button_dlc = self.text_root:AddChild(TEMPLATES.StandardButton(
 			onDLCGiftClickFn,
 			STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_GIFT,
-			{230, 50}
+			{250, 60}
 		)
 	)
     
+    self.close_button:SetFocusChangeDir(MOVE_UP, self.buy_button)
+    self.close_button:SetFocusChangeDir(MOVE_RIGHT, self.buy_button)
+    self.buy_button:SetFocusChangeDir(MOVE_DOWN, self.close_button)
+    self.buy_button:SetFocusChangeDir(MOVE_LEFT, self.close_button)
+
+    self:SetData( iap_def )
+end)
+
+function PurchasePackPopup:SetData( iap_def )
+
+    set_data( self, iap_def )
+
+    self.desc:SetString( GetSkinDescription( self.item_type ) )
+
+    self.buy_button:SetText(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN)
+    self.buy_button:SetOnClick( function() onPurchaseClickFn( self ) end )
+
+    self.savings_frame:SetScale(0.85)
+    self.oldprice_line:SetScale(1.3)
+    self.text_root:SetPosition(250, 10)
+
+    local contentw = 520
+
+    self.title:SetHAlign(ANCHOR_LEFT)
+    self.title:SetVAlign(ANCHOR_TOP)
+    self.desc:SetHAlign(ANCHOR_LEFT)
+    self.desc:SetVAlign(ANCHOR_TOP)
+    self.text:SetHAlign(ANCHOR_LEFT)
+    self.text:SetVAlign(ANCHOR_TOP)
+
+    self.title:SetRegionSize(contentw, 90 )
+    self.desc:SetRegionSize(contentw,130)
+    self.text:SetRegionSize(contentw,80)
+    self.collection:SetRegionSize(contentw,40)
+    self.price:SetRegionSize(contentw,80)
+    self.oldprice:SetRegionSize(contentw,40)
+    self.savings:SetRegionSize(60,50)
+
+    self.title:EnableWordWrap( true )
+    self.desc:EnableWordWrap( true )
+    self.text:EnableWordWrap( true )
+
+    self.collection:SetPosition(0,240)
+    self.title:SetPosition(0, 190)
+    self.desc:SetPosition(0, 70 )
+    self.text:SetPosition(0, -50 )
+    self.price:SetPosition( 0, -120)
+    self.oldprice:SetPosition( 0,-85)
+    self.oldprice_line:SetPosition(-200,-90)
+    self.savings_frame:SetPosition(-300,-128)
+    self.savings:SetPosition(-300,-128)
+    self.button_dlc:SetPosition(130, -85)
+
+    self.icon_image:SetScale(0.7)
+    self.icon_glow:SetScale(2.2)
+    self.icon_glow2:SetScale(2.5)
+
+    self.divider:SetPosition(-1,-190)
+    self.close_button:SetPosition(0, -232)
+
+    if IsPackFeatured(self.item_type) then
+        self.icon_root:SetPosition(-270, 80)
+        self.icon_glow:Show()
+        self.icon_glow2:Show()
+    else
+        self.icon_root:SetPosition(-270, 80)
+        self.icon_glow:Hide()
+        self.icon_glow2:Hide()
+    end
+
+    if IsSteam() and IsPackGiftable(self.item_type) then
+		self.button_dlc:Show()
+		self.buy_button:SetPosition(130, -145)
+		self.button_dlc.item_type = self.item_type
+		self.button_dlc.steam_dlc_id = GetPackGiftDLCID(self.item_type)
+
+        self.buy_button:SetFocusChangeDir(MOVE_UP, self.button_dlc)
+        self.button_dlc:SetFocusChangeDir(MOVE_DOWN, self.buy_button)
+	else
+		self.button_dlc:Hide()
+        self.buy_button:SetPosition(130, -130)
+		self.button_dlc.item_type = nil
+		self.button_dlc.steam_dlc_id = nil
+        
+        self.buy_button:SetFocusChangeDir(MOVE_UP, nil)
+	end
+
+    self.default_focus = self.buy_button
+end
+
+function PurchasePackPopup:Close()
+    TheFrontEnd:PopScreen(self)
+end
+
+function PurchasePackPopup:OnControl(control, down)
+    if PurchasePackPopup._base.OnControl(self, control, down) then return true end
+
+    if not down and control == CONTROL_CANCEL then
+        self:Close()
+        return true
+    end
+end
+
+-------------------------------------------------------------------
+
+
+local PurchasePackScreen = Class(Screen, function(self, prev_screen, profile, initial_item_key)
+    Screen._ctor(self, "PurchasePackScreen")
+
+    self.initial_item_key = initial_item_key
+    self:DoInit()
+
+	Profile:SetShopHash( CalculateShopHash() )
+
+	self.default_focus = self.purchase_root
+end)
+
+function PurchasePackScreen:DoInit()
+    self.root = self:AddChild(TEMPLATES.ScreenRoot())
+
+    self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
+
+    self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.PURCHASEPACKSCREEN.TITLE, ""))
+    self.onlinestatus = self.root:AddChild(OnlineStatus(true))
+
+    self.purchase_root = self:_BuildPurchasePanel()
+    
+    --use the initial item key to set the filters
+    if self.initial_item_key ~= nil and self.filters ~= nil then
+        self.filters[FILTER_TYPE_INDEX].spinner:SetSelected(self.initial_item_key)
+    end
+
+    self:UpdatePurchasePanel()
+            
+    if not TheInput:ControllerAttached() then 
+        self.back_button = self.root:AddChild(TEMPLATES.BackButton(
+                function()
+                    TheFrontEnd:FadeBack()
+                end
+            ))
+    end
+end
+
+
+-------------------------------------------------------------------
+
+
+local PurchaseWidget = Class(Widget, function(self, screen_self)
+	Widget._ctor(self, "PurchaseWidget")
+
+	self.root = add_details( self, self, 1 )
+    self.root:SetScale(0.90)
+    self.item_type = nil
+        
+    self.frame = self.root:AddChild(Image("images/fepanels_redux_shop_panel.xml", "shop_panel.tex"))
+    self.frame:SetScale(0.55)
+    self.frame:SetPosition(-10,-7)
+    self.frame:MoveToBack()
+
+    self.purchased = self.root:AddChild(Image("images/global_redux.xml", "shop_checkmark.tex"))
+    self.purchased:SetScale(0.65)
+    self.purchased:SetPosition(-213,55)
+
+    self.button = self.root:AddChild(TEMPLATES.StandardButton(
+			nil,
+			nil,
+			{150, 45}
+		)
+	)
+    
+    self.info_button = self.root:AddChild(TEMPLATES.StandardButton(
+            nil,
+            STRINGS.UI.PURCHASEPACKSCREEN.INFO_BTN,
+            {45, 45}
+        )
+    )
 
     self.OnGainFocus = function()
         PurchasePackScreen._base.OnGainFocus(self)
@@ -186,79 +449,79 @@ end)
 
 function PurchaseWidget:ApplyDataToWidget(iap_def)
     if iap_def and not iap_def.is_blank then
-        self.item_type = iap_def.item_type
 
-        local title = GetSkinName(self.item_type)
-        local text = GetSkinDescription(self.item_type)
-        local price = ""
-        if IsSteam() then
-            price = build_price( iap_def.currency_code, iap_def.cents )
-        elseif IsRail() then
-            price = iap_def.rail_price .. " RMB"
-        end
-        self.button:SetText(subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN, {price = price}))
+        set_data( self, iap_def )
 
-        self.icon_image:Hide()
-        self.icon_anim:Hide()
-        local image = GetPurchaseDisplayForItem(self.item_type)
-        if image then
-            self.icon_image:SetTexture(unpack(image))
-            self.icon_image:Show()
+        self.info_button:SetOnClick( function() TheFrontEnd:PushScreen( PurchasePackPopup( iap_def ) ) end )
+        self.button:SetOnClick( function() onPurchaseClickFn( self ) end )
+        self.button:SetText(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN)
+
+        self.frame:SetScale(0.7)
+        self.frame:SetPosition(0,0)
+        self.savings_frame:SetScale(0.55)
+        self.oldprice_line:SetScale(0.65)
+        self.text_root:SetPosition(0, 0)
+
+        local contentw = 285
+        if IsPackFeatured(self.item_type) then
+            self.title:EnableWordWrap( true )
+            self.title:SetPosition( 0, 40 )
+            self.title:SetRegionSize( contentw, 50 )
         else
-            self.icon_anim:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(self.item_type), "SWAP_ICON")
-            self.icon_anim:Show()
+            self.title:ResetRegionSize()
+            self.title:EnableWordWrap( false )
+            self.title:SetTruncatedString(GetSkinName(self.item_type), contentw, 80, true)
+            local w,_ = self.title:GetRegionSize()
+            self.title:SetPosition(w/2-285/2, 55)
         end
+        self.text:SetPosition(0, IsPackFeatured(self.item_type) and -5 or -5 )
+        self.text:SetRegionSize(contentw,40)
+        self.text:EnableWordWrap( true )
+        self.collection:SetPosition(0,32)
+        self.collection:SetRegionSize(contentw,20)
+        self.price:SetRegionSize(130,30)
+        self.oldprice:SetRegionSize(130,16)
+        self.price:SetPosition( -80, -58)
+        self.oldprice:SetPosition(-80,-38)
+        self.oldprice_line:SetPosition(-115,-38)
+        self.savings_frame:SetPosition(-170,-57)
+        self.savings:SetRegionSize(50,30)
+        self.savings:SetPosition(-168,-58)
+        self.button:SetPosition(157,-57)
+        self.info_button:SetPosition(-212,-57)
+        self.text_root:SetPosition(80, 0)
 
-
-        self.title:SetString(title)
-        self.text:SetString(text)
+        if OwnsSkinPack(self.item_type) then
+            self.purchased:Show()
+		else
+            self.purchased:Hide()
+		end
 
         if IsPackFeatured(self.item_type) then
             self.frame:SetTexture("images/fepanels_redux_shop_panel_wide.xml", "shop_panel_wide.tex")
-            self.frame:SetScale(0.542)
-            self.frame:SetPosition(235, -7)
-            self.icon_root:SetPosition(-70, -5)
-            self.icon_image:SetScale(0.30)
-            self.text_root:SetScale(1.2)
-            self.text_root:SetPosition(390, 60)
-            self.title:SetHAlign(ANCHOR_LEFT)
-            self.title:SetRegionSize(500,25)
-            self.text:SetHAlign(ANCHOR_LEFT)
-            self.text:SetRegionSize(500,75)
-            self.button:SetPosition(-130,-115)
-            
-            if IsSteam() and IsPackGiftable(self.item_type) then
-				self.button_dlc:Show()
-				self.button_dlc:SetPosition(110,-115)
-				self.button_dlc.item_type = self.item_type
-				self.button_dlc.steam_dlc_id = GetPackGiftDLCID(self.item_type)
-			else
-				self.button_dlc:Hide()
-				self.button_dlc.item_type = nil
-				self.button_dlc.steam_dlc_id = nil
-			end
-			
+
+            self.icon_root:SetPosition(-145, 5)
+            self.icon_image:SetScale(0.24)
+            self.icon_glow:SetScale(1.0)
+            self.icon_glow:Show()
+            self.icon_glow2:SetScale(1.1)
+            self.icon_glow2:Show()
+
+            self.collection:Hide()
+		
 			--Deal with focus hacks for featured widget with multiple buttons
-			self.button:SetFocusChangeDir(MOVE_RIGHT, self.button_dlc)
-			self.button_dlc:SetFocusChangeDir(MOVE_LEFT, self.button)
-			self:SetFocusChangeDir(MOVE_RIGHT, nil)
+            self.info_button:SetFocusChangeDir(MOVE_RIGHT, self.button)
+			self.button:SetFocusChangeDir(MOVE_LEFT, self.info_button)
 			
 		else
             self.frame:SetTexture("images/fepanels_redux_shop_panel.xml", "shop_panel.tex")
-            self.frame:SetScale(0.55)
-            self.frame:SetPosition(-10,-7)
-            self.icon_root:SetPosition(-140, 0)
-            self.icon_image:SetScale(0.35)
-            self.text_root:SetScale(1)
-            self.text_root:SetPosition(60, 50)
-            self.title:SetHAlign(ANCHOR_MIDDLE)
-            self.title:SetRegionSize(245, 60)
-            self.text:SetHAlign(ANCHOR_MIDDLE)
-            self.text:SetRegionSize(245, 60)
-            self.button:SetPosition(0,-120)
-            self.button_dlc:Hide()
-            self.button_dlc.item_type = nil
-			self.button_dlc.steam_dlc_id = nil
+            
+            self.icon_root:SetPosition(-145, 10)
+            self.icon_image:SetScale(0.25)
+            self.icon_glow:Hide()
+            self.icon_glow2:Hide()
+
+            self.collection:Show()
         end
 
         self.root:Show()
@@ -277,19 +540,112 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
     end
 end
 
-function PurchasePackScreen:_BuildPurchasePanel()
-    local purchase_ss = self.root:AddChild(Widget("purchase_ss"))
-  
-    -- Overlay is how we display purchasing.
-    if PLATFORM == "WIN32_RAIL" or TheNet:IsNetOverlayEnabled() then
-        local unvalidated_iap_defs = TheItems:GetIAPDefs()
-        local iap_defs = {}
-        for i,iap in ipairs(unvalidated_iap_defs) do
-            -- Don't show items unless we have data/strings to describe them.
-            if MISC_ITEMS[iap.item_type] then
-                table.insert(iap_defs, iap)
+
+-------------------------------------------------------------------
+
+function PurchasePackScreen:GetIAPDefs( no_filter_or_sort )
+    local unvalidated_iap_defs = TheItems:GetIAPDefs()
+    local all_iap_defs = {}
+    local iap
+    for _,iap in ipairs(unvalidated_iap_defs) do
+        -- Don't show items unless we have data/strings to describe them.
+        if MISC_ITEMS[iap.item_type] then
+            table.insert(all_iap_defs, iap)
+        else
+            print("Missing def for IAP", iap.item_type)                
+        end
+    end
+    
+    if no_filter_or_sort then
+        return all_iap_defs
+    end
+
+    --Filter here!!!
+    local iap_defs = {}    
+    for _,iap in ipairs(all_iap_defs) do
+        local is_valid_with_filters = true
+        for _,filter in ipairs(self.filters) do
+            if filter.name == "OWNED" then
+                local filter_data = filter.spinner:GetSelectedData()
+                if filter_data == "UNOWNED" then
+                    if OwnsSkinPack(iap.item_type) then
+                        is_valid_with_filters = false
+                    end
+                end
+            
+            elseif filter.name == "TYPE" then
+                local filter_data = filter.spinner:GetSelectedData()
+                if filter_data == "ALL" then
+                    --all good
+                elseif filter_data == "ITEMS" then
+                    if not DoesPackHaveBelongings(iap.item_type) then
+                        is_valid_with_filters = false
+                    end
+                elseif filter_data == self.initial_item_key then
+                    --specific item passed in
+                    if not DoesPackHaveItem( iap.item_type, self.initial_item_key ) then
+                        is_valid_with_filters = false
+                    end
+                else
+                    --character skins
+                    if not DoesPackHaveSkinsForCharacter( iap.item_type, filter_data ) then
+                        is_valid_with_filters = false
+                    end
+                end
             end
         end
+
+        if is_valid_with_filters then
+            table.insert(iap_defs, iap)
+        end
+    end
+
+
+    local function DisplayOrderSort(a,b)
+        if MISC_ITEMS[a.item_type].release_group == MISC_ITEMS[b.item_type].release_group then
+            return MISC_ITEMS[a.item_type].display_order < MISC_ITEMS[b.item_type].display_order
+        else
+            return MISC_ITEMS[a.item_type].release_group > MISC_ITEMS[b.item_type].release_group
+        end
+    end
+    table.sort(iap_defs, DisplayOrderSort)
+    return iap_defs        
+end
+
+local label_width = 70
+local widget_width = 190
+local height = 30
+local spacing = 3
+local total_width = label_width + widget_width + spacing
+local bg_width = spacing + total_width + spacing + 10
+local bg_height = height + 2
+
+ function PurchasePackScreen:_CreateSpinnerFilter( name, text, spinnerOptions )
+
+    local group = TEMPLATES.LabelSpinner(text, spinnerOptions, label_width, widget_width, height, spacing, CHATFONT, 20)
+    self.side_panel:AddChild(group)
+    group.bg = group:AddChild(TEMPLATES.ListItemBackground(bg_width, bg_height))
+    group.bg:MoveToBack()
+
+    group.label:SetHAlign(ANCHOR_LEFT)
+    group.spinner:EnablePendingModificationBackground()
+    group.spinner:SetOnChangedFn(
+        function(...)
+            self:UpdatePurchasePanel()
+        end)
+
+    group.name = name
+
+    return group
+end
+
+function PurchasePackScreen:_BuildPurchasePanel()
+    local purchase_ss = self.root:AddChild(Widget("purchase_ss"))
+
+    -- Overlay is how we display purchasing.
+    if PLATFORM == "WIN32_RAIL" or TheNet:IsNetOverlayEnabled() then
+        local iap_defs = self:GetIAPDefs(true)
+
         if #iap_defs == 0 then
             local msg = STRINGS.UI.PURCHASEPACKSCREEN.NO_PACKS_FOR_SALE
             if IsAnyFestivalEventActive() then
@@ -298,19 +654,7 @@ function PurchasePackScreen:_BuildPurchasePanel()
             local dialog = purchase_ss:AddChild(TEMPLATES.CurlyWindow(400, 200, "", nil, nil, msg))
             purchase_ss.focus_forward = dialog
         else
-            local function DisplayOrderSort(a,b)
-                return MISC_ITEMS[a.item_type].display_order < MISC_ITEMS[b.item_type].display_order
-            end
-            table.sort(iap_defs, DisplayOrderSort)
-
-			local padded_defs = {}
-			for _,def in pairs(iap_defs) do
-				table.insert(padded_defs, def)
-				if IsPackFeatured(def.item_type) then
-					-- Make space for the featured pack's double-wide widget.
-					table.insert(padded_defs, { is_blank = true })
-				end
-			end
+            purchase_ss:SetPosition(40,0)
 
             local function ScrollWidgetsCtor(context, index)
                 return PurchaseWidget( self )
@@ -320,21 +664,22 @@ function PurchasePackScreen:_BuildPurchasePanel()
             end
             
             purchase_ss.scroll_window = purchase_ss:AddChild(TEMPLATES.RectangleWindow(915, 620))
-			purchase_ss.scroll_window:SetBackgroundTint(0,0,0,.8) -- black to contrast brown in shop widgets
+			purchase_ss.scroll_window:SetBackgroundTint(0,0,0,0) -- transparent
     
 			purchase_ss.scroll_window.grid = purchase_ss.scroll_window:InsertWidget(
 				TEMPLATES.ScrollingGrid(
-                    padded_defs,
+                    iap_defs,
                     {
                         context = {},
                         widget_width  = 440,
-                        widget_height = 260,
-                        num_visible_rows = 2.15,
+                        widget_height = 160,
+                        num_visible_rows = 3.65,
                         num_columns      = 2,
                         item_ctor_fn = ScrollWidgetsCtor,
                         apply_fn     = ScrollWidgetApply,
                         scrollbar_offset = 20,
 						scrollbar_height_offset = -60,
+                        scissor_pad = 35,
                     }
                 )
 			)
@@ -347,6 +692,49 @@ function PurchasePackScreen:_BuildPurchasePanel()
 				purchase_ss.scroll_window.grid.list_root.grid:DoFocusHookups()
 				oldRefreshView(self)
             end
+            
+
+            self.side_panel = self.root:AddChild(Widget("side_panel"))
+            self.side_panel:SetPosition(-480,0)
+
+            self.filters_label = self.side_panel:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PURCHASEPACKSCREEN.FILTERS, UICOLOURS.GOLD_SELECTED))
+            self.filters_label:SetPosition(0,15)
+            self.filters_label:SetRegionSize(100,30)
+            self.filters_divider = self.side_panel:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
+            self.filters_divider:SetScale(0.4)
+
+
+            self.filters = {}
+            
+            local owned_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_UNOWNED, data = "UNOWNED" } }
+            self.filters[FILTER_OWNED_INDEX] = self:_CreateSpinnerFilter( "OWNED", STRINGS.UI.PURCHASEPACKSCREEN.OWNED_FILTER, owned_options )
+            
+            local type_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ITEMS, data = "ITEMS" }  }
+            for _,character in pairs(DST_CHARACTERLIST) do
+                table.insert( type_options, { text = STRINGS.NAMES[string.upper(character)], data = character } )
+            end
+            if self.initial_item_key ~= nil then
+                table.insert(type_options, 1, { text = GetSkinName(self.initial_item_key), data = self.initial_item_key });
+            end
+            self.filters[FILTER_TYPE_INDEX] = self:_CreateSpinnerFilter( "TYPE", STRINGS.UI.PURCHASEPACKSCREEN.TYPE_FILTER, type_options )
+
+            for i,spinner in pairs(self.filters) do
+                spinner:SetPosition( 0, i * -(height + spacing) )
+                
+                if i > 1 then
+                    spinner:SetFocusChangeDir(MOVE_UP, self.filters[i-1])
+                end
+                if i < #self.filters then
+                    spinner:SetFocusChangeDir(MOVE_DOWN, self.filters[i+1])
+                end
+            end
+
+            self.side_panel.focus_forward = self.filters[1]
+
+            
+            purchase_ss:SetFocusChangeDir(MOVE_LEFT, self.side_panel)
+            self.side_panel:SetFocusChangeDir(MOVE_RIGHT, purchase_ss)
+
         end
     else
         local buttons = {
@@ -368,8 +756,12 @@ function PurchasePackScreen:_BuildPurchasePanel()
     return purchase_ss
 end
 
-
-
+function PurchasePackScreen:UpdatePurchasePanel()
+    if self.purchase_root.scroll_window ~= nil then
+        local iap_defs = self:GetIAPDefs()
+        self.purchase_root.scroll_window.grid:SetItemsData(iap_defs)
+    end
+end
 
 
 function PurchasePackScreen:OnBecomeActive()
@@ -378,6 +770,8 @@ function PurchasePackScreen:OnBecomeActive()
     if not self.shown then
         self:Show()
     end
+
+    self:UpdatePurchasePanel()
 
     self.leaving = nil
 end
@@ -404,3 +798,4 @@ end
 
 
 return PurchasePackScreen
+

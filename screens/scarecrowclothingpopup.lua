@@ -22,7 +22,7 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
     self.root:SetPosition(RESOLUTION_X/2, RESOLUTION_Y/2, 0)
 
     local skeleton_data = {}
-	skeleton_data.base_skin = "scarecrow_none"
+	skeleton_data.base_skin = ""
 	skeleton_data.body_skin = ""
 	skeleton_data.hand_skin = ""
 	skeleton_data.legs_skin = ""

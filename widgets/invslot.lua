@@ -77,7 +77,7 @@ function InvSlot:Click(stack_mod)
             end
             TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_object")
         elseif container:CanTakeItemInSlot(active_item, slot_number) then
-            if container_item.prefab == active_item.prefab and
+            if container_item.prefab == active_item.prefab and container_item.skinname == active_item.skinname and
                 container_item.replica.stackable ~= nil and
                 container:AcceptsStacks() then
                 --Add active item to slot stack
@@ -107,12 +107,31 @@ function InvSlot:Click(stack_mod)
     end
 end
 
-local function FindBestContainer(item, containers, exclude_containers)
+local function FindBestContainer(self, item, containers, exclude_containers)
     if item == nil or containers == nil then
         return
     end
 
-    local containerwithsameitem = nil
+    --Construction containers
+    --NOTE: reusing containerwithsameitem variable
+    local containerwithsameitem = self.owner ~= nil and self.owner.components.constructionbuilderuidata ~= nil and self.owner.components.constructionbuilderuidata:GetContainer() or nil
+    if containerwithsameitem ~= nil then
+        if containers[containerwithsameitem] ~= nil and (exclude_containers == nil or not exclude_containers[containerwithsameitem]) then
+            local slot = self.owner.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab)
+            if slot ~= nil then
+                local container = containerwithsameitem.replica.container
+                if container ~= nil and container:CanTakeItemInSlot(item, slot) then
+                    local existingitem = container:GetItemInSlot(slot)
+                    if existingitem == nil or (container:AcceptsStacks() and existingitem.replica.stackable ~= nil and not existingitem.replica.stackable:IsFull()) then
+                        return containerwithsameitem
+                    end
+                end
+            end
+        end
+        containerwithsameitem = nil
+    end
+
+    --local containerwithsameitem = nil --reused with construction containers code above
     local containerwithemptyslot = nil
     local containerwithnonstackableslot = nil
 
@@ -127,7 +146,7 @@ local function FindBestContainer(item, containers, exclude_containers)
                     end
                     if item.replica.equippable ~= nil and container == k.replica.inventory then
                         local equip = container:GetEquippedItem(item.replica.equippable:EquipSlot())
-                        if equip ~= nil and equip.prefab == item.prefab then
+                        if equip ~= nil and equip.prefab == item.prefab and equip.skinname == item.skinname then
                             if equip.replica.stackable ~= nil and not equip.replica.stackable:IsFull() then
                                 return k
                             elseif not isfull and containerwithsameitem == nil then
@@ -136,7 +155,7 @@ local function FindBestContainer(item, containers, exclude_containers)
                         end
                     end
                     for k1, v1 in pairs(container:GetItems()) do
-                        if v1.prefab == item.prefab then
+                        if v1.prefab == item.prefab and v1.skinname == item.skinname then
                             if v1.replica.stackable ~= nil and not v1.replica.stackable:IsFull() then
                                 return k
                             elseif not isfull and containerwithsameitem == nil then
@@ -184,19 +203,19 @@ function InvSlot:TradeItem(stack_mod)
         local dest_inst = nil
         if container == inventory then
             local playercontainers = backpack ~= nil and { [backpack] = true } or nil
-            dest_inst = FindBestContainer(container_item, opencontainers, playercontainers)
-                or FindBestContainer(container_item, playercontainers)
+            dest_inst = FindBestContainer(self, container_item, opencontainers, playercontainers)
+                or FindBestContainer(self, container_item, playercontainers)
         elseif container == overflow then
-            dest_inst = FindBestContainer(container_item, opencontainers, { [backpack] = true })
+            dest_inst = FindBestContainer(self, container_item, opencontainers, { [backpack] = true })
                 or (inventory:IsOpenedBy(character)
-                    and FindBestContainer(container_item, { [character] = true })
+                    and FindBestContainer(self, container_item, { [character] = true })
                     or nil)
         else
             local exclude_containers = { [container.inst] = true }
             if backpack ~= nil then
                 exclude_containers[backpack] = true
             end
-            dest_inst = FindBestContainer(container_item, opencontainers, exclude_containers)
+            dest_inst = FindBestContainer(self, container_item, opencontainers, exclude_containers)
             if dest_inst == nil then
                 local playercontainers = {}
                 if inventory:IsOpenedBy(character) then
@@ -205,7 +224,7 @@ function InvSlot:TradeItem(stack_mod)
                 if backpack ~= nil then
                     playercontainers[backpack] = true
                 end
-                dest_inst = FindBestContainer(container_item, playercontainers)
+                dest_inst = FindBestContainer(self, container_item, playercontainers)
             end
         end
 
@@ -241,6 +260,62 @@ function InvSlot:Inspect()
             inventory:InspectItemFromInvTile(self.tile.item)
         end
     end
+end
+
+--------------------------------------------------------------------------
+
+function InvSlot:ConvertToConstructionSlot(ingredient, amount)
+    if ingredient ~= nil then
+        self:SetBGImage2(ingredient.atlas, ingredient.type..".tex", { 1, 1, 1, .4 })
+        self.highlight_scale = 1.7
+
+        local function onquantitychanged(tile, quantity)
+            self:SetLabel(
+                string.format("%i/%i", amount + quantity, ingredient.amount),
+                (amount + quantity >= ingredient.amount and { .25, .75, .25, 1 }) or
+                (quantity > 0 and { 1, 1, 1, 1 }) or
+                { .7, .7, .7, 1 }
+            )
+            --return true skips updating the item tile's stack counter display
+            return true
+        end
+
+        local function ontilechanged(self, tile)
+            if tile ~= nil then
+                self.bgimage2:Hide()
+                tile:SetOnQuantityChangedFn(onquantitychanged)
+                if tile.item == nil then
+                    --should not happend
+                    onquantitychanged(tile, 0)
+                elseif tile.item.replica.stackable ~= nil then
+                    tile:SetQuantity(tile.item.replica.stackable:StackSize())
+                else
+                    onquantitychanged(tile, 1)
+                end
+            else
+                self.bgimage2:Show()
+                onquantitychanged(nil, 0)
+            end
+        end
+
+        self:SetOnTileChangedFn(ontilechanged)
+        ontilechanged(self, self.tile)
+    else
+        self:SetBGImage2()
+        self:SetLabel()
+        self:SetOnTileChangedFn()
+        self.highlight_scale = 1.6
+
+        if self.tile ~= nil then
+            self.tile:SetOnQuantityChangedFn()
+            if self.tile.item ~= nil and self.tile.item.replica.stackable ~= nil then
+                self.tile:SetQuantity(self.tile.item.replica.stackable:StackSize())
+            end
+        end
+    end
+
+    self.base_scale = 1.5
+    self:SetScale(self.base_scale)
 end
 
 return InvSlot

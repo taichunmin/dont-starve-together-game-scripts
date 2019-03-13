@@ -156,6 +156,19 @@ function Widget:MoveTo(from, to, time, fn)
     self.inst.components.uianim:MoveTo(from, to, time, fn)
 end
 
+function Widget:CancelRotateTo(run_complete_fn)
+    if self.inst.components.uianim ~= nil then
+        self.inst.components.uianim:CancelRotateTo(run_complete_fn)
+    end
+end
+
+function Widget:RotateTo(from, to, time, fn, infinite)
+    if not self.inst.components.uianim then
+        self.inst:AddComponent("uianim")
+    end
+    self.inst.components.uianim:RotateTo(from, to, time, fn, infinite)
+end
+
 function Widget:TintTo(from, to, time, fn)
     if not self.inst.components.uianim then
         self.inst:AddComponent("uianim")
@@ -584,6 +597,10 @@ function Widget:ClearFocus()
 end
 
 function Widget:SetFocusFromChild(from_child)
+    if self.parent == nil and not self.is_screen then
+        print("Warning: Widget:SetFocusFromChild is happening on a widget outside of the screen/widget hierachy. This will cause focus moves to fail. Is ", self.name, "not a screen?")
+        print(debugstack())
+    end
     for k,v in pairs(self.children) do
         if v ~= from_child and v.focus then
             v:ClearFocus()
@@ -593,7 +610,7 @@ function Widget:SetFocusFromChild(from_child)
     if not self.focus then
         self.focus = true
         if self.OnGainFocus then
-            self:OnGainFocus()
+             self:OnGainFocus()
         end
 
         if self.ongainfocusfn then
@@ -695,7 +712,9 @@ function Widget:SetHoverText(text, params)
             else
                 self.hovertext:SetString(text)
             end
-            if params.colour then self.hovertext:SetColour(params.colour) end
+            if params.colour then
+                self.hovertext:SetColour(params.colour)
+            end
             self.hovertext:Hide()
 
             
@@ -748,6 +767,9 @@ function Widget:SetHoverText(text, params)
             end
         else
             self.hovertext:SetString(text)
+            if params and params.colour then
+                self.hovertext:SetColour(params.colour)
+            end
             if self.hovertext_bg then
                 local w, h = self.hovertext:GetRegionSize()
                 self.hovertext_bg:SetSize(w*1.5, h*2.0)

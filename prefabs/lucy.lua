@@ -58,12 +58,21 @@ local function unstore(inst)
     end
 end
 
+local function PostMigration(inst)
+    inst.components.talker:StopIgnoringAll("migration")
+end
+
 local function topocket(inst, owner)
     if inst._container ~= owner then
         unstore(inst)
         storeincontainer(inst, owner)
     end
     inst.lucy_classified:SetTarget(owner.components.inventoryitem ~= nil and owner.components.inventoryitem.owner or owner)
+
+    if owner ~= nil and owner.migration ~= nil then
+        inst.components.talker:IgnoreAll("migration")
+        inst:DoTaskInTime(.2, PostMigration)
+    end
 end
 
 local function toground(inst)

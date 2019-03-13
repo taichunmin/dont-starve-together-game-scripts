@@ -1,8 +1,8 @@
 wxputils = {}
 
 local function GetLevelProgressFraction()
-	local level = TheInventory:GetWXPLevel(GetFestivalEventServerName(WORLD_FESTIVAL_EVENT))
-    local wxp = TheInventory:GetWXP(GetFestivalEventServerName(WORLD_FESTIVAL_EVENT))
+	local level = TheInventory:GetWXPLevel(GetActiveFestivalEventServerName())
+    local wxp = TheInventory:GetWXP(GetActiveFestivalEventServerName())
     
     local curr_level_wxp = TheItems:GetWXPForLevel(level)
     local next_level_wxp = TheItems:GetWXPForLevel(level+1)
@@ -20,13 +20,12 @@ function wxputils.BuildProgressString()
 end
 
 
-function wxputils.GetLevel(festival_key)
-    return TheInventory:GetWXPLevel(GetFestivalEventServerName(festival_key))
+function wxputils.GetLevel(festival_key, season)
+    return TheInventory:GetWXPLevel(GetFestivalEventServerName(festival_key, season))
 end
 
 function wxputils.GetActiveLevel()
-    --TheItems:GetLevelForWXP(TheInventory:GetWXP(GetFestivalEventServerName(WORLD_FESTIVAL_EVENT))) --this was the previous calculation we were using, but we have the level already.
-	return TheInventory:GetWXPLevel(GetFestivalEventServerName(WORLD_FESTIVAL_EVENT))
+	return TheInventory:GetWXPLevel(GetActiveFestivalEventServerName())
 end
 
 function wxputils.GetLevelForWXP(wxp)
@@ -38,9 +37,9 @@ function wxputils.GetWXPForLevel(level)
 end
 
 function wxputils.GetActiveWXP()
-    return TheInventory:GetWXP(GetFestivalEventServerName(WORLD_FESTIVAL_EVENT))
+    return TheInventory:GetWXP(GetActiveFestivalEventServerName())
 end
 
-function wxputils.GetEventStatus(festival_key, cb_fn)
-    TheItems:GetEventStatus(GetFestivalEventServerName(festival_key), cb_fn)
+function wxputils.GetEventStatus(festival_key, season, cb_fn)
+    TheItems:GetEventStatus(GetFestivalEventServerName(festival_key, season), cb_fn)
 end
