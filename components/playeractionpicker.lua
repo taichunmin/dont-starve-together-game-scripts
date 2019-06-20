@@ -4,6 +4,7 @@ local PlayerActionPicker = Class(function(self, inst)
     self.containers = {}
     self.leftclickoverride = nil
     self.rightclickoverride = nil
+    self.pointspecialactionsfn = nil
     self.actionfilterstack = {} -- only the highest priority filter is active
     self.actionfilter = nil
 end)
@@ -146,6 +147,10 @@ function PlayerActionPicker:GetPointActions(pos, useitem, right)
     return sorted_acts
 end
 
+function PlayerActionPicker:GetPointSpecialActions(pos, useitem, right)
+    return self.pointspecialactionsfn ~= nil and self:SortActionList(self.pointspecialactionsfn(self.inst, pos, useitem, right), pos) or {}
+end
+
 function PlayerActionPicker:GetEquippedItemActions(target, useitem, right)
     local actions = {}
 
@@ -216,17 +221,22 @@ function PlayerActionPicker:GetLeftClickActions(position, target)
         end
     end
 
-    if actions == nil and target == nil and equipitem ~= nil and equipitem:IsValid() and ispassable then
-        --can we use our equipped item at the point?
-        actions = self:GetPointActions(position, equipitem)
-        --this is to make it so you don't auto-drop equipped items when you left click the ground. kinda ugly.
-        if actions ~= nil then
-            for i, v in ipairs(actions) do
-                if v.action == ACTIONS.DROP then
-                    table.remove(actions, i)
-                    break
+    if actions == nil and target == nil and ispassable then
+        if equipitem ~= nil and equipitem:IsValid() then
+            --can we use our equipped item at the point?
+            actions = self:GetPointActions(position, equipitem)
+            --this is to make it so you don't auto-drop equipped items when you left click the ground. kinda ugly.
+            if actions ~= nil then
+                for i, v in ipairs(actions) do
+                    if v.action == ACTIONS.DROP then
+                        table.remove(actions, i)
+                        break
+                    end
                 end
             end
+        end
+        if actions == nil or #actions <= 0 then
+            actions = self:GetPointSpecialActions(position, useitem, false)
         end
     end
 
@@ -276,6 +286,10 @@ function PlayerActionPicker:GetRightClickActions(position, target)
         end
     elseif equipitem ~= nil and equipitem:IsValid() and (ispassable or (equipitem.components.aoetargeting ~= nil and equipitem.components.aoetargeting.alwaysvalid and equipitem.components.aoetargeting:IsEnabled())) then
         actions = self:GetPointActions(position, equipitem, true)
+    end
+
+    if (actions == nil or #actions <= 0) and target == nil and ispassable then
+        actions = self:GetPointSpecialActions(position, useitem, true)
     end
 
     return actions or {}

@@ -102,11 +102,10 @@ function PlayerAvatarPopup:Layout(data, show_net_profile)
         self.portrait:SetScale(.37)
         self.portrait:SetPosition(right_column, portrait_height)
 
-        if softresolvefilepath("images/names_"..self.currentcharacter..".xml") then
-            self.character_name = self.proot:AddChild(Image("images/names_"..self.currentcharacter..".xml", self.currentcharacter..".tex"))
-            self.character_name:SetScale(.15)
-            self.character_name:SetPosition(right_column + 5, portrait_height + 115)
-        end
+        self.character_name = self.proot:AddChild(Image("images/names_gold_wilson.xml", "wilson.tex"))
+        self.character_name:SetScale(.13)
+        self.character_name:SetPosition(right_column-3, portrait_height + 120)
+        SetHeroNameTexture_Gold(self.character_name, self.currentcharacter)
 
         local widget_height = 75
         local body_offset = 10
@@ -415,7 +414,7 @@ function PlayerAvatarPopup:UpdateEquipWidgetForSlot(image_group, slot, equipdata
     image_group._text:SetColour(unpack(GetColorForItem(name)))
     image_group._text:SetMultilineTruncatedString(namestr, 2, TEXT_WIDTH, 25, true, true)
 
-    local atlas = "images/inventoryimages.xml"
+    local atlas = ""
     local default = DEFAULT_IMAGES[slot] or "trinket_5.tex"
     if name == "none" then
         if slot == EQUIPSLOTS.BODY then
@@ -432,6 +431,8 @@ function PlayerAvatarPopup:UpdateEquipWidgetForSlot(image_group, slot, equipdata
         end
     elseif softresolvefilepath("images/inventoryimages/"..name..".xml") ~= nil then
         atlas = "images/inventoryimages/"..name..".xml"
+    else
+        atlas = GetInventoryItemAtlas(name..".tex")
     end
     image_group._image:SetTexture(atlas, name..".tex", default)
 end

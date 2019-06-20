@@ -43,6 +43,8 @@ local function fn()
 
     inst.Transform:SetTwoFaced()
 
+    inst:AddTag("plant")
+
     inst.AnimState:SetBank("worm")
     inst.AnimState:SetBuild("worm")
     inst.AnimState:PlayAnimation("berry_idle", true)

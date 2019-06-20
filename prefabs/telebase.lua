@@ -229,7 +229,7 @@ local function commonfn()
     inst:AddComponent("savedrotation")
 
     inst:ListenForEvent("onbuilt", OnBuilt)
-    inst:ListenForEvent("ondeconstrcutstructure", dropgems)
+    inst:ListenForEvent("ondeconstructstructure", dropgems)
 
     inst:ListenForEvent("onremove", OnRemove)
 

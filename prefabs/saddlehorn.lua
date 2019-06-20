@@ -28,6 +28,9 @@ local function fn()
     inst.AnimState:SetBuild("saddlehorn")
     inst.AnimState:PlayAnimation("idle")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

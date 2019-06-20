@@ -576,6 +576,8 @@ function EntityScript:GetAdjectivedName()
         return ConstructAdjectivedName(self, name, STRINGS.SMOLDERINGITEM)
     elseif self:HasTag("diseased") then
         return ConstructAdjectivedName(self, name, STRINGS.DISEASEDITEM)
+    elseif self:HasTag("rotten") then
+        return ConstructAdjectivedName(self, name, STRINGS.UI.HUD.SPOILED)
     elseif self:HasTag("withered") then
         return ConstructAdjectivedName(self, name, STRINGS.WITHEREDITEM)
     elseif not self.no_wet_prefix and (self.always_wet_prefix or self:GetIsWet()) then

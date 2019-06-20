@@ -14,6 +14,14 @@ local prefabs =
     "dug_berrybush_juicy",
 }
 
+local function OnDeconstructStructure(inst)
+    if inst.components.lootdropper.loot ~= nil then
+        for i, v in ipairs(inst.components.lootdropper.loot) do
+            inst.components.lootdropper:SpawnLootPrefab(v, inst:GetPosition())
+        end
+    end
+end
+
 local function onhammered(inst, worker)
     if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
         inst.components.burnable:Extinguish()
@@ -244,6 +252,8 @@ local function fn()
 
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+
+    inst:ListenForEvent("ondeconstructstructure", OnDeconstructStructure)
 
     return inst
 end

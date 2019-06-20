@@ -1,3 +1,5 @@
+local wortox_soul_common = require("prefabs/wortox_soul_common")
+
 local function oncanbait(self)
     if self.isset and self.bait == nil then
         self.inst:AddTag("canbait")
@@ -81,6 +83,11 @@ function Trap:GetDebugString()
         end
     end
 
+    local souls = self.numsouls or self.starvednumsouls
+    if souls ~= nil then
+        str = str.." Souls:"..souls
+    end
+
     return str
 end
 
@@ -101,6 +108,8 @@ function Trap:Reset(sprung)
     self.isset = false
     self.issprung = sprung == true
     self.lootprefabs = nil
+    self.numsouls = nil
+    self.starvednumsouls = nil
     self:RemoveBait()
     self.target = nil
     self:StopStarvation()
@@ -172,15 +181,21 @@ function Trap:OnTrappedStarve()
         local timeintrap = self.inst.components.timer:GetTimeElapsed("foodspoil") or TUNING.TOTAL_DAY_TIME * 2
 
         if self.starvedlootprefabs ~= nil then
+            local x, y, z = self.inst.Transform:GetWorldPosition()
             for i, v in ipairs(self.starvedlootprefabs) do
                 local loot = SpawnPrefab(v)
                 if loot ~= nil then
-                    loot.Transform:SetPosition(self.inst.Transform:GetWorldPosition())
+                    loot.Transform:SetPosition(x, 0, z)
                     if loot.components.perishable ~= nil then
                         loot.components.perishable:LongUpdate(timeintrap)
                     end
                 end
             end
+        end
+
+        local numsouls = self.starvednumsouls or self.numsouls
+        if numsouls ~= nil then
+            TheWorld:PushEvent("starvedtrapsouls", { numsouls = numsouls, trap = self.inst })
         end
 
         self:Reset(true)
@@ -224,10 +239,15 @@ function Trap:DoSpring()
             self.onspring(self.inst, self.target, self.bait)
         end
 
-        self.lootprefabs =
-            (self.target.components.inventoryitem ~= nil and self.target.components.inventoryitem.trappable and { self.target.prefab }) or
-            (self.target.components.lootdropper ~= nil and self.target.components.lootdropper.trappable and self.target.components.lootdropper:GenerateLoot()) or
-            nil
+        if self.target.components.inventoryitem ~= nil and self.target.components.inventoryitem.trappable then
+            self.lootprefabs = { self.target.prefab }
+            self.numsouls = nil
+            self.starvednumsouls = wortox_soul_common.HasSoul(self.target) and wortox_soul_common.GetNumSouls(self.target) or nil
+        else
+            self.lootprefabs = self.target.components.lootdropper ~= nil and self.target.components.lootdropper.trappable and self.target.components.lootdropper:GenerateLoot() or nil
+            self.numsouls = wortox_soul_common.HasSoul(self.target) and wortox_soul_common.GetNumSouls(self.target) or nil
+            self.starvednumsouls = nil
+        end
 
         self:StartStarvation()
 
@@ -238,6 +258,8 @@ function Trap:DoSpring()
         end
     else
         self.lootprefabs = nil
+        self.numsouls = nil
+        self.starvednumsouls = nil
     end
 
     if self.bait ~= nil and self.bait:IsValid() then
@@ -306,6 +328,10 @@ function Trap:Harvest(doer)
             end
         end
 
+        if self.numsouls ~= nil then
+            doer:PushEvent("harvesttrapsouls", { numsouls = self.numsouls, pos = pos })
+        end
+
         if self.inst:IsValid() then
             self:Reset()
 
@@ -366,6 +392,8 @@ function Trap:OnSave()
         isset = self.isset or nil,
         bait = self.bait ~= nil and self.bait.GUID or nil,
         loot = self.lootprefabs,
+        souls = self.numsouls,
+        starvedsouls = self.starvednumsouls,
         starvedloot = self.starvedlootprefabs,
     },
     {
@@ -382,6 +410,9 @@ function Trap:OnLoad(data)
         (type(data.loot) == "string" and { data.loot }) or
         (type(data.loot) == "table" and data.loot) or
         nil
+
+    self.numsouls = data.souls
+    self.starvednumsouls = data.starvedsouls
 
     self.starvedlootprefabs =
         (type(data.starvedloot) == "string" and { data.starvedloot }) or

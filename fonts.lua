@@ -10,6 +10,7 @@ NEWFONT_OUTLINE = "spirequal_outline"
 NEWFONT_OUTLINE_SMALL = "spirequal_outline_small"
 NUMBERFONT = "stint-ucr"
 TALKINGFONT = "talkingfont"
+TALKINGFONT_WORMWOOD = "talkingfont_wormwood"
 CHATFONT = "bellefair"
 HEADERFONT = "hammerhead"
 CHATFONT_OUTLINE = "bellefair_outline"
@@ -56,6 +57,7 @@ DEFAULT_FALLBACK_TABLE_OUTLINE = {
 
 FONTS = {
 	{ filename = "fonts/talkingfont"..font_posfix..".zip", alias = TALKINGFONT, fallback = DEFAULT_FALLBACK_TABLE_OUTLINE },
+	{ filename = "fonts/talkingfont_wormwood"..font_posfix..".zip", alias = TALKINGFONT_WORMWOOD, fallback = DEFAULT_FALLBACK_TABLE_OUTLINE },
 	{ filename = "fonts/hammerhead50"..font_posfix..".zip", alias = HEADERFONT, fallback = DEFAULT_FALLBACK_TABLE },
 	{ filename = "fonts/bellefair50"..font_posfix..".zip", alias = CHATFONT, fallback = DEFAULT_FALLBACK_TABLE },
 	{ filename = "fonts/bellefair50_outline"..font_posfix..".zip", alias = CHATFONT_OUTLINE, fallback = DEFAULT_FALLBACK_TABLE_OUTLINE },

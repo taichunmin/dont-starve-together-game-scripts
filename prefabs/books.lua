@@ -25,8 +25,8 @@ local function trygrowth(inst)
         inst.components.pickable:FinishGrowing()
     end
 
-    if inst.components.crop ~= nil then
-        inst.components.crop:DoGrow(TUNING.TOTAL_DAY_TIME * 3, true)
+    if inst.components.crop ~= nil and (inst.components.crop.rate or 0) > 0 then
+        inst.components.crop:DoGrow(1 / inst.components.crop.rate, true)
     end
 
     if inst.components.growable ~= nil and

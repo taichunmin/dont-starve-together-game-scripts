@@ -53,7 +53,7 @@ local function DoDamage(inst, targets, skiptoss)
     end
 
     inst.components.combat.ignorehitrange = true
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, nil, { "playerghost", "INLIMBO", --[["NOCLICK",]] "DECOR", "INLIMBO" }, { "_combat", "pickable", "campfire", "CHOP_workable", "HAMMER_workable", "MINE_workable", "DIG_workable" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, nil, { "playerghost", "INLIMBO", --[["NOCLICK",]] "DECOR", "INLIMBO" }, { "_combat", "pickable", "NPC_workable", "CHOP_workable", "HAMMER_workable", "MINE_workable", "DIG_workable" })) do
         if not targets[v] and v:IsValid() and not v:IsInLimbo() and not (v.components.health ~= nil and v.components.health:IsDead()) then
             local vradius = v:GetPhysicsRadius(.5)
             local range = RADIUS + vradius
@@ -61,9 +61,9 @@ local function DoDamage(inst, targets, skiptoss)
                 local isworkable = false
                 if v.components.workable ~= nil then
                     local work_action = v.components.workable:GetWorkAction()
-                    --V2C: nil action for campfires
+                    --V2C: nil action for NPC_workable (e.g. campfires)
                     isworkable =
-                        (   work_action == nil and v:HasTag("campfire")    ) or
+                        (   work_action == nil and v:HasTag("NPC_workable") ) or
                         (   v.components.workable:CanBeWorked() and
                             (   work_action == ACTIONS.CHOP or
                                 work_action == ACTIONS.HAMMER or

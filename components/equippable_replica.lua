@@ -27,4 +27,13 @@ function Equippable:IsEquipped()
     end
 end
 
+function Equippable:IsRestricted(target)
+    --return true if restricted (can't equip)
+    if self.inst.components.equippable ~= nil then
+        return self.inst.components.equippable:IsRestricted(target)
+    end
+    local restrictedtag = self.inst.replica.inventoryitem ~= nil and self.inst.replica.inventoryitem:GetEquipRestrictedTag() or nil
+    return restrictedtag ~= nil and not target:HasTag(restrictedtag)
+end
+
 return Equippable

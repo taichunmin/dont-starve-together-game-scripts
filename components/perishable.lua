@@ -1,15 +1,27 @@
 local function onpercent(self)
-    self.inst:RemoveTag("fresh")
-    self.inst:RemoveTag("stale")
-    self.inst:RemoveTag("spoiled")
     local percent = self:GetPercent()
     if percent >= .5 then
-        self.inst:AddTag("fresh")
+        if not self.inst:HasTag("fresh") then
+            self.inst:RemoveTag("stale")
+            self.inst:RemoveTag("spoiled")
+            self.inst:AddTag("fresh")
+            self.inst:PushEvent("forceperishchange")
+        end
     elseif percent > .2 then
-        self.inst:AddTag("stale")
-    else
+        if not self.inst:HasTag("stale") then
+            self.inst:RemoveTag("fresh")
+            self.inst:RemoveTag("spoiled")
+            self.inst:AddTag("stale")
+            self.inst:PushEvent("forceperishchange")
+        end
+    elseif not self.inst:HasTag("spoiled") then
+        self.inst:RemoveTag("fresh")
+        self.inst:RemoveTag("stale")
         self.inst:AddTag("spoiled")
+        self.inst:PushEvent("forceperishchange")
     end
+    --V2C: force clients to refresh spoilage icons when tags change,
+    --     since the percent value may not change enough to be dirty
 end
 
 local Perishable = Class(function(self, inst)

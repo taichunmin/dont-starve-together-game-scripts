@@ -5,7 +5,7 @@ local Aura = Class(function(self, inst)
     self.active = false
     self.applying = false
     self.auratestfn = nil
-    self.auraexcludetags = { "noauradamage", "INLIMBO" }
+    self.auraexcludetags = { "noauradamage", "INLIMBO", "notarget", "noattack", "flight", "invisible", "playerghost" }
     self._fn = function(target) return self.auratestfn(inst, target) end
 end)
 

@@ -24,6 +24,11 @@ local function fn()
 
     inst:AddTag("sharp")
 
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        --weapon (from weapon component) added to pristine state for optimization
+        inst:AddTag("weapon")
+    end
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

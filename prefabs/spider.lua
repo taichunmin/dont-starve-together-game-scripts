@@ -91,11 +91,12 @@ local function FindTarget(inst, radius)
         inst,
         SpringCombatMod(radius),
         function(guy)
-            return inst.components.combat:CanTarget(guy)
+            return (not guy:HasTag("monster") or guy:HasTag("player"))
+                and inst.components.combat:CanTarget(guy)
                 and not (inst.components.follower ~= nil and inst.components.follower.leader == guy)
         end,
         { "_combat", "character" },
-        { "monster", "INLIMBO" }
+        { "spiderwhisperer", "spiderdisguise", "INLIMBO" }
     )
 end
 

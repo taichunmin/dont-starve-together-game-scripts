@@ -38,10 +38,11 @@ local function Retarget(inst)
         local oldtarget = inst.components.combat.target
         local newtarget = FindEntity(inst, 10, 
             function(guy) 
-                return inst.components.combat:CanTarget(guy) 
+                return (not guy:HasTag("monster") or guy:HasTag("player"))
+                    and inst.components.combat:CanTarget(guy) 
             end,
             { "character", "_combat" },
-            { "monster", "INLIMBO" }
+            { "spiderwhisperer", "spiderdisguise", "INLIMBO" }
         )
 
         if newtarget ~= nil and newtarget ~= oldtarget then

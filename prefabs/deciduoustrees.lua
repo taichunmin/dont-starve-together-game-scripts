@@ -20,7 +20,6 @@ local assets =
 local prefabs =
 {
     "log",
-    "twigs",
     "acorn",
     "charcoal",
     "green_leaves",
@@ -37,7 +36,8 @@ local prefabs =
     "livinglog",
     "nightmarefuel",
     "spoiled_food",
-    "birchnutdrake"
+    "birchnutdrake",
+    "small_puff",
 }
 
 local builds =
@@ -928,6 +928,36 @@ local function OnEntityWake(inst)
     inst._wasonfire = nil
 end
 
+local REMOVABLE =
+{
+    ["log"] = true,
+    ["acorn"] = true,
+    ["charcoal"] = true,
+}
+
+local function OnTimerDone(inst, data)
+    if data.name == "decay" then
+        local x, y, z = inst.Transform:GetWorldPosition()
+        if inst:IsAsleep() then
+            -- before we disappear, clean up any crap left on the ground
+            -- too many objects is as bad for server health as too few!
+            local leftone = false
+            for i, v in ipairs(TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "INLIMBO", "fire" })) do
+                if REMOVABLE[v.prefab] then
+                    if leftone then
+                        v:Remove()
+                    else
+                        leftone = true
+                    end
+                end
+            end
+        else
+            SpawnPrefab("small_puff").Transform:SetPosition(x, y, z)
+        end
+        inst:Remove()
+    end
+end
+
 local function onsave(inst, data)
     if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() or inst:HasTag("burnt") then
         data.burnt = true
@@ -1179,6 +1209,7 @@ local function makefn(build, stage, data)
         inst.MiniMapEntity:SetIcon("tree_leaf.png")
         inst.MiniMapEntity:SetPriority(-1)
 
+        inst:AddTag("plant")
         inst:AddTag("tree")
         inst:AddTag("birchnut")
         inst:AddTag("cattoyairborne")
@@ -1232,6 +1263,9 @@ local function makefn(build, stage, data)
         inst.components.plantregrowth:SetRegrowthRate(TUNING.DECIDUOUS_REGROWTH.OFFSPRING_TIME)
         inst.components.plantregrowth:SetProduct("acorn_sapling")
         inst.components.plantregrowth:SetSearchTag("deciduoustree")
+
+        inst:AddComponent("timer")
+        inst:ListenForEvent("timerdone", OnTimerDone)
 
         inst:AddComponent("inspectable")
         inst.components.inspectable.getstatus = inspect_tree

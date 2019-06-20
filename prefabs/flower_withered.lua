@@ -3,8 +3,6 @@ local assets =
     Asset("ANIM", "anim/withered_flowers.zip"),
 }
 
-local names = {"wf1","wf2","wf3"}
-
 local function onpickedfn(inst, picker)
     inst:Remove()
 end
@@ -14,7 +12,7 @@ local function onsave(inst, data)
 end
 
 local function onload(inst, data)
-    if data and data.anim then
+    if data ~= nil and data.anim ~= nil then
         inst.animname = data.anim
         inst.AnimState:PlayAnimation(inst.animname)
     end
@@ -25,11 +23,11 @@ local function fn()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
     inst.AnimState:SetBank("withered_flowers")
     inst.AnimState:SetBuild("withered_flowers")
+    inst.AnimState:SetRayTestOnBB(true)
 
     inst.entity:SetPristine()
 
@@ -37,7 +35,7 @@ local function fn()
         return inst
     end
 
-    inst.animname = names[math.random(#names)]
+    inst.animname = "wf"..tostring(math.random(3))
     inst.AnimState:PlayAnimation(inst.animname)
 
     inst:AddComponent("inspectable")
@@ -59,4 +57,4 @@ local function fn()
     return inst
 end
 
-return Prefab("common/objects/flower_withered", fn, assets)
+return Prefab("flower_withered", fn, assets)

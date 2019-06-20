@@ -18,6 +18,8 @@ local Crop = Class(function(self, inst)
     self.task = nil
     self.matured = false
     self.onmatured = nil
+    self.onwithered = nil
+    self.onharvest = nil
     self.cantgrowtime = 0
 end,
 nil,
@@ -34,6 +36,14 @@ function Crop:SetOnMatureFn(fn)
     self.onmatured = fn
 end
 
+function Crop:SetOnWitheredFn(fn)
+    self.onwithered = fn
+end
+
+function Crop:SetOnHarvestFn(fn)
+    self.onharvest = fn
+end
+
 function Crop:OnSave()
     return
     {
@@ -47,19 +57,27 @@ end
 function Crop:OnLoad(data)
     if data ~= nil then
         self.product_prefab = data.prefab or self.product_prefab
-        self.growthpercent = data.percent or self.growthpercent
+        self.growthpercent = math.clamp(data.percent, 0, 1) or self.growthpercent
         self.rate = data.rate or self.rate
-        self.matured = data.matured or self.matured
+        if data.matured ~= nil then
+            self.matured = data.matured
+        end
     end
 
     if not self.inst:HasTag("withered") then
         self:DoGrow(0)
         if self.product_prefab ~= nil and self.matured then
-            self.inst.AnimState:PlayAnimation("grow_pst")
+            self.inst.AnimState:SetPercent("grow_pst", 1)
             if self.onmatured ~= nil then
                 self.onmatured(self.inst)
             end
         end
+    end
+end
+
+function Crop:LoadPostPass()--newents, data)
+    if self.grower == nil then
+        self:Resume()
     end
 end
 
@@ -75,14 +93,17 @@ function Crop:Fertilize(fertilizer, doer)
                 fertilizer.components.fertilizer.fertilize_sound ~= nil then
                 doer.SoundEmitter:PlaySound(fertilizer.components.fertilizer.fertilize_sound)
             end
-            self.growthpercent = self.growthpercent + fertilizer.components.fertilizer.fertilizervalue * self.rate
+            self.growthpercent = math.clamp(self.growthpercent + fertilizer.components.fertilizer.fertilizervalue * self.rate, 0, 1)
         end
-        self.inst.AnimState:SetPercent("grow", self.growthpercent)
-        if self.growthpercent >= 1 then
+        if self.growthpercent < 1 then
+            self.inst.AnimState:SetPercent("grow", self.growthpercent)
+        else
             self.inst.AnimState:PlayAnimation("grow_pst")
             self:Mature()
-            self.task:Cancel()
-            self.task = nil
+            if self.task ~= nil then
+                self.task:Cancel()
+                self.task = nil
+            end
         end
         if fertilizer.components.finiteuses ~= nil then
             fertilizer.components.finiteuses:Use()
@@ -95,15 +116,12 @@ end
 
 function Crop:DoGrow(dt, nowither)
     if not self.inst:HasTag("withered") then 
-        self.inst.AnimState:SetPercent("grow", self.growthpercent)
-
         local shouldgrow = nowither or not TheWorld.state.isnight
         if not shouldgrow then
-            local x,y,z = self.inst.Transform:GetWorldPosition()
-            local ents = TheSim:FindEntities(x,0,z, DAYLIGHT_SEARCH_RANGE, { "daylight", "lightsource" })
-            for i,v in ipairs(ents) do
+            local x, y, z = self.inst.Transform:GetWorldPosition()
+            for i, v in ipairs(TheSim:FindEntities(x, 0, z, DAYLIGHT_SEARCH_RANGE, { "daylight", "lightsource" })) do
                 local lightrad = v.Light:GetCalculatedRadius() * .7
-                if v:GetDistanceSqToPoint(x,y,z) < lightrad * lightrad then
+                if v:GetDistanceSqToPoint(x, y, z) < lightrad * lightrad then
                     shouldgrow = true
                     break
                 end
@@ -115,17 +133,21 @@ function Crop:DoGrow(dt, nowither)
                 (TheWorld.state.israining and 1 + TUNING.CROP_RAIN_BONUS * TheWorld.state.precipitationrate) or
                 (TheWorld.state.isspring and 1 + TUNING.SPRING_GROWTH_MODIFIER / 3) or
                 1
-            self.growthpercent = self.growthpercent + dt * self.rate * temp_rate
+            self.growthpercent = math.clamp(self.growthpercent + dt * self.rate * temp_rate, 0, 1)
             self.cantgrowtime = 0
         else
             self.cantgrowtime = self.cantgrowtime + dt
-            if self.cantgrowtime > TUNING.CROP_DARK_WITHER_TIME
-                and self.inst.components.witherable then
+            if self.cantgrowtime > TUNING.CROP_DARK_WITHER_TIME and self.inst.components.witherable ~= nil then
                 self.inst.components.witherable:ForceWither()
+                if self.inst:HasTag("withered") then
+                    return
+                end
             end
         end
 
-        if self.growthpercent >= 1 then
+        if self.growthpercent < 1 then
+            self.inst.AnimState:SetPercent("grow", self.growthpercent)
+        else
             self.inst.AnimState:PlayAnimation("grow_pst")
             self:Mature()
             if self.task ~= nil then
@@ -159,8 +181,8 @@ end
 
 function Crop:StartGrowing(prod, grow_time, grower, percent)
     self.product_prefab = prod
-    self.rate = 1/ grow_time
-    self.growthpercent = percent or 0
+    self.rate = 1 / grow_time
+    self.growthpercent = math.clamp(percent or 0, 0, 1)
     self.inst.AnimState:SetPercent("grow", self.growthpercent)
     self.grower = grower
 
@@ -201,10 +223,17 @@ function Crop:Harvest(harvester)
         self.matured = false
         self.growthpercent = 0
         self.product_prefab = nil
+
+        if self.onharvest ~= nil then
+            self.onharvest(self.inst, product, harvester)
+        end
+
         if self.grower ~= nil and self.grower:IsValid() and self.grower.components.grower ~= nil then
             self.grower.components.grower:RemoveCrop(self.inst)
+            self.grower = nil
+        else
+            self.inst:Remove()
         end
-        self.grower = nil
 
         return true, product
     end
@@ -216,6 +245,25 @@ function Crop:Mature()
         if self.onmatured ~= nil then
             self.onmatured(self.inst)
         end
+    end
+end
+
+function Crop:MakeWithered()
+    if self.task ~= nil then
+        self.task:Cancel()
+        self.task = nil
+    end
+    self.matured = false
+    self.product_prefab = "cutgrass"
+    self.growthpercent = 0
+    self.rate = 0
+    self.inst.AnimState:PlayAnimation("picked")
+    if self.inst.components.burnable == nil then
+        MakeMediumBurnable(self.inst)
+        MakeSmallPropagator(self.inst)
+    end
+    if self.onwithered ~= nil then
+        self.onwithered(self.inst)
     end
 end
 

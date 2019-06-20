@@ -341,7 +341,7 @@ local function fn()
     inst.CreateItem = CreateItem
 
     inst:ListenForEvent("onbuilt", onbuilt)
-	inst:ListenForEvent("ondeconstrcutstructure", dropitems)
+	inst:ListenForEvent("ondeconstructstructure", dropitems)
 
     if not TheWorld:HasTag("cave") then
         inst.OnEntityWake = CheckChessMoonEventKnockOff

@@ -23,6 +23,9 @@ local assets =
     Asset("DYNAMIC_ATLAS", "images/names_gold_random.xml"),
     Asset("PKGREF", "images/names_gold_random.tex"),
 
+    Asset("DYNAMIC_ATLAS", "images/names_gold_cn_random.xml"),
+    Asset("PKGREF", "images/names_gold_cn_random.tex"),
+
     -- Asset("ANIM", "anim/portrait_frame.zip"), -- Not currently used, but likely to come back
     Asset("ANIM", "anim/spiral_bg.zip"),
 

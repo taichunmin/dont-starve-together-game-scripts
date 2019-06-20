@@ -44,6 +44,7 @@ local prefabs =
     "petrified_tree_fx_tall",
     "petrified_tree_fx_old",
     "petrified_trunk_break_fx",
+    "small_puff",
 }
 
 local twiggy_prefabs =
@@ -52,6 +53,7 @@ local twiggy_prefabs =
     "twigs",
     "twiggy_nut",
     "charcoal",
+    "small_puff",
     --#DISEASE "diseaseflies",
     --#DISEASE "disease_flies_puff",
     --#DISEASE "green_leaves_chop",
@@ -704,25 +706,34 @@ local function OnEntityWake(inst)
     end
 end
 
+local REMOVABLE =
+{
+    ["log"] = true,
+    ["pinecone"] = true,
+    ["twigs"] = true,
+    ["twiggy_nut"] = true,
+    ["charcoal"] = true,
+}
+
 local function OnTimerDone(inst, data)
     if data.name == "decay" then
-        -- before we disappear, clean up any crap left on the ground -- too
-        -- many objects is as bad for server health as too few!
-        local x,y,z = inst.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x,y,z,6)
-        local leftone = false
-        for k,ent in pairs(ents) do
-            if ent.prefab == "log"
-                or ent.prefab == "pinecone"
-                or ent.prefab == "charcoal" then
-                if leftone then
-                    ent:Remove()
-                else
-                    leftone = true
+        local x, y, z = inst.Transform:GetWorldPosition()
+        if inst:IsAsleep() then
+            -- before we disappear, clean up any crap left on the ground
+            -- too many objects is as bad for server health as too few!
+            local leftone = false
+            for i, v in ipairs(TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "INLIMBO", "fire" })) do
+                if REMOVABLE[v.prefab] then
+                    if leftone then
+                        v:Remove()
+                    else
+                        leftone = true
+                    end
                 end
             end
+        else
+            SpawnPrefab("small_puff").Transform:SetPosition(x, y, z)
         end
-
         inst:Remove()
     end
 end
@@ -899,6 +910,7 @@ local function tree(name, build, stage, data)
 
         inst.MiniMapEntity:SetPriority(-1)
 
+        inst:AddTag("plant")
         inst:AddTag("tree")
 
         inst.build = build

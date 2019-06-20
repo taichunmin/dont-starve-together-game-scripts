@@ -239,10 +239,16 @@ end
 local function OnIsTakingFireDamageDirty(inst)
     if inst._parent ~= nil then
         if inst.istakingfiredamage:value() then
-            inst._parent:PushEvent("startfiredamage")
+            inst._parent:PushEvent("startfiredamage", { low = inst.istakingfiredamagelow:value() })
         else
             inst._parent:PushEvent("stopfiredamage")
         end
+    end
+end
+
+local function OnIsTakingFireDamageLowDirty(inst)
+    if inst._parent ~= nil then
+        inst._parent:PushEvent("changefiredamage", { low = inst.istakingfiredamagelow:value() })
     end
 end
 
@@ -792,6 +798,7 @@ local function RegisterNetListeners(inst)
         inst.pausepredictionframes:set_local(0)
         inst:ListenForEvent("healthdirty", OnHealthDirty)
         inst:ListenForEvent("istakingfiredamagedirty", OnIsTakingFireDamageDirty)
+        inst:ListenForEvent("istakingfiredamagelowdirty", OnIsTakingFireDamageLowDirty)
         inst:ListenForEvent("combat.attackedpulse", OnAttackedPulseEvent)
         inst:ListenForEvent("hungerdirty", OnHungerDirty)
         inst:ListenForEvent("sanitydirty", OnSanityDirty)
@@ -870,6 +877,7 @@ local function fn()
     inst.maxhealth = net_ushortint(inst.GUID, "health.maxhealth", "healthdirty")
     inst.healthpenalty = net_byte(inst.GUID, "health.penalty", "healthdirty")
     inst.istakingfiredamage = net_bool(inst.GUID, "health.takingfiredamage", "istakingfiredamagedirty")
+    inst.istakingfiredamagelow = net_bool(inst.GUID, "health.takingfiredamagelow", "istakingfiredamagelowdirty")
     inst.issleephealing = net_bool(inst.GUID, "health.healthsleep")
     inst.ishealthpulseup = net_bool(inst.GUID, "health.dodeltaovertime(up)", "healthdirty")
     inst.ishealthpulsedown = net_bool(inst.GUID, "health.dodeltaovertime(down)", "healthdirty")

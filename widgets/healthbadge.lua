@@ -95,16 +95,19 @@ function HealthBadge:SetPercent(val, max, penaltypercent)
 end
 
 function HealthBadge:OnUpdate(dt)
-    local down =
-        (self.owner.IsFreezing ~= nil and self.owner:IsFreezing()) or
-        (self.owner.IsOverheating ~= nil and self.owner:IsOverheating()) or
+    local down
+    if (self.owner.IsFreezing ~= nil and self.owner:IsFreezing()) or
+        (self.owner.replica.health ~= nil and self.owner.replica.health:IsTakingFireDamageFull()) or
         (self.owner.replica.hunger ~= nil and self.owner.replica.hunger:IsStarving()) or
-        (self.owner.replica.health ~= nil and self.owner.replica.health:IsTakingFireDamage()) or
         (self.owner.IsBeaverStarving ~= nil and self.owner:IsBeaverStarving()) or
-        next(self.corrosives) ~= nil
+        next(self.corrosives) ~= nil then
+        down = "_most"
+    elseif self.owner.IsOverheating ~= nil and self.owner:IsOverheating() then
+        down = self.owner:HasTag("heatresistant") and "_more" or "_most"
+    end
 
     -- Show the up-arrow when we're sleeping (but not in a straw roll: that doesn't heal us)
-    local up = not down and
+    local up = down == nil and
         (   (self.owner.player_classified ~= nil and self.owner.player_classified.issleephealing:value()) or
             next(self.hots) ~= nil or
             (self.owner.replica.inventory ~= nil and self.owner.replica.inventory:EquipHasTag("regen"))
@@ -112,7 +115,7 @@ function HealthBadge:OnUpdate(dt)
         self.owner.replica.health ~= nil and self.owner.replica.health:IsHurt()
 
     local anim =
-        (down and "arrow_loop_decrease_most") or
+        (down ~= nil and ("arrow_loop_decrease"..down)) or
         (not up and "neutral") or
         (next(self.hots) ~= nil and "arrow_loop_increase_most") or
         "arrow_loop_increase"

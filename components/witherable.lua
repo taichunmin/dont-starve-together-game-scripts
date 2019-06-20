@@ -48,25 +48,11 @@ end
 --------------------------------------------------------------------------
 -- Withering
 
-local function DoCropWither(inst, self)
-    local crop = inst.components.crop
-    if crop == nil then
+local function DoCropWither(inst)
+    if inst.components.crop == nil then
         return false
     end
-    -- TODO: task is crop:DoGrow
-    if crop.task ~= nil then
-        crop.task:Cancel()
-        crop.task = nil
-    end
-    crop.matured = false
-    crop.product_prefab = "cutgrass"
-    crop.growthpercent = 0
-    crop.rate = 0
-    inst.AnimState:PlayAnimation("picked")
-    if inst.components.burnable == nil then
-        MakeMediumBurnable(inst)
-        MakeSmallPropagator(inst)
-    end
+    inst.components.crop:MakeWithered()
     return true
 end
 
@@ -91,7 +77,7 @@ local function WitherHandler(inst, self, force)
         self:Start()
     else
         self.withered = true
-        if DoCropWither(inst, self) or DoPickableWither(inst, self) then
+        if DoCropWither(inst) or DoPickableWither(inst, self) then
             self:DelayRejuvenate(TUNING.TOTAL_DAY_TIME)
         else
             print("Failed to wither "..tostring(inst))
@@ -316,7 +302,7 @@ function Witherable:OnLoad(data)
     if data.withered then
         self.withered = true
         if self.inst.components.crop ~= nil then
-            DoCropWither(self.inst, self)
+            DoCropWither(self.inst)
         elseif self.inst.components.pickable ~= nil then
             self.restore_cycles = data.restore_cycles
         end

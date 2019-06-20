@@ -100,6 +100,9 @@ local function fn()
 
     inst:AddTag("thrown")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --projectile (from projectile component) added to pristine state for optimization
     inst:AddTag("projectile")
 

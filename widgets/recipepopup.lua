@@ -153,7 +153,7 @@ function RecipePopup:BuildWithSpinner(horizontal)
     self.lines.line_under_spinner:SetPosition(320, -120)
     self.lines.line_under_spinner:SetTint(unpack(BROWN))
 
-    self.amulet = self.contents:AddChild(Image( resolvefilepath("images/inventoryimages.xml"), "greenamulet.tex"))
+    self.amulet = self.contents:AddChild(Image( resolvefilepath(GetInventoryItemAtlas("greenamulet.tex")), "greenamulet.tex"))
     self.amulet:SetPosition(415, -155, 0)
     self.amulet:SetTooltip(STRINGS.GREENAMULET_TOOLTIP)
 
@@ -215,7 +215,7 @@ function RecipePopup:BuildNoSpinner(horizontal)
                                 end
                             end)
 
-    self.amulet = self.contents:AddChild(Image( resolvefilepath("images/inventoryimages.xml"), "greenamulet.tex"))
+    self.amulet = self.contents:AddChild(Image( resolvefilepath(GetInventoryItemAtlas("greenamulet.tex")), "greenamulet.tex"))
     self.amulet:SetPosition(415, -105, 0)
     self.amulet:SetTooltip(STRINGS.GREENAMULET_TOOLTIP)
 
@@ -288,7 +288,7 @@ function RecipePopup:Refresh()
     for i, v in ipairs(recipe.tech_ingredients) do
         if v.type:sub(-9) == "_material" then
             local has, level = builder:HasTechIngredient(v)
-            local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", nil, nil, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+            local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", nil, nil, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
             if GetGameModeProperty("icons_use_cc") then
                 ing.ing:SetEffect("shaders/ui_cc.ksh")
             end
@@ -306,7 +306,7 @@ function RecipePopup:Refresh()
 
     for i, v in ipairs(recipe.ingredients) do
         local has, num_found = inventory:Has(v.type, RoundBiasedUp(v.amount * builder:IngredientMod()))
-        local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
         end
@@ -322,7 +322,7 @@ function RecipePopup:Refresh()
         --#BDOIG - does this need to listen for deltas and change while menu is open?
         --V2C: yes, but the entire craft tabs does. (will be added there)
         local has, amount = builder:HasCharacterIngredient(v)
-        local ing = self.contents:AddChild(IngredientUI(v.atlas, v.type..".tex", v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
         end
@@ -464,7 +464,7 @@ function RecipePopup:GetSkinOptions()
         data = nil,
         colour = DEFAULT_SKIN_COLOR,
         new_indicator = false,
-        image = {"images/inventoryimages.xml", self.recipe.product..".tex", "default.tex"},
+        image = {GetInventoryItemAtlas(self.recipe.product..".tex"), self.recipe.product..".tex", "default.tex"},
     })
 
     local recipe_timestamp = Profile:GetRecipeTimestamp(self.recipe.product)
@@ -484,7 +484,7 @@ function RecipePopup:GetSkinOptions()
                 data = nil,
                 colour = colour,
                 new_indicator = new_indicator,
-                image = {"images/inventoryimages.xml", image_name..".tex" or "default.tex", "default.tex"},
+                image = {GetInventoryItemAtlas(image_name..".tex"), image_name..".tex" or "default.tex", "default.tex"},
             })
         end
 

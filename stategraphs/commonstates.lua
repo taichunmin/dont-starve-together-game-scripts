@@ -546,13 +546,28 @@ local function onexitfrozen(inst)
     inst.AnimState:ClearOverrideSymbol("swap_frozen")
 end
 
-local function onenterthaw(inst)
+local function onenterthawpre(inst)
     if inst.components.locomotor ~= nil then
         inst.components.locomotor:StopMoving()
     end
     inst.AnimState:PlayAnimation("frozen_loop_pst", true)
     inst.SoundEmitter:PlaySound("dontstarve/common/freezethaw", "thawing")
     inst.AnimState:OverrideSymbol("swap_frozen", "frozen", "frozen")
+end
+
+local function onenterthawpst(inst)
+    --V2C: cuz... freezable component and SG need to match state,
+    --     but messages to SG are queued, so it is not great when
+    --     when freezable component tries to change state several
+    --     times within one frame...
+    if inst.components.freezable == nil or not inst.components.freezable:IsFrozen() then
+        onunfreeze(inst)
+    end
+end
+
+local function onenterthaw(inst)
+    onenterthawpre(inst)
+    onenterthawpst(inst)
 end
 
 local function onexitthaw(inst)
@@ -590,8 +605,9 @@ CommonStates.AddFrozenStates = function(states, onoverridesymbols, onclearsymbol
         tags = { "busy", "thawing" },
 
         onenter = onoverridesymbols ~= nil and function(inst)
-            onenterthaw(inst)
+            onenterthawpre(inst)
             onoverridesymbols(inst)
+            onenterthawpst(inst)
         end or onenterthaw,
 
         events =

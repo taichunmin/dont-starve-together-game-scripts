@@ -116,15 +116,17 @@ function Harvestable:Harvest(picker)
         local produce = self.produce
         self.produce = 0
 
+        local pos = self.inst:GetPosition()
+
         if self.onharvestfn ~= nil then
             self.onharvestfn(self.inst, picker, produce)
         end
-		
+
 		if self.product ~= nil then
 			if picker ~= nil and picker.components.inventory ~= nil then
 				picker:PushEvent("harvestsomething", { object = self.inst })
 			end
-			
+
 			for i = 1, produce, 1 do
 				local loot = SpawnPrefab(self.product)
 				if loot ~= nil then
@@ -132,7 +134,7 @@ function Harvestable:Harvest(picker)
 						loot.components.inventoryitem:InheritMoisture(TheWorld.state.wetness, TheWorld.state.iswet)
 					end
 					if picker ~= nil and picker.components.inventory ~= nil then
-						picker.components.inventory:GiveItem(loot)
+						picker.components.inventory:GiveItem(loot, nil, pos)
 					else
 						LaunchAt(loot, self.inst, nil, 1, 1)
 					end

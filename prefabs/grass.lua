@@ -262,6 +262,7 @@ local function grass(name, stage)
         inst.AnimState:SetBuild("grass1")
         inst.AnimState:PlayAnimation("idle", true)
 
+        inst:AddTag("plant")
         inst:AddTag("renewable")
 
         --witherable (from witherable component) added to pristine state for optimization

@@ -320,6 +320,8 @@ function LootDropper:DropLoot(pt)
             end
         end
     end
+
+    TheWorld:PushEvent("entity_droploot", { inst = self.inst })
 end
 
 return LootDropper

@@ -545,7 +545,7 @@ local function destroystructure(staff, target)
         target.components.stewer:Harvest()
     end
 
-   	target:PushEvent("ondeconstrcutstructure", caster)
+   	target:PushEvent("ondeconstructstructure", caster)
 
     if target.components.stackable ~= nil then
         --if it's stackable we only want to destroy one of them.
@@ -689,7 +689,8 @@ end
 ---------COLOUR SPECIFIC CONSTRUCTIONS---------
 
 local function red()
-    local inst = commonfn("red", { "firestaff", "rangedweapon", "rangedlighter" }, true)
+    --weapon (from weapon component) added to pristine state for optimization
+    local inst = commonfn("red", { "firestaff", "weapon", "rangedweapon", "rangedlighter" }, true)
 
     inst.projectiledelay = FRAMES
 
@@ -713,7 +714,8 @@ local function red()
 end
 
 local function blue()
-    local inst = commonfn("blue", { "icestaff", "rangedweapon", "extinguisher" }, true)
+    --weapon (from weapon component) added to pristine state for optimization
+    local inst = commonfn("blue", { "icestaff", "weapon", "rangedweapon", "extinguisher" }, true)
 
     inst.projectiledelay = FRAMES
 

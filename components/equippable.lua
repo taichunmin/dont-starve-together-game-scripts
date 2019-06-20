@@ -12,6 +12,12 @@ local function onwalkspeedmult(self, walkspeedmult)
     end
 end
 
+local function onrestrictedtag(self, restrictedtag)
+    if self.inst.replica.inventoryitem ~= nil then
+        self.inst.replica.inventoryitem:SetEquipRestrictedTag(restrictedtag)
+    end
+end
+
 local Equippable = Class(function(self, inst)
     self.inst = inst
 
@@ -22,6 +28,7 @@ local Equippable = Class(function(self, inst)
     self.onpocketfn = nil
     self.equipstack = false
     self.walkspeedmult = nil
+    --self.retrictedtag = nil --only entities with this tag can equip
     self.dapperness = 0
     self.dapperfn = nil
     self.insulated = false
@@ -32,11 +39,14 @@ nil,
 {
     equipslot = onequipslot,
     walkspeedmult = onwalkspeedmult,
+    restrictedtag = onrestrictedtag,
 })
 
 function Equippable:OnRemoveFromEntity()
-    if self.inst.replica.inventoryitem ~= nil then
-        self.inst.replica.inventoryitem:SetWalkSpeedMult(1)
+    local inventoryitem = self.inst.replica.inventoryitem
+    if inventoryitem ~= nil then
+        inventoryitem:SetWalkSpeedMult(1)
+        inventoryitem:SetEquipRestrictedTag(nil)
     end
 end
 
@@ -91,6 +101,10 @@ end
 
 function Equippable:GetWalkSpeedMult()
     return self.walkspeedmult or 1.0
+end
+
+function Equippable:IsRestricted(target)
+    return self.restrictedtag ~= nil and self.restrictedtag:len() > 0 and not target:HasTag(self.restrictedtag)
 end
 
 function Equippable:GetDapperness(owner)

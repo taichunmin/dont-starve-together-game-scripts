@@ -570,8 +570,6 @@ local function fnmoon()
     inst.components.locomotor.runspeed = TUNING.MOONHOUND_SPEED
     inst.components.health:SetMaxHealth(TUNING.MOONHOUND_HEALTH)
 
-    inst:AddComponent("entitytracker")
-
     inst:ListenForEvent("moonpetrify", OnMoonPetrify)
     inst:ListenForEvent("moontransformed", OnMoonTransformed)
 

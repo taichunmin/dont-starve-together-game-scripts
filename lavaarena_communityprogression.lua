@@ -15,12 +15,12 @@ local IS_CLIENT_HOSTED = 3
 local unordered_unlocks =
 {
 	{id = "book_elemental",					alias = "spear_lance",								style = "item",		atlas = "images/lavaarena_unlocks.xml",	icon = "book_elemental.tex"},
-	{id = "lavaarena_firebomb",																	style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_firebomb.tex"},
-	{id = "lavaarena_heavyblade",																style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_heavyblade.tex"},
-    {id = "lavaarena_armor_hpdamager",															style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_armor_hpdamager.tex"},
-    {id = "lavaarena_armor_hpextraheavy",														style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_armor_hpextraheavy.tex"},
-    {id = "lavaarena_armor_hppetmastery",														style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_armor_hppetmastery.tex"},
-	{id = "lavaarena_armor_hprecharger",														style = "item",		atlas = "images/inventoryimages.xml",	icon = "lavaarena_armor_hprecharger.tex"},
+	{id = "lavaarena_firebomb",																	style = "item",		atlas = nil,							icon = "lavaarena_firebomb.tex"},
+	{id = "lavaarena_heavyblade",																style = "item",		atlas = nil,							icon = "lavaarena_heavyblade.tex"},
+    {id = "lavaarena_armor_hpdamager",															style = "item",		atlas = nil,							icon = "lavaarena_armor_hpdamager.tex"},
+    {id = "lavaarena_armor_hpextraheavy",														style = "item",		atlas = nil,							icon = "lavaarena_armor_hpextraheavy.tex"},
+    {id = "lavaarena_armor_hppetmastery",														style = "item",		atlas = nil,							icon = "lavaarena_armor_hppetmastery.tex"},
+	{id = "lavaarena_armor_hprecharger",														style = "item",		atlas = nil,							icon = "lavaarena_armor_hprecharger.tex"},
 	{id = "trails",													progression_key = true,		style = "creature",	atlas = "images/lavaarena_unlocks.xml", icon = "trails.tex"},
 	{id = "boarrior",												progression_key = true,		style = "boss",		atlas = "images/lavaarena_unlocks.xml", icon = "boarrior.tex"},
 	{id = "rhinodrill",												progression_key = true,		style = "creature",	atlas = "images/lavaarena_unlocks.xml", icon = "rhinodrill.tex"},

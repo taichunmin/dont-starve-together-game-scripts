@@ -2,7 +2,7 @@ function FindEntityToDraw(target, tool)
     if target ~= nil then
         local x, y, z = target.Transform:GetWorldPosition()
         for i, v in ipairs(TheSim:FindEntities(x, y, z, 1.5, { "_inventoryitem" }, { "INLIMBO" })) do
-            if v ~= target and v ~= tool and v.entity:IsVisible() then
+            if v ~= target and v ~= tool and v.entity:IsVisible() and v.replica.inventoryitem:CanBePickedUp() then
                 return v
             end
         end

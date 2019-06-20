@@ -207,12 +207,14 @@ function ServerCreationScreen:_UpdateMenuButton(slotnum)
                 end
             end
             
-            --Todo(Peter):fixup the STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY string to properly use subfmt to work better with translations.
-            if PLATFORM == "WIN32_RAIL" then
-	            self.slot_day_cache[slotnum] = (season ~= nil and (season.." ") or "")..day..STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY
-			else
-	            self.slot_day_cache[slotnum] = (season ~= nil and (season.." ") or "")..STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY.." "..day
-			end
+            local day_text = ""
+            if season ~= nil then
+                day_text = subfmt(STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_SEASON_V2, {day_count = day, season = season} )
+            else
+                day_text = subfmt(STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_V2, {day_count = day} )
+            end
+
+            self.slot_day_cache[slotnum] = day_text
         else
             self.slot_day_cache[slotnum] = STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_NEW
         end

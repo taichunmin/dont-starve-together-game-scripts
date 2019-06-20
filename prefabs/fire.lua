@@ -4,6 +4,11 @@ local assets =
     Asset("SOUND", "sound/common.fsb"),
 }
 
+local prefabs =
+{
+    "firefx_light",
+}
+
 local heats = { 30, 70, 120, 180, 220 }
 
 local function GetHeatFn(inst)
@@ -25,7 +30,6 @@ local function fn()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddLight()
     inst.entity:AddNetwork()
 
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
@@ -67,4 +71,4 @@ local function fn()
     return inst
 end
 
-return Prefab("fire", fn, assets)
+return Prefab("fire", fn, assets, prefabs)

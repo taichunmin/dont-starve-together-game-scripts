@@ -36,7 +36,7 @@ end
 local function onpickedfn(inst, picker)
     inst.AnimState:PlayAnimation("picking")
     inst.AnimState:PushAnimation("picked", false)
-    if picker.components.combat ~= nil then
+    if picker ~= nil and picker.components.combat ~= nil and not (picker.components.inventory ~= nil and picker.components.inventory:EquipHasTag("bramble_resistant")) then
         picker.components.combat:GetAttacked(inst, TUNING.MARSHBUSH_DAMAGE)
         picker:PushEvent("thorns")
     end
@@ -78,6 +78,7 @@ local function fn()
     inst.AnimState:SetBank("marsh_bush")
     inst.AnimState:PlayAnimation("idle", true)
 
+    inst:AddTag("plant")
     inst:AddTag("thorny")
 
     inst.entity:SetPristine()
@@ -130,6 +131,7 @@ local function burnt_fn()
     inst.AnimState:SetBank("marsh_bush")
     inst.AnimState:PlayAnimation("burnt")
 
+    inst:AddTag("plant")
     inst:AddTag("thorny")
     inst:AddTag("burnt")
 

@@ -8,13 +8,13 @@ local assets =
 local prefabs =
 {
     "collapse_small",
-	"mudpuddle_splash",
-	"pigshrine_mud",
+    "mudpuddle_splash",
     "ash",
     "meat",
     "cookedmeat",
     "meat_dried",
-	"spoiled_food",
+    "spoiled_food",
+    "charcoal",
 }
 
 local function OnBurnt(inst)
@@ -24,6 +24,7 @@ local function OnBurnt(inst)
         inst:RemoveEventCallback("perished", inst._onofferingperished, inst.offering)
         inst.offering:Remove()
         inst.offering = nil
+        inst.components.lootdropper:SpawnLootPrefab("charcoal")
     end
     inst.AnimState:Hide("meat")
     if inst.components.trader ~= nil then
@@ -82,8 +83,8 @@ local function SetOffering(inst, offering, loading)
 
     if not loading then
         inst.SoundEmitter:PlaySound("dontstarve/common/plant")
-		inst.AnimState:PlayAnimation("use")
-		inst.AnimState:PushAnimation("idle")
+        inst.AnimState:PlayAnimation("use")
+        inst.AnimState:PushAnimation("idle", false)
     end
 
     MakePrototyper(inst)
@@ -123,6 +124,9 @@ local function MakeEmpty(inst)
 end
 
 local function OnIgnite(inst)
+    if inst.offering ~= nil then
+        inst.components.lootdropper:SpawnLootPrefab("charcoal")
+    end
     MakeEmpty(inst)
     inst.components.trader:Disable()
     DefaultBurnFn(inst)
@@ -141,11 +145,10 @@ local function onbuilt(inst)
     MakeEmpty(inst)
 
     inst.AnimState:PlayAnimation("place")
-	inst.AnimState:PushAnimation("idle")
+    inst.AnimState:PushAnimation("idle", false)
     inst.SoundEmitter:PlaySound("dontstarve/common/together/pig_shrine/place")
 
-	local splash = SpawnPrefab("mudpuddle_splash")
-	splash.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    SpawnPrefab("mudpuddle_splash").Transform:SetPosition(inst.Transform:GetWorldPosition())
 end
 
 local function onhammered(inst, worker)
@@ -154,13 +157,13 @@ local function onhammered(inst, worker)
     end
     inst.components.lootdropper:DropLoot()
     DropOffering(inst, worker)
+    local x, y, z = inst.Transform:GetWorldPosition()
     local fx = SpawnPrefab("collapse_small")
-    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    fx.Transform:SetPosition(x, y, z)
     fx:SetMaterial("wood")
-    local splash = SpawnPrefab("mudpuddle_splash")
-    splash.Transform:SetPosition(inst.Transform:GetWorldPosition())
-	
-	inst:Remove()
+    SpawnPrefab("mudpuddle_splash").Transform:SetPosition(x, y, z)
+
+    inst:Remove()
 end
 
 local function onhit(inst, worker, workleft)
@@ -168,22 +171,21 @@ local function onhit(inst, worker, workleft)
     MakeEmpty(inst)
     if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("hit")
-        inst.AnimState:PushAnimation("idle")
+        inst.AnimState:PushAnimation("idle", false)
 
-		if workleft > 0 then
-			local splash = SpawnPrefab("mudpuddle_splash")
-			splash.Transform:SetPosition(inst.Transform:GetWorldPosition())
-		end
+        if workleft > 0 then
+            SpawnPrefab("mudpuddle_splash").Transform:SetPosition(inst.Transform:GetWorldPosition())
+        end
     end
 end
 
 local function OnOfferingPerished(inst)
-	if inst.offering ~= nil then
-	    MakeEmpty(inst)
-		local rot = SpawnPrefab("spoiled_food")
-		rot.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    if inst.offering ~= nil then
+        MakeEmpty(inst)
+        local rot = SpawnPrefab("spoiled_food")
+        rot.Transform:SetPosition(inst.Transform:GetWorldPosition())
         LaunchAt(rot, inst, nil, .5, 0.6, .6)
-	end
+    end
 end
 
 local function onsave(inst, data)
@@ -211,6 +213,27 @@ local function GetStatus(inst)
         or nil
 end
 
+local function CreateMud()
+    local inst = CreateEntity()
+
+    inst:AddTag("DECOR") --"FX" will catch mouseover
+    inst:AddTag("NOCLICK")
+    --[[Non-networked entity]]
+    inst.entity:SetCanSleep(false)
+    inst.persists = false
+
+    inst.entity:AddTransform()
+    inst.entity:AddAnimState()
+
+    inst.AnimState:SetBank("pigshrine")
+    inst.AnimState:SetBuild("pigshrine")
+    inst.AnimState:PlayAnimation("ripple_fx", true)
+    inst.AnimState:SetLayer(LAYER_BACKGROUND)
+    inst.AnimState:SetSortOrder(2)
+
+    return inst
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -227,7 +250,7 @@ local function fn()
 
     inst.AnimState:SetBank("pigshrine")
     inst.AnimState:SetBuild("pigshrine")
-    inst.AnimState:PlayAnimation("idle", true)
+    inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("structure")
     inst:AddTag("pigshrine")
@@ -240,12 +263,11 @@ local function fn()
     inst.entity:SetPristine()
 
     if not TheNet:IsDedicated() then
-        inst._puddle = SpawnPrefab("pigshrine_mud")
-        inst._puddle.entity:SetParent(inst.entity)
+        CreateMud().entity:SetParent(inst.entity)
 
-		if not TheWorld.ismastersim then
-			return inst
-		end
+        if not TheWorld.ismastersim then
+            return inst
+        end
     end
 
     inst:AddComponent("inspectable")
@@ -271,7 +293,7 @@ local function fn()
     inst.components.burnable:SetOnExtinguishFn(OnExtinguish)
 
     inst._onofferingremoved = function() MakeEmpty(inst) end
-	inst._onofferingperished = function() OnOfferingPerished(inst) end
+    inst._onofferingperished = function() OnOfferingPerished(inst) end
 
     inst.OnSave = onsave
     inst.OnLoad = onload
@@ -279,25 +301,7 @@ local function fn()
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
 
-    return inst
-end
-
-local function mud_fn()
-    local inst = CreateEntity()
-
-    --Use FX, not DECOR, otherwise won't inspect properly when parented
-    inst:AddTag("FX")
-    --[[Non-networked entity]]
-    inst.persists = false
-
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-
-    inst.AnimState:SetBank("pigshrine")
-    inst.AnimState:SetBuild("pigshrine")
-    inst.AnimState:PlayAnimation("ripple_fx", true)
-    inst.AnimState:SetLayer(LAYER_BACKGROUND)
-    inst.AnimState:SetSortOrder(2)
+    inst:ListenForEvent("ondeconstructstructure", DropOffering)
 
     return inst
 end
@@ -307,6 +311,4 @@ return Prefab("pigshrine", fn, assets, prefabs),
         nil, nil, nil, nil, nil, nil,
         function(inst)
             inst.AnimState:Hide("meat")
-        end),
-	Prefab("pigshrine_mud", mud_fn, assets)
-		
+        end)

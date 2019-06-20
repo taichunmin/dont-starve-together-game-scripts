@@ -41,20 +41,28 @@ local function onload(inst, data)
 end
 
 local function onpickedfn(inst, picker)
-    if picker and picker.components.sanity then
-        picker.components.sanity:DoDelta(TUNING.SANITY_TINY)
+    local pos = inst:GetPosition()
+
+    if picker ~= nil then
+        if picker.components.sanity ~= nil and not picker:HasTag("plantkin") then
+            picker.components.sanity:DoDelta(TUNING.SANITY_TINY)
+        end
+
+        if inst.animname == ROSE_NAME and
+            picker.components.combat ~= nil and
+            not (picker.components.inventory ~= nil and picker.components.inventory:EquipHasTag("bramble_resistant")) then
+            picker.components.combat:GetAttacked(inst, TUNING.ROSE_DAMAGE)
+            picker:PushEvent("thorns")
+        end
     end
 
-    if inst.animname == ROSE_NAME and picker.components.combat ~= nil then
-        picker.components.combat:GetAttacked(inst, TUNING.ROSE_DAMAGE)
-        picker:PushEvent("thorns")
+    if not inst.planted then
+        TheWorld:PushEvent("beginregrowth", inst)
     end
-
-	if not inst.planted then
-		TheWorld:PushEvent("beginregrowth", inst)
-	end
 
     inst:Remove()
+
+    TheWorld:PushEvent("plantkilled", { doer = picker, pos = pos }) --this event is pushed in other places too
 end
 
 local function GetStatus(inst)

@@ -114,7 +114,7 @@ local function OnKilledOther(player, data)
             if not (data.victim.prefab == "pigman" and
                     data.victim.components.werebeast ~= nil and
                     data.victim.components.werebeast:IsInWereState()) then
-                OnNaughtyAction(naughtiness, playerdata)
+                OnNaughtyAction(naughtiness * (data.stackmult or 1), playerdata)
             end
         end
     end

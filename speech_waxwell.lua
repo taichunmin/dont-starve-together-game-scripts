@@ -313,7 +313,7 @@ return {
 			ATTACKER = "You're going off the deep end, pal.",
 			MURDERER = "Our truce ends here, murderer!",
 			REVIVER = "%s is a real pal...",
-			GHOST = "Are you certain you wish to return to this world, %s?",
+			GHOST = "Are you certain you wish to return to this world?",
 			FIRESTARTER = "The fire is supposed to go in the pit, Higgsbury.",
 		},
 		WOLFGANG = 
@@ -322,7 +322,7 @@ return {
 			ATTACKER = "The strongman %s seems a little unhinged.",
 			MURDERER = "Murderous fiend! Behold my power!",
 			REVIVER = "%s tethers lost spirits to this world.",
-			GHOST = "Let's find a heart, %s. I'll prepare my incantations.",
+			GHOST = "Let's find a heart. I'll prepare my incantations.",
 			FIRESTARTER = "Did you intend to burn that, %s?",
 		},
 		WAXWELL = 
@@ -341,8 +341,8 @@ return {
 			ATTACKER = "If you're going to attack, at least finish the job!",
 			MURDERER = "Murderous fiend! This will be your destruction!",
 			REVIVER = "%s never did respect human mortality.",
-			GHOST = "A shame about your death, %s. You were the only one I half-liked.",
-			FIRESTARTER = "Mx. %s is finally making good on their promise of mayhem.",
+			GHOST = "A shame about your death. You were the only one I half-liked.",
+			FIRESTARTER = "Mx. %s is making good on their promises of mayhem.",
 		},
 		WILLOW = 
 		{
@@ -359,7 +359,7 @@ return {
 			ATTACKER = "%s has been corrupted...",
 			MURDERER = "Don't think I'll hesitate, murderous fiend!",
 			REVIVER = "%s is a true death defier.",
-			GHOST = "%s's looking a little too much like her sister. Needs a heart.",
+			GHOST = "%s is looking a bit too much like her sister.",
 			FIRESTARTER = "Don't play with fire, Ms. %s.",
 		},
 		WOODIE = 
@@ -371,7 +371,7 @@ return {
 			GHOST = "That blockhead could use a heart.",
 			BEAVER = "Ha! What a delightful curse.",
 			BEAVERGHOST = "Yew don't look so wood.",
-			FIRESTARTER = "Is it wise to be starting fires, given your predilections?",
+			FIRESTARTER = "Is it wise to start fires, given your predilections?",
 		},
 		WICKERBOTTOM = 
 		{
@@ -380,7 +380,7 @@ return {
 			MURDERER = "Do not start fights you cannot win!",
 			REVIVER = "%s has excellent command of the dark arts.",
 			GHOST = "You know the price of revival as well as I do, %s.",
-			FIRESTARTER = "Never pinned you for the wanton destruction type, Ms.",
+			FIRESTARTER = "Never pinned you for the wanton destruction type.",
 		},
 		WES = 
 		{
@@ -418,29 +418,49 @@ return {
             GHOST = "My, you're looking spirited today, %s.",
             FIRESTARTER = "You were the last one I expected to start fires, %s.",
         },
-
-		BERNIE_INACTIVE =
-		{
-			BROKEN = "It's seen better days.",
-			GENERIC = "It makes me a little nostalgic.",
-		},
-		BERNIE_ACTIVE = "Just what am I looking at here?",
-		BURNT_MARSH_BUSH = "Utterly destroyed.",
-		
-		SHADOWDIGGER = "I'm a shadow of myself. Ha-ha!",
-		
-		LICHEN = "A slow growing cave plant.",
-		GLOMMER = "A flying goop factory.",
-        GLOMMERFLOWER = 
+        WORTOX =
         {
-        	GENERIC = "Flower power.",
-        	DEAD = "Flower power forever.",
+            GENERIC = "Greetings, Mr. %s.",
+            ATTACKER = "Do not make me bind you with magic, imp.",
+            MURDERER = "Enough is enough! Prepare to be banished, imp!",
+            REVIVER = "Hm. I'll allow you to stay on this plane awhile longer.",
+            GHOST = "Serves you right, meddling imp.",
+            FIRESTARTER = "Do I smell fire and brimstone?",
+        },
+        WORMWOOD =
+        {
+            GENERIC = "Greetings, Mr. %s.",
+            ATTACKER = "It's time you make like a tree and leaf.",
+            MURDERER = "Don't worry, %s. I'll make it a clear cut.",
+            REVIVER = "I suppose he has his uses.",
+            GHOST = "What a shame. Now I'll never know what that gem does.",
+            FIRESTARTER = "%s has been starting fires, now hasn't he?",
+        },
+
+        BERNIE_INACTIVE =
+        {
+            BROKEN = "It's seen better days.",
+            GENERIC = "It makes me a little nostalgic.",
+        },
+        BERNIE_ACTIVE = "Just what am I looking at here?",
+        BERNIE_BIG = "How truly unnerving.",
+
+        BURNT_MARSH_BUSH = "Utterly destroyed.",
+
+        SHADOWDIGGER = "I'm a shadow of myself. Ha-ha!",
+
+        LICHEN = "A slow growing cave plant.",
+        GLOMMER = "A flying goop factory.",
+        GLOMMERFLOWER =
+        {
+            GENERIC = "Flower power.",
+            DEAD = "Flower power forever.",
         },
         GLOMMERWINGS = "They're sticky.",
         GLOMMERFUEL = "Well, that's rank.",
         BELL = "More bell.",
-        STATUEGLOMMER = 
-        {	
+        STATUEGLOMMER =
+        {
         	GENERIC = "Thank goodness, I thought it was another wretched statue of me.",
         	EMPTY = "The fewer statues the better, I say.",
     	},
@@ -974,7 +994,6 @@ return {
         },
 
 		MAXWELLPHONOGRAPH = "That accursed thing!",
-		--...
 		BOOMERANG = "Beats getting your hands dirty.",
 		PIGGUARD = "Blech. Disgusting brute.",
 		ABIGAIL = "Why won't these mortals just stay dead?",
@@ -1064,7 +1083,6 @@ return {
 		BEEHIVE = "Not the bees!",
 		BEEMINE = "They wait so patiently.",
 		BEEMINE_MAXWELL = "Maybe I shouldn't have put that there.",
-		--...
 		BERRIES = "Sigh. If I have to.",
 		BERRIES_COOKED = "A little more refined, at least.",
         BERRIES_JUICY = "Delightfully sweet with a subtle hint of tartness.",
@@ -1856,7 +1874,6 @@ return {
 		TRAP = "Only the dumbest animals will fall for this.",
 		TRAP_TEETH = "This one packs a wallop.",
 		TRAP_TEETH_MAXWELL = "I'm... sure I had my reasons when I placed this.",
-		--...
 		TREASURECHEST_TRAP = "Hmmm. Looks suspicious.",
 		TREECLUMP = "I can't get through there.",
 
@@ -2197,8 +2214,6 @@ return {
         CONSTRUCTION_PLANS = "I suppose I should build this.",
         MOONROCKSEED = "Oooh, some new knowledge.",
 
-        --...Make your jokes...I'll be seeing you soon...
-
         --Quagmire
         QUAGMIRE_ALTAR = 
         {
@@ -2412,36 +2427,41 @@ return {
         QUAGMIRE_LAMP_SHORT = "A little civility.",
 
         --v2 Winona
-        WINONA_CATAPULT = 
+        WINONA_CATAPULT =
         {
-        	GENERIC = "I could have thought of that.",
-        	OFF = "It's useless out here without power.",
-        	BURNING = "I'm going to pretend I don't see it.",
-        	BURNT = "Oh. What a pity.",
+            GENERIC = "I could have thought of that.",
+            OFF = "It's useless out here without power.",
+            BURNING = "I'm going to pretend I don't see it.",
+            BURNT = "Oh. What a pity.",
         },
-        WINONA_SPOTLIGHT = 
+        WINONA_SPOTLIGHT =
         {
-        	GENERIC = "Well sure, if you want to take the easy way out.",
-        	OFF = "It's useless out here without power.",
-        	BURNING = "I'm going to pretend I don't see it.",
-        	BURNT = "Oh. What a pity.",
+            GENERIC = "Well sure, if you want to take the easy way out.",
+            OFF = "It's useless out here without power.",
+            BURNING = "I'm going to pretend I don't see it.",
+            BURNT = "Oh. What a pity.",
         },
-        WINONA_BATTERY_LOW = 
+        WINONA_BATTERY_LOW =
         {
-        	GENERIC = "Where does she find the time to build all this.",
-        	LOWPOWER = "I think it's losing power.",
+            GENERIC = "Where does she find the time to build all this.",
+            LOWPOWER = "I think it's losing power.",
             OFF = "See? It wasn't so great after all.",
             BURNING = "I'm going to pretend I don't see it.",
             BURNT = "Oh. What a pity.",
         },
-        WINONA_BATTERY_HIGH = 
+        WINONA_BATTERY_HIGH =
         {
-        	GENERIC = "At least she has the sense to use gems.",
-        	LOWPOWER = "I think it's losing power.",
+            GENERIC = "At least she has the sense to use gems.",
+            LOWPOWER = "I think it's losing power.",
             OFF = "Magic isn't so easy, is it?",
             BURNING = "I'm going to pretend I don't see it.",
             BURNT = "Oh. What a pity.",
         },
+
+        --Wormwood
+        COMPOSTWRAP = "I'm utterly dung with all of this.",
+        ARMOR_BRAMBLE = "Who's frail now?",
+        TRAP_BRAMBLE = "Best laid traps.",
     },
     DESCRIBE_GENERIC = "You tell me.",
     DESCRIBE_TOODARK = "I can't see in the dark!",

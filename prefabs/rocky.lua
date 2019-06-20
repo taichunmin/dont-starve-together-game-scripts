@@ -56,7 +56,19 @@ local function ShouldAcceptItem(inst, item)
 end
 
 local function OnGetItemFromPlayer(inst, giver, item)
-    if item.components.edible ~= nil and item.components.edible.foodtype == FOODTYPE.ELEMENTAL then
+    if item.components.edible ~= nil and
+        item.components.edible.foodtype == FOODTYPE.ELEMENTAL and
+        item.components.inventoryitem ~= nil and
+        (   --make sure it didn't drop due to pockets full
+            item.components.inventoryitem:GetGrandOwner() == inst or
+            --could be merged into a stack
+            (   not item:IsValid() and
+                inst.components.inventory:FindItem(function(obj)
+                    return obj.prefab == item.prefab
+                        and obj.components.stackable ~= nil
+                        and obj.components.stackable:IsStack()
+                end) ~= nil)
+        ) then
         if inst.components.combat:TargetIs(giver) then
             inst.components.combat:SetTarget(nil)
         elseif giver.components.leader ~= nil then

@@ -1,16 +1,15 @@
-
 local PotionCommon = require "prefabs/halloweenpotion_common"
 
-local assets = JoinArrays(PotionCommon.assets, 
+local assets = JoinArrays(PotionCommon.assets,
 {
-	Asset("ANIM", "anim/livingtree_root.zip"),
-	Asset("SCRIPT", "scripts/prefabs/halloweenpotion_common.lua"),
-	Asset("INV_IMAGE", "livingtree_root_hallowed_nights")
+    Asset("ANIM", "anim/livingtree_root.zip"),
+    Asset("SCRIPT", "scripts/prefabs/halloweenpotion_common.lua"),
+    Asset("INV_IMAGE", "livingtree_root_hallowed_nights")
 })
 
-local prefabs = JoinArrays(PotionCommon.prefabs, 
+local prefabs = JoinArrays(PotionCommon.prefabs,
 {
-	"livingtree_sapling",
+    "livingtree_sapling",
 })
 
 local beat_delay = 15
@@ -70,9 +69,9 @@ local function ondeploy(inst, pt, deployer)
 end
 
 local function potion_onputinfire(inst, target)
-	if target:HasTag("campfire") then
-		PotionCommon.SpawnPuffFx(inst, target)
-	end
+    if target:HasTag("campfire") then
+        PotionCommon.SpawnPuffFx(inst, target)
+    end
 end
 
 local function fn()
@@ -85,12 +84,14 @@ local function fn()
 
     MakeInventoryPhysics(inst)
 
+    inst:AddTag("deployedplant")
+
     inst.AnimState:SetBank("livingtree_root")
     inst.AnimState:SetBuild("livingtree_root")
     inst.AnimState:PlayAnimation("idle")
-	if not IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
-		inst.AnimState:Hide("eye")
-	end
+    if not IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+        inst.AnimState:Hide("eye")
+    end
 
     inst.entity:SetPristine()
 
@@ -105,7 +106,7 @@ local function fn()
 
     inst:AddComponent("fuel")
     inst.components.fuel.fuelvalue = TUNING.LARGE_FUEL
-	inst.components.fuel.ontaken = potion_onputinfire
+    inst.components.fuel.ontaken = potion_onputinfire
 
     MakeSmallBurnable(inst, TUNING.SMALL_BURNTIME)
     MakeSmallPropagator(inst)
@@ -113,9 +114,9 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetOnDroppedFn(ondropped)
     inst.components.inventoryitem:SetOnPutInInventoryFn(onpickup)
-	if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
+    if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
         inst.components.inventoryitem:ChangeImageName("livingtree_root_hallowed_nights")
-	end
+    end
 
     MakeHauntableLaunchAndIgnite(inst)
 
@@ -132,4 +133,4 @@ local function fn()
 end
 
 return Prefab("livingtree_root", fn, assets, prefabs),
-	MakePlacer("livingtree_root_placer", "livingtree_root", "livingtree_root", "placer")
+    MakePlacer("livingtree_root_placer", "livingtree_root", "livingtree_root", "placer")

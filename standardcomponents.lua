@@ -1150,3 +1150,72 @@ function ToggleOnAllObjectCollisionsAt(inst, x, z)
 end
 
 --------------------------------------------------------------------------
+--V2C: new for DST, useful for preventing player collisions when placing large objects
+
+local function OnUpdatePlacedObjectPhysicsRadius(inst, data)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local mindist = math.huge
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+        if v.entity:IsVisible() then
+            local d = v:GetDistanceSqToPoint(x, y, z)
+            d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0
+            if d < mindist then
+                if d <= 0 then
+                    mindist = 0
+                    break
+                end
+                mindist = d
+            end
+        end
+    end
+    local radius = math.clamp(mindist, 0, inst.physicsradiusoverride)
+    if radius > 0 then
+        if radius ~= data.radius then
+            data.radius = radius
+            inst.Physics:SetCapsule(radius, 2)
+            inst.Physics:Teleport(x, y, z)
+        end
+        if data.ischaracterpassthrough then
+            data.ischaracterpassthrough = false
+            inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+        end
+        if radius >= inst.physicsradiusoverride then
+            inst._physicstask:Cancel()
+            inst._physicstask = nil
+        end
+    end
+end
+
+function PreventCharacterCollisionsWithPlacedObjects(inst)
+    inst.Physics:ClearCollisionMask()
+    inst.Physics:CollidesWith(COLLISION.ITEMS)
+    inst.Physics:CollidesWith(COLLISION.GIANTS)
+    if inst._physicstask ~= nil then
+        inst._physicstask:Cancel()
+    end
+    local data = { radius = inst.physicsradiusoverride, ischaracterpassthrough = true }
+    inst._physicstask = inst:DoPeriodicTask(.5, OnUpdatePlacedObjectPhysicsRadius, nil, data)
+    OnUpdatePlacedObjectPhysicsRadius(inst, data)
+end
+
+--------------------------------------------------------------------------
+--V2C: new for DST, useful for allowing entities to prevent targeting players that attacked them
+
+local function StopTargetingAttacker(inst, attacker)
+    if inst.components.combat ~= nil and inst.components.combat:TargetIs(attacker) then
+        inst.components.combat:DropTarget()
+    end
+end
+
+function PreventTargetingOnAttacked(inst, attacker, tag)
+    if attacker.WINDSTAFF_CASTER ~= nil and attacker.WINDSTAFF_CASTER:IsValid() then
+        attacker = attacker.WINDSTAFF_CASTER
+    end
+    if attacker:HasTag(tag) then
+        StopTargetingAttacker(inst, attacker)
+        --V2C: fire darts and tornado staves may set target after, so do this again next frame
+        inst:DoTaskInTime(0, StopTargetingAttacker, attacker)
+        return true
+    end
+    return false
+end

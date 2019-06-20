@@ -107,6 +107,7 @@ local function commonfn(bank, build, radius)
     inst.AnimState:SetBuild(build)
     inst.AnimState:PlayAnimation("bloom")
 
+    inst:AddTag("plant")
     inst:AddTag("stalkerbloom")
 
     inst._faderadius = radius

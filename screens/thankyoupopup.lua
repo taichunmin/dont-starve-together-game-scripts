@@ -14,7 +14,7 @@ require "skinsutils"
 GIFT_TYPE = {
     EARLY_ACCESS = {
         atlas="images/thankyou_item_popup.xml",
-        image="thankyou_beta_1.tex",
+        image="thankyou_gift.tex",
         titleoffset={-70, 0, 0},
         title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
         secondtitle=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_SECONDTITLE.EARLY_ACCESS,
@@ -68,6 +68,12 @@ GIFT_TYPE = {
         image={"thankyou_gift.tex"},
         title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_DAILY,
         titleoffset={0, -20, 0},
+    },
+    HAMLET = {
+        atlas="images/thankyou_item_popup.xml",
+        image={"thankyou_hamlet.tex"},
+        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
+        titleoffset={-120, 0, 0},
     },
 }
 

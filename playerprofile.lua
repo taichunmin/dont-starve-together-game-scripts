@@ -150,7 +150,12 @@ function PlayerProfile:GetLastSelectedCharacter()
     local character = self.persistdata.last_selected_character
     if not table.contains(DST_CHARACTERLIST, character) then
         character = DST_CHARACTERLIST[1]
-    end
+	end
+	
+	if not IsCharacterOwned( character ) then
+		character = "wilson"
+	end
+
     return character
 end
 

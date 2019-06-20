@@ -127,6 +127,8 @@ local function tree_fn()
 
     inst.MiniMapEntity:SetIcon("cave_banana_tree.png")
 
+    inst:AddTag("plant")
+
     inst.AnimState:SetBank("cave_banana_tree")
     inst.AnimState:SetBuild("cave_banana_tree")
     inst.AnimState:PlayAnimation("idle_loop", true)
@@ -207,6 +209,8 @@ local function stump_fn()
 
     inst.MiniMapEntity:SetIcon("cave_banana_tree_stump.png")
 
+    inst:AddTag("plant")
+
     inst.AnimState:SetBank("cave_banana_tree")
     inst.AnimState:SetBuild("cave_banana_tree")
     inst.AnimState:PlayAnimation("idle_stump")
@@ -270,6 +274,8 @@ local function burnt_fn()
     MakeObstaclePhysics(inst, .25)
 
     inst.MiniMapEntity:SetIcon("cave_banana_tree_burnt.png")
+
+    inst:AddTag("plant")
 
     inst.AnimState:SetBank("cave_banana_tree")
     inst.AnimState:SetBuild("cave_banana_tree")

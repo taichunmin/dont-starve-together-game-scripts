@@ -41,6 +41,12 @@ local function fn()
 
     inst:AddTag("hammer")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

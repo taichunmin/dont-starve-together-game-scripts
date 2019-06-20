@@ -115,7 +115,7 @@ local function GiveFlower(inst, flowerid, lifespan, giver)
     inst.task = inst:DoTaskInTime(lifespan, WiltFlower)
 end
 
-local function ondeconstrcutstructure(inst)
+local function ondeconstructstructure(inst)
     if inst.flowerid ~= nil then
 		inst.components.lootdropper:SpawnLootPrefab("spoiled_food") -- because destroying an endtable will spoil any flowers in it
     end
@@ -284,7 +284,7 @@ local function fn()
     MakeSnowCovered(inst)
 
     inst:ListenForEvent("onbuilt", onbuilt)
-	inst:ListenForEvent("ondeconstrcutstructure", ondeconstrcutstructure)
+	inst:ListenForEvent("ondeconstructstructure", ondeconstructstructure)
 
     inst.OnSave = onsave 
     inst.OnLoad = onload

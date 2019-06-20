@@ -115,7 +115,7 @@ function RecipePopup:Refresh()
     local has_enough, num_found = inventory:Has(ingredient.type, RoundBiasedUp(ingredient.amount * builder:IngredientMod()))
 	local name = STRINGS.NAMES[string.upper(ingredient.type)]
 
-    self.ingredient = self.ingredient_backing:AddChild(Image(ingredient.atlas, ingredient.type..".tex"))
+    self.ingredient = self.ingredient_backing:AddChild(Image(ingredient:GetAtlas(), ingredient.type..".tex"))
 	self.ingredient:SetEffect("shaders/ui_cc.ksh")
     self.num_ingredients = self.ingredient:AddChild(Text(BODYTEXTFONT, 65, tostring(ingredient.amount)))
     if not has_enough then

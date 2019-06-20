@@ -323,6 +323,7 @@ local function OnGotCommander(inst, data)
         inst.components.entitytracker:TrackEntity("keeper", data.commander)
 
         inst.components.knownlocations:RememberLocation("keeperoffset", inst:GetPosition() - data.commander:GetPosition(), false)
+        inst:AddTag("notaunt")
     end
 end
 
@@ -331,6 +332,7 @@ local function OnLostCommander(inst, data)
     if keeper == data.commander then
         inst.components.entitytracker:ForgetEntity("keeper")
         inst.components.knownlocations:ForgetLocation("keeperoffset")
+        inst:RemoveTag("notaunt")
     end
 end
 

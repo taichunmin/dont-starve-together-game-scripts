@@ -9,7 +9,7 @@ local prefabs =
     "sporecloud_overlay",
 }
 
-local AURA_EXCLUDE_TAGS = { "toadstool", "playerghost", "ghost", "shadow", "shadowminion", "noauradamage", "INLIMBO" }
+local AURA_EXCLUDE_TAGS = { "toadstool", "playerghost", "ghost", "shadow", "shadowminion", "noauradamage", "INLIMBO", "notarget", "noattack", "flight", "invisible" }
 
 local FADE_FRAMES = 5
 local FADE_INTENSITY = .8

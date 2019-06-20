@@ -20,12 +20,13 @@ local function onhammered(inst)
 end
 
 local function onplanted(inst, data)
-    local x, y, z = inst.Transform:GetWorldPosition()
+    local pos = inst:GetPosition()
     inst:Remove()
     local tree = SpawnPrefab(data.seed.components.winter_treeseed.winter_tree)
-    tree.Transform:SetPosition(x, y, z)
+    tree.Transform:SetPosition(pos:Get())
     tree.components.growable:StartGrowing()
     data.seed:Remove()
+    TheWorld:PushEvent("itemplanted", { doer = data.doer, pos = pos }) --this event is pushed in other places too
 end
 
 local function onbuilt(inst)

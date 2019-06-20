@@ -49,19 +49,32 @@ local function OnReset(inst)
     if inst.components.inventoryitem ~= nil then
         inst.components.inventoryitem.nobounce = true
     end
-    inst.SoundEmitter:PlaySound("dontstarve/common/trap_teeth_reset")
-    inst.AnimState:PlayAnimation("reset")
-    inst.AnimState:PushAnimation("idle", false)
+    if not inst:IsInLimbo() then
+        inst.MiniMapEntity:SetEnabled(true)
+    end
+    if not inst.AnimState:IsCurrentAnimation("idle") then
+        inst.SoundEmitter:PlaySound("dontstarve/common/trap_teeth_reset")
+        inst.AnimState:PlayAnimation("reset")
+        inst.AnimState:PushAnimation("idle", false)
+    end
 end
 
 local function OnResetMax(inst)
-    inst.SoundEmitter:PlaySound("dontstarve/common/trap_teeth_reset")
-    inst.AnimState:PlayAnimation("idle")
+    if not inst:IsInLimbo() then
+        inst.MiniMapEntity:SetEnabled(true)
+    end
+    if not inst.AnimState:IsCurrentAnimation("idle") then
+        inst.SoundEmitter:PlaySound("dontstarve/common/trap_teeth_reset")
+        inst.AnimState:PlayAnimation("idle")
+    end
 end
 
 local function SetSprung(inst)
     if inst.components.inventoryitem ~= nil then
         inst.components.inventoryitem.nobounce = true
+    end
+    if not inst:IsInLimbo() then
+        inst.MiniMapEntity:SetEnabled(true)
     end
     inst.AnimState:PlayAnimation("trap_idle")
 end
@@ -70,6 +83,7 @@ local function SetInactive(inst)
     if inst.components.inventoryitem ~= nil then
         inst.components.inventoryitem.nobounce = false
     end
+    inst.MiniMapEntity:SetEnabled(false)
     inst.AnimState:PlayAnimation("inactive")
 end
 
@@ -113,7 +127,7 @@ local function common_fn(bank, build, isinventoryitem)
 
     inst.AnimState:SetBank(bank)
     inst.AnimState:SetBuild(build)
-    inst.AnimState:PlayAnimation("inactive")
+    inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("trap")
 

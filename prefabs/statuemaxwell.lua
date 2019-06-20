@@ -1,7 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/statue_maxwell.zip"),
-	Asset("MINIMAP_IMAGE", "statue"),
+    Asset("MINIMAP_IMAGE", "statue"),
 }
 
 local prefabs =
@@ -23,6 +23,7 @@ local function OnWork(inst, worker, workleft)
     if workleft <= 0 then
         local pos = inst:GetPosition()
         SpawnPrefab("rock_break_fx").Transform:SetPosition(pos:Get())
+        TheWorld:PushEvent("ms_unlockchesspiece", "formal")
         inst.components.lootdropper:DropLoot(pos)
         inst:Remove()
     elseif workleft < TUNING.MARBLEPILLAR_MINE / 3 then
@@ -49,7 +50,7 @@ local function fn()
     inst:AddTag("maxwell")
     inst.entity:AddTag("statue")
 
-    MakeObstaclePhysics(inst, 0.66)
+    MakeObstaclePhysics(inst, .66)
 
     inst.MiniMapEntity:SetIcon("statue.png")
 

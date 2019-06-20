@@ -13,7 +13,7 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 	default_build = default_build or ""
 	base_skin = base_skin or ""
 	
-	--print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	--print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 	--print(prefab, base_skin)
 	--dumptable(clothing_names)
 	
@@ -101,6 +101,13 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 					src_symbols = CLOTHING[name].symbol_overrides_mighty
 					allow_arms = true
 					allow_torso = true
+				
+				elseif skintype == "stage_2" and CLOTHING[name].symbol_overrides_stage2 then
+					src_symbols = CLOTHING[name].symbol_overrides_stage2
+				elseif skintype == "stage_3" and CLOTHING[name].symbol_overrides_stage3 then
+					src_symbols = CLOTHING[name].symbol_overrides_stage3
+				elseif skintype == "stage_4" and CLOTHING[name].symbol_overrides_stage4 then
+					src_symbols = CLOTHING[name].symbol_overrides_stage4
 				end
 
 
@@ -143,6 +150,8 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 							--print("setting skin", sym, name )
 							
 							if sym == "leg" then
+								anim_state:ShowSymbol("foot") --Hack for wormwood cactus legs hiding feet. If someone else sets legs (full body piece) we want to show the feet again. This should be generalized better if we're going to do more silly stuff like feet hiding.
+
 								if CLOTHING[name].legs_cuff_size ~= nil then
 									legs_cuff_size = CLOTHING[name].legs_cuff_size
 									--print("setting legs_cuff_size to", legs_cuff_size, name )
@@ -257,6 +266,9 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 	end
 end
 
+function Skinner:GetSkinMode()
+    return self.skintype
+end
 
 function Skinner:SetSkinMode(skintype, default_build)
 	skintype = skintype or self.skintype

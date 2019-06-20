@@ -460,7 +460,7 @@ local states=
             TimeEvent(25*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pounce") end),
             TimeEvent(26*FRAMES, function(inst) inst.Physics:SetMotorVelOverride(7,0,0) end),
             TimeEvent(31*FRAMES, function(inst) 
-                if inst.target and (inst.target.prefab == "balloon" or inst.target:HasTag("bird")) and math.random() < (TUNING.CATCOON_ATTACK_CONNECT_CHANCE * 2) then
+                if inst.target ~= nil and (inst.target:HasTag("balloon") or inst.target:HasTag("bird")) and math.random() < (TUNING.CATCOON_ATTACK_CONNECT_CHANCE * 2) then
                     inst.components.combat:DoAttack()
                     inst.hiss = true
                 elseif inst.target and inst.target:IsValid() and math.random() <= (TUNING.CATCOON_ATTACK_CONNECT_CHANCE * 1.5) and inst:GetDistanceSqToInst(inst.target) <= 3 then

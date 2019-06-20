@@ -10,16 +10,44 @@ local assets =
 local prefabs =
 {
     "bernie_inactive",
+    "bernie_big",
 }
 
 local function goinactive(inst)
-    local inactive = SpawnPrefab("bernie_inactive")
+    local skin_name = nil
+    if inst:GetSkinName() ~= nil then
+        skin_name = string.gsub(inst:GetSkinName(), "_active", "")
+    end
+
+    local inactive = SpawnPrefab("bernie_inactive", skin_name, inst.skin_id, nil)
     if inactive ~= nil then
         --Transform health % into fuel.
         inactive.components.fueled:SetPercent(inst.components.health:GetPercent())
         inactive.Transform:SetPosition(inst.Transform:GetWorldPosition())
+        inactive.Transform:SetRotation(inst.Transform:GetRotation())
+        local bigcd = inst.components.timer:GetTimeLeft("transform_cd")
+        if bigcd ~= nil then
+            inactive.components.timer:StartTimer("transform_cd", bigcd)
+        end
         inst:Remove()
         return inactive
+    end
+end
+
+local function gobig(inst)
+    local skin_name = nil
+    if inst:GetSkinName() ~= nil then
+        skin_name = string.gsub(inst:GetSkinName(), "_active", "_big")
+    end
+    
+    local big = SpawnPrefab("bernie_big", skin_name, inst.skin_id, nil)
+    if big ~= nil then
+        --Rescale health %
+        big.components.health:SetPercent(inst.components.health:GetPercent())
+        big.Transform:SetPosition(inst.Transform:GetWorldPosition())
+        big.Transform:SetRotation(inst.Transform:GetRotation())
+        inst:Remove()
+        return big
     end
 end
 
@@ -29,6 +57,24 @@ local function onpickup(inst, owner)
         owner.components.inventory:GiveItem(inactive, nil, owner:GetPosition())
     end
     return true
+end
+
+local function OnSleepTask(inst)
+    inst._sleeptask = nil
+    inst:GoInactive()
+end
+
+local function OnEntitySleep(inst)
+    if inst._sleeptask ~= nil then
+        inst._sleeptask = inst:DoTaskInTime(.5, OnSleepTask)
+    end
+end
+
+local function OnEntityWake(inst)
+    if inst._sleeptask ~= nil then
+        inst._sleeptask:Cancel()
+        inst._sleeptask = nil
+    end
 end
 
 local function fn()
@@ -50,6 +96,7 @@ local function fn()
 
     inst:AddTag("smallcreature")
     inst:AddTag("companion")
+    inst:AddTag("soulless")
 
     inst.entity:SetPristine()
 
@@ -76,6 +123,9 @@ local function fn()
     inst:SetBrain(brain)
 
     inst.GoInactive = goinactive
+    inst.GoBig = gobig
+    inst.OnEntitySleep = OnEntitySleep
+    inst.OnEntityWake = OnEntityWake
 
     return inst
 end

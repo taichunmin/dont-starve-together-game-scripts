@@ -204,13 +204,19 @@ function Text:SetMultilineTruncatedString(str, maxlines, maxwidth, maxcharsperli
                 if IsNewLine(str:byte(#line + 1)) then
                     str = str:sub(#line + 2)
                 elseif not IsWhiteSpace(str:byte(#line + 1)) then
+                    local found_white = false
                     for i = #line, 1, -1 do
                         if IsWhiteSpace(line:byte(i)) then
                             line = line:sub(1, i)
+                            found_white = true
                             break
                         end
                     end
                     str = str:sub(#line + 1)
+                    
+                    if not found_white then
+                        print("Warning: ".. str .. " was split on non-whitespace.")
+                    end
                 else
                     str = str:sub(#line + 2)
                     while #str > 0 and IsWhiteSpace(str:byte(1)) do

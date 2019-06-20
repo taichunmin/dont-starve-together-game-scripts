@@ -152,6 +152,9 @@ local function projectilefn()
 
     inst:AddTag("NOCLICK")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --projectile (from complexprojectile component) added to pristine state for optimization
     inst:AddTag("projectile")
 

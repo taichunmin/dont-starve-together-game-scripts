@@ -61,6 +61,7 @@ local function fn()
     inst:AddComponent("stackable")
 
     inst:AddComponent("fertilizer")
+    inst.components.fertilizer:SetHealingAmount(TUNING.POOP_FERTILIZE_HEALTH)
     inst.components.fertilizer.fertilizervalue = TUNING.GUANO_FERTILIZE
     inst.components.fertilizer.soil_cycles = TUNING.GUANO_SOILCYCLES
     inst.components.fertilizer.withered_cycles = TUNING.GUANO_WITHEREDCYCLES

@@ -85,6 +85,18 @@ PREFAB_SKINS = {
 	{
 		"beehat_mourning",
 	},
+	bernie_active = 
+	{
+		"bernie_cat_active",
+	},
+	bernie_big = 
+	{
+		"bernie_cat_big",
+	},
+	bernie_inactive = 
+	{
+		"bernie_cat",
+	},
 	birdcage = 
 	{
 		"birdcage_circus",
@@ -242,6 +254,10 @@ PREFAB_SKINS = {
 		"hammer_crowbar",
 		"hammer_forge",
 	},
+	heatrock = 
+	{
+		"heatrock_fire",
+	},
 	icebox = 
 	{
 		"icebox_coffin",
@@ -258,6 +274,10 @@ PREFAB_SKINS = {
 	{
 		"lantern_tesla",
 		"lantern_winter",
+	},
+	lighter = 
+	{
+		"lighter_haunteddoll",
 	},
 	minerhat = 
 	{
@@ -362,6 +382,7 @@ PREFAB_SKINS = {
 	{
 		"umbrella_circus",
 		"umbrella_heart",
+		"umbrella_parasol",
 		"umbrella_spider",
 	},
 	wardrobe = 
@@ -485,13 +506,18 @@ PREFAB_SKINS = {
 		"willow_dragonfly",
 		"willow_dragonfly_d",
 		"willow_formal",
+		"willow_formalp",
 		"willow_gladiator",
+		"willow_haunteddoll",
 		"willow_ice",
 		"willow_magma",
 		"willow_none",
 		"willow_rose",
+		"willow_rosep",
 		"willow_shadow",
+		"willow_shadowp",
 		"willow_survivor",
+		"willow_survivorp",
 		"willow_victorian",
 	},
 	wilson = 
@@ -577,6 +603,20 @@ PREFAB_SKINS = {
 		"woodie_treeguard",
 		"woodie_treeguard_d",
 		"woodie_victorian",
+	},
+	wormwood = 
+	{
+		"wormwood_cactus",
+		"wormwood_mushroom",
+		"wormwood_none",
+		"wormwood_rose",
+	},
+	wortox = 
+	{
+		"wortox_minotaur",
+		"wortox_none",
+		"wortox_original",
+		"wortox_survivor",
 	},
 	wx78 = 
 	{

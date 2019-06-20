@@ -292,7 +292,7 @@ local function OnResetBeard(inst)
     inst.components.beard.bits = inst.isbeavermode:value() and 0 or 3
 end
 
-local function beaversanityfn(inst)
+local function beaversanityfn()--inst, dt)
     return TUNING.BEAVER_SANITY_PENALTY
 end
 
@@ -410,7 +410,7 @@ end
 --------------------------------------------------------------------------
 
 local function onbecamehuman(inst)
-    if inst.prefab ~= nil and inst.sg.currentstate.name ~= "reviver_rebirth" then
+    if inst.prefab ~= nil and not inst.sg:HasStateTag("ghostbuild") then
         inst.AnimState:SetBank("wilson")
         inst.components.skinner:SetSkinMode("normal_skin")
     end
@@ -457,6 +457,8 @@ local function onbecamehuman(inst)
         inst:RemoveTag("beaver")
         inst.Network:RemoveUserFlag(USERFLAGS.CHARACTER_STATE_1)
         inst.isbeavermode:set(false)
+        inst.overrideskinmode = nil
+        inst.overrideghostskinmode = nil
         inst:PushEvent("stopbeaver")
         OnBeaverModeDirty(inst)
     end
@@ -465,7 +467,7 @@ local function onbecamehuman(inst)
 end
 
 local function onbecamebeaver(inst)
-    if inst.sg.currentstate.name ~= "reviver_rebirth" then
+    if not inst.sg:HasStateTag("ghostbuild") then
         inst.components.skinner:HideAllClothing(inst.AnimState)
         inst.AnimState:SetBank("werebeaver")
         inst.components.skinner:SetSkinMode("werebeaver_skin")
@@ -513,6 +515,8 @@ local function onbecamebeaver(inst)
         inst:AddTag("beaver")
         inst.Network:AddUserFlag(USERFLAGS.CHARACTER_STATE_1)
         inst.isbeavermode:set(true)
+        inst.overrideskinmode = "werebeaver_skin"
+        inst.overrideghostskinmode = "ghost_werebeaver_skin"
         inst:PushEvent("startbeaver")
         OnBeaverModeDirty(inst)
     end
@@ -543,7 +547,7 @@ local function onrespawnedfromghost(inst)
 end
 
 local function onbecameghost(inst, data)
-    if inst.isbeavermode:value() and not (data and data.corps) then
+    if inst.isbeavermode:value() and not (data ~= nil and data.corpse) then
         inst.components.skinner:SetSkinMode("ghost_werebeaver_skin")
     end
 

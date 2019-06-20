@@ -97,6 +97,7 @@ function FilterBar:AddSorter()
         SORT_RELEASE = "sort_release.tex",
         SORT_NAME = "sort_name.tex",
         SORT_RARITY = "sort_rarity.tex",
+        SORT_COUNT = "sort_count.tex",
     }
 
     local btn = TEMPLATES.IconButton("images/button_icons.xml", modes["SORT_RELEASE"])

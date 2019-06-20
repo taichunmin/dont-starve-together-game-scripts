@@ -3,7 +3,8 @@ require "prefabutil"
 local assets =
 {
     Asset("ANIM", "anim/sign_mini.zip"),
-    Asset("ATLAS_BUILD", "images/inventoryimages.xml", 256),
+    Asset("ATLAS_BUILD", "images/inventoryimages1.xml", 256),
+    Asset("ATLAS_BUILD", "images/inventoryimages2.xml", 256),
 }
 
 local assets_item =
@@ -63,7 +64,14 @@ end
 
 local function OnDrawnFn(inst, image, src)
     if image ~= nil then
-        inst.AnimState:OverrideSymbol("SWAP_SIGN", src ~= nil and src.replica.inventoryitem ~= nil and src.replica.inventoryitem:GetAtlas() or "images/inventoryimages.xml", image..".tex")
+        local atlas = nil
+        if src ~= nil and src.replica.inventoryitem ~= nil then
+            atlas = src.replica.inventoryitem:GetAtlas()
+        else
+            atlas = GetInventoryItemAtlas(image..".tex")
+        end
+        
+        inst.AnimState:OverrideSymbol("SWAP_SIGN", atlas, image..".tex")
         if inst:HasTag("sign") then
             inst.components.drawable:SetCanDraw(false)
             inst._imagename:set(src ~= nil and (src.drawnameoverride or src:GetBasicDisplayName()) or "")

@@ -104,11 +104,26 @@ function MakeBanner(self)
 		anim:GetAnimState():PlayAnimation("loop", true)
 		anim:SetScale(0.63)
 		anim:SetPosition(347, 85)]]
-        anim:GetAnimState():SetBuild("dst_menu_winona")
+        --[[anim:GetAnimState():SetBuild("dst_menu_winona")
         anim:GetAnimState():SetBank("dst_menu_winona")
         anim:GetAnimState():PlayAnimation("loop", true)
         anim:SetScale(0.475)
-        anim:SetPosition(327, -17)
+        anim:SetPosition(327, -17)]]
+        --[[anim:GetAnimState():SetBuild("dst_menu_wortox")
+        anim:GetAnimState():SetBank("dst_menu_wortox")
+        anim:GetAnimState():PlayAnimation("loop", true)
+        anim:SetScale(.667)
+        anim:SetPosition(0, 0)]]
+        --[[anim:GetAnimState():SetBuild("dst_menu_willow")
+        anim:GetAnimState():SetBank("dst_menu_willow")
+        anim:GetAnimState():PlayAnimation("loop", true)
+        anim:SetScale(.667)
+        anim:SetPosition(0, 0)]]
+        anim:GetAnimState():SetBuild("dst_menu_wormwood")
+        anim:GetAnimState():SetBank("dst_menu_wormwood")
+        anim:GetAnimState():PlayAnimation("loop", true)
+        anim:SetScale(.667)
+        anim:SetPosition(0, 0)
 	end
 
 	if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
@@ -176,6 +191,39 @@ local MultiplayerMainScreen = Class(Screen, function(self, prev_screen, profile,
 	self.default_focus = self.menu
 end)
 
+function MultiplayerMainScreen:GotoShop( filter_info )
+	if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
+		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MAINSCREEN.OFFLINE, STRINGS.UI.MAINSCREEN.ITEMCOLLECTION_DISABLE, 
+			{
+				{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
+						SimReset()
+					end},
+				{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BACK, cb=function() TheFrontEnd:PopScreen() end },
+			}))
+	else
+		self:StopMusic()
+		self:_FadeToScreen(PurchasePackScreen, {Profile, filter_info})
+	end
+end
+
+
+function MultiplayerMainScreen:getStatsPanel()
+    return MainMenuStatsPanel({store_cb = function()
+        if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
+            TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MAINSCREEN.OFFLINE, STRINGS.UI.MAINSCREEN.ITEMCOLLECTION_DISABLE, 
+                {
+                    {text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
+                            SimReset()
+                        end},
+                    {text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BACK, cb=function() TheFrontEnd:PopScreen() end },
+                }))
+        else
+            self:StopMusic()
+            self:_FadeToScreen(PurchasePackScreen, {Profile})
+        end
+    end
+    })
+end
 function MultiplayerMainScreen:DoInit()
     self.fixed_root = self:AddChild(Widget("root"))
     self.fixed_root:SetVAnchor(ANCHOR_MIDDLE)
@@ -198,28 +246,15 @@ function MultiplayerMainScreen:DoInit()
 				if self.info_panel ~= nil then
 					self.info_panel:Kill() 
 				end
-				self.info_panel = self.fixed_root:AddChild(MainMenuStatsPanel())
+				self.info_panel = self.fixed_root:AddChild(self:getStatsPanel())
 			end,
-			on_to_skins_cb = function()
-			    if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
-					TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MAINSCREEN.OFFLINE, STRINGS.UI.MAINSCREEN.ITEMCOLLECTION_DISABLE, 
-						{
-							{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
-									SimReset()
-								end},
-							{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BACK, cb=function() TheFrontEnd:PopScreen() end },
-						}))
-				else
-					self:StopMusic()
-					self:_FadeToScreen(PurchasePackScreen, {Profile})
-				end
-			end
+			on_to_skins_cb = function( filter_info ) self:GotoShop( filter_info ) end,
 			})
 		if self.info_panel == nil then
 			self.info_panel = self.fixed_root:AddChild(info_panel)
 		end
 	else
-		self.info_panel = self.fixed_root:AddChild(MainMenuStatsPanel())
+		self.info_panel = self.fixed_root:AddChild(self:getStatsPanel())
 	end
 
     if IsAnyFestivalEventActive() then        
@@ -269,6 +304,8 @@ function MultiplayerMainScreen:DoFocusHookups()
         self.debug_menu:SetFocusChangeDir(MOVE_LEFT, self.menu)
     end
 
+	self.menu:SetFocusChangeDir(MOVE_RIGHT, self.info_panel)
+	self.info_panel:SetFocusChangeDir(MOVE_LEFT, self.menu)
 end
 
 function MultiplayerMainScreen:EnableBannerSounds(enable)
@@ -552,6 +589,11 @@ function MultiplayerMainScreen:MakeMainMenu()
         {widget = browse_button},
     }
 
+	if IsConsole() then
+		local shop_button = MakeMainMenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() self:GotoShop() end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip)
+		table.insert(menu_items, 2, {widget = shop_button})
+	end
+
     if MODS_ENABLED then
         local mods_button = MakeMainMenuButton(STRINGS.UI.MAINSCREEN.MODS, function() self:OnModsButton() end, STRINGS.UI.MAINSCREEN.TOOLTIP_MODS, self.tooltip)
         -- Mods should appear above quit (the last menu option).
@@ -655,20 +697,23 @@ function MultiplayerMainScreen:OnBecomeActive()
 end
 
 function MultiplayerMainScreen:FinishedFadeIn()
-	
     if HasNewSkinDLCEntitlements() then
         if IsSteam() then
             local popup_screen = PopupDialogScreen( STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.GIFT_RECEIVED_BODY,
                     {
-                        {text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function() TheFrontEnd:PopScreen() MakeSkinDLCPopup() end },
+                        { text=STRINGS.UI.PURCHASEPACKSCREEN.OK, cb = function()
+                                TheFrontEnd:PopScreen()
+                                MakeSkinDLCPopup( function() self:FinishedFadeIn() end )
+                            end
+                        },
                     }
                 )
 
             TheFrontEnd:PushScreen( popup_screen )
         else
-            MakeSkinDLCPopup()
+            MakeSkinDLCPopup( function() self:FinishedFadeIn() end )
         end
-	else
+    else
 		--Do new entitlement items
 		local items = {}
 		local entitlement_items = TheInventory:GetUnopenedEntitlementItems()
@@ -685,7 +730,7 @@ function MultiplayerMainScreen:FinishedFadeIn()
 			local thankyou_popup = ThankYouPopup(items)
 			TheFrontEnd:PushScreen(thankyou_popup)
 		else
-            if IsConsole() then
+            if IsConsole() or IsSteam() then
 			    --Make sure we only do one mainscreen popup at a time
 			    --Do language assistance popup
 			    local interface_lang = TheNet:GetLanguageCode()
@@ -694,15 +739,24 @@ function MultiplayerMainScreen:FinishedFadeIn()
                         local lang_id = LANGUAGE_STEAMCODE_TO_ID[interface_lang]
                         local locale = LOC.GetLocale(lang_id)
                         if locale ~= nil then
-                            local popup_screen = PopupDialogScreen( STRINGS.PRETRANSLATED.LANGUAGES_TITLE[locale.id], STRINGS.PRETRANSLATED.LANGUAGES_BODY[locale.id],
-						            {
-							            { text = STRINGS.PRETRANSLATED.LANGUAGES_YES[locale.id], cb = function() Profile:SetLanguageID(lang_id, function() SimReset() end ) end },
-							            { text = STRINGS.PRETRANSLATED.LANGUAGES_NO[locale.id], cb = function() TheFrontEnd:PopScreen() end}
-						            }
-					            )
-				            TheFrontEnd:PushScreen( popup_screen )
-				            Profile:SetValue("language_asked_"..interface_lang, true)
-				            Profile:Save()
+                            local show_dialog = false
+                            if IsConsole() then
+                                show_dialog = locale.in_console_menu
+                            elseif IsSteam() then
+                                show_dialog = locale.in_steam_menu
+                            end
+
+                            if show_dialog then
+                                local popup_screen = PopupDialogScreen( STRINGS.PRETRANSLATED.LANGUAGES_TITLE[locale.id], STRINGS.PRETRANSLATED.LANGUAGES_BODY[locale.id],
+                                        {
+                                            { text = STRINGS.PRETRANSLATED.LANGUAGES_YES[locale.id], cb = function() Profile:SetLanguageID(lang_id, function() SimReset() end ) end },
+                                            { text = STRINGS.PRETRANSLATED.LANGUAGES_NO[locale.id], cb = function() TheFrontEnd:PopScreen() end}
+                                        }
+                                    )
+                                TheFrontEnd:PushScreen( popup_screen )
+                                Profile:SetValue("language_asked_"..interface_lang, true)
+                                Profile:Save()
+                            end
                         end
                     end
 			    end

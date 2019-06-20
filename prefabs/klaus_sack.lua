@@ -170,6 +170,8 @@ local function onuseklauskey(inst, key, doer)
         inst:AddTag("NOCLICK")
         inst:DoTaskInTime(1, ErodeAway)
 
+        inst:RemoveComponent("klaussacklock")
+
         return true, nil, true
     else
         LaunchAt(SpawnPrefab("boneshard"), inst, doer, .2, 1, 1)

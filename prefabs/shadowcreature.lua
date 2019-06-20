@@ -74,6 +74,14 @@ local function OnNewCombatTarget(inst, data)
     NotifyBrainOfTarget(inst, data.target)
 end
 
+local function OnDeath(inst, data)
+    if data ~= nil and data.afflicter ~= nil and data.afflicter:HasTag("crazy") then
+        --max one nightmarefuel if killed by a crazy NPC (e.g. Bernie)
+        inst.components.lootdropper:SetLoot({ "nightmarefuel" })
+        inst.components.lootdropper:SetChanceLootTable(nil)
+    end
+end
+
 local function MakeShadowCreature(data)
     local assets =
     {
@@ -156,6 +164,7 @@ local function MakeShadowCreature(data)
 
         inst:ListenForEvent("attacked", OnAttacked)
         inst:ListenForEvent("newcombattarget", OnNewCombatTarget)
+        inst:ListenForEvent("death", OnDeath)
 
         inst.persists = false
 

@@ -96,6 +96,7 @@ local Fueled = Class(function(self, inst)
     self.period = 1
     --self.firstperiod = nil
     --self.firstperiodfull = nil
+    --self.firstperioddt = nil
     self.bonusmult = 1
     self.depleted = nil
 end,
@@ -175,7 +176,7 @@ function Fueled:TakeFuelItem(item, doer)
         local oldsection = self:GetCurrentSection()
 
         local wetmult = item:GetIsWet() and TUNING.WET_FUEL_PENALTY or 1
-        local masterymult = doer ~= nil and doer.components.fuelmaster ~= nil and doer.components.fuelmaster.bonusmult or 1
+        local masterymult = doer ~= nil and doer.components.fuelmaster ~= nil and doer.components.fuelmaster:GetBonusMult(item, self.inst) or 1
         self:DoDelta(item.components.fuel.fuelvalue * self.bonusmult * wetmult * masterymult, doer)
 
         local fuelvalue = 0
@@ -232,18 +233,22 @@ local function OnDoUpdate(inst, self, period)
     self:DoUpdate(period)
 end
 
-local function OnDoFirstUpdate(inst, self, period)
-    self:DoUpdate(period)
-    self.task = self.inst:DoPeriodicTask(self.period, OnDoUpdate, nil, self, self.period)
-end
-
 function Fueled:StartConsuming()
     self.consuming = true
     if self.task == nil then
-        self.task = self.firstperiod ~= nil and
-            self.inst:DoTaskInTime(0, OnDoFirstUpdate, self, self.currentfuel >= self.maxfuel and self.firstperiodfull or self.firstperiod) or
-            self.inst:DoPeriodicTask(self.period, OnDoUpdate, nil, self, self.period)
+        self.task = self.inst:DoPeriodicTask(self.period, OnDoUpdate, nil, self, self.period)
+        if self.firstperiod ~= nil then
+            self.firstperioddt = self.currentfuel >= self.maxfuel and self.firstperiodfull or self.firstperiod
+            self.inst:StartWallUpdatingComponent(self)
+        end
     end
+end
+
+function Fueled:OnWallUpdate(dt)
+    dt = self.firstperioddt
+    self.firstperioddt = nil
+    self.inst:StopWallUpdatingComponent(self)
+    self:DoUpdate(dt)
 end
 
 function Fueled:InitializeFuelLevel(fuel)
@@ -256,14 +261,14 @@ function Fueled:InitializeFuelLevel(fuel)
     local newsection = self:GetCurrentSection()
     if oldsection ~= newsection and self.sectionfn then
         self.sectionfn(newsection, oldsection, self.inst)
-		self.inst:PushEvent("onfueldsectionchanged", {newsection = newsection, oldsection = oldsection})
+        self.inst:PushEvent("onfueldsectionchanged", { newsection = newsection, oldsection = oldsection })
     end
 end
 
 function Fueled:DoDelta(amount, doer)
     local oldsection = self:GetCurrentSection()
 
-    self.currentfuel = math.max(0, math.min(self.maxfuel, self.currentfuel + amount) )
+    self.currentfuel = math.max(0, math.min(self.maxfuel, self.currentfuel + amount))
 
     local newsection = self:GetCurrentSection()
 
@@ -271,7 +276,7 @@ function Fueled:DoDelta(amount, doer)
         if self.sectionfn then
             self.sectionfn(newsection, oldsection, self.inst, doer)
         end
-		self.inst:PushEvent("onfueldsectionchanged", {newsection = newsection, oldsection = oldsection, doer = doer})
+        self.inst:PushEvent("onfueldsectionchanged", { newsection = newsection, oldsection = oldsection, doer = doer })
         if self.currentfuel <= 0 and self.depleted then
             self.depleted(self.inst)
         end
@@ -282,7 +287,7 @@ end
 
 function Fueled:DoUpdate(dt)
     if self.consuming then
-        self:DoDelta(-dt*self.rate*self.rate_modifiers:Get())
+        self:DoDelta(-dt * self.rate * self.rate_modifiers:Get())
     end
 
     if self:IsEmpty() then
@@ -296,9 +301,13 @@ end
 
 function Fueled:StopConsuming()
     self.consuming = false
-    if self.task then
+    if self.task ~= nil then
         self.task:Cancel()
         self.task = nil
+    end
+    if self.firstperioddt ~= nil then
+        self.firstperioddt = nil
+        self.inst:StopWallUpdatingComponent(self)
     end
 end
 

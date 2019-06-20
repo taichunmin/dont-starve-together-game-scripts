@@ -425,6 +425,24 @@ return {
             GHOST = "%s hath fallen! A heart!",
             FIRESTARTER = "%s's flames could temper steel.",
         },
+        WORTOX =
+        {
+            GENERIC = "Hail, fire giant %s!",
+            ATTACKER = "Back! Back, beast!",
+            MURDERER = "%s will pay for his trespasses!",
+            REVIVER = "%s abides by a warrior's code.",
+            GHOST = "An honorable Viking leaves no one behind!",
+            FIRESTARTER = "%s stepped forth from Hel's flames!",
+        },
+        WORMWOOD =
+        {
+            GENERIC = "Greetings, %s, touched by Yggdrasil!",
+            ATTACKER = "Rumors of %s's terrible act have spread like weeds.",
+            MURDERER = "I will root you out, monstrous plant!",
+            REVIVER = "%s is a kind and formidable healer.",
+            GHOST = "My dear friend hath fallen in battle!",
+            FIRESTARTER = "%s is sure to be scalded by Hel's flames!",
+        },
 
         LAVA_POND_ROCK = "Stone belched forth by the earth's fiery heart!",
 
@@ -436,13 +454,14 @@ return {
 
         BERNIE_INACTIVE =
         {
-            BROKEN = "He has gone to Valhalla.",
-            GENERIC = "It's a stuffed bear.",
+            BROKEN = "It has gone to Valhalla.",
+            GENERIC = "It's a stuffed beast.",
         },
-        BERNIE_ACTIVE = "What a brave bear!",
+        BERNIE_ACTIVE = "What a brave beast!",
+        BERNIE_BIG = "The beast hath been imbued with a fighting spirit!",
 
         GLOMMER = "A majestic goober.",
-        GLOMMERFLOWER = 
+        GLOMMERFLOWER =
         {
             GENERIC = "A wonder of the woods.",
             DEAD = "It was once a wonder of the woods.",
@@ -450,8 +469,8 @@ return {
         GLOMMERWINGS = "Ohh, look what the goober left for me.",
         GLOMMERFUEL = "This slop could be useful.",
         BELL = "I prefer the ringing resonance of clashing blades.",
-        STATUEGLOMMER = 
-        {   
+        STATUEGLOMMER =
+        {
             GENERIC = "A curious homage to the gods.",
             EMPTY = "That wasn't very respectful.",
         },
@@ -1955,7 +1974,7 @@ return {
         HALLOWEENPOTION_DRINKS_WEAK = "A meager reward for my troubles.",
         HALLOWEENPOTION_DRINKS_POTENT = "Fortune hath smiled upon me today!", 
         HALLOWEENPOTION_FIRE_FX = "Hel's fuel.",
-        HALLOWEENPOTION_BRAVERY = "'tis Berserker magic.",
+        HALLOWEENPOTION_BRAVERY = "Tis Berserker magic.",
         MADSCIENCE_LAB = "Be there method to this madness?",
         LIVINGTREE_ROOT = "I hath birthed the root of terror!",
         LIVINGTREE_SAPLING = "It bears the promise of horridness!",
@@ -2432,21 +2451,21 @@ return {
         QUAGMIRE_LAMP_SHORT = "'Tis a magic light of short stature.",
 
         --v2 Winona
-        WINONA_CATAPULT = 
+        WINONA_CATAPULT =
         {
             GENERIC = "Reinforcements hath arrived! To battle!",
             OFF = "It has no fighting spirit.",
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_SPOTLIGHT = 
+        WINONA_SPOTLIGHT =
         {
             GENERIC = "It can't get enough of me!",
             OFF = "It has no fighting spirit.",
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_BATTERY_LOW = 
+        WINONA_BATTERY_LOW =
         {
             GENERIC = "The tinkerer hath many tricks.",
             LOWPOWER = "T'will not hold out much longer!",
@@ -2454,7 +2473,7 @@ return {
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_BATTERY_HIGH = 
+        WINONA_BATTERY_HIGH =
         {
             GENERIC = "Tis fueled by glorious magic.",
             LOWPOWER = "T'will not hold out much longer!",
@@ -2462,6 +2481,11 @@ return {
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
+
+        --Wormwood
+        COMPOSTWRAP = "I question my ally's tastes.",
+        ARMOR_BRAMBLE = "My ally is surely a strong warrior.",
+        TRAP_BRAMBLE = "A most clever trap for one's foes.",
     },
     DESCRIBE_GENERIC = "It is an artifact of this realm.",
     DESCRIBE_TOODARK = "Too dark, even for battle.",

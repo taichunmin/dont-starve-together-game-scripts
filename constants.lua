@@ -303,7 +303,7 @@ ROG_CHARACTERLIST =
 
 DST_CHARACTERLIST =
 {
-    "wilson", "willow", "wolfgang", "wendy", "wx78", "wickerbottom", "woodie", "wes", "waxwell", "wathgrithr", "webber", "winona"
+    "wilson", "willow", "wolfgang", "wendy", "wx78", "wickerbottom", "woodie", "wes", "waxwell", "wathgrithr", "webber", "winona", "wortox", "wormwood",
 }
 
 require("prefabskins")
@@ -385,6 +385,8 @@ CHARACTER_GENDERS =
 		"wolfgang",
 		"wes",
 		"webber",
+		"wortox",
+		"wormwood",
 	},
 	ROBOT = {
 		"wx78",
@@ -968,6 +970,7 @@ CUSTOM_RECIPETABS =
     BOOKS =         { str = "BOOKS",        sort = 999, icon = "tab_book.tex",          owner_tag = "bookbuilder" },
     SHADOW =        { str = "SHADOW",       sort = 999, icon = "tab_shadow.tex",        owner_tag = "shadowmagic" },
     ENGINEERING =   { str = "ENGINEERING",  sort = 999, icon = "tab_engineering.tex",   owner_tag = "handyperson" },
+    NATURE =        { str = "NATURE",       sort = 999, icon = "tab_nature.tex",        owner_tag = "plantkin" },
 }
 
 QUAGMIRE_RECIPETABS =
@@ -1167,6 +1170,8 @@ CHARACTER_COLOURS =
     wathgrithr   = WEBCOLOURS.OTHERBLUE,
     webber       = WEBCOLOURS.SPRINGGREEN,
     winona       = WEBCOLOURS.CRIMSON,
+    wortox       = WEBCOLOURS.RED, --VITO do something here
+    wormwood     = WEBCOLOURS.RED, --VITO do something here
     default      = WEBCOLOURS.THISTLE,
 }
 
@@ -1520,7 +1525,7 @@ USERFLAGS =
     CHARACTER_STATE_1	= 4,
     CHARACTER_STATE_2	= 8,
     IS_LOADING			= 16,
-    -- = 32,
+    CHARACTER_STATE_3   = 32,
     -- = 64,
     -- = 128,
 }
@@ -1710,6 +1715,17 @@ LANGUAGE_STEAMCODE_TO_ID =
 QUAGMIRE_NUM_FOOD_PREFABS = 69
 QUAGMIRE_NUM_SEEDS_PREFABS = 7
 QUAGMIRE_USE_KLUMP = false
+
+-- needs to be kept synchronized with InventoryProgress enum in InventoryManager.h
+INVENTORY_PROGRESS = 
+{
+	IDLE = 0,
+	CHECK_SHOP = 1,
+	CHECK_EVENT = 2,
+	CHECK_DLC = 3,
+	CHECK_DAILY_GIFT = 4,
+	CHECK_INVENTORY = 5,
+}
 
 CURRENT_BETA = 0 -- set to 0 if there is no beta. Note: release builds wont use this so only staging and dev really care
 BETA_INFO =

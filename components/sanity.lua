@@ -307,7 +307,9 @@ function Sanity:Recalc(dt)
     self.rate = dapper_delta + moisture_delta + light_delta + aura_delta + ghost_delta + self.externalmodifiers:Get()
 
     if self.custom_rate_fn ~= nil then
-        self.rate = self.rate + self.custom_rate_fn(self.inst)
+        --NOTE: dt param was added for wormwood's custom rate function
+        --      dt shouldn't have been applied to the return value yet
+        self.rate = self.rate + self.custom_rate_fn(self.inst, dt)
     end
 
     self.rate = self.rate * self.rate_modifier

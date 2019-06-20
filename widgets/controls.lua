@@ -336,7 +336,8 @@ function Controls:OnUpdate(dt)
     if controller_mode and not (self.inv.open or self.crafttabs.controllercraftingopen) and self.owner:IsActionsVisible() then
         local ground_l, ground_r = self.owner.components.playercontroller:GetGroundUseAction()
         local ground_cmds = {}
-        if self.owner.components.playercontroller.deployplacer ~= nil or self.owner.components.playercontroller.placer ~= nil then
+        local isplacing = self.owner.components.playercontroller.deployplacer ~= nil or self.owner.components.playercontroller.placer ~= nil
+        if isplacing then
             local placer = self.terraformplacer
 
             if self.owner.components.playercontroller.deployplacer ~= nil then
@@ -378,6 +379,21 @@ function Controls:OnUpdate(dt)
         local attack_shown = false
         local controller_target = self.owner.components.playercontroller:GetControllerTarget()
         local controller_attack_target = self.owner.components.playercontroller:GetControllerAttackTarget()
+        local l, r
+        if controller_target ~= nil then
+            l, r = self.owner.components.playercontroller:GetSceneItemControllerAction(controller_target)
+        end
+
+        if not isplacing and r == nil and ground_r == nil then
+            ground_r = self.owner.components.playercontroller:GetGroundUseSpecialAction(nil, true)
+            if ground_r ~= nil then
+                table.insert(ground_cmds, TheInput:GetLocalizedControl(controller_id, CONTROL_CONTROLLER_ALTACTION).." "..ground_r:GetActionString())
+                self.groundactionhint:Show()
+                self.groundactionhint:SetTarget(self.owner)
+                self.groundactionhint.text:SetString(table.concat(ground_cmds, "\n"))
+            end
+        end
+
         if controller_target ~= nil then
             local cmds, cmdsoffset
             local textblock = self.playeractionhint.text
@@ -396,7 +412,6 @@ function Controls:OnUpdate(dt)
                 itemInActions = true
             end
 
-            local l, r = self.owner.components.playercontroller:GetSceneItemControllerAction(controller_target)
             local adjective = controller_target:GetAdjective()
             table.insert(cmds, adjective ~= nil and (adjective.." "..controller_target:GetDisplayName()) or controller_target:GetDisplayName())
             shownItemIndex = #cmds

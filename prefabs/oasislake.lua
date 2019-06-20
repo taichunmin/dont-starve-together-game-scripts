@@ -60,12 +60,12 @@ local function SpawnSucculents(inst)
     local pt = inst:GetPosition()
 
     local function noentcheckfn(offset)
-        return #(TheSim:FindEntities(pt.x + offset.x, pt.y + offset.y, pt.z + offset.z, 2)) == 0
+        return #TheSim:FindEntities(pt.x + offset.x, pt.y + offset.y, pt.z + offset.z, 2, nil, { "FX", "INLIMBO" }) == 0
     end
 
-    local succulents_to_spawn = MAX_SUCCULENTS - #(TheSim:FindEntities(pt.x, pt.y, pt.z, SUCCULENT_RANGE, {"succulent"})) 
+    local succulents_to_spawn = MAX_SUCCULENTS - #TheSim:FindEntities(pt.x, pt.y, pt.z, SUCCULENT_RANGE, { "succulent" })
     for i = 1, succulents_to_spawn do
-        local offset = FindWalkableOffset(pt, math.random()*2*PI, GetRandomMinMax(SUCCULENT_RANGE_MIN, SUCCULENT_RANGE), 10, false, true)
+        local offset = FindWalkableOffset(pt, math.random() * 2 * PI, GetRandomMinMax(SUCCULENT_RANGE_MIN, SUCCULENT_RANGE), 10, false, true, noentcheckfn)
         if offset ~= nil then
             local plant = SpawnPrefab("succulent_plant")
             plant.Transform:SetPosition((pt + offset):Get())

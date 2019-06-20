@@ -120,6 +120,7 @@ local function fn()
     inst:AddTag("mushtree")
     inst:AddTag("webbed")
     inst:AddTag("cavedweller")
+    inst:AddTag("plant")
     inst:AddTag("tree")
 
     inst.entity:SetPristine()

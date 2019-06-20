@@ -31,6 +31,8 @@ local function shrub_fn()
 
     MakeObstaclePhysics(inst, .3)
 
+    inst:AddTag("plant")
+
     -- for stats tracking
     inst:AddTag("quagmire_wildplant")
 

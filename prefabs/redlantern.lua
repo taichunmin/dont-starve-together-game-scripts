@@ -55,7 +55,7 @@ local function turnon(inst)
             inst._light._lantern = inst
             inst:ListenForEvent("onremove", onremovelight, inst._light)
         end
-        inst._light.entity:SetParent((inst._body or inst.components.inventoryitem.owner or inst).entity)
+        inst._light.entity:SetParent((inst.components.inventoryitem.owner or inst._body or inst).entity)
 
         inst.AnimState:Show("LIGHT")
 

@@ -465,8 +465,8 @@ local states =
             TimeEvent(15*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/dragonfly/punchimpact")
                 inst.components.combat:DoAttack(inst.sg.statemem.target)
-                if inst.components.combat.target and inst.components.combat.target.components.health and inst.enraged then
-                    inst.components.combat.target.components.health:DoFireDamage(5)
+                if inst.enraged and inst.components.combat:HasTarget() and inst.components.combat.target.components.health ~= nil then
+                    inst.components.combat.target.components.health:DoFireDamage(5, inst, true)
                 end
             end),
         },

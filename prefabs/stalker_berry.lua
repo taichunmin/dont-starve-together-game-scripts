@@ -103,6 +103,7 @@ local function fn()
     inst.AnimState:SetBuild("forest_glowberry")
     inst.AnimState:PlayAnimation("bloom")
 
+    inst:AddTag("plant")
     inst:AddTag("stalkerbloom")
 
     inst._fade = net_smallbyte(inst.GUID, "stalker_berry._fade", "fadedirty")

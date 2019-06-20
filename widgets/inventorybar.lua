@@ -715,11 +715,11 @@ function Inv:CloseControllerInventory()
             self.active_slot:DeHighlight()
         end
 
-        self:ScaleTo(self.selected_scale, self.base_scale,.1)
+        self:ScaleTo(self.selected_scale, self.base_scale, .1)
 
         local bp = self.owner.HUD:GetFirstOpenContainerWidget()
         if bp ~= nil then
-            bp:ScaleTo(self.selected_scale,self.base_scale,.1)
+            bp:ScaleTo(self.selected_scale,self.base_scale, .1)
         end
 
         TheFrontEnd:LockFocus(false)
@@ -727,22 +727,19 @@ function Inv:CloseControllerInventory()
 end
 
 function Inv:GetDescriptionString(item)
-    local str = nil
-    local in_equip_slot = item and item.components.equippable and item.components.equippable:IsEquipped()
-    if item and item.replica.inventoryitem then
-        local adjective = item:GetAdjective()
-        if adjective then
-            str = adjective .. " " .. item:GetDisplayName()
-        else
-            str = item:GetDisplayName()
-        end
+    if item == nil then
+        return ""
     end
-    
-    return str or ""
+    local adjective = item:GetAdjective()
+    return adjective ~= nil and (adjective.." "..item:GetDisplayName()) or item:GetDisplayName()
 end
 
-function Inv:SetTooltipColour(r,g,b,a)
-   self.actionstringtitle:SetColour(r,g,b,a)
+function Inv:SetTooltipColour(r, g, b, a)
+   self.actionstringtitle:SetColour(r, g, b, a)
+end
+
+local function GetDropActionString(doer, item)
+    return BufferedAction(doer, nil, ACTIONS.DROP, item, doer:GetPosition()):GetActionString()
 end
 
 function Inv:UpdateCursorText()
@@ -806,12 +803,12 @@ function Inv:UpdateCursorText()
                     end
                 end
 
-                table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. STRINGS.UI.HUD.DROP)
+                table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. GetDropActionString(self.owner, inv_item))
             end
         else 
             if is_equip_slot then
                 --handle the quip slot stuff as a special case because not every item can go there
-                if active_item ~= nil and active_item.replica.equippable ~= nil and active_item.replica.equippable:EquipSlot() == self.active_slot.equipslot then
+                if active_item ~= nil and active_item.replica.equippable ~= nil and active_item.replica.equippable:EquipSlot() == self.active_slot.equipslot and not active_item.replica.equippable:IsRestricted(self.owner) then
                     if inv_item and active_item then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.SWAP)
                     elseif not inv_item and active_item then
@@ -822,7 +819,7 @@ function Inv:UpdateCursorText()
                         inv_item.replica.inventoryitem:CanGoInContainer() then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.UNEQUIP)
                     else
-                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.DROP)
+                        table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. GetDropActionString(self.owner, inv_item))
                     end
                 end
             else
@@ -839,7 +836,7 @@ function Inv:UpdateCursorText()
 
                 if inv_item ~= nil and active_item == nil then
                     table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.SELECT)
-                    table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. STRINGS.UI.HUD.DROP)
+                    table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. GetDropActionString(self.owner, inv_item))
                 elseif inv_item ~= nil and active_item ~= nil then
                     if inv_item.prefab == active_item.prefab and inv_item.skinname == active_item.skinname and active_item.replica.stackable ~= nil then
                         table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HUD.PUT)

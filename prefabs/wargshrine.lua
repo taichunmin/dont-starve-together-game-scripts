@@ -21,6 +21,7 @@ local function ShowFlame(inst, torch)
             fx.entity:SetParent(inst.entity)
             fx.entity:AddFollower()
             fx.Follower:FollowSymbol(inst.GUID, "swap_torch", 0, fx.fx_offset, 0)
+            fx:AttachLightTo(inst)
 
             table.insert(inst.fires, fx)
         end
@@ -329,6 +330,8 @@ local function fn()
 
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+
+    inst:ListenForEvent("ondeconstructstructure", DropTorch)
 
     return inst
 end

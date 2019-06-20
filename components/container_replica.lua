@@ -190,6 +190,7 @@ function Container:CanTakeItemInSlot(item, slot)
     return item ~= nil
         and item.replica.inventoryitem ~= nil
         and item.replica.inventoryitem:CanGoInContainer()
+        and not item.replica.inventoryitem:CanOnlyGoInPocket()
         and not (GetGameModeProperty("non_item_equips") and item.replica.equippable ~= nil)
         and (self.itemtestfn == nil or self:itemtestfn(item, slot))
 end

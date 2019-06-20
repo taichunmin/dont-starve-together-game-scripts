@@ -17,9 +17,14 @@ Ingredient = Class(function(self, ingredienttype, amount, atlas, deconstruct)
     end
     self.type = ingredienttype
     self.amount = amount
-    self.atlas = resolvefilepath(atlas or "images/inventoryimages.xml")
+    self.atlas = atlas and resolvefilepath(atlas) or nil
     self.deconstruct = deconstruct
 end)
+
+function Ingredient:GetAtlas()
+	self.atlas = self.atlas or resolvefilepath(GetInventoryItemAtlas(self.type..".tex"))
+	return self.atlas
+end
 
 local num = 0
 AllRecipes = {}
@@ -70,10 +75,10 @@ Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing
 
     self.product       = product or name
     self.tab           = tab
-
-    self.atlas         = (atlas and resolvefilepath(atlas)) or resolvefilepath("images/inventoryimages.xml")
+    
     self.imagefn       = type(image) == "function" and image or nil
-    self.image         = self.imagefn == nil and image or (self.product .. ".tex")
+self.image         = self.imagefn == nil and image or (self.product .. ".tex")
+    self.atlas         = (atlas and resolvefilepath(atlas))-- or resolvefilepath(GetInventoryItemAtlas(self.image))
 
     --self.lockedatlas   = (lockedatlas and resolvefilepath(lockedatlas)) or (atlas == nil and resolvefilepath("images/inventoryimages_inverse.xml")) or nil
     --self.lockedimage   = lockedimage or (self.product ..".tex")
@@ -96,6 +101,11 @@ Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing
     num                = num + 1
     AllRecipes[name]   = self
 end)
+
+function Recipe:GetAtlas()
+	self.atlas = self.atlas or resolvefilepath(GetInventoryItemAtlas(self.image))
+	return self.atlas
+end
 
 function Recipe:SetModRPCID()
     local rpc_id = smallhash(self.name)

@@ -60,6 +60,8 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
+    inst:AddTag("plant")
+
     inst.AnimState:SetBank("livingtree_root")
     inst.AnimState:SetBuild("livingtree_root")
 

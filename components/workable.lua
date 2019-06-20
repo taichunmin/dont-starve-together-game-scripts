@@ -122,12 +122,20 @@ function Workable:WorkedBy(worker, numworks)
     end
 
     if self.workleft <= 0 then
+        local isplant =
+            self.inst:HasTag("plant") and
+            not self.inst:HasTag("burnt") and
+            not (self.inst.components.diseaseable ~= nil and self.inst.components.diseaseable:IsDiseased())
+        local pos = isplant and self.inst:GetPosition() or nil
+
         if self.onfinish ~= nil then
             self.onfinish(self.inst, worker)
         end
         self.inst:PushEvent("workfinished", { worker = worker })
-
         worker:PushEvent("finishedwork", { target = self.inst, action = self.action })
+        if isplant then
+            TheWorld:PushEvent("plantkilled", { doer = worker, pos = pos, workaction = self.action }) --this event is pushed in other places too
+        end
     end
 end
 

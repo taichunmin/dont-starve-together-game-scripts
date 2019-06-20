@@ -76,6 +76,12 @@ local function fn()
     inst:AddTag("throw_line")
     inst:AddTag("chop_attack")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --rechargeable (from rechargeable component) added to pristine state for optimization
     inst:AddTag("rechargeable")
 

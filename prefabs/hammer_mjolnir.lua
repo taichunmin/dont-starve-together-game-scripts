@@ -56,6 +56,12 @@ local function fn()
 
     inst:AddTag("hammer")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --aoeweapon_leap (from aoeweapon_leap component) added to pristine state for optimization
     inst:AddTag("aoeweapon_leap")
 

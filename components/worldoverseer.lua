@@ -1,4 +1,5 @@
 local WORLDOVERSEER_HEARTBEAT = 5 * 60
+local WORLDOVERSEER_HEARTBEAT_POLL = 5
 
 local Stats = require("stats")
 
@@ -18,6 +19,7 @@ local WorldOverseer = Class(function(self, inst)
     self._daytime = nil
 
 	self.inst:DoPeriodicTask(WORLDOVERSEER_HEARTBEAT, function() self:Heartbeat() end )
+	self.inst:DoPeriodicTask(WORLDOVERSEER_HEARTBEAT_POLL, function() self:HeartbeatPoll() end )
 	self.inst:ListenForEvent("ms_playerjoined", function(src, player) self:OnPlayerJoined(src, player) end , TheWorld)
 	self.inst:ListenForEvent("ms_playerleft", function(src, player) self:OnPlayerLeft(src, player) end, TheWorld)
     self.inst:ListenForEvent("cycleschanged", function(inst, data) self:OnCyclesChanged(data) end, TheWorld)
@@ -25,7 +27,11 @@ local WorldOverseer = Class(function(self, inst)
 
 	for i, v in ipairs(AllPlayers) do
 		self:OnPlayerJoined(self.inst, v)
-	end
+    end
+    
+    self._v2_seenplayers = {}
+    self.last_heartbeat_poll_time = os.time()
+    self.heartbeat_poll_counter = 0
 end)
 
 function WorldOverseer:OnCyclesChanged(cycles)
@@ -59,12 +65,11 @@ function WorldOverseer:RecordPlayerJoined(player)
 									crafted_items = {},
 								}
 	else
-		-- player was here before this timeframe
+        -- player was here before this timeframe
 		playerstats.secondsplayed = playerstats.endtime - playerstats.starttime
 		playerstats.starttime = time
 		playerstats.endtime = nil
 		playerstats.worn_items = items
-
 	end
 end
 
@@ -347,9 +352,115 @@ function WorldOverseer:OnPlayerLeft(src,player)
 	self:RecordPlayerLeft(player)
 end
 
-function WorldOverseer:Heartbeat(dt)
+function WorldOverseer:Heartbeat()
 	self:DumpPlayerStats()
 	self:DumpSessionStats()
 end
+
+
+--Note: Peter is only responsible for code below this comment :)
+function WorldOverseer:HeartbeatPoll()
+    if not TheWorld.ismastershard then
+        return
+    end
+
+    local time_now = os.time()
+
+    local client_table = TheNet:GetClientTable()
+    local current_players = {}
+    for _,v in ipairs(client_table) do
+        current_players[v.userid] = { prefab = v.prefab }
+    end
+    
+    local resumed_from_suspend = (time_now - self.last_heartbeat_poll_time) > 15 * 60
+    self.last_heartbeat_poll_time = time_now
+
+    if resumed_from_suspend then
+        --start a new session for everyone
+        for k,_ in pairs(self._v2_seenplayers) do
+            print("New time stamps for everyone at", time_now)
+            self._v2_seenplayers[k].gameplay_session_id = time_now
+        end
+    end
+
+    for k,v in pairs(current_players) do
+        if self._v2_seenplayers[k] == nil then
+            --New player joined
+
+            self._v2_seenplayers[k] = {
+                gameplay_session_id = time_now,
+                prefab = v.prefab
+            }
+            self:SendClientJoin(k, self._v2_seenplayers[k])
+        end
+    end
+
+    for k,v in pairs(self._v2_seenplayers) do
+        if current_players[k] == nil then
+            --Player quit
+
+            if not resumed_from_suspend then
+                self:SendClientQuit(k, v)
+            end
+            self._v2_seenplayers[k] = nil
+        end
+    end
+
+    --Send heartbeat after some time. We want this to come after the rest of this update, so that coming back from a resume will 
+    self.heartbeat_poll_counter = self.heartbeat_poll_counter + WORLDOVERSEER_HEARTBEAT_POLL
+    if self.heartbeat_poll_counter > WORLDOVERSEER_HEARTBEAT then
+        self.heartbeat_poll_counter = 0
+        for k,v in pairs(self._v2_seenplayers) do
+            self:SendClientHeartBeat(k, v)
+        end
+    end
+end
+
+
+function WorldOverseer:QuitAll()
+    for k,v in pairs(self._v2_seenplayers) do
+        self:SendClientQuit(k, v)
+    end
+end
+
+
+
+function WorldOverseer:SendClientJoin(userid, data)
+    local sendstats = Stats.BuildContextTable(userid)
+    sendstats.event = "SESSION_BEGIN"
+    sendstats.GameplaySessionID = tostring(data.gameplay_session_id)
+    sendstats.character = data.prefab
+
+    --print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Send Join event")
+    --dumptable(sendstats)
+    local jsonstats = json.encode_compliant(sendstats)
+    TheSim:SendProfileStats(jsonstats)
+end
+
+function WorldOverseer:SendClientHeartBeat(userid, data)
+    local sendstats = Stats.BuildContextTable(userid)
+    sendstats.event = "HEARTBEAT"
+    sendstats.GameplaySessionID = tostring(data.gameplay_session_id)
+    sendstats.character = data.prefab
+
+    --print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Send Heartbeat event")
+    --dumptable(sendstats)
+    local jsonstats = json.encode_compliant(sendstats)
+    TheSim:SendProfileStats(jsonstats)
+end
+
+function WorldOverseer:SendClientQuit(userid, data)
+    local sendstats = Stats.BuildContextTable(userid)
+    sendstats.event = "SESSION_END"
+    sendstats.GameplaySessionID = tostring(data.gameplay_session_id)
+    sendstats.character = data.prefab
+
+    --print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Send Quit event")
+    --dumptable(sendstats)
+    local jsonstats = json.encode_compliant(sendstats)
+    TheSim:SendProfileStats(jsonstats)
+end
+
+
 
 return WorldOverseer

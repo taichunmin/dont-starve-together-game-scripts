@@ -57,6 +57,9 @@ local function fn()
     inst:AddTag("firestaff")
     inst:AddTag("pyroweapon")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --rechargeable (from rechargeable component) added to pristine state for optimization
     inst:AddTag("rechargeable")
 

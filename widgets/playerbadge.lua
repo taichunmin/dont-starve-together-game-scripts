@@ -107,6 +107,10 @@ function PlayerBadge:IsCharacterState2()
     return checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_2)
 end
 
+function PlayerBadge:IsCharacterState3()
+    return checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_3)
+end
+
 function PlayerBadge:IsLoading()
     return checkbit(self.userflags, USERFLAGS.IS_LOADING)
 end
@@ -128,7 +132,8 @@ function PlayerBadge:GetAvatarAtlas()
         local starting = self:IsGhost() and "avatar_ghost_" or "avatar_"
         local ending =
             (self:IsCharacterState1() and "_1" or "")..
-            (self:IsCharacterState2() and "_2" or "")
+            (self:IsCharacterState2() and "_2" or "")..
+            (self:IsCharacterState3() and "_3" or "")
 
         return location..starting..self.prefabname..ending..".xml"
     end
@@ -147,7 +152,8 @@ function PlayerBadge:GetAvatar()
     local starting = self:IsGhost() and "avatar_ghost_" or "avatar_"
     local ending =
         (self:IsCharacterState1() and "_1" or "")..
-        (self:IsCharacterState2() and "_2" or "")
+        (self:IsCharacterState2() and "_2" or "")..
+        (self:IsCharacterState3() and "_3" or "")
 
     return self.prefabname ~= ""
         and (starting..self.prefabname..ending..".tex")

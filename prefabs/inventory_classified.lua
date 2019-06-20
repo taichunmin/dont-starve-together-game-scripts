@@ -328,7 +328,9 @@ local function OnStackItemDirty(inst, item)
         --This is for the player's crafting HUD
         data.item = item
         inst._parent:PushEvent("stacksizechange", data)
-        if data.src_pos ~= nil or not IsBusy(inst) then
+        --V2C: commented out the "or not IsBusy(inst)" condition because it
+        --     was triggering UI sounds when eating from a stack of items.
+        if data.src_pos ~= nil --[[or not IsBusy(inst)]] then
             for i, v in ipairs(inst._items) do
                 if item == v:value() then
                     data.slot = i

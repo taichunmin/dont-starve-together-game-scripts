@@ -5,7 +5,7 @@ EMOJI_ITEMS =
 	emoji_abigail =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "abigail",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -20,7 +20,7 @@ EMOJI_ITEMS =
 	emoji_alchemyengine =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "alchemy",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -35,7 +35,7 @@ EMOJI_ITEMS =
 	emoji_arcane =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "arcane",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -50,7 +50,7 @@ EMOJI_ITEMS =
 	emoji_backpack =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "backpack",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -65,7 +65,7 @@ EMOJI_ITEMS =
 	emoji_battle =
 	{
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		input_name = "battle",
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
@@ -80,7 +80,7 @@ EMOJI_ITEMS =
 	emoji_beefalo =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "beefalo",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -95,7 +95,7 @@ EMOJI_ITEMS =
 	emoji_beehive =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "beehive",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -110,7 +110,7 @@ EMOJI_ITEMS =
 	emoji_berry_bush =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "berry",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -125,7 +125,7 @@ EMOJI_ITEMS =
 	emoji_carrot =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "carrot",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -140,7 +140,7 @@ EMOJI_ITEMS =
 	emoji_chest =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "chest",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -155,7 +155,7 @@ EMOJI_ITEMS =
 	emoji_chester =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "chester",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -170,7 +170,7 @@ EMOJI_ITEMS =
 	emoji_crockpot =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "crockpot",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -185,7 +185,7 @@ EMOJI_ITEMS =
 	emoji_egg =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "egg",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -200,7 +200,7 @@ EMOJI_ITEMS =
 	emoji_eyeball =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "eyeball",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -215,7 +215,7 @@ EMOJI_ITEMS =
 	emoji_eyeplant =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "eyeplant",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -230,7 +230,7 @@ EMOJI_ITEMS =
 	emoji_faketeeth =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "faketeeth",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -245,7 +245,7 @@ EMOJI_ITEMS =
 	emoji_farm =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "farm",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -260,7 +260,7 @@ EMOJI_ITEMS =
 	emoji_fire =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "fire",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -275,7 +275,7 @@ EMOJI_ITEMS =
 	emoji_firepit =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "firepit",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -290,7 +290,7 @@ EMOJI_ITEMS =
 	emoji_flex =
 	{
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		input_name = "flex",
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
@@ -305,7 +305,7 @@ EMOJI_ITEMS =
 	emoji_ghost =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "ghost",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -320,7 +320,7 @@ EMOJI_ITEMS =
 	emoji_gold =
 	{
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		input_name = "gold",
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
@@ -335,7 +335,7 @@ EMOJI_ITEMS =
 	emoji_grave =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "grave",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -350,7 +350,7 @@ EMOJI_ITEMS =
 	emoji_hambat =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "hambat",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -365,7 +365,7 @@ EMOJI_ITEMS =
 	emoji_hammer =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "hammer",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -380,7 +380,7 @@ EMOJI_ITEMS =
 	emoji_heart =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "heart",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -395,7 +395,7 @@ EMOJI_ITEMS =
 	emoji_horn =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "horn",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -410,7 +410,7 @@ EMOJI_ITEMS =
 	emoji_hunger =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "hunger",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -425,7 +425,7 @@ EMOJI_ITEMS =
 	emoji_lightbulb =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "lightbulb",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -440,7 +440,7 @@ EMOJI_ITEMS =
 	emoji_meat_big =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "meat",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -455,7 +455,7 @@ EMOJI_ITEMS =
 	emoji_pig =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "pig",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -470,7 +470,7 @@ EMOJI_ITEMS =
 	emoji_poop =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "poop",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -485,7 +485,7 @@ EMOJI_ITEMS =
 	emoji_redgem =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "redgem",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -500,7 +500,7 @@ EMOJI_ITEMS =
 	emoji_refine =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "refine",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -515,7 +515,7 @@ EMOJI_ITEMS =
 	emoji_salt =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "salt",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -530,7 +530,7 @@ EMOJI_ITEMS =
 	emoji_sanity =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "sanity",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -545,7 +545,7 @@ EMOJI_ITEMS =
 	emoji_sciencemachine =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "sciencemachine",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -560,7 +560,7 @@ EMOJI_ITEMS =
 	emoji_shadowmanipulator =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "shadow",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -575,7 +575,7 @@ EMOJI_ITEMS =
 	emoji_shovel =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "shovel",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -590,7 +590,7 @@ EMOJI_ITEMS =
 	emoji_skull =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "skull",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -605,7 +605,7 @@ EMOJI_ITEMS =
 	emoji_thumbsup =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "thumbsup",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -620,7 +620,7 @@ EMOJI_ITEMS =
 	emoji_tophat =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "tophat",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -635,7 +635,7 @@ EMOJI_ITEMS =
 	emoji_torch =
 	{
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		input_name = "torch",
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
@@ -650,7 +650,7 @@ EMOJI_ITEMS =
 	emoji_trap =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "trap",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -665,7 +665,7 @@ EMOJI_ITEMS =
 	emoji_trophy =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "trophy",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -680,7 +680,7 @@ EMOJI_ITEMS =
 	emoji_wave =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "wave",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
@@ -695,7 +695,7 @@ EMOJI_ITEMS =
 	emoji_web =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "web",
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
@@ -710,7 +710,7 @@ EMOJI_ITEMS =
 	emoji_wormhole =
 	{
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		input_name = "wormhole",
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },

@@ -297,6 +297,7 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("livingtree.png")
 
+    inst:AddTag("plant")
     inst:AddTag("tree")
     inst:AddTag("decoratable")
     inst:AddTag("fridge")

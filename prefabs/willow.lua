@@ -26,9 +26,9 @@ end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
 
-local function sanityfn(inst)
+local function sanityfn(inst)--, dt)
+    local delta = inst.components.temperature:IsFreezing() and -TUNING.SANITYAURA_LARGE or 0
     local x, y, z = inst.Transform:GetWorldPosition() 
-    local delta = 0
     local max_rad = 10
     local ents = TheSim:FindEntities(x, y, z, max_rad, { "fire" })
     for i, v in ipairs(ents) do
@@ -43,9 +43,21 @@ local function sanityfn(inst)
     return delta
 end
 
+local function GetFuelMasterBonus(inst, item, target)
+    return (target:HasTag("campfire") or target.prefab == "nightlight") and TUNING.WILLOW_CAMPFIRE_FUEL_MULT or 1
+end
+
+local function OnRespawnedFromGhost(inst)
+    inst.components.freezable:SetResistance(3)
+end
+
 local function common_postinit(inst)
     inst:AddTag("pyromaniac")
     inst:AddTag("expertchef")
+    inst:AddTag("bernieowner")
+
+    --For UI health meter arrows
+    inst:AddTag("heatresistant") --less overheat damage
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         inst:AddTag("bernie_reviver")
@@ -56,44 +68,30 @@ local function common_postinit(inst)
     end
 end
 
-local function UpdateSanityTemperature(inst)
-    --Don't chill all the way to 0, or temperature
-    --update fluctuations can still cause freezing
-    if TheWorld.state.temperature > 1 then
-        local sanity = inst.components.sanity:GetPercent()
-        if sanity < TUNING.WILLOW_CHILL_START then
-            inst.components.temperature:SetModifier(
-                "sanity",
-                math.max(
-                    1 - TheWorld.state.temperature,
-                    sanity > TUNING.WILLOW_CHILL_END and
-                    easing.outQuad(sanity - TUNING.WILLOW_CHILL_END, TUNING.WILLOW_SANITY_CHILLING, -TUNING.WILLOW_SANITY_CHILLING, TUNING.WILLOW_CHILL_START - TUNING.WILLOW_CHILL_END) or
-                    TUNING.WILLOW_SANITY_CHILLING
-                )
-            )
-            return
-        end
-    end
-
-    inst.components.temperature:RemoveModifier("sanity")
-end
-
 local function master_postinit(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
 
     inst.components.health.fire_damage_scale = TUNING.WILLOW_FIRE_DAMAGE
-    inst.components.health.fire_timestart = TUNING.WILLOW_FIRE_IMMUNITY
 
     inst.components.sanity:SetMax(TUNING.WILLOW_SANITY)
     inst.components.sanity.custom_rate_fn = sanityfn
     inst.components.sanity.rate_modifier = TUNING.WILLOW_SANITY_MODIFIER
 
-    inst:DoPeriodicTask(.1, UpdateSanityTemperature, 0)
+    inst.components.temperature.inherentinsulation = -TUNING.INSULATION_TINY
+    inst.components.temperature.inherentsummerinsulation = TUNING.INSULATION_TINY
+    inst.components.temperature:SetFreezingHurtRate(TUNING.WILSON_HEALTH / TUNING.WILLOW_FREEZING_KILL_TIME)
+    inst.components.temperature:SetOverheatHurtRate(TUNING.WILSON_HEALTH / TUNING.WILLOW_OVERHEAT_KILL_TIME)
+
+    inst:ListenForEvent("ms_respawnedfromghost", OnRespawnedFromGhost)
+    OnRespawnedFromGhost(inst)
 
     if TheNet:GetServerGameMode() == "lavaarena" then
         event_server_data("lavaarena", "prefabs/willow").master_postinit(inst)
     elseif TheNet:GetServerGameMode() == "quagmire" then
         event_server_data("quagmire", "prefabs/willow").master_postinit(inst)
+    else
+        inst:AddComponent("fuelmaster")
+        inst.components.fuelmaster:SetBonusFn(GetFuelMasterBonus)
     end
 end
 

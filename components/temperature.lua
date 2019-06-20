@@ -21,6 +21,7 @@ local Temperature = Class(function(self, inst)
     self.mintemp = TUNING.MIN_ENTITY_TEMP
     self.overheattemp = TUNING.OVERHEAT_TEMP
     self.hurtrate = TUNING.WILSON_HEALTH / TUNING.FREEZING_KILL_TIME
+    --self.overheathurtrate = nil --defaults to use same as .hurtrate (freezing rate)
     self.inherentinsulation = 0
     self.inherentsummerinsulation = 0
     self.shelterinsulation = TUNING.INSULATION_MED_LARGE
@@ -49,6 +50,14 @@ nil,
 {
     current = oncurrent,
 })
+
+function Temperature:SetFreezingHurtRate(rate)
+    self.hurtrate = rate
+end
+
+function Temperature:SetOverheatHurtRate(rate)
+    self.overheathurtrate = rate
+end
 
 function Temperature:DoDelta(delta)
     self:SetTemperature(self.current + delta)
@@ -398,7 +407,7 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
         if self.current < 0 then
             self.inst.components.health:DoDelta(-self.hurtrate * dt, true, "cold")
         elseif self.current > self.overheattemp then
-            self.inst.components.health:DoDelta(-self.hurtrate * dt, true, "hot")
+            self.inst.components.health:DoDelta(-(self.overheathurtrate or self.hurtrate) * dt, true, "hot")
         end
     end
 end

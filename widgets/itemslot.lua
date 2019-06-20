@@ -12,16 +12,36 @@ local ItemSlot = Class(Widget, function(self, atlas, bgim, owner)
     self.base_scale = 1
 end)
 
+function ItemSlot:LockHighlight()
+    if not self.highlight then
+        self:ScaleTo(self.base_scale, self.highlight_scale, .125)
+        self.highlight = true
+    end
+end
+
+function ItemSlot:UnlockHighlight()
+    if self.highlight then
+        if self.big then
+            self:ScaleTo(self.base_scale, self.highlight_scale, .125)
+        else
+            self:ScaleTo(self.highlight_scale, self.base_scale, .125)
+        end
+        self.highlight = false
+    end
+end
+
 function ItemSlot:Highlight()
     if not self.big then
         self:ScaleTo(self.base_scale, self.highlight_scale, .125)
-        self.big = true 
+        self.big = true
     end
 end
 
 function ItemSlot:DeHighlight()
     if self.big then
-        self:ScaleTo(self.highlight_scale, self.base_scale, .25)
+        if not self.highlight then
+            self:ScaleTo(self.highlight_scale, self.base_scale, .25)
+        end
         self.big = false
     end
 end

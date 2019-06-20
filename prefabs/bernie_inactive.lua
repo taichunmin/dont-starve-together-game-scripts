@@ -76,11 +76,20 @@ local function tryreanimate(inst)
         end
     end
     if target ~= nil then
-        local active = SpawnPrefab("bernie_active")
+        local skin_name = nil
+        if inst:GetSkinName() ~= nil then
+            skin_name = inst:GetSkinName().."_active"
+        end
+        local active = SpawnPrefab("bernie_active", skin_name, inst.skin_id, nil)
         if active ~= nil then
             --Transform fuel % into health.
             active.components.health:SetPercent(inst.components.fueled:GetPercent())
             active.Transform:SetPosition(inst.Transform:GetWorldPosition())
+            active.Transform:SetRotation(inst.Transform:GetRotation())
+            local bigcd = inst.components.timer:GetTimeLeft("transform_cd")
+            if bigcd ~= nil then
+                active.components.timer:StartTimer("transform_cd", bigcd)
+            end
             inst:Remove()
         end
     end
@@ -99,26 +108,47 @@ local function deactivate(inst)
     end
 end
 
+local function bernie_swap_object_helper( animstate, skin_build, symbol, guid )
+    if skin_build ~= nil then
+        animstate:OverrideItemSkinSymbol("swap_object", skin_build, symbol, guid, symbol)
+    else
+        animstate:OverrideSymbol("swap_object", "bernie_build", symbol)
+    end
+end
+
 local function onfuelchange(section, oldsection, inst)
     if inst.components.fueled:IsEmpty() then
         if not inst._isdeadstate then
             inst._isdeadstate = true
+            inst.components.equippable.dapperness = 0
+            inst.components.insulator:SetInsulation(0)
             inst.AnimState:PlayAnimation("dead_loop")
-            inst.components.inventoryitem:ChangeImageName("bernie_dead")
+            local prefix_name = "bernie"
+            if inst:GetSkinName() ~= nil then
+                prefix_name = inst:GetSkinName()
+            end
+            inst.components.inventoryitem:ChangeImageName(prefix_name.."_dead")
             if not inst.components.inventoryitem:IsHeld() then
                 deactivate(inst)
                 startdecay(inst)
+            elseif inst.components.equippable:IsEquipped() then
+                bernie_swap_object_helper( inst.components.inventoryitem.owner.AnimState, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID )
             end
         end
     elseif inst._isdeadstate then
         inst._isdeadstate = nil
+        inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
+        inst.components.insulator:SetInsulation(TUNING.INSULATION_SMALL)
         inst.AnimState:PlayAnimation("inactive")
-        inst.components.inventoryitem:ChangeImageName()
+        inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
         if not inst.components.inventoryitem:IsHeld() then
             stopdecay(inst)
             if inst.entity:IsAwake() then
                 activate(inst)
             end
+        elseif inst.components.equippable:IsEquipped() then
+            bernie_swap_object_helper( inst.components.inventoryitem.owner.AnimState, inst:GetSkinBuild(), "swap_bernie", inst.GUID )
+            inst.components.fueled:StartConsuming()
         end
     end
 end
@@ -144,20 +174,66 @@ end
 
 --------------------------------------------------------------------------
 
+local function OnEquip(inst, owner)
+    if inst:GetSkinBuild() ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+    end
+
+    if inst.components.fueled:IsEmpty() then
+        bernie_swap_object_helper( owner.AnimState, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID )
+    else
+        bernie_swap_object_helper( owner.AnimState, inst:GetSkinBuild(), "swap_bernie", inst.GUID )
+        inst.components.fueled:StartConsuming()
+    end
+
+    owner.AnimState:Show("ARM_carry")
+    owner.AnimState:Hide("ARM_normal")
+
+    if inst._lastowner ~= owner then
+        if inst._lastowner ~= nil then
+            inst:RemoveEventCallback("onattackother", inst._onattackother, inst._lastowner)
+        end
+        inst._lastowner = owner
+        inst:ListenForEvent("onattackother", inst._onattackother, owner)
+    end
+end
+
+local function OnUnequip(inst, owner)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
+
+    owner.AnimState:Hide("ARM_carry")
+    owner.AnimState:Show("ARM_normal")
+
+    inst.components.fueled:StopConsuming()
+
+    if inst._lastowner ~= nil then
+        inst:RemoveEventCallback("onattackother", inst._onattackother, inst._lastowner)
+        inst._lastowner = nil
+    end
+end
+
+--------------------------------------------------------------------------
+
 local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
 
+    inst.DynamicShadow:SetSize(1, .5)
+
     inst.AnimState:SetBank("bernie")
     inst.AnimState:SetBuild("bernie_build")
     inst.AnimState:PlayAnimation("inactive")
+
+    inst:AddTag("nopunch")
 
     inst.entity:SetPristine()
 
@@ -174,10 +250,22 @@ local function fn()
 
     inst:AddComponent("inventoryitem")
 
+    inst:AddComponent("equippable")
+    inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
+    inst.components.equippable.restrictedtag = "bernieowner"
+    inst.components.equippable:SetOnEquip(OnEquip)
+    inst.components.equippable:SetOnUnequip(OnUnequip)
+
+    inst:AddComponent("insulator")
+    inst.components.insulator:SetInsulation(TUNING.INSULATION_SMALL)
+
     inst:AddComponent("fueled")
     inst.components.fueled.fueltype = FUELTYPE.USAGE
+    inst.components.fueled.rate = TUNING.BERNIE_FUEL_RATE
     inst.components.fueled:InitializeFuelLevel(TUNING.BERNIE_FUEL)
     inst.components.fueled:SetSectionCallback(onfuelchange)
+
+    inst:AddComponent("timer")
 
     inst:ListenForEvent("onputininventory", topocket)
     inst:ListenForEvent("ondropped", toground)
@@ -190,6 +278,12 @@ local function fn()
 
     inst.OnLoad = onload
     inst.OnSave = onsave
+
+    inst._onattackother = function(attacker)--, data)
+        if not (attacker.components.rider ~= nil and attacker.components.rider:IsRiding() or inst.components.fueled:IsEmpty()) then
+            inst.components.fueled:DoDelta(-.01 * TUNING.BERNIE_FUEL)
+        end
+    end
 
     return inst
 end

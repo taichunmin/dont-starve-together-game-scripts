@@ -690,6 +690,8 @@ AddGameDebugKey(KEY_G, function()
         end
     elseif TheInput:IsKeyDown(KEY_SHIFT) then
 		c_supergodmode()
+    elseif TheInput:IsKeyDown(KEY_ALT) then
+		c_armor()
     else
         c_godmode()
     end

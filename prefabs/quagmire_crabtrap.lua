@@ -1,6 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/quagmire_crab_trap.zip"),
+    Asset("SCRIPT", "scripts/prefabs/wortox_soul_common.lua"),
 }
 
 local function fn()

@@ -38,6 +38,12 @@ local function fn()
     inst.AnimState:SetBuild("swap_bugnet")
     inst.AnimState:PlayAnimation("idle")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

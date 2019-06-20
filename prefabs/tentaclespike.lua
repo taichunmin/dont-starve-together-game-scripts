@@ -28,6 +28,9 @@ local function fn()
 
     inst:AddTag("sharp")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     MakeInventoryPhysics(inst)
 
     inst.entity:SetPristine()

@@ -1,5 +1,60 @@
 require "prefabutil"
 
+local function MineRattle(inst)
+    inst.AnimState:PlayAnimation("hit")
+    inst.AnimState:PushAnimation("idle", false)
+    inst.SoundEmitter:PlaySound("dontstarve/bee/beemine_rattle")
+    inst.rattletask = inst:DoTaskInTime(4 + math.random(), MineRattle)
+end
+
+local function StartRattleTask(inst, delay)
+    if delay ~= nil then
+        if inst.rattletask ~= nil then
+            inst.rattletask:Cancel()
+        end
+        inst.rattletask = inst:DoTaskInTime(delay, MineRattle)
+    elseif inst.rattletask == nil then
+        inst.rattletask = inst:DoTaskInTime(4 + math.random(), MineRattle)
+    end
+end
+
+local function StopRattleTask(inst)
+    if inst.rattletask ~= nil then
+        inst.rattletask:Cancel()
+        inst.rattletask = nil
+    end
+end
+
+local function StartRattling(inst, delay)
+    inst.rattling = true
+    if not inst:IsAsleep() then
+        StartRattleTask(inst, delay)
+    else
+        inst.nextrattletime = delay ~= nil and GetTime() + delay or nil
+    end
+end
+
+local function StopRattling(inst)
+    inst.rattling = false
+    inst.nextrattletime = nil
+    StopRattleTask(inst)
+end
+
+local function OnEntitySleep(inst)
+    if inst.rattling and inst.rattletask ~= nil then
+        inst.nextrattletime = GetTime() + GetTaskRemaining(inst.rattletask)
+    end
+    StopRattleTask(inst)
+end
+
+local function OnEntityWake(inst)
+    if inst.rattling then
+        local t = inst.nextrattletime ~= nil and inst.nextrattletime - GetTime() or -1
+        StartRattleTask(inst, t >= 0 and t or .5 + 4.5 * math.random())
+    end
+    inst.nextrattletime = nil
+end
+
 local function SpawnBees(inst, target)
     inst.SoundEmitter:PlaySound("dontstarve/bee/beemine_explo")
     if target == nil or not target:IsValid() then
@@ -23,10 +78,7 @@ local function SpawnBees(inst, target)
 end
 
 local function OnExplode(inst)
-    if inst.rattletask ~= nil then
-        inst.rattletask:Cancel()
-        inst.rattletask = nil
-    end
+    StopRattling(inst)
     if inst.spawntask ~= nil then -- We've already been told to explode
         return
     end
@@ -49,44 +101,47 @@ local function onhammered(inst, worker)
     end
 end
 
-local function MineRattle(inst)
-    inst.AnimState:PlayAnimation("hit")
-    inst.AnimState:PushAnimation("idle", false)
-    inst.SoundEmitter:PlaySound("dontstarve/bee/beemine_rattle")
-    inst.rattletask = inst:DoTaskInTime(4 + math.random(), MineRattle)
-end
-
-local function StartRattling(inst)
-    if inst.rattletask ~= nil then
-        inst.rattletask:Cancel()
-    end
-    inst.rattletask = inst:DoTaskInTime(1, MineRattle)
-end
-
-local function StopRattling(inst)
-    if inst.rattletask ~= nil then
-        inst.rattletask:Cancel()
-        inst.rattletask = nil
-    end
-end
-
 local function ondeploy(inst, pt, deployer)
     inst.components.mine:Reset()
     inst.Physics:Stop()
     inst.Physics:Teleport(pt:Get())
 end
 
-local function SetActive(inst)
+local function OnReset(inst)
     if inst.components.inventoryitem ~= nil then
         inst.components.inventoryitem.nobounce = true
     end
+    if not inst:IsInLimbo() then
+        inst.MiniMapEntity:SetEnabled(true)
+    end
+    if not (inst.AnimState:IsCurrentAnimation("idle") or inst.AnimState:IsCurrentAnimation("hit")) then
+        if not inst:IsAsleep() then
+            inst.SoundEmitter:PlaySound("dontstarve/bee/beemine_rattle")
+            inst.AnimState:PlayAnimation("reset")
+            inst.AnimState:PushAnimation("idle", false)
+        else
+            inst.AnimState:PlayAnimation("idle")
+        end
+        StopRattling(inst) --force restart
+    end
     StartRattling(inst)
+end
+
+local function SetSprung(inst)
+    if inst.components.inventoryitem ~= nil then
+        inst.components.inventoryitem.nobounce = true
+    end
+    if not inst:IsInLimbo() then
+        inst.MiniMapEntity:SetEnabled(true)
+    end
+    StartRattling(inst, 1)
 end
 
 local function SetInactive(inst)
     if inst.components.inventoryitem ~= nil then
         inst.components.inventoryitem.nobounce = false
     end
+    inst.MiniMapEntity:SetEnabled(false)
     inst.AnimState:PlayAnimation("inactive")
     StopRattling(inst)
 end
@@ -145,7 +200,7 @@ local function BeeMine(name, alignment, skin, spawnprefab, isinventory)
 
         inst.AnimState:SetBank(skin)
         inst.AnimState:SetBuild(skin)
-        inst.AnimState:PlayAnimation("inactive")
+        inst.AnimState:PlayAnimation("idle")
 
         inst:AddTag("mine")
 
@@ -159,8 +214,8 @@ local function BeeMine(name, alignment, skin, spawnprefab, isinventory)
         inst.components.mine:SetOnExplodeFn(OnExplode)
         inst.components.mine:SetAlignment(alignment)
         inst.components.mine:SetRadius(TUNING.BEEMINE_RADIUS)
-        inst.components.mine:SetOnResetFn(SetActive)
-        inst.components.mine:SetOnSprungFn(SetActive)
+        inst.components.mine:SetOnResetFn(OnReset)
+        inst.components.mine:SetOnSprungFn(SetSprung)
         inst.components.mine:SetOnDeactivateFn(SetInactive)
 
         inst.beeprefab = spawnprefab
@@ -186,6 +241,9 @@ local function BeeMine(name, alignment, skin, spawnprefab, isinventory)
         inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
         inst.components.mine:Reset()
+
+        inst.OnEntitySleep = OnEntitySleep
+        inst.OnEntityWake = OnEntityWake
 
         return inst
     end

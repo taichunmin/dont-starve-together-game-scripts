@@ -34,6 +34,8 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
+    inst:AddTag("lichen")
+
     inst.AnimState:SetBank("algae_bush")
     inst.AnimState:SetBuild("algae_bush")
     inst.AnimState:PlayAnimation("idle", true)

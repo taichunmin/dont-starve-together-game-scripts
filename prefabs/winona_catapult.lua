@@ -70,19 +70,20 @@ local function ShareTargetFn(dude)
     return dude:HasTag("catapult")
 end
 
+local function ForceDropTarget(inst, target)
+    if inst.components.combat ~= nil and inst.components.combat:TargetIs(target) then
+        inst.components.combat:DropTarget()
+    end
+end
+
 local function OnAttacked(inst, data)
     local attacker = data ~= nil and data.attacker or nil
-    if attacker ~= nil then
-        if not attacker:HasTag("player") then
-            if inst:IsNear(attacker, TUNING.WINONA_CATAPULT_MAX_RANGE) and
-                not inst:IsNear(attacker, math.max(0, TUNING.WINONA_CATAPULT_MIN_RANGE - TUNING.WINONA_CATAPULT_AOE_RADIUS - attacker:GetPhysicsRadius(0))) then
-                inst.components.combat:SetTarget(attacker)
-            end
-            inst.components.combat:ShareTarget(attacker, 15, ShareTargetFn, 10)
-        elseif data.damage == 0 and inst.components.combat:TargetIs(attacker) then
-            --V2C: prevent targeting players when using fire/ice staff on the catapult
-            inst.components.combat:DropTarget()
+    if attacker ~= nil and not PreventTargetingOnAttacked(inst, attacker, "player") then
+        if inst:IsNear(attacker, TUNING.WINONA_CATAPULT_MAX_RANGE) and
+            not inst:IsNear(attacker, math.max(0, TUNING.WINONA_CATAPULT_MIN_RANGE - TUNING.WINONA_CATAPULT_AOE_RADIUS - attacker:GetPhysicsRadius(0))) then
+            inst.components.combat:SetTarget(attacker)
         end
+        inst.components.combat:ShareTarget(attacker, 15, ShareTargetFn, 10)
     end
     if data ~= nil and data.damage == 0 and data.weapon ~= nil and (data.weapon:HasTag("rangedlighter") or data.weapon:HasTag("extinguisher")) then
         --V2C: weapon may be invalid by the time it reaches stategraph event handler, so ues a lua property instead

@@ -17,14 +17,15 @@ local function checkmaster(tar, inst)
 end
 
 local function retargetfn(inst)
-    return FindEntity(inst, TUNING.EYEPLANT_ATTACK_DIST, function(guy) 
-        if not guy.components.health:IsDead() then
-            return not checkmaster(guy, inst)
-        end
-    end,
-    {"_combat","_health"}, -- see entityreplica.lua
-    nil,
-    {"character","monster","animal","prey","eyeplant","lureplant"}
+    return FindEntity(
+        inst,
+        TUNING.EYEPLANT_ATTACK_DIST,
+        function(guy) 
+            return not (guy.components.health:IsDead() or checkmaster(guy, inst))
+        end,
+        { "_combat", "_health" }, -- see entityreplica.lua
+        { "INLIMBO", "plantkin" },
+        { "character", "monster", "animal", "prey", "eyeplant", "lureplant" }
     )
 end
 

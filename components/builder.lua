@@ -455,7 +455,9 @@ function Builder:DoBuild(recname, pt, rotation, skin)
                     self.inst:PushEvent("builditem", { item = prod, recipe = recipe, skin = skin, prototyper = self.current_prototyper })
                     ProfileStatsAdd("build_"..prod.prefab)
 
-                    if prod.components.equippable ~= nil and self.inst.components.inventory:GetEquippedItem(prod.components.equippable.equipslot) == nil then
+                    if prod.components.equippable ~= nil and
+                        self.inst.components.inventory:GetEquippedItem(prod.components.equippable.equipslot) == nil and
+                        not prod.components.equippable:IsRestricted(self.inst) then
                         if recipe.numtogive <= 1 then
                             --The item is equippable. Equip it.
                             self.inst.components.inventory:Equip(prod)

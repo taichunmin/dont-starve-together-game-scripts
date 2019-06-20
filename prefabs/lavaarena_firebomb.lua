@@ -60,6 +60,9 @@ local function fn()
 
     inst:AddTag("throw_line")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --rechargeable (from rechargeable component) added to pristine state for optimization
     inst:AddTag("rechargeable")
 

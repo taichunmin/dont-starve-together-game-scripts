@@ -1,5 +1,4 @@
 require "behaviours/wander"
-require "behaviours/faceentity"
 require "behaviours/follow"
 
 local BernieBrain = Class(Brain, function(self, inst)
@@ -13,6 +12,7 @@ local MAX_FOLLOW_DIST = 12
 local TARGET_FOLLOW_DIST = 6
 local TAUNT_DIST = 16
 local LOSE_LEADER_DIST_SQ = 30 * 30
+local BIG_LEADER_DIST_SQ = 8 * 8
 
 local wander_times =
 {
@@ -28,7 +28,7 @@ end
 
 local function FindShadowCreatures(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TAUNT_DIST, { "shadowcreature", "_combat", "locomotor" })
+    local ents = TheSim:FindEntities(x, y, z, TAUNT_DIST, { "shadowcreature", "_combat", "locomotor" }, { "INLIMBO", "notaunt" })
     for i = #ents, 1, -1 do
         if not IsTauntable(inst, ents[i]) then
             table.remove(ents, i)
@@ -78,9 +78,49 @@ local function GetLeader(self)
     return self._leader
 end
 
+local function ShouldGoBig(self)
+    local x, y, z = self.inst.Transform:GetWorldPosition()
+    for i, v in ipairs(AllPlayers) do
+        if v:HasTag("bernieowner") and
+            v.bigbernies == nil and
+            v.blockbigbernies == nil and
+            v.components.sanity:IsCrazy() and
+            v.entity:IsVisible() and
+            v:GetDistanceSqToPoint(x, y, z) < BIG_LEADER_DIST_SQ then
+            self._leader = v
+            return true
+        end
+    end
+    return false
+end
+
+local function OnEndBlockBigBernies(leader)
+    leader.blockbigbernies = nil
+end
+
+local function DoGoBig(inst, leader)
+    if leader ~= nil then
+        if leader.blockbigbernies ~= nil then
+            leader.blockbigbernies:Cancel()
+        end
+        --V2C: block other big bernies from triggering, since brain needs time to detect initial leader
+        leader.blockbigbernies = leader:DoTaskInTime(.5, OnEndBlockBigBernies)
+    end
+    inst:GoBig()
+end
+
 function BernieBrain:OnStart()
     local root =
     PriorityNode({
+        IfNode(
+            function()
+                return not self.inst.sg:HasStateTag("busy")
+                    and not self.inst.components.timer:TimerExists("transform_cd")
+                    and ShouldGoBig(self)
+            end,
+            "Go Big",
+            ActionNode(function() DoGoBig(self.inst, self._leader) end)),
+
         --Get the attention of nearby sanity monsters.
         WhileNode(
             function()

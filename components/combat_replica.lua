@@ -254,8 +254,8 @@ function Combat:IsValidTarget(target)
         or (target.replica.combat ~= nil and
             target.replica.health ~= nil and
             not target.replica.health:IsDead() and
-            not (target:HasTag("shadow") and self.inst.replica.sanity == nil) and
-            not (target:HasTag("playerghost") and (self.inst.replica.sanity == nil or self.inst.replica.sanity:IsSane())) and
+            not (target:HasTag("shadow") and self.inst.replica.sanity == nil and not self.inst:HasTag("crazy")) and
+            not (target:HasTag("playerghost") and (self.inst.replica.sanity == nil or self.inst.replica.sanity:IsSane()) and not self.inst:HasTag("crazy")) and
             -- gjans: Some specific logic so the birchnutter doesn't attack it's spawn with it's AOE
             -- This could possibly be made more generic so that "things" don't attack other things in their "group" or something
             (not self.inst:HasTag("birchnutroot") or not (target:HasTag("birchnutroot") or target:HasTag("birchnut") or target:HasTag("birchnutdrake"))) and 
@@ -343,7 +343,7 @@ function Combat:CanBeAttacked(attacker)
             end
         end
         local sanity = attacker.replica.sanity
-        if sanity ~= nil and sanity:IsCrazy() then
+        if sanity ~= nil and sanity:IsCrazy() or attacker:HasTag("crazy") then
             --Insane attacker can pretty much attack anything
             return true
         end

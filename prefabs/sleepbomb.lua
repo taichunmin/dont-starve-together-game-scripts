@@ -92,6 +92,9 @@ local function fn()
         inst.components.reticule.mouseenabled = true
 
         inst:AddTag("nopunch")
+    else
+        --weapon (from weapon component) added to pristine state for optimization
+        inst:AddTag("weapon")
     end
 
     inst.entity:SetPristine()

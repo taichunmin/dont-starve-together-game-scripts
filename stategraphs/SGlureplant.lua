@@ -215,6 +215,11 @@ local states =
         onenter = function(inst)
             inst.AnimState:PlayAnimation("death_hidden")
             RemovePhysicsColliders(inst)
+            --Task starts from PreventCharacterCollisionsWithPlacedObjects called by lureplant_bulb
+            if inst._physicstask ~= nil then
+                inst._physicstask:Cancel()
+                inst._physicstask = nil
+            end
             inst.SoundEmitter:PlaySound("dontstarve/creatures/eyeplant/lure_die")
         end,
     },
@@ -226,6 +231,11 @@ local states =
         onenter = function(inst)
             inst.AnimState:PlayAnimation("death")
             RemovePhysicsColliders(inst)
+            --Task starts from PreventCharacterCollisionsWithPlacedObjects called by lureplant_bulb
+            if inst._physicstask ~= nil then
+                inst._physicstask:Cancel()
+                inst._physicstask = nil
+            end
             inst.SoundEmitter:PlaySound("dontstarve/creatures/eyeplant/lure_die")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/eyeplant/vine_retract")
         end,

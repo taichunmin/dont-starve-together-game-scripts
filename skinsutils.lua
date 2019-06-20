@@ -37,7 +37,6 @@ EVENT_ICONS =
 	event_hallowed = {"HALLOWED"}
 }
 
--- Also update GetBuildForItem!
 local function GetSpecialItemCategories()
 	-- We build this in a function because these symbols don't exist when this
 	-- file is first loaded.
@@ -98,8 +97,16 @@ function GetNextRarity(rarity)
 	return rarities[rarity] or ""
 end
 
-function GetFrameSymbolForRarity( rarity )
+function IsHeirloomRarity( rarity )
 	if rarity == "HeirloomElegant" or rarity == "HeirloomDistinguished" or rarity == "HeirloomSpiffy" or rarity == "HeirloomClassy" then
+		return true
+	end
+	return false
+end
+
+
+function GetFrameSymbolForRarity( rarity )
+	if IsHeirloomRarity(rarity) then
 		return "heirloom"
 	end
 	return string.lower( rarity )
@@ -110,7 +117,7 @@ function GetBuildForItem(name)
 	local skin_data = GetSkinData(name)
 	if skin_data.build_name_override ~= nil then
 		return skin_data.build_name_override
-	end
+		end
 
 	return name
 end
@@ -157,6 +164,18 @@ function GetPackTotalItems(item_key)
     return #output_items
 end
 
+function _IsPackInsideOther( pack_a, pack_b )
+	local a_items = GetPurchasePackOutputItems(pack_a)
+	local b_items = GetPurchasePackOutputItems(pack_b)
+	
+	for _,item in ipairs( a_items ) do
+		if not table.contains( b_items, item ) then
+			return false
+		end
+	end
+	return true
+end
+
 function _GetSubPacks(item_key)
     local sub_packs = {}
 	local output_items = GetPurchasePackOutputItems(item_key)
@@ -189,6 +208,23 @@ function _GetSubPacks(item_key)
 		end
 	end
 	
+	--Ugh, packs such as pack_character_wormwood, which have a unique item, plus one other, have one sub pack, which makes us think it's a bundle, but it's not really...
+	if GetTableSize(sub_packs) == 1 then
+		sub_packs = {}
+	end
+
+	--Now coalesce sub packs into the the largest sub packs to avoid overlap
+	for sub_pack_a,_ in pairs( sub_packs ) do
+		for sub_pack_b,_ in pairs( sub_packs ) do
+			if sub_pack_a ~= sub_pack_b then
+				if _IsPackInsideOther( sub_pack_a, sub_pack_b ) then
+					sub_packs[sub_pack_a] = nil
+					break
+				end
+			end
+		end
+	end
+	
 	return sub_packs
 end
 
@@ -216,7 +252,7 @@ function GetPackTotalSets(item_key)
     return count
 end
 
-function GetPackTotalValue(item_key)
+function IsPackABundle(item_key)
     local sub_packs = _GetSubPacks(item_key)
 
     local value = 0
@@ -239,14 +275,73 @@ function GetPackTotalValue(item_key)
         print("Error!!! Figure out iap for this platform.")
     end
     
-    return value 
+    return (value > 0), value 
 end
 
-function GetPackSavings(iap_def, total_value)
-    if IsSteam() then
-        return math.floor(100 * (1 - (iap_def.cents / total_value)))
+local getPriceFromIAPDef = function( iap_def, sale_active )
+	if IsSteam() then
+		if sale_active then
+			return iap_def.sale_cents
+		else
+			return iap_def.cents
+		end
+	elseif IsRail() then
+		if sale_active then
+			return iap_def.rail_sale_price
+		else
+			return iap_def.rail_price
+		end
+	end
+end
+
+function BuildPriceStr( value, currency_code, sale_active )
+    if type(value) ~= "number" then
+		value = getPriceFromIAPDef( value, sale_active )
+    end
+
+	if IsSteam() then
+		if currency_code == "JPY" or
+			currency_code == "IDR" or
+			currency_code == "VND" or
+			currency_code == "KRW" or
+			currency_code == "UAH" or
+			currency_code == "CNY" or
+			currency_code == "INR" or
+			currency_code == "CLP" or
+			currency_code == "COP" or
+			currency_code == "TWD" or
+			currency_code == "KZT" or
+			currency_code == "CRC" or
+			currency_code == "UYU" then
+
+			return string.format( "%s %0.0f", currency_code, value / 100 )
+		else
+		
+			return string.format( "%s %1.2f", currency_code, value / 100 )
+		end
     elseif IsRail() then
-        return math.floor(100 * (1 - (tonumber(iap_def.rail_price) / total_value)))
+        return tostring(value) .. " RMB"
+    else
+        print("Error!!! Figure out the pricing for the new platform.")
+    end
+end
+
+function IsSaleActive( iap_def )
+	local sale_active = false
+
+	local sale_duration = iap_def.sale_end - os.time()
+	if sale_duration > 0 and iap_def.sale_percent > 0 then
+		sale_active = true
+	end
+
+	return sale_active, sale_duration
+end
+
+function GetPackSavings(iap_def, total_value, sale_active )
+    if IsSteam() then
+        return math.floor(100 * (1 - (getPriceFromIAPDef(iap_def, sale_active) / total_value)))
+    elseif IsRail() then
+        return math.floor(100 * (1 - (tonumber(getPriceFromIAPDef(iap_def, sale_active)) / total_value)))
     else
         print("Error!!! Figure out iap for this platform.")
     end
@@ -418,10 +513,6 @@ function GetRarityForItem(item)
 		rarity = "Common"
 	end
 
-    if rarity == "Character" then --hack for restricted character rarity items
-		rarity = "Common"
-    end
-
 	return rarity
 end
 
@@ -478,7 +569,7 @@ function IsUserCommerceAllowedOnItemData(item_data)
         return false
     end
     return IsUserCommerceAllowedOnItemType(item_data.item_key)
-    end
+end
 
 function IsUserCommerceAllowedOnItemType(item_key)
 	if TheInventory:CheckOwnership(item_key) then
@@ -493,7 +584,54 @@ function IsUserCommerceSellAllowedOnItem(item_type)
     return num_owned > 0 and TheItems:GetBarterSellPrice(item_type) ~= 0
 end
 
+function GetCharacterRequiredForItem(item_type)
+	local data = GetSkinData(item_type)
+	if not data.is_restricted and data.type == "base" then --ignore is_restricted as they'd block themselves from being weaved, ooops :)
+		return data.base_prefab
+	end
+	print("Unexpected item_type passed to GetCharacterRequiredForItem", item_type)
+end
+
+function IsUserCommerceBuyRestrictedDueType(item_type)
+	local data = GetSkinData(item_type)
+	if data.rarity_modifier == nil then
+		return true
+	end
+	return false
+end
+
+function IsUserCommerceBuyRestrictedDueToOwnership(item_type)
+	local data = GetSkinData(item_type)
+	if not data.is_restricted and data.type == "base" then --ignore is_restricted as they'd block themselves from being weaved, ooops :)
+		if not IsCharacterOwned(data.base_prefab) then
+			return true
+		end
+	end
+	return false
+end
+
+function IsPackRestrictedDueToOwnership(item_type)
+	local pack_includes_character = {}
+	for _,v in pairs(GetPurchasePackOutputItems(item_type)) do
+		local data = GetSkinData(v)
+		if data.is_restricted then
+			pack_includes_character[data.base_prefab] = true
+		end
+	end
+	for _,v in pairs(GetPurchasePackOutputItems(item_type)) do
+		local data = GetSkinData(v)
+		if data.type == "base" and pack_includes_character[data.base_prefab] == nil and not IsCharacterOwned(data.base_prefab) then
+			return true, data.base_prefab
+		end
+	end
+	return false
+end
+
 function IsUserCommerceBuyAllowedOnItem(item_type)
+	if IsUserCommerceBuyRestrictedDueToOwnership(item_type) then
+		return false
+	end
+
     local num_owned = TheInventory:GetOwnedItemCountForCommerce(item_type)
 	return num_owned == 0 and TheItems:GetBarterBuyPrice(item_type) ~= 0
 end
@@ -585,12 +723,6 @@ local function _ItemStringRedirect(item)
     if string.sub( item, -8 ) == "_builder" then
 		item = string.sub( item, 1, -9 )
 	end
-    if IsDefaultCharacterSkin(item) then
-        local data = GetSkinData(item)
-        if not data.is_restricted then
-            item = "none"
-        end
-    end
     if string.sub( item, -8) == "default1" then
         item = "none"
     end
@@ -728,9 +860,9 @@ end
 function CompareItemDataForSortByRelease(item_key_a, item_key_b)
     if item_key_a == item_key_b then
         return false
-    elseif IsDefaultSkin(item_key_a) then
+    elseif IsDefaultSkin(item_key_a) and not IsDefaultSkin(item_key_b) then
         return true
-    elseif IsDefaultSkin(item_key_b) then
+    elseif not IsDefaultSkin(item_key_a) and IsDefaultSkin(item_key_b) then
         return false
     elseif GetReleaseGroup(item_key_a) ~= GetReleaseGroup(item_key_b) then
         return CompareReleaseGroup(item_key_a, item_key_b)
@@ -744,9 +876,9 @@ end
 function CompareItemDataForSortByName(item_key_a, item_key_b)
     if item_key_a == item_key_b then
         return false
-    elseif IsDefaultSkin(item_key_a) then
+    elseif IsDefaultSkin(item_key_a) and not IsDefaultSkin(item_key_b) then
         return true
-    elseif IsDefaultSkin(item_key_b) then
+    elseif not IsDefaultSkin(item_key_a) and IsDefaultSkin(item_key_b) then
         return false
     else
         return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
@@ -756,12 +888,29 @@ end
 function CompareItemDataForSortByRarity(item_key_a, item_key_b)
     if item_key_a == item_key_b then
         return false
-    elseif IsDefaultSkin(item_key_a) then
+    elseif IsDefaultSkin(item_key_a) and not IsDefaultSkin(item_key_b) then
         return true
-    elseif IsDefaultSkin(item_key_b) then
+    elseif not IsDefaultSkin(item_key_a) and IsDefaultSkin(item_key_b) then
         return false
     elseif GetRarityForItem(item_key_a) ~= GetRarityForItem(item_key_b) then
 		return CompareRarities(item_key_a, item_key_b)
+	else
+        return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
+    end
+end
+
+function CompareItemDataForSortByCount(item_key_a, item_key_b, item_counts)
+	local count_a = item_counts[item_key_a] or 0
+	local count_b = item_counts[item_key_b] or 0
+
+	if item_key_a == item_key_b then
+        return false
+    elseif IsDefaultSkin(item_key_a) and not IsDefaultSkin(item_key_b) then
+        return true
+    elseif not IsDefaultSkin(item_key_a) and IsDefaultSkin(item_key_b) then
+        return false
+    elseif count_a ~= count_b then
+		return count_a >= count_b
 	else
         return GetLexicalSortLiteral(item_key_a) < GetLexicalSortLiteral(item_key_b)
     end
@@ -802,11 +951,15 @@ function GetInventorySkinsList( do_sort )
 		table.insert(skins_list, data)
 	end
 
+	print("################################### GetInventorySkinsList", #skins_list)
+	--dumptable(skins_list)
+
 	if do_sort then
-table.sort(skins_list, function(a,b)
-			return CompareItemDataForSortByRarity(a.item, b.item)
-			end)
-		end
+		table.sort(skins_list, function(a,b)
+			--return a.item > b.item
+			return CompareItemDataForSortByRarity( a.item, b.item )
+		end)
+	end
 
     return skins_list
 end
@@ -904,6 +1057,7 @@ function _BonusItemRewarded(bonus_item, item_counts)
 	end
 	return false
 end
+
 function WillUnravelBreakEnsemble(item_type)
 	local in_collection, bonus_item = IsItemInCollection(item_type)
 
@@ -920,20 +1074,50 @@ function WillUnravelBreakEnsemble(item_type)
 	return false --not rewarded already
 end
 
+function WillUnravelBreakRestrictedCharacter(item_type)
+	local item_counts = GetOwnedItemCounts()
+    if item_counts[item_type] == 1 and IsDefaultCharacterSkin( item_type ) then
+		local data = GetSkinData( item_type )
+		if data.is_restricted then
+			return true
+		end
+	end
+	return false
+end
+
+function HasHeirloomItem(herocharacter)
+	for _,item_key in ipairs(SKIN_AFFINITY_INFO[herocharacter] or {}) do
+		local rarity = GetRarityForItem(item_key)
+		if IsHeirloomRarity(rarity) then
+			return true
+		end
+	end
+	return false
+end
+
 function GetSkinCollectionCompletionForHero(herocharacter)
-    assert(herocharacter)
-    local num_owned = 0
-    local num_need = 0
+	assert(herocharacter)
+	--we'll use the shared build name instead of the item_key
+	local bonus = HasHeirloomItem(herocharacter)
+	local owned_items = {}
+	local need_items = {}
+	
     for i,item_key in ipairs(SKIN_AFFINITY_INFO[herocharacter] or {}) do
 		if ShouldDisplayItemInCollection(item_key) then
+			local build = GetBuildForItem(item_key)
 			if TheInventory:CheckOwnership(item_key) then
-				num_owned = num_owned + 1
+				owned_items[build] = true
+				need_items[build] = nil
 			else
-				num_need = num_need + 1
+				bonus = false
+				if owned_items[build] == nil then
+					need_items[build] = true
+				end
 			end
 		end
-    end
-    return num_owned, num_need
+	end
+
+    return GetTableSize(owned_items), GetTableSize(need_items), bonus
 end
 
 function GetNullFilter()
@@ -1047,6 +1231,11 @@ function ShouldDisplayItemInCollection(item_type)
     return true
 end
 
+function IsRestrictedCharacter( prefab )
+	local data = GetSkinData(prefab.."_none")
+	return data.is_restricted
+end
+
 function IsCharacterOwned( prefab )
 	return IsDefaultSkinOwned(prefab.."_none")
 end
@@ -1054,7 +1243,7 @@ end
 function IsDefaultSkinOwned( item_key )
     if IsDefaultCharacterSkin( item_key ) then
 		local data = GetSkinData(item_key)
-        if data.is_restricted then
+		if data.is_restricted then
             return TheInventory:CheckOwnership(item_key)
         end
         return true
@@ -1249,6 +1438,9 @@ local dailyGiftType = nil --to test daily gift popup, put a item type into this 
 function SetDailyGiftItem(item_type)
 	dailyGiftType = item_type
 end
+function IsDailyGiftItemPending()
+	return dailyGiftType ~= nil
+end
 function GetDailyGiftItem()
 	local ret = dailyGiftType
 	dailyGiftType = nil
@@ -1265,12 +1457,6 @@ function SetSkinDLCEntitlementReceived(entitlement)
 	Profile:SetEntitlementReceived(entitlement)
 end
 
-function SetSkinDLCEntitlementOwned(entitlement)
-	if not Profile:IsEntitlementReceived(entitlement) then
-		AddNewSkinDLCEntitlement(entitlement)
-	end
-	Profile:SetEntitlementReceived(entitlement)
-end
 
 local newSkinDLCEntitlements = {} --to test DLC gifting popup, put a pack item type in this table
 function AddNewSkinDLCEntitlement(entitlement)
@@ -1325,4 +1511,85 @@ function MakeSkinDLCPopup(_cb)
 			_cb()
 		end
 	end
+end
+
+
+function DisplayCharacterUnownedPopup(character, skins_subscreener)
+	local PopupDialogScreen = require "screens/redux/popupdialog"
+	local body_str = subfmt(STRINGS.UI.LOBBYSCREEN.UNOWNED_CHARACTER_BODY, {character = STRINGS.CHARACTER_NAMES[character] })
+    local unowned_popup = PopupDialogScreen(STRINGS.UI.LOBBYSCREEN.UNOWNED_CHARACTER_TITLE, body_str,
+    {
+        --Note(Peter): this is atrocious, but I don't see a better way to talk to the screen panel way down. Maybe implement a UI event system?
+        {text=STRINGS.UI.BARTERSCREEN.COMMERCE_BUY, cb = function()
+            TheFrontEnd:PopScreen()
+            skins_subscreener.sub_screens["base"].picker:DoCommerceForDefaultItem(character.."_none")
+        end},
+        {text=STRINGS.UI.LOBBYSCREEN.VISIT_SHOP, cb = function()
+            TheFrontEnd:PopScreen()
+            skins_subscreener.sub_screens["base"].picker:DoShopForDefaultItem(character.."_none")
+        end},
+        {text=STRINGS.UI.POPUPDIALOG.OK, cb = function()
+            TheFrontEnd:PopScreen()
+        end},
+    })
+    TheFrontEnd:PushScreen(unowned_popup)
+end
+
+function DisplayCharacterUnownedPopupPurchase(character, purchase_screen)
+	local PopupDialogScreen = require "screens/redux/popupdialog"
+	local body_str = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.UNOWNED_CHARACTER_BODY, {character = STRINGS.CHARACTER_NAMES[character] })
+	local button_txt = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.VIEW_REQUIRED, {character = STRINGS.CHARACTER_NAMES[character] })
+	
+	local unowned_popup = PopupDialogScreen(STRINGS.UI.LOBBYSCREEN.UNOWNED_CHARACTER_TITLE, body_str,
+    {
+        {text=button_txt, cb = function()
+			purchase_screen:UpdateFilterToItem(character.."_none")
+			TheFrontEnd:PopScreen()
+        end},
+        {text=STRINGS.UI.POPUPDIALOG.OK, cb = function()
+            TheFrontEnd:PopScreen()
+        end},
+    })
+    TheFrontEnd:PushScreen(unowned_popup)
+end
+
+function DisplayInventoryFailedPopup( screen )
+	if not screen.leave_from_fail and not TheInventory:HasDownloadedInventory() then
+		local PopupDialogScreen = require "screens/redux/popupdialog"
+		local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
+
+		local unowned_popup = PopupDialogScreen(STRINGS.UI.PLAYERSUMMARYSCREEN.FAILED_INVENTORY_TITLE, STRINGS.UI.PLAYERSUMMARYSCREEN.FAILED_INVENTORY_BODY,
+		{
+			{text=STRINGS.UI.PLAYERSUMMARYSCREEN.FAILED_INVENTORY_YES, cb = function()
+				
+                screen.leave_from_fail = true
+                TheFrontEnd:PopScreen() --pop the failed dialog
+                
+                screen.items_get_popup = GenericWaitingPopup("GetAllItemsPopup", STRINGS.UI.PLAYERSUMMARYSCREEN.GET_INVENTORY, nil, true, function()
+                    screen.poll_task:Cancel()
+                    screen.poll_task = nil
+                end )
+                TheFrontEnd:PushScreen(screen.items_get_popup)
+                
+                screen.poll_task = scheduler:ExecutePeriodic( 1, function() 
+                    if not TheInventory:IsDownloadingInventory() then
+                        screen.items_get_popup:Close()
+                    end
+                end, nil, 0, "poll_inv_state", screen )
+
+                TheInventory:StartGetAllItems()
+
+                screen.leave_from_fail = false
+
+			end},
+			{text=STRINGS.UI.PLAYERSUMMARYSCREEN.FAILED_INVENTORY_NO, cb = function()
+				
+                screen.leave_from_fail = true
+                TheFrontEnd:PopScreen()
+				screen:Close()
+				
+			end},
+		})
+		TheFrontEnd:PushScreen(unowned_popup)		
+    end
 end

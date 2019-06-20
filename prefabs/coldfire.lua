@@ -123,6 +123,7 @@ local function fn()
 
     inst:AddTag("campfire")
     inst:AddTag("blueflame")
+    inst:AddTag("NPC_workable")
 
     MakeObstaclePhysics(inst, .3)
 

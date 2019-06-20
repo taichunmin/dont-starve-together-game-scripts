@@ -84,6 +84,7 @@ local function fn()
     inst:AddTag("smallcreature")
     inst:AddTag("cattoyairborne")
     inst:AddTag("wildfireprotected")
+    inst:AddTag("deployedplant")
 
     --pollinator (from pollinator component) added to pristine state for optimization
     inst:AddTag("pollinator")

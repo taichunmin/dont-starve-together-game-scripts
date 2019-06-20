@@ -5,6 +5,11 @@ local assets =
     Asset("SOUND", "sound/common.fsb"),
 }
 
+local prefabs =
+{
+    "firefx_light",
+}
+
 local firelevels =
 {
     {anim="level1", sound="dontstarve/common/campfire", radius=3, intensity=.8, falloff=.44, colour = {255/255,255/255,192/255}, soundintensity=.1},
@@ -18,7 +23,6 @@ local function fn()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddLight()
     inst.entity:AddNetwork()
 
     inst.AnimState:SetBank("campfire_fire")
@@ -41,4 +45,4 @@ local function fn()
     return inst
 end
 
-return Prefab("pigtorch_flame", fn, assets)
+return Prefab("pigtorch_flame", fn, assets, prefabs)

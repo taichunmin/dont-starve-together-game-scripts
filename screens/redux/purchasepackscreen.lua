@@ -15,24 +15,12 @@ require("misc_items")
 
 local FILTER_OWNED_INDEX = 1
 local FILTER_TYPE_INDEX = 2
+local FILTER_DISCOUNT_INDEX = 3
 
-local build_price_str = function( value, currency_code )
-    if type(value) ~= "number" then
-        if IsSteam() then
-	        value = value.cents
-        elseif IsRail() then
-            value = value.rail_price
-        end
-    end
 
-	if IsSteam() then
-        local whole = tostring(value / 100)
-	    return currency_code .. " " .. whole
-    elseif IsRail() then
-        return tostring(value) .. " RMB"
-    else
-        print("Error!!! Figure out the pricing for the new platform.")
-    end
+
+local function itemKeyIsCharacter(initial_item_key)
+    return table.contains(DST_CHARACTERLIST, initial_item_key)
 end
 
 local add_details = function ( self, proot, fontsize )
@@ -66,22 +54,23 @@ local add_details = function ( self, proot, fontsize )
     self.price = self.text_root:AddChild(Text(HEADERFONT, 28*fontsize, nil, UICOLOURS.GOLD_FOCUS))
     self.oldprice = self.text_root:AddChild(Text(HEADERFONT, 15*fontsize, nil, { 123 / 255, 105 / 255, 61 / 255, 1 } ))
     self.oldprice_line = self.text_root:AddChild(Image("images/global_redux.xml", "shop_crossed_price.tex"))
+    self.expire_txt = self.text_root:AddChild(Text(HEADERFONT, 15*fontsize, nil, UICOLOURS.GOLD_UNIMPORTANT))
     self.savings_frame = self.text_root:AddChild(Image("images/global_redux.xml", "shop_discount.tex"))
     self.savings = self.text_root:AddChild(Text(HEADERFONT, 15*fontsize, nil, UICOLOURS.BLACK ))
+    self.sale_frame = self.text_root:AddChild(Image("images/global_redux.xml", "shop_sale_tag.tex"))
+    self.sale_txt = self.text_root:AddChild(Text(HEADERFONT, 19*fontsize, nil, UICOLOURS.BLACK ))
 
     return self.root
-
 end
 
 local purchasefn = 
-    function( self )
+    function( self, item_type_purchased, sale_percent_purchased )
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/purchase")
 
         local commerce_popup = GenericWaitingPopup("ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
         TheFrontEnd:PushScreen(commerce_popup)
 
-        local item_type_purchased = self.item_type --need to save a copy of this for the callback function because the UI could update on us, and item_type could change.
-        TheItems:StartPurchase(item_type_purchased, function(success, message)
+        TheItems:StartPurchase(item_type_purchased, sale_percent_purchased, function(success, message)
             self.inst:DoTaskInTime(0, function()  --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
                 commerce_popup:Close()
                 if success then
@@ -123,26 +112,36 @@ local purchasefn =
 
 local onPurchaseClickFn =
     function( self )
-        if OwnsSkinPack(self.item_type) then
-            local warning = PopupDialogScreen(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_DESC, 
-                        {
-                            {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_OK, cb = function() 
-                                TheFrontEnd:PopScreen()
-                            purchasefn( self ) 
-                            end },
-                            {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_CANCEL, cb = function() 
-                                TheFrontEnd:PopScreen()
-                            end },
-                        })
-            TheFrontEnd:PushScreen( warning )    
+        local restricted_pack, missing_character = IsPackRestrictedDueToOwnership(self.item_type)
+        
+        local item_type_purchased = self.item_type --need to save a copy of this for the callback function because the UI could update on us, and item_type could change.
+        local sale_percent_purchased = self.sale_percent --need to save a copy of this for the callback function because the UI could update on us, and sale_percent could change.
+
+        if restricted_pack then
+            DisplayCharacterUnownedPopupPurchase(missing_character, self.screen_self)
         else
-        purchasefn( self )
+            if OwnsSkinPack(self.item_type) then
+                local warning = PopupDialogScreen(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_TITLE, STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_DESC, 
+                            {
+                                {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_OK, cb = function() 
+                                    TheFrontEnd:PopScreen()
+                                    purchasefn( self, item_type_purchased, sale_percent_purchased ) 
+                                end },
+                                {text=STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_WARNING_CANCEL, cb = function() 
+                                    TheFrontEnd:PopScreen()
+                                end },
+                            })
+                TheFrontEnd:PushScreen( warning )    
+            else
+                purchasefn( self, item_type_purchased, sale_percent_purchased )
+            end
         end
     end
 
 local set_data =
     function ( self, iap_def )
         self.item_type = iap_def.item_type
+        
 
         local title = GetSkinName(self.item_type)
         self.title:SetString(title)
@@ -150,27 +149,90 @@ local set_data =
         local collection = GetPackCollection(self.item_type)
         self.collection:SetString(collection)
 
-        self.price:SetString( build_price_str( iap_def, iap_def.currency_code ) )
 
-        local total_value = GetPackTotalValue(self.item_type)
-        local total_value_str = build_price_str( total_value, iap_def.currency_code )
-        self.oldprice:SetString( total_value_str )
-    
-        local savings = GetPackSavings(iap_def, total_value)
+        local sale_active, sale_duration = IsSaleActive(iap_def)
 
-        self.savings:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PACK_SAVINGS, { savings = savings }) )
-        if savings > 0 then
-            self.savings:Show()
-            self.savings_frame:Show()
+        local savings = 0 
+        local is_pack_bundle, total_value = IsPackABundle(self.item_type)
+        if is_pack_bundle then
+            local total_value_str = BuildPriceStr( total_value, iap_def.currency_code )
+            self.oldprice:SetString( total_value_str )
+            savings = GetPackSavings(iap_def, total_value, sale_active)
+        else
+            local original_price_str = BuildPriceStr( iap_def, iap_def.currency_code, false )
+            self.oldprice:SetString( original_price_str )
+        end
+
+        
+        if sale_active then
+            self.price:SetString( BuildPriceStr( iap_def, iap_def.currency_code, true ) )
+
+            self.sale_frame:Show()
+            self.sale_txt:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.SALE_TXT, { sale_percent = tostring(iap_def.sale_percent) }) )
+            self.sale_txt:Show()
+
+            self.sale_percent = iap_def.sale_percent
+            
+            local expire_str = ""
+            local day_time   = 60 * 60 * 24 * 2
+            local hours_time = 60 * 60 * 24
+            local hour_time = 60 * 60 * 2
+            local soon_time  = 60 * 60 * 1
+            
+            if sale_duration < soon_time then
+                expire_str = STRINGS.UI.PURCHASEPACKSCREEN.EXPIRE_SOON_TXT
+
+            elseif sale_duration < hour_time then
+                expire_str = STRINGS.UI.PURCHASEPACKSCREEN.EXPIRE_HOUR_TXT
+
+            elseif sale_duration < hours_time then
+                local hours = math.floor( sale_duration / (60 * 60) )
+                expire_str = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.EXPIRE_HOURS_TXT, { hours = hours })
+
+            elseif sale_duration < day_time then
+                expire_str = STRINGS.UI.PURCHASEPACKSCREEN.EXPIRE_DAY_TXT
+
+            else
+                local days = math.floor( sale_duration / (60 * 60 * 24) )
+                expire_str = subfmt(STRINGS.UI.PURCHASEPACKSCREEN.EXPIRE_DAYS_TXT, { days = days })
+            end
+            self.expire_txt:SetString( expire_str )
+            self.expire_txt:Show()
 
             self.oldprice:Show()
             self.oldprice_line:Show()
-        else
-            self.savings:Hide()
-            self.savings_frame:Hide()
 
-            self.oldprice:Hide()
-            self.oldprice_line:Hide()
+            if savings > 0 then
+                self.savings:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PACK_SAVINGS, { savings = savings }) )
+                self.savings:Show()
+                self.savings_frame:Show()
+            else
+                self.savings:Hide()
+                self.savings_frame:Hide()
+            end
+        else
+            self.price:SetString( BuildPriceStr( iap_def, iap_def.currency_code, false ) )
+
+            self.sale_percent = 0
+
+            if savings > 0 then
+                self.savings:SetString( subfmt(STRINGS.UI.PURCHASEPACKSCREEN.PACK_SAVINGS, { savings = savings }) )
+                self.savings:Show()
+                self.savings_frame:Show()
+
+                self.oldprice:Show()
+                self.oldprice_line:Show()
+            else
+                self.savings:Hide()
+                self.savings_frame:Hide()
+
+                self.oldprice:Hide()
+                self.oldprice_line:Hide()
+            end
+
+            self.sale_frame:Hide()
+            self.sale_txt:Hide()
+            self.expire_txt:Hide()
         end
 
         local total_items = GetPackTotalItems(self.item_type)
@@ -203,13 +265,16 @@ local set_data =
         self.price:SetVAlign(ANCHOR_BOTTOM)
         self.oldprice:SetHAlign(ANCHOR_LEFT)
         self.oldprice:SetVAlign(ANCHOR_BOTTOM)
+        self.expire_txt:SetHAlign(ANCHOR_RIGHT)
+        self.expire_txt:SetVAlign(ANCHOR_BOTTOM)
     end
 
 -------------------------------------------------------------------
 
-local PurchasePackPopup = Class(Screen, function(self, iap_def)
+local PurchasePackPopup = Class(Screen, function(self, iap_def, screen_self)
     Screen._ctor(self, "PurchasePackPopup")
-
+    
+    self.screen_self = screen_self
     self.black = self:AddChild( TEMPLATES.BackgroundTint() )
     self.proot = self:AddChild( TEMPLATES.ScreenRoot() )
 
@@ -298,6 +363,7 @@ function PurchasePackPopup:SetData( iap_def )
     self.collection:SetRegionSize(contentw,40)
     self.price:SetRegionSize(contentw,80)
     self.oldprice:SetRegionSize(contentw,40)
+    self.expire_txt:SetRegionSize( 275, 40 )
     self.savings:SetRegionSize(60,50)
 
     self.title:EnableWordWrap( true )
@@ -309,9 +375,18 @@ function PurchasePackPopup:SetData( iap_def )
     self.desc:SetPosition(0, 70 )
     self.text:SetPosition(0, -50 )
     self.price:SetPosition( 0, -120)
-    self.oldprice:SetPosition( 0,-85)
-    self.oldprice_line:SetPosition(-200,-90)
+    self.oldprice:SetPosition( 0, -80)
+    self.oldprice_line:SetPosition( -200, -85)
+    self.expire_txt:SetPosition( 112, -75)
     self.savings_frame:SetPosition(-300,-128)
+
+    self.sale_frame:SetPosition( 238, 233 )
+    self.sale_frame:SetRotation(1.5)
+    self.sale_txt:SetScale(0.85)
+    self.sale_txt:SetRegionSize(80, 80)
+    self.sale_txt:SetPosition(256, 261)
+    self.sale_txt:SetRotation(47)
+
     self.savings:SetPosition(-300,-128)
     self.button_dlc:SetPosition(130, -85)
 
@@ -368,10 +443,13 @@ end
 -------------------------------------------------------------------
 
 
-local PurchasePackScreen = Class(Screen, function(self, prev_screen, profile, initial_item_key)
+local PurchasePackScreen = Class(Screen, function(self, prev_screen, profile, filter_info)
     Screen._ctor(self, "PurchasePackScreen")
 
-    self.initial_item_key = initial_item_key
+    if filter_info == nil then filter_info = {} end --in-case we get given a nil filter_info
+    self.initial_item_key = filter_info.initial_item_key
+    self.initial_discount_key = filter_info.initial_discount_key
+
     self:DoInit()
 
 	Profile:SetShopHash( CalculateShopHash() )
@@ -393,16 +471,23 @@ function PurchasePackScreen:DoInit()
     if self.initial_item_key ~= nil and self.filters ~= nil then
         self.filters[FILTER_TYPE_INDEX].spinner:SetSelected(self.initial_item_key)
     end
+    
+    if IsNotConsole() and self.initial_discount_key ~= nil and self.filters ~= nil then
+        self.filters[FILTER_DISCOUNT_INDEX].spinner:SetSelected(self.initial_discount_key)
+    end
+    
 
     self:UpdatePurchasePanel()
             
     if not TheInput:ControllerAttached() then 
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
-                    TheFrontEnd:FadeBack()
+                    self:Close()
                 end
             ))
     end
+
+    self.update_timer = 0
 end
 
 
@@ -412,11 +497,13 @@ end
 local PurchaseWidget = Class(Widget, function(self, screen_self)
 	Widget._ctor(self, "PurchaseWidget")
 
+    self.screen_self = screen_self
 	self.root = add_details( self, self, 1 )
     self.root:SetScale(0.90)
     self.item_type = nil
+    self.sale_percent = 0
         
-    self.frame = self.root:AddChild(Image("images/fepanels_redux_shop_panel.xml", "shop_panel.tex"))
+    self.frame = self.root:AddChild(Image("images/fepanels_redux.xml", "shop_panel.tex"))
     self.frame:SetScale(0.55)
     self.frame:SetPosition(-10,-7)
     self.frame:MoveToBack()
@@ -452,13 +539,14 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
 
         set_data( self, iap_def )
 
-        self.info_button:SetOnClick( function() TheFrontEnd:PushScreen( PurchasePackPopup( iap_def ) ) end )
+        self.info_button:SetOnClick( function() TheFrontEnd:PushScreen( PurchasePackPopup( iap_def, self.screen_self ) ) end )
         self.button:SetOnClick( function() onPurchaseClickFn( self ) end )
         self.button:SetText(STRINGS.UI.PURCHASEPACKSCREEN.PURCHASE_BTN)
 
         self.frame:SetScale(0.7)
         self.frame:SetPosition(0,0)
         self.savings_frame:SetScale(0.55)
+        self.sale_frame:SetScale(0.75)
         self.oldprice_line:SetScale(0.65)
         self.text_root:SetPosition(0, 0)
 
@@ -482,23 +570,34 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
         self.price:SetRegionSize(130,30)
         self.oldprice:SetRegionSize(130,16)
         self.price:SetPosition( -80, -58)
-        self.oldprice:SetPosition(-80,-38)
-        self.oldprice_line:SetPosition(-115,-38)
-        self.savings_frame:SetPosition(-170,-57)
-        self.savings:SetRegionSize(50,30)
-        self.savings:SetPosition(-168,-58)
-        self.button:SetPosition(157,-57)
-        self.info_button:SetPosition(-212,-57)
-        self.text_root:SetPosition(80, 0)
+
+        self.oldprice:SetPosition(-78, -36)
+        self.oldprice_line:SetPosition(-113, -36)
+
+        self.expire_txt:SetRegionSize( 275, 16)
+        self.expire_txt:SetPosition( 0, -30)
+
+        self.savings_frame:SetPosition(-170, -57)
+        self.savings:SetRegionSize(50, 30)
+        self.savings:SetPosition(-168, -58)
+        self.sale_frame:SetPosition(100, 26.5)
+        self.sale_txt:SetRegionSize(50, 40)
+        self.sale_txt:SetPosition(112, 48)
+        self.sale_txt:SetRotation(45)
+        self.button:SetPosition(157, -57)
+        self.info_button:SetPosition(-212, -57)
+        self.text_root:SetPosition(90, 0)
 
         if OwnsSkinPack(self.item_type) then
             self.purchased:Show()
 		else
             self.purchased:Hide()
 		end
+        
 
+        local panel_tex = ""
         if IsPackFeatured(self.item_type) then
-            self.frame:SetTexture("images/fepanels_redux_shop_panel_wide.xml", "shop_panel_wide.tex")
+            panel_tex = "shop_panel_feat.tex"
 
             self.icon_root:SetPosition(-145, 5)
             self.icon_image:SetScale(0.24)
@@ -509,12 +608,9 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
 
             self.collection:Hide()
 		
-			--Deal with focus hacks for featured widget with multiple buttons
-            self.info_button:SetFocusChangeDir(MOVE_RIGHT, self.button)
-			self.button:SetFocusChangeDir(MOVE_LEFT, self.info_button)
 			
 		else
-            self.frame:SetTexture("images/fepanels_redux_shop_panel.xml", "shop_panel.tex")
+            panel_tex = "shop_panel.tex"
             
             self.icon_root:SetPosition(-145, 10)
             self.icon_image:SetScale(0.25)
@@ -524,6 +620,16 @@ function PurchaseWidget:ApplyDataToWidget(iap_def)
             self.collection:Show()
         end
 
+        if IsSaleActive( iap_def ) then
+            panel_tex = "shop_panel_sale.tex"
+        end
+
+        self.frame:SetTexture("images/fepanels_redux.xml", panel_tex)
+
+        --Deal with focus hacks for widget with multiple buttons
+        self.info_button:SetFocusChangeDir(MOVE_RIGHT, self.button)
+        self.button:SetFocusChangeDir(MOVE_LEFT, self.info_button)
+            
         self.root:Show()
         
         self.ongainfocusfn = nil
@@ -546,7 +652,6 @@ end
 function PurchasePackScreen:GetIAPDefs( no_filter_or_sort )
     local unvalidated_iap_defs = TheItems:GetIAPDefs()
     local all_iap_defs = {}
-    local iap
     for _,iap in ipairs(unvalidated_iap_defs) do
         -- Don't show items unless we have data/strings to describe them.
         if MISC_ITEMS[iap.item_type] then
@@ -581,7 +686,7 @@ function PurchasePackScreen:GetIAPDefs( no_filter_or_sort )
                     if not DoesPackHaveBelongings(iap.item_type) then
                         is_valid_with_filters = false
                     end
-                elseif filter_data == self.initial_item_key then
+                elseif filter_data == self.initial_item_key and not itemKeyIsCharacter(self.initial_item_key) then
                     --specific item passed in
                     if not DoesPackHaveItem( iap.item_type, self.initial_item_key ) then
                         is_valid_with_filters = false
@@ -589,6 +694,19 @@ function PurchasePackScreen:GetIAPDefs( no_filter_or_sort )
                 else
                     --character skins
                     if not DoesPackHaveSkinsForCharacter( iap.item_type, filter_data ) then
+                        is_valid_with_filters = false
+                    end
+                end
+            elseif filter.name == "DISCOUNT" then
+                local filter_data = filter.spinner:GetSelectedData()
+                if filter_data == "ALL" then
+                    --all good
+                elseif filter_data == "SALE" then
+                    if not IsSaleActive(iap) then
+                        is_valid_with_filters = false
+                    end
+                elseif filter_data == "BUNDLE" then
+                    if not IsPackABundle( iap.item_type ) then
                         is_valid_with_filters = false
                     end
                 end
@@ -620,7 +738,8 @@ local total_width = label_width + widget_width + spacing
 local bg_width = spacing + total_width + spacing + 10
 local bg_height = height + 2
 
- function PurchasePackScreen:_CreateSpinnerFilter( name, text, spinnerOptions )
+
+function PurchasePackScreen:_CreateSpinnerFilter( name, text, spinnerOptions )
 
     local group = TEMPLATES.LabelSpinner(text, spinnerOptions, label_width, widget_width, height, spacing, CHATFONT, 20)
     self.side_panel:AddChild(group)
@@ -639,6 +758,19 @@ local bg_height = height + 2
     return group
 end
 
+local function build_type_options(initial_item_key)
+    local type_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ITEMS, data = "ITEMS" }  }
+    for _,character in pairs(DST_CHARACTERLIST) do
+        table.insert( type_options, { text = STRINGS.NAMES[string.upper(character)], data = character } )
+    end
+
+    if initial_item_key ~= nil and not itemKeyIsCharacter(initial_item_key) then
+        table.insert(type_options, 1, { text = GetSkinName(initial_item_key), data = initial_item_key });
+    end
+
+    return type_options
+end
+
 function PurchasePackScreen:_BuildPurchasePanel()
     local purchase_ss = self.root:AddChild(Widget("purchase_ss"))
 
@@ -647,10 +779,7 @@ function PurchasePackScreen:_BuildPurchasePanel()
         local iap_defs = self:GetIAPDefs(true)
 
         if #iap_defs == 0 then
-            local msg = STRINGS.UI.PURCHASEPACKSCREEN.NO_PACKS_FOR_SALE
-            if IsAnyFestivalEventActive() then
-                msg = STRINGS.UI.PURCHASEPACKSCREEN.FAILED_TO_LOAD
-            end
+            local msg = STRINGS.UI.PURCHASEPACKSCREEN.FAILED_TO_LOAD
             local dialog = purchase_ss:AddChild(TEMPLATES.CurlyWindow(400, 200, "", nil, nil, msg))
             purchase_ss.focus_forward = dialog
         else
@@ -709,14 +838,13 @@ function PurchasePackScreen:_BuildPurchasePanel()
             local owned_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_UNOWNED, data = "UNOWNED" } }
             self.filters[FILTER_OWNED_INDEX] = self:_CreateSpinnerFilter( "OWNED", STRINGS.UI.PURCHASEPACKSCREEN.OWNED_FILTER, owned_options )
             
-            local type_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ITEMS, data = "ITEMS" }  }
-            for _,character in pairs(DST_CHARACTERLIST) do
-                table.insert( type_options, { text = STRINGS.NAMES[string.upper(character)], data = character } )
-            end
-            if self.initial_item_key ~= nil then
-                table.insert(type_options, 1, { text = GetSkinName(self.initial_item_key), data = self.initial_item_key });
-            end
+            local type_options = build_type_options( self.initial_item_key )
             self.filters[FILTER_TYPE_INDEX] = self:_CreateSpinnerFilter( "TYPE", STRINGS.UI.PURCHASEPACKSCREEN.TYPE_FILTER, type_options )
+
+            if IsNotConsole() then
+                local discount_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_SALE, data = "SALE" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_BUNDLE, data = "BUNDLE" } }
+                self.filters[FILTER_DISCOUNT_INDEX] = self:_CreateSpinnerFilter( "DISCOUNT", STRINGS.UI.PURCHASEPACKSCREEN.DISCOUNT_FILTER, discount_options )
+            end
 
             for i,spinner in pairs(self.filters) do
                 spinner:SetPosition( 0, i * -(height + spacing) )
@@ -735,6 +863,8 @@ function PurchasePackScreen:_BuildPurchasePanel()
             purchase_ss:SetFocusChangeDir(MOVE_LEFT, self.side_panel)
             self.side_panel:SetFocusChangeDir(MOVE_RIGHT, purchase_ss)
 
+            self.empty_txt = purchase_ss.scroll_window:AddChild(Text(CHATFONT, 26, STRINGS.UI.PURCHASEPACKSCREEN.EMPTY_AFTER_FILTER))
+            self.empty_txt:Hide()
         end
     else
         local buttons = {
@@ -756,9 +886,25 @@ function PurchasePackScreen:_BuildPurchasePanel()
     return purchase_ss
 end
 
+
+function PurchasePackScreen:UpdateFilterToItem(item_key)
+    self.initial_item_key = item_key
+    
+    local type_options = build_type_options( self.initial_item_key )
+
+    self.filters[FILTER_TYPE_INDEX].spinner:SetOptions(type_options)
+    self.filters[FILTER_TYPE_INDEX].spinner:SetSelected(self.initial_item_key)
+end
+
+
 function PurchasePackScreen:UpdatePurchasePanel()
     if self.purchase_root.scroll_window ~= nil then
         local iap_defs = self:GetIAPDefs()
+        if table.getn(iap_defs) == 0 then
+            self.empty_txt:Show()
+        else
+            self.empty_txt:Hide()
+        end
         self.purchase_root.scroll_window.grid:SetItemsData(iap_defs)
     end
 end
@@ -774,13 +920,19 @@ function PurchasePackScreen:OnBecomeActive()
     self:UpdatePurchasePanel()
 
     self.leaving = nil
+    
+    DisplayInventoryFailedPopup( self )
+end
+
+function PurchasePackScreen:Close()
+    TheFrontEnd:FadeBack()
 end
 
 function PurchasePackScreen:OnControl(control, down)
     if PurchasePackScreen._base.OnControl(self, control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
-        TheFrontEnd:FadeBack()
+        self:Close()
         return true
     end
 end
@@ -794,6 +946,13 @@ end
 
 
 function PurchasePackScreen:OnUpdate(dt)
+    self.update_timer = self.update_timer + dt
+    if self.update_timer > 1.0 then
+        self.update_timer = 0
+		if self.purchase_root.scroll_window then
+			self.purchase_root.scroll_window.grid:RefreshView()
+		end
+    end
 end
 
 

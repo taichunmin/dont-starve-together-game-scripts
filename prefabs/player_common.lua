@@ -310,6 +310,11 @@ local function OnDropItem(inst)
     inst.SoundEmitter:PlaySound("dontstarve/common/dropGeneric")
 end
 
+local function OnBurntHands(inst)
+    --Others can hear this
+    inst.SoundEmitter:PlaySound("dontstarve/common/fireOut")
+end
+
 --------------------------------------------------------------------------
 --Action events
 --------------------------------------------------------------------------
@@ -649,11 +654,13 @@ local function OnRemoveEntity(inst)
         if TheWorld.ismastersim then
             inst.player_classified:Remove()
             inst.player_classified = nil
-            if inst.ghostenabled then
-                inst.Network:RemoveUserFlag(USERFLAGS.IS_GHOST)
-            end
-            inst.Network:RemoveUserFlag(USERFLAGS.CHARACTER_STATE_1)
-            inst.Network:RemoveUserFlag(USERFLAGS.CHARACTER_STATE_2)
+            --No bit ops support, but in this case, + results in same as |
+            inst.Network:RemoveUserFlag(
+                USERFLAGS.CHARACTER_STATE_1 +
+                USERFLAGS.CHARACTER_STATE_2 +
+                USERFLAGS.CHARACTER_STATE_3 +
+                (inst.ghostenabled and USERFLAGS.IS_GHOST or 0)
+            )
         else
             inst.player_classified._parent = nil
             inst:RemoveEventCallback("onremove", inst.ondetachclassified, inst.player_classified)
@@ -1312,7 +1319,9 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst.Transform:SetFourFaced()
 
         inst.AnimState:SetBank("wilson")
-        inst.AnimState:SetBuild(name) --do we still need to do this or can we assume that the skinner will be setting the appropriate build?
+        --We don't need to set the build because we'll rely on the skinner component to set the appropriate build/skin
+        --V2C: turns out we do need to set the build for debug spawn
+        inst.AnimState:SetBuild(name)
         inst.AnimState:PlayAnimation("idle")
 
         inst.AnimState:Hide("ARM_carry")
@@ -1457,11 +1466,13 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst:RemoveTag("_sheltered")
         inst:RemoveTag("_rider")
 
-        if inst.ghostenabled then
-            inst.Network:RemoveUserFlag(USERFLAGS.IS_GHOST)
-        end
-        inst.Network:RemoveUserFlag(USERFLAGS.CHARACTER_STATE_1)
-        inst.Network:RemoveUserFlag(USERFLAGS.CHARACTER_STATE_2)
+        --No bit ops support, but in this case, + results in same as |
+        inst.Network:RemoveUserFlag(
+            USERFLAGS.CHARACTER_STATE_1 +
+            USERFLAGS.CHARACTER_STATE_2 +
+            USERFLAGS.CHARACTER_STATE_3 +
+            (inst.ghostenabled and USERFLAGS.IS_GHOST or 0)
+        )
 
         inst.player_classified = SpawnPrefab("player_classified")
         inst.player_classified.entity:SetParent(inst.entity)
@@ -1668,6 +1679,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
 
         inst:ListenForEvent("startfiredamage", OnStartFireDamage)
         inst:ListenForEvent("stopfiredamage", OnStopFireDamage)
+        inst:ListenForEvent("burnt", OnBurntHands)
 
         TheWorld:PushEvent("ms_playerspawn", inst)
 

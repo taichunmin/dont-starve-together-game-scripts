@@ -8,6 +8,13 @@ local function DoTalkSound(inst)
     end
 end
 
+local function StopTalkSound(inst, instant)
+    if not instant and inst.endghosttalksound ~= nil and inst.SoundEmitter:PlayingSound("talk") then
+        inst.SoundEmitter:PlaySound(inst.endghosttalksound)
+    end
+    inst.SoundEmitter:KillSound("talk")
+end
+
 local actionhandlers =
 {
     ActionHandler(ACTIONS.HAUNT, "haunt_pre"),
@@ -328,9 +335,7 @@ local states =
             end),
         },
 
-        onexit = function(inst)
-            inst.SoundEmitter:KillSound("talk")
-        end,
+        onexit = StopTalkSound,
     },
 
     State
@@ -357,9 +362,7 @@ local states =
             end),
         },
 
-        onexit = function(inst)
-            inst.SoundEmitter:KillSound("talk")
-        end,
+        onexit = StopTalkSound,
     },
 
     State{

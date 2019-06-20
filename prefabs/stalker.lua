@@ -1414,8 +1414,6 @@ local function atrium_fn()
         return inst
     end
 
-    inst.components.inspectable.nameoverride = "stalker"
-
     inst.components.lootdropper:SetLootSetupFn(AtriumLootFn)
 
     inst:AddComponent("commander")

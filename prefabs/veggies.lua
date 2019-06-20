@@ -62,8 +62,21 @@ local assets_seeds =
     Asset("ANIM", "anim/seeds.zip"),
 }
 
-local function MakeVeggie(name, has_seeds)
+local prefabs_seeds =
+{
+    "plant_normal_ground",
+    "seeds_placer",
+}
 
+local function OnDeploy(inst, pt)--, deployer, rot)
+    local plant = SpawnPrefab("plant_normal_ground")
+    plant.components.crop:StartGrowing(inst.components.plantable.product, inst.components.plantable.growtime)
+    plant.Transform:SetPosition(pt.x, 0, pt.z)
+    plant.SoundEmitter:PlaySound("dontstarve/wilson/plant_seeds")
+    inst:Remove()
+end
+
+local function MakeVeggie(name, has_seeds)
     local assets =
     {
         Asset("ANIM", "anim/"..name..".zip"),
@@ -73,13 +86,12 @@ local function MakeVeggie(name, has_seeds)
     {
         Asset("ANIM", "anim/"..name..".zip"),
     }
-    
+
     local prefabs =
     {
         name.."_cooked",
         "spoiled_food",
     }
-    
     if has_seeds then
         table.insert(prefabs, name.."_seeds")
     end
@@ -97,8 +109,12 @@ local function MakeVeggie(name, has_seeds)
         inst.AnimState:SetBuild("seeds")
         inst.AnimState:SetRayTestOnBB(true)
 
+        inst:AddTag("deployedplant")
+
         --cookable (from cookable component) added to pristine state for optimization
         inst:AddTag("cookable")
+
+        inst.overridedeployplacername = "seeds_placer"
 
         inst.entity:SetPristine()
 
@@ -132,6 +148,11 @@ local function MakeVeggie(name, has_seeds)
         inst:AddComponent("plantable")
         inst.components.plantable.growtime = TUNING.SEEDS_GROW_TIME
         inst.components.plantable.product = name
+
+        inst:AddComponent("deployable")
+        inst.components.deployable:SetDeployMode(DEPLOYMODE.PLANT)
+        inst.components.deployable.restrictedtag = "plantkin"
+        inst.components.deployable.ondeploy = OnDeploy
 
         MakeHauntableLaunchAndPerish(inst)
 
@@ -266,7 +287,7 @@ local function MakeVeggie(name, has_seeds)
 
     local base = Prefab(name, fn, assets, prefabs)
     local cooked = Prefab(name.."_cooked", fn_cooked, assets_cooked)
-    local seeds = has_seeds and Prefab(name.."_seeds", fn_seeds, assets_seeds) or nil
+    local seeds = has_seeds and Prefab(name.."_seeds", fn_seeds, assets_seeds, prefabs_seeds) or nil
 
     return base, cooked, seeds
 end

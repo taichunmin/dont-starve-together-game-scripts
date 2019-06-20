@@ -132,7 +132,7 @@ local function onpickup(inst, picker)
             item.components.inventoryitem.ondropfn(item)
         end
         if inst.lootaggro[i] and item.components.combat ~= nil and picker ~= nil then
-            if not (item:HasTag("spider") and (picker:HasTag("spiderwhisperer") or picker:HasTag("monster"))) then
+            if not (item:HasTag("spider") and (picker:HasTag("spiderwhisperer") or picker:HasTag("spiderdisguise") or (picker:HasTag("monster") and not picker:HasTag("player")))) then
                 item.components.combat:SuggestTarget(picker)
             end
         end

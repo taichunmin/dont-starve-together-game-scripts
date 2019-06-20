@@ -5,7 +5,7 @@ local assets =
     Asset("ANIM", "anim/cactus_flower.zip"),
 }
 
-local prefabs = 
+local prefabs =
 {
     "cactus_meat",
     "cactus_flower",
@@ -17,28 +17,28 @@ end
 
 local function onpickedfn(inst, picker)
     inst.Physics:SetActive(false)
-    if inst.has_flower then
-        inst.AnimState:PlayAnimation("picked_flower") 
-    else
-        inst.AnimState:PlayAnimation("picked") 
-    end
+    inst.AnimState:PlayAnimation(inst.has_flower and "picked_flower" or "picked")
     inst.AnimState:PushAnimation("empty", true)
-    if picker.components.combat then
-        picker.components.combat:GetAttacked(inst, TUNING.CACTUS_DAMAGE)
-        picker:PushEvent("thorns")
-    end
 
-    if inst.has_flower then -- You get a cactus flower, yay.
-        if picker ~= nil and picker.components.inventory ~= nil then
+    if picker ~= nil then
+        if picker.components.combat ~= nil and not (picker.components.inventory ~= nil and picker.components.inventory:EquipHasTag("bramble_resistant")) then
+            picker.components.combat:GetAttacked(inst, TUNING.CACTUS_DAMAGE)
+            picker:PushEvent("thorns")
+        end
+
+        if inst.has_flower then
+            -- You get a cactus flower, yay.
             local loot = SpawnPrefab("cactus_flower")
-            if loot ~= nil then
-                if loot.components.inventoryitem ~= nil then
-                    loot.components.inventoryitem:InheritMoisture(TheWorld.state.wetness, TheWorld.state.iswet)
-                end
+            loot.components.inventoryitem:InheritMoisture(TheWorld.state.wetness, TheWorld.state.iswet)
+            if picker.components.inventory ~= nil then
                 picker.components.inventory:GiveItem(loot, nil, inst:GetPosition())
+            else
+                local x, y, z = inst.Transform:GetWorldPosition()
+                loot.components.inventoryitem:DoDropPhysics(x, y, z, true)
             end
         end
     end
+
     inst.has_flower = false
 end
 
@@ -62,75 +62,67 @@ local function makeemptyfn(inst)
 end
 
 local function OnEntityWake(inst)
-    if TheWorld.state.issummer  then
-        if inst.components.pickable and inst.components.pickable.canbepicked then
-            inst.AnimState:PlayAnimation("idle_flower", true)
-            inst.has_flower = true
-        else
-            inst.AnimState:PlayAnimation("empty", true)
-            inst.has_flower = false
-        end
+    if inst.components.pickable ~= nil and inst.components.pickable.canbepicked then
+        inst.has_flower = TheWorld.state.issummer
+        inst.AnimState:PlayAnimation(inst.has_flower and "idle_flower" or "idle", true)
     else
-        if inst.components.pickable and inst.components.pickable.canbepicked then
-            inst.AnimState:PlayAnimation("idle", true)
-        else
-            inst.AnimState:PlayAnimation("empty", true)
-        end
+        inst.AnimState:PlayAnimation("empty", true)
         inst.has_flower = false
     end
 end
 
 local function MakeCactus(name)
-	local function cactusfn()
-		local inst = CreateEntity()
+    local function cactusfn()
+        local inst = CreateEntity()
 
-		inst.entity:AddTransform()
-		inst.entity:AddAnimState()
-		inst.entity:AddMiniMapEntity()
-		inst.entity:AddNetwork()
+        inst.entity:AddTransform()
+        inst.entity:AddAnimState()
+        inst.entity:AddMiniMapEntity()
+        inst.entity:AddNetwork()
 
-		inst.MiniMapEntity:SetIcon(name..".png")
+        inst.MiniMapEntity:SetIcon(name..".png")
 
-		inst.AnimState:SetBuild(name)
-		inst.AnimState:SetBank(name)
-		inst.AnimState:PlayAnimation("idle", true)
+        inst.AnimState:SetBuild(name)
+        inst.AnimState:SetBank(name)
+        inst.AnimState:PlayAnimation("idle", true)
 
-		inst:AddTag("thorny")
+        inst:AddTag("plant")
+        inst:AddTag("thorny")
 
-		MakeObstaclePhysics(inst, .3)
+        MakeObstaclePhysics(inst, .3)
 
         inst:SetPrefabNameOverride("cactus")
 
-		inst.entity:SetPristine()
+        inst.entity:SetPristine()
 
-		if not TheWorld.ismastersim then
-			return inst
-		end
+        if not TheWorld.ismastersim then
+            return inst
+        end
 
-		inst.AnimState:SetTime(math.random()*2)
+        inst.AnimState:SetTime(math.random() * 2)
 
-		inst:AddComponent("pickable")
-		inst.components.pickable.picksound = "dontstarve/wilson/harvest_sticks"
+        inst:AddComponent("pickable")
+        inst.components.pickable.picksound = "dontstarve/wilson/harvest_sticks"
 
-		inst.components.pickable:SetUp("cactus_meat", TUNING.CACTUS_REGROW_TIME)
-		inst.components.pickable.onregenfn = onregenfn
-		inst.components.pickable.onpickedfn = onpickedfn
-		inst.components.pickable.makeemptyfn = makeemptyfn
-		inst.components.pickable.ontransplantfn = ontransplantfn
+        inst.components.pickable:SetUp("cactus_meat", TUNING.CACTUS_REGROW_TIME)
+        inst.components.pickable.onregenfn = onregenfn
+        inst.components.pickable.onpickedfn = onpickedfn
+        inst.components.pickable.makeemptyfn = makeemptyfn
+        inst.components.pickable.ontransplantfn = ontransplantfn
 
-		inst:AddComponent("inspectable")
+        inst:AddComponent("inspectable")
 
-		MakeLargeBurnable(inst)
-		MakeMediumPropagator(inst)
+        MakeLargeBurnable(inst)
+        MakeMediumPropagator(inst)
 
-		inst.OnEntityWake = OnEntityWake
+        inst.OnEntityWake = OnEntityWake
 
-		MakeHauntableIgnite(inst)
+        MakeHauntableIgnite(inst)
 
-		return inst
-	end
-	
-	return Prefab(name, cactusfn, assets, prefabs)
+        return inst
+    end
+
+    return Prefab(name, cactusfn, assets, prefabs)
 end
 
 local function cactusflowerfn()

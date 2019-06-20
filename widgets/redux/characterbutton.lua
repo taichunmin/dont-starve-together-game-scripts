@@ -4,6 +4,7 @@ local ImageButton = require "widgets/imagebutton"
 require("characterutil")
 
 local DEFAULT_AVATAR = "avatar_unknown.tex"
+local LOCKED_GREY = {0.5, 0.5, 0.5, 1}
 
 -- Like a PlayerBadge, but outside of game (no associated player) and clickable.
 local CharacterButton = Class(ImageButton, function(self, character, cbPortraitFocused, cbPortraitClicked)
@@ -28,6 +29,11 @@ local CharacterButton = Class(ImageButton, function(self, character, cbPortraitF
 
     -- Put the face in front of the button.
     self.face = self:AddChild(Image())
+    
+    self.lock_img = self:AddChild(Image("images/frontend_redux.xml", "accountitem_frame_lock.tex"))
+    self.lock_img:SetScale(.15,.15)
+    self.lock_img:SetPosition(-20,-20)
+
     self:SetCharacter(self.herocharacter)
 end)
 
@@ -35,6 +41,20 @@ function CharacterButton:SetCharacter(hero)
     self.herocharacter = hero
     local atlas, texture = GetCharacterAvatarTextureLocation(hero)
     self.face:SetTexture(atlas, texture, DEFAULT_AVATAR)
+
+    if IsCharacterOwned(hero) then
+        self.image:SetTint(unpack(WHITE))
+        self.face:SetTint(unpack(WHITE))
+        self.lock_img:Hide()
+    else
+        self.image:SetTint(unpack(LOCKED_GREY))
+        self.face:SetTint(unpack(LOCKED_GREY))
+        self.lock_img:Show()
+    end
+end
+
+function CharacterButton:RefreshInventory()
+    self:SetCharacter(self.herocharacter)
 end
 
 return CharacterButton

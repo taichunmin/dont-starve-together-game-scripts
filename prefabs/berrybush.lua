@@ -297,6 +297,7 @@ local function createbush(name, inspectname, berryname, master_postinit)
         MakeSmallObstaclePhysics(inst, .1)
 
         inst:AddTag("bush")
+        inst:AddTag("plant")
         inst:AddTag("renewable")
 
         --witherable (from witherable component) added to pristine state for optimization

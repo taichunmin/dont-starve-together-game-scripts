@@ -7,7 +7,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_alchemyengine =
@@ -15,7 +15,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_arcane =
@@ -23,7 +23,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_backpack =
@@ -31,7 +31,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_battle =
@@ -39,7 +39,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	emoji_beefalo =
@@ -47,7 +47,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_beehive =
@@ -55,7 +55,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_berry_bush =
@@ -63,7 +63,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_carrot =
@@ -71,7 +71,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_chest =
@@ -79,7 +79,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_chester =
@@ -87,7 +87,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_crockpot =
@@ -95,7 +95,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_egg =
@@ -103,7 +103,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_eyeball =
@@ -111,7 +111,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_eyeplant =
@@ -119,7 +119,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_faketeeth =
@@ -127,7 +127,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_farm =
@@ -135,7 +135,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_fire =
@@ -143,7 +143,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_firepit =
@@ -151,7 +151,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_flex =
@@ -159,7 +159,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	emoji_ghost =
@@ -167,7 +167,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_gold =
@@ -175,7 +175,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	emoji_grave =
@@ -183,7 +183,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_hambat =
@@ -191,7 +191,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_hammer =
@@ -199,7 +199,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_heart =
@@ -207,7 +207,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_horn =
@@ -215,7 +215,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_hunger =
@@ -223,7 +223,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_lightbulb =
@@ -231,7 +231,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_meat_big =
@@ -239,7 +239,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_pig =
@@ -247,7 +247,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_poop =
@@ -255,7 +255,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_redgem =
@@ -263,7 +263,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_refine =
@@ -271,7 +271,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_salt =
@@ -279,7 +279,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_sanity =
@@ -287,7 +287,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_sciencemachine =
@@ -295,7 +295,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_shadowmanipulator =
@@ -303,7 +303,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_shovel =
@@ -311,7 +311,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_skull =
@@ -319,7 +319,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_thumbsup =
@@ -327,7 +327,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_tophat =
@@ -335,7 +335,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_torch =
@@ -343,7 +343,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VARG", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	emoji_trap =
@@ -351,7 +351,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_trophy =
@@ -359,7 +359,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_wave =
@@ -367,7 +367,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	emoji_web =
@@ -375,7 +375,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "LAVA", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	emoji_wormhole =
@@ -383,7 +383,7 @@ MISC_ITEMS =
 		type = "emoji",
 		skin_tags = { "VICTORIAN", "EMOJI", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_bearger_yule =
@@ -391,7 +391,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "WINTER", "LOADING", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	loading_critters =
@@ -399,7 +399,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VARG", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	loading_deerclops_yule =
@@ -407,7 +407,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "WINTER", "LOADING", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	loading_dragonfly_yule =
@@ -415,7 +415,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "WINTER", "LOADING", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	loading_goats_victorian =
@@ -423,7 +423,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_goosemoose_yule =
@@ -431,7 +431,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "WINTER", "LOADING", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	loading_magma =
@@ -439,7 +439,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	loading_magma2 =
@@ -447,7 +447,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	loading_maxwell =
@@ -455,7 +455,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_merm =
@@ -463,7 +463,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_pig_elite =
@@ -471,7 +471,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "YOTP", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	loading_pigking =
@@ -479,7 +479,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_webber =
@@ -487,7 +487,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_webber_feast =
@@ -495,7 +495,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "ICE", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	loading_wendy =
@@ -503,7 +503,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_wendy_creepy =
@@ -511,7 +511,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "HALLOWED", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	loading_wendy_victorian =
@@ -519,7 +519,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_wes_victorian =
@@ -527,7 +527,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_wickerbottom =
@@ -535,7 +535,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_wickerbottom_victorian =
@@ -543,7 +543,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_wigfrid =
@@ -551,7 +551,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_willow_bats =
@@ -559,7 +559,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "HALLOWED", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	loading_willow_victorian =
@@ -567,7 +567,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_willowfire =
@@ -575,7 +575,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_wilson_feast =
@@ -583,7 +583,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "ICE", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	loading_wilson_madscience =
@@ -591,7 +591,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "HALLOWED", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	loading_winona_victorian =
@@ -599,7 +599,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_wolfgang =
@@ -607,7 +607,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	loading_wolfgang_feast =
@@ -615,7 +615,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "ICE", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	loading_woodie_victorian =
@@ -623,7 +623,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "VICTORIAN", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	loading_wx_magma =
@@ -631,7 +631,7 @@ MISC_ITEMS =
 		type = "loading",
 		skin_tags = { "LAVA", "LOADING", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	mysterybox_classic_4 =
@@ -640,7 +640,7 @@ MISC_ITEMS =
 		skin_tags = { "MYSTERYBOX", },
 		box_build = "box_mystery_classic",
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 50,
 	},
 	mysterybox_ice_4 =
@@ -649,7 +649,7 @@ MISC_ITEMS =
 		skin_tags = { "MYSTERYBOX", },
 		box_build = "box_mystery_ice",
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 55,
 	},
 	mysterybox_lava_4 =
@@ -658,7 +658,7 @@ MISC_ITEMS =
 		skin_tags = { "MYSTERYBOX", },
 		box_build = "box_shared",
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 52,
 	},
 	mysterybox_nature_4 =
@@ -667,7 +667,7 @@ MISC_ITEMS =
 		skin_tags = { "MYSTERYBOX", },
 		box_build = "box_mystery_nature",
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 58,
 	},
 	mysterybox_victorian_4 =
@@ -676,8 +676,36 @@ MISC_ITEMS =
 		skin_tags = { "MYSTERYBOX", },
 		box_build = "box_mystery_victorian",
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 45,
+	},
+	pack_character_wormwood =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 3,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_character_wormwood.xml",
+		display_tex = "character_wormwood.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_none", "wormwood_rose", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", },
+		output_items = {  "wormwood_none", "wormwood_rose", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", },
+		release_group = 68,
+	},
+	pack_character_wortox =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 2,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_character_wortox.xml",
+		display_tex = "character_wortox.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wortox_none", "wortox_survivor", "body_wortox_survivor", "hand_wortox_survivor", "legs_wortox_survivor", },
+		output_items = {  "wortox_none", "wortox_survivor", "body_wortox_survivor", "hand_wortox_survivor", "legs_wortox_survivor", },
+		release_group = 63,
 	},
 	pack_factory_items =
 	{
@@ -1009,6 +1037,31 @@ MISC_ITEMS =
 		display_items = {  "wx78_wip", "body_wx78_wip", "hand_wx78_wip", "feet_wx78_wip", },
 		output_items = {  "wx78_wip", "body_wx78_wip", "hand_wx78_wip", "feet_wx78_wip", },
 		release_group = 49,
+	},
+	pack_hamlet_wormwood =
+	{
+		type = "purchase",
+		skin_tags = { },
+		steam_dlc_id = 712640,
+		build_name_override = "pack_hamlet_gift",
+		display_items = {  "wormwood_none", },
+		output_items = {  "wormwood_none", },
+		legacy_popup_category = "HAMLET",
+		release_group = 68,
+	},
+	pack_haunteddoll_items =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 2,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_haunteddoll_items.xml",
+		display_tex = "haunteddoll_items.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "bernie_cat", "lighter_haunteddoll", "umbrella_parasol", },
+		output_items = {  "bernie_cat", "lighter_haunteddoll", "umbrella_parasol", },
+		release_group = 66,
 	},
 	pack_heart_you =
 	{
@@ -1608,6 +1661,85 @@ MISC_ITEMS =
 		output_items = {  "wx78_victorian", "body_wx78_victorian", "hand_wx78_victorian", "legs_wx78_victorian", },
 		release_group = 46,
 	},
+	pack_willow_deluxe =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 1,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_willow_deluxe.xml",
+		display_tex = "willow_deluxe.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_haunteddoll", "willow_formalp", "willow_survivorp", "willow_shadowp", "willow_rosep", },
+		output_items = {  "willow_haunteddoll", "body_willow_haunteddoll", "feet_willow_haunteddoll", "hand_willow_haunteddoll", "willow_formalp", "body_willow_formalp", "feet_formal_stilettop_black_scribble", "willow_survivorp", "body_willow_survivorp", "willow_shadowp", "body_willow_shadowp", "willow_rosep", "body_willow_rosep", },
+		release_group = 66,
+	},
+	pack_willow_formal =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 102,
+		build_name_override = "willow_formal",
+		display_atlas = "bigportraits/willow_formal.xml",
+		display_tex = "willow_formal_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_formalp", "body_willow_formalp", "feet_formal_stilettop_black_scribble", },
+		output_items = {  "willow_formalp", "body_willow_formalp", "feet_formal_stilettop_black_scribble", },
+		release_group = 66,
+	},
+	pack_willow_haunteddoll =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 102,
+		build_name_override = "willow_haunteddoll",
+		display_atlas = "bigportraits/willow_haunteddoll.xml",
+		display_tex = "willow_haunteddoll_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_haunteddoll", "body_willow_haunteddoll", "feet_willow_haunteddoll", "hand_willow_haunteddoll", },
+		output_items = {  "willow_haunteddoll", "body_willow_haunteddoll", "feet_willow_haunteddoll", "hand_willow_haunteddoll", },
+		release_group = 66,
+	},
+	pack_willow_rose =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 102,
+		build_name_override = "willow_rose",
+		display_atlas = "bigportraits/willow_rose.xml",
+		display_tex = "willow_rose_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_rosep", "body_willow_rosep", },
+		output_items = {  "willow_rosep", "body_willow_rosep", },
+		release_group = 66,
+	},
+	pack_willow_shadow =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 102,
+		build_name_override = "willow_shadow",
+		display_atlas = "bigportraits/willow_shadow.xml",
+		display_tex = "willow_shadow_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_shadowp", "body_willow_shadowp", },
+		output_items = {  "willow_shadowp", "body_willow_shadowp", },
+		release_group = 66,
+	},
+	pack_willow_survivor =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 102,
+		build_name_override = "willow_survivor",
+		display_atlas = "bigportraits/willow_survivor.xml",
+		display_tex = "willow_survivor_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "willow_survivorp", "body_willow_survivorp", },
+		output_items = {  "willow_survivorp", "body_willow_survivorp", },
+		release_group = 66,
+	},
 	pack_winona_deluxe =
 	{
 		type = "purchase",
@@ -1686,6 +1818,115 @@ MISC_ITEMS =
 		output_items = {  "winona_survivorp", "body_winona_survivorp", },
 		release_group = 61,
 	},
+	pack_wormwood_cactus =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 4,
+		build_name_override = "wormwood_cactus",
+		display_atlas = "bigportraits/wormwood_cactus.xml",
+		display_tex = "wormwood_cactus_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_cactus", "body_wormwood_cactus", "hand_wormwood_cactus", "legs_wormwood_cactus", },
+		output_items = {  "wormwood_cactus", "body_wormwood_cactus", "hand_wormwood_cactus", "legs_wormwood_cactus", },
+		release_group = 68,
+	},
+	pack_wormwood_deluxe =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		steam_dlc_id = 1084430,
+		display_order = 1,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_wormwood_deluxe.xml",
+		display_tex = "wormwood_deluxe.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_none", "wormwood_rose", "wormwood_cactus", "wormwood_mushroom", },
+		output_items = {  "wormwood_none", "wormwood_rose", "wormwood_cactus", "wormwood_mushroom", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", "body_wormwood_cactus", "hand_wormwood_cactus", "legs_wormwood_cactus", "body_wormwood_mushroom", "hand_wormwood_mushroom", "legs_wormwood_mushroom", },
+		release_group = 68,
+	},
+	pack_wormwood_deluxealt =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 2,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_wormwood_deluxealt.xml",
+		display_tex = "wormwood_deluxealt.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_rose", "wormwood_cactus", "wormwood_mushroom", },
+		output_items = {  "wormwood_rose", "wormwood_cactus", "wormwood_mushroom", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", "body_wormwood_cactus", "hand_wormwood_cactus", "legs_wormwood_cactus", "body_wormwood_mushroom", "hand_wormwood_mushroom", "legs_wormwood_mushroom", },
+		release_group = 68,
+	},
+	pack_wormwood_mushroom =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 5,
+		build_name_override = "wormwood_mushroom",
+		display_atlas = "bigportraits/wormwood_mushroom.xml",
+		display_tex = "wormwood_mushroom_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_mushroom", "body_wormwood_mushroom", "hand_wormwood_mushroom", "legs_wormwood_mushroom", },
+		output_items = {  "wormwood_mushroom", "body_wormwood_mushroom", "hand_wormwood_mushroom", "legs_wormwood_mushroom", },
+		release_group = 68,
+	},
+	pack_wormwood_rose =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 6,
+		build_name_override = "wormwood_rose",
+		display_atlas = "bigportraits/wormwood_rose.xml",
+		display_tex = "wormwood_rose_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wormwood_rose", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", },
+		output_items = {  "wormwood_rose", "body_wormwood_rose", "hand_wormwood_rose", "legs_wormwood_rose", },
+		release_group = 68,
+	},
+	pack_wortox_deluxe =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		steam_dlc_id = 1051700,
+		display_order = 1,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_wortox_deluxe.xml",
+		display_tex = "wortox_deluxe.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wortox_none", "wortox_survivor", "wortox_original", "wortox_minotaur", },
+		output_items = {  "wortox_none", "wortox_survivor", "body_wortox_survivor", "hand_wortox_survivor", "legs_wortox_survivor", "wortox_minotaur", "body_wortox_minotaur", "hand_wortox_minotaur", "legs_wortox_minotaur", "wortox_original", "body_wortox_original", "hand_wortox_original", "legs_wortox_original", },
+		release_group = 63,
+	},
+	pack_wortox_minotaur =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 3,
+		build_name_override = "wortox_minotaur",
+		display_atlas = "bigportraits/wortox_minotaur.xml",
+		display_tex = "wortox_minotaur_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wortox_minotaur", "body_wortox_minotaur", "hand_wortox_minotaur", "legs_wortox_minotaur", },
+		output_items = {  "wortox_minotaur", "body_wortox_minotaur", "hand_wortox_minotaur", "legs_wortox_minotaur", },
+		release_group = 63,
+	},
+	pack_wortox_original =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 4,
+		build_name_override = "wortox_original",
+		display_atlas = "bigportraits/wortox_original.xml",
+		display_tex = "wortox_original_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "wortox_original", "body_wortox_original", "hand_wortox_original", "legs_wortox_original", },
+		output_items = {  "wortox_original", "body_wortox_original", "hand_wortox_original", "legs_wortox_original", },
+		release_group = 63,
+	},
 	pack_wrestler_promo1 =
 	{
 		type = "purchase",
@@ -1746,7 +1987,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_arrowsignpostcircus =
@@ -1761,7 +2002,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_birchnut =
@@ -1769,7 +2010,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_birdcagecircus =
@@ -1784,7 +2025,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	playerportrait_bg_boarlord =
@@ -1792,7 +2033,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	playerportrait_bg_brokenclock =
@@ -1800,7 +2041,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_camp =
@@ -1808,7 +2049,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_car =
@@ -1816,7 +2057,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_cardinals =
@@ -1824,7 +2065,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_cottontree =
@@ -1832,7 +2073,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_deciduousforest =
@@ -1840,7 +2081,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_elementals =
@@ -1848,15 +2089,15 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	playerportrait_bg_factory =
 	{
 		type = "playerportrait",
-		skin_tags = { "PLAYERPORTRAIT", },
+		skin_tags = { "NEXTKIN", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 60,
 	},
 	playerportrait_bg_fancyarch =
@@ -1864,7 +2105,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_featherhatcircus =
@@ -1879,7 +2120,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_fencepattern =
@@ -1887,7 +2128,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_firesuppressorcircus =
@@ -1916,7 +2157,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_forestfire =
@@ -1924,7 +2165,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_garden =
@@ -1932,7 +2173,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_gnaw =
@@ -1940,7 +2181,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_grasslands =
@@ -1948,7 +2189,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_gravestones =
@@ -1956,7 +2197,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_graveyard =
@@ -1964,7 +2205,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_graveyard2 =
@@ -1972,7 +2213,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HALLOWED", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	playerportrait_bg_hallowedornaments =
@@ -1980,7 +2221,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HALLOWED", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	playerportrait_bg_heart1 =
@@ -1988,7 +2229,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HEART", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 39,
 	},
 	playerportrait_bg_heart2 =
@@ -1996,15 +2237,22 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HEART", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 39,
+	},
+	playerportrait_bg_heatrockfire =
+	{
+		type = "playerportrait",
+		skin_tags = { "CRYSTAL", "PLAYERPORTRAIT", },
+		rarity = "Loyal",
+		release_group = 65,
 	},
 	playerportrait_bg_lamppost =
 	{
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_lava =
@@ -2012,7 +2260,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_lavaarena =
@@ -2020,7 +2268,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_livingforest =
@@ -2028,7 +2276,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HALLOWED", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	playerportrait_bg_lonecarrot =
@@ -2036,7 +2284,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_lumpyevergreen =
@@ -2044,7 +2292,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_marblestatue =
@@ -2052,7 +2300,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_marshhouse =
@@ -2060,7 +2308,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_messylab =
@@ -2068,7 +2316,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HALLOWED", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	playerportrait_bg_monsterspawn =
@@ -2076,7 +2324,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	playerportrait_bg_mushroom =
@@ -2084,7 +2332,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_oven =
@@ -2092,7 +2340,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_penguins =
@@ -2100,7 +2348,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_pighouse =
@@ -2108,7 +2356,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_plates =
@@ -2116,7 +2364,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_portal =
@@ -2124,7 +2372,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_pothanger =
@@ -2132,7 +2380,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VICTORIAN", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	playerportrait_bg_pumpkinlantern =
@@ -2140,7 +2388,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "HALLOWED", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	playerportrait_bg_quagmiretournamentbronze =
@@ -2176,7 +2424,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_roseportal =
@@ -2184,7 +2432,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_shoreline =
@@ -2192,7 +2440,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_spawngate =
@@ -2200,7 +2448,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	playerportrait_bg_spidermarsh =
@@ -2208,7 +2456,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_spikymarsh =
@@ -2216,7 +2464,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_suspisciousdirtpile =
@@ -2224,7 +2472,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VARG", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	playerportrait_bg_tentcircus =
@@ -2239,7 +2487,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "LAVA", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	playerportrait_bg_toothtraps =
@@ -2247,7 +2495,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "VARG", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	playerportrait_bg_tophatcircus =
@@ -2269,7 +2517,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_winterfire =
@@ -2277,7 +2525,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_winterometercircus =
@@ -2292,7 +2540,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_yotp1 =
@@ -2300,7 +2548,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yotp2 =
@@ -2308,7 +2556,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yotp3 =
@@ -2316,7 +2564,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yotp4 =
@@ -2324,7 +2572,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yotp5 =
@@ -2332,7 +2580,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yotp6 =
@@ -2340,7 +2588,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "YOTP", "PLAYERPORTRAIT", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	playerportrait_bg_yule1 =
@@ -2348,7 +2596,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_yule2 =
@@ -2356,7 +2604,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_yule3 =
@@ -2364,7 +2612,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	playerportrait_bg_yule4 =
@@ -2372,7 +2620,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	playerportrait_bg_yule5 =
@@ -2380,7 +2628,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	playerportrait_bg_yule6 =
@@ -2388,7 +2636,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	playerportrait_bg_yule7 =
@@ -2396,7 +2644,7 @@ MISC_ITEMS =
 		type = "playerportrait",
 		skin_tags = { "WINTER", "PLAYERPORTRAIT", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_abigail_flower =
@@ -2404,7 +2652,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_arrowsignpost_circus =
@@ -2419,7 +2667,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_bat_furled =
@@ -2427,7 +2675,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_bearger_roar =
@@ -2435,7 +2683,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_beefalo =
@@ -2443,7 +2691,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_bernie =
@@ -2451,7 +2699,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_birdcage_circus =
@@ -2466,7 +2714,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_catcoon =
@@ -2474,7 +2722,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_chester =
@@ -2482,7 +2730,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_clayhound =
@@ -2490,7 +2738,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_claywarg =
@@ -2498,7 +2746,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_crow =
@@ -2506,7 +2754,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_cupcake =
@@ -2514,7 +2762,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_deerclops =
@@ -2522,7 +2770,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_dragonfly_sleeping =
@@ -2530,7 +2778,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_dragonfruit =
@@ -2538,15 +2786,15 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_factory =
 	{
 		type = "profileflair",
-		skin_tags = { "PROFILEFLAIR", },
+		skin_tags = { "NEXTKIN", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 60,
 	},
 	profileflair_featherhat_circus =
@@ -2561,7 +2809,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_firesuppressor_circus =
@@ -2576,7 +2824,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_carrotcake =
@@ -2584,7 +2832,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_cheeseburger =
@@ -2592,7 +2840,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_cheesecake =
@@ -2600,7 +2848,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_crabcake =
@@ -2608,7 +2856,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_crabroll =
@@ -2616,7 +2864,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_croquette =
@@ -2624,7 +2872,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_fishpie =
@@ -2632,7 +2880,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_grilledcheese =
@@ -2640,7 +2888,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_jellyroll =
@@ -2648,7 +2896,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_meatpie =
@@ -2656,7 +2904,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_pizza =
@@ -2664,7 +2912,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_potroast =
@@ -2672,7 +2920,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_pudding =
@@ -2680,7 +2928,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_roastedveggies =
@@ -2688,7 +2936,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_spaghettiandmeatballs =
@@ -2696,7 +2944,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_steakfrites =
@@ -2704,7 +2952,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_stuffedmushroom =
@@ -2712,7 +2960,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_trifle =
@@ -2720,7 +2968,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_food_turnipcake =
@@ -2728,7 +2976,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_frog =
@@ -2736,7 +2984,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_gift_1 =
@@ -2744,7 +2992,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_gift_2 =
@@ -2752,7 +3000,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_gift_3 =
@@ -2760,7 +3008,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_goosemoose =
@@ -2768,15 +3016,22 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
+	},
+	profileflair_heatrock_fire =
+	{
+		type = "profileflair",
+		skin_tags = { "CRYSTAL", "PROFILEFLAIR", },
+		rarity = "Loyal",
+		release_group = 65,
 	},
 	profileflair_hound =
 	{
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_icehound =
@@ -2784,7 +3039,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_knight =
@@ -2792,7 +3047,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_koalefant =
@@ -2800,7 +3055,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_krampus =
@@ -2808,7 +3063,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_living_wood =
@@ -2816,7 +3071,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "HALLOWED", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	profileflair_luckygoldnugget_yotp =
@@ -2824,7 +3079,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_mactusk =
@@ -2832,7 +3087,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_mad_science =
@@ -2840,7 +3095,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "HALLOWED", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	profileflair_mandrake =
@@ -2848,7 +3103,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_merm =
@@ -2856,7 +3111,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_mole =
@@ -2864,7 +3119,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_mudpie_yotp =
@@ -2872,7 +3127,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_nightlight =
@@ -2880,7 +3135,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_ornaments_1 =
@@ -2888,7 +3143,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_10 =
@@ -2896,7 +3151,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_11 =
@@ -2904,7 +3159,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_12 =
@@ -2912,7 +3167,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_13 =
@@ -2920,7 +3175,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_14 =
@@ -2928,7 +3183,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_ornaments_15 =
@@ -2936,7 +3191,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_ornaments_16 =
@@ -2944,7 +3199,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_ornaments_2 =
@@ -2952,7 +3207,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_3 =
@@ -2960,7 +3215,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_4 =
@@ -2968,7 +3223,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_5 =
@@ -2976,7 +3231,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_6 =
@@ -2984,7 +3239,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_7 =
@@ -2992,7 +3247,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_8 =
@@ -3000,7 +3255,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_ornaments_9 =
@@ -3008,7 +3263,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Classy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_pengull =
@@ -3016,7 +3271,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_phonograph =
@@ -3024,7 +3279,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_pig_happy =
@@ -3032,7 +3287,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_pigking =
@@ -3040,7 +3295,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_pigking_yotp =
@@ -3048,7 +3303,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_pigtoken_yotp =
@@ -3056,7 +3311,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_potion_sanity =
@@ -3064,7 +3319,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "HALLOWED", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	profileflair_pumpkinlantern =
@@ -3072,7 +3327,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_puppington =
@@ -3080,7 +3335,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_quagmiretournament_bronze =
@@ -3116,7 +3371,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_rainometer_circus =
@@ -3131,7 +3386,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_redlantern_yotp =
@@ -3139,7 +3394,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "YOTP", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 56,
 	},
 	profileflair_rook =
@@ -3147,7 +3402,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_rose =
@@ -3155,7 +3410,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_shadowhand =
@@ -3163,7 +3418,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_shadowmanipulator =
@@ -3171,7 +3426,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_smallbird =
@@ -3179,7 +3434,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_spider =
@@ -3187,7 +3442,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_tallbird_eye =
@@ -3195,7 +3450,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_tent_circus =
@@ -3210,7 +3465,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_battlestandardattack =
@@ -3218,7 +3473,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_battlestandardheal =
@@ -3226,7 +3481,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_beetletaur =
@@ -3234,7 +3489,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_blowdarts =
@@ -3242,7 +3497,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boaraudienceboo =
@@ -3250,7 +3505,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boaraudiencecheer =
@@ -3258,7 +3513,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boaraudienceeat =
@@ -3266,7 +3521,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boarlord =
@@ -3274,7 +3529,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boaron =
@@ -3282,7 +3537,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_boarrior =
@@ -3290,7 +3545,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_bookelemental =
@@ -3298,7 +3553,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_bookfossil =
@@ -3306,7 +3561,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_elementalattack =
@@ -3314,7 +3569,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_elementalrise =
@@ -3322,7 +3577,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_fireballstaff =
@@ -3330,7 +3585,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_gungnir =
@@ -3338,7 +3593,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_hammer =
@@ -3346,7 +3601,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_healingstaff =
@@ -3354,7 +3609,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_lance =
@@ -3362,7 +3617,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_peghook =
@@ -3370,7 +3625,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_rhinodrill =
@@ -3378,7 +3633,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_snapper =
@@ -3386,7 +3641,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_tails =
@@ -3394,7 +3649,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_tailsguard =
@@ -3402,7 +3657,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_theforge_turtillus =
@@ -3410,7 +3665,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 51,
 	},
 	profileflair_tophat_circus =
@@ -3425,7 +3680,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "HALLOWED", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	profileflair_treeguard =
@@ -3433,7 +3688,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_trinket_faketeeth =
@@ -3441,7 +3696,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_trinket_gnome =
@@ -3449,7 +3704,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_trinket_gnomette =
@@ -3457,7 +3712,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_umbrella_circus =
@@ -3472,7 +3727,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VARG", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 40,
 	},
 	profileflair_victorian_boar =
@@ -3480,7 +3735,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_coppercoin =
@@ -3488,7 +3743,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_goatkid =
@@ -3496,7 +3751,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_goatmom =
@@ -3504,7 +3759,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_goldcoin =
@@ -3512,7 +3767,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_merm =
@@ -3520,7 +3775,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_merm2 =
@@ -3528,7 +3783,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_pigeon =
@@ -3536,7 +3791,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_safe =
@@ -3544,7 +3799,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_silvercoin =
@@ -3552,7 +3807,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_victorian_topazcoin =
@@ -3560,7 +3815,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "VICTORIAN", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 43,
 	},
 	profileflair_waffle =
@@ -3568,7 +3823,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_watermelonhat_pumpkin =
@@ -3576,7 +3831,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "HALLOWED", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 49,
 	},
 	profileflair_werepig_howl =
@@ -3584,7 +3839,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_wererabbit =
@@ -3592,7 +3847,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "LAVA", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		release_group = 32,
 	},
 	profileflair_winterometer_circus =
@@ -3607,7 +3862,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_candycane =
@@ -3615,7 +3870,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_chocolatelog =
@@ -3623,7 +3878,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_claus =
@@ -3631,7 +3886,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_deer =
@@ -3639,7 +3894,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Spiffy",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_deerclops =
@@ -3647,7 +3902,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_dragonfly =
@@ -3655,7 +3910,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_dragonflyfire =
@@ -3663,7 +3918,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_eggnog =
@@ -3671,7 +3926,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_fruitcake =
@@ -3679,7 +3934,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_gingerbreadman =
@@ -3687,7 +3942,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_glommer =
@@ -3695,7 +3950,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_goosemoose =
@@ -3703,7 +3958,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Distinguished",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 36,
 	},
 	profileflair_yule_hotchocolate =
@@ -3711,7 +3966,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_puppington =
@@ -3719,7 +3974,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 	profileflair_yule_sugarcookie =
@@ -3727,7 +3982,7 @@ MISC_ITEMS =
 		type = "profileflair",
 		skin_tags = { "WINTER", "PROFILEFLAIR", },
 		rarity = "Common",
-		rarity_modifier = "Seasonal",
+		rarity_modifier = "Woven",
 		release_group = 54,
 	},
 }

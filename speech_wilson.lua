@@ -315,43 +315,44 @@ return {
         MOONROCKIDOL = "I only worship science.",
         CONSTRUCTION_PLANS = "Stuff for science!",
 
-       	ANTLION = 
-		{
-			GENERIC = "It wants something from me.",
-			VERYHAPPY = "I think we're on good terms.",
-			UNHAPPY = "It looks mad.",
-		},
-		ANTLIONTRINKET = "Someone might be interested in this.",
-		SANDSPIKE = "I could've been skewered!",
+        ANTLION =
+        {
+            GENERIC = "It wants something from me.",
+            VERYHAPPY = "I think we're on good terms.",
+            UNHAPPY = "It looks mad.",
+        },
+        ANTLIONTRINKET = "Someone might be interested in this.",
+        SANDSPIKE = "I could've been skewered!",
         SANDBLOCK = "It's so gritty!",
         GLASSSPIKE = "Memories of the time I wasn't skewered.",
         GLASSBLOCK = "That's science for you.",
-		ABIGAIL_FLOWER = 
-		{ 
-			GENERIC ="It's hauntingly beautiful.",
-			LONG = "It hurts my soul to look at that thing.",
-			MEDIUM = "It's giving me the creeps.",
-			SOON = "Something is up with that flower!",
-			HAUNTED_POCKET = "I don't think I should hang on to this.",
-			HAUNTED_GROUND = "I'd die to find out what it does.",
-		},
+        ABIGAIL_FLOWER =
+        {
+            GENERIC ="It's hauntingly beautiful.",
+            LONG = "It hurts my soul to look at that thing.",
+            MEDIUM = "It's giving me the creeps.",
+            SOON = "Something is up with that flower!",
+            HAUNTED_POCKET = "I don't think I should hang on to this.",
+            HAUNTED_GROUND = "I'd die to find out what it does.",
+        },
 
-		BALLOONS_EMPTY = "It looks like clown currency.",
-		BALLOON = "How are they floating?",
+        BALLOONS_EMPTY = "It looks like clown currency.",
+        BALLOON = "How are they floating?",
 
-		BERNIE_INACTIVE =
-		{
-			BROKEN = "It finally fell apart.",
-			GENERIC = "It's all scorched.",
-		},
+        BERNIE_INACTIVE =
+        {
+            BROKEN = "It finally fell apart.",
+            GENERIC = "It's all scorched.",
+        },
 
-		BERNIE_ACTIVE = "That teddy bear is moving around. Interesting.",
-		
-		BOOK_BIRDS = "No point studying when I can just wing it.",
-		BOOK_TENTACLES = "Someone'll get suckered into reading this.",
-		BOOK_GARDENING = "I see no farm in reading that.",
-		BOOK_SLEEP = "Strange, it's just 500 pages of telegraph codes.",
-		BOOK_BRIMSTONE = "The beginning was dull, but got better near the end.",
+        BERNIE_ACTIVE = "That teddy bear is moving around. Interesting.",
+        BERNIE_BIG = "Remind me not to get on Willow's bad side.",
+
+        BOOK_BIRDS = "No point studying when I can just wing it.",
+        BOOK_TENTACLES = "Someone'll get suckered into reading this.",
+        BOOK_GARDENING = "I see no farm in reading that.",
+        BOOK_SLEEP = "Strange, it's just 500 pages of telegraph codes.",
+        BOOK_BRIMSTONE = "The beginning was dull, but got better near the end.",
 
         PLAYER =
         {
@@ -362,107 +363,107 @@ return {
             GHOST = "%s could use a heart.",
             FIRESTARTER = "Burning that wasn't very scientific, %s.",
         },
-		WILSON = 
-		{
-			GENERIC = "Stars and atoms! Are you my doppelganger, %s?",
-			ATTACKER = "Yeesh. Do I always look that creepy?",
-			MURDERER = "Your existence is an affront to the laws of science, %s!",
-			REVIVER = "%s has expertly put our theories into practice.",
-			GHOST = "Better concoct a revival device. Can't leave another man of science floating.",
-			FIRESTARTER = "Burning that wasn't very scientific, %s.",
-		},
-		WOLFGANG = 
-		{
-			GENERIC = "It's good to see you, %s!",
-			ATTACKER = "Let's not start a fight with the strongman...",
-			MURDERER = "Murderer! I can take you!",
-			REVIVER = "%s is just a big teddy bear.",
-			GHOST = "I told you you couldn't deadlift that boulder, %s. The numbers were all wrong.",
-			FIRESTARTER = "You can't actually \"fight\" fire, %s!",
-		},
-		WAXWELL = 
-		{
-			GENERIC = "Decent day to you, %s!",
-			ATTACKER = "Seems you've gone from \"dapper\" to \"slapper\".",
-			MURDERER = "I'll show you Logic and Reason... those're my fists!",
-			REVIVER = "%s is using his powers for good.",
-			GHOST = "Don't look at me like that, %s! I'm working on it!",
-			FIRESTARTER = "%s's just asking to get roasted.",
-		},
-		WX78 = 
-		{
-			GENERIC = "Good day to you, %s!",
-			ATTACKER = "I think we need to tweak your primary directive, %s...",
-			MURDERER = "%s! You've violated the first law!",
-			REVIVER = "I guess %s got that empathy module up and running.",
-			GHOST = "I always thought %s could use a heart. Now I'm certain!",
-			FIRESTARTER = "You look like you're gonna melt, %s. What happened?",
-		},
-		WILLOW = 
-		{
-			GENERIC = "Good day to you, %s!",
-			ATTACKER = "%s is holding that lighter pretty tightly...",
-			MURDERER = "Murderer! Arsonist!",
-			REVIVER = "%s, friend of ghosts.",
-			GHOST = "I bet you're just burning for a heart, %s.",
-			FIRESTARTER = "Again?",
-		},
-		WENDY = 
-		{
-			GENERIC = "Greetings, %s!",
-			ATTACKER = "%s doesn't have any sharp objects, does she?",
-			MURDERER = "Murderer!",
-			REVIVER = "%s treats ghosts like family.",
-			GHOST = "I'm seeing double! I'd better concoct a heart for %s.",
-			FIRESTARTER = "I know you set those flames, %s.",
-		},
-		WOODIE = 
-		{
-			GENERIC = "Greetings, %s!",
-			ATTACKER = "%s has been a bit of a sap lately...",
-			MURDERER = "Murder! Bring me an axe and we'll get in the swing of things!",
-			REVIVER = "%s saved everyone's backbacon.",
-			GHOST = "Does \"universal\" coverage include the void, %s?",
-			BEAVER = "%s's gone on a wood chucking rampage!",
-			BEAVERGHOST = "Will you bea-very mad if I don't revive you, %s?",
-			FIRESTARTER = "Don't burn yourself out, %s.",
-		},
-		WICKERBOTTOM = 
-		{
-			GENERIC = "Good day, %s!",
-			ATTACKER = "I think %s's planning to throw the book at me.",
-			MURDERER = "Here comes my peer review!",
-			REVIVER = "I have deep respect for %s's practical theorems.",
-			GHOST = "This doesn't seem very scientific, does it, %s?",
-			FIRESTARTER = "I'm sure you had a very clever reason for that fire.",
-		},
-		WES = 
-		{
-			GENERIC = "Greetings, %s!",
-			ATTACKER = "%s is silent, but deadly...",
-			MURDERER = "Mime this!",
-			REVIVER = "%s thinks outside the invisible box.",
-			GHOST = "How do you say \"I'll concoct a revival device\" in mime?",
-			FIRESTARTER = "Wait, don't tell me. You lit a fire.",
-		},
-		WEBBER = 
-		{
-			GENERIC = "Good day, %s!",
-			ATTACKER = "I'm gonna roll up a piece of papyrus newspaper, just in case.",
-			MURDERER = "Murderer! I'll squash you, %s!",
-			REVIVER = "%s is playing well with others.",
-			GHOST = "%s is really buggin' me for a heart.",
-			FIRESTARTER = "We need to have a group meeting about fire safety.",
-		},
-		WATHGRITHR = 
-		{
-			GENERIC = "Good day, %s!",
-			ATTACKER = "I'd like to avoid a punch from %s, if possible.",
-			MURDERER = "%s's gone berserk!",
-			REVIVER = "%s has full command of spirits.",
-			GHOST = "Nice try. You're not escaping to Valhalla yet, %s.",
-			FIRESTARTER = "%s is really heating things up today.",
-		},
+        WILSON =
+        {
+            GENERIC = "Stars and atoms! Are you my doppelganger?",
+            ATTACKER = "Yeesh. Do I always look that creepy?",
+            MURDERER = "Your existence is an affront to the laws of science, %s!",
+            REVIVER = "%s has expertly put our theories into practice.",
+            GHOST = "Best concoct a revival device. Can't leave another man of science floating.",
+            FIRESTARTER = "Burning that wasn't very scientific, %s.",
+        },
+        WOLFGANG =
+        {
+            GENERIC = "It's good to see you, %s!",
+            ATTACKER = "Let's not start a fight with the strongman...",
+            MURDERER = "Murderer! I can take you!",
+            REVIVER = "%s is just a big teddy bear.",
+            GHOST = "I told you you couldn't deadlift that boulder. The numbers were all wrong.",
+            FIRESTARTER = "You can't actually \"fight\" fire, %s!",
+        },
+        WAXWELL =
+        {
+            GENERIC = "Decent day to you, %s!",
+            ATTACKER = "Seems you've gone from \"dapper\" to \"slapper\".",
+            MURDERER = "I'll show you Logic and Reason... those're my fists!",
+            REVIVER = "%s is using his powers for good.",
+            GHOST = "Don't look at me like that, %s! I'm working on it!",
+            FIRESTARTER = "%s's just asking to get roasted.",
+        },
+        WX78 =
+        {
+            GENERIC = "Good day to you, %s!",
+            ATTACKER = "I think we need to tweak your primary directive, %s...",
+            MURDERER = "%s! You've violated the first law!",
+            REVIVER = "I guess %s got that empathy module up and running.",
+            GHOST = "I always thought %s could use a heart. Now I'm certain!",
+            FIRESTARTER = "You look like you're gonna melt, %s. What happened?",
+        },
+        WILLOW =
+        {
+            GENERIC = "Good day to you, %s!",
+            ATTACKER = "%s is holding that lighter pretty tightly...",
+            MURDERER = "Murderer! Arsonist!",
+            REVIVER = "%s, friend of ghosts.",
+            GHOST = "I bet you're just burning for a heart, %s.",
+            FIRESTARTER = "Again?",
+        },
+        WENDY =
+        {
+            GENERIC = "Greetings, %s!",
+            ATTACKER = "%s doesn't have any sharp objects, does she?",
+            MURDERER = "Murderer!",
+            REVIVER = "%s treats ghosts like family.",
+            GHOST = "I'm seeing double! I'd better concoct a heart for %s.",
+            FIRESTARTER = "I know you set those flames, %s.",
+        },
+        WOODIE =
+        {
+            GENERIC = "Greetings, %s!",
+            ATTACKER = "%s has been a bit of a sap lately...",
+            MURDERER = "Murderer! Bring me an axe and let's get in the swing of things!",
+            REVIVER = "%s saved everyone's backbacon.",
+            GHOST = "Does \"universal\" coverage include the void, %s?",
+            BEAVER = "%s's gone on a wood chucking rampage!",
+            BEAVERGHOST = "Will you bea-very mad if I don't revive you, %s?",
+            FIRESTARTER = "Don't burn yourself out, %s.",
+        },
+        WICKERBOTTOM =
+        {
+            GENERIC = "Good day, %s!",
+            ATTACKER = "I think %s's planning to throw the book at me.",
+            MURDERER = "Here comes my peer review!",
+            REVIVER = "I have deep respect for %s's practical theorems.",
+            GHOST = "This doesn't seem very scientific, does it, %s?",
+            FIRESTARTER = "I'm sure you had a very clever reason for that fire.",
+        },
+        WES =
+        {
+            GENERIC = "Greetings, %s!",
+            ATTACKER = "%s is silent, but deadly...",
+            MURDERER = "Mime this!",
+            REVIVER = "%s thinks outside the invisible box.",
+            GHOST = "How do you say \"I'll get a revival device\" in mime?",
+            FIRESTARTER = "Wait, don't tell me. You lit a fire.",
+        },
+        WEBBER =
+        {
+            GENERIC = "Good day, %s!",
+            ATTACKER = "I'm gonna roll up a papyrus newspaper, just in case.",
+            MURDERER = "Murderer! I'll squash you, %s!",
+            REVIVER = "%s is playing well with others.",
+            GHOST = "%s is really buggin' me for a heart.",
+            FIRESTARTER = "We need to have a group meeting about fire safety.",
+        },
+        WATHGRITHR =
+        {
+            GENERIC = "Good day, %s!",
+            ATTACKER = "I'd like to avoid a punch from %s, if possible.",
+            MURDERER = "%s's gone berserk!",
+            REVIVER = "%s has full command of spirits.",
+            GHOST = "Nice try. You're not escaping to Valhalla yet, %s.",
+            FIRESTARTER = "%s is really heating things up today.",
+        },
         WINONA =
         {
             GENERIC = "Good day to you, %s!",
@@ -472,26 +473,45 @@ return {
             GHOST = "Looks like someone threw a wrench into your plans.",
             FIRESTARTER = "Things are burning up at the factory.",
         },
-        MIGRATION_PORTAL = 
+        WORTOX =
+        {
+            GENERIC = "Greetings to you, %s!",
+            ATTACKER = "I knew %s couldn't be trusted!",
+            MURDERER = "Time to grab the imp by the horns!",
+            REVIVER = "Thanks for lending a helping claw, %s.",
+            GHOST = "I reject the reality of ghosts and imps.",
+            FIRESTARTER = "%s is becoming a survival liability.",
+        },
+        WORMWOOD =
+        {
+            GENERIC = "Greetings, %s!",
+            ATTACKER = "%s seems pricklier than usual today.",
+            MURDERER = "Prepare to get weed whacked, %s!",
+            REVIVER = "%s never gives up on his friends.",
+            GHOST = "You need some help, lil guy?",
+            FIRESTARTER = "I thought you hated fire, %s.",
+        },
+
+        MIGRATION_PORTAL =
         {
             GENERIC = "If I had any friends, this could take me to them.",
             OPEN = "If I step through, will I still be me?",
             FULL = "It seems to be popular over there.",
         },
-		GLOMMER = "It's cute, in a gross kind of way.",
-		GLOMMERFLOWER = 
-		{
-			GENERIC = "The petals shimmer in the light.",
-			DEAD = "The petals droop and shimmer in the light.",
-		},
-		GLOMMERWINGS = "These would look empirically amazing on a helmet!",
-		GLOMMERFUEL = "This goop smells foul.",
-		BELL = "Dingalingaling.",
-		STATUEGLOMMER = 
-		{	
-			GENERIC = "I'm not sure what that's supposed to be.",
-			EMPTY = "I broke it. For science.",
-		},
+        GLOMMER = "It's cute, in a gross kind of way.",
+        GLOMMERFLOWER =
+        {
+            GENERIC = "The petals shimmer in the light.",
+            DEAD = "The petals droop and shimmer in the light.",
+        },
+        GLOMMERWINGS = "These would look empirically amazing on a helmet!",
+        GLOMMERFUEL = "This goop smells foul.",
+        BELL = "Dingalingaling.",
+        STATUEGLOMMER =
+        {
+            GENERIC = "I'm not sure what that's supposed to be.",
+            EMPTY = "I broke it. For science.",
+        },
 
         LAVA_POND_ROCK = "As gneiss a place as any.",
 
@@ -2427,36 +2447,41 @@ return {
         QUAGMIRE_LAMP_SHORT = "Enlightening.",
 
         --v2 Winona
-        WINONA_CATAPULT = 
+        WINONA_CATAPULT =
         {
-        	GENERIC = "She's made a sort of automatic defense system.",
-        	OFF = "It needs some electricity.",
-        	BURNING = "It's on fire!",
-        	BURNT = "Science couldn't save it.",
+            GENERIC = "She's made a sort of automatic defense system.",
+            OFF = "It needs some electricity.",
+            BURNING = "It's on fire!",
+            BURNT = "Science couldn't save it.",
         },
-        WINONA_SPOTLIGHT = 
+        WINONA_SPOTLIGHT =
         {
-        	GENERIC = "What an ingenious idea!",
-        	OFF = "It needs some electricity.",
-        	BURNING = "It's on fire!",
-        	BURNT = "Science couldn't save it.",
+            GENERIC = "What an ingenious idea!",
+            OFF = "It needs some electricity.",
+            BURNING = "It's on fire!",
+            BURNT = "Science couldn't save it.",
         },
-        WINONA_BATTERY_LOW = 
+        WINONA_BATTERY_LOW =
         {
-        	GENERIC = "Looks science-y. How does it work?",
-        	LOWPOWER = "It's getting low on power.",
-        	OFF = "I could get it working, if Winona's busy.",
-        	BURNING = "It's on fire!",
-        	BURNT = "Science couldn't save it.",
+            GENERIC = "Looks science-y. How does it work?",
+            LOWPOWER = "It's getting low on power.",
+            OFF = "I could get it working, if Winona's busy.",
+            BURNING = "It's on fire!",
+            BURNT = "Science couldn't save it.",
         },
-        WINONA_BATTERY_HIGH = 
+        WINONA_BATTERY_HIGH =
         {
-        	GENERIC = "Hey! That's not science!",
-        	LOWPOWER = "It'll turn off soon.",
-        	OFF = "Science beats magic, every time.",
-        	BURNING = "It's on fire!",
-        	BURNT = "Science couldn't save it.",
+            GENERIC = "Hey! That's not science!",
+            LOWPOWER = "It'll turn off soon.",
+            OFF = "Science beats magic, every time.",
+            BURNING = "It's on fire!",
+            BURNT = "Science couldn't save it.",
         },
+
+        --Wormwood
+        COMPOSTWRAP = "Wormwood offered me a bite, but I respectfully declined.",
+        ARMOR_BRAMBLE = "The best offense is a good defense.",
+        TRAP_BRAMBLE = "It'd really poke whoever stepped on it.",
     },
     DESCRIBE_GENERIC = "It's a... thing.",
     DESCRIBE_TOODARK = "It's too dark to see!",

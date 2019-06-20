@@ -13,7 +13,7 @@ function GetCurrentLocale()
         if IsRail() then
             local lang_id = LANGUAGE.CHINESE_S_RAIL
             locale =  LOC.GetLocale(lang_id)
-		elseif IsConsole() then
+		elseif IsConsole() or IsSteam() then
             local lang_id = Profile:GetLanguageID()
             locale =  LOC.GetLocale(lang_id)
         end

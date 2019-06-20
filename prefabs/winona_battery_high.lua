@@ -237,13 +237,7 @@ local function LoseGem(inst, gemname, slot)
     inst.SoundEmitter:PlaySound("dontstarve/common/gem_shatter")
 end
 
-local function OnWorkFinished(inst)
-    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
-        inst.components.burnable:Extinguish()
-    end
-    local fx = SpawnPrefab("collapse_small")
-    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-    fx:SetMaterial("wood")
+local function DropGems(inst)
     if #inst._gems > 0 then
         for i, v in ipairs(inst._gems) do
             if i < #inst._gems then
@@ -253,6 +247,16 @@ local function OnWorkFinished(inst)
             end
         end
     end
+end
+
+local function OnWorkFinished(inst)
+    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
+        inst.components.burnable:Extinguish()
+    end
+    local fx = SpawnPrefab("collapse_small")
+    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    fx:SetMaterial("wood")
+    DropGems(inst)
     inst.components.lootdropper:DropLoot()
     inst:Remove()
 end
@@ -595,6 +599,7 @@ local function fn()
     inst.components.circuitnode:SetOnDisconnectFn(OnDisconnectCircuit)
 
     inst:ListenForEvent("onbuilt", OnBuilt)
+    inst:ListenForEvent("ondeconstructstructure", DropGems)
     inst:ListenForEvent("engineeringcircuitchanged", OnCircuitChanged)
 
     MakeHauntableWork(inst)

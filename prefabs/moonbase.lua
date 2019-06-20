@@ -598,6 +598,7 @@ local function fn()
     inst:AddTag("moonbase")
     inst:AddTag("event_trigger")
     inst:AddTag("antlion_sinkhole_blocker")
+    inst:AddTag("NPC_workable")
 
     inst._music = net_tinybyte(inst.GUID, "moonbase._music", "musicdirty")
 

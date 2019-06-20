@@ -251,6 +251,8 @@ local function commonfn(bank, build, light_params)
     inst.entity:AddLightWatcher()
     inst.entity:AddNetwork()
 
+    inst:AddTag("plant")
+
     inst.LightWatcher:SetLightThresh(.075)
     inst.LightWatcher:SetDarkThresh(.05)
 

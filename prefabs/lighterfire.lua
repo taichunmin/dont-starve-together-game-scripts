@@ -1,5 +1,6 @@
-local TEXTURE = "fx/torchfire.tex"
+local MakeLighterFire = require("prefabs/lighterfire_common")
 
+local TEXTURE = "fx/torchfire.tex"
 local SHADER = "shaders/vfx_particle.ksh"
 
 local COLOUR_ENVELOPE_NAME = "lighterfirecolourenvelope"
@@ -9,6 +10,7 @@ local assets =
 {
     Asset("IMAGE", TEXTURE),
     Asset("SHADER", SHADER),
+    Asset("SCRIPT", "scripts/prefabs/lighterfire_common.lua"),
 }
 
 --------------------------------------------------------------------------
@@ -62,7 +64,7 @@ local function emit_fn(effect, sphere_emitter)
     )
 end
 
-local function InitParticles(inst)
+local function common_postinit(inst)
     --Dedicated server does not need to spawn local particle fx
     if TheNet:IsDedicated() then
         return
@@ -103,38 +105,10 @@ local function InitParticles(inst)
     end)
 end
 
---------------------------------------------------------------------------
-
-local function fn()
-    local inst = CreateEntity()
-
-    inst.entity:AddTransform()
-    inst.entity:AddLight()
-    inst.entity:AddSoundEmitter()
-    inst.entity:AddNetwork()
-
-    inst:AddTag("FX")
-    inst:AddTag("playerlight")
-
-    inst.Light:SetIntensity(.75)
-    inst.Light:SetColour(200 / 255, 150 / 255, 50 / 255)
-    inst.Light:SetFalloff(.5)
-    inst.Light:SetRadius(1)
-
-    inst.SoundEmitter:PlaySound("dontstarve/wilson/lighter_LP", "torch")
-    inst.SoundEmitter:SetParameter("torch", "intensity", 1)
-
-    InitParticles(inst)
-
-    inst.entity:SetPristine()
-
-    if not TheWorld.ismastersim then
-        return inst
-    end
-
-    inst.persists = false
-
-    return inst
+local function master_postinit(inst)
+    inst.fx_offset_x = 56
+    inst.fx_offset_y = -40
 end
 
-return Prefab("lighterfire", fn, assets)
+
+return MakeLighterFire("lighterfire", assets, nil, common_postinit, master_postinit)

@@ -152,8 +152,9 @@ end
 function Burnable:GetLargestLightRadius()
     local largestRadius = nil
     for i, v in ipairs(self.fxchildren) do
-        if v.Light ~= nil and v.Light:IsEnabled() then
-            local radius = v.Light:GetCalculatedRadius()
+        local light = v.components.firefx ~= nil and v.components.firefx.light ~= nil and v.components.firefx.light.Light or v.Light
+        if light ~= nil and light:IsEnabled() then
+            local radius = light:GetCalculatedRadius()
             if largestRadius == nil or radius > largestRadius then
                 largestRadius = radius
             end
@@ -248,6 +249,9 @@ function Burnable:StartWildfire()
 end
 
 local function DoneBurning(inst, self)
+    local isplant = inst:HasTag("plant") and not (inst.components.diseaseable ~= nil and inst.components.diseaseable:IsDiseased())
+    local pos = isplant and inst:GetPosition() or nil
+
     inst:PushEvent("onburnt")
 
     if self.onburnt ~= nil then
@@ -261,6 +265,10 @@ local function DoneBurning(inst, self)
 
     if self.extinguishimmediately then
         self:Extinguish()
+    end
+
+    if isplant then
+        TheWorld:PushEvent("plantkilled", { pos = pos }) --this event is pushed in other places too
     end
 end
 
@@ -321,7 +329,7 @@ function Burnable:SmotherSmolder(smotherer)
         elseif smotherer.components.stackable ~= nil then
             smotherer.components.stackable:Get():Remove()
         elseif smotherer.components.health ~= nil and smotherer.components.combat ~= nil then
-            smotherer.components.health:DoFireDamage(smotherer:HasTag("pyromaniac") and 0 or TUNING.SMOTHER_DAMAGE, nil, true)
+            smotherer.components.health:DoFireDamage(TUNING.SMOTHER_DAMAGE, nil, true)
             smotherer:PushEvent("burnt")
         end
     end
@@ -421,6 +429,7 @@ function Burnable:SpawnFX(immediate)
             if fx.components.firefx ~= nil then
                 fx.components.firefx.radius_levels = v.radius_levels
                 fx.components.firefx:SetLevel(self.fxlevel, immediate)
+                fx.components.firefx:AttachLightTo(self.inst)
             end
         end
     end

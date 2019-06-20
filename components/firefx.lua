@@ -14,8 +14,35 @@ local FireFX = Class(function(self, inst)
     self.extinguishsound = nil
     --self.extinguishsoundtest = nil
 
+    self.light = SpawnPrefab("firefx_light")
+    self.light.entity:SetParent(self.inst.entity)
+    self._onremovelighttarget = function()
+        self.light.entity:SetParent(inst.entity)
+    end
+
     inst:StartUpdatingComponent(self) 
 end)
+
+function FireFX:OnRemoveEntity()
+    self.light:Remove()
+end
+
+FireFX.OnRemoveFromEntity = FireFX.OnRemoveEntity
+
+function FireFX:AttachLightTo(target)
+    local old = self.light.entity:GetParent()
+    if old ~= target then
+        if old ~= self.inst then
+            self.light:RemoveEventCallback("onremove", self._onremovelighttarget, old)
+        end
+        if target ~= self.inst then
+            self.light:ListenForEvent("onremove", self._onremovelighttarget, target)
+            self.light.entity:SetParent(target.entity)
+        else
+            self.light.entity:SetParent(self.inst.entity)
+        end
+    end
+end
 
 function FireFX:OnUpdate(dt)
     local time = GetTime() * 30
@@ -23,7 +50,7 @@ function FireFX:OnUpdate(dt)
     --Convert flicker from [-1 , 1] -> [0, 1]
     --flicker = (1 + flicker) * .5
     --local rad = self.current_radius + flicker * .05
-    self.inst.Light:SetRadius(self.current_radius + .025 + (math.sin(time) + math.sin(time + 2) + math.sin(time + .7777)) * .0125)
+    self.light.Light:SetRadius(self.current_radius + .025 + (math.sin(time) + math.sin(time + 2) + math.sin(time + .7777)) * .0125)
 
     if self.usedayparamforsound and self.isday ~= TheWorld.state.isday then
         self.isday = TheWorld.state.isday
@@ -41,7 +68,7 @@ function FireFX:UpdateRadius()
 
     self.current_radius = self.percent * (highval_r - lowval_r) + lowval_r
 
-    self.inst.Light:SetRadius(self.current_radius)
+    self.light.Light:SetRadius(self.current_radius)
 end
 
 function FireFX:SetPercentInLevel(percent)
@@ -51,7 +78,7 @@ function FireFX:SetPercentInLevel(percent)
     local lowval_i = self.levels[math.max(1, self.level - 1)].intensity
     local highval_i = self.levels[self.level].intensity
 
-    self.inst.Light:SetIntensity(percent * (highval_i - lowval_i) + lowval_i)
+    self.light.Light:SetIntensity(percent * (highval_i - lowval_i) + lowval_i)
 end
 
 function FireFX:SetLevel(lev, immediate)
@@ -74,11 +101,11 @@ function FireFX:SetLevel(lev, immediate)
         end
 
         self.current_radius = self:GetLevelRadius(self.level)
-        self.inst.Light:Enable(true)
-        self.inst.Light:SetIntensity(params.intensity)
-        self.inst.Light:SetRadius(self.current_radius)
-        self.inst.Light:SetFalloff(params.falloff)
-        self.inst.Light:SetColour(unpack(params.colour))
+        self.light.Light:Enable(true)
+        self.light.Light:SetIntensity(params.intensity)
+        self.light.Light:SetRadius(self.current_radius)
+        self.light.Light:SetFalloff(params.falloff)
+        self.light.Light:SetColour(unpack(params.colour))
 
         if self.playingsound ~= params.sound then
             if self.playingsound ~= nil then

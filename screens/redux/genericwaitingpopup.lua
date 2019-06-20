@@ -1,7 +1,7 @@
 local Screen = require "widgets/screen"
 local TEMPLATES = require "widgets/redux/templates"
 
-local GenericWaitingPopup = Class(Screen, function(self, name, title_text, additional_buttons, forbid_cancel)
+local GenericWaitingPopup = Class(Screen, function(self, name, title_text, additional_buttons, forbid_cancel, cancel_cb )
     -- Need the child's widget name because we use it to distinguish behavior
     -- for different popups!
 	Screen._ctor(self, name)
@@ -10,6 +10,7 @@ local GenericWaitingPopup = Class(Screen, function(self, name, title_text, addit
 	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
 
 	self.forbid_cancel = forbid_cancel
+	self.cancel_cb = cancel_cb
 
     local buttons = additional_buttons or {}
     if not TheInput:ControllerAttached() then
@@ -64,8 +65,11 @@ function GenericWaitingPopup:OnControl(control, down)
 end
 
 function GenericWaitingPopup:OnCancel()
-    self:Disable()
-    TheFrontEnd:PopScreen()
+	if self.cancel_cb ~= nil then
+		self.cancel_cb()
+	end
+	self:Disable()
+	TheFrontEnd:PopScreen()
 end
 
 function GenericWaitingPopup:Close()

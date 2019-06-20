@@ -232,7 +232,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
     	
     local function onLogin(forceOffline)
 	    local account_manager = TheFrontEnd:GetAccountManager()
-	    local is_banned = (account_manager:IsBanned() == true)
+        local is_banned, banned_reason = account_manager:IsBanned()
 	    local must_upgrade = account_manager:MustUpgradeClient()
 	    local communication_succeeded = account_manager:CommunicationSucceeded()
 	    local inventory_succeeded = TheInventory:HasDownloadedInventory()
@@ -241,7 +241,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
         if is_banned then -- We are banned
         	TheFrontEnd:PopScreen()
 	        TheNet:NotifyAuthenticationFailure()
-            OnNetworkDisconnect( "E_BANNED", true)
+            OnNetworkDisconnect( banned_reason, true)
         -- We are on a deprecated version of the game
         elseif must_upgrade then
         	TheFrontEnd:PopScreen()

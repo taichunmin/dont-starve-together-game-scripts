@@ -24,10 +24,9 @@ local start_inv =
         "meat",
         "meat",
     },
-
 }
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
-	start_inv[string.lower(k)] = v.WATHGRITHR
+    start_inv[string.lower(k)] = v.WATHGRITHR
 end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
@@ -48,6 +47,9 @@ local function IsValidVictim(victim)
                 victim:HasTag("veggie") or
                 victim:HasTag("structure") or
                 victim:HasTag("wall") or
+                victim:HasTag("balloon") or
+                victim:HasTag("groundspike") or
+                victim:HasTag("smashable") or
                 victim:HasTag("companion"))
         and victim.components.health ~= nil
         and victim.components.combat ~= nil

@@ -2,7 +2,8 @@ local assets =
 {
     Asset("ANIM", "anim/trap.zip"),
     Asset("SOUND", "sound/common.fsb"),
-	Asset("MINIMAP_IMAGE", "rabbittrap"),
+    Asset("MINIMAP_IMAGE", "rabbittrap"),
+    Asset("SCRIPT", "scripts/prefabs/wortox_soul_common.lua"),
 }
 
 local sounds =

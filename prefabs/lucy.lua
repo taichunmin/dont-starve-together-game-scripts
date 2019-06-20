@@ -134,6 +134,12 @@ local function fn()
 
     inst:AddTag("sharp")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst.AttachClassified = AttachClassified
     inst.DetachClassified = DetachClassified
     inst.OnRemoveEntity = OnRemoveEntity

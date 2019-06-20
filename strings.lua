@@ -58,6 +58,8 @@ STRINGS =
         wathgrithr = "Wigfrid",
         webber = "Webber",
         winona = "Winona",
+        wortox = "Wortox",
+        wormwood = "Wormwood",
         unknown = "The Unknown",
         random = "Random",
     },
@@ -77,6 +79,8 @@ STRINGS =
         wathgrithr = "\"All the wörld's a stage. För me!\"",
         webber = "\"We're always together, and never alone!\"",
         winona = "\"Anything can be fixed with hard work and elbow grease.\"",
+        wortox = "\"Pardon me if I don't shake your hand.\"",
+        wormwood = "\"Hello friend?\"",
         random = "Anybody could be under that hat.",
     },
 
@@ -94,6 +98,8 @@ STRINGS =
         wathgrithr = "The Performance Artist",
         webber = "The Indigestible",
         winona = "The Handywoman",
+        wortox = "The Soul Starved",
+        wormwood = "The Lonesome",
         random = "?"
     },
 
@@ -101,7 +107,7 @@ STRINGS =
     CHARACTER_DESCRIPTIONS =
     {
         wilson = "\n*Grows a magnificent beard",
-        willow = "*Is resistant to fire damage \n*Can craft a reliable lighter and a cuddly bear \n*Can't keep warm when insane",
+        willow = "*Is immune to fire, but hates the cold \n*Protected by her cuddly bear, Bernie \n*Can craft a reliable lighter",
         wendy = "*Is haunted by her twin sister \n*Feels comfortable in the dark \n*Doesn't hit very hard",
         wolfgang = "*Grows stronger on a full belly \n*Is afraid of monsters and the dark",
         wx78 = "*Not a picky eater \n*Is charged by lightning, but damaged by water \n*Can upgrade with gears",
@@ -114,6 +120,8 @@ STRINGS =
         wathgrithr = "*Excels in battle \n*Absorbs the power of fallen foes \n*Only eats meat",
         webber = "*Is a monster \n*Can befriend spiders \n*Grows a silky smooth beard",
         winona = "*Is a skilled builder\n*Gets one free hit from the dark\n*Invents her own gadgets",
+        wortox = "*Is an imp \n*Can hop through time and space \n*Less nourished by physical food",
+        wormwood = "*Plants relate to him\n*Has a Green Thumb\n*Food fills his stomach, but not his heart",
         random = "\nSelect a random character",
     },
 
@@ -133,6 +141,8 @@ STRINGS =
         wathgrithr = "*Battle cries increase nearby allies' next attack damage by 25%\n*Gains less aggro when attacking\n\nExpertise:\nMelee, Darts",
         webber = "*Accompanied by itsy bitsy spiders\n\n\n\nExpertise:\nDarts",
         winona = "*All ability cooldowns are 10% faster\n\n\n\nExpertise:\nMelee, Darts, Staves",
+        wortox = "*PLACEHOLDER\n\n\n\nExpertise:\nPLACEHOLDER",
+        wormwood = "*PLACEHOLDER\n\n\n\nExpertise:\nPLACEHOLDER",
         random = "\nSelect a random character",
     },
 
@@ -152,6 +162,8 @@ STRINGS =
         wathgrithr = "*Harvests an extra meat when slaughtering Beefalo\n\n\n*Expertise:\nGathering",
         webber = "*Sows seeds and harvests plants much more quickly\n\n\n*Expertise:\nFarming",
         winona = "*Performs most actions slightly faster\n\n\n\n*Expertise:\nFarming",
+        wortox = "*PLACEHOLDER\n\n\n\nExpertise:\nPLACEHOLDER",
+        wormwood = "*PLACEHOLDER\n\n\n\nExpertise:\nPLACEHOLDER",
         random = "\nSelect a random character",
     },
 
@@ -169,6 +181,8 @@ STRINGS =
         wathgrithr = "Whoever Wigfrid was before her titular role has been lost to time, and the power of method acting.",
         webber = "Webber is a polite young monster who cares deeply for all his friends, human or otherwise.",
         winona = "Winona is a former assembly line worker with a boisterous attitude and love of all things mechanical.",
+        wortox = "Wortox is a mischievous imp whose levity masks a deep well of guilt. He has taken many souls in his time.",
+        wormwood = "An amalgam of vines given sentience by lunar magic, Wormwood searches for friends so he can finally belong.",
     },
 
     --ACTION MOUSEOVER TEXT
@@ -208,6 +222,7 @@ STRINGS =
             GENERIC = "Drop",
             SETTRAP = "Set Trap",
             SETMINE = "Set Mine",
+            FREESOUL = "Release Soul",
             PLACELANTERN = "Place",
         },
         PICK = "Pick",
@@ -375,7 +390,11 @@ STRINGS =
             GENERIC = "Cast Spell", --"Cast Spell on"
             SCIENCE = "Use Gadget",
         },
-        BLINK = "Telepoof",
+        BLINK =
+        {
+            GENERIC = "Telepoof",
+            SOUL = "Soul Hop",
+        },
         COMBINESTACK = "Combine Stack",
         BURY = "Bury",
         FEED = "Feed",
@@ -787,6 +806,8 @@ STRINGS =
         WATHGRITHR = "Wigfrid",
         WEBBER = "Webber",
         WINONA = "Winona",
+        WORTOX = "Wortox",
+        WORMWOOD = "Wormwood",
 
         PIGKING = "Pig King",
         STRAWHAT = "Straw Hat",
@@ -819,6 +840,7 @@ STRINGS =
         RESEARCHLAB4 = "Prestihatitator",
         CARTOGRAPHYDESK = "Cartographer's Desk",
         PLANT_NORMAL = "Crop",
+        PLANT_NORMAL_GROUND = "Wild Crop",
         RAZOR = "Razor",
         BEARDHAIR = "Beard Hair",
         FURTUFT = "Fur Tuft",
@@ -1440,6 +1462,10 @@ STRINGS =
 
         BERNIE_INACTIVE = "Bernie",
         BERNIE_ACTIVE = "Bernie",
+        BERNIE_BIG = "BERNIE!",
+        --ASHLEY_INACTIVE = "Ashley",
+        --ASHLEY_ACTIVE = "Ashley",
+        --ASHLEY_BIG = "ASHLEY!",
 
         DECREASE_HEALTH = "Health",
         HALF_HEALTH = "Maximum Health",
@@ -1887,6 +1913,15 @@ STRINGS =
         WINONA_SPOTLIGHT = "Winona's Spotlight",
         WINONA_BATTERY_LOW = "Winona's Generator",
         WINONA_BATTERY_HIGH = "Winona's G.E.M.erator",
+
+        --Wortox
+        WORTOX_SOUL = "Soul",
+
+        --Wormwood
+        COMPOSTWRAP = "Compost Wrap",
+        ARMOR_BRAMBLE = "Bramble Husk",
+        TRAP_BRAMBLE = "Bramble Trap",
+        BRAMBLEFX = "Thorns", --for death announce if killed by thorns from armor_bramble, and owner is no longer available
     },
 
     NAME_DETAIL_EXTENTION =
@@ -2260,6 +2295,12 @@ STRINGS =
         WINONA_SPOTLIGHT = "Shine a light both day and night.",
         WINONA_BATTERY_LOW = "Someone's gotta keep the juice flowing.",
         WINONA_BATTERY_HIGH = "This one uses gems, so you know it's good.",
+
+        --Wormwood
+        LIVINGLOG = "Put yourself into your work.",
+        ARMOR_BRAMBLE = "Nature's way of saying \"keep away\".",
+        COMPOSTWRAP = "\"Herbal\" therapy.",
+        TRAP_BRAMBLE = "An equal opportunity annoyer.",
     },
 
     -- MAXWELL_TEST = {"Say pal, you don't look so good.", "You better find something to eat before night comes!"},
@@ -3051,6 +3092,7 @@ STRINGS =
         CELESTIAL = "Celestial",
         SHADOW = "Shadow",
         ENGINEERING = "Engineering",
+        NATURE = "Green Thumb",
         CARTOGRAPHY = "Cartography",
         SCULPTING = "Sculptures",
         ORPHANAGE = "Critters",
@@ -3628,6 +3670,7 @@ STRINGS.UI =
             "Woodie's plaid...",
             "WX-78's gears...",
             "Winona's tools...",
+            "Wortox's hooves...",
             "a monarch's sorrow...",
             "an inescapable nostalgia...",
             "gold and marble...",
@@ -3643,6 +3686,7 @@ STRINGS.UI =
             "food...",
             "lovely roses...",
             "gems...",
+            "souls...",
             "unspeakable things...",
             "primal instincts...",
             "terrible darkness...",
@@ -3837,6 +3881,9 @@ STRINGS.UI =
         DYNAMICCONTENT_DESC = "Due to an error, dynamic content loading has been disabled.",
         DYNAMICCONTENT_RE_ENABLE = "Re-enable",
         DYNAMICCONTENT_OK = "I understand",
+		DYNAMICCONTENT_DISABLE = "Disable Dynamic Content",
+		DYNAMICCONTENT_ENABLE = "Enable Dynamic Content",
+		DYNAMICCONTENT_CLEAR = "Clear Dynamic Content",
 
         FRESHBUILD = "Fresh Build!",
         UPDATERELEASED = "Now Playing:",
@@ -4098,7 +4145,7 @@ STRINGS.UI =
         CLOCKSURVIVED = "Survived",
         CLOCKDAY = "Day",
         CLOCKDAYS = "Days",
-        WORLD_CLOCKDAY = "Day",
+        WORLD_CLOCKDAY = "Day", --deprecated, left here for mods to use
         WORLD_CLOCKDAY_V2 = "Day {day_count}",
         SAVING = "SAVING...",
         WORLD = "World",
@@ -4300,6 +4347,7 @@ STRINGS.UI =
         MOVEMENTPREDICTION = "Lag Compensation:",
         MOVEMENTPREDICTION_ENABLED = "Predictive",
         MOVEMENTPREDICTION_DISABLED = "None",
+		TARGETLOCKING = "Target Locking:",
         DISPLAY_AREA_LABEL = "Display Area:",
         DISPLAY_AREA_BUTTON = "Adjust",
         -- INPUTFREQENCY = "Input Frequency(hz):",
@@ -4349,6 +4397,10 @@ STRINGS.UI =
         CURRENTLY_SPEAKING = "Currently Speaking...",
         RETRYING = "Retrying",
         RESTORING = "Restoring Backup",
+		CHECK_SHOP = "Updating the shop",
+		CHECK_EVENT = "Catching up on current events",
+		CHECK_DAILY_GIFT = "Checking for daily gifts",
+		CHECK_INVENTORY = "Updating inventory",
     },
     
     BOX_POPUP =
@@ -4367,7 +4419,7 @@ STRINGS.UI =
         THANKS_POPUP_SWR = "Thank you for buying the ShipWrecked DLC",
         THANKS_POPUP_ROGR = "Thank you for buying the Reign of Giants DLC",
         THANKS_POPUP_TITLE = "Thanks for playing",
-        THANKS_POPUP_TITLE_TWITCH = "Thanks for watching Twitch",
+        THANKS_POPUP_TITLE_TWITCH = "Thanks for watching game streams",
         THANKS_POPUP_TITLE_STORE = "Enjoy your gift",
         NORMAL_POPUP_TITLE = "received...",
         NEW_SKIN = "You got a skin for %s!",
@@ -4386,6 +4438,12 @@ STRINGS.UI =
         {
             EARLY_ACCESS = "Early\nAccess",
         },
+    },
+
+    STATSPANEL =
+    {
+        MOTD_TITLE = "Now Available!",
+        MOTD_BODY = "Character and item skin sets now available for purchase!",
     },
 
     POPUPDIALOG =
@@ -4475,6 +4533,7 @@ STRINGS.UI =
             INVALID_CLIENT_TOKEN = "Invalid Client Token", 
             ID_DST_GAME_SESSION_AUTH_FAILED = "Authentication Failed",
             E_BANNED = "Account Banned",
+            E_DELETED = "Account Deleted",
             E_UPGRADE = "Version Out of Date",
             ID_DST_USER_CONNECTION_FAILED = "Connection Failed",
             ID_DST_FRIENDS_ONLY_SERVER = "Friends Only",
@@ -4533,6 +4592,7 @@ STRINGS.UI =
             ID_DST_INCOMPATIBLE_PROTOCOL_VERSION = "The server has a different version than you do. Please check that your game version is up-to-date.",
             FORCE_DISCONNECTION = "The connection has been forcibly closed by the engine.",
             E_BANNED = "Your account has been banned for violating the terms of use.",
+            E_DELETED = "Your account has been marked for deletion and cannot be used anymore.",
             E_UPGRADE = "A new version is available.\nPlease update Don't Starve Together.",
             INVALID_CLIENT_TOKEN = "A token error occurred. Please try again.",
             INVALID_GAME_SESSION_TOKEN = "Unable to reach the Klei server. Please try again.",
@@ -5372,7 +5432,9 @@ STRINGS.UI =
         DELETE = "Delete",
         SLOT = "Server Slot",
         SURE = "Are you sure?",
-        SERVERDAY = "Day",
+        SERVERDAY = "Day", --deprecated, left here for mods to use
+        SERVERDAY_V2 = "Day {day_count}",
+        SERVERDAY_SEASON_V2 = "{season} Day {day_count}",
         SERVERDAY_NEW = "A Whole New World",
         SELECT_SLOT = "Select Slot",
         SNAPSHOTS = "Rollback",
@@ -5433,9 +5495,10 @@ STRINGS.UI =
         BANNED_PLAYERS_HEADER = "Banned Players",
         PLAYER = "Player",
         DATE = "Date",
-        DAY = "Day",
+        DAY = "Day", --deprecated, left here for mods to use
         DAY_V2 = "Day {day_count}",
-        UNKNOWN_DAY = "???",
+        DAY_UNKNOWN = "Unknown Day",
+        UNKNOWN_DAY = "???", --deprecated, left here for mods to use
         UNKNOWN_DAY_PS4 = "Creation of the World",
         EMPTY_SLOT = "EMPTY",
         EMPTY_SLOT_TITLE = "Empty Slot",
@@ -5462,7 +5525,9 @@ STRINGS.UI =
         DELETE_ENTRY_BODY_2 = "\" from your ban list?\nThis will affect all servers you create.",
         CLEAR_LIST_TITLE = "Unban all?",
         CLEAR_LIST_BODY = "Do you want to delete all banned players?\nThis will affect all servers you create.",
-        RESTORE_SNAPSHOT_HEADER = "Restore %s",
+        RESTORE_SNAPSHOT_HEADER = "Restore %s", --deprecated, left here for mods to use
+        HEADER_DAY = "Restore Day {day_count}",
+        HEADER_DAY_UNKNOWN = "Restore Unknown Day",
         RESTORE_SNAPSHOT_BODY = "Do you want to restore this save? You will lose all changes made to the world past the selected day, as well as all subsequent saves. This cannot be undone.",
         UNKNOWN_USER_NAME = "[unknown]", -- this is consistent with what steam when it can't get a player name
         SNAPSHOTS_TITLE = "Snapshots: ",
@@ -5519,7 +5584,11 @@ STRINGS.UI =
         EMPTY_SLOT = "Available Slot",
         READY = "Ready!",
         TOGGLE_PORTRAIT = "Toggle Portrait",
-        
+
+        UNOWNED_CHARACTER_TITLE = "Character Not Owned",
+        UNOWNED_CHARACTER_BODY = "You have not yet unlocked {character}.\nTo play this character, you must either weave them using Spools, or purchase them from the Shop.",
+        VISIT_SHOP = "Visit Shop",
+
         SERVER_SHUTDOWN_TITLE = "Server is Shutting Down",
         SERVER_SHUTDOWN_BODY = "This server is about to shut down.",
     },
@@ -6620,7 +6689,7 @@ STRINGS.UI =
 
         FESTIVAL_HISTORY = "History of Travels",
         CURRENCY_LABEL = "Spools",
-        CURRENCY_EXPLAIN = "Items can be unraveled into Spools to weave event items.",
+        CURRENCY_EXPLAIN = "Items can be unraveled into Spools to weave special items.",
         XP_LABEL = "XP Earned",
         NEW_STUFF = "Recent Discoveries",
         LOADING_STUFF = "Loading Discoveries...",
@@ -6642,6 +6711,13 @@ STRINGS.UI =
         TOOLTIP_PURCHASE = "Browse purchasable skin sets",
 
         LEVEL_ACHIEVED_FMT = "{event_title} level accomplished:",
+
+        FAILED_INVENTORY_TITLE = "Item Collection Download Failed",
+        FAILED_INVENTORY_BODY = "Unfortunately you failed to download your item collection, would you like you try again?",
+        FAILED_INVENTORY_YES = "Yes",
+        FAILED_INVENTORY_NO = "No",
+        
+        GET_INVENTORY = "Downloading Item Collection",
     },
 
     COLLECTIONSCREEN = 
@@ -6673,22 +6749,25 @@ STRINGS.UI =
 
     BARTERSCREEN =
     {
-        TITLE = "The Event Loom",
+        TITLE = "The Curio Loom",
         COMMERCE_BUY = "Weave",
         COMMERCE_GRIND = "Unravel",
-        CONFIRM_BUY_FMT = "Use {doodad_count} Spools to weave item: {item_name}?\n\nYou will be left with {doodad_net} Spools.\nSpools are used to weave limited-time event items.",
+        CONFIRM_BUY_FMT = "Use {doodad_count} Spools to weave item: {item_name}?\n\nYou will be left with {doodad_net} Spools.\nSpools are used to weave \"Woven\" rarity curios.",
         FAIL_BUY_FMT = "{doodad_count} Spools are required to weave item: {item_name}.\n\nYou need {doodad_net} more Spool(s) to weave this item.\nSpools can be obtained by unraveling curios.",
-        CONFIRM_GRIND_FMT = "Unravel this {item_name} into {doodad_count} Spools?\n\nYou will have a total of {doodad_net} Spools.\nSpools are used to weave limited-time event items.",
-        COMMERCE_INFO_BUY = "Use {doodad_value} Spools to weave this special event item.",
-        COMMERCE_INFO_NOBUY = "Only special event items from an active event can be woven from Spools.",
-        COMMERCE_INFO_GRIND = "This item can be unraveled into {doodad_value} Spools.",
-        COMMERCE_INFO_NOGRIND = "This item cannot be unraveled.",
-        NO_MARKET = "This item cannot be traded or sold.",
+        CONFIRM_GRIND_FMT = "Unravel this {item_name} into {doodad_count} Spools?\n\nYou will have a total of {doodad_net} Spools.\nSpools are used to weave \"Woven\" rarity curios.",
+        COMMERCE_INFO_BUY = "Use {doodad_value} Spools to weave this curio.",
+        COMMERCE_INFO_NOBUY_NOT_ACTIVE = "This curio is not currently weaveable.",
+        COMMERCE_INFO_NOBUY_NEVER = "This curio is not weaveable.",
+        COMMERCE_INFO_NOBUY_UNOWNED = "You must have {character} unlocked to weave this item from Spools.",
+        COMMERCE_INFO_GRIND = "This curio can be unraveled into {doodad_value} Spools.",
+        COMMERCE_INFO_NOGRIND = "This curio cannot be unraveled.",
+        NO_MARKET = "This curio cannot be traded or sold.",
         CANCEL = "Nevermind",
         OK = "OK",
         
         UNRAVEL_WARNING_TITLE = "Warning!",
         UNRAVEL_WARNING_BODY = "Unraveling this item will break your {ensemble_name} and cause you to lose access to the Reward item, {reward_name}.",
+        UNRAVEL_WARNING_RESTRICTED_BODY = "You will no longer be able to play as {character} if you unravel this item. You'll also lose access to all the items you own that are character-specific to {character}, although you'll be able to unravel them, if you wish.",
         
         FAILED_TITLE = "Connection failure",
         FAILED_BODY = "Sorry!\nFailed to contact Klei Servers. Please try again.",
@@ -6715,6 +6794,7 @@ STRINGS.UI =
         FILTER_OFF      = "Off",
         SORT_NAME       = "Name",
         SORT_RARITY     = "Rarity",
+        SORT_COUNT      = "Owned Count",
         SORT_RELEASE    = "Release Date",
 
         TOOLTIP_BASE = "Equip a head item",
@@ -6743,7 +6823,6 @@ STRINGS.UI =
         TITLE = "Shop",
 
         FAILED_TO_LOAD = "Sorry!\nThe Klei store is closed right now.\nPlease try again later.",
-        NO_PACKS_FOR_SALE = "Sorry!\nThe Klei store is closed.\nCheck back during the next event.",
 
         PURCHASE_OVERLAY_REQUIRED_TITLE = "Steam Overlay Required",
         PURCHASE_OVERLAY_REQUIRED_BODY = "Please enable the Steam Overlay to purchase clothing sets.",
@@ -6755,6 +6834,13 @@ STRINGS.UI =
         PURCHASE_WARNING_CANCEL = "Nevermind!",
 
         PACK_SAVINGS = "-{savings}%",
+        SALE_TXT = "-{sale_percent}%\nSale!",
+
+        EXPIRE_DAYS_TXT = "Offer expires in {days} days!",
+        EXPIRE_DAY_TXT = "Offer expires in 1 day!",
+        EXPIRE_HOURS_TXT = "Offer expires in {hours} hours!",
+        EXPIRE_HOUR_TXT = "Offer expires in 1 hour!",
+        EXPIRE_SOON_TXT = "Offer expires soon!",
 
         PACK_SHORT_DESC = "Includes {total_items} skin items!",
         MEGAPACK_SHORT_DESC = "Includes {total_sets} skin sets! {total_items} total skin items!",
@@ -6774,10 +6860,18 @@ STRINGS.UI =
 
         OWNED_FILTER = "Owned:",
         TYPE_FILTER = "Type:",
+        DISCOUNT_FILTER = "Discount:",
         FILTER_ALL = "All",
         FILTER_UNOWNED = "Unowned",
         FILTER_ITEMS = "Belongings",
-        
+        FILTER_BUNDLE = "Bundles",
+        FILTER_SALE = "Sales",
+
+        EMPTY_AFTER_FILTER = "There are currently no chests for sale that match your filter criteria.",
+
+        UNOWNED_CHARACTER_BODY = "You do not currently own {character}.\nThis chest contains skins for {character}, which will be unusable without owning them.",
+        VIEW_REQUIRED = "View {character} Chests",
+
         OK = "OK",
     },
 
@@ -6821,11 +6915,9 @@ STRINGS.UI =
         Event           = "Event (Limited-Time Use)",
         
         Lustrous        = "Lustrous",
-		EventModifier	= "Event - ",
-		Seasonal		= "Seasonal - ",
-
+		Woven		    = "Woven - ",
         CharacterModifier = "",
-		Classic			= "Classic - ",
+
     },
     
     COLOUR =
@@ -7826,6 +7918,8 @@ STRINGS.UI =
         RESTORE_BACKUP = "Restore Backup",	
 		RESTORE_BACKUP_BODY = "Are you sure you want to restore from the last available backup? This process can not be undone.",    
         RESTOREBACKUP_FAILED = "An error occurred while\nrestoring your data.",	 
+		OVERWRITE_SAVEDATA_TITLE = "Overwrite save data",
+		OVERWRITE_SAVEDATA_BODY = "Are you sure you want to overwrite your save data? Your settings and worlds will be lost. This process can not be undone.",    
     },
     
     QUITTINGTITLE = "Quitting!",
@@ -7908,6 +8002,8 @@ STRINGS.CHARACTERS =
     WATHGRITHR = require "speech_wathgrithr",
     WEBBER = require "speech_webber",
     WINONA = require "speech_winona",
+    WORTOX = require "speech_wortox",
+    WORMWOOD = require "speech_wormwood",
 }
 
 STRINGS.LUCY =
@@ -8480,11 +8576,7 @@ if PLATFORM == "WIN32_RAIL" then
 	STRINGS.UI.ITEM_SERVER.FAILED_MULTIPLE_PENDING_PURCHASES = ""
 	STRINGS.UI.ITEM_SERVER.FAILED_IAP_RATE_LIMITED = ""
 	
-	STRINGS.CHARACTER_QUOTES.wathgrithr = string.gsub(STRINGS.CHARACTER_QUOTES.wathgrithr, "ö", "o")
-	for k,v in pairs( STRINGS.SKIN_QUOTES ) do
-		STRINGS.SKIN_QUOTES[k] = string.gsub(v, "ö", "o")
-	end
-	
+
 	--Remove console strings
 	STRINGS.PSN = nil
 	STRINGS.UI.HELP.CHANGEVALUE = nil
@@ -8597,6 +8689,8 @@ if PLATFORM == "WIN32_RAIL" then
     STRINGS.UI.SAVELOAD.RESTORE_BACKUP = nil
     STRINGS.UI.SAVELOAD.RESTORE_BACKUP_BODY = nil
     STRINGS.UI.SAVELOAD.RESTOREBACKUP_FAILED = nil
+	STRINGS.UI.SAVELOAD.OVERWRITE_SAVEDATA_TITLE = nil
+	STRINGS.UI.SAVELOAD.OVERWRITE_SAVEDATA_BODY = nil
     
     STRINGS.UI.COMMANDWHEEL = nil
 
@@ -8621,6 +8715,9 @@ if PLATFORM == "WIN32_RAIL" then
     STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_DESC = nil
     STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_RE_ENABLE = nil
     STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_OK = nil
+	STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_DISABLE = nil
+	STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_ENABLE = nil
+	STRINGS.UI.MAINSCREEN.DYNAMICCONTENT_CLEAR = nil
 	
 	STRINGS.UI.OPTIONS.BUGREPORT = nil
     STRINGS.UI.OPTIONS.DYNAMICCONTENT_ENABLE = nil

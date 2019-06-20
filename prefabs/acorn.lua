@@ -68,6 +68,7 @@ local function fn()
     inst.AnimState:SetBuild("acorn")
     inst.AnimState:PlayAnimation("idle")
 
+    inst:AddTag("deployedplant")
     inst:AddTag("icebox_valid")
     inst:AddTag("cattoy")
     inst:AddTag("show_spoilage")

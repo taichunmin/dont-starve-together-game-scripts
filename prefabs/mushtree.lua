@@ -59,20 +59,22 @@ local REMOVABLE =
 
 local function ontimerdone(inst, data)
     if data.name == "decay" then
+        local x, y, z = inst.Transform:GetWorldPosition()
         if inst:IsAsleep() then
             -- before we disappear, clean up any crap left on the ground
             -- too many objects is as bad for server health as too few!
-            local x, y, z = inst.Transform:GetWorldPosition()
-            local ents = TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "INLIMBO", "fire" })
-            -- leave at least one
-            if #ents > 1 then
-                table.remove(ents, 1)
-                for i, ent in ipairs(ents) do
-                    if REMOVABLE[ent.prefab] then
-                        ent:Remove()
+            local leftone = false
+            for i, v in ipairs(TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "INLIMBO", "fire" })) do
+                if REMOVABLE[v.prefab] then
+                    if leftone then
+                        v:Remove()
+                    else
+                        leftone = true
                     end
                 end
             end
+        else
+            SpawnPrefab("small_puff").Transform:SetPosition(x, y, z)
         end
         inst:Remove()
     end
@@ -299,6 +301,17 @@ local function startchange(inst, treestate, build, soundname)
     end
 end
 
+local function workcallback(inst, worker, workleft)
+    if not (worker ~= nil and worker:HasTag("playerghost")) then
+        inst.SoundEmitter:PlaySound("dontstarve/wilson/use_axe_mushroom")
+    end
+    if workleft > 0 then
+        inst.AnimState:PlayAnimation("chop")
+        inst.AnimState:PushAnimation("idle_loop", true)
+    end
+    --V2C: different anims are played in workfinishcallback if workleft <= 0
+end
+
 local function maketree(name, data, state)
     local function bloom_tree(inst, instant)
         if inst._changetask ~= nil then
@@ -377,22 +390,14 @@ local function maketree(name, data, state)
         end
     end
 
-    local function workcallback(inst, worker, workleft)
-        if not (worker ~= nil and worker:HasTag("playerghost")) then
-            inst.SoundEmitter:PlaySound("dontstarve/wilson/use_axe_mushroom")
-        end
-        if workleft <= 0 then
-            inst.SoundEmitter:PlaySound("dontstarve/forest/treefall")
-            makestump(inst)
+    local function workfinishcallback(inst)--, worker)
+        inst.SoundEmitter:PlaySound("dontstarve/forest/treefall")
+        makestump(inst)
 
-            inst.AnimState:PlayAnimation("fall")
+        inst.AnimState:PlayAnimation("fall")
+        inst.AnimState:PushAnimation("idle_stump")
 
-            inst.components.lootdropper:DropLoot(inst:GetPosition())
-            inst.AnimState:PushAnimation("idle_stump")
-        else
-            inst.AnimState:PlayAnimation("chop")
-            inst.AnimState:PushAnimation("idle_loop", true)
-        end
+        inst.components.lootdropper:DropLoot(inst:GetPosition())
     end
 
     local function onload(inst, loaddata)
@@ -445,6 +450,7 @@ local function maketree(name, data, state)
         inst:AddTag("shelter")
         inst:AddTag("mushtree")
         inst:AddTag("cavedweller")
+        inst:AddTag("plant")
         inst:AddTag("tree")
 
         if data.webbable then
@@ -478,6 +484,7 @@ local function maketree(name, data, state)
         inst.components.workable:SetWorkAction(ACTIONS.CHOP)
         inst.components.workable:SetWorkLeft(data.work)
         inst.components.workable:SetOnWorkCallback(workcallback)
+        inst.components.workable:SetOnFinishCallback(workfinishcallback)
 
         inst:AddComponent("periodicspawner")
         inst.components.periodicspawner:SetPrefab(data.spore)
@@ -550,6 +557,7 @@ function treeset(name, data, build, bloombuild)
         name.."_stump",
         name.."_burntfx",
         name.."_bloom_burntfx",
+        "small_puff",
     }
 
     table.insert(treeprefabs, Prefab(name, maketree(name, data), assets, prefabs))

@@ -170,6 +170,8 @@ local function MakeHat(name)
     end
 
     local function earmuffs_custom_init(inst)
+        inst:AddTag("open_top_hat")
+
         inst.AnimState:SetRayTestOnBB(true)
     end
 
@@ -302,6 +304,7 @@ local function MakeHat(name)
     end
 
     local function ruins_custom_init(inst)
+        inst:AddTag("open_top_hat")
         inst:AddTag("metal")
     end
 
@@ -573,9 +576,11 @@ local function MakeHat(name)
         end
         local owner = inst.components.inventoryitem and inst.components.inventoryitem.owner
         if owner and owner.components.leader then
-            
-            if not owner:HasTag("spiderwhisperer") then --Webber has to stay a monster.
-                owner:RemoveTag("monster")
+            if not owner:HasTag("spiderwhisperer") then
+                if not owner:HasTag("playermonster") then
+                    owner:RemoveTag("monster")
+                end
+                owner:RemoveTag("spiderdisguise")
 
                 for k,v in pairs(owner.components.leader.followers) do
                     if k:HasTag("spider") and k.components.combat then
@@ -617,6 +622,7 @@ local function MakeHat(name)
         if owner and owner.components.leader then
             owner.components.leader:RemoveFollowersByTag("pig")
             owner:AddTag("monster")
+            owner:AddTag("spiderdisguise")
         end
         inst.updatetask = inst:DoPeriodicTask(0.5, spider_update, 1)
     end
@@ -767,6 +773,7 @@ local function MakeHat(name)
     end
 
     local function flower_custom_init(inst)
+        inst:AddTag("open_top_hat")
         inst:AddTag("show_spoilage")
     end
 
@@ -883,6 +890,7 @@ local function MakeHat(name)
     end
 
     local function eyebrella_custom_init(inst)
+        inst:AddTag("open_top_hat")
         inst:AddTag("umbrella")
 
         --waterproofer (from waterproofer component) added to pristine state for optimization
@@ -1381,8 +1389,12 @@ local function MakeHat(name)
 
     --NOTE: goggleshat do NOT provide "goggles" tag benefits because you do not
     --      actually wear them over your eyes, and they're just for style -_ -"
+    local function goggles_custom_init(inst)
+        inst:AddTag("open_top_hat")
+    end
+
     local function goggles()
-        local inst = simple()
+        local inst = simple(goggles_custom_init)
 
         if not TheWorld.ismastersim then
             return inst

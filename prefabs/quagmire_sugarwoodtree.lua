@@ -62,6 +62,7 @@ local function fn(tree_def)
 
     inst.Transform:SetScale(0.8, 0.8, 0.8)
 
+    inst:AddTag("plant")
     inst:AddTag("tree")
     inst:AddTag("shelter")
     inst:AddTag("sugarwoodtree")

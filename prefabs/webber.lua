@@ -30,7 +30,9 @@ prefabs = FlattenTree({ prefabs, start_inv }, true)
 
 local function common_postinit(inst)
     inst:AddTag("spiderwhisperer")
+    inst:AddTag("playermonster")
     inst:AddTag("monster")
+    inst:AddTag("dualsoul")
     inst:AddTag(UPGRADETYPES.SPIDER.."_upgradeuser")
 
     if TheNet:GetServerGameMode() == "quagmire" then

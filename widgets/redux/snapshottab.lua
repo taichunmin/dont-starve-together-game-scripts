@@ -81,7 +81,13 @@ function SnapshotTab:MakeSnapshotsMenu()
             widget.btn:Hide()
 
         elseif not data.empty then
-            local day_text = STRINGS.UI.SERVERADMINSCREEN.DAY.." "..tostring(data.world_day or STRINGS.UI.SERVERADMINSCREEN.UNKNOWN_DAY)
+            local day_text = ""
+            if data.world_day ~= nil then
+                day_text = subfmt(STRINGS.UI.SERVERADMINSCREEN.DAY_V2, {day_count = data.world_day} )
+            else
+                day_text = STRINGS.UI.SERVERADMINSCREEN.DAY_UNKNOWN
+            end
+
             widget.day:SetString(day_text)
             if data.world_season ~= nil then
                 widget.season:SetString(data.world_season)
@@ -130,10 +136,15 @@ function SnapshotTab:OnClickSnapshot(snapshot_num)
     end
 
     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-
-    local day_text = STRINGS.UI.SERVERADMINSCREEN.DAY.." "..tostring(self.snapshots[snapshot_num].world_day or STRINGS.UI.SERVERADMINSCREEN.UNKNOWN_DAY)
-    local header = string.format(STRINGS.UI.SERVERADMINSCREEN.RESTORE_SNAPSHOT_HEADER, day_text)
-    local popup = PopupDialogScreen(header, STRINGS.UI.SERVERADMINSCREEN.RESTORE_SNAPSHOT_BODY, {
+    
+    local day_text_header = ""
+    if self.snapshots[snapshot_num].world_day ~= nil then
+        day_text_header = subfmt(STRINGS.UI.SERVERADMINSCREEN.HEADER_DAY, {day_count = self.snapshots[snapshot_num].world_day} )
+    else
+        day_text_header = STRINGS.UI.SERVERADMINSCREEN.HEADER_DAY_UNKNOWN
+    end
+    
+    local popup = PopupDialogScreen(day_text_header, STRINGS.UI.SERVERADMINSCREEN.RESTORE_SNAPSHOT_BODY, {
         {
             text = STRINGS.UI.SERVERADMINSCREEN.YES,
             cb = function()

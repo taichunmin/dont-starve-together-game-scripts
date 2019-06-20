@@ -60,7 +60,7 @@ function HoverText:OnUpdate()
 
             if colour == nil then
                 if lmb.target ~= nil then
-                    if lmb.invobject ~= nil and lmb.invobject.components.weapon == nil and lmb.invobject.components.tool == nil then
+                    if lmb.invobject ~= nil and not (lmb.invobject:HasTag("weapon") or lmb.invobject:HasTag("tool")) then
                         colour = lmb.invobject:GetIsWet() and WET_TEXT_COLOUR or NORMAL_TEXT_COLOUR
                     else
                         colour = lmb.target:GetIsWet() and WET_TEXT_COLOUR or NORMAL_TEXT_COLOUR
@@ -71,7 +71,7 @@ function HoverText:OnUpdate()
             end
 
             if not overriden and lmb.target ~= nil and lmb.invobject == nil and lmb.target ~= lmb.doer then
-                local name = lmb.target:GetDisplayName() or (lmb.target.components.named ~= nil and lmb.target.components.named.name) or nil
+                local name = lmb.target:GetDisplayName()
                 if name ~= nil then
                     local adjective = lmb.target:GetAdjective()
                     str = str.." "..(adjective ~= nil and (adjective.." "..name) or name)
@@ -79,6 +79,8 @@ function HoverText:OnUpdate()
                     if lmb.target.replica.stackable ~= nil and lmb.target.replica.stackable:IsStack() then
                         str = str.." x"..tostring(lmb.target.replica.stackable:StackSize())
                     end
+
+                    --NOTE: This won't work on clients. Leaving it here anyway.
                     if lmb.target.components.inspectable ~= nil and lmb.target.components.inspectable.recordview and lmb.target.prefab ~= nil then
                         ProfileStatsSet(lmb.target.prefab.."_seen", true)
                     end

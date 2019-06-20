@@ -1,6 +1,6 @@
 -- not local - debugkeys use it too
 function ConsoleCommandPlayer()
-    return (c_sel() and c_sel():HasTag("player") and c_sel()) or ThePlayer or AllPlayers[1]
+    return (c_sel() ~= nil and c_sel():HasTag("player") and c_sel()) or ThePlayer or AllPlayers[1]
 end
 
 function ConsoleWorldPosition()
@@ -157,6 +157,9 @@ function c_spawn(prefab, count, dontselect)
     local inst = nil
     for i = 1, count do
         inst = DebugSpawn(prefab)
+        if inst.components.skinner ~= nil and IsRestrictedCharacter(prefab) then
+            inst.components.skinner:SetSkinMode("normal_skin")
+        end
     end
     if not dontselect then
         SetDebugEntity(inst)
@@ -183,7 +186,18 @@ end
 -- Despawn a player, returning to character select screen
 function c_despawn(player)
     if TheWorld ~= nil and TheWorld.ismastersim then
-        player = ListingOrConsolePlayer(player)
+        --V2C: need to avoid targeting c_spawned player entities
+        --player = ListingOrConsolePlayer(player)
+        if type(player) == "string" or type(player) == "number" then
+            player = UserToPlayer(input)
+        end
+        if player == nil then
+            player = c_sel() ~= nil and c_sel():HasTag("player") and c_sel() or nil
+        end
+        if player == nil or player.components.playercontroller == nil then
+            player = ThePlayer or AllPlayers[1]
+        end
+        -------------------------------------------------------------------
         if player ~= nil and player:IsValid() then
             --Queue it because remote command may currently be overriding
             --ThePlayer, which will get stomped during delete
@@ -617,11 +631,12 @@ function c_armor(player)
     if player ~= nil then
         SuUsed("c_armor", true)
         player.components.health:SetAbsorptionAmount(1)
-    end
+        print("Enabled full absorption on " .. tostring(player.userid))
+	end
 end
 
 function c_armour(player)
-	c_armour(player)
+	c_armor(player)
 end
 
 function c_find(prefab, radius, inst)

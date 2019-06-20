@@ -265,7 +265,7 @@ function Freezable:Freeze(freezetime)
 end
 
 function Freezable:Unfreeze()
-    if self:IsFrozen() and not (self.inst.components.health ~= nil and self.inst.components.health:IsDead()) then
+    if self:IsFrozen() then
         self.state = states.NORMAL
         self.coldness = 0
         self.damagetotal = 0
@@ -273,15 +273,17 @@ function Freezable:Unfreeze()
         self:SpawnShatterFX()
         self:UpdateTint()
 
-        if self.inst.brain ~= nil then
-            self.inst.brain:Start()
-        end
+        if not (self.inst.components.health ~= nil and self.inst.components.health:IsDead()) then
+            if self.inst.brain ~= nil then
+                self.inst.brain:Start()
+            end
 
-        self.inst:PushEvent("unfreeze")
+            self.inst:PushEvent("unfreeze")
 
-        -- prevent going from unfreeze immediately into an attack, it looks weird
-        if self.inst.components.combat ~= nil then
-            self.inst.components.combat:BlankOutAttacks(0.3)
+            -- prevent going from unfreeze immediately into an attack, it looks weird
+            if self.inst.components.combat ~= nil then
+                self.inst.components.combat:BlankOutAttacks(0.3)
+            end
         end
     end
 end

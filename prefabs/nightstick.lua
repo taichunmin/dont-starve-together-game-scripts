@@ -91,6 +91,9 @@ local function fn()
 
     inst:AddTag("wildfireprotected")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

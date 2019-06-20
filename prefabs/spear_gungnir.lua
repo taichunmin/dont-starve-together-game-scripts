@@ -65,6 +65,9 @@ local function fn()
     inst:AddTag("sharp")
     inst:AddTag("pointy")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --aoeweapon_lunge (from aoeweapon_lunge component) added to pristine state for optimization
     inst:AddTag("aoeweapon_lunge")
 

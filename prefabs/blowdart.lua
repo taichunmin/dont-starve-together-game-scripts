@@ -54,6 +54,9 @@ local function common(anim, tags, removephysicscolliders)
     inst:AddTag("blowdart")
     inst:AddTag("sharp")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --projectile (from projectile component) added to pristine state for optimization
     inst:AddTag("projectile")
 

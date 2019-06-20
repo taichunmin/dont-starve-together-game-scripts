@@ -15,6 +15,7 @@ local assets =
     Asset("ANIM", "anim/bee.zip"),
     Asset("ANIM", "anim/bee_build.zip"),
     Asset("ANIM", "anim/bee_angry_build.zip"),
+    Asset("INV_IMAGE", "killerbee"),
     Asset("SOUND", "sound/bee.fsb"),
 }
 
@@ -52,7 +53,7 @@ local function OnWorked(inst, worker)
 end
 
 local function OnDropped(inst)
-    if inst.buzzing and not inst:IsAsleep() then
+    if inst.buzzing and not (inst:IsAsleep() or inst.SoundEmitter:PlayingSound("buzz")) then
         inst.SoundEmitter:PlaySound(inst.sounds.buzz, "buzz")
     end
     inst.sg:GoToState("catchbreath")
@@ -89,7 +90,7 @@ local function EnableBuzz(inst, enable)
     if enable then
         if not inst.buzzing then
             inst.buzzing = true
-            if not (inst.components.inventoryitem:IsHeld() or inst:IsAsleep()) then
+            if not (inst.components.inventoryitem:IsHeld() or inst:IsAsleep() or inst.SoundEmitter:PlayingSound("buzz")) then
                 inst.SoundEmitter:PlaySound(inst.sounds.buzz, "buzz")
             end
         end
@@ -100,7 +101,7 @@ local function EnableBuzz(inst, enable)
 end
 
 local function OnWake(inst)
-    if inst.buzzing and not inst.components.inventoryitem:IsHeld() then
+    if inst.buzzing and not (inst.components.inventoryitem:IsHeld() or inst.SoundEmitter:PlayingSound("buzz")) then
         inst.SoundEmitter:PlaySound(inst.sounds.buzz, "buzz")
     end
 end
@@ -236,6 +237,16 @@ end
 local workerbrain = require("brains/beebrain")
 local killerbrain = require("brains/killerbeebrain")
 
+local function worker_OnIsSpring(inst, isspring)
+    if isspring then
+        inst.AnimState:SetBuild("bee_angry_build")
+        inst.components.inventoryitem:ChangeImageName("killerbee")
+    else
+        inst.AnimState:SetBuild("bee_build")
+        inst.components.inventoryitem:ChangeImageName()
+    end
+end
+
 local function workerbee()
     --pollinator (from pollinator component) added to pristine state for optimization
     --for searching: inst:AddTag("pollinator")
@@ -245,8 +256,9 @@ local function workerbee()
         return inst
     end
 
+    inst:WatchWorldState("isspring", worker_OnIsSpring)
     if TheWorld.state.isspring then
-        inst.AnimState:SetBuild("bee_angry_build")
+        worker_OnIsSpring(inst, true)
     end
 
     inst.components.health:SetMaxHealth(TUNING.BEE_HEALTH)

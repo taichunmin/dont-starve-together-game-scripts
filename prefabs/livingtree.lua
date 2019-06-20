@@ -164,6 +164,7 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("livingtree.png")
 
+    inst:AddTag("plant")
     inst:AddTag("tree")
 
     inst.AnimState:SetBank("evergreen_living_wood")

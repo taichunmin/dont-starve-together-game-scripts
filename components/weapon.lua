@@ -17,6 +17,7 @@ local Weapon = Class(function(self, inst)
     self.stimuli = nil
     --self.overridestimulifn = nil
 
+    --V2C: Recommended to explicitly add tag to prefab pristine state
     self.inst:AddTag("weapon")
 end,
 nil,
@@ -25,6 +26,8 @@ nil,
 })
 
 function Weapon:OnRemoveFromEntity()
+    self.inst:RemoveTag("weapon")
+
     if self.inst.replica.inventoryitem ~= nil then
         self.inst.replica.inventoryitem:SetAttackRange(-1)
     end

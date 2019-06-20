@@ -41,7 +41,7 @@ local function DoMushroomOverrideSymbol(inst, product)
     inst.AnimState:OverrideSymbol("swap_mushroom", "mushroom_farm_"..(string.split(product, "_")[1]).."_build", "swap_mushroom")
 end
 
-local function StartGrowing(inst, product)
+local function StartGrowing(inst, giver, product)
     if inst.components.harvestable ~= nil then
         local is_spore = product:HasTag("spore")
         local max_produce = is_spore and levels[1].amount or levels[2].amount
@@ -52,6 +52,8 @@ local function StartGrowing(inst, product)
         inst.components.harvestable:SetProduct(productname, max_produce)
         inst.components.harvestable:SetGrowTime(TUNING.MUSHROOMFARM_FULL_GROW_TIME / max_produce)
         inst.components.harvestable:Grow()
+
+        TheWorld:PushEvent("itemplanted", { doer = giver, pos = inst:GetPosition() }) --this event is pushed in other places too
     end
 end
 
@@ -242,7 +244,7 @@ local function onacceptitem(inst, giver, item)
         inst.components.workable:SetWorkLeft(FULLY_REPAIRED_WORKLEFT)
         updatelevel(inst)
     else
-        StartGrowing(inst, item)
+        StartGrowing(inst, giver, item)
     end
 end
 

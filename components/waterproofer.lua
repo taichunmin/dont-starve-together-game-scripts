@@ -14,8 +14,8 @@ end)
 function WaterProofer:OnRemoveFromEntity()
     self.inst:RemoveTag("waterproofer")
 
-    if inst.components.inventoryitem ~= nil then
-        inst.components.inventoryitem:EnableMoisture(true)
+    if self.inst.components.inventoryitem ~= nil then
+        self.inst.components.inventoryitem:EnableMoisture(true)
     end
 end
 

@@ -49,6 +49,9 @@ local function fn()
 
     inst:AddTag("horn")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
     inst.AnimState:SetBank("horn")
     inst.AnimState:SetBuild("horn")
     inst.AnimState:PlayAnimation("idle")

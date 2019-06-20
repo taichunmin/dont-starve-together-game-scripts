@@ -53,9 +53,6 @@ local assets =
     Asset("IMAGE", "images/serverbrowser.tex"),
     --
 
-    Asset("ATLAS", "images/inventoryimages.xml"),
-    Asset("IMAGE", "images/inventoryimages.tex"),
-
     Asset("ANIM", "anim/wet_meter_player.zip"), 
     Asset("ANIM", "anim/wet_meter.zip"),
 

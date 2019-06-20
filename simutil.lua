@@ -334,3 +334,18 @@ function ApplySpecialEvent(event)
         end
     end
 end
+
+
+
+local inventoryItemAtlasLookup = {}
+
+function GetInventoryItemAtlas(imagename)
+	local atlas = inventoryItemAtlasLookup[imagename]
+	if atlas then
+		return atlas
+	end
+	local base_atlas = "images/inventoryimages1.xml"
+	atlas = TheSim:AtlasContains(base_atlas, imagename) and base_atlas or "images/inventoryimages2.xml"
+	inventoryItemAtlasLookup[imagename] = atlas
+	return atlas
+end

@@ -74,20 +74,6 @@ function Tune(overrides)
 
         WILSON_SANITY = 200,
 
-        WILLOW_SANITY = 120,
-        WILLOW_SANITY_MODIFIER = 1.1,
-        WILLOW_FIRE_DAMAGE = 0.5,
-        WILLOW_FIRE_IMMUNITY = 3,
-
-        WILLOW_SANITY_CHILLING = -20,
-        WILLOW_CHILL_START = .4,
-        WILLOW_CHILL_END = 0,
-
-        BERNIE_HEALTH = 1000,
-        BERNIE_FUEL = 100,
-        BERNIE_DECAY_TIME = total_day_time * 3,
-        BERNIE_SPEED = 1,
-
         BALLOON_PILE_DECAY_TIME = total_day_time * 3,
         BALLOON_MAX_COUNT = 100,
 
@@ -1664,7 +1650,7 @@ function Tune(overrides)
         WEBBER_BEARD_INSULATION_FACTOR = .75,
 
         PLAYER_FREEZE_WEAR_OFF_TIME = 3,
-        PLAYER_BURN_TIME = 5.3,
+        PLAYER_BURN_TIME = 3.3,
 
         DUSK_INSULATION_BONUS = seg_time*2,
         NIGHT_INSULATION_BONUS = seg_time*4,
@@ -2643,6 +2629,7 @@ function Tune(overrides)
             WATHGRITHR = 150,
             WEBBER = 150,
             WINONA = 200,
+            WORTOX = 200, --VITO do something here
         },
 
 		GAMEMODE_STARTING_ITEMS =
@@ -2661,6 +2648,7 @@ function Tune(overrides)
 				WATHGRITHR = { "spear_gungnir", "lavaarena_armorlightspeed" },
 				WEBBER = { "blowdart_lava", "lavaarena_armorlightspeed" },
 				WINONA = { "hammer_mjolnir", "lavaarena_armormedium" },
+                WORTOX = {}, --VITO do something here
 			},
 			QUAGMIRE =
 			{
@@ -2676,6 +2664,7 @@ function Tune(overrides)
 				WATHGRITHR = {},
 				WEBBER = {},
 				WINONA = {},
+                WORTOX = {}, --VITO do something here
 			},
 		},
 
@@ -2693,6 +2682,7 @@ function Tune(overrides)
             WATHGRITHR = 2,
             WEBBER = 1,
             WINONA = 1,
+            WORTOX = 1, --VITO do something here
         },
 
 	    LAVAARENA_BERNIE_SCALE = 1.2,
@@ -2773,6 +2763,53 @@ function Tune(overrides)
         WINONA_BATTERY_HIGH_MAX_FUEL_TIME = total_day_time * 6,
         WINONA_BATTERY_RANGE = 5,
         WINONA_BATTERY_MIN_LOAD = .2,
+
+        --v2 Willow
+        BERNIE_HEALTH = 1000,
+        BERNIE_FUEL = total_day_time * 15 / 3, --multiply by fuel_rate
+        BERNIE_FUEL_RATE = 1 / 3, --bernie lasts 15 days, but can still be repaired by one sewing kit (+5 days)
+        BERNIE_DECAY_TIME = total_day_time * 3,
+        BERNIE_SPEED = 1,
+        BERNIE_BIG_HEALTH = 2000,
+        BERNIE_BIG_WALK_SPEED = 4.5,
+        BERNIE_BIG_RUN_SPEED = 11,
+        BERNIE_BIG_HIT_RECOVERY = 1,
+        BERNIE_BIG_DAMAGE = 50,
+        BERNIE_BIG_ATTACK_PERIOD = 2,
+        BERNIE_BIG_ATTACK_RANGE = 3,
+        BERNIE_BIG_HIT_RANGE = 3.25,
+        BERNIE_BIG_COOLDOWN = 6,
+        WILLOW_SANITY = 120,
+        WILLOW_SANITY_MODIFIER = 1.1,
+        WILLOW_FREEZING_KILL_TIME = 60,
+        WILLOW_OVERHEAT_KILL_TIME = 180,
+        WILLOW_CAMPFIRE_FUEL_MULT = 1.5,
+        WILLOW_FIRE_DAMAGE = 0,
+
+        --Wortox
+        WORTOX_HEALTH = 200,
+        WORTOX_HUNGER = 175,
+        WORTOX_SANITY = 150,
+        WORTOX_SANITY_AURA_MULT = .5,
+        WORTOX_MAX_SOULS = 20,
+        WORTOX_FOOD_MULT = .5,
+        WORTOX_SOULEXTRACT_RANGE = 20, --die within this range of wortox to spawn soul
+        WORTOX_SOULSTEALER_RANGE = 8, --souls fly towards wortox when he walks within this range
+        WORTOX_SOULHEAL_RANGE = 8,
+
+        --Wormwood
+        WORMWOOD_BURN_TIME = 4.3,
+        WORMWOOD_FIRE_DAMAGE = 1.25,
+        ARMORBRAMBLE_DMG = wilson_attack/1.5,
+        ARMORBRAMBLE_ABSORPTION = .65*multiplayer_armor_absorption_modifier,
+        ARMORBRAMBLE = wilson_health*2.5*multiplayer_armor_durability_modifier,
+        TRAP_BRAMBLE_USES = 10,
+        TRAP_BRAMBLE_DAMAGE = 40,
+        TRAP_BRAMBLE_RADIUS = 2.5,
+        COMPOSTWRAP_SOILCYCLES = 20,
+        COMPOSTWRAP_WITHEREDCYCLES = 2,
+        COMPOSTWRAP_FERTILIZE = day_time * 6,
+        POOP_FERTILIZE_HEALTH = 2,
     }
 end
 

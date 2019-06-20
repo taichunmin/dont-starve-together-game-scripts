@@ -186,7 +186,7 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
     self.collection_title:SetHAlign(ANCHOR_LEFT)
     
     self.store_btn = self.footer:AddChild(ImageButton("images/frontend_redux.xml", "button_shop_vshort_normal.tex", "button_shop_vshort_hover.tex", "button_shop_vshort_disabled.tex", "button_shop_vshort_down.tex"))
-    self.store_btn:SetOnClick( function() TheFrontEnd:FadeToScreen( TheFrontEnd:GetActiveScreen(), function() return PurchasePackScreen( nil, nil, self.last_interaction_target.item_key) end, nil ) end )
+    self.store_btn:SetOnClick( function() TheFrontEnd:FadeToScreen( TheFrontEnd:GetActiveScreen(), function() return PurchasePackScreen( nil, nil, { initial_item_key = self.last_interaction_target.item_key } ) end, nil ) end )
     self.store_btn:SetScale(0.5)
     self.store_btn:SetPosition(205,-23)
     self.store_btn:Hide()
@@ -366,7 +366,15 @@ function ItemExplorer:_GetActionInfoText(item_data)
             local doodad_value = TheItems:GetBarterBuyPrice(item_data.item_key)
             text = subfmt(STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_BUY, {doodad_value=doodad_value})
         else
-            text = STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_NOBUY
+            if IsUserCommerceBuyRestrictedDueToOwnership(item_data.item_key) then
+                text = subfmt(STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_NOBUY_UNOWNED, { character = STRINGS.CHARACTER_NAMES[GetCharacterRequiredForItem(item_data.item_key)] } )
+            else
+                if IsUserCommerceBuyRestrictedDueType(item_data.item_key) then
+                    text = STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_NOBUY_NEVER
+                else
+                    text = STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_NOBUY_NOT_ACTIVE
+                end
+            end
         end
     end
     
@@ -410,9 +418,42 @@ function ItemExplorer:_ApplyItemToMarket(item_data)
     end
 end
 
+function ItemExplorer:DoCommerceForDefaultItem(default_item_key)
+    --This relies on the first item in this list matching the expected item key. If we can't find it, maybe we can search to find the selected item.
+    local w = self.scroll_list:GetListWidgets()[1]    
+    if w.data.item_key == default_item_key then
+        w:onclick()
+        self:_LaunchCommerce()
+    else
+        print("Failed to launch commerce due to mismatched item key.")
+    end
+end
+
+function ItemExplorer:DoShopForDefaultItem(default_item_key)
+    --This relies on the first item in this list matching the expected item key. If we can't find it, maybe we can search to find the selected item.
+    local w = self.scroll_list:GetListWidgets()[1]    
+    if w.data.item_key == default_item_key then
+        w:onclick()
+        self.store_btn:onclick()
+    else
+        print("Failed to launch shop due to mismatched item key.")
+    end
+end
+                
 function ItemExplorer:_LaunchCommerce()
     local item_key = self.last_interaction_target.item_key
-	if WillUnravelBreakEnsemble( item_key ) then
+    if WillUnravelBreakRestrictedCharacter( item_key ) then
+        local data = GetSkinData(item_key)
+        local character = data.base_prefab
+        local body = subfmt(STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_RESTRICTED_BODY, {character=STRINGS.CHARACTER_NAMES[character]})
+
+		TheFrontEnd:PushScreen(PopupDialogScreen(
+			STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_TITLE,
+			body,
+			{{ text = STRINGS.UI.BARTERSCREEN.OK, cb = function() TheFrontEnd:PopScreen() self:_DoCommerce(item_key) end },
+			 { text = STRINGS.UI.BARTERSCREEN.CANCEL, cb = function() TheFrontEnd:PopScreen() end }}))
+		return
+    elseif WillUnravelBreakEnsemble( item_key ) then
         local _, reward_item = IsItemInCollection(item_key)
         local body = subfmt(STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_BODY, {ensemble_name=STRINGS.SET_NAMES[reward_item], reward_name=GetSkinName(reward_item)})
         
@@ -628,6 +669,7 @@ function ItemExplorer:_UpdateItemSelectedInfo(item_key)
     else
         self.can_show_steam = false
         self.can_show_pack = false
+        self.store_btn:Hide()
     end
 
     
@@ -729,7 +771,9 @@ function ItemExplorer:_CreateScrollingGridItem(context, scroll_index, width, hei
 
     w.UpdateSelectionState = function(w_self)
         local item_data = w_self.data
-        w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key), item_data.is_dlc_owned)
+        if item_data.item_key then --do we have bad data? but wwhhhhhyyy???? and hoooowwww???
+            w_self:SetInteractionState(IsDataSelected(context, item_data), item_data.is_owned, item_data.is_interaction_target, IsUserCommerceBuyAllowedOnItem(item_data.item_key), item_data.is_dlc_owned)
+        end
     end
 
     return w
@@ -803,6 +847,7 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
         end
     end
 
+    
 
     --Sort the data that is going into the list
     local sort_type = Profile:GetItemSortMode()    
@@ -814,7 +859,12 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
     elseif sort_type == "SORT_RARITY" then
         sort_fn = function(item_key_a, item_key_b)
             return CompareItemDataForSortByRarity(item_key_a, item_key_b)
-        end      
+        end
+    elseif sort_type == "SORT_COUNT" then
+		local item_counts = GetOwnedItemCounts()
+        sort_fn = function(item_key_a, item_key_b)
+            return CompareItemDataForSortByCount(item_key_a, item_key_b, item_counts)
+        end
     else --"SORT_RELEASE" or nil
         sort_fn = function(item_key_a, item_key_b)
             return CompareItemDataForSortByRelease(item_key_a, item_key_b)
@@ -844,7 +894,7 @@ function ItemExplorer:OnControl(control, down)
                 self:_ShowMarketplaceForInteractTarget()
                 return true
             elseif self.can_show_pack then
-                TheFrontEnd:FadeToScreen( TheFrontEnd:GetActiveScreen(), function() return PurchasePackScreen( nil, nil, self.last_interaction_target.item_key ) end, nil )
+                TheFrontEnd:FadeToScreen( TheFrontEnd:GetActiveScreen(), function() return PurchasePackScreen( nil, nil, { initial_item_key = self.last_interaction_target.item_key }) end, nil )
                 return true
 			end
         elseif not down and control == CONTROL_MAP then

@@ -11,6 +11,7 @@ local function ondeploy(inst, pt)
     if lp ~= nil then
         lp.Transform:SetPosition(pt:Get())
         inst.components.stackable:Get():Remove()
+        PreventCharacterCollisionsWithPlacedObjects(lp)
         lp.sg:GoToState("spawn")
     end
 end

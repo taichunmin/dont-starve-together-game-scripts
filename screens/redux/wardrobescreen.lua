@@ -54,8 +54,6 @@ function WardrobeScreen:_DoInit()
     self.characterquote:SetHAlign(ANCHOR_MIDDLE)
     self.characterquote:SetVAlign(ANCHOR_TOP)
     self.characterquote:SetPosition(0,-20)
-    self.characterquote:SetRegionSize(300, 60)
-    self.characterquote:EnableWordWrap(true)
     self.characterquote:SetColour(UICOLOURS.IVORY)
 
     -- Can't load skins until above widgets exist. Can't create ClothingExplorerPanel until skins are loaded.
@@ -304,7 +302,13 @@ function WardrobeScreen:_SetPortrait()
         SetOvalPortraitTexture(self.heroportrait, herocharacter)
     end
 
-    self.characterquote:SetString(STRINGS.SKIN_QUOTES[skin] or STRINGS.CHARACTER_QUOTES[herocharacter] or "")
+    self.characterquote:SetMultilineTruncatedString(STRINGS.SKIN_QUOTES[skin] or STRINGS.CHARACTER_QUOTES[herocharacter] or "",
+        3, --maxlines
+        300, --maxwidth, 
+        55, --maxcharsperline,
+        true, --ellipses,
+        false --shrink_to_fit
+    )
 end
 
 function WardrobeScreen:OnBecomeActive()
@@ -313,6 +317,12 @@ function WardrobeScreen:OnBecomeActive()
         for key,sub_screen in pairs(self.subscreener.sub_screens) do
             sub_screen:RefreshInventory()
         end
+
+        --Check if they even own this character or not, so we can prompt the user
+        if not self.did_once and not IsCharacterOwned( self.currentcharacter ) then
+            DisplayCharacterUnownedPopup( self.currentcharacter, self.subscreener)
+        end
+        self.did_once = true
     end
 end
 

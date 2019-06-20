@@ -62,7 +62,7 @@ function NotificationWidget:OnRecipeMade(data)
 		end
 		params.tint = TINT_GOOD
 		params.icons = { 
-			{atlas = "images/inventoryimages.xml", texture = data.product..".tex"}, 
+			{atlas = GetInventoryItemAtlas(data.product..".tex"), texture = data.product..".tex"}, 
 		}
 	end
 
@@ -101,7 +101,8 @@ local function SetupCoins(coins, size, tint)
 			value:SetHAlign(ANCHOR_RIGHT)
 			value:SetPosition(width + text_w/2 , 0)
 
-			local coin = root:AddChild(Image("images/inventoryimages.xml", "quagmire_coin"..tostring(coin_num)..".tex"))
+			local img_name =  "quagmire_coin"..tostring(coin_num)..".tex"
+			local coin = root:AddChild(Image( GetInventoryItemAtlas(img_name), img_name))
 			coin:ScaleToSize(size, size)
 			coin:SetPosition(width + text_w + size/2, 1)
 			coin:SetEffect("shaders/ui_cc.ksh")

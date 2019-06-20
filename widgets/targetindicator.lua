@@ -53,6 +53,7 @@ local TargetIndicator = Class(Widget, function(self, owner, target)
     self.isGhost = checkbit(self.userflags, USERFLAGS.IS_GHOST)
     self.isCharacterState1 = checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_1)
     self.isCharacterState2 = checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_2)
+    self.isCharacterState3 = checkbit(self.userflags, USERFLAGS.CHARACTER_STATE_3)
 
     self.is_mod_character = target ~= nil and target.prefab ~= nil and table.contains(MODCHARACTERLIST, target.prefab)
     self.target = target
@@ -113,6 +114,7 @@ function TargetIndicator:OnUpdate()
         self.isGhost = checkbit(userflags, USERFLAGS.IS_GHOST)
         self.isCharacterState1 = checkbit(userflags, USERFLAGS.CHARACTER_STATE_1)
         self.isCharacterState2 = checkbit(userflags, USERFLAGS.CHARACTER_STATE_2)
+        self.isCharacterState3 = checkbit(userflags, USERFLAGS.CHARACTER_STATE_3)
         self.headbg:SetTexture(DEFAULT_ATLAS, self.isGhost and "avatar_ghost_bg.tex" or "avatar_bg.tex")
         self.head:SetTexture(self:GetAvatarAtlas(), self:GetAvatar(), DEFAULT_AVATAR)
     end
@@ -244,7 +246,8 @@ function TargetIndicator:GetAvatarAtlas()
         local starting = self.isGhost and "avatar_ghost_" or "avatar_"
         local ending =
             (self.isCharacterState1 and "_1" or "")..
-            (self.isCharacterState2 and "_2" or "")
+            (self.isCharacterState2 and "_2" or "")..
+            (self.isCharacterState3 and "_3" or "")
 
         return location..starting..self.target.prefab..ending..".xml"
     end
@@ -255,7 +258,8 @@ function TargetIndicator:GetAvatar()
     local starting = self.isGhost and "avatar_ghost_" or "avatar_"
     local ending =
         (self.isCharacterState1 and "_1" or "")..
-        (self.isCharacterState2 and "_2" or "")
+        (self.isCharacterState2 and "_2" or "")..
+        (self.isCharacterState3 and "_3" or "")
 
     return self.target.prefab ~= nil
         and self.target.prefab ~= ""

@@ -47,6 +47,9 @@ local function fn()
     inst:AddTag("pointy")
     inst:AddTag("superjump")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --aoeweapon_leap (from aoeweapon_leap component) added to pristine state for optimization
     inst:AddTag("aoeweapon_leap")
 

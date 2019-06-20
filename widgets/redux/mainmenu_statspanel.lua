@@ -4,35 +4,49 @@ local easing = require "easing"
 local Widget = require "widgets/widget"
 local TEMPLATES = require "widgets/redux/templates"
 
+local ImageButton = require "widgets/imagebutton"
+
 local NUM_RECENT_ITEMS = 4
 
-local MainMenuStatsPanel = Class(Widget, function(self)
+local MainMenuStatsPanel = Class(Widget, function(self, config)
     Widget._ctor(self, "MainMenuStatsPanel")
+
+	self.config = config
 
 	local width = 300
 	self.width = width
 
-    local item_root = self:AddChild(Widget("death_root"))
-    item_root:SetPosition(380, -200)
-    local death_label = item_root:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.MOST_COMMON_DEATH, UICOLOURS.GOLD_SELECTED))
-    death_label:SetPosition(0,15)
-    death_label:SetRegionSize(width,30)
-    local divider = item_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
-    divider:SetScale(0.5)
-    divider:SetPosition(0,0)
+	local center_x = 0
+	local center_y = 0
+    local motd_w = width
+	local motd_cell_size = {width = motd_w, height = motd_w/16*9}
+	local text_padding = 13
 
-	local deaths = self:FindMostCommonDeaths()
-	if #deaths == 0 then
-		table.insert(deaths, STRINGS.UI.PLAYERSUMMARYSCREEN.NO_DEATHS)
-	end
-	for i = 1, math.min(3, #deaths) do
-		local death = item_root:AddChild(Text(UIFONT, 25, ""))
-		death:SetPosition(0, -5 - i * 30)
-		death:SetAutoSizingString(deaths[i], width)
-	end
+	local item_root = self:AddChild(Widget("store_root"))
+    item_root:SetPosition(-50, -90)
+
+	
+	self.image = item_root:AddChild(ImageButton("images/stats_panel_motd.xml", "stats_panel_motd.tex"))
+	self.image:ForceImageSize(motd_cell_size.width, motd_cell_size.height)
+	self.image:SetNormalScale(0.4,0.4)
+	self.image:SetFocusScale(0.41,0.41)
+	self.image:SetOnClick( function() config.store_cb() end )
+
+	local max_w = motd_cell_size.width - text_padding * 2
+	local title = self.image.image:AddChild(Text(BODYTEXTFONT, 44, "", UICOLOURS.HIGHLIGHT_GOLD))
+	title:SetAutoSizingString(STRINGS.UI.STATSPANEL.MOTD_TITLE, max_w)
+	title:SetHAlign(ANCHOR_LEFT)
+	title:SetPosition(-230,180)
+
+	local body = self.image.image:AddChild(Text(BODYTEXTFONT, 48, "", UICOLOURS.GOLD_SELECTED))
+	body:SetMultilineTruncatedString(STRINGS.UI.STATSPANEL.MOTD_BODY, 3, 800, nil, true)
+	body:SetHAlign(ANCHOR_LEFT)
+	body:SetPosition(0,-160)
+		
+
 
     item_root = self:AddChild(Widget("friend_root"))
-    item_root:SetPosition(380, -50)
+    item_root:SetPosition(-50, -220)
     local death_label = item_root:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.MOST_COMMON_FRIENDS, UICOLOURS.GOLD_SELECTED))
     death_label:SetPosition(0,15)
     death_label:SetRegionSize(width,30)
@@ -50,7 +64,11 @@ local MainMenuStatsPanel = Class(Widget, function(self)
 	self:RefreshFriends()
 
 	self.recent_items = self:AddChild(self:BuildItemsSummary(width))
-	self.recent_items:SetPosition(-50, -50)
+	self.recent_items:SetPosition(380, -30)
+
+	self.focus_forward = self.image
+
+	self.hide_items = IsDailyGiftItemPending()
 end)
 
 function MainMenuStatsPanel:RefreshFriends()
@@ -68,6 +86,7 @@ function MainMenuStatsPanel:RefreshFriends()
 end
 
 function MainMenuStatsPanel:OnBecomeActive()
+	self.hide_items = IsDailyGiftItemPending()
     self.recent_items:UpdateItems()
 	self:RefreshFriends()
 end
@@ -92,7 +111,7 @@ function MainMenuStatsPanel:FindMostCommonDeaths()
         return a_deaths > b_deaths
     end)
 
-	return causes;
+	return causes
 end
 
 function MainMenuStatsPanel:BuildItemsSummary(width)
@@ -133,7 +152,7 @@ function MainMenuStatsPanel:BuildItemsSummary(width)
 		unopened_msg:Hide()
 
 		new_root.UpdateItems = function()
-		    if not TheInventory:HasDownloadedInventory() then
+		    if self.hide_items or not TheInventory:HasDownloadedInventory() then
 				for i, item in ipairs(items) do
 					item:Hide()
 				end

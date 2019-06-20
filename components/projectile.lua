@@ -166,8 +166,8 @@ end
 
 function Projectile:Miss(target)
     local attacker = self.owner
-    if self.owner.components.combat == nil and self.owner.components.weapon ~= nil and self.owner.components.inventoryitem ~= nil then
-        attacker = self.owner.components.inventoryitem.owner
+    if attacker ~= nil and attacker.components.combat == nil and attacker.components.weapon ~= nil and attacker.components.inventoryitem ~= nil then
+        attacker = attacker.components.inventoryitem.owner
     end
     StopTrackingDelayOwner(self)
     self:Stop()

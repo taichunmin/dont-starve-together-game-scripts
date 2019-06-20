@@ -57,10 +57,45 @@ local function onhit(inst)
     end
 end
 
+local function OnUpdatePhysicsRadius(inst, data)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local mindist = math.huge
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+        if v.entity:IsVisible() then
+            local d = v:GetDistanceSqToPoint(x, y, z)
+            d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0
+            if d < mindist then
+                if d <= 0 then
+                    mindist = 0
+                    break
+                end
+                mindist = d
+            end
+        end
+    end
+    local radius = math.clamp(mindist, 0, inst.physicsradiusoverride)
+    if radius > 0 then
+        if radius ~= data.radius then
+            data.radius = radius
+            inst.Physics:SetCapsule(radius, 2)
+            inst.Physics:Teleport(x, y, z)
+        end
+        if data.ischaracterpassthrough then
+            data.ischaracterpassthrough = false
+            inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+        end
+        if radius >= inst.physicsradiusoverride then
+            inst._physicstask:Cancel()
+            inst._physicstask = nil
+        end
+    end
+end
+
 local function onbuilt(inst)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:PushAnimation("closed", false)
     inst.SoundEmitter:PlaySound("dontstarve/common/wardrobe_craft")
+    PreventCharacterCollisionsWithPlacedObjects(inst)
 end
 
 local function onsave(inst, data)
@@ -84,7 +119,8 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
-    MakeObstaclePhysics(inst, .8)
+    inst:SetPhysicsRadiusOverride(.8)
+    MakeObstaclePhysics(inst, inst.physicsradiusoverride)
 
     inst:AddTag("structure")
 

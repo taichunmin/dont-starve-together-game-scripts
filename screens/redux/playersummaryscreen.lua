@@ -131,7 +131,7 @@ function PlayerSummaryScreen:DoInit()
     if not TheInput:ControllerAttached() then
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
-                    self:_Close()
+                    self:Close()
                 end
             ))
     end
@@ -425,6 +425,8 @@ function PlayerSummaryScreen:OnBecomeActive()
     self:_RefreshMostCommonFriend()
     self:_RefreshClientData()
     self:StartMusic()
+
+    DisplayInventoryFailedPopup( self )
 end
 
 function PlayerSummaryScreen:_RefreshTitles()
@@ -478,44 +480,29 @@ end
 function PlayerSummaryScreen:_RefreshClientData()
     -- Always update the puppet so it doesn't have the rank unless appropriate.
     self:_RefreshPuppet()
-    if TheInventory:HasDownloadedInventory() then
-        for i,w in ipairs(self.waiting_for_inventory) do
-            w:Enable()
-        end
-        -- Force focus to change to widgets are correctly redrawn.
-        self.menu:SetFocus(2)
-        self.menu:SetFocus()
-
-        self.doodad_count:SetCount(TheInventory:GetCurrencyAmount())
-        if self.experiencebar then
-            local profileflair = GetMostRecentlySelectedItem(self.user_profile, "profileflair")
-            self.experiencebar:UpdateExperienceForLocalUser(profileflair)
-        end
-        self.new_items:UpdateItems()
-        self:_RefreshTitles()
-    else
-        self:_ScheduleRefresh()
+    
+    for i,w in ipairs(self.waiting_for_inventory) do
+        w:Enable()
     end
+    -- Force focus to change to widgets are correctly redrawn.
+    self.menu:SetFocus(2)
+    self.menu:SetFocus()
+
+    self.doodad_count:SetCount(TheInventory:GetCurrencyAmount())
+    if self.experiencebar then
+        local profileflair = GetMostRecentlySelectedItem(self.user_profile, "profileflair")
+        self.experiencebar:UpdateExperienceForLocalUser(profileflair)
+    end
+    self.new_items:UpdateItems()
+    self:_RefreshTitles()
 end
 
-function PlayerSummaryScreen:_ScheduleRefresh()
-    -- Player could navigate to this screen before inventory finishes
-    -- downloading. Keep looking for updated data until it's ready.
-    if self.refresh_task then
-        self.refresh_task:Cancel()
-        self.refresh_task = nil
-    end
-    self.refresh_task = self.inst:DoTaskInTime(2, function()
-		self.refresh_task = nil
-        self:_RefreshClientData()
-    end)
-end
 
 function PlayerSummaryScreen:OnControl(control, down)
     if PlayerSummaryScreen._base.OnControl(self, control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
-        self:_Close()
+        self:Close()
         return true
     end
 end
@@ -560,7 +547,7 @@ function PlayerSummaryScreen:StopMusic()
     end
 end
 
-function PlayerSummaryScreen:_Close()
+function PlayerSummaryScreen:Close()
     self:StopMusic()
     TheFrontEnd:FadeBack()
 end

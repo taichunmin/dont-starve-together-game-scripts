@@ -75,10 +75,11 @@ end
 local function CheckFocusTarget(inst)
     if inst._focustarget ~= nil and (
             not inst._focustarget:IsValid() or
-            inst._focustarget.components.health:IsDead() or
+            (inst._focustarget.components.health ~= nil and inst._focustarget.components.health:IsDead()) or
             inst._focustarget:HasTag("playerghost")
         ) then
         inst._focustarget = nil
+        inst:RemoveTag("notaunt")
     end
     return inst._focustarget
 end
@@ -156,6 +157,7 @@ end
 
 local function FocusTarget(inst, target)
     inst._focustarget = target
+    inst:AddTag("notaunt")
 
     if target ~= nil then
         if inst.components.locomotor.walkspeed ~= TUNING.BEEGUARD_DASH_SPEED then

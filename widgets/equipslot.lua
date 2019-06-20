@@ -9,12 +9,11 @@ local EquipSlot = Class(ItemSlot, function(self, equipslot, atlas, bgim, owner)
     self.inst:ListenForEvent("newactiveitem", function(owner, data)
         if data.item ~= nil and
             data.item.replica.equippable ~= nil and
-            equipslot == data.item.replica.equippable:EquipSlot() then
-            self:ScaleTo(self.base_scale, self.highlight_scale, 0.125)
-            self.highlight = true
-        elseif self.highlight then
-            self.highlight = false
-            self:ScaleTo(self.highlight_scale, self.base_scale, 0.125)
+            equipslot == data.item.replica.equippable:EquipSlot() and
+            not data.item.replica.equippable:IsRestricted(owner) then
+            self:LockHighlight()
+        else
+            self:UnlockHighlight()
         end
     end, owner)
 end)
@@ -30,7 +29,8 @@ function EquipSlot:OnControl(control, down)
             local active_item = inventory:GetActiveItem()
             if active_item ~= nil then
                 if active_item.replica.equippable ~= nil and
-                    self.equipslot == active_item.replica.equippable:EquipSlot() then
+                    self.equipslot == active_item.replica.equippable:EquipSlot() and
+                    not active_item.replica.equippable:IsRestricted(self.owner) then
                     if self.tile ~= nil and self.tile.item ~= nil then
                         inventory:SwapEquipWithActiveItem()
                     else

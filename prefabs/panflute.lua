@@ -38,6 +38,9 @@ local function fn()
     inst.AnimState:SetBuild("pan_flute")
     inst.AnimState:PlayAnimation("idle")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

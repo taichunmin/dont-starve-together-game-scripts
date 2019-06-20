@@ -144,7 +144,11 @@ local function ondeath(inst, deadthing, killer)
         inst._playerlink.components.leader ~= nil and
         inst.components.inventoryitem.owner == nil and
         deadthing ~= nil and
-        not (deadthing:HasTag("wall") or deadthing:HasTag("smashable") or deadthing:HasTag("engineering")) then
+        not (deadthing:HasTag("wall") or
+            deadthing:HasTag("balloon") or
+            deadthing:HasTag("groundspike") or
+            deadthing:HasTag("smashable") or
+            deadthing:HasTag("engineering")) then
 
         if deadthing:IsValid() then
             if not inst:IsNear(deadthing, 16) then

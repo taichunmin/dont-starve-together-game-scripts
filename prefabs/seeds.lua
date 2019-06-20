@@ -1,4 +1,5 @@
 require "prefabs/veggies"
+require "prefabutil"
 
 local assets =
 {
@@ -9,6 +10,7 @@ local prefabs =
 {
     "seeds_cooked",
     "spoiled_food",
+    "plant_normal_ground",
 }
 
 for k,v in pairs(VEGGIES) do
@@ -32,6 +34,14 @@ local function pickproduct(inst)
     return "carrot"
 end
 
+local function OnDeploy(inst, pt)--, deployer, rot)
+    local plant = SpawnPrefab("plant_normal_ground")
+    plant.components.crop:StartGrowing(inst.components.plantable.product(inst), inst.components.plantable.growtime)
+    plant.Transform:SetPosition(pt.x, 0, pt.z)
+    plant.SoundEmitter:PlaySound("dontstarve/wilson/plant_seeds")
+    inst:Remove()
+end
+
 local function common(anim, cookable)
     local inst = CreateEntity()
 
@@ -47,6 +57,8 @@ local function common(anim, cookable)
     inst.AnimState:SetRayTestOnBB(true)
 
     if cookable then
+        inst:AddTag("deployedplant")
+
         --cookable (from cookable component) added to pristine state for optimization
         inst:AddTag("cookable")
     end
@@ -77,7 +89,6 @@ local function common(anim, cookable)
     MakeHauntableLaunchAndPerish(inst)
 
     inst:AddComponent("perishable")
-
     inst.components.perishable:SetPerishTime(TUNING.PERISH_SUPERSLOW)
     inst.components.perishable:StartPerishing()
     inst.components.perishable.onperishreplacement = "spoiled_food"
@@ -100,6 +111,11 @@ local function raw()
     inst.components.plantable.growtime = TUNING.SEEDS_GROW_TIME
     inst.components.plantable.product = pickproduct
 
+    inst:AddComponent("deployable")
+    inst.components.deployable:SetDeployMode(DEPLOYMODE.PLANT)
+    inst.components.deployable.restrictedtag = "plantkin"
+    inst.components.deployable.ondeploy = OnDeploy
+
     return inst
 end
 
@@ -111,11 +127,12 @@ local function cooked()
     end
 
     inst.components.edible.healthvalue = TUNING.HEALING_TINY
-    inst.components.edible.hungervalue = TUNING.CALORIES_TINY/2
+    inst.components.edible.hungervalue = TUNING.CALORIES_TINY / 2
     inst.components.perishable:SetPerishTime(TUNING.PERISH_MED)
 
     return inst
 end
 
 return Prefab("seeds", raw, assets, prefabs),
-    Prefab("seeds_cooked", cooked, assets)
+    Prefab("seeds_cooked", cooked, assets),
+    MakePlacer("seeds_placer", "plant_normal_ground", "plant_normal_ground", "placer")

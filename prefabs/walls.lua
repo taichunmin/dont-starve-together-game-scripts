@@ -271,6 +271,7 @@ function MakeWallType(data)
             MakeMediumBurnable(inst)
             MakeLargePropagator(inst)
             inst.components.burnable.flammability = .5
+            inst.components.burnable.nocharring = true
 
             --lame!
             if data.name == MATERIALS.WOOD then

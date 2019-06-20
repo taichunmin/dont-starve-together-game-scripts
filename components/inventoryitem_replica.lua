@@ -1,5 +1,3 @@
-local DEFAULT_ATLAS = "images/inventoryimages.xml"
-
 local InventoryItem = Class(function(self, inst)
     self.inst = inst
 
@@ -12,11 +10,13 @@ local InventoryItem = Class(function(self, inst)
 
         inst:ListenForEvent("percentusedchange", function(inst, data) self.classified:SerializePercentUsed(data.percent) end)
         inst:ListenForEvent("perishchange", function(inst, data) self.classified:SerializePerish(data.percent) end)
+        inst:ListenForEvent("forceperishchange", function(inst) self.classified:ForcePerishDirty() end)
         inst:ListenForEvent("rechargechange", function(inst, data) self.classified:SerializeRecharge(data.percent, data.overtime) end)
 
         if inst.components.deployable ~= nil then
             self:SetDeployMode(inst.components.deployable.mode)
             self:SetDeploySpacing(inst.components.deployable.spacing)
+            self:SetDeployRestrictedTag(inst.components.deployable.restrictedtag)
             self:SetUseGridPlacer(inst.components.deployable.usegridplacer)
         end
 
@@ -29,6 +29,7 @@ local InventoryItem = Class(function(self, inst)
         --     Avoiding asserts, but hopefully comments are enough =)
         if inst.components.equippable ~= nil then
             self:SetWalkSpeedMult(inst.components.equippable.walkspeedmult or 1)
+            self:SetEquipRestrictedTag(inst.components.equippable.restrictedtag)
         elseif inst.components.saddler ~= nil then
             self:SetWalkSpeedMult(inst.components.saddler.speedmult or 1)
         end
@@ -85,6 +86,14 @@ function InventoryItem:CanGoInContainer()
     return self.classified ~= nil and self.classified.cangoincontainer:value()
 end
 
+function InventoryItem:SetCanOnlyGoInPocket(canonlygoinpocket)
+    self.classified.canonlygoinpocket:set(canonlygoinpocket)
+end
+
+function InventoryItem:CanOnlyGoInPocket()
+    return self.classified ~= nil and self.classified.canonlygoinpocket:value()
+end
+
 function InventoryItem:SetImage(imagename)
     self.classified.image:set(imagename ~= nil and (imagename..".tex") or 0)
 end
@@ -97,14 +106,14 @@ function InventoryItem:GetImage()
 end
 
 function InventoryItem:SetAtlas(atlasname)
-    self.classified.atlas:set(atlasname ~= nil and atlasname ~= DEFAULT_ATLAS and resolvefilepath(atlasname) or 0)
+    self.classified.atlas:set(atlasname ~= nil and resolvefilepath(atlasname) or 0)
 end
 
 function InventoryItem:GetAtlas()
     return self.classified ~= nil and
         self.classified.atlas:value() ~= 0 and
         self.classified.atlas:value() or
-        DEFAULT_ATLAS
+        GetInventoryItemAtlas(self:GetImage())
 end
 
 function InventoryItem:SetOwner(owner)
@@ -196,14 +205,14 @@ function InventoryItem:SetDeployMode(deploymode)
     self.classified.deploymode:set(deploymode)
 end
 
-function InventoryItem:IsDeployable()
+function InventoryItem:IsDeployable(deployer)
     if self.inst.components.deployable ~= nil then
-        return true
-    elseif self.classified ~= nil then
-        return self.classified.deploymode:value() ~= DEPLOYMODE.NONE
-    else
+        return self.inst.components.deployable:IsDeployable(deployer)
+    elseif self.classified == nil or self.classified.deploymode:value() == DEPLOYMODE.NONE then
         return false
     end
+    local restrictedtag = self.classified.deployrestrictedtag:value()
+    return restrictedtag == nil or restrictedtag == 0 or (deployer ~= nil and deployer:HasTag(restrictedtag))
 end
 
 function InventoryItem:SetDeploySpacing(deployspacing)
@@ -220,10 +229,14 @@ function InventoryItem:DeploySpacingRadius()
     end
 end
 
-function InventoryItem:CanDeploy(pt, mouseover)
+function InventoryItem:SetDeployRestrictedTag(restrictedtag)
+    self.classified.deployrestrictedtag:set(restrictedtag or 0)
+end
+
+function InventoryItem:CanDeploy(pt, mouseover, deployer)
     if self.inst.components.deployable ~= nil then
-        return self.inst.components.deployable:CanDeploy(pt, mouseover)
-    elseif self.classified == nil then
+        return self.inst.components.deployable:CanDeploy(pt, mouseover, deployer)
+    elseif not self:IsDeployable(deployer) then
         return false
     elseif self.classified.deploymode:value() == DEPLOYMODE.ANYWHERE then
         return TheWorld.Map:IsPassableAtPoint(pt:Get())
@@ -250,7 +263,7 @@ function InventoryItem:GetDeployPlacerName()
     elseif self.classified ~= nil and self.classified.usegridplacer:value() then
         return "gridplacer"
     end
-    return (self.inst.prefab or "").."_placer"
+    return self.inst.overridedeployplacername or ((self.inst.prefab or "").."_placer")
 end
 
 function InventoryItem:SetAttackRange(attackrange)
@@ -296,6 +309,20 @@ function InventoryItem:GetWalkSpeedMult()
     else
         return 1
     end
+end
+
+function InventoryItem:SetEquipRestrictedTag(restrictedtag)
+    self.classified.equiprestrictedtag:set(restrictedtag or 0)
+end
+
+function InventoryItem:GetEquipRestrictedTag()
+    if self.inst.components.equippable ~= nil then
+        return self.inst.components.equippable:GetRestrictedTag()
+    end
+    return self.classified ~= nil
+        and self.classified.equiprestrictedtag:value() ~= 0
+        and self.classified.equiprestrictedtag:value()
+        or nil
 end
 
 function InventoryItem:SetMoistureLevel(moisture)

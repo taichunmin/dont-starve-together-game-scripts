@@ -1059,7 +1059,15 @@ function RequestShutdown()
     Shutdown()
 end
 
+function DoWorldOverseerShutdown()
+    if TheWorld ~= nil and TheWorld.ismastershard and TheWorld.components.worldoverseer ~= nil then
+        TheWorld.components.worldoverseer:QuitAll()
+    end
+end
+
 function Shutdown()
+    DoWorldOverseerShutdown()
+
     SimShuttingDown = true
 
     Print(VERBOSITY.DEBUG, 'Ending the sim now!')
@@ -1172,7 +1180,7 @@ end
 local function postsavefn()
     TheNet:Disconnect(true)
     EnableAllMenuDLC()
-
+    
     if TheNet:GetIsHosting() then
         TheSystemService:StopDedicatedServers()
     end
@@ -1187,6 +1195,8 @@ local function savefn()
     if TheWorld == nil then
         postsavefn()
     elseif TheWorld.ismastersim then
+        DoWorldOverseerShutdown()
+        
         for i, v in ipairs(AllPlayers) do
             v:OnDespawn()
         end

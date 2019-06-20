@@ -20,7 +20,7 @@ return {
         {
         	WRONGKEY = "That doesn't go there!",
         	KLAUS = "It's too dangerous!",
-        	QUAGMIRE_WRONGKEY = "Aw...It's the wrong one.",
+        	QUAGMIRE_WRONGKEY = "Aw... It's the wrong one.",
         },
         ACTIVATE = 
 		{
@@ -281,25 +281,26 @@ return {
     --YOTP--
     ANNOUNCE_LEAVE_MINIGAME = "We'll leave this sign for someone else.",
 
-	BATTLECRY =
-	{
-		GENERIC = "En garde!",
-		PIG = "We hate it! Horrible pig!",
-		PREY = "We will put you in our web!",
-		SPIDER = "Hey, wanna play?",
-		SPIDER_WARRIOR = "Why can't we just get along?!",
-		DEER = "Hopefully we're venomous!",
-	},
-	COMBAT_QUIT =
-	{
-		GENERIC = "Well, we would have won!",
-		PIG = "Another day, pig.",
-		PREY = "Speedy thing!",
-		SPIDER = "We didn't actually want to hurt you.",
-		SPIDER_WARRIOR = "Simmer down, friend.",
-	},
-	DESCRIBE =
-	{
+    BATTLECRY =
+    {
+        GENERIC = "En garde!",
+        PIG = "We hate it! Horrible pig!",
+        PREY = "We will put you in our web!",
+        SPIDER = "Hey, wanna play?",
+        SPIDER_WARRIOR = "Why can't we just get along?!",
+        DEER = "Hopefully we're venomous!",
+    },
+    COMBAT_QUIT =
+    {
+        GENERIC = "Well, we would have won!",
+        PIG = "Another day, pig.",
+        PREY = "Speedy thing!",
+        SPIDER = "We didn't actually want to hurt you.",
+        SPIDER_WARRIOR = "Simmer down, friend.",
+    },
+
+    DESCRIBE =
+    {
         PLAYER =
         {
             GENERIC = "Hey! Hi %s!",
@@ -309,107 +310,107 @@ return {
             GHOST = "Don't worry, %s, we'll find you a heart!",
             FIRESTARTER = "%s, you lit a fire!",
         },
-		WILSON =
-		{
-			GENERIC = "Hi %s! Nice weather we're having!",
-			ATTACKER = "Why are you being so mean, %s?",
-			MURDERER = "Meanie! We will stop you no matter what!",
-			REVIVER = "%s doesn't believe in ghosts, but he believes in us!",
-			GHOST = "You're looking much paler than usual, %s!",
-			FIRESTARTER = "Uh... Is your hair smoking, %s?",
+        WILSON =
+        {
+            GENERIC = "Hi %s! Nice weather we're having!",
+            ATTACKER = "Why are you being so mean, %s?",
+            MURDERER = "Meanie! We will stop you no matter what!",
+            REVIVER = "%s doesn't believe in ghosts, but he believes in us!",
+            GHOST = "You're looking much paler than usual, %s!",
+            FIRESTARTER = "Uh... Is your hair smoking, %s?",
         },
-		WOLFGANG =
-		{
-			GENERIC = "Hi %s! Have you been working out?",
-			ATTACKER = "Hey %s, you look upset about something.",
-			MURDERER = "You're just a big bully!",
-			REVIVER = "%s's nice! I wish he'd stop messing up our head fur, though.",
-			GHOST = "I'm sure you're the strongest ghost, %s. Let's get a heart though.",
-			FIRESTARTER = "%s, no!! Fire can hurt you!",
-		},
-		WAXWELL =
-		{
-			GENERIC = "Hi %s! Lookin' dapper!",
-			ATTACKER = "%s looks eviler than usual...",
-			MURDERER = "You're the real monster, %s!",
-			REVIVER = "Wow, %s is really nice! He's helping people!",
-			GHOST = "Aw %s, no one deserves to be stuck like that!",
-			FIRESTARTER = "Don't burn our things please. We like them.",
-		},
-		WX78 =
-		{
-			GENERIC = "Hi %s! You look very non-organic today!",
-			ATTACKER = "We thought you were a friendly robot, %s!",
-			MURDERER = "Let us introduce you to our world wide web! Sh-sha!",
-			REVIVER = "Aww. We'd beep-boop %s on the nose if they had one!",
-			GHOST = "Bad day destroying humans, %s? Tomorrow will be better!",
-			FIRESTARTER = "Maybe they didn't know fire is dangerous to us.",
-		},
-		WILLOW =
-		{
-			GENERIC = "Hi %s! How's Bernie?",
-			ATTACKER = "%s's playing with fire. Err...",
-			MURDERER = "You're gonna get burned, %s!",
-			REVIVER = "%s's like a burnt marshmallow. Crispy on the outside, gooey on the inside!",
-			GHOST = "Uh-oh! Does that hurt, %s?",
-			FIRESTARTER = "Another fire? Well, as long as you're happy...",
-		},
-		WENDY =
-		{
-			GENERIC = "Hi %s! Let's play, okay?",
-			ATTACKER = "Are you angry at me, %s?",
-			MURDERER = "We're taking my friendship bracelet back!",
-			REVIVER = "%s always plays nice with ghosts.",
-			GHOST = "Don't worry, %s! Our spider friends will help bring you back!",
-			FIRESTARTER = "Uhh, uh-oh, let's play a different game, %s.",
-		},
-		WOODIE =
-		{
-			GENERIC = "Hi %s, hi Lucy!",
-			ATTACKER = "%s looks angry today.",
-			MURDERER = "You need to treat people nicer, %s!",
-			REVIVER = "%s is gruff, but nice.",
-			GHOST = "Wanna go heart-hunting with us, %s?",
-			BEAVER = "%s's being gnawghty.",
-			BEAVERGHOST = "Can I pet your ears or will our claws swish through?",
-			FIRESTARTER = "Um. I think you lit a fire, %s.",
-		},
-		WICKERBOTTOM =
-		{
-			GENERIC = "Hello Ms. %s!",
-			ATTACKER = "Uh-oh! We're in trouble with Ms. %s!",
-			MURDERER = "Killer! Does this mean we don't have to do our homework?!",
-			REVIVER = "Ms. %s is very smart and wise. She's neat!",
-			GHOST = "Don't worry Ms. %s, we'll find you a heart!",
-			FIRESTARTER = "Ms. %s! We already had our combustion lessons!",
-		},
-		WES =
-		{
-			GENERIC = "Hey! Hi %s!",
-			ATTACKER = "Maybe we can talk this out?",
-			MURDERER = "You're supposed to play nice!",
-			REVIVER = "%s is super nice. And his makeup's cool!",
-			GHOST = "We'll help you get back on your feet, %s!",
-			FIRESTARTER = "You were just supposed to mime lighting it!",
-		},
-		WEBBER = 
-		{
-			GENERIC = "A spiderfriend! Hi %s!",
-			ATTACKER = "Ah! We look scary when we're mad!",
-			MURDERER = "We won't let you hurt our friends!",
-			REVIVER = "%s likes helping ghosts, just like us.",
-			GHOST = "Oh no! We should help ourselves!",
-			FIRESTARTER = "Spiderfriend, why did you light that fire?",
-		},
-		WATHGRITHR = 
-		{
-			GENERIC = "Wow, %s! You're lookin' tough!",
-			ATTACKER = "%s looks really mean. And tough.",
-			MURDERER = "We're not scared of pointy spearsticks! Fight!",
-			REVIVER = "%s is a super valiant lady.",
-			GHOST = "Wow! Even as a ghost you're super tough, %s!",
-			FIRESTARTER = "You're supposed to put fires out when you're finished.",
-		},
+        WOLFGANG =
+        {
+            GENERIC = "Hi %s! Have you been working out?",
+            ATTACKER = "Hey %s, you look upset about something.",
+            MURDERER = "You're just a big bully!",
+            REVIVER = "%s's nice! I wish he'd stop messing up our head fur, though.",
+            GHOST = "I'm sure you're the strongest ghost. Let's get a heart though.",
+            FIRESTARTER = "%s, no!! Fire can hurt you!",
+        },
+        WAXWELL =
+        {
+            GENERIC = "Hi %s! Lookin' dapper!",
+            ATTACKER = "%s looks eviler than usual...",
+            MURDERER = "You're the real monster, %s!",
+            REVIVER = "Wow, %s is really nice! He's helping people!",
+            GHOST = "Aw %s, no one deserves to be stuck like that!",
+            FIRESTARTER = "Don't burn our things please. We like them.",
+        },
+        WX78 =
+        {
+            GENERIC = "Hi %s! You look very non-organic today!",
+            ATTACKER = "We thought you were a friendly robot, %s!",
+            MURDERER = "Let us introduce you to our world wide web! Sh-sha!",
+            REVIVER = "Aww. We'd beep-boop %s on the nose if they had one!",
+            GHOST = "Bad day destroying humans, %s? Tomorrow will be better!",
+            FIRESTARTER = "Maybe they didn't know fire is dangerous to us.",
+        },
+        WILLOW =
+        {
+            GENERIC = "Hi %s! How's Bernie?",
+            ATTACKER = "%s's playing with fire. Err...",
+            MURDERER = "You're gonna get burned, %s!",
+            REVIVER = "She's like a burnt marshmallow. Crispy outside, super mushy inside!",
+            GHOST = "Uh-oh! Does that hurt, %s?",
+            FIRESTARTER = "Another fire? Well, as long as you're happy...",
+        },
+        WENDY =
+        {
+            GENERIC = "Hi %s! Let's play, okay?",
+            ATTACKER = "Are you angry at me, %s?",
+            MURDERER = "We're taking my friendship bracelet back!",
+            REVIVER = "%s always plays nice with ghosts.",
+            GHOST = "Don't worry! Our spider friends will help bring you back!",
+            FIRESTARTER = "Uhh, uh-oh, let's play a different game, %s.",
+        },
+        WOODIE =
+        {
+            GENERIC = "Hi %s, hi Lucy!",
+            ATTACKER = "%s looks angry today.",
+            MURDERER = "You need to treat people nicer, %s!",
+            REVIVER = "%s is gruff, but nice.",
+            GHOST = "Wanna go heart-hunting with us, %s?",
+            BEAVER = "%s's being gnawghty.",
+            BEAVERGHOST = "Can I pet your ears or will our claws swish through?",
+            FIRESTARTER = "Um. I think you lit a fire, %s.",
+        },
+        WICKERBOTTOM =
+        {
+            GENERIC = "Hello Ms. %s!",
+            ATTACKER = "Uh-oh! We're in trouble with Ms. %s!",
+            MURDERER = "Killer! Does this mean we don't have to do our homework?!",
+            REVIVER = "Ms. %s is very smart and wise. She's neat!",
+            GHOST = "Don't worry Ms. %s, we'll find you a heart!",
+            FIRESTARTER = "Ms. %s! We already had our combustion lessons!",
+        },
+        WES =
+        {
+            GENERIC = "Hey! Hi %s!",
+            ATTACKER = "Maybe we can talk this out?",
+            MURDERER = "You're supposed to play nice!",
+            REVIVER = "%s is super nice. And his makeup's cool!",
+            GHOST = "We'll help you get back on your feet, %s!",
+            FIRESTARTER = "You were just supposed to mime lighting it!",
+        },
+        WEBBER =
+        {
+            GENERIC = "A spiderfriend! Hi %s!",
+            ATTACKER = "Ah! We look scary when we're mad!",
+            MURDERER = "We won't let you hurt our friends!",
+            REVIVER = "%s likes helping ghosts, just like us.",
+            GHOST = "Oh no! We should help ourselves!",
+            FIRESTARTER = "Spiderfriend, why did you light that fire?",
+        },
+        WATHGRITHR =
+        {
+            GENERIC = "Wow, %s! You're lookin' tough!",
+            ATTACKER = "%s looks really mean. And tough.",
+            MURDERER = "We're not scared of pointy spearsticks! Fight!",
+            REVIVER = "%s is a super valiant lady.",
+            GHOST = "Wow! Even as a ghost you're super tough, %s!",
+            FIRESTARTER = "You're supposed to put fires out when you're finished.",
+        },
         WINONA =
         {
             GENERIC = "Hi %s! Build anything neat today?",
@@ -419,6 +420,24 @@ return {
             GHOST = "Aw, I'm sorry that happened to you, %s.",
             FIRESTARTER = "Don't light fires, %s!",
         },
+        WORTOX =
+        {
+            GENERIC = "Hey %s! Your horns look nice!",
+            ATTACKER = "Hey, play nice, %s!",
+            MURDERER = "Oh no! %s, what did you do!",
+            REVIVER = "Grandpa always said laughter was the best medicine!",
+            GHOST = "Oh no, %s! You're hurt!",
+            FIRESTARTER = "Don't play tricks, Mr. Imp!",
+        },
+        WORMWOOD =
+        {
+            GENERIC = "Hey, it's my good friend, %s!",
+            ATTACKER = "Hey, %s! Friends don't hit friends!",
+            MURDERER = "Wickerbottom says we can't be friends anymore!",
+            REVIVER = "%s is really rooting for us!",
+            GHOST = "Poor %s! He died of loneliness!",
+            FIRESTARTER = "I don't think it's safe for you to be around fire.",
+        },
 
         MULTIPLAYER_PORTAL = "It's pretty... pretty scary!",
         MULTIPLAYER_PORTAL_MOONROCK = "Gosh. It's so sparkly!",
@@ -426,29 +445,30 @@ return {
         MOONROCKIDOL = "It looks kinda like an alien.",
         MOONROCKSEED = "Neat, it's a ball that floats by itself!",
 
-		BERNIE_INACTIVE =
-		{
-			BROKEN = "It's all busted up.",
-			GENERIC = "A teddy bear.",
-		},
-		BERNIE_ACTIVE = "That teddy bear is moving!",
+        BERNIE_INACTIVE =
+        {
+            BROKEN = "It's all busted up.",
+            GENERIC = "A teddy bear.",
+        },
+        BERNIE_ACTIVE = "That teddy bear is moving!",
+        BERNIE_BIG = "It's creepy and cute at the same time!!",
 
         LAVA_POND_ROCK = "Wow! A rock!",
 
         GLOMMER = "Nice eyes.",
-        GLOMMERFLOWER = 
+        GLOMMERFLOWER =
         {
-        	GENERIC = "It doesn't smell very nice.",
-        	DEAD = "I spoke too soon. It smells worse now.",
+            GENERIC = "It doesn't smell very nice.",
+            DEAD = "I spoke too soon. It smells worse now.",
         },
         GLOMMERWINGS = "I wish I'd at least ended up with wings. Sigh.",
         GLOMMERFUEL = "Yucky muck!",
         BELL = "Exactly the right amount of bell.",
-        STATUEGLOMMER = 
-        {	
-        	GENERIC = "A statue of some weird bug.",
-        	EMPTY = "Take that, rock bug!",
-    	},
+        STATUEGLOMMER =
+        {
+            GENERIC = "A statue of some weird bug.",
+            EMPTY = "Take that, rock bug!",
+        },
 
 		WEBBERSKULL = "How did this get here?",
 		WORMLIGHT = "It's gushing with light.",
@@ -2428,36 +2448,41 @@ return {
         QUAGMIRE_LAMP_SHORT = "We're almost as tall as this lamp.",
 
         --v2 Winona
-        WINONA_CATAPULT = 
+        WINONA_CATAPULT =
         {
-        	GENERIC = "We feel safer already!",
-        	OFF = "How come it's not on?",
-        	BURNING = "Oh, oh!",
-        	BURNT = "Oh no! It got burnt!",
+            GENERIC = "We feel safer already!",
+            OFF = "How come it's not on?",
+            BURNING = "Oh, oh!",
+            BURNT = "Oh no! It got burnt!",
         },
-        WINONA_SPOTLIGHT = 
+        WINONA_SPOTLIGHT =
         {
-        	GENERIC = "She made us a nightlight!",
-        	OFF = "How come it's not on?",
-        	BURNING = "Oh, oh!",
-        	BURNT = "Oh no! It got burnt!",
+            GENERIC = "She made us a nightlight!",
+            OFF = "How come it's not on?",
+            BURNING = "Oh, oh!",
+            BURNT = "Oh no! It got burnt!",
         },
-        WINONA_BATTERY_LOW = 
+        WINONA_BATTERY_LOW =
         {
-        	GENERIC = "It feeds hungry machines.",
-        	LOWPOWER = "We think it's running low.",
+            GENERIC = "It feeds hungry machines.",
+            LOWPOWER = "We think it's running low.",
             OFF = "Hey Winona! How do we fix it?",
             BURNING = "Oh, oh!",
             BURNT = "Oh no! It got burnt!",
         },
-        WINONA_BATTERY_HIGH = 
+        WINONA_BATTERY_HIGH =
         {
-        	GENERIC = "Machines think gem power is really tasty.",
-        	LOWPOWER = "We think it's running low.",
+            GENERIC = "Machines think gem power is really tasty.",
+            LOWPOWER = "We think it's running low.",
             OFF = "Winoooona! The thing broke!",
             BURNING = "Oh, oh!",
             BURNT = "Oh no! It got burnt!",
         },
+
+        --Wormwood
+        COMPOSTWRAP = "Double doodoo.",
+        ARMOR_BRAMBLE = "We're ready to let spikes fly!",
+        TRAP_BRAMBLE = "It's a very pointy planty trap!",
     },
     DESCRIBE_GENERIC = "Can we play with it?",
     DESCRIBE_TOODARK = "All our eyes stopped working!",

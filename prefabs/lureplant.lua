@@ -294,7 +294,8 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
-    MakeObstaclePhysics(inst, .7)
+    inst:SetPhysicsRadiusOverride(.7)
+    MakeObstaclePhysics(inst, inst.physicsradiusoverride)
 
     inst:AddTag("lureplant")
     inst:AddTag("hostile")

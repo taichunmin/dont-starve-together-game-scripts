@@ -36,6 +36,8 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("reeds.png")
 
+    inst:AddTag("plant")
+
     inst.AnimState:SetBank("grass")
     inst.AnimState:SetBuild("reeds")
     inst.AnimState:PlayAnimation("idle", true)
@@ -67,7 +69,7 @@ local function fn()
     MakeSmallBurnable(inst, TUNING.SMALL_FUEL)
     MakeSmallPropagator(inst)
     MakeNoGrowInWinter(inst)
-    MakeHauntableIgnite(inst)    
+    MakeHauntableIgnite(inst)
     ---------------------   
 
     return inst

@@ -201,7 +201,7 @@ end
 local OptionsScreen = Class(Screen, function(self, prev_screen)
 	Screen._ctor(self, "OptionsScreen")
 
-    self.show_language_options = (prev_screen ~= nil and prev_screen.name == "MultiplayerMainScreen") and IsConsole()
+    self.show_language_options = (prev_screen ~= nil and prev_screen.name == "MultiplayerMainScreen") and (IsConsole() or IsSteam())
 	self.show_datacollection = IsSteam() and not InGamePlay()
 	self.show_cinematics = not InGamePlay()
 

@@ -155,7 +155,8 @@ local function SetupValueDetails(dish, coins, parent, center, y, size)
 			value:SetHAlign(ANCHOR_RIGHT)
 			value:SetPosition(width + text_w/2 , y)
 
-			local coin = root:AddChild(Image("images/inventoryimages.xml", "quagmire_coin"..tostring(coin_num)..".tex"))
+			local img_name = "quagmire_coin"..tostring(coin_num)..".tex"
+			local coin = root:AddChild(Image(GetInventoryItemAtlas(img_name), img_name))
 			coin:ScaleToSize(size, size)
 			coin:SetPosition(width + text_w + size/2, y+1)
 			coin:SetEffect("shaders/ui_cc.ksh")
@@ -209,7 +210,8 @@ local function SetupRecipeIngredientDetails(recipe, parent, y)
 			backing:ScaleToSize(ingredient_size, ingredient_size)
 			backing:SetPosition(x + (i)*ingredient_size + (i-1)*x_spacing, y - ingredient_size/2 - (b-1)*(ingredient_size+8))
 
-			local img = inv_item_root:AddChild(Image("images/inventoryimages.xml", (ingredient_icon_fallback[items[i]] or items[i])..".tex"))
+			local img_name = (ingredient_icon_fallback[items[i]] or items[i])..".tex"
+			local img = inv_item_root:AddChild(Image(GetInventoryItemAtlas(img_name), img_name))
 			img:ScaleToSize(ingredient_size, ingredient_size)
 			img:SetPosition(backing:GetPosition())
 			img:SetEffect("shaders/ui_cc.ksh")
@@ -492,17 +494,17 @@ function QuagmireRecipeBook:BuildRecipeBook()
 		w.icon:SetEffect("shaders/ui_cc.ksh")
 
 
-		w.coin = w.recipie_root:AddChild(Image("images/inventoryimages.xml", "quagmire_coin1.tex"))
+		w.coin = w.recipie_root:AddChild(Image(GetInventoryItemAtlas("quagmire_coin1.tex"), "quagmire_coin1.tex"))
 		w.coin:ScaleToSize(coin_size, coin_size)
         w.coin:SetPosition(-base_size/2 + 23, -base_size/2 + 25)
 
-		w.silver = w.recipie_root:AddChild(Image("images/inventoryimages.xml", "quagmire_coin1.tex"))
+		w.silver = w.recipie_root:AddChild(Image(GetInventoryItemAtlas("quagmire_coin1.tex"), "quagmire_coin1.tex"))
 		w.silver:ScaleToSize(coin_size, coin_size)
         w.silver:SetPosition(-base_size/2 + 50, -base_size/2 + 25)
 
 		w.stations = {}
-		w.stations[2] = w.recipie_root:AddChild(Image("images/inventoryimages.xml", "quagmire_pot_small.tex"))
-		w.stations[1] = w.recipie_root:AddChild(Image("images/inventoryimages.xml", "quagmire_pot_small.tex"))
+		w.stations[2] = w.recipie_root:AddChild(Image(GetInventoryItemAtlas("quagmire_pot_small.tex"), "quagmire_pot_small.tex"))
+		w.stations[1] = w.recipie_root:AddChild(Image(GetInventoryItemAtlas("quagmire_pot_small.tex"), "quagmire_pot_small.tex"))
 
 		w.stations[1]:ScaleToSize(coin_size + 3, coin_size + 3)
         w.stations[1]:SetPosition(base_size/2 - 25, -base_size/2 + 25)
@@ -594,7 +596,6 @@ function QuagmireRecipeBook:BuildRecipeBook()
             name="", 
 			id = i,
 			id_str = string.format("%02i", i),
-			atlas = "images/inventoryimages.xml",
         })
 	end
 
@@ -618,7 +619,7 @@ function QuagmireRecipeBook:BuildRecipeBook()
 		self.all_recipes[id].recipe = recipe
 		self.all_recipes[id].icon = client_name..".tex"
 		if recipe.dish == nil then
-			self.all_recipes[id].atlas = "images/inventoryimages.xml"
+			self.all_recipes[id].atlas = GetInventoryItemAtlas(self.all_recipes[id].icon)
 		elseif not is_image_loaded then
 			self.all_recipes[id].atlas = "images/quagmire_food_common_inv_images_hires.xml"
 			self.all_recipes[id].icon = (recipe.station[1]=="pot" and "goop_" or "burnt_") .. recipe.dish .. ".tex"

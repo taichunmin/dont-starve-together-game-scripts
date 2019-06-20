@@ -73,6 +73,9 @@ local function fn()
     inst:AddTag("aoeblowdart_long")
     inst:AddTag("sharp")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     --rechargeable (from rechargeable component) added to pristine state for optimization
     inst:AddTag("rechargeable")
 

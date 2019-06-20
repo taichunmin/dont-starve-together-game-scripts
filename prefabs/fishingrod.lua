@@ -42,6 +42,11 @@ local function fn()
     --fishingrod (from fishingrod component) added to pristine state for optimization
     inst:AddTag("fishingrod")
 
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        --weapon (from weapon component) added to pristine state for optimization
+        inst:AddTag("weapon")
+    end
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

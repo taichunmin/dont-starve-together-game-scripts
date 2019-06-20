@@ -48,7 +48,7 @@ end
 local function ShouldAcceptItem(inst, item)
     if item.components.equippable ~= nil and item.components.equippable.equipslot == EQUIPSLOTS.HEAD then
         return true
-    elseif item.components.edible ~= nil then
+    elseif inst.components.eater:CanEat(item) then
         local foodtype = item.components.edible.foodtype
         if foodtype == FOODTYPE.MEAT or foodtype == FOODTYPE.HORRIBLE then
             return inst.components.follower.leader == nil or inst.components.follower:GetLoyaltyPercent() <= TUNING.PIG_FULL_LOYALTY_PERCENT
@@ -67,7 +67,20 @@ local function OnGetItemFromPlayer(inst, giver, item)
     --I eat food
     if item.components.edible ~= nil then
         --meat makes us friends (unless I'm a guard)
-        if item.components.edible.foodtype == FOODTYPE.MEAT or item.components.edible.foodtype == FOODTYPE.HORRIBLE then
+        if (    item.components.edible.foodtype == FOODTYPE.MEAT or
+                item.components.edible.foodtype == FOODTYPE.HORRIBLE
+            ) and
+            item.components.inventoryitem ~= nil and
+            (   --make sure it didn't drop due to pockets full
+                item.components.inventoryitem:GetGrandOwner() == inst or
+                --could be merged into a stack
+                (   not item:IsValid() and
+                    inst.components.inventory:FindItem(function(obj)
+                        return obj.prefab == item.prefab
+                            and obj.components.stackable ~= nil
+                            and obj.components.stackable:IsStack()
+                    end) ~= nil)
+            ) then
             if inst.components.combat:TargetIs(giver) then
                 inst.components.combat:SetTarget(nil)
             elseif giver.components.leader ~= nil and not (inst:HasTag("guard") or giver:HasTag("monster")) then

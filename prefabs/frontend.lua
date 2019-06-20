@@ -125,9 +125,6 @@ local assets =
     Asset("DYNAMIC_ATLAS", "images/lobbyscreen.xml"),
     Asset("PKGREF", "images/lobbyscreen.tex"),
 
-    --testing 
-    Asset("ATLAS", "images/inventoryimages.xml"),
-    Asset("IMAGE", "images/inventoryimages.tex"),
 
     Asset("ANIM", "anim/mod_player_build.zip"),
     
@@ -161,6 +158,10 @@ local assets =
     Asset("PKGREF", "images/thankyou_item_event2.tex"),
     Asset("DYNAMIC_ATLAS", "images/thankyou_item_popup_rog.xml"),
     Asset("PKGREF", "images/thankyou_item_popup_rog.tex"),
+
+	-- hard coded MotD for upsell (TODO: maybe try to fix this once we do proper MotD for non-Steam)
+   	Asset("DYNAMIC_ATLAS", "images/stats_panel_motd.xml"),
+   	Asset("PKGREF", "images/stats_panel_motd.tex"),
 
     --Credits screen
     Asset("SOUND", "sound/gramaphone.fsb"),

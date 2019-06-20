@@ -524,11 +524,13 @@ function Inventory:GetNextAvailableSlot(item)
                 return k, self.itemslots
             end
         end
-        local overflow = self:GetOverflowContainer()
-        if overflow ~= nil then
-            for k, v in pairs(overflow.slots) do
-                if v.prefab == prefabname and v.skinname == prefabskinname and v.components.stackable and not v.components.stackable:IsFull() then
-                    return k, overflow
+        if not (item.components.inventoryitem ~= nil and item.components.inventoryitem.canonlygoinpocket) then
+            local overflow = self:GetOverflowContainer()
+            if overflow ~= nil then
+                for k, v in pairs(overflow.slots) do
+                    if v.prefab == prefabname and v.skinname == prefabskinname and v.components.stackable and not v.components.stackable:IsFull() then
+                        return k, overflow
+                    end
                 end
             end
         end
@@ -580,25 +582,27 @@ function Inventory:CanAcceptCount(item, maxcount)
         end
     end
 
-    --check for empty space in our backpack
-    local overflow = self:GetOverflowContainer()
-    if overflow ~= nil then
-        for k = 1, overflow.numslots do
-            local v = overflow.slots[k]
-            if v ~= nil then
-                if v.prefab == item.prefab and v.skinname == item.skinname and v.components.stackable ~= nil then
-                    acceptcount = acceptcount + v.components.stackable:RoomLeft()
+    if not (item.components.inventoryitem ~= nil and item.components.inventoryitem.canonlygoinpocket) then
+        --check for empty space in our backpack
+        local overflow = self:GetOverflowContainer()
+        if overflow ~= nil then
+            for k = 1, overflow.numslots do
+                local v = overflow.slots[k]
+                if v ~= nil then
+                    if v.prefab == item.prefab and v.skinname == item.skinname and v.components.stackable ~= nil then
+                        acceptcount = acceptcount + v.components.stackable:RoomLeft()
+                        if acceptcount >= stacksize then
+                            return stacksize
+                        end
+                    end
+                elseif overflow:CanTakeItemInSlot(item, k) then
+                    if overflow.acceptsstacks or stacksize <= 1 then
+                        return stacksize
+                    end
+                    acceptcount = acceptcount + 1
                     if acceptcount >= stacksize then
                         return stacksize
                     end
-                end
-            elseif overflow:CanTakeItemInSlot(item, k) then
-                if overflow.acceptsstacks or stacksize <= 1 then
-                    return stacksize
-                end
-                acceptcount = acceptcount + 1
-                if acceptcount >= stacksize then
-                    return stacksize
                 end
             end
         end
@@ -762,6 +766,7 @@ function Inventory:GiveItem(inst, slot, src_pos)
     --can't hold it!
     if self.activeitem == nil and
         self.maxslots > 0 and
+        not inst.components.inventoryitem.canonlygoinpocket and
         not (self.inst.components.playercontroller ~= nil and
             self.inst.components.playercontroller.isclientcontrollerattached) then
         inst.components.inventoryitem:OnPutInInventory(self.inst)
@@ -806,7 +811,7 @@ function Inventory:SetActiveItem(item)
 end
 
 function Inventory:Equip(item, old_to_active)
-    if item == nil or item.components.equippable == nil or not item:IsValid() then
+    if item == nil or item.components.equippable == nil or not item:IsValid() or item.components.equippable:IsRestricted(self.inst) then
         return
     end
 
@@ -1510,7 +1515,7 @@ function Inventory:ControllerUseItemOnSceneFromInvTile(item, target, actioncode,
         elseif item.components.inventoryitem:GetGrandOwner() ~= self.inst then
             --V2C: This is now invalid as playercontroller will now send this
             --     case to the proper call to move items between controllers.
-        elseif actioncode == nil or CanEntitySeeTarget(self.inst, target) then
+        elseif actioncode == nil or target == nil or CanEntitySeeTarget(self.inst, target) then
             act = self.inst.components.playercontroller:GetItemUseAction(item, target)
         end
 

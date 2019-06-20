@@ -182,7 +182,12 @@ function WxpLobbyPanel:ShowAchievement(achievement, animate)
 					dish_img:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, LEVELUP_TIME)
 				end
 			end
-			local food_img = img:AddChild(Image(dish == nil and "images/inventoryimages.xml" or "images/quagmire_food_inv_images_hires_"..recipe_name..".xml", recipe_name..".tex"))
+			local atlas = "images/quagmire_food_inv_images_hires_"..recipe_name..".xml"
+			if dish == nil then
+				atlas = GetInventoryItemAtlas(recipe_name..".tex")
+			end
+
+			local food_img = img:AddChild(Image(atlas, recipe_name..".tex"))
 			food_img:SetSize(img_width - 8, img_width - 8)
 			if animate then
 				food_img:SetTint(1,1,1,0)

@@ -82,6 +82,10 @@ local function sapling_fn(build, anim, growprefab, tag, fireproof, overrideloot)
         inst.AnimState:SetBuild(build)
         inst.AnimState:PlayAnimation(anim)
 
+        if not fireproof then
+            inst:AddTag("plant")
+        end
+
         inst:AddTag(tag)
 
         inst.entity:SetPristine()

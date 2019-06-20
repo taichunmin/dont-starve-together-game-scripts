@@ -53,6 +53,14 @@ local function OnAttacked(inst, data)
     end
 end
 
+local function OnDeath(inst, data)
+    if data ~= nil and data.afflicter ~= nil and data.afflicter:HasTag("crazy") and inst.components.lootdropper.loot == nil then
+        --max one nightmarefuel if killed by a crazy NPC (e.g. Bernie)
+        inst.components.lootdropper:SetLoot({ "nightmarefuel" })
+        inst.components.lootdropper:SetChanceLootTable(nil)
+    end
+end
+
 local function ScheduleCleanup(inst)
     inst:DoTaskInTime(math.random() * TUNING.NIGHTMARE_SEGS.DAWN * TUNING.SEG_TIME, function()
         inst.components.lootdropper:SetLoot({})
@@ -143,6 +151,7 @@ local function MakeShadowCreature(data)
         inst.components.lootdropper:SetChanceLootTable('nightmare_creature')
 
         inst:ListenForEvent("attacked", OnAttacked)
+        inst:ListenForEvent("death", OnDeath)
 
         inst:WatchWorldState("isnightmaredawn", OnNightmareDawn)
 

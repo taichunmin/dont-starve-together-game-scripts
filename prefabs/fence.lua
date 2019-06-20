@@ -573,6 +573,7 @@ local function MakeWall(name, builds, isdoor, klaussackkeyid)
             MakeMediumBurnable(inst)
             MakeMediumPropagator(inst)
             inst.components.burnable.flammability = .5
+            inst.components.burnable.nocharring = true
 
             MakeHauntableWork(inst)
         end

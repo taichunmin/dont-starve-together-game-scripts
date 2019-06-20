@@ -78,7 +78,7 @@ function Talker:Chatter(strtbl, strid, time, forcetext)
 end
 
 function Talker:OnRemoveFromEntity()
-    self.inst:RemoveEventCalback("chatterdirty", OnChatterDirty)
+    self.inst:RemoveEventCallback("chatterdirty", OnChatterDirty)
     if TheWorld.ismastersim then
         self.inst:RemoveTag("ignoretalking")
     end

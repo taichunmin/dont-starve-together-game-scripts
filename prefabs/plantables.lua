@@ -35,6 +35,8 @@ local function make_plantable(data)
 
         MakeInventoryPhysics(inst)
 
+        inst:AddTag("deployedplant")
+
         inst.AnimState:SetBank(data.bank or data.name)
         inst.AnimState:SetBuild(data.build or data.name)
         inst.AnimState:PlayAnimation("dropped")

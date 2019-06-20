@@ -117,7 +117,7 @@ end
 --end
 
 local function DoAreaAttack(inst)
-    inst.components.combat:DoAreaAttack(inst, 2, nil, nil, nil, { "INLIMBO" })
+    inst.components.combat:DoAreaAttack(inst, 2, nil, nil, nil, { "INLIMBO", "notarget", "noattack", "flight", "invisible", "playerghost" })
 end
 
 local function OnDeath(inst)
@@ -161,6 +161,7 @@ local function fn()
     inst.DynamicShadow:SetSize(1, .5)
 
     inst:AddTag("cattoyairborne")
+    inst:AddTag("balloon")
 
     inst.entity:SetPristine()
 

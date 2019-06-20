@@ -161,6 +161,28 @@ function Health:IsTakingFireDamage()
     end
 end
 
+function Health:SetIsTakingFireDamageLow(istakingfiredamagelow)
+    if self.classified ~= nil then
+        self.classified.istakingfiredamagelow:set(istakingfiredamagelow)
+    end
+end
+
+function Health:IsTakingFireDamageLow()
+    if self.inst.components.health ~= nil then
+        return self.inst.components.health.takingfiredamagelow == true
+    else
+        return self.classified ~= nil and self.classified.istakingfiredamagelow:value()
+    end
+end
+
+function Health:IsTakingFireDamageFull()
+    if self.inst.components.health ~= nil then
+        return self.inst.components.health.takingfiredamage and not self.inst.components.health.takingfiredamagelow
+    else
+        return self.classified ~= nil and self.classified.istakingfiredamage:value() and not self.classified.istakingfiredamagelow:value()
+    end
+end
+
 function Health:SetCanHeal(canheal)
     self._cannotheal:set(not canheal)
 end

@@ -111,7 +111,7 @@ function Grower:OnLoad(data, newents)
     end
 end
 
-function Grower:PlantItem(item)
+function Grower:PlantItem(item, doer)
     if item.components.plantable == nil then
         return false
     end
@@ -125,14 +125,15 @@ function Grower:PlantItem(item)
         prefab = item.components.plantable.product or item.prefab
     end
 
-    for k,v in ipairs(self.croppoints) do
+    self.inst:AddTag("NOCLICK")
+
+    local pos = self.inst:GetPosition()
+
+    for i, v in ipairs(self.croppoints) do
         local plant1 = SpawnPrefab("plant_normal")
         plant1.persists = false
-        self.inst:AddTag("NOCLICK")
-
-        plant1.components.crop:StartGrowing(prefab, item.components.plantable.growtime*self.growrate, self.inst)
-        local pos = Vector3(self.inst.Transform:GetWorldPosition()) + v
-        plant1.Transform:SetPosition(pos:Get())
+        plant1.components.crop:StartGrowing(prefab, item.components.plantable.growtime * self.growrate, self.inst)
+        plant1.Transform:SetPosition(pos.x + v.x, pos.y + v.y, pos.z + v.z)
 
         self.crops[plant1] = true
     end
@@ -143,6 +144,8 @@ function Grower:PlantItem(item)
         self.onplantfn(item)
     end
     item:Remove()
+
+    TheWorld:PushEvent("itemplanted", { doer = doer, pos = pos }) --this event is pushed in other places too
 
     return true
 end

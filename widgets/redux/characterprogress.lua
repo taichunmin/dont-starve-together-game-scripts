@@ -19,6 +19,7 @@ local CharacterProgress = Class(Widget, function(self, character, cbPortraitFocu
     self:RefreshInventory()
 
     self.focus_forward = self.icon
+    self.show_heirloom_bonus = false
 end)
 
 function CharacterProgress:_BuildProgressBanner(herocharacter)
@@ -47,21 +48,33 @@ function CharacterProgress:_GetUnlockPercent(num_owned, num_need)
     end
 end
 
+
 function CharacterProgress:RefreshInventory()
-    local num_owned, num_need = GetSkinCollectionCompletionForHero(self.herocharacter)
+    local num_owned, num_need, bonus = GetSkinCollectionCompletionForHero(self.herocharacter)
     local percent = self:_GetUnlockPercent(num_owned, num_need)
 
     self.characterprogress:SetString(string.format("%0.0f%%", percent*100))
     self.progressbar:GetAnimState():SetPercent("fill_progress", percent)
+
+    local colour = WHITE
+    if self.show_heirloom_bonus and bonus then
+        self.progressbar:GetAnimState():Show("platinum")
+        self.progressbar:GetAnimState():Hide("gold")
+        colour = SKIN_RARITY_COLORS.HeirloomElegant
+    else
+        self.progressbar:GetAnimState():Show("gold")
+        self.progressbar:GetAnimState():Hide("platinum")
+    end
+    self.progressbar:GetAnimState():SetMultColour(unpack(colour))
+    
+
+    self.icon:RefreshInventory()
 end
 
 function CharacterProgress:SetCharacter(hero)
     self.herocharacter = hero
 	self.icon:SetCharacter(hero)
     self:RefreshInventory()
-    --local colour = CHARACTER_COLOURS[hero] or CHARACTER_COLOURS.default
-    --self.characterprogress:SetColour(colour)
-    --self.progressbar:GetAnimState():SetMultColour(unpack(colour))
 end
 
 return CharacterProgress

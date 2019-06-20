@@ -32,7 +32,7 @@ local HEAVY_WORK_ACTIONS =
     HAMMER = true,
     MINE = true,
 }
-local HEAVY_SMASHABLE_TAGS = { "smashable", "quakedebris", "_combat", "_inventoryitem", "campfire" }
+local HEAVY_SMASHABLE_TAGS = { "smashable", "quakedebris", "_combat", "_inventoryitem", "NPC_workable" }
 for k, v in pairs(HEAVY_WORK_ACTIONS) do
     table.insert(HEAVY_SMASHABLE_TAGS, k.."_workable")
 end
@@ -167,8 +167,9 @@ local _GroundDetectionUpdate = _ismastersim and function(debris, override_densit
                         elseif v.components.workable ~= nil then
                             if v.sg == nil or not v.sg:HasStateTag("busy") then
                                 local work_action = v.components.workable:GetWorkAction()
-                                --V2C: nil action for campfires
-                                if (work_action == nil or HEAVY_WORK_ACTIONS[work_action.id]) and
+                                --V2C: nil action for NPC_workable (e.g. campfires)
+                                if (    (work_action == nil and v:HasTag("NPC_workable")) or
+                                        (work_action ~= nil and HEAVY_WORK_ACTIONS[work_action.id]) ) and
                                     (work_action ~= ACTIONS.DIG
                                     or (v.components.spawner == nil and
                                         v.components.childspawner == nil)) then

@@ -13,7 +13,7 @@ local MotdManager = Class(function(self)
 end)
 
 function MotdManager:IsEnabled()
-	return IsSteam()
+	return IsSteam() or IsRail()
 end
 
 function MotdManager:Initialize()
@@ -120,7 +120,7 @@ end
 
 function MotdManager:QueryForMotdInfo(remaining_retries)
 	local url = TheSim:GetMOTDQueryURL()
-	print("[MOTD] Downloading info")
+	print("[MOTD] Downloading info from", url)
 
 	TheSim:QueryServer( url, function(motd_json, isSuccessful, resultCode) 
 		local status, motd_info = "", "" 

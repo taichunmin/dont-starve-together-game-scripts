@@ -43,6 +43,14 @@ local function common_fn(bank, build)
 
     inst:AddTag("sharp")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
+    if TheNet:GetServerGameMode() ~= "quagmire" then
+        --weapon (from weapon component) added to pristine state for optimization
+        inst:AddTag("weapon")
+    end
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

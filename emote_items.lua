@@ -31,7 +31,7 @@ EMOTE_ITEMS =
 	emote_dance_chicken =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "chicken",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -50,7 +50,7 @@ EMOTE_ITEMS =
 	emote_dance_robot =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "robot",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -69,7 +69,7 @@ EMOTE_ITEMS =
 	emote_dance_step =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "step",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -105,7 +105,7 @@ EMOTE_ITEMS =
 	emote_flex =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "flex",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -123,7 +123,7 @@ EMOTE_ITEMS =
 	emote_impatient =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "impatient",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -141,7 +141,7 @@ EMOTE_ITEMS =
 	emote_jumpcheer =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "cheer",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -159,7 +159,7 @@ EMOTE_ITEMS =
 	emote_laugh =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "laugh",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -177,7 +177,7 @@ EMOTE_ITEMS =
 	emote_shrug =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "shrug",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },
@@ -220,7 +220,7 @@ EMOTE_ITEMS =
 	emote_slowclap =
 	{
 		rarity = "Distinguished",
-		rarity_modifier = "EventModifier",
+		rarity_modifier = "Woven",
 		cmd_name = "slowclap",
 		type = "emote",
 		skin_tags = { "LAVA", "EMOTE", },

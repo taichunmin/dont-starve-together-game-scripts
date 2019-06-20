@@ -28,10 +28,18 @@ local CharacterSelect = Class(Widget, function(self, owner, character_widget_cto
 end)
 
 function CharacterSelect:_BuildCharactersList(additionalCharacters)
-	local characters = ExceptionArrays(GetActiveCharacterList(), MODCHARACTEREXCEPTIONS_DST)
-	for i,hero in ipairs(additionalCharacters) do
+    local active_characters = ExceptionArrays(GetActiveCharacterList(), MODCHARACTEREXCEPTIONS_DST)
+    
+    local characters = {}
+    for _,hero in ipairs(active_characters) do
+        if TheNet:IsOnlineMode() or not IsRestrictedCharacter( hero ) then
+            table.insert(characters, hero)
+        end
+    end
+
+	for _,hero in ipairs(additionalCharacters) do
 		table.insert(characters, hero)
-	end
+    end
     return characters
 end
 

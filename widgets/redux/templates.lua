@@ -1668,7 +1668,7 @@ function TEMPLATES.ScrollingGrid(items, opts)
         -- Caller can force a peek height if they will add items to the list or
         -- have hidden empty widgets.
         peek_height = opts.widget_height * opts.peek_percent
-    elseif #items < opts.num_visible_rows * opts.num_columns then
+    elseif #items < math.floor(opts.num_visible_rows) * opts.num_columns then
         -- No peek if we won't scroll.
         -- This won't work if we later update the items in the grid. Would be
         -- nice if TrueScrollList could handle this but I think we'd need to

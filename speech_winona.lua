@@ -164,7 +164,12 @@ return {
 	ANNOUNCE_CRAFTING_FAIL = "How did I junk that up?!",
 	ANNOUNCE_DEERCLOPS = "Democrew incoming!",
 	ANNOUNCE_CAVEIN = "Uh... I hope everyone brought hardhats.",
-	ANNOUNCE_ANTLION_SINKHOLE = "Earthquake! I think?",
+	ANNOUNCE_ANTLION_SINKHOLE = 
+	{
+		"Earthquake! I think?",
+		"What's that?!",
+		"What on earth? The earth!",
+	},
 	ANNOUNCE_ANTLION_TRIBUTE =
 	{
         "Get a load of this!",
@@ -304,48 +309,49 @@ return {
 	},
 	DESCRIBE =
 	{
-		MULTIPLAYER_PORTAL = "That was a one-way ticket.",
-		MULTIPLAYER_PORTAL_MOONROCK = "Wow. Can't even see the weld joints.",
+        MULTIPLAYER_PORTAL = "That was a one-way ticket.",
+        MULTIPLAYER_PORTAL_MOONROCK = "Wow. Can't even see the weld joints.",
         CONSTRUCTION_PLANS = "Let's get building.",
         MOONROCKIDOL = "Do I gotta offer it up to something?",
         MOONROCKSEED = "I could learn a thing or two from this.",
-		ANTLION = 
-		{
-			GENERIC = "How's the weather up there?",
-			VERYHAPPY = "Looks like we're safe for awhile.",
-			UNHAPPY = "That is not a happy monster.",
-		},
-		ANTLIONTRINKET = "It's a colorful bucket.",
-		SANDSPIKE = "Hit and a miss!",
+        ANTLION =
+        {
+            GENERIC = "How's the weather up there?",
+            VERYHAPPY = "Looks like we're safe for awhile.",
+            UNHAPPY = "That is not a happy monster.",
+        },
+        ANTLIONTRINKET = "It's a colorful bucket.",
+        SANDSPIKE = "Hit and a miss!",
         SANDBLOCK = "Things are getting gritty!",
         GLASSSPIKE = "That's a hazardous decoration.",
         GLASSBLOCK = "It's a big hunk of glass.",
-		ABIGAIL_FLOWER = 
-		{ 
-			GENERIC = "What a nice little flower.",
-			LONG = "What a nice little flower.",
-			MEDIUM = "It's getting antsy.",
-			SOON = "Something's coming.",
-			HAUNTED_POCKET = "It wants down.",
-			HAUNTED_GROUND = "What do you want? Water?",
-		},
+        ABIGAIL_FLOWER =
+        {
+            GENERIC = "What a nice little flower.",
+            LONG = "What a nice little flower.",
+            MEDIUM = "It's getting antsy.",
+            SOON = "Something's coming.",
+            HAUNTED_POCKET = "It wants down.",
+            HAUNTED_GROUND = "What do you want? Water?",
+        },
 
-		BALLOONS_EMPTY = "No fun without Wes.",
-		BALLOON = "Oh! A balloon.",
+        BALLOONS_EMPTY = "No fun without Wes.",
+        BALLOON = "Oh! A balloon.",
 
-		BERNIE_INACTIVE =
-		{
-			BROKEN = "He's a bit of a fixer-upper.",
-			GENERIC = "This little guy's been well loved.",
-		},
+        BERNIE_INACTIVE =
+        {
+            BROKEN = "He's a bit of a fixer-upper.",
+            GENERIC = "This little guy's been well loved.",
+        },
 
-		BERNIE_ACTIVE = "Is he clockwork? Can I peek inside?",
-		
-		BOOK_BIRDS = "I was never much of a book learner.",
-		BOOK_TENTACLES = "I'm not really a \"book smarts\" kind of gal.",
-		BOOK_GARDENING = "I prefer to learn from experience.",
-		BOOK_SLEEP = "I already know how to sleep, thanks.",
-		BOOK_BRIMSTONE = "I prefer hands-on learning.",
+        BERNIE_ACTIVE = "Is he clockwork? Can I peek inside?",
+        BERNIE_BIG = "That girl knows how to put on a show.",
+
+        BOOK_BIRDS = "I was never much of a book learner.",
+        BOOK_TENTACLES = "I'm not really a \"book smarts\" kind of gal.",
+        BOOK_GARDENING = "I prefer to learn from experience.",
+        BOOK_SLEEP = "I already know how to sleep, thanks.",
+        BOOK_BRIMSTONE = "I prefer hands-on learning.",
 
         PLAYER =
         {
@@ -356,140 +362,159 @@ return {
             GHOST = "Stop whinin', %s, it's just a scratch!",
             FIRESTARTER = "You better not have singed any of my projects, %s.",
         },
-		WILSON = 
-		{
-			GENERIC = "Hey %s! How ya doin'?",
-			ATTACKER = "Hands to yourself, bucko!",
-			MURDERER = "Mad scientist! Get'em!",
-			REVIVER = "You're good people, scientist.",
-			GHOST = "Stop whinin', %s, it's just a scratch!",
-			FIRESTARTER = "You better not have singed any of my projects, scientist.",
-		},
-		WOLFGANG = 
-		{
-			GENERIC = "How you doin', big guy?",
-			ATTACKER = "I wouldn't wanna catch the business end of those mitts!",
-			MURDERER = "Watch out! He's got a taste fer blood now!",
-			REVIVER = "You're just a big softie, aintcha?",
-			GHOST = "Walk it off, big guy!",
-			FIRESTARTER = "Was that fire an accident, %s?",
-		},
-		WAXWELL = 
-		{
-			GENERIC = "So... %s.",
-			ATTACKER = "Don't make me noogie you, %s.",
-			MURDERER = "How many lives you plannin' on ruinin', %s?",
-			REVIVER = "Nice job, ya big walnut.",
-			GHOST = "I could just leave you like this, hey?",
-			FIRESTARTER = "Mysterious fires follow you like a plague, %s.",
-		},
-		WX78 = 
-		{
-			GENERIC = "C'mon, %s! Justa tiny peek under the hood!",
-			ATTACKER = "Yeesh. They're on the fritz again.",
-			MURDERER = "I'll reset you to factory standards, bot.",
-			REVIVER = "Ha! The bucket'o'bolts has feelings after all!",
-			GHOST = "Incredible! You gotta tell me how that works, %s!",
-			FIRESTARTER = "Your logic lets you set fires, %s? Why?",
-		},
-		WILLOW = 
-		{
-			GENERIC = "Good ta see ya, %s!",
-			ATTACKER = "Yer a workplace hazard, %s.",
-			MURDERER = "She's mad! Get'er!",
-			REVIVER = "Knew I could count on you, %s.",
-			GHOST = "Ha! You're a disaster, %s.",
-			FIRESTARTER = "Business as usual.",
-		},
-		WENDY = 
-		{
-			GENERIC = "Hey there, %s.",
-			ATTACKER = "Woah there, slugger!",
-			MURDERER = "She's not playin'! Murderer!",
-			REVIVER = "You got a sharp mind in that noggin, %s.",
-			GHOST = "I hope you left the other guy lookin' worse.",
-			FIRESTARTER = "Anythin' you wanna tell me about that fire, kiddo?",
-		},
-		WOODIE = 
-		{
-			GENERIC = "You down ta chop some trees for me later, %s?",
-			ATTACKER = "Watch where you're swingin' that thing, %s!",
-			MURDERER = "Yikes! Axe murderer!",
-			REVIVER = "You're a good, honest guy, %s.",
-			GHOST = "You're fine, %s, I've seen worse.",
-			BEAVER = "Well ain't that somethin'.",
-			BEAVERGHOST = "You're just a walkin' disaster, ain'tcha, %s?",
-			FIRESTARTER = "You're gonna start a forest fire, %s!",
-		},
-		WICKERBOTTOM = 
-		{
-			GENERIC = "How's life treatin' ya, grams?",
-			ATTACKER = "Yeesh, that ol' librarian packs a punch!",
-			MURDERER = "Watch out! Grams is on a rampage!",
-			REVIVER = "Don't worry grams, I won't read too much into it. Ha!",
-			GHOST = "You're a tough one, %s, I'll give ya that.",
-			FIRESTARTER = "A fire? Here I thought you were responsible, grams.",
-		},
-		WES = 
-		{
-			GENERIC = "Don't worry %s, I can talk enough for two. Ha!",
-			ATTACKER = "Didn't know ya had it in ya, %s!",
-			MURDERER = "Killer mime! I'll have nightmares tonight!",
-			REVIVER = "Thanks for the assist, %s.",
-			GHOST = "Let's getcha back on your feet, %s.",
-			FIRESTARTER = "You responsible for that fire there, %s?",
-		},
-		WEBBER = 
-		{
-			GENERIC = "How's life treating ya, kiddo?",
-			ATTACKER = "Yeesh, kid, dial it back!",
-			MURDERER = "Killer spider! Get it!",
-			REVIVER = "You did good, kid.",
-			GHOST = "You'll be fine, kid, yer a boxer.",
-			FIRESTARTER = "Alright, %s. Why'd ya set the fire?",
-		},
-		WATHGRITHR = 
-		{
-			GENERIC = "Hey, %s! Arm wrestle rematch later?",
-			ATTACKER = "Woah! Watch that right hook, %s!",
-			MURDERER = "Takin' the warrior thing too far, %s!",
-			REVIVER = "That was good work there, %s.",
-			GHOST = "Well that just won't do at all!",
-			FIRESTARTER = "Quit startin' fires, %s!",
-		},
-		WINONA = 
-		{
-			GENERIC = "That's a good lookin' gal!",
-			ATTACKER = "Ooo, I'm gonna disassemble you.",
-			MURDERER = "Pfft! I'd never murder so openly!",
-			REVIVER = "I owe ya one, %s.",
-			GHOST = "That is not a good look on you, %s.",
-			FIRESTARTER = "Haven't we lost enough to fires, %s?",
-		},
-        MIGRATION_PORTAL = 
+        WILSON =
+        {
+            GENERIC = "Hey %s! How ya doin'?",
+            ATTACKER = "Hands to yourself, bucko!",
+            MURDERER = "Mad scientist! Get'em!",
+            REVIVER = "You're good people, scientist.",
+            GHOST = "Stop whinin', %s, it's just a scratch!",
+            FIRESTARTER = "You better not have singed any of my projects, scientist.",
+        },
+        WOLFGANG =
+        {
+            GENERIC = "How you doin', big guy?",
+            ATTACKER = "I wouldn't wanna catch the business end of those mitts!",
+            MURDERER = "Watch out! He's got a taste fer blood now!",
+            REVIVER = "You're just a big softie, aintcha?",
+            GHOST = "Walk it off, big guy!",
+            FIRESTARTER = "Was that fire an accident, %s?",
+        },
+        WAXWELL =
+        {
+            GENERIC = "So... %s.",
+            ATTACKER = "Don't make me noogie you, %s.",
+            MURDERER = "How many lives you plannin' on ruinin', %s?",
+            REVIVER = "Nice job, ya big walnut.",
+            GHOST = "I could just leave you like this, hey?",
+            FIRESTARTER = "Mysterious fires follow you like a plague, %s.",
+        },
+        WX78 =
+        {
+            GENERIC = "C'mon, %s! Justa tiny peek under the hood!",
+            ATTACKER = "Yeesh. They're on the fritz again.",
+            MURDERER = "I'll reset you to factory standards, bot.",
+            REVIVER = "Ha! The bucket'o'bolts has feelings after all!",
+            GHOST = "Incredible! You gotta tell me how that works, %s!",
+            FIRESTARTER = "Your logic lets you set fires, %s? Why?",
+        },
+        WILLOW =
+        {
+            GENERIC = "Good ta see ya, %s!",
+            ATTACKER = "Yer a workplace hazard, %s.",
+            MURDERER = "She's mad! Get'er!",
+            REVIVER = "Knew I could count on you, %s.",
+            GHOST = "Ha! You're a disaster, %s.",
+            FIRESTARTER = "Business as usual.",
+        },
+        WENDY =
+        {
+            GENERIC = "Hey there, %s.",
+            ATTACKER = "Woah there, slugger!",
+            MURDERER = "She's not playin'! Murderer!",
+            REVIVER = "You got a sharp mind in that noggin, %s.",
+            GHOST = "I hope you left the other guy lookin' worse.",
+            FIRESTARTER = "Anythin' you wanna tell me about that fire, kiddo?",
+        },
+        WOODIE =
+        {
+            GENERIC = "You down ta chop some trees for me later, %s?",
+            ATTACKER = "Watch where you're swingin' that thing, %s!",
+            MURDERER = "Yikes! Axe murderer!",
+            REVIVER = "You're a good, honest guy, %s.",
+            GHOST = "You're fine, %s, I've seen worse.",
+            BEAVER = "Well ain't that somethin'.",
+            BEAVERGHOST = "You're just a walkin' disaster, ain'tcha, %s?",
+            FIRESTARTER = "You're gonna start a forest fire, %s!",
+        },
+        WICKERBOTTOM =
+        {
+            GENERIC = "How's life treatin' ya, grams?",
+            ATTACKER = "Yeesh, that ol' librarian packs a punch!",
+            MURDERER = "Watch out! Grams is on a rampage!",
+            REVIVER = "Don't worry grams, I won't read too much into it. Ha!",
+            GHOST = "You're a tough one, %s, I'll give ya that.",
+            FIRESTARTER = "A fire? Here I thought you were responsible, grams.",
+        },
+        WES =
+        {
+            GENERIC = "Don't worry %s, I can talk enough for two. Ha!",
+            ATTACKER = "Didn't know ya had it in ya, %s!",
+            MURDERER = "Killer mime! I'll have nightmares tonight!",
+            REVIVER = "Thanks for the assist, %s.",
+            GHOST = "Let's getcha back on your feet, %s.",
+            FIRESTARTER = "You responsible for that fire there, %s?",
+        },
+        WEBBER =
+        {
+            GENERIC = "How's life treating ya, kiddo?",
+            ATTACKER = "Yeesh, kid, dial it back!",
+            MURDERER = "Killer spider! Get it!",
+            REVIVER = "You did good, kid.",
+            GHOST = "You'll be fine, kid, yer a boxer.",
+            FIRESTARTER = "Alright, %s. Why'd ya set the fire?",
+        },
+        WATHGRITHR =
+        {
+            GENERIC = "Hey, %s! Arm wrestle rematch later?",
+            ATTACKER = "Woah! Watch that right hook, %s!",
+            MURDERER = "Takin' the warrior thing too far, %s!",
+            REVIVER = "That was good work there, %s.",
+            GHOST = "Well that just won't do at all!",
+            FIRESTARTER = "Quit startin' fires, %s!",
+        },
+        WINONA =
+        {
+            GENERIC = "That's a good lookin' gal!",
+            ATTACKER = "Ooo, I'm gonna disassemble you.",
+            MURDERER = "Pfft! I'd never murder so openly!",
+            REVIVER = "I owe ya one, %s.",
+            GHOST = "That is not a good look on you, %s.",
+            FIRESTARTER = "Haven't we lost enough to fires, %s?",
+        },
+        WORTOX =
+        {
+            GENERIC = "Hey, %s! Heard any good jokes lately?",
+            ATTACKER = "Keep them claws to yourself, how about?!",
+            MURDERER = "Look out! %s is positively demonic!",
+            REVIVER = "Thanks for the assist there, %s.",
+            GHOST = "Oof! You need a hand there, %s?",
+            FIRESTARTER = "Were you plannin' on putting that fire out?",
+        },
+        WORMWOOD =
+        {
+            GENERIC = "%s! How ya doin', ya big bean sprout?",
+            ATTACKER = "Yer on thin ice there, %s.",
+            MURDERER = "Time to roll up my sleeves and pluck a few weeds!",
+            REVIVER = "Keep up the good work there, bucko.",
+            GHOST = "You're not slackin' off, are ya?",
+            FIRESTARTER = "Watch where you're lightin' them fires!",
+        },
+
+        MIGRATION_PORTAL =
         {
             GENERIC = "Hellooo? Anyone in there?",
             OPEN = "Make way! I'm coming through!",
             FULL = "It's packed. I'll stay put.",
         },
-		GLOMMER = 
-		{
-			GENERIC = "Check out the peepers on this guy.",
-			SLEEPING = "He deserves the break.",
-		},
-		GLOMMERFLOWER = 
-		{
-			GENERIC = "That's one big flower.",
-			DEAD = "Did we not water it enough?",
-		},
-		GLOMMERWINGS = "You can see right through'em.",
-		GLOMMERFUEL = "Doesn't look useful.",
-		BELL = "There's always a stampede when the quittin' bell rings.",
-		STATUEGLOMMER = 
-		{	
-			GENERIC = "One weird sculpture.",
-			EMPTY = "The materials were worth more than the statue.",
-		},
+        GLOMMER =
+        {
+            GENERIC = "Check out the peepers on this guy.",
+            SLEEPING = "He deserves the break.",
+        },
+        GLOMMERFLOWER =
+        {
+            GENERIC = "That's one big flower.",
+            DEAD = "Did we not water it enough?",
+        },
+        GLOMMERWINGS = "You can see right through'em.",
+        GLOMMERFUEL = "Doesn't look useful.",
+        BELL = "There's always a stampede when the quittin' bell rings.",
+        STATUEGLOMMER =
+        {
+            GENERIC = "One weird sculpture.",
+            EMPTY = "The materials were worth more than the statue.",
+        },
 
 		LAVA_POND_ROCK = "That... is a rock.",
 		LAVA_POND_ROCK2 = "That... is a rock.",
@@ -2432,36 +2457,41 @@ return {
         QUAGMIRE_LAMP_SHORT = "That's a light.",
 
         --v2 Winona
-        WINONA_CATAPULT = 
+        WINONA_CATAPULT =
         {
-        	GENERIC = "Not a bad result considering the materials.",
-        	OFF = "Gotta hook it up to the generator.",
-        	BURNING = "Quick! Put it out!",
-        	BURNT = "Aw, nuts and bolts!",
+            GENERIC = "Not a bad result considering the materials.",
+            OFF = "Gotta hook it up to the generator.",
+            BURNING = "Quick! Put it out!",
+            BURNT = "Aw, nuts and bolts!",
         },
-        WINONA_SPOTLIGHT = 
+        WINONA_SPOTLIGHT =
         {
-        	GENERIC = "Sorry, Charlie.",
-        	OFF = "Gotta hook it up to the generator.",
-        	BURNING = "Quick! Put it out!",
-        	BURNT = "Criminy! My machine!",
+            GENERIC = "Sorry, Charlie.",
+            OFF = "Gotta hook it up to the generator.",
+            BURNING = "Quick! Put it out!",
+            BURNT = "Criminy! My machine!",
         },
-        WINONA_BATTERY_LOW = 
+        WINONA_BATTERY_LOW =
         {
-        	GENERIC = "That oughta do it.",
-        	LOWPOWER = "Just about out of juice.",
-        	OFF = "Needs some more nitre.",
-        	BURNING = "Quick! Put it out!",
-        	BURNT = "Aw, nuts and bolts!",
+            GENERIC = "That oughta do it.",
+            LOWPOWER = "Just about out of juice.",
+            OFF = "Needs some more nitre.",
+            BURNING = "Quick! Put it out!",
+            BURNT = "Aw, nuts and bolts!",
         },
-        WINONA_BATTERY_HIGH = 
+        WINONA_BATTERY_HIGH =
         {
-        	GENERIC = "I don't get how gems work, I just know they do.",
-        	LOWPOWER = "Gonna need a top up soon.",
-        	OFF = "Needs a few more'a those gem thingies.",
-        	BURNING = "Quick! Put it out!",
-        	BURNT = "Criminy! My machine!",
+            GENERIC = "I don't get how gems work, I just know they do.",
+            LOWPOWER = "Gonna need a top up soon.",
+            OFF = "Needs a few more'a those gem thingies.",
+            BURNING = "Quick! Put it out!",
+            BURNT = "Criminy! My machine!",
         },
+
+        --Wormwood
+        COMPOSTWRAP = "Heh. That bean sprout's a gross little guy.",
+        ARMOR_BRAMBLE = "Odd design. How do you wear it without pricking yourself?",
+        TRAP_BRAMBLE = "That lil plant fella whipped it up.",
     },
     DESCRIBE_GENERIC = "Incredible! I have no idea what that is.",
     DESCRIBE_TOODARK = "Low visibility causes workplace accidents!",

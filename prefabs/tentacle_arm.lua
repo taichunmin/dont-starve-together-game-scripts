@@ -112,6 +112,7 @@ local function fn()
     inst:AddTag("hostile")
     inst:AddTag("tentacle_pillar_arm")
     inst:AddTag("wet")
+    inst:AddTag("soulless")
 
     inst.entity:SetPristine()
 

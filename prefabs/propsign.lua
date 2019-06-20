@@ -136,6 +136,9 @@ local function fn()
     inst:AddTag("irreplaceable")
     inst:AddTag("nonpotatable")
 
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
+
     inst:SetPrefabNameOverride("homesign")
 
     inst.entity:SetPristine()

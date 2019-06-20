@@ -68,7 +68,7 @@ local function ShouldAcceptItem(inst, item)
             item.components.equippable.equipslot == EQUIPSLOTS.HEAD
         ) or
         (   --accept food, but not too many carrots for loyalty!
-            item.components.edible ~= nil and
+            inst.components.eater:CanEat(item) and
             (   (item.prefab ~= "carrot" and item.prefab ~= "carrot_cooked") or
                 inst.components.follower.leader == nil or
                 inst.components.follower:GetLoyaltyPercent() <= .9
@@ -79,7 +79,20 @@ end
 local function OnGetItemFromPlayer(inst, giver, item)
     --I eat food
     if item.components.edible ~= nil then
-        if item.prefab == "carrot" or item.prefab == "carrot_cooked" then
+        if (    item.prefab == "carrot" or
+                item.prefab == "carrot_cooked"
+            ) and
+            item.components.inventoryitem ~= nil and
+            (   --make sure it didn't drop due to pockets full
+                item.components.inventoryitem:GetGrandOwner() == inst or
+                --could be merged into a stack
+                (   not item:IsValid() and
+                    inst.components.inventory:FindItem(function(obj)
+                        return obj.prefab == item.prefab
+                            and obj.components.stackable ~= nil
+                            and obj.components.stackable:IsStack()
+                    end) ~= nil)
+            ) then
             if inst.components.combat:TargetIs(giver) then
                 inst.components.combat:SetTarget(nil)
             elseif giver.components.leader ~= nil then

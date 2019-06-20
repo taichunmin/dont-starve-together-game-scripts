@@ -196,12 +196,13 @@ local RPC_HANDLERS =
         end
     end,
 
-    ControllerAltActionButtonPoint = function(player, action, x, z, isreleased, noforce, mod_name)
+    ControllerAltActionButtonPoint = function(player, action, x, z, isreleased, noforce, isspecial, mod_name)
         if not (checknumber(action) and
                 checknumber(x) and
                 checknumber(z) and
                 optbool(isreleased) and
                 optbool(noforce) and
+                optbool(isspecial) and
                 optstring(mod_name)) then
             printinvalid("ControllerAltActionButtonPoint", player)
             return
@@ -209,7 +210,7 @@ local RPC_HANDLERS =
         local playercontroller = player.components.playercontroller
         if playercontroller ~= nil then
             if IsPointInRange(player, x, z) then
-                playercontroller:OnRemoteControllerAltActionButtonPoint(action, Vector3(x, 0, z), isreleased, noforce, mod_name)
+                playercontroller:OnRemoteControllerAltActionButtonPoint(action, Vector3(x, 0, z), isreleased, noforce, isspecial, mod_name)
             else
                 print("Remote controller alt action button point out of range")
             end

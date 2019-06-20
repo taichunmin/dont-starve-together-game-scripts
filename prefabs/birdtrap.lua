@@ -8,6 +8,8 @@ local assets =
     Asset("ANIM", "anim/robin_winter_build.zip"),
     Asset("ANIM", "anim/canary_build.zip"),
 
+    Asset("SCRIPT", "scripts/prefabs/wortox_soul_common.lua"),
+
     -- Swapsymbol assets
 }
 

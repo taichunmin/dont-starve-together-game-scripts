@@ -33,6 +33,7 @@ local function onequip(inst, owner)
             fx.entity:SetParent(owner.entity)
             fx.entity:AddFollower()
             fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, fx.fx_offset, 0)
+            fx:AttachLightTo(owner)
 
             table.insert(inst.fires, fx)
         end
@@ -145,6 +146,9 @@ local function fn()
 
     --waterproofer (from waterproofer component) added to pristine state for optimization
     inst:AddTag("waterproofer")
+
+    --weapon (from weapon component) added to pristine state for optimization
+    inst:AddTag("weapon")
 
     inst.entity:SetPristine()
 

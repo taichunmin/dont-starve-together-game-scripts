@@ -45,6 +45,9 @@ local function fn()
 
     inst:AddTag("whistle")
 
+    --tool (from tool component) added to pristine state for optimization
+    inst:AddTag("tool")
+
     inst.AnimState:SetBank("hound_whistle")
     inst.AnimState:SetBuild("houndwhistle")
     inst.AnimState:PlayAnimation("idle")

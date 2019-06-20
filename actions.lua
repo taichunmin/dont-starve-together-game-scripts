@@ -96,7 +96,7 @@ ACTIONS =
     FISH = Action(),
     REEL = Action({ instant=true }),
     POLLINATE = Action(),
-    FERTILIZE = Action(),
+    FERTILIZE = Action({ mount_valid=true }),
     SMOTHER = Action({ priority=1 }),
     MANUALEXTINGUISH = Action({ priority=1 }),
     LAYEGG = Action(),
@@ -187,8 +187,12 @@ ACTION_MOD_IDS = {} --This will be filled in when mods add actions via AddAction
 
 ACTIONS.EAT.fn = function(act)
     local obj = act.target or act.invobject
-    if obj ~= nil and obj.components.edible ~= nil and act.doer.components.eater ~= nil then
-        return act.doer.components.eater:Eat(obj, act.doer)
+    if obj ~= nil then
+        if obj.components.edible ~= nil and act.doer.components.eater ~= nil then
+            return act.doer.components.eater:Eat(obj, act.doer)
+        elseif obj.components.soul ~= nil and act.doer.components.souleater ~= nil then
+            return act.doer.components.souleater:EatSoul(obj)
+        end
     end
 end
 
@@ -276,31 +280,30 @@ ACTIONS.PICKUP.fn = function(act)
 
         act.doer:PushEvent("onpickupitem", { item = act.target })
 
-        --special case for trying to carry two backpacks
-        if not act.target.components.inventoryitem.cangoincontainer and act.target.components.equippable and act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot) then
-            local item = act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot)
-            if item.components.inventoryitem and item.components.inventoryitem.cangoincontainer then
-                
-                --act.doer.components.inventory:SelectActiveItemFromEquipSlot(act.target.components.equippable.equipslot)
-                act.doer.components.inventory:GiveItem(act.doer.components.inventory:Unequip(act.target.components.equippable.equipslot))
-            else
-                act.doer.components.inventory:DropItem(act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot))
+        if act.target.components.equippable ~= nil and not act.target.components.equippable:IsRestricted(act.doer) then
+            local equip = act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot)
+            if equip ~= nil and not act.target.components.inventoryitem.cangoincontainer then
+                --special case for trying to carry two backpacks
+                if equip.components.inventoryitem ~= nil and equip.components.inventoryitem.cangoincontainer then
+                    --act.doer.components.inventory:SelectActiveItemFromEquipSlot(act.target.components.equippable.equipslot)
+                    act.doer.components.inventory:GiveItem(act.doer.components.inventory:Unequip(act.target.components.equippable.equipslot))
+                else
+                    act.doer.components.inventory:DropItem(equip)
+                end
+                act.doer.components.inventory:Equip(act.target)
+                return true
+            elseif act.doer:HasTag("player") then
+                if equip == nil or act.doer.components.inventory:GetNumSlots() <= 0 then
+                    act.doer.components.inventory:Equip(act.target)
+                    return true
+                elseif GetGameModeProperty("non_item_equips") then
+                    act.doer.components.inventory:DropItem(equip)
+                    act.doer.components.inventory:Equip(act.target)
+                    return true
+                end
             end
-            act.doer.components.inventory:Equip(act.target)
-            return true
         end
 
-        if act.target.components.equippable ~= nil and act.doer:HasTag("player") then
-            local equip = act.doer.components.inventory:GetEquippedItem(act.target.components.equippable.equipslot)
-            if equip == nil or act.doer.components.inventory:GetNumSlots() <= 0 then
-                act.doer.components.inventory:Equip(act.target)
-                return true
-            elseif GetGameModeProperty("non_item_equips") then
-                act.doer.components.inventory:DropItem(equip)
-                act.doer.components.inventory:Equip(act.target)
-                return true
-            end
-        end
         act.doer.components.inventory:GiveItem(act.target, nil, act.target:GetPosition())
         return true
     end
@@ -399,6 +402,7 @@ ACTIONS.DROP.strfn = function(act)
     if act.invobject ~= nil and not act.invobject:HasActionComponent("deployable") then
         return (act.invobject:HasTag("trap") and "SETTRAP")
             or (act.invobject:HasTag("mine") and "SETMINE")
+            or (act.invobject:HasTag("soul") and "FREESOUL")
             or (act.invobject.prefab == "pumpkin_lantern" and "PLACELANTERN")
             or nil
     end
@@ -455,14 +459,14 @@ ACTIONS.BAIT.fn = function(act)
 end
 
 ACTIONS.DEPLOY.fn = function(act)
-    if act.invobject and act.invobject.components.deployable and act.invobject.components.deployable:CanDeploy(act.pos) then
-        local obj = (act.doer.components.inventory and act.doer.components.inventory:RemoveItem(act.invobject)) or 
-        (act.doer.components.container and act.doer.components.container:RemoveItem(act.invobject))
-        if obj then
+    if act.invobject ~= nil and act.invobject.components.deployable ~= nil and act.invobject.components.deployable:CanDeploy(act.pos, nil, act.doer) then
+        local container = act.doer.components.inventory or act.doer.components.container
+        local obj = container ~= nil and container:RemoveItem(act.invobject) or nil
+        if obj ~= nil then
             if obj.components.deployable:Deploy(act.pos, act.doer, act.rotation) then
                 return true
             else
-                act.doer.components.inventory:GiveItem(obj)
+                container:GiveItem(obj)
             end
         end
     end
@@ -540,22 +544,26 @@ ACTIONS.DIG.fn = function(act)
 end
 
 ACTIONS.FERTILIZE.fn = function(act)
-    if act.target ~= nil and act.invobject ~= nil and act.invobject.components.fertilizer ~= nil then
-        if act.target.components.crop ~= nil and not (act.target.components.crop:IsReadyForHarvest() or act.target:HasTag("withered")) then
-            return act.target.components.crop:Fertilize(act.invobject, act.doer)
-        elseif act.target.components.grower ~= nil and act.target.components.grower:IsEmpty() then
-            act.target.components.grower:Fertilize(act.invobject, act.doer)
-            return true
-        elseif act.target.components.pickable ~= nil and act.target.components.pickable:CanBeFertilized() then
-            act.target.components.pickable:Fertilize(act.invobject, act.doer)
-            return true
-        elseif act.target.components.quagmire_fertilizable ~= nil then
-            act.target.components.quagmire_fertilizable:Fertilize(act.invobject, act.doer)
-            return true
+    if act.invobject ~= nil and act.invobject.components.fertilizer ~= nil then
+        if act.target ~= nil and not (act.doer ~= nil and act.doer.components.rider ~= nil and act.doer.components.rider:IsRiding()) then
+            if act.target.components.crop ~= nil and not (act.target.components.crop:IsReadyForHarvest() or act.target:HasTag("withered")) then
+                return act.target.components.crop:Fertilize(act.invobject, act.doer)
+            elseif act.target.components.grower ~= nil and act.target.components.grower:IsEmpty() then
+                act.target.components.grower:Fertilize(act.invobject, act.doer)
+                return true
+            elseif act.target.components.pickable ~= nil and act.target.components.pickable:CanBeFertilized() then
+                act.target.components.pickable:Fertilize(act.invobject, act.doer)
+                return true
+            elseif act.target.components.quagmire_fertilizable ~= nil then
+                act.target.components.quagmire_fertilizable:Fertilize(act.invobject, act.doer)
+                return true
+            end
+        end
+        if act.doer ~= nil and (act.target == nil or act.doer == act.target) then
+            return act.invobject.components.fertilizer:Heal(act.doer)
         end
     end
 end
-
 
 ACTIONS.SMOTHER.fn = function(act)
     if act.target.components.burnable and act.target.components.burnable:IsSmoldering() then
@@ -1062,13 +1070,13 @@ ACTIONS.PLANT.fn = function(act)
     if act.doer.components.inventory ~= nil then
         local seed = act.doer.components.inventory:RemoveItem(act.invobject)
         if seed ~= nil then
-            if act.target.components.grower ~= nil and act.target.components.grower:PlantItem(seed) then
+            if act.target.components.grower ~= nil and act.target.components.grower:PlantItem(seed, act.doer) then
                 return true
             elseif act.target:HasTag("winter_treestand")
                 and act.target.components.burnable ~= nil
                 and not (act.target.components.burnable:IsBurning() or
                         act.target.components.burnable:IsSmoldering()) then
-                act.target:PushEvent("plantwintertreeseed", { seed = seed })
+                act.target:PushEvent("plantwintertreeseed", { seed = seed, doer = act.doer })
                 return true
             else
                 act.doer.components.inventory:GiveItem(seed)
@@ -1325,10 +1333,10 @@ ACTIONS.MURDER.fn = function(act)
             act.doer.SoundEmitter:PlaySound(murdered.components.health.murdersound)
         end
 
+        local stacksize = murdered.components.stackable ~= nil and murdered.components.stackable:StackSize() or 1
         if murdered.components.lootdropper ~= nil then
             murdered.causeofdeath = act.doer
             local pos = Vector3(x, y, z)
-            local stacksize = murdered.components.stackable ~= nil and murdered.components.stackable:StackSize() or 1
             for i = 1, stacksize do
                 local loots = murdered.components.lootdropper:GenerateLoot()
                 for k, v in pairs(loots) do
@@ -1340,7 +1348,8 @@ ACTIONS.MURDER.fn = function(act)
             end
         end
 
-        act.doer:PushEvent("killed", { victim = murdered })
+        act.doer:PushEvent("murdered", { victim = murdered, stackmult = stacksize })
+        act.doer:PushEvent("killed", { victim = murdered, stackmult = stacksize })
         murdered:Remove()
 
         return true
@@ -1463,10 +1472,24 @@ ACTIONS.CASTSPELL.fn = function(act)
     end
 end
 
+ACTIONS.BLINK.strfn = function(act)
+    return act.invobject == nil and act.doer ~= nil and act.doer:HasTag("soulstealer") and "SOUL" or nil
+end
 
 ACTIONS.BLINK.fn = function(act)
-    if act.invobject and act.invobject.components.blinkstaff then
-        return act.invobject.components.blinkstaff:Blink(act.pos, act.doer)
+    if act.invobject ~= nil then
+        if act.invobject.components.blinkstaff ~= nil then
+            return act.invobject.components.blinkstaff:Blink(act.pos, act.doer)
+        end
+    elseif act.doer ~= nil
+        and act.doer.sg ~= nil
+        and act.doer.sg.currentstate.name == "portal_jumpin_pre"
+        and act.pos ~= nil
+        and act.doer.components.inventory ~= nil
+        and act.doer.components.inventory:Has("wortox_soul", 1) then
+        act.doer.components.inventory:ConsumeByName("wortox_soul", 1)
+        act.doer.sg:GoToState("portal_jumpin", act.pos)
+        return true
     end
 end
 

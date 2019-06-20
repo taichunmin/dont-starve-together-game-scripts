@@ -22,35 +22,44 @@ function BlinkStaff:SpawnEffect(inst)
 end
 
 local function OnBlinked(caster, self, pt)
-    if caster.components.health ~= nil then
-        caster.components.health:SetInvincible(false)
+    if caster.sg == nil then
+        caster:Show()
+        if caster.components.health ~= nil then
+            caster.components.health:SetInvincible(false)
+        end
+        if caster.DynamicShadow ~= nil then
+            caster.DynamicShadow:Enable(true)
+        end
+    elseif caster.sg.statemem.onstopblinking ~= nil then
+        caster.sg.statemem.onstopblinking()
     end
     caster.Physics:Teleport(pt:Get())
     self:SpawnEffect(caster)
-    caster:Show()
-    if caster.DynamicShadow ~= nil then
-        caster.DynamicShadow:Enable(true)
-    end
     caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
 end
 
 function BlinkStaff:Blink(pt, caster)
-    if not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) or TheWorld.Map:IsGroundTargetBlocked(pt) then
+    if (caster.sg ~= nil and caster.sg.currentstate.name ~= "quicktele") or
+        not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) or
+        TheWorld.Map:IsGroundTargetBlocked(pt) then
         return false
-    end
-
-    if self.blinktask ~= nil then
+    elseif self.blinktask ~= nil then
         self.blinktask:Cancel()
     end
 
     self:SpawnEffect(caster)
     caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
-    caster:Hide()
-    if caster.DynamicShadow ~= nil then
-        caster.DynamicShadow:Enable(false)
-    end
-    if caster.components.health ~= nil then
-        caster.components.health:SetInvincible(true)
+
+    if caster.sg == nil then
+        caster:Hide()
+        if caster.DynamicShadow ~= nil then
+            caster.DynamicShadow:Enable(false)
+        end
+        if caster.components.health ~= nil then
+            caster.components.health:SetInvincible(true)
+        end
+    elseif caster.sg.statemem.onstartblinking ~= nil then
+        caster.sg.statemem.onstartblinking()
     end
 
     self.blinktask = caster:DoTaskInTime(.25, OnBlinked, self, pt)

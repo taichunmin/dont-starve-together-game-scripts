@@ -212,6 +212,7 @@ local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
 	end]]
 end)
 
+
 local LoadoutPanel = Class(LobbyPanel, function(self, owner)
     LobbyPanel._ctor(self, "LoadoutPanel")
     
@@ -224,6 +225,12 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 
     function self:OnShow()
 		self.loadout:SetDefaultMenuOption()
+
+		if not IsCharacterOwned( owner.lobbycharacter ) then
+			self.inst:DoTaskInTime(0, function()  --delay a frame so that focus isn't broken
+				DisplayCharacterUnownedPopup( owner.lobbycharacter, self.loadout.subscreener )
+			end)
+		end
     end
 
     self.focus_forward = self.loadout
@@ -250,7 +257,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 	    return table.concat(t, "  ")
 	end
     
-    function self:OnBecomeActive()
+	function self:OnBecomeActive()
         if self.loadout and self.loadout.subscreener then
             for key,sub_screen in pairs(self.loadout.subscreener.sub_screens) do
                 sub_screen:RefreshInventory()
@@ -265,13 +272,26 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
         
 	    owner.profile:SetCollectionTimestamp(GetInventoryTimestamp())
 
+		if not IsCharacterOwned( owner.character_for_game ) then
+			DisplayCharacterUnownedPopup( owner.character_for_game, self.loadout.subscreener )
+			return false
+		end
+
         --We can't be random character at this point
-        if owner.character_for_game == "random" then
-		    local all_chars = ExceptionArrays(GetActiveCharacterList(), MODCHARACTEREXCEPTIONS_DST)
+		if owner.character_for_game == "random" then
+			local char_list = GetActiveCharacterList()
+			
+			--remove unowned characters
+			for i = #char_list, 1, -1 do
+				if not IsCharacterOwned(char_list[i]) then
+					table.remove(char_list, i)
+				end
+			end
+
+		    local all_chars = ExceptionArrays(char_list, MODCHARACTEREXCEPTIONS_DST)
 		    owner.character_for_game = all_chars[math.random(#all_chars)]
             
             local bases = owner.profile:GetSkinsForPrefab(owner.character_for_game)
-            dumptable(bases)
             owner.currentskins.base = GetRandomItem(bases)
         else
             self.loadout:_SaveLoadout() --only save the loadout when it's not a random character
@@ -289,7 +309,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 			StartGame(owner)
 			return false
 		end
-	end
+	end	
 end)
 
 local WaitingPanel = Class(LobbyPanel, function(self, owner)

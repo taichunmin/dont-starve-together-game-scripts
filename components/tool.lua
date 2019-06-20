@@ -12,11 +12,14 @@ local Tool = Class(function(self, inst)
     self.inst = inst
     self.actions = {}
     inst:ListenForEvent("percentusedchange", PercentChanged)
+
+    --V2C: Recommended to explicitly add tag to prefab pristine state
+    inst:AddTag("tool")
 end)
 
 function Tool:OnRemoveFromEntity()
     self.inst:RemoveEventCallback("percentusedchange", PercentChanged)
-
+    self.inst:RemoveTag("tool")
     for k, v in pairs(self.actions) do
         self.inst:RemoveTag(k.id.."_tool")
     end

@@ -147,6 +147,7 @@ local function fn()
     inst.MiniMapEntity:SetIcon("marshtree.png")
     inst.MiniMapEntity:SetPriority(-1)
 
+    inst:AddTag("plant")
     inst:AddTag("tree")
 
     inst.AnimState:SetBuild("tree_marsh")

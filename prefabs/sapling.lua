@@ -150,6 +150,7 @@ local function fn()
     inst.AnimState:SetBuild("sapling")
     inst.AnimState:PlayAnimation("sway", true)
 
+    inst:AddTag("plant")
     inst:AddTag("renewable")
 
     --witherable (from witherable component) added to pristine state for optimization

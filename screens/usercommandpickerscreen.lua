@@ -147,7 +147,7 @@ function UserCommandPickerScreen:UpdateActions()
     end
 
     for i=#self.actions,1,-1 do
-        if self.actions[i].commandname == "kick" or self.actions[i].comandname == "ban" then
+        if self.actions[i].commandname == "kick" or self.actions[i].commandname == "ban" then
             table.remove(self.actions, i)
         end
     end

@@ -152,7 +152,7 @@ function MotdPanel:OnImagesLoaded()
 					Stats.PushMetricsEvent("motd2.clicked", TheNet:GetUserID(), motd_msg, "is_only_local_users_data")
 
 					if data.link == "skins" then
-						self.config.on_to_skins_cb()
+						self.config.on_to_skins_cb( data.filter_info )
 					else
 						VisitURL(data.link) 
 					end

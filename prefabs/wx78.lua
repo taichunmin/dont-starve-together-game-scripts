@@ -90,6 +90,7 @@ local function onupdate(inst, dt)
 
         inst.Light:Enable(true)
         inst.Light:SetRadius(rad)
+        --V2C: setting .runspeed does not stack with mount speed
         inst.components.locomotor.runspeed = TUNING.WILSON_RUN_SPEED*(1+runspeed_bonus)
         inst.components.temperature.mintemp = 10
     end
@@ -274,6 +275,7 @@ local function ondeath(inst)
 end
 
 local function common_postinit(inst)
+    inst:AddTag("soulless")
     inst:AddTag("electricdamageimmune")
     --electricdamageimmune is for combat and not lightning strikes
     --also used in stategraph for not stomping custom light values
