@@ -31,6 +31,7 @@ return {
 			GENERIC = "All full!",
 			NOTALLOWED = "That's against the rules.",
 			INUSE = "Are you finding everything okay in there?",
+            NOTMASTERCHEF = "Warly gets upset when we play with his things.",
 		},
 		CONSTRUCT =
         {
@@ -48,6 +49,7 @@ return {
         {   
             GENERIC = "That's off-limits.",
             INUSE = "It's okay, we can wait for you to finish!",   
+            NOTMASTERCHEF = "Warly gets upset when we play with his things.",
         },
 		COOK =
         {
@@ -281,6 +283,18 @@ return {
     --YOTP--
     ANNOUNCE_LEAVE_MINIGAME = "We'll leave this sign for someone else.",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "With great lightning powers comes great responsibility!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "We feel so strong!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "We feel so much safer now!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "We can help out with the chores!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "Away, nasty water!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Aww, done already?",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "We're tired of fighting!",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Aah! We need armor!",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "We're bored now.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Nooo! Spiders don't like the damp!",
+    
     BATTLECRY =
     {
         GENERIC = "En garde!",
@@ -437,6 +451,15 @@ return {
             REVIVER = "%s is really rooting for us!",
             GHOST = "Poor %s! He died of loneliness!",
             FIRESTARTER = "I don't think it's safe for you to be around fire.",
+        },
+        WARLY =
+        {
+            GENERIC = "Hey %s! Do you have any snacks?",
+            ATTACKER = "%s, don't you think you should say sorry?",
+            MURDERER = "We thought you were nice!",
+            REVIVER = "Thanks a bunch, %s!",
+            GHOST = "Oh no, %s is hurt!",
+            FIRESTARTER = "We don't think you were supposed to start that fire.",
         },
 
         MULTIPLAYER_PORTAL = "It's pretty... pretty scary!",
@@ -1570,7 +1593,6 @@ return {
 		POMEGRANATE_SEEDS = "We could grow something with these.",
 		POND = "Water doesn't go well with our fur.",
 		POOP = "Doodoo.",
-		--PORTABLECOOKPOT_ITEM = "Makes yummies!",
 		FERTILIZER = "I saw mum use this in her gardens.",
 		PUMPKIN = "That's a huge pumpkin!",
 		PUMPKINCOOKIE = "Yum!",
@@ -2483,6 +2505,70 @@ return {
         COMPOSTWRAP = "Double doodoo.",
         ARMOR_BRAMBLE = "We're ready to let spikes fly!",
         TRAP_BRAMBLE = "It's a very pointy planty trap!",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Makes yummies!",
+            DONE = "Mmmm! Let's eat!",
+        },
+        PORTABLEBLENDER_ITEM = "Shake-a, shake-a, shake-a!",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "Oh! Can we grind it, please?",
+            DONE = "All done.",
+        },
+        SPICEPACK = "I'm sure Mr. Warly won't mind if we use this!",
+        SPICE_GARLIC = "Our breath will smell stinky. Yay!",
+        SPICE_SUGAR = "It turns everything into dessert!",
+        SPICE_CHILI = "Ho! Ha! That's spicy!",
+        MONSTERTARTARE = "Looks amazing!",
+        FRESHFRUITCREPES = "Cripes! We can't wait for these crepes!",
+        FROGFISHBOWL = "Thanks Warly!",
+        POTATOTORNADO = "Woah! It's cool, AND edible!",
+        DRAGONCHILISALAD = "Okay, we'll eat a salad.",
+        GLOWBERRYMOUSSE = "Mmm, mousse!",
+        VOLTGOATJELLY = "WOW! Gelatin!",
+        NIGHTMAREPIE = "It's scary, but tasty.",
+        BONESOUP = "Warly makes really good stuff.",
+        MASHEDPOTATOES = "Just like grandma used to make!",
+        POTATOSOUFFLE = "It looks so fancy.",
+        MOQUECA = "We love when Warly cooks for us.",
+        GAZPACHO = "I don't wanna eat it, but Warly was nice to make it for us.",
+        ASPARAGUSSOUP = "Mmmm...warms our tummy.",
+        VEGSTINGER = "It's a drink with vegetables in it.",
+        BANANAPOP = "Yaaay! Popsicle, popsicle!",
+        CEVICHE = "Yucky!",
+        SALSA = "Yummy but... spicy!!",
+        PEPPERPOPPER = "We're so stuffed we'll pop!",
+
+        TURNIP = "Wow! It's a turnip!",
+        TURNIP_COOKED = "We cooked the turnip.",
+        TURNIP_SEEDS = "We can find out what they are by planting them.",
+        --
+        GARLIC = "Maxwell says you ward monsters away with it.",
+        GARLIC_COOKED = "It didn't ward us off!",
+        GARLIC_SEEDS = "We can find out what they are by planting them.",
+        --
+        ONION = "It makes all our eyes water!",
+        ONION_COOKED = "Our eyes don't water any more.",
+        ONION_SEEDS = "We can find out what they are by planting them.",
+        --
+        POTATO = "Woah! A potato!",
+        POTATO_COOKED = "It's a cooked potato now.",
+        POTATO_SEEDS = "We can find out what they are by planting them.",
+        --
+        TOMATO = "Is it a fruit or a vegetable?",
+        TOMATO_COOKED = "It's a cooked fregetable. Vruit?",
+        TOMATO_SEEDS = "We can find out what they are by planting them.",
+
+        ASPARAGUS = "Mom said we should eat our vegetables.", 
+        ASPARAGUS_COOKED = "Asparagus makes our pee smell funny.",
+        ASPARAGUS_SEEDS = "Do we have a garden to plant this?", 
+
+        PEPPER = "It's so small and cute!",
+        PEPPER_COOKED = "I bet it's spicy.",
+        PEPPER_SEEDS = "Let's plant these and see what grows.",
     },
     DESCRIBE_GENERIC = "Can we play with it?",
     DESCRIBE_TOODARK = "All our eyes stopped working!",

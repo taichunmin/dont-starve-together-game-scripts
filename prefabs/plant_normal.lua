@@ -47,13 +47,18 @@ local function onwithered(inst)
     end
 end
 
+local function CalcPerish(inst, product)
+    local t = inst.components.timer ~= nil and inst.components.timer:GetTimeLeft("rotting") or 0
+    if t <= 0 then
+        return 1
+    end
+    t = math.max(0, 1 - t / (product.components.perishable.perishtime or TUNING.PERISH_MED))
+    return 1 - t * t
+end
+
 local function onharvest(inst, product, doer)
-    if product ~= nil and product.components.perishable ~= nil and inst.components.timer ~= nil then
-        local t = inst.components.timer:GetTimeLeft("rotting") or 0
-        if t > 0 then
-            t = math.max(0, 1 - t / (product.components.perishable.perishtime or TUNING.PERISH_MED))
-            product.components.perishable:SetPercent(1 - t * t)
-        end
+    if product ~= nil and product.components.perishable ~= nil then
+        product.components.perishable:SetPercent(CalcPerish(inst, product))
     end
 end
 
@@ -67,6 +72,9 @@ local function onburnt(inst)
         else
             local temp = SpawnPrefab(inst.components.crop.product_prefab)
             product = SpawnPrefab(temp.components.cookable ~= nil and temp.components.cookable.product or "seeds_cooked")
+            if product.components.perishable ~= nil and temp.components.perishable ~= nil then
+                product.components.perishable:SetPercent((1 + CalcPerish(inst, temp)) * .5)
+            end
             temp:Remove()
         end
 

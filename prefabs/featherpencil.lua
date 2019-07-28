@@ -3,7 +3,7 @@ local assets =
     Asset("ANIM", "anim/feather_pencil.zip"),
 }
 
-local function OnDrawFn(inst, target, image)
+local function OnDrawFn(inst)--, target, image, src, atlas, bgimage, bgatlas)
     inst.components.stackable:Get():Remove()
 end
 

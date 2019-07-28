@@ -18,6 +18,14 @@ local COMMON = 3
 local UNCOMMON = 1
 local RARE = .5
 
+local QUAGMIRE_PORTS =
+{
+    "tomato",
+    "potato",
+    "onion",
+    "garlic",
+}
+
 VEGGIES =
 {
     cave_banana = MakeVegStats(0,   TUNING.CALORIES_SMALL,  TUNING.HEALING_TINY,    TUNING.PERISH_MED, 0,       
@@ -55,6 +63,24 @@ VEGGIES =
 
     watermelon = MakeVegStats(UNCOMMON, TUNING.CALORIES_SMALL, TUNING.HEALING_SMALL, TUNING.PERISH_FAST, TUNING.SANITY_TINY,
                               TUNING.CALORIES_SMALL, TUNING.HEALING_TINY, TUNING.PERISH_SUPERFAST, TUNING.SANITY_TINY*1.5),
+
+    tomato = MakeVegStats(COMMON, TUNING.CALORIES_SMALL, TUNING.HEALING_SMALL, TUNING.PERISH_FAST, 0,
+                                  TUNING.CALORIES_SMALL, TUNING.HEALING_MED, TUNING.PERISH_MED, 0 ),
+
+    potato = MakeVegStats(COMMON, TUNING.CALORIES_SMALL, -TUNING.HEALING_SMALL, TUNING.PERISH_MED, -TUNING.SANITY_TINY,
+                                  TUNING.CALORIES_MED, TUNING.HEALING_MED, TUNING.PERISH_FAST, 0),
+
+    asparagus = MakeVegStats(UNCOMMON, TUNING.CALORIES_SMALL, TUNING.HEALING_SMALL, TUNING.PERISH_FAST, 0,
+                                     TUNING.CALORIES_MED, TUNING.HEALING_SMALL, TUNING.PERISH_SUPERFAST, 0),
+
+    onion = MakeVegStats(RARE, TUNING.CALORIES_TINY, 0, TUNING.PERISH_SLOW, -TUNING.SANITY_SMALL, 
+                                   TUNING.CALORIES_TINY, TUNING.HEALING_TINY, TUNING.PERISH_MED, -TUNING.SANITY_TINY),
+    
+    garlic = MakeVegStats(RARE, TUNING.CALORIES_TINY, 0, TUNING.PERISH_SLOW, -TUNING.SANITY_SMALL, 
+                                   TUNING.CALORIES_TINY, TUNING.HEALING_TINY, TUNING.PERISH_MED, -TUNING.SANITY_TINY),
+    
+    pepper = MakeVegStats(RARE, TUNING.CALORIES_TINY, -TUNING.HEALING_MED, TUNING.PERISH_SLOW, -TUNING.SANITY_MED, 
+                                    TUNING.CALORIES_TINY, -TUNING.HEALING_SMALL, TUNING.PERISH_SLOW, -TUNING.SANITY_SMALL),
 }
 
 local assets_seeds =
@@ -87,9 +113,15 @@ local function MakeVeggie(name, has_seeds)
         Asset("ANIM", "anim/"..name..".zip"),
     }
 
+    local usequagmireicon = table.contains(QUAGMIRE_PORTS, name)
+    if usequagmireicon then
+        table.insert(assets, Asset("INV_IMAGE", "quagmire_"..name))
+        table.insert(assets_cooked, Asset("INV_IMAGE", "quagmire_"..name.."_cooked"))
+    end
+
     local prefabs =
     {
-        name.."_cooked",
+        name .."_cooked",
         "spoiled_food",
     }
     if has_seeds then
@@ -133,7 +165,7 @@ local function MakeVeggie(name, has_seeds)
         inst:AddComponent("inventoryitem")
 
         inst.AnimState:PlayAnimation("idle")
-        inst.components.edible.healthvalue = TUNING.HEALING_TINY/2
+        inst.components.edible.healthvalue = TUNING.HEALING_TINY / 2
         inst.components.edible.hungervalue = TUNING.CALORIES_TINY
 
         inst:AddComponent("perishable")
@@ -207,6 +239,9 @@ local function MakeVeggie(name, has_seeds)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+        if usequagmireicon then
+            inst.components.inventoryitem:ChangeImageName("quagmire_"..name)
+        end
 
         MakeSmallBurnable(inst)
         MakeSmallPropagator(inst)
@@ -266,6 +301,9 @@ local function MakeVeggie(name, has_seeds)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+        if usequagmireicon then
+            inst.components.inventoryitem:ChangeImageName("quagmire_"..name.."_cooked")
+        end
 
         MakeSmallBurnable(inst)
         MakeSmallPropagator(inst)

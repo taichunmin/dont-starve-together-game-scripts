@@ -5,6 +5,7 @@ local assets =
 {
     Asset("SCRIPT", "scripts/prefabs/player_common.lua"),
     Asset("SOUND", "sound/willow.fsb"),
+    Asset("ANIM", "anim/player_idles_willow.zip"),
 }
 
 local prefabs =
@@ -25,6 +26,11 @@ for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
 end
 
 prefabs = FlattenTree({ prefabs, start_inv }, true)
+
+local function customidleanimfn(inst)
+    local item = inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+    return item ~= nil and item.prefab == "bernie_inactive" and "idle_willow" or nil
+end
 
 local function sanityfn(inst)--, dt)
     local delta = inst.components.temperature:IsFreezing() and -TUNING.SANITYAURA_LARGE or 0
@@ -70,6 +76,8 @@ end
 
 local function master_postinit(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
+
+    inst.customidleanim = customidleanimfn
 
     inst.components.health.fire_damage_scale = TUNING.WILLOW_FIRE_DAMAGE
 

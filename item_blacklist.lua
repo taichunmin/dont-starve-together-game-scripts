@@ -26,6 +26,7 @@ ITEM_DISPLAY_BLACKLIST =
 	lamb_winter_builder = true,
 	minerhat_cowboy = true,
 	minerhat_floppy = true,
+	moonstaff_crystal = true,
 	orangestaff_ancient = true,
 	orangestaff_victorian = true,
 	perdling_rooster_builder = true,

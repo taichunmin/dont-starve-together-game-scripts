@@ -107,6 +107,10 @@ function Stackable:Put(item, source_pos)
             self.inst.components.inventoryitem:DiluteMoisture(item, numberadded)
         end
 
+        if self.inst.components.edible ~= nil then
+            self.inst.components.edible:DiluteChill(item, numberadded)
+        end
+
         if self.maxsize >= newtotal then
             item:Remove()
         else

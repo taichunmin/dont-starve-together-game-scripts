@@ -206,6 +206,10 @@ function Crop:Harvest(harvester)
             product = SpawnPrefab(self.product_prefab)
         end
 
+        if self.onharvest ~= nil then
+            self.onharvest(self.inst, product, harvester)
+        end
+
         if product ~= nil then
             if product.components.inventoryitem ~= nil then
                 product.components.inventoryitem:InheritMoisture(TheWorld.state.wetness, TheWorld.state.iswet)
@@ -223,10 +227,6 @@ function Crop:Harvest(harvester)
         self.matured = false
         self.growthpercent = 0
         self.product_prefab = nil
-
-        if self.onharvest ~= nil then
-            self.onharvest(self.inst, product, harvester)
-        end
 
         if self.grower ~= nil and self.grower:IsValid() and self.grower.components.grower ~= nil then
             self.grower.components.grower:RemoveCrop(self.inst)

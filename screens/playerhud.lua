@@ -28,7 +28,7 @@ local TargetIndicator = require "widgets/targetindicator"
 
 local EventAnnouncer = require "widgets/eventannouncer"
 local GiftItemPopUp = require "screens/giftitempopup"
-local WardrobePopupScreen = require "screens/wardrobepopup"
+local GridWardrobePopupScreen = require "screens/redux/wardrobepopupgridloadout"
 local ScarecrowClothingPopupScreen = require "screens/scarecrowclothingpopup"
 local PlayerAvatarPopup = require "widgets/playeravatarpopup"
 local DressupAvatarPopup = require "widgets/dressupavatarpopup"
@@ -361,8 +361,8 @@ function PlayerHud:OpenWardrobeScreen(target)
 				Profile
 			)
     else
-        self.wardrobepopup =
-			WardrobePopupScreen(
+		self.wardrobepopup =
+			GridWardrobePopupScreen(
 				self.owner,
 				Profile,
 				self.recentgifts ~= nil and self.recentgifts.item_types or nil,
@@ -376,16 +376,30 @@ function PlayerHud:OpenWardrobeScreen(target)
 end
 
 function PlayerHud:CloseWardrobeScreen()
-    --Hack for holding offset when transitioning from giftitempopup to wardrobepopup
+	local activescreen = TheFrontEnd:GetActiveScreen()
+
+	if activescreen == nil then return end
+
+	--Hack for holding offset when transitioning from giftitempopup to wardrobepopup
     TheCamera:PopScreenHOffset(self)
     self:ClearRecentGifts()
+    print( "Note(Peter): Disable wardrobe popping for now" )
 
-    if self.wardrobepopup ~= nil then
-        if self.wardrobepopup.inst:IsValid() then
-            TheFrontEnd:PopScreen(self.wardrobepopup)
-        end
-        self.wardrobepopup = nil
-    end
+	--[[if activescreen.name ~= "ItemServerContactPopup" then
+		--Hack for holding offset when transitioning from giftitempopup to wardrobepopup
+		TheCamera:PopScreenHOffset(self)
+		self:ClearRecentGifts()
+
+		if self.wardrobepopup ~= nil then
+            if self.wardrobepopup.inst:IsValid() then
+                print("popping", self.wardrobepopup)
+				TheFrontEnd:PopScreen(self.wardrobepopup)
+			end
+			self.wardrobepopup = nil
+		end
+	else
+		self.inst:DoTaskInTime(.5, function() self:CloseWardrobeScreen() end)
+    end]]
 end
 
 --Helper for transferring data between screens when transitioning from giftitempopup to wardrobepopup

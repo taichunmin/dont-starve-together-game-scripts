@@ -155,6 +155,9 @@ end
 function c_spawn(prefab, count, dontselect)
     count = count or 1
     local inst = nil
+
+    prefab = string.lower(prefab)
+
     for i = 1, count do
         inst = DebugSpawn(prefab)
         if inst.components.skinner ~= nil and IsRestrictedCharacter(prefab) then
@@ -381,6 +384,9 @@ end
 -- Put an item(s) in the player's inventory
 function c_give(prefab, count, dontselect)
     local MainCharacter = ConsoleCommandPlayer()
+
+    prefab = string.lower(prefab)
+
     if MainCharacter ~= nil then
         for i = 1, count or 1 do
             local inst = DebugSpawn(prefab)
@@ -669,6 +675,7 @@ function c_findtag(tag, radius, inst)
 end
 
 function c_gonext(name)
+    name = string.lower(name)
     return c_goto(c_findnext(name))
 end
 

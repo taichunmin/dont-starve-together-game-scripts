@@ -31,6 +31,7 @@ return {
 			GENERIC = "It's full already.",
 			NOTALLOWED = "They won't let me.",
 			INUSE = "I'll use it after they're done.",
+            NOTMASTERCHEF = "I'm not THAT good at cooking.",
 		},
 		CONSTRUCT =
         {
@@ -48,6 +49,7 @@ return {
         {   
             GENERIC = "Make someone else do it!",
             INUSE = "There must be something good in there if you want it so bad!",  
+            NOTMASTERCHEF = "I'm not THAT good at cooking.",
         },
 		COOK =
         {
@@ -288,6 +290,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "I think it's angry!!",
     QUAGMIRE_ANNOUNCE_WIN = "Let's get out of here!",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I've never tried using electricity to start fires!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "You wanna fight?!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "Come at me, jerks!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Where did all this motivation come from?!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "Ha! Take that, water!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "I like setting fires the old fashioned way, anyhow.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Nooo I still had more hitting I wanted to do!",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Might not be the best time to pick a fight.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "Welp. The motivation didn't last.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Ugh. Back to watching out for puddles.",
+    
     BATTLECRY =
     {
         GENERIC = "It's you or me!",
@@ -444,6 +458,15 @@ return {
             REVIVER = "Hey, thanks a bunch there, %s!",
             GHOST = "I think %s needs some help.",
             FIRESTARTER = "You've got a lot of guts for a plant. I like that!",
+        },
+        WARLY =
+        {
+            GENERIC = "Hi %s!",
+            ATTACKER = "%s has been serving up knuckle sandwiches.",
+            MURDERER = "I'm gonna smoke you like a ham!",
+            REVIVER = "%s would never leave anyone behind.",
+            GHOST = "Did you mean to do that?",
+            FIRESTARTER = "Haha, nice one, %s!!",
         },
 
         MULTIPLAYER_PORTAL = "The vines coil away from my lighter... weird!",
@@ -1702,7 +1725,6 @@ return {
 		POMEGRANATE_SEEDS = "Looks like the part from inside the fruit.",
 		POOP = "Ew. Nasty. But useful.",
 		SCORCHED_SKELETON = "Ewwwwwwwwwww!",
-		--PORTABLECOOKPOT_ITEM = "Just a dumb pot.",
 		PUMPKIN = "I wonder what would happen if I applied fire.",
 		PUMPKINCOOKIE = "Cookies!!!",
 		PUMPKIN_COOKED = "Fire on the outside turned out pretty well.",
@@ -2491,6 +2513,70 @@ return {
         COMPOSTWRAP = "That's disgusting!",
         ARMOR_BRAMBLE = "I think Wormwood made it.",
         TRAP_BRAMBLE = "It's got really sharp thorns.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Just a dumb pot.",
+            DONE = "Good. Let's eat!",
+        },
+        PORTABLEBLENDER_ITEM = "Shakes things up a bit.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "All that work better be worth it.",
+            DONE = "All that work for just a little bit of spice?",
+        },
+        SPICEPACK = "I'm sure Warly won't mind if I borrow this.",
+        SPICE_GARLIC = "Powdered stink.",
+        SPICE_SUGAR = "It's like drinking candy.",
+        SPICE_CHILI = "I like the way it sets my mouth on fire.",
+        MONSTERTARTARE = "Gross!",
+        FRESHFRUITCREPES = "Ooo la la.",
+        FROGFISHBOWL = "Woah, that's a ton of frogs.",
+        POTATOTORNADO = "Woah, I didn't know potatoes came in that shape!",
+        DRAGONCHILISALAD = "I can't wait to eat it.",
+        GLOWBERRYMOUSSE = "That's definitely going in my mouth.",
+        VOLTGOATJELLY = "HEY WARLY! Can I eat this?",
+        NIGHTMAREPIE = "I'm sure he wouldn't mind if I stole a nibble.",
+        BONESOUP = "I would practically INHALE that!",
+        MASHEDPOTATOES = "I LOVE mashed potatoes.",
+        POTATOSOUFFLE = "MY stuff never comes out looking like THIS!",
+        MOQUECA = "It looks soooo good!",
+        GAZPACHO = "I prefer hot food.",
+        ASPARAGUSSOUP = "Even water and vegetables taste better with fire.",
+        VEGSTINGER = "Fire for my tongue.",
+        BANANAPOP = "This is the opposite of burning.",
+        CEVICHE = "It's still slimy.",
+        SALSA = "Hey, this is great!",
+        PEPPERPOPPER = "My mouth is on fire!",
+
+        TURNIP = "Haha gross, I hate turnips.",
+        TURNIP_COOKED = "Take that, turnip.",
+        TURNIP_SEEDS = "It's just a bunch of seeds.",
+        --
+        GARLIC = "It's just a couple cloves of garlic.",
+        GARLIC_COOKED = "Fire made it better.",
+        GARLIC_SEEDS = "It's just a bunch of seeds.",
+        --
+        ONION = "It's so bulbous.",
+        ONION_COOKED = "Roasting. My favorite cooking method.",
+        ONION_SEEDS = "It's just a bunch of seeds.",
+        --
+        POTATO = "We grew it in that gross muck.",
+        POTATO_COOKED = "Cooking just means sticking stuff in fire.",
+        POTATO_SEEDS = "It's just a bunch of seeds.",
+        --
+        TOMATO = "Cutting these is a pain.",
+        TOMATO_COOKED = "It just needed a couple minutes on the fire.",
+        TOMATO_SEEDS = "It's just a bunch of seeds.",
+
+        ASPARAGUS = "They're all chewy like this. They need fire.", 
+        ASPARAGUS_COOKED = "Not so chewy now, are you?", 
+        ASPARAGUS_SEEDS = "This'll make some food.",
+
+        PEPPER = "Good. These are the hot ones.",
+        PEPPER_COOKED = "First rule of vegetables: fire makes it better.",
+        PEPPER_SEEDS = "It's just a bunch of seeds.",
     },
     DESCRIBE_GENERIC = "I have no idea what that is!",
     DESCRIBE_TOODARK = "I need more light!",

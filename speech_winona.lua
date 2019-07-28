@@ -22,6 +22,7 @@ return {
 			GENERIC = "It's full to bursting.",
 			NOTALLOWED = "That's just impractical.",
 			INUSE = "No rush.",
+            NOTMASTERCHEF = "I don't wanna ruin whatever Warly's working on.",
 		},
 		CONSTRUCT =
         {
@@ -34,6 +35,7 @@ return {
 		{	
 			GENERIC = "I can't right now.",
 			INUSE = "No rush.",
+            NOTMASTERCHEF = "I don't wanna ruin whatever Warly's working on.",
 		},
 		UNLOCK =
         {
@@ -290,6 +292,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "N-nice sky wyrm... Uh-oh.",
     QUAGMIRE_ANNOUNCE_WIN = "Better leave while we can!",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I ain't no electrician, but what the heck!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "Time to give 'em the old one-two!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I'm tough as nails!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Let's turn up the elbow grease!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "I've been waterproofed!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "I'm all outta juice!",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Y'know, fightin' ain't always the answer.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "I'd better take a step back.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "I'm off the clock!",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "I think I might be needin' an umbrella soon.",
+    
 	BATTLECRY =
 	{
 		GENERIC = "I'll demolish you!",
@@ -489,6 +503,15 @@ return {
             REVIVER = "Keep up the good work there, bucko.",
             GHOST = "You're not slackin' off, are ya?",
             FIRESTARTER = "Watch where you're lightin' them fires!",
+        },
+        WARLY =
+        {
+            GENERIC = "Hey, %s! Got anything tasty for me?",
+            ATTACKER = "Watch where you're throwin' them oven mitts!",
+            MURDERER = "Killer chef! Get'em!",
+            REVIVER = "You're a real pal, %s.",
+            GHOST = "Missed your snack break, didja %s?",
+            FIRESTARTER = "I'm sure %s knows how to handle grease fires.",
         },
 
         MIGRATION_PORTAL =
@@ -2492,6 +2515,71 @@ return {
         COMPOSTWRAP = "Heh. That bean sprout's a gross little guy.",
         ARMOR_BRAMBLE = "Odd design. How do you wear it without pricking yourself?",
         TRAP_BRAMBLE = "That lil plant fella whipped it up.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "A fancy pot for some fancy cookin'.",
+            DONE = "Let's see if all that fuss was worth it.",
+        },
+        PORTABLEBLENDER_ITEM = "I like the way that machine dances.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "Probably a whole lot of interesting gears in there.",
+            DONE = "Well worth all that the work.",
+        },
+        SPICEPACK = "Say, this is some fine bit of engineering!",
+        SPICE_GARLIC = "Hooboy. That's some smelly dust.",
+        SPICE_SUGAR = "Now all I need is some pancakes to pour this over.",
+        SPICE_CHILI = "Just smelling it is making my eyes water.",
+        MONSTERTARTARE = "I'm all for getting my daily iron but this goes too far.",
+        FRESHFRUITCREPES = "Fruit wrapped in a blanket of pancake.",
+        FROGFISHBOWL = "Mmm! Love Warly's dishes.",
+        POTATOTORNADO = "Count on Warly's cookin' to always make my day.",
+        DRAGONCHILISALAD = "Can't believe Warly's got me eatin' salads.",
+        GLOWBERRYMOUSSE = "You really outdid yourself with this one, buddy.",
+        VOLTGOATJELLY = "You can really taste the electricity.",
+        NIGHTMAREPIE = "Lookit that, Warly's at it again.",
+        BONESOUP = "Knocked it out of the park again, bucko.",
+        MASHEDPOTATOES = "That's good eatin' there, Warl'!",
+        POTATOSOUFFLE = "Looks great, Warly!",
+        MOQUECA = "What's this fancy stuff? I like it!",
+        GAZPACHO = "I'd never turn down grub!",
+        ASPARAGUSSOUP = "Huh. Interesting choice but I ain't complainin'!",
+        VEGSTINGER = "I could use one of these after a long day.",
+        BANANAPOP = "Cool and refreshin'!",
+        CEVICHE = "Now that's some tasty grub!",
+        SALSA = "Wish I had some chips to go with this.",
+        PEPPERPOPPER = "My mouth's havin' a party!",
+
+        TURNIP = "A fresh, ripe turnip.",
+        TURNIP_COOKED = "I'd rather not eat them on their own.",
+        TURNIP_SEEDS = "I got no idea what they'd grow into.",
+        --
+        GARLIC = "Makes everything taste better.",
+        GARLIC_COOKED = "Bet that brought out the flavor.",
+        GARLIC_SEEDS = "I got no idea what they'd grow into.",
+        --
+        ONION = "I hate chopping vegetables.",
+        ONION_COOKED = "Done and done.",
+        ONION_SEEDS = "I got no idea what they'd grow into.",
+        --
+        POTATO = "I just think they're neat.",
+        POTATO_COOKED = "I've always been a meat and potatoes gal.",
+        POTATO_SEEDS = "I got no idea what they'd grow into.",
+        --
+        TOMATO = "Gotta appreciate havin' fresh vegetables.",
+        TOMATO_COOKED = "I prefer'em fried and green.",
+        TOMATO_SEEDS = "I got no idea what they'd grow into.",
+
+        ASPARAGUS = "Makes ya big and strong.",
+        ASPARAGUS_COOKED = "I'm not fussy.",
+        ASPARAGUS_SEEDS = "What's this going to grow into, I wonder.",
+
+        PEPPER = "Ye-hooo! They gotta a kick to 'em.",
+        PEPPER_COOKED = "Just the smell is making my eyes water.",
+        PEPPER_SEEDS = "Wonder what these'll make.",
+
     },
     DESCRIBE_GENERIC = "Incredible! I have no idea what that is.",
     DESCRIBE_TOODARK = "Low visibility causes workplace accidents!",

@@ -4,7 +4,7 @@ local HealthWarningPopup = require "screens/healthwarningpopup"
 local Stats = require("stats")
 
 require "scheduler"
-require "skinsutils"
+--require "skinsutils"
 
 local DEBUG_MODE = BRANCH == "dev"
 

@@ -3,19 +3,19 @@ local assets =
     Asset("ANIM", "anim/armor_slurper.zip"),
 }
 
-local function onequip(inst, owner) 
+local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_body", "armor_slurper", "swap_body")
-    if owner.components.hunger then
-        owner.components.hunger.burnrate = TUNING.ARMORSLURPER_SLOW_HUNGER
+    if owner.components.hunger ~= nil then
+        owner.components.hunger.burnratemodifiers:SetModifier(inst, TUNING.ARMORSLURPER_SLOW_HUNGER)
     end
 
     inst.components.fueled:StartConsuming()
 end
 
-local function onunequip(inst, owner) 
+local function onunequip(inst, owner)
     owner.AnimState:ClearOverrideSymbol("swap_body")
-    if owner.components.hunger then
-        owner.components.hunger.burnrate = 1
+    if owner.components.hunger ~= nil then
+        owner.components.hunger.burnratemodifiers:RemoveModifier(inst)
     end
 
     inst.components.fueled:StopConsuming()

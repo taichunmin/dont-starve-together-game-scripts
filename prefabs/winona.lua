@@ -4,6 +4,7 @@ local assets =
 {
     Asset("SCRIPT", "scripts/prefabs/player_common.lua"),
     Asset("SOUND", "sound/winona.fsb"),
+    Asset("ANIM", "anim/player_idles_winona.zip"),
 }
 
 local start_inv =
@@ -34,6 +35,8 @@ end
 
 local function master_postinit(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
+
+    inst.customidleanim = "idle_winona"
 
     inst.components.grue:SetResistance(1)
 

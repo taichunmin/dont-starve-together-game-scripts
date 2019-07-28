@@ -1043,6 +1043,7 @@ MISC_ITEMS =
 		type = "purchase",
 		skin_tags = { },
 		steam_dlc_id = 712640,
+		display_order = 114,
 		build_name_override = "pack_hamlet_gift",
 		display_items = {  "wormwood_none", },
 		output_items = {  "wormwood_none", },
@@ -1661,6 +1662,59 @@ MISC_ITEMS =
 		output_items = {  "wx78_victorian", "body_wx78_victorian", "hand_wx78_victorian", "legs_wx78_victorian", },
 		release_group = 46,
 	},
+	pack_warly_deluxe =
+	{
+		type = "purchase",
+		skin_tags = { },
+		featured_pack = true,
+		display_order = 1,
+		build_name_override = "pack_common",
+		display_atlas = "images/iap_images_warly_deluxe.xml",
+		display_tex = "warly_deluxe.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "warly_rose", "warly_victorian", "warly_fisherman", },
+		output_items = {  "warly_rose", "warly_victorian", "warly_fisherman", "body_warly_rose", "hand_warly_rose", "legs_warly_rose", "body_warly_victorian", "feet_warly_victorian", "legs_warly_victorian", "body_warly_fisherman", "feet_warly_fisherman", "legs_warly_fisherman", },
+		release_group = 71,
+	},
+	pack_warly_fisherman =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 115,
+		build_name_override = "warly_fisherman",
+		display_atlas = "bigportraits/warly_fisherman.xml",
+		display_tex = "warly_fisherman_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "warly_fisherman", "body_warly_fisherman", "feet_warly_fisherman", "legs_warly_fisherman", },
+		output_items = {  "warly_fisherman", "body_warly_fisherman", "feet_warly_fisherman", "legs_warly_fisherman", },
+		release_group = 71,
+	},
+	pack_warly_rose =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 115,
+		build_name_override = "warly_rose",
+		display_atlas = "bigportraits/warly_rose.xml",
+		display_tex = "warly_rose_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "warly_rose", "body_warly_rose", "hand_warly_rose", "legs_warly_rose", },
+		output_items = {  "warly_rose", "body_warly_rose", "hand_warly_rose", "legs_warly_rose", },
+		release_group = 71,
+	},
+	pack_warly_victorian =
+	{
+		type = "purchase",
+		skin_tags = { },
+		display_order = 115,
+		build_name_override = "warly_victorian",
+		display_atlas = "bigportraits/warly_victorian.xml",
+		display_tex = "warly_victorian_oval.tex",
+		box_build = "box_shop_plain",
+		display_items = {  "warly_victorian", "body_warly_victorian", "feet_warly_victorian", "legs_warly_victorian", },
+		output_items = {  "warly_victorian", "body_warly_victorian", "feet_warly_victorian", "legs_warly_victorian", },
+		release_group = 71,
+	},
 	pack_willow_deluxe =
 	{
 		type = "purchase",
@@ -2092,6 +2146,13 @@ MISC_ITEMS =
 		rarity_modifier = "Woven",
 		release_group = 51,
 	},
+	playerportrait_bg_eyebrellahatcrystal =
+	{
+		type = "playerportrait",
+		skin_tags = { "CRYSTAL", "PLAYERPORTRAIT", },
+		rarity = "Loyal",
+		release_group = 69,
+	},
 	playerportrait_bg_factory =
 	{
 		type = "playerportrait",
@@ -2247,6 +2308,13 @@ MISC_ITEMS =
 		rarity = "Loyal",
 		release_group = 65,
 	},
+	playerportrait_bg_iceboxcrystal =
+	{
+		type = "playerportrait",
+		skin_tags = { "CRYSTAL", "PLAYERPORTRAIT", },
+		rarity = "Loyal",
+		release_group = 69,
+	},
 	playerportrait_bg_lamppost =
 	{
 		type = "playerportrait",
@@ -2326,6 +2394,13 @@ MISC_ITEMS =
 		rarity = "Classy",
 		rarity_modifier = "Woven",
 		release_group = 51,
+	},
+	playerportrait_bg_moonstarstaffcrystal =
+	{
+		type = "playerportrait",
+		skin_tags = { "CRYSTAL", "PLAYERPORTRAIT", },
+		rarity = "Loyal",
+		release_group = 69,
 	},
 	playerportrait_bg_mushroom =
 	{
@@ -2789,6 +2864,13 @@ MISC_ITEMS =
 		rarity_modifier = "Woven",
 		release_group = 32,
 	},
+	profileflair_eyebrellahat_crystal =
+	{
+		type = "profileflair",
+		skin_tags = { "CRYSTAL", "PROFILEFLAIR", },
+		rarity = "Loyal",
+		release_group = 69,
+	},
 	profileflair_factory =
 	{
 		type = "profileflair",
@@ -3034,6 +3116,13 @@ MISC_ITEMS =
 		rarity_modifier = "Woven",
 		release_group = 32,
 	},
+	profileflair_icebox_crystal =
+	{
+		type = "profileflair",
+		skin_tags = { "CRYSTAL", "PROFILEFLAIR", },
+		rarity = "Loyal",
+		release_group = 69,
+	},
 	profileflair_icehound =
 	{
 		type = "profileflair",
@@ -3121,6 +3210,13 @@ MISC_ITEMS =
 		rarity = "Common",
 		rarity_modifier = "Woven",
 		release_group = 32,
+	},
+	profileflair_moonstaff_crystal =
+	{
+		type = "profileflair",
+		skin_tags = { "CRYSTAL", "PROFILEFLAIR", },
+		rarity = "Loyal",
+		release_group = 69,
 	},
 	profileflair_mudpie_yotp =
 	{
@@ -3444,6 +3540,13 @@ MISC_ITEMS =
 		rarity = "Common",
 		rarity_modifier = "Woven",
 		release_group = 32,
+	},
+	profileflair_starstaff_crystal =
+	{
+		type = "profileflair",
+		skin_tags = { "CRYSTAL", "PROFILEFLAIR", },
+		rarity = "Loyal",
+		release_group = 69,
 	},
 	profileflair_tallbird_eye =
 	{

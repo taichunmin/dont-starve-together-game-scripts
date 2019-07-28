@@ -31,6 +31,7 @@ return {
             GENERIC = "I will make it fit!",
             NOTALLOWED = "Bah! Useless.",
             INUSE = "Wolfgang can share!",
+            NOTMASTERCHEF = "Warly is very nice to cook. Wolfgang will not get in way.",
         },
         CONSTRUCT =
         {
@@ -48,6 +49,7 @@ return {
         {   
             GENERIC = "Maybe Wolfgang do later.",
             INUSE = "Wolfgang would like to use after you, if okay.", 
+            NOTMASTERCHEF = "Warly is very nice to cook. Wolfgang will not get in way.",
         },
         COOK =
         {
@@ -281,6 +283,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "Sky beast is mad!",
     QUAGMIRE_ANNOUNCE_WIN = "Is time to leave. Goodbye, good food!",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "Sparky! I like!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "Wolfgang even mightier than was before!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "Ha! Wimpy blows bounce right off Wolfgang!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "You watch, let Wolfgang take care of this!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "Water will not bother Wolfgang!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Lightning magic gone.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Wolfgang still strong! Just little less strong!",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Wolfgang will need new defensive strategy.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "Time for little break.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Feels damp... Wolfgang hope not to catch cold.",
+    
     BATTLECRY =
     {
         GENERIC = "I will punch you!",
@@ -436,6 +450,15 @@ return {
             REVIVER = "%s is Wolfgang's best friend.",
             GHOST = "Little plant was overwatered, maybe?",
             FIRESTARTER = "Leafy green man did a fire booboo.",
+        },
+        WARLY =
+        {
+            GENERIC = "Is tasty-making man, %s! Hello!",
+            ATTACKER = "Why not use fists for bread making, yes?",
+            MURDERER = "Tasty-making man is murderer!",
+            REVIVER = "%s has nice big heart.",
+            GHOST = "Does tiny man %s need Mighty Wolfgang's help?",
+            FIRESTARTER = "Tasty-making man was probably cook with big fire.",
         },
 
         MULTIPLAYER_PORTAL = "Why door not crumble under mighty Wolfgang punches?!",
@@ -1644,7 +1667,6 @@ return {
         POND = "Is all wet.",
         POOP = "Smelly!",
         SCORCHED_SKELETON = "Wolfgang does not like this!!",
-        --PORTABLECOOKPOT_ITEM = "Wolfgang will cook good meal for friends, meal like home!",
         PUMPKIN = "Is big as head of weakling man! Not Wolfgang head.",
         PUMPKINCOOKIE = "Is tasty cookie.",
         PUMPKIN_COOKED = "Very gourd!",
@@ -2462,6 +2484,70 @@ return {
         COMPOSTWRAP = "Is very mighty poop.",
         ARMOR_BRAMBLE = "Mighty Wolfgang does not need armor!",
         TRAP_BRAMBLE = "Is sharp plant for hurting feets.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Wolfgang will cook good meal for friends, meal like home!",
+            DONE = "A meal with friends!",
+        },
+        PORTABLEBLENDER_ITEM = "Wolfgang could smash food like that if he wanted.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "Wolfgang will turn grinder with his mighty muscles!",
+            DONE = "Is little pile with mighty taste.",
+        },
+        SPICEPACK = "Wolfgang will carry all the food!",
+        SPICE_GARLIC = "Smells like mama used to make.",
+        SPICE_SUGAR = "Fruit smashing made sweet sauce.",
+        SPICE_CHILI = "Is mighty spicy, but Wolfgang can take it.",
+        MONSTERTARTARE = "Blech!",
+        FRESHFRUITCREPES = "Manly midmorning brunch.",
+        FROGFISHBOWL = "Food will make Wolfgang very strong!",
+        POTATOTORNADO = "Wolfgang loves potato.",
+        DRAGONCHILISALAD = "Vegetables help Wolfgang grow big and strong.",
+        GLOWBERRYMOUSSE = "Tasty-making friend has made thing very tasty.",
+        VOLTGOATJELLY = "Is look very nice, tasty-making friend!",
+        NIGHTMAREPIE = "Wolfgang must eat with eyes closed.",
+        BONESOUP = "Wolfgang will be so mighty!",
+        MASHEDPOTATOES = "Friend has made Wolfgang delicious potatoes.",
+        POTATOSOUFFLE = "Wolfgang is very proud of tiny cooking friend.",
+        MOQUECA = "Made by Wolfgang's friend. Mmm.",
+        GAZPACHO = "Is tasting very good!",
+        ASPARAGUSSOUP = "Is warm in Wolfgang's belly.",
+        VEGSTINGER = "Hoo! Is spicy!",
+        BANANAPOP = "Wolfgang can eat in one bite!",
+        CEVICHE = "It will be better in Wolfgang's belly!",
+        SALSA = "Is a tasty sauce!",
+        PEPPERPOPPER = "Wolfgang like a spicy challenge!",
+
+        TURNIP = "I will use in many dishes! Yes!",
+        TURNIP_COOKED = "Smell is very good.",
+        TURNIP_SEEDS = "Is little tiny seeds for burying.",
+        --
+        GARLIC = "Is good flavor for stewing.",
+        GARLIC_COOKED = "Flavor is good now.",
+        GARLIC_SEEDS = "Is little tiny seeds for burying.",
+        --
+        ONION = "Wolfgang eats like apple when not cooking.",
+        ONION_COOKED = "Crispy, brown, sweet.",
+        ONION_SEEDS = "Is little tiny seeds for burying.",
+        --
+        POTATO = "Wolfgang's favorite veggie.",
+        POTATO_COOKED = "Is golden brown! Texture like sun!",
+        POTATO_SEEDS = "Is little tiny seeds for burying.",
+        --
+        TOMATO = "Is good for sauce makings.",
+        TOMATO_COOKED = "Roasty and toasty.",
+        TOMATO_SEEDS = "Is little tiny seeds for burying.",
+
+        ASPARAGUS = "Wolfgang always eat his vegetables.", 
+        ASPARAGUS_COOKED = "Vegetables make me big and strong.",
+        ASPARAGUS_SEEDS = "It grows up to make food.",  
+
+        PEPPER = "Hehe! Is little tiny vegetable.",
+        PEPPER_COOKED = "Teeny vegetable smashes Wolfgang's tastebuds.",
+        PEPPER_SEEDS = "It grows up to make food.",       
     },
     DESCRIBE_GENERIC = "What is this thing?",
     DESCRIBE_TOODARK = "Help friends! Save Wolfgang from dark!",

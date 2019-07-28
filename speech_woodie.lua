@@ -32,6 +32,7 @@ return {
 			GENERIC = "It's already packed tighter than a Toronto streetcar.",
 			NOTALLOWED = "I could probably find a better place to put that.",
 			INUSE = "Oh, sorry. I didn't mean to hover over your shoulder.",
+            NOTMASTERCHEF = "I wouldn't wanna muddle it up.",
 		},
 		CONSTRUCT =
         {
@@ -49,6 +50,7 @@ return {
         {   
             GENERIC = "I can't right now. Sorry!", 
             INUSE = "Sorry! I'll wait til you're finished there.",  
+            NOTMASTERCHEF = "I wouldn't wanna muddle it up.",
         },
 		COOK =
         {
@@ -280,6 +282,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "It's over for us, eh.",
     QUAGMIRE_ANNOUNCE_WIN = "We done did it.",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "Careful you don't get zapped, eh!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "I feel strong as a grizzly bear!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I'm feelin' a heckuva lot tougher now!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Time to roll up our sleeves, eh Lucy?",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "I could stand under Niagara Falls and stay dry!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Power's out, eh?",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Sorry, all the fight's gone out of me.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Anyone got a spare hockey helmet?",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "That's enough hustlin' around for now.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "I can feel the dampness creepin' back in.",
+    
     BATTLECRY =
     {
         GENERIC = "Get over here, eh!",
@@ -436,6 +450,15 @@ return {
             REVIVER = "You're a good sapling, %s.",
             GHOST = "C'mon, let's getcha replanted.",
             FIRESTARTER = "I thought you of all people would prevent forest fires.",
+        },
+        WARLY =
+        {
+            GENERIC = "%s, buddy! How you doing?",
+            ATTACKER = "Careful where you're swingin', %s.",
+            MURDERER = "I'm gonna soufflé you alive!",
+            REVIVER = "%s is a stand up kinda guy.",
+            GHOST = "Welp, that's the way the cookie crumbles.",
+            FIRESTARTER = "Watch that fire now, %s.",
         },
 
 		MULTIPLAYER_PORTAL = "That'd be the thing I fell through, eh.",
@@ -1646,7 +1669,6 @@ return {
 		POMEGRANATE_SEEDS = "Seedy.",
 		POND = "I can't swim!",
 		POOP = "Don't poop in camp!",
-		--PORTABLECOOKPOT_ITEM = "Sure makes the camp smell nice.",
 		--BOOK_METEOR = "That there ain't right.",
 		PUMPKIN = "I don't like to eat things that grow on the ground.",
 		PUMPKINCOOKIE = "This will keep me chopping.",
@@ -2479,6 +2501,70 @@ return {
         COMPOSTWRAP = "Well. Plants gotta fertilize.",
         ARMOR_BRAMBLE = "All natural safety precautions.",
         TRAP_BRAMBLE = "A trap for the forest, by the forest.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Sure makes the camp smell nice.",
+            DONE = "Well, should we eat?",
+        },
+        PORTABLEBLENDER_ITEM = "Chops up food pretty good.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "I'm not usually one for fancy spices.",
+            DONE = "All ground up.",
+        },
+        SPICEPACK = "A handy knapsack for conserving food!",
+        SPICE_GARLIC = "I suppose some spice couldn't hurt.",
+        SPICE_SUGAR = "I prefer my syrup to be maple.",
+        SPICE_CHILI = "Yep. That's a spicy sauce.",
+        MONSTERTARTARE = "Isn't there anything else to eat?",
+        FRESHFRUITCREPES = "I can get maple syrup on that?",
+        FROGFISHBOWL = "I'm not one to turn my nose up at a meal.",
+        POTATOTORNADO = "I'll eat a tater in any form.",
+        DRAGONCHILISALAD = "Looks real good, buddy.",
+        GLOWBERRYMOUSSE = "Boy would I ever like to dig into that.",
+        VOLTGOATJELLY = "Can't remember the last time I had dessert.",
+        NIGHTMAREPIE = "Whatcha think, Lucy? Should we try a bite?",
+        BONESOUP = "I could always go for a nice hearty soup.",
+        MASHEDPOTATOES = "A nice change of pace from meatballs.",
+        POTATOSOUFFLE = "Lucy and I will clean up, since Warly did the cooking.",
+        MOQUECA = "My mouth is watering just looking at it.",
+        GAZPACHO = "Really cools a fella down.",
+        ASPARAGUSSOUP = "It's a soup made out of those little trees.",
+        VEGSTINGER = "Hoo! Spicy!",
+        BANANAPOP = "I'd prefer maple taffy...",
+        CEVICHE = "I'd be loonie not to eat this.",
+        SALSA = "Lucy'll give ya a hand chopping veggies next time, eh bud?",
+        PEPPERPOPPER = "Hoo! That's a hot one, eh?",
+
+        TURNIP = "From the community garden.",
+        TURNIP_COOKED = "Cooked real nice.",
+        TURNIP_SEEDS = "Looks like new crop seeds to me.",
+        --
+        GARLIC = "Homegrown.",
+        GARLIC_COOKED = "Lucy helped.",
+        GARLIC_SEEDS = "Looks like new crop seeds to me.",
+        --
+        ONION = "I only cry tears of joy.",
+        ONION_COOKED = "Perfectly roasted.",
+        ONION_SEEDS = "Looks like new crop seeds to me.",
+        --
+        POTATO = "I love good local produce.",
+        POTATO_COOKED = "It cooked up real nice.",
+        POTATO_SEEDS = "Looks like new crop seeds to me.",
+        --
+        TOMATO = "That's a nice looking tomato.",
+        TOMATO_COOKED = "Heartburn city.",
+        TOMATO_SEEDS = "Looks like new crop seeds to me.",
+
+        ASPARAGUS = "When it's raw, it's almost as tough as trees.", 
+        ASPARAGUS_COOKED = "Little easier to eat them cooked.", 
+        ASPARAGUS_SEEDS = "I should plant this.",
+
+        PEPPER = "Funny looking vegetable.",
+        PEPPER_COOKED = "Pretty tiny but it packs a punch, eh?",
+        PEPPER_SEEDS = "I should plant this.",
     },
     DESCRIBE_GENERIC = "What's that, eh?",
     DESCRIBE_TOODARK = "It's too dark, eh!",

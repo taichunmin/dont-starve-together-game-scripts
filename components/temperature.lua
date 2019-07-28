@@ -328,7 +328,10 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
         --print(self.delta + self.current, "after carried/equipped")
 
         -- Recently eaten temperatured food is inherently equipped heat/cold
-        if self.bellytemperaturedelta ~= nil then
+        if self.bellytemperaturedelta ~= nil and (
+                (self.bellytemperaturedelta > 0 and self.current < TUNING.HOT_FOOD_WARMING_THRESHOLD) or
+                (self.bellytemperaturedelta < 0 and self.current > TUNING.COLD_FOOD_CHILLING_THRESHOLD)
+            ) then
             self.delta = self.delta + self.bellytemperaturedelta
         end
 

@@ -117,6 +117,8 @@ local function onworked(inst, worker, workleft)
 
         inst.components.lootdropper:DropLoot(pos)
 
+        RemovePhysicsColliders(inst)
+        inst:AddTag("NOCLICK")
 		inst.persists = false
 	    inst:ListenForEvent("animover", inst.Remove)
     end

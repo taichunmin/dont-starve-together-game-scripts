@@ -11,6 +11,7 @@ local Prototyper = Class(function(self, inst)
     self.onturnon = nil
     self.onturnoff = nil
     self.doers = {}
+    --self.restrictedtag = nil --only entities with this tag can turn on
 
     self.onremovedoer = function(doer) self:TurnOff(doer) end
 end)

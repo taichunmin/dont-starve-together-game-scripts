@@ -288,7 +288,7 @@ function RecipePopup:Refresh()
     for i, v in ipairs(recipe.tech_ingredients) do
         if v.type:sub(-9) == "_material" then
             local has, level = builder:HasTechIngredient(v)
-            local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", nil, nil, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+            local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), nil, nil, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
             if GetGameModeProperty("icons_use_cc") then
                 ing.ing:SetEffect("shaders/ui_cc.ksh")
             end
@@ -306,7 +306,7 @@ function RecipePopup:Refresh()
 
     for i, v in ipairs(recipe.ingredients) do
         local has, num_found = inventory:Has(v.type, RoundBiasedUp(v.amount * builder:IngredientMod()))
-        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
         end
@@ -322,7 +322,7 @@ function RecipePopup:Refresh()
         --#BDOIG - does this need to listen for deltas and change while menu is open?
         --V2C: yes, but the entire craft tabs does. (will be added there)
         local has, amount = builder:HasCharacterIngredient(v)
-        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v.type..".tex", v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
         end

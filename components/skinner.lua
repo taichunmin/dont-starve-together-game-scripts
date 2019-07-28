@@ -12,11 +12,7 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 	skintype = skintype or "normal_skin"
 	default_build = default_build or ""
 	base_skin = base_skin or ""
-	
-	--print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-	--print(prefab, base_skin)
-	--dumptable(clothing_names)
-	
+
 	if skintype ~= "NO_BASE" then
 		anim_state:SetSkin(base_skin, default_build)
 	end

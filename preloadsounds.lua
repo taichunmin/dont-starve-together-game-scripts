@@ -67,6 +67,7 @@ local MainSounds =
 	"tentacle.fsb",
     "together.fsb",
 	"wallace.fsb",
+    "warly.fsb",
 	"wendy.fsb",
 	"wickerbottom.fsb",
 	"willow.fsb",

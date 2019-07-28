@@ -22,6 +22,7 @@ return {
 			GENERIC = "It's full, full, full.",
 			NOTALLOWED = "Oh I simply couldn't.",
 			INUSE = "Another soul has use of it right now.",
+            NOTMASTERCHEF = "Warly won't let me peek inside. He's no fun.",
 		},
 		CONSTRUCT =
         {
@@ -34,6 +35,7 @@ return {
 		{	
 			GENERIC = "Oh I simply couldn't.",
 			INUSE = "It is making a pact with another.",
+            NOTMASTERCHEF = "Warly won't let me peek inside. He's no fun.",
 		},
 		UNLOCK =
         {
@@ -158,7 +160,7 @@ return {
 	ANNOUNCE_COLD = "It's finally frozen over!",
 	ANNOUNCE_HOT = "Hot, hot, hot!",
 	ANNOUNCE_CRAFTING_FAIL = "My hands are truly cursed.",
-	ANNOUNCE_DEERCLOPS = "Clipping and clopping, here comes a stomping!",
+	ANNOUNCE_DEERCLOPS = "A massive brute is en route!",
 	ANNOUNCE_CAVEIN = "I'd best hop on out of here!",
 	ANNOUNCE_ANTLION_SINKHOLE = 
 	{
@@ -304,6 +306,18 @@ return {
     QUAGMIRE_ANNOUNCE_MEALBURNT = "Well it's not raw! Hyuyu!",
     QUAGMIRE_ANNOUNCE_LOSE = "Oh dear.",
     QUAGMIRE_ANNOUNCE_WIN = "Must be off now!",
+
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I'm an electric imp!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "Hyuyu, I'm ready to play!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I feel just great! Must've been something I ate!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "That was just the thing to give my step a spring!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "There will be no wet fur smell for this imp! Hyuyu!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "I think I gave them quite a shock! Hyuyu!",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "It was all just a prank!",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "That was fun, let's do it again!",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "All work and no play doesn't suit an imp. Hyuyu!",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Alas and alack, the dampness is back.",
 
 	BATTLECRY =
 	{
@@ -501,10 +515,20 @@ return {
             GENERIC = "Heard any good jokes lately, %s?",
             ATTACKER = "What a cruel trick you've played! Hyuyu!",
             MURDERER = "You've really gone and dung it this time, hyuyu!",
-            REVIVER = "I guess %s doesn't have a taste for souls.",
+            REVIVER = "%s is just too kind a soul, I suppose.",
             GHOST = "Finally, a break from his poop jokes.",
             FIRESTARTER = "Ooo, there's an ember of fun in you yet.",
         },
+        WARLY =
+        {
+            GENERIC = "%s sure likes food. I don't get humans.",
+            ATTACKER = "I think %s's been causing some trouble. How fun!",
+            MURDERER = "Don't hurt me-hee-hee!",
+            REVIVER = "I guess %s doesn't have a taste for souls.",
+            GHOST = "The culinarian's become the culination, hyuyu!",
+            FIRESTARTER = "Oh, are we playing pranks today, %s?",
+        },
+        
         NEXTCHARACTER =
         {
             GENERIC = "Hyuyu, what are you up to %s?",
@@ -2480,6 +2504,71 @@ return {
         COMPOSTWRAP = "It's poop. So the plants won't droop.",
         ARMOR_BRAMBLE = "Who'd like to give an imp a hug? Hyuyu!",
         TRAP_BRAMBLE = "Spiky, pointy, green and thorny!",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Does it make soul food?",
+            DONE = "A mortal meal is not really my deal.",
+        },
+        PORTABLEBLENDER_ITEM = "All that chopping and no souls.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "Grind, grind, grind away.",
+            DONE = "Mortals are so strange.",
+        },
+        SPICEPACK = "What a cute little pack. Hyuyu!",
+        SPICE_GARLIC = "Hissss!",
+        SPICE_SUGAR = "A saccharine collection of liquified confection.",
+        SPICE_CHILI = "I'll spike some mortal's food. Hyuyu!",
+        MONSTERTARTARE = "Monster flesh that's very fresh. ",
+        FRESHFRUITCREPES = "Fruits and berries put to bed.",
+        FROGFISHBOWL = "I'd rather have a nice fresh soul.",
+        POTATOTORNADO = "I think I remember when I used to eat food. Maybe.",
+        DRAGONCHILISALAD = "Warly spends a lot of time on this stuff.",
+        GLOWBERRYMOUSSE = "Seems like a lot of effort for something you eat.",
+        VOLTGOATJELLY = "Hyuyu, it looks interesting at least.",
+        NIGHTMAREPIE = "Hyuyu, humans sure are strange.",
+        BONESOUP = "They spend all day cooking and then devour it in minutes.",
+        MASHEDPOTATOES = "Humans mush stuff up sometimes. That's just how it is.",
+        POTATOSOUFFLE = "I'm sure it's good, but it's not for me.",
+        MOQUECA = "I don't really like human food.",
+        GAZPACHO = "This human food stuff seems more watery than usual.",
+        ASPARAGUSSOUP = "Even for human food, this is odd.",
+        VEGSTINGER = "I can't decide if it's for sipping or souping.",
+        BANANAPOP = "Hyuyu, what will the mortals think of next.",
+        CEVICHE = "I'd rather leave this for the humans.",
+        SALSA = "A spicy treat for mortals to eat.",
+        PEPPERPOPPER = "I'll stuff them with toothpaste when Warly's not looking. Hyuyu!",
+
+        TURNIP = "That's a tiny turnip.",
+        TURNIP_COOKED = "Cooked, but not into a dish.",
+        TURNIP_SEEDS = "Strange little seeds, indeed, indeed.",
+        --
+        GARLIC = "Hissss!",
+        GARLIC_COOKED = "Hissssss!",
+        GARLIC_SEEDS = "Strange little seeds, indeed, indeed.",
+        --
+        ONION = "You'll see no tears from my eye. I cannot cry!",
+        ONION_COOKED = "Like tiny circles decending.",
+        ONION_SEEDS = "Strange little seeds, indeed, indeed.",
+        --
+        POTATO = "Mortals like this in all its forms.",
+        POTATO_COOKED = "A roasted mortal food.",
+        POTATO_SEEDS = "Strange little seeds, indeed, indeed.",
+        --
+        TOMATO = "Who shall I throw this at?",
+        TOMATO_COOKED = "Squishy, squishy.",
+        TOMATO_SEEDS = "Strange little seeds, indeed, indeed.",
+
+        ASPARAGUS = "A spear I guess. Hyuyu!",
+        ASPARAGUS_COOKED = "I'd rather not.",
+        ASPARAGUS_SEEDS = "Strange little seeds, indeed, indeed.",
+
+        PEPPER = "An impy little vegetable.",
+        PEPPER_COOKED = "Tiny toasted twisty things.",
+        PEPPER_SEEDS = "Strange little seeds, indeed, indeed.",
+
     },
     DESCRIBE_GENERIC = "Ooo, a mystery!",
     DESCRIBE_TOODARK = "I can't see the physical plane!",

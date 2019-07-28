@@ -22,6 +22,7 @@ return {
 			GENERIC = "Too full",
 			NOTALLOWED = "Why can't it go?",
 			INUSE = "Someone else's",
+            NOTMASTERCHEF = "Not mine",
 		},
 		CONSTRUCT =
         {
@@ -34,6 +35,7 @@ return {
 		{	
 			GENERIC = "Nope",
 			INUSE = "Friends doing it",
+            NOTMASTERCHEF = "Not mine",
 		},
 		UNLOCK =
         {
@@ -169,7 +171,7 @@ return {
 	ANNOUNCE_COLD = "Brrr... Cold!",
 	ANNOUNCE_HOT = "Woo-wee, it's hot!",
 	ANNOUNCE_CRAFTING_FAIL = "Failed",
-	ANNOUNCE_DEERCLOPS = "Eyeball Branch Head near!",
+	ANNOUNCE_DEERCLOPS = "Something scary coming!!",
 	ANNOUNCE_CAVEIN = "Sky is falling!",
 	ANNOUNCE_ANTLION_SINKHOLE = 
 	{
@@ -310,6 +312,18 @@ return {
 
     ANNOUNCE_BLOOMING = {"Feeling bloomy!"},
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "Zap! Zap, Zap!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "Feel stronger!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "Hmm, bark feel thicker!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Faster gooder!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "No more wet!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Aww. No more zaps.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Feel less fighty now.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Back to normal.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "Tired now.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Water back!",
+    
 	BATTLECRY =
 	{
 		GENERIC = "Attack!",
@@ -508,6 +522,15 @@ return {
             REVIVER = "%s makes friends well again!",
             GHOST = "Oh. That you, %s?",
             FIRESTARTER = "Why make so much fire?!",
+        },
+        WARLY =
+        {
+            GENERIC = "Friend that makes tummy happy",
+            ATTACKER = "Friend make lots of Ouch!",
+            MURDERER = "Do not eat friends!",
+            REVIVER = "Thank you, friend %s!",
+            GHOST = "%s needs help!",
+            FIRESTARTER = "Ah! %s make scary burnies!",
         },
 
         MIGRATION_PORTAL = 
@@ -1074,9 +1097,11 @@ return {
         {
 			GENERIC = "Not for belly",
 		},
-        CHESSPIECE_PIPE = 
-        {
- 		},
+        CHESSPIECE_PIPE = "Bubbles!",
+        CHESSPIECE_DEERCLOPS = "Oh. Where legs?",
+        CHESSPIECE_BEARGER = "Not so smelly now",
+        CHESSPIECE_MOOSEGOOSE = "Oh. Tweeter can't tweet now",
+        CHESSPIECE_DRAGONFLY = "Only stone fire now",
         CHESSJUNK1 = "Machine stuff",
         CHESSJUNK2 = "Lots of machine stuff",
         CHESSJUNK3 = "Full of machine stuff",
@@ -1833,7 +1858,7 @@ return {
 			GENERIC = "Angry Leggy Bug",
 			SLEEPING = "Sleepytime",
 		},
-		SPOILED_FOOD = "Yum",
+		SPOILED_FOOD = "Not good for belly",
         STAGEHAND =
         {
 			AWAKE ="Ohh! Table friend!",
@@ -2641,7 +2666,7 @@ return {
         },
 
 		BULLKELP_PLANT = 
-         {
+        {
             GENERIC = "Water friends!",
             PICKED = "Yum!",
         },
@@ -2662,6 +2687,69 @@ return {
         ARMOR_BRAMBLE = "Pokey protection",
         TRAP_BRAMBLE = "Friends made a trap!",
 
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "For belly stuff",
+            DONE = "All done!",
+        },
+        PORTABLEBLENDER_ITEM = "Chops belly stuff",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "What's it do?",
+            DONE = "Made pile of tasty dirt",
+        },
+        SPICEPACK = "Pack for belly stuff!",
+        SPICE_GARLIC = "(sniff) ahh-CHOO!",
+        SPICE_SUGAR = "Sweet tasty juice!",
+        SPICE_CHILI = "Makes mouth on fire!",
+        MONSTERTARTARE = "Nope",
+        FRESHFRUITCREPES = "Sweet belly stuff",
+        FROGFISHBOWL = "Yum yums!",
+        POTATOTORNADO = "Whirly Swirly!",
+        DRAGONCHILISALAD = "Eating bits",
+        GLOWBERRYMOUSSE = "Glowy chomp-stuff",
+        VOLTGOATJELLY = "Friend made. With Love",
+        NIGHTMAREPIE = "Scare nibbles",
+        BONESOUP = "Yum Broth",
+        MASHEDPOTATOES = "Tasty goop",
+        POTATOSOUFFLE = "Different Potato",
+        MOQUECA = "Made by friend",
+        GAZPACHO = "Friend made Liquid",
+        ASPARAGUSSOUP = "Swimming sticks",
+        VEGSTINGER = "Tangy water",
+        BANANAPOP = "Frozen friend hair",
+        CEVICHE = "Belly goop",
+        SALSA = "Tasty mush",
+        PEPPERPOPPER = "Yummy bites",
+
+        TURNIP = "Cute little dirt friend",
+        TURNIP_COOKED = "Makes good belly stuff",
+        TURNIP_SEEDS = "Mystery baby",
+        --
+        GARLIC = "Mmm... Smelly Dirt thing!",
+        GARLIC_COOKED = "Mmm... Smells good",
+        GARLIC_SEEDS = "Mystery baby",
+        --
+        ONION = "Makes eyes wet",
+        ONION_COOKED = "Sky Belly will like this",
+        ONION_SEEDS = "Mystery baby",
+        --
+        POTATO = "Thanks, dirt!",
+        POTATO_COOKED = "Dirt makes good belly stuff",
+        POTATO_SEEDS = "Mystery baby",
+        --
+        TOMATO = "Oh! Squishy ball",
+        TOMATO_COOKED = "Made little red circles",
+        TOMATO_SEEDS = "Mystery baby",
+
+        ASPARAGUS = "Sticks for belly", 
+        ASPARAGUS_COOKED = "Smells pointy",
+        ASPARAGUS_SEEDS = "Grows the belly sticks",
+
+        PEPPER = "Aww... cute!",
+        PEPPER_COOKED = "Oh. Smells like fire",
+        PEPPER_SEEDS = "Mystery baby",
     },
     DESCRIBE_GENERIC = "Friend?",
     DESCRIBE_TOODARK = "Where is light?",

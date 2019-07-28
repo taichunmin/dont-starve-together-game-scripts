@@ -21,6 +21,7 @@ return {
 			GENERIC = "It wouldn't fit.",
 			NOTALLOWED = "That can't go in there.",
 			INUSE = "Worry not, pal. I've the patience of a saint.",
+            NOTMASTERCHEF = "I have more important things to do than that.",
 		},
 		CONSTRUCT =
         {
@@ -38,6 +39,7 @@ return {
 		{	
 			GENERIC = "Curses.",
 			INUSE = "I'm quite adept at waiting. I've had a lot of practice.",	
+            NOTMASTERCHEF = "I have more important things to do than that.",
 		},
 		USEKLAUSSACKKEY =
         {
@@ -279,6 +281,18 @@ return {
     --YOTP---
     ANNOUNCE_LEAVE_MINIGAME = "I don't need this anymore.",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "Unlimited power!",
+	ANNOUNCE_ATTACH_BUFF_ATTACK   		   = "I'm not afraid of some fisticuffs!",
+	ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I feel protected by an unseen force.",
+	ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "My focus feels heightened!",
+	ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "Finally, some respite from the dampness.",
+	
+	ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Shame. I was starting to enjoy that.",
+	ANNOUNCE_DETACH_BUFF_ATTACK 		   = "My strength has left me.",
+	ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "I've been left vulnerable!",
+	ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "My enthusiasm for this has run dry.",
+	ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "I'm exposed to the elements!",
+    
 	BATTLECRY =
 	{
 		GENERIC = "To arms!",
@@ -435,6 +449,15 @@ return {
             REVIVER = "I suppose he has his uses.",
             GHOST = "What a shame. Now I'll never know what that gem does.",
             FIRESTARTER = "%s has been starting fires, now hasn't he?",
+        },
+        WARLY =
+        {
+            GENERIC = "Greetings, Mr. %s.",
+            ATTACKER = "%s seems out of sorts today.",
+            MURDERER = "Eat this!",
+            REVIVER = "Thank-you for the assistance, %s.",
+            GHOST = "Oh, what a shame.",
+            FIRESTARTER = "%s's started some suspicious fires recently.",
         },
 
         BERNIE_INACTIVE =
@@ -1633,7 +1656,6 @@ return {
 		POMEGRANATE_SEEDS = "Such labor is beneath me.",
 		POND = "I can see my face reflected off the top.",
 		POOP = "It's the way of all mortal life.",
-		--PORTABLECOOKPOT_ITEM = "An instrument of the dark culinary arts.",
 		PUMPKIN = "Hallowe'en was always my favorite.",
 		PUMPKINCOOKIE = "It's been eons since I had a good biscuit.",
 		PUMPKIN_COOKED = "A little more refined, at least.",
@@ -2462,6 +2484,70 @@ return {
         COMPOSTWRAP = "I'm utterly dung with all of this.",
         ARMOR_BRAMBLE = "Who's frail now?",
         TRAP_BRAMBLE = "Best laid traps.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "An instrument of the dark culinary arts.",
+            DONE = "Let's hope something palatable has come of it.",
+        },
+        PORTABLEBLENDER_ITEM = "Does it have to make such a horrible racket?",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "Ah. The daily grind.",
+            DONE = "Finally something with some taste.",
+        },
+        SPICEPACK = "I've been reduced to hauling my own foodstuffs.",
+        SPICE_GARLIC = "Keeps everyone from getting too close.",
+        SPICE_SUGAR = "I never was one for syrupy mush.",
+        SPICE_CHILI = "Bit of a kick in the pants.",
+        MONSTERTARTARE = "It's less than appetizing.",
+        FRESHFRUITCREPES = "Deserves to be eaten with fine silverware. Sadly, I've just my hands.",
+        FROGFISHBOWL = "At the end of the day, it's still frog.",
+        POTATOTORNADO = "What an odd way to serve potatoes.",
+        DRAGONCHILISALAD = "I'll permit him to stay so long as he keeps cooking.",
+        GLOWBERRYMOUSSE = "What a nice change it is to know someone who cooks.",
+        VOLTGOATJELLY = "Just because I'm old doesn't mean I like gelatin.",
+        NIGHTMAREPIE = "I'm going to have dreams about this pie nightmare.",
+        BONESOUP = "It's hearty and filling.",
+        MASHEDPOTATOES = "I do love mashed potatoes.",
+        POTATOSOUFFLE = "It's so delicate.",
+        MOQUECA = "I've never had it before.",
+        GAZPACHO = "It smells much nicer going in than coming back out.",
+        ASPARAGUSSOUP = "I suppose you can make soup from anything.",
+        VEGSTINGER = "I do enjoy a drink.",
+        BANANAPOP = "Hm... I don't know what I was expecting.",
+        CEVICHE = "A delightful, cultured dish.",
+        SALSA = "A bit spicy for my delicate palate.",
+        PEPPERPOPPER = "Pops right into my mouth!",
+
+        TURNIP = "It's a big, bulbous turnip.",
+        TURNIP_COOKED = "Hardly improves the taste.",
+        TURNIP_SEEDS = "Am I supposed to plant these?",
+        --
+        GARLIC = "I suppose that's why there are no vampires around.",
+        GARLIC_COOKED = "I wonder if it still wards away the undead.",
+        GARLIC_SEEDS = "Am I supposed to plant these?",
+        --
+        ONION = "It's a pungent onion.",
+        ONION_COOKED = "Take that, onion.",
+        ONION_SEEDS = "Am I supposed to plant these?",
+        --
+        POTATO = "It is in the nightshade family, you know.",
+        POTATO_COOKED = "The potato may be eaten now.",
+        POTATO_SEEDS = "Am I supposed to plant these?",
+        --
+        TOMATO = "It's a red, red tomato.",
+        TOMATO_COOKED = "It's a red, red roasted tomato.",
+        TOMATO_SEEDS = "Am I supposed to plant these?",
+
+        ASPARAGUS = "We must always eat our vegetables.",
+        ASPARAGUS_COOKED = "Smells terrible.",
+        ASPARAGUS_SEEDS = "Such labor is beneath me.", 
+
+        PEPPER = "Looks like the spicy kind.",
+        PEPPER_COOKED = "Slightly more exciting than the usual vegetable.",
+        PEPPER_SEEDS = "Am I supposed to plant these?",
     },
     DESCRIBE_GENERIC = "You tell me.",
     DESCRIBE_TOODARK = "I can't see in the dark!",

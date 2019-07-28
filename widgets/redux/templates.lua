@@ -13,7 +13,7 @@ local UIAnim = require "widgets/uianim"
 local Widget = require "widgets/widget"
 
 require("constants")
-require("skinsutils")
+--require("skinsutils")
 require("stringutil")
 
 local TEMPLATES = {}

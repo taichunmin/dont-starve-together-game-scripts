@@ -81,6 +81,9 @@ local assets =
     Asset("ANIM", "anim/ringmeter.zip"),
 
     Asset("SOUND", "sound/together.fsb"),
+
+	Asset("DYNAMIC_ATLAS", "images/bg_redux_wardrobe_bg.xml"),
+    Asset("PKGREF", "images/bg_redux_wardrobe_bg.tex"),
 }
 
 local prefabs =

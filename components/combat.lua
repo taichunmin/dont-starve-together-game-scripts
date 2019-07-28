@@ -848,8 +848,10 @@ function Combat:DoAttack(targ, weapon, projectile, stimuli, instancemult)
     local reflect_list = {}
     if targ.components.combat ~= nil then
         local mult =
-            (stimuli == "electric" or
-            (weapon ~= nil and weapon.components.weapon ~= nil and weapon.components.weapon.stimuli == "electric"))
+            (   stimuli == "electric" or
+                (weapon ~= nil and weapon.components.weapon ~= nil and weapon.components.weapon.stimuli == "electric") or
+                self.inst.components.electricattacks ~= nil
+            )
             and not (targ:HasTag("electricdamageimmune") or
                     (targ.components.inventory ~= nil and targ.components.inventory:IsInsulated()))
             and TUNING.ELECTRIC_DAMAGE_MULT + TUNING.ELECTRIC_WET_DAMAGE_MULT * (targ.components.moisture ~= nil and targ.components.moisture:GetMoisturePercent() or (targ:GetIsWet() and 1 or 0))

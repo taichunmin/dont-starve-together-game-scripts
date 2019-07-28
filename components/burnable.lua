@@ -1,4 +1,5 @@
 local SMOLDER_TICK_TIME = 2
+local SourceModifierList = require("util/sourcemodifierlist")
 
 local function oncanlight(self)
     if not self.burning and self.canlight then
@@ -48,6 +49,7 @@ local Burnable = Class(function(self, inst)
     self.canlight = true
 
     self.lightningimmune = false
+
     --self.nocharring = false --default almost everything chars
     --self.ignorefuel = false --set true if igniting/extinguishing should not start/stop fuel consumption
 

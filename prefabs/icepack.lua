@@ -1,7 +1,12 @@
 local assets =
 {
     Asset("ANIM", "anim/swap_icepack.zip"),
-    Asset("ANIM", "anim/ui_icepack_2x3.zip"),
+    Asset("ANIM", "anim/ui_backpack_2x4.zip"),
+}
+
+local prefabs =
+{
+    "ash",
 }
 
 local function onequip(inst, owner)
@@ -25,6 +30,18 @@ local function onburnt(inst)
     SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())
 
     inst:Remove()
+end
+
+local function onignite(inst)
+    if inst.components.container ~= nil then
+        inst.components.container.canbeopened = false
+    end
+end
+
+local function onextinguish(inst)
+    if inst.components.container ~= nil then
+        inst.components.container.canbeopened = true
+    end
 end
 
 local function fn()
@@ -63,7 +80,6 @@ local function fn()
 
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
-
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
 
@@ -73,10 +89,12 @@ local function fn()
     MakeSmallBurnable(inst)
     MakeSmallPropagator(inst)
     inst.components.burnable:SetOnBurntFn(onburnt)
+    inst.components.burnable:SetOnIgniteFn(onignite)
+    inst.components.burnable:SetOnExtinguishFn(onextinguish)
 
     MakeHauntableLaunchAndDropFirstItem(inst)
 
     return inst
 end
 
-return Prefab("icepack", fn, assets)
+return Prefab("icepack", fn, assets, prefabs)

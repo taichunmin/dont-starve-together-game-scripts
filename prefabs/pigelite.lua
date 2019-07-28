@@ -226,7 +226,6 @@ local function MakePigElite(variation)
         MakeHauntablePanic(inst)
 
         inst:AddComponent("inspectable")
-        inst.components.inspectable.nameoverride = "pigguard"
 
         inst:AddComponent("inventory")
         inst:AddComponent("knownlocations")

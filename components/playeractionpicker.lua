@@ -25,6 +25,10 @@ function PlayerActionPicker:UnregisterContainer(container)
     end
 end
 
+function PlayerActionPicker:HasContainerWidgetAction()
+    return next(self.containers) ~= nil
+end
+
 function PlayerActionPicker:OnUpdateActionFilterStack()
     local num = #self.actionfilterstack
     if num > 0 then

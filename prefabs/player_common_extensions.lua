@@ -168,7 +168,7 @@ local function CommonActualRez(inst)
     inst.components.grogginess:SetResistance(3)
     inst.components.grogginess:SetKnockOutTest(ShouldKnockout)
 
-    inst.components.moisture:ForceDry(false)
+    inst.components.moisture:ForceDry(false, inst)
 
     inst.components.sheltered:Start()
 
@@ -430,7 +430,7 @@ local function CommonPlayerDeath(inst)
 
     inst:RemoveComponent("grogginess")
 
-    inst.components.moisture:ForceDry(true)
+    inst.components.moisture:ForceDry(true, inst)
 
     inst.components.sheltered:Stop()
 

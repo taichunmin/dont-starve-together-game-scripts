@@ -31,11 +31,18 @@ local Edible = Class(function(self, inst)
     self.temperaturedelta = 0
     self.temperatureduration = 0
 
+    --chill is a percentage [0, 1] of .temperatureduration
+    --don't change this from 0 unless .temperaturedelta > 0
+    self.chill = 0
+    --self.nochill = false
+
     self.stale_hunger = TUNING.STALE_FOOD_HUNGER
     self.stale_health = TUNING.STALE_FOOD_HEALTH
 
     self.spoiled_hunger = TUNING.SPOILED_FOOD_HUNGER
     self.spoiled_health = TUNING.SPOILED_FOOD_HEALTH
+
+    self.spice = nil
 
     if inst.prefab == "berries" then
         --hack for smallbird; berries are actually part of veggie
@@ -75,7 +82,12 @@ function Edible:GetSanity(eater)
         end
     end
 
-    return self.sanityvalue
+    local multiplier = 1
+    if self.spice and TUNING.SPICE_MULTIPLIERS[self.spice] and TUNING.SPICE_MULTIPLIERS[self.spice].SANITY then
+        multiplier = multiplier + TUNING.SPICE_MULTIPLIERS[self.spice].SANITY
+    end
+
+    return self.sanityvalue * multiplier
 end
 
 function Edible:GetHunger(eater)
@@ -96,6 +108,7 @@ end
 function Edible:GetHealth(eater)
     local multiplier = 1
     local healthvalue = self.gethealthfn ~= nil and self.gethealthfn(self.inst, eater) or self.healthvalue
+    local spice_source = self.spice
 
     local ignore_spoilage = not self.degrades_with_spoilage or healthvalue < 0 or (eater ~= nil and eater.components.eater ~= nil and eater.components.eater.ignoresspoilage)
 
@@ -104,9 +117,15 @@ function Edible:GetHealth(eater)
             multiplier = eater ~= nil and eater.components.eater ~= nil and eater.components.eater.stale_health or self.stale_health
         elseif self.inst.components.perishable:IsSpoiled() then
             multiplier = eater ~= nil and eater.components.eater ~= nil and eater.components.eater.spoiled_health or self.spoiled_health
+            spice_source = nil
         end
     end
-    return multiplier * healthvalue
+
+    if spice_source and TUNING.SPICE_MULTIPLIERS[spice_source] and TUNING.SPICE_MULTIPLIERS[spice_source].HEALTH then
+        multiplier = multiplier + TUNING.SPICE_MULTIPLIERS[spice_source].HEALTH
+    end
+
+    return multiplier * healthvalue 
 end
 
 function Edible:GetDebugString()
@@ -126,12 +145,52 @@ function Edible:OnEaten(eater)
         self.oneaten(self.inst, eater)
     end
 
+    local delta_multiplier = 1
+    local duration_multiplier = 1
+
+    if self.spice and TUNING.SPICE_MULTIPLIERS[self.spice] then
+        if TUNING.SPICE_MULTIPLIERS[self.spice].TEMPERATUREDELTA then
+            delta_multiplier = delta_multiplier + TUNING.SPICE_MULTIPLIERS[self.spice].TEMPERATUREDELTA
+        end
+
+        if TUNING.SPICE_MULTIPLIERS[self.spice].TEMPERATUREDURATION then
+            duration_multiplier = duration_multiplier + TUNING.SPICE_MULTIPLIERS[self.spice].TEMPERATUREDURATION
+        end
+    end
+
     -- Food is an implicit heater/cooler if it has temperature
-    if self.temperaturedelta ~= 0 and self.temperatureduration ~= 0 and eater ~= nil and eater.components.temperature ~= nil then
-        eater.components.temperature:SetTemperatureInBelly(self.temperaturedelta, self.temperatureduration)
+    if self.temperaturedelta ~= 0 and
+        self.temperatureduration ~= 0 and
+        self.chill < 1 and
+        eater ~= nil and
+        eater.components.temperature ~= nil then
+        eater.components.temperature:SetTemperatureInBelly(self.temperaturedelta * (1 - self.chill) * delta_multiplier, self.temperatureduration * duration_multiplier)
     end
 
     self.inst:PushEvent("oneaten", { eater = eater })
+end
+
+function Edible:AddChill(delta)
+    if self.temperaturedelta > 0 and not self.nochill then
+        self.chill = math.clamp(self.chill + delta / self.temperatureduration, 0, 1)
+    end
+end
+
+function Edible:DiluteChill(item, count)
+    if self.temperaturedelta > 0 and not self.nochill and self.inst.components.stackable ~= nil and item.components.edible ~= nil then
+        local stacksize = self.inst.components.stackable.stacksize
+        self.chill = (stacksize * self.chill + count * item.components.edible.chill) / (stacksize + count)
+    end
+end
+
+function Edible:OnSave()
+    return self.chill > 0 and { chill = self.chill } or nil
+end
+
+function Edible:OnLoad(data)
+    if data.chill ~= nil and self.temperaturedelta > 0 and not self.nochill then
+        self.chill = math.clamp(data.chill, 0, 1)
+    end
 end
 
 return Edible

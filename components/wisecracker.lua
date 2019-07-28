@@ -2,6 +2,8 @@ local Wisecracker = Class(function(self, inst)
     self.inst = inst
     self.time_in_lightstate = 0
     self.inlight = true
+    self.foodbuffname = nil
+    self.foodbuffpriority = nil
 
     inst:ListenForEvent("oneat",
         function(inst, data)
@@ -16,13 +18,31 @@ local Wisecracker = Class(function(self, inst)
                             inst.components.eater.healthabsorption == 0
                         )) then
                     inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "PAINFUL"))
-                elseif data.food.components.perishable ~= nil and
-                    data.food.components.edible.degrades_with_spoilage and
-                    not data.food.components.perishable:IsFresh() then
-                    if data.food.components.perishable:IsStale() then
-                        inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "STALE"))
-                    elseif data.food.components.perishable:IsSpoiled() then
-                        inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "SPOILED"))
+                elseif data.food.components.perishable ~= nil then
+                    if data.food.components.perishable:IsFresh() then
+                        local ismasterchef = inst:HasTag("masterchef")
+                        if ismasterchef and data.food.prefab == "wetgoop" then
+                            inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "PAINFUL"))
+                        else
+                            local count = inst.components.foodmemory ~= nil and inst.components.foodmemory:GetMemoryCount(data.food.prefab) or 0
+                            if count > 0 then
+                                inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "SAME_OLD_"..tostring(math.min(5, count))))
+                            elseif ismasterchef then
+                                inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT",
+                                    (data.food:HasTag("masterfood") and "TASTY") or
+                                    (data.food:HasTag("preparedfood") and "PREPARED") or
+                                    (data.food.components.cookable ~= nil and "RAW") or
+                                    (data.food.components.perishable.perishtime == TUNING.PERISH_PRESERVED and "DRIED") or
+                                    "COOKED"
+                                ))
+                            end
+                        end
+                    elseif data.food.components.edible.degrades_with_spoilage then
+                        if data.food.components.perishable:IsStale() then
+                            inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "STALE"))
+                        elseif data.food.components.perishable:IsSpoiled() then
+                            inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "SPOILED"))
+                        end
                     end
                 end
             end
@@ -190,6 +210,20 @@ local Wisecracker = Class(function(self, inst)
         end)
     end
 
+    local function OnFoodBuff(inst, data)
+        if data ~= nil and
+            data.buff ~= nil and
+            (   self.foodbuffname == nil or
+                self.foodbuffpriority == nil or
+                (data.priority ~= nil and data.priority > self.foodbuffpriority)
+            ) then
+            self.foodbuffname = data.buff
+            self.foodbuffpriority = data.priority
+        end
+    end
+    inst:ListenForEvent("foodbuffattached", OnFoodBuff)
+    inst:ListenForEvent("foodbuffdetached", OnFoodBuff)
+
     if TheNet:GetServerGameMode() == "quagmire" then
         event_server_data("quagmire", "components/wisecracker").AddQuagmireEventListeners(inst)
     end
@@ -197,18 +231,30 @@ end)
 
 function Wisecracker:OnUpdate(dt)
     local nightvision = CanEntitySeeInDark(self.inst)
+    local is_talker_busy = false
+
     if nightvision or self.inst.LightWatcher:IsInLight() then
-        if not self.inlight and (nightvision or self.inst.LightWatcher:GetTimeInLight() >= .5) then
+        if not self.inlight and (nightvision or self.inst.LightWatcher:GetTimeInLight() >= 0.5) then
             self.inlight = true
             if self.inst.components.talker ~= nil and not self.inst:HasTag("playerghost") then
                 self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_ENTER_LIGHT"))
+                is_talker_busy = true
             end
         end
-    elseif self.inlight and self.inst.LightWatcher:GetTimeInDark() >= .5 then
+    elseif self.inlight and self.inst.LightWatcher:GetTimeInDark() >= 0.5 then
         self.inlight = false
         if self.inst.components.talker ~= nil then
             self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_ENTER_DARK"))
+            is_talker_busy = true
         end
+    end
+
+    if self.foodbuffname ~= nil then
+        if not is_talker_busy then
+            self.inst.components.talker:Say(GetString(self.inst, self.foodbuffname))
+        end
+        self.foodbuffname = nil
+        self.foodbuffpriority = nil
     end
 end
 

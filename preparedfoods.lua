@@ -1,4 +1,4 @@
-local foods=
+local foods =
 {
 	butterflymuffin =
 	{
@@ -23,13 +23,14 @@ local foods=
 		perishtime = TUNING.PERISH_SLOW,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 2,
+        potlevel = "high",
 	},
 	
 	taffy =
 	{
 		test = function(cooker, names, tags) return tags.sweetener and tags.sweetener >= 3 and not tags.meat end,
 		priority = 10,
-		foodtype = FOODTYPE.VEGGIE,
+		foodtype = FOODTYPE.GOODIES,
 		health = -TUNING.HEALING_SMALL,
 		hunger = TUNING.CALORIES_SMALL*2,
 		perishtime = TUNING.PERISH_SLOW,
@@ -75,6 +76,7 @@ local foods=
 		perishtime = TUNING.PERISH_MED,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 2,
+        potlevel =  "high",
 		tags = {"catfood"}
 	},
 	
@@ -88,6 +90,7 @@ local foods=
 		perishtime = TUNING.PERISH_SLOW,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 2,
+        potlevel = "high",
 		tags = {"honeyed"}
 	},
 	
@@ -131,6 +134,7 @@ local foods=
 		temperature = TUNING.HOT_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_LONG,
 		cooktime = 2,
+        potlevel = "high",
 	},
 	mandrakesoup =
 	{
@@ -142,6 +146,7 @@ local foods=
 		perishtime = TUNING.PERISH_FAST,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 3,
+        potlevel = "low",
 	},
 	baconeggs =
 	{
@@ -153,6 +158,7 @@ local foods=
 		perishtime = TUNING.PERISH_PRESERVED,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 2,
+        potlevel = "high",
 	},
 	meatballs =
 	{
@@ -164,6 +170,7 @@ local foods=
 		perishtime = TUNING.PERISH_MED,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = .75,
+        potlevel = "high",
 	},	
 	bonestew =
 	{
@@ -175,6 +182,7 @@ local foods=
 		perishtime = TUNING.PERISH_MED,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = .75,
+        potlevel = "low",
 	},
 	perogies =
 	{
@@ -186,6 +194,7 @@ local foods=
 		perishtime = TUNING.PERISH_PRESERVED,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 1,
+        potlevel = "high",
 	},
 	turkeydinner =
 	{
@@ -199,6 +208,7 @@ local foods=
 		temperature = TUNING.HOT_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_AVERAGE,
 		cooktime = 3,
+        potlevel = "high",
 	},
 	ratatouille =
 	{
@@ -235,6 +245,7 @@ local foods=
 		temperature = TUNING.COLD_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_BRIEF,
 		cooktime = .5,
+        potlevel = "low",
 	},
 	fishtacos =
 	{
@@ -246,6 +257,7 @@ local foods=
 		perishtime = TUNING.PERISH_FAST,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = .5,
+        potlevel = "high",
 	},
 	waffles =
 	{
@@ -257,6 +269,7 @@ local foods=
 		perishtime = TUNING.PERISH_FAST,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = .5,
+        potlevel = "high",
 	},	
 	
 	monsterlasagna =
@@ -282,6 +295,7 @@ local foods=
 		perishtime = 9000000,
 		sanity = 0,
 		cooktime = 0.5,
+        potlevel = "low",
 		tags = {"honeyed"}
 	},
 
@@ -319,6 +333,7 @@ local foods=
 		perishtime = TUNING.PERISH_FAST,
 		sanity = TUNING.SANITY_TINY,
 		cooktime = .5,
+        potlevel = "low",
 	},	
 
 	icecream =
@@ -333,6 +348,7 @@ local foods=
 		temperature = TUNING.COLD_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_LONG,
 		cooktime = .5,
+        potlevel = "low",
 	},	
 
 	watermelonicle =
@@ -347,6 +363,7 @@ local foods=
 		temperature = TUNING.COLD_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_AVERAGE,
 		cooktime = .5,
+        potlevel = "low",
 	},	
 
 	trailmix =
@@ -373,6 +390,7 @@ local foods=
 		temperature = TUNING.HOT_FOOD_BONUS_TEMP,
 		temperatureduration = TUNING.FOOD_TEMP_LONG,
 		cooktime = .5,
+        potlevel = "low",
 	},	
 
 	guacamole = 
@@ -385,6 +403,7 @@ local foods=
 		perishtime = TUNING.PERISH_MED,
 		sanity = 0,
 		cooktime = .5,
+        potlevel = "low",
 	},
 
 	jellybean =
@@ -397,6 +416,7 @@ local foods=
 		perishtime = nil, -- not perishable
 		sanity = TUNING.SANITY_TINY,
 		cooktime = 2.5,
+        potlevel = "low",
 		tags = {"honeyed"},
 		stacksize = 3,
         prefabs = { "healthregenbuff" },
@@ -409,12 +429,119 @@ local foods=
         end,
 	},
 
-}
-for k,v in pairs(foods) do
-	v.name = k
-	v.weight = v.weight or 1
-	v.priority = v.priority or 0
-end
+    --new!
+    potatotornado =
+    {
+        test = function(cooker, names, tags) return (names.potato or names.potato_cooked) and names.twigs and (not tags.monster or tags.monster <= 1) and not tags.meat and (tags.inedible and tags.inedible <= 2) end,
+        priority = 10,
+        foodtype = FOODTYPE.VEGGIE,
+        health = TUNING.HEALING_SMALL,
+        hunger = TUNING.CALORIES_LARGE,
+        perishtime = TUNING.PERISH_MED,
+        sanity = TUNING.SANITY_MED,
+        cooktime = .75,
+    },
 
+    mashedpotatoes =
+    {
+        test = function(cooker, names, tags) return ((names.potato and names.potato > 1) or (names.potato_cooked and names.potato_cooked > 1) or (names.potato and names.potato_cooked)) and (names.garlic or names.garlic_cooked) and not tags.meat and not tags.inedible end,
+        priority = 20,
+        foodtype = FOODTYPE.VEGGIE,
+        health = TUNING.HEALING_MED,
+        hunger = TUNING.CALORIES_LARGE,
+        perishtime = TUNING.PERISH_SLOW,
+        sanity = TUNING.SANITY_LARGE,
+        cooktime = 1,
+        potlevel = "low",
+    },
+
+    asparagussoup = 
+	{
+		test = function(cooker, names, tags) return (names.asparagus or names.asparagus_cooked) and tags.veggie and tags.veggie > 2 and not tags.meat and not tags.inedible end,
+		priority = 10,
+		foodtype = FOODTYPE.VEGGIE,
+		health = TUNING.HEALING_MED,
+		hunger = TUNING.CALORIES_MEDSMALL,
+		perishtime = TUNING.PERISH_SLOW,
+		sanity = TUNING.SANITY_TINY,	
+		cooktime = 0.5,
+        potlevel = "low",
+	},	
+
+	vegstinger = 
+	{
+		test = function(cooker, names, tags) return (names.asparagus or names.asparagus_cooked or names.tomato or names.tomato_cooked) and tags.veggie and tags.veggie > 2 and tags.frozen and not tags.meat and not tags.inedible and not tags.egg end,
+		priority = 15,
+		foodtype = FOODTYPE.VEGGIE,
+		health = TUNING.HEALING_SMALL,
+		hunger = TUNING.CALORIES_MED,
+		perishtime = TUNING.PERISH_SLOW,
+		sanity = TUNING.SANITY_LARGE,	
+		cooktime = 0.5,
+        potlevel = "low",
+	},
+
+	bananapop = 
+	{
+		test = function(cooker, names, tags) return (names.cave_banana or names.cave_banana_cooked) and tags.frozen and names.twigs and not tags.meat and not tags.fish and (tags.inedible and tags.inedible <= 2) end,
+		priority = 20,
+		foodtype = FOODTYPE.VEGGIE,
+		health = TUNING.HEALING_MED,
+		hunger = TUNING.CALORIES_SMALL,
+		perishtime = TUNING.PERISH_SUPERFAST,
+		sanity = TUNING.SANITY_LARGE,
+		temperature = TUNING.COLD_FOOD_BONUS_TEMP,
+		temperatureduration = TUNING.FOOD_TEMP_AVERAGE,
+		cooktime = 0.5,
+        potlevel = "low",
+	},
+
+	ceviche = 
+	{
+		test = function(cooker, names, tags) return tags.fish and tags.fish >= 2 and tags.frozen and not tags.inedible and not tags.egg end,
+		priority = 20,
+		foodtype = FOODTYPE.MEAT,
+		health = TUNING.HEALING_MED,
+		hunger = TUNING.CALORIES_MED,
+		perishtime = TUNING.PERISH_MED,
+		sanity = TUNING.SANITY_TINY,
+		temperature = TUNING.COLD_FOOD_BONUS_TEMP,
+		temperatureduration = TUNING.FOOD_TEMP_AVERAGE,
+		cooktime = 0.5,
+	},
+
+	salsa = 
+	{
+		test = function(cooker, names, tags) return (names.tomato or names.tomato_cooked) and (names.onion or names.onion_cooked) and not tags.meat and not tags.inedible and not tags.egg end,
+		priority = 20,
+		foodtype = FOODTYPE.VEGGIE,
+		health = TUNING.HEALING_SMALL,
+		hunger = TUNING.CALORIES_MED,
+		perishtime = TUNING.PERISH_SLOW,
+		sanity = TUNING.SANITY_LARGE,
+		cooktime = 0.5,
+        potlevel = "low",
+	},
+
+	pepperpopper =
+	{
+		test = function(cooker, names, tags) return (names.pepper or names.pepper_cooked) and tags.meat and tags.meat <= 1.5 and not tags.inedible end,
+		priority = 20,
+		foodtype = FOODTYPE.MEAT,
+		health = TUNING.HEALING_MEDLARGE,
+		hunger = TUNING.CALORIES_MED,
+		perishtime = TUNING.PERISH_SLOW,
+		sanity = -TUNING.SANITY_TINY,
+		temperature = TUNING.HOT_FOOD_BONUS_TEMP,
+		temperatureduration = TUNING.FOOD_TEMP_LONG,
+		cooktime = 2,
+	}
+}
+
+for k, v in pairs(foods) do
+    v.name = k
+    v.weight = v.weight or 1
+    v.priority = v.priority or 0
+end
 
 return foods

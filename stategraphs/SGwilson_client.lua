@@ -199,7 +199,10 @@ local actionhandlers =
                 or "dolongaction"
         end),
     ActionHandler(ACTIONS.SHAVE, "shave"),
-    ActionHandler(ACTIONS.COOK, "dolongaction"),
+    ActionHandler(ACTIONS.COOK,
+        function(inst, action)
+            return inst:HasTag("expertchef") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.FILL, "dolongaction"),
     ActionHandler(ACTIONS.PICKUP, "doshortaction"),
     ActionHandler(ACTIONS.CHECKTRAP, "doshortaction"),
@@ -319,6 +322,7 @@ local actionhandlers =
         end),
     ActionHandler(ACTIONS.STARTCHANNELING, "startchanneling"),
     ActionHandler(ACTIONS.REVIVE_CORPSE, "dolongaction"),
+    ActionHandler(ACTIONS.DISMANTLE, "dolongaction"),
 
     --Quagmire
     ActionHandler(ACTIONS.TILL, "till_start"),

@@ -67,11 +67,10 @@ local COMPONENT_ACTIONS =
                 if right and inst.replica.container:IsOpenedBy(doer) then
                     table.insert(actions, doer.components.constructionbuilderuidata ~= nil and doer.components.constructionbuilderuidata:GetContainer() == inst and ACTIONS.APPLYCONSTRUCTION or ACTIONS.WRAPBUNDLE)
                 end
-            elseif not inst:HasTag("burnt") and
-                inst.replica.container:CanBeOpened() and
-                doer.replica.inventory ~= nil and
-                not (doer.replica.rider ~= nil and
-                    doer.replica.rider:IsRiding()) then
+            elseif not inst:HasTag("burnt")
+                and inst.replica.container:CanBeOpened()
+                and doer.replica.inventory ~= nil
+                and not (doer.replica.rider ~= nil and doer.replica.rider:IsRiding()) then
                 table.insert(actions, ACTIONS.RUMMAGE)
             end
         end,
@@ -177,6 +176,17 @@ local COMPONENT_ACTIONS =
             end
         end,
 
+        portablecookware = function(inst, doer, actions, right)
+            if right and not inst:HasTag("fire") and
+                --(not inst:HasTag("professionalcookware") or doer:HasTag("professionalchef")) and
+                (not inst:HasTag("mastercookware") or doer:HasTag("masterchef")) then
+                local container = inst.replica.container
+                if container == nil or (container:CanBeOpened() and not container:IsOpenedBy(doer)) then
+                    table.insert(actions, ACTIONS.DISMANTLE)
+                end
+            end
+        end,
+
         projectile = function(inst, doer, actions)
             if inst:HasTag("catchable") and doer:HasTag("cancatch") then
                 table.insert(actions, ACTIONS.CATCH)
@@ -230,7 +240,6 @@ local COMPONENT_ACTIONS =
         end,
         --]]
 
-
         sleepingbag = function(inst, doer, actions)
             if doer:HasTag("player") and not doer:HasTag("insomniac") and not inst:HasTag("hassleeper") then
                 table.insert(actions, ACTIONS.SLEEPIN)
@@ -242,17 +251,22 @@ local COMPONENT_ACTIONS =
                 not (doer.replica.rider ~= nil and doer.replica.rider:IsRiding()) then
                 if inst:HasTag("donecooking") then
                     table.insert(actions, ACTIONS.HARVEST)
-                elseif right and
-                    (inst:HasTag("readytocook")
-                    or (inst.replica.container ~= nil and
+                elseif right and (
+                    (   inst:HasTag("readytocook") and
+                        --(not inst:HasTag("professionalcookware") or doer:HasTag("professionalchef")) and
+                        (not inst:HasTag("mastercookware") or doer:HasTag("masterchef"))
+                    ) or
+                    (   inst.replica.container ~= nil and
                         inst.replica.container:IsFull() and
-                        inst.replica.container:IsOpenedBy(doer))) then
+                        inst.replica.container:IsOpenedBy(doer)
+                    )
+                ) then
                     table.insert(actions, ACTIONS.COOK)
                 end
             end
         end,
 
-		madsciencelab = function(inst, doer, actions, right)
+        madsciencelab = function(inst, doer, actions, right)
             if right and
                 (inst:HasTag("readytocook")
                 or (inst.replica.container ~= nil and
@@ -400,7 +414,7 @@ local COMPONENT_ACTIONS =
                                         table.insert(actions, ACTIONS.FEED)
                                     end
                                 elseif target:HasTag("player") then
-                                    if TheNet:GetPVPEnabled() or not (inst:HasTag("badfood") or inst:HasTag("spoiled")) then
+                                    if TheNet:GetPVPEnabled() or not (inst:HasTag("badfood") or inst:HasTag("unsafefood") or inst:HasTag("spoiled")) then
                                     table.insert(actions, ACTIONS.FEEDPLAYER)
                                     end
                                 elseif target:HasTag("small_livestock")
@@ -420,8 +434,8 @@ local COMPONENT_ACTIONS =
                                 table.insert(actions, ACTIONS.FEED)
                             end
                         elseif target:HasTag("player") then
-                            if TheNet:GetPVPEnabled() or not (inst:HasTag("badfood") or inst:HasTag("spoiled")) then
-                            table.insert(actions, ACTIONS.FEEDPLAYER)
+                            if TheNet:GetPVPEnabled() or not (inst:HasTag("badfood") or inst:HasTag("unsafefood") or inst:HasTag("spoiled")) then
+                                table.insert(actions, ACTIONS.FEEDPLAYER)
                             end
                         elseif target:HasTag("small_livestock")
                             and target.replica.inventoryitem ~= nil

@@ -22,6 +22,7 @@ return {
 			GENERIC = "It's full.",
 			NOTALLOWED = "That can't go in there.",
 			INUSE = "I should wait my turn.",
+            NOTMASTERCHEF = "I'm not a fancy enough chef for that.",
 		},
         CONSTRUCT =
         {
@@ -34,6 +35,7 @@ return {
 		{	
 			GENERIC = "I can't do that.",
 			INUSE = "They're elbow deep in junk right now.",
+            NOTMASTERCHEF = "I'm not a fancy enough chef for that.",
 		},
 		USEKLAUSSACKKEY =
         {
@@ -291,6 +293,18 @@ return {
         "My liege!",
     },
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I feel positively electric!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "Let me at 'em!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I feel much safer now!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Productivity intensifying!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "I feel as dry as one of Wickerbottom's lectures!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "The electricity's gone, but the static clings.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "It seems my brawniness was short-lived.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Well, that was nice while it lasted.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "Desire to procrastinate... creeping back...",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Looks like my dry spell is over.",
+    
 	BATTLECRY =
 	{
 		GENERIC = "Go for the eyes!",
@@ -490,6 +504,15 @@ return {
             REVIVER = "%s never gives up on his friends.",
             GHOST = "You need some help, lil guy?",
             FIRESTARTER = "I thought you hated fire, %s.",
+        },
+        WARLY =
+        {
+            GENERIC = "Greetings, %s!",
+            ATTACKER = "Well, this is a recipe for disaster.",
+            MURDERER = "I hope you don't have any half-baked plans to murder me!",
+            REVIVER = "Always rely on %s to cook up a plan.",
+            GHOST = "Maybe he was cooking with ghost peppers.",
+            FIRESTARTER = "He's gonna flambé the place right down!",
         },
 
         MIGRATION_PORTAL =
@@ -1049,8 +1072,8 @@ return {
         CHESSPIECE_BEARGER = "It was a lot bigger up close.",
         CHESSPIECE_MOOSEGOOSE = "Eurgh. It's so lifelike.",
         CHESSPIECE_DRAGONFLY = "Ah, that brings back memories. Bad ones.",
-        CHESSPIECE_CLAYHOUND = "??",
-        CHESSPIECE_CLAYWARG = "??",
+        --CHESSPIECE_CLAYHOUND = "??",
+        --CHESSPIECE_CLAYWARG = "??",
         CHESSJUNK1 = "A pile of broken chess pieces.",
         CHESSJUNK2 = "Another pile of broken chess pieces.",
         CHESSJUNK3 = "Even more broken chess pieces.",
@@ -1592,7 +1615,6 @@ return {
         POMEGRANATE_SEEDS = "It's a pome-whatsit seed.",
         POND = "I can't see the bottom!",
         POOP = "I should fill my pockets!",
-        --PORTABLECOOKPOT_ITEM = "Now we're cookin'!",
         FERTILIZER = "That is definitely a bucket full of poop.",
         PUMPKIN = "It's as big as my head!",
         PUMPKINCOOKIE = "That's a pretty gourd cookie!",
@@ -2482,6 +2504,70 @@ return {
         COMPOSTWRAP = "Wormwood offered me a bite, but I respectfully declined.",
         ARMOR_BRAMBLE = "The best offense is a good defense.",
         TRAP_BRAMBLE = "It'd really poke whoever stepped on it.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Now we're cookin'!",
+            DONE = "Now we're done cookin'!",
+        },
+        PORTABLEBLENDER_ITEM = "It mixes all the food.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "This will spice things up.",
+            DONE = "Should make things a little tastier.",
+        },
+        SPICEPACK = "A breakthrough in culinary science!",
+        SPICE_GARLIC = "A powerfully potent powder.",
+        SPICE_SUGAR = "Sweet! It's sweet!",
+        SPICE_CHILI = "A flagon of fiery fluid.",
+        MONSTERTARTARE = "There's got to be something else to eat around here.",
+        FRESHFRUITCREPES = "Sugary fruit! Part of a balanced breakfast.",
+        FROGFISHBOWL = "Is that just... frogs stuffed inside a fish?",
+        POTATOTORNADO = "Potato, scientifically infused with the power of a tornado!",
+        DRAGONCHILISALAD = "I hope I can handle the spice level.",
+        GLOWBERRYMOUSSE = "Warly sure can cook.",
+        VOLTGOATJELLY = "It's shockingly delicious.",
+        NIGHTMAREPIE = "It's a little spooky.",
+        BONESOUP = "No bones about it, Warly can cook.",
+        MASHEDPOTATOES = "I've heard cooking is basically chemistry. I should try it.",
+        POTATOSOUFFLE = "I forgot what good food tasted like.",
+        MOQUECA = "He's as talented a chef as I am a scientist.",
+        GAZPACHO = "How in science does it taste so good?",
+        ASPARAGUSSOUP = "Smells like it tastes.",
+        VEGSTINGER = "Can you use the celery as a straw?",
+        BANANAPOP = "No, not brain freeze! I need that for science!",
+        CEVICHE = "Can I get a bigger bowl? This one looks a little shrimpy.",
+        SALSA = "So... hot...!",
+        PEPPERPOPPER = "What a mouthful!",
+
+        TURNIP = "It's a raw turnip.",
+        TURNIP_COOKED = "Cooking is science in practice.",
+        TURNIP_SEEDS = "A handful of odd seeds.",
+        --
+        GARLIC = "The number one breath enhancer.",
+        GARLIC_COOKED = "Perfectly browned.",
+        GARLIC_SEEDS = "A handful of odd seeds.",
+        --
+        ONION = "Looks crunchy.",
+        ONION_COOKED = "A successful chemical reaction.",
+        ONION_SEEDS = "A handful of odd seeds.",
+        --
+        POTATO = "The apples of the earth.",
+        POTATO_COOKED = "A successful temperature experiment.",
+        POTATO_SEEDS = "A handful of odd seeds.",
+        --
+        TOMATO = "It's red because it's full of science.",
+        TOMATO_COOKED = "Cooking's easy if you understand chemistry.",
+        TOMATO_SEEDS = "A handful of odd seeds.",
+
+        ASPARAGUS = "A vegetable.", 
+        ASPARAGUS_COOKED = "Science says it's good for me.",
+        ASPARAGUS_SEEDS = "It's asparagus seeds.",
+
+        PEPPER = "Nice and spicy.",
+        PEPPER_COOKED = "It was already hot to begin with.",
+        PEPPER_SEEDS = "A handful of seeds.",
     },
     DESCRIBE_GENERIC = "It's a... thing.",
     DESCRIBE_TOODARK = "It's too dark to see!",

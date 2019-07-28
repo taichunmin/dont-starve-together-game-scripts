@@ -160,6 +160,7 @@ ACTIONS =
     BRUSH = Action({ priority=3, rmb=false }),
     ABANDON = Action({ rmb=true }),
     PET = Action(),
+    DISMANTLE = Action({ rmb=true }),
 
     CASTAOE = Action({ priority=10, rmb=true, distance=8 }),
 
@@ -350,6 +351,10 @@ ACTIONS.RUMMAGE.fn = function(act)
             targ.components.container:Close()
             act.doer:PushEvent("closecontainer", { container = targ })
             return true
+        elseif targ:HasTag("mastercookware") and not act.doer:HasTag("masterchef") then
+            return false, "NOTMASTERCHEF"
+        --elseif targ:HasTag("professionalcookware") and not act.doer:HasTag("professionalchef") then
+            --return false, "NOTPROCHEF"
         elseif targ.components.container:IsOpen() then
             return false, "INUSE"
         elseif targ.components.container.canbeopened then
@@ -478,7 +483,8 @@ ACTIONS.DEPLOY.strfn = function(act)
                 (act.invobject:HasTag("wallbuilder") and "WALL") or
                 (act.invobject:HasTag("fencebuilder") and "FENCE") or
                 (act.invobject:HasTag("gatebuilder") and "GATE") or
-                (act.invobject:HasTag("eyeturret") and "TURRET")    )
+                (act.invobject:HasTag("eyeturret") and "TURRET") or
+                (act.invobject:HasTag("portableitem") and "PORTABLE")   )
         or nil
 end
 
@@ -503,15 +509,20 @@ local function DoToolWork(act, workaction)
         act.target.components.workable:GetWorkAction() == workaction then
         act.target.components.workable:WorkedBy(
             act.doer,
-            (   act.invobject ~= nil and
-                act.invobject.components.tool ~= nil and
-                act.invobject.components.tool:GetEffectiveness(workaction)
-            ) or
-            (   act.doer ~= nil and
-                act.doer.components.worker ~= nil and
-                act.doer.components.worker:GetEffectiveness(workaction)
-            ) or
-            1
+            (   (   act.invobject ~= nil and
+                    act.invobject.components.tool ~= nil and
+                    act.invobject.components.tool:GetEffectiveness(workaction)
+                ) or
+                (   act.doer ~= nil and
+                    act.doer.components.worker ~= nil and
+                    act.doer.components.worker:GetEffectiveness(workaction)
+                ) or
+                1
+            ) *
+            (   act.doer.components.workmultiplier ~= nil and
+                act.doer.components.workmultiplier:GetMultiplier(workaction) or
+                1
+            )
         )
         return true
     end
@@ -679,6 +690,12 @@ ACTIONS.ATTACK.strfn = function(act)
             return "SMASHABLE"
         end
     end
+end
+
+ACTIONS.COOK.stroverridefn = function(act)
+    --done this way instead of using .strfn and "SPICE" modifier to try and avoid
+    --breaking mods due to the way the COOK string is accessed in containers.lua.
+    return act.target ~= nil and act.target:HasTag("spicer") and STRINGS.ACTIONS.SPICE or nil
 end
 
 ACTIONS.COOK.fn = function(act)
@@ -930,6 +947,7 @@ ACTIONS.FEEDPLAYER.fn = function(act)
         act.target.components.eater:CanEat(act.invobject) and
         (TheNet:GetPVPEnabled() or
         not (act.invobject:HasTag("badfood") or
+            act.invobject:HasTag("unsafefood") or
             act.invobject:HasTag("spoiled"))) then
 
         if act.target.components.eater:PrefersToEat(act.invobject) then
@@ -973,7 +991,11 @@ ACTIONS.STORE.fn = function(act)
     end
     --
     if target.components.container ~= nil and act.invobject.components.inventoryitem ~= nil and act.doer.components.inventory ~= nil then
-        if target.components.container:IsOpen() and not target.components.container:IsOpenedBy(act.doer) then
+        if target:HasTag("mastercookware") and not act.doer:HasTag("masterchef") then
+            return false, "NOTMASTERCHEF"
+        --elseif target:HasTag("professionalcookware") and not act.doer:HasTag("professionalchef") then
+            --return false, "NOTPROCHEF"
+        elseif target.components.container:IsOpen() and not target.components.container:IsOpenedBy(act.doer) then
             return false, "INUSE"
         end
 
@@ -1049,7 +1071,7 @@ ACTIONS.BUNDLESTORE.fn = ACTIONS.STORE.fn
 
 ACTIONS.STORE.strfn = function(act)
     if act.target ~= nil then
-        return ((act.target.prefab == "cookpot" or act.target:HasTag("quagmire_stewer")) and "COOK")
+        return ((act.target:HasTag("stewer") or act.target:HasTag("quagmire_stewer")) and (act.target:HasTag("spicer") and "SPICE" or "COOK"))
             or (act.target.prefab == "birdcage" and "IMPRISON")
             or (act.target:HasTag("decoratable") and "DECORATE")
             or nil
@@ -1845,11 +1867,11 @@ ACTIONS.DRAW.fn = function(act)
         act.invobject.components.drawingtool ~= nil and
         act.target.components.drawable ~= nil and
         act.target.components.drawable:CanDraw() then
-        local image, src = act.invobject.components.drawingtool:GetImageToDraw(act.target)
+        local image, src, atlas, bgimage, bgatlas = act.invobject.components.drawingtool:GetImageToDraw(act.target)
         if image == nil then
             return false, "NOIMAGE"
         end
-        act.invobject.components.drawingtool:Draw(act.target, image, src)
+        act.invobject.components.drawingtool:Draw(act.target, image, src, atlas, bgimage, bgatlas)
         return true
     end
 end
@@ -2011,6 +2033,26 @@ end
 ACTIONS.CASTAOE.fn = function(act)
     if act.invobject ~= nil and act.invobject.components.aoespell ~= nil and act.invobject.components.aoespell:CanCast(act.doer, act.pos) then
         act.invobject.components.aoespell:CastSpell(act.doer, act.pos)
+        return true
+    end
+end
+
+ACTIONS.DISMANTLE.fn = function(act)
+    if act.target ~= nil and
+        act.target.components.portablecookware ~= nil and
+        not (act.target.components.burnable ~= nil and act.target.components.burnable:IsBurning()) then
+
+        if act.target.components.container ~= nil then
+            if act.target.components.container:IsOpen() then
+                return false, "INUSE"
+            elseif not act.target.components.container:IsEmpty() or (act.target.components.stewer ~= nil and act.target.components.stewer:IsDone()) then
+                return false, "NOTEMPTY"
+            elseif not act.target.components.container.canbeopened then
+                return false, "COOKING"
+            end
+        end
+
+        act.target.components.portablecookware:Dismantle(act.doer)
         return true
     end
 end

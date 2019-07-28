@@ -3,7 +3,7 @@
 local Text = require "widgets/text"
 local UIAnim = require "widgets/uianim"
 
-require("skinsutils")
+--require("skinsutils")
 
 
 local AccountItemFrame = Class(UIAnim, function(self)

@@ -189,6 +189,9 @@ function bugnet_init_fn(inst, build_name)
 
     inst.AnimState:SetSkin(build_name, "swap_bugnet")
     inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+    
+    local skin_data = GetSkinData(inst:GetSkinName())
+    inst.overridebugnetsound = skin_data.skin_sound
 end
 
 --------------------------------------------------------------------------
@@ -325,6 +328,7 @@ beehat_init_fn = hat_init_fn
 watermelonhat_init_fn = hat_init_fn
 wathgrithrhat_init_fn = hat_init_fn
 beefalohat_init_fn = hat_init_fn
+eyebrellahat_init_fn = hat_init_fn
 
 --------------------------------------------------------------------------
 --[[ Bedroll skin functions ]]
@@ -789,6 +793,14 @@ function orangestaff_init_fn(inst, build_name)
     end
 end
 
+function yellowstaff_init_fn(inst, build_name)
+    staff_init_fn(inst, build_name)
+
+    local skin_data = GetSkinData( build_name ) --build_name is skin name for yellowstaff
+    inst.morph_skin = skin_data.granted_items[1]
+end
+
+opalstaff_init_fn = staff_init_fn
 firestaff_init_fn = staff_init_fn
 icestaff_init_fn = staff_init_fn
 
@@ -803,11 +815,7 @@ function heatrock_init_fn(inst, build_name)
     end
 
     inst.AnimState:SetSkin(build_name, "heat_rock")
-    --V2C: heatrock will have already initialized it's inventory icon
-    --     to the proper skin and heat level, so don't stomp it here!
-    if inst.components.inventoryitem.imagename == nil then
-        inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
-    end
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName()..tostring(inst.currentTempRange))
 end
 
 
@@ -1063,7 +1071,10 @@ local function icebox_opened(inst)
     if inst.frost_fx ~= nil and inst._frostfx == nil then
         inst._frostfx = SpawnPrefab(inst.frost_fx)
         inst._frostfx.Transform:SetPosition(x, y, z)
+
+        --Note(Peter) Set the skin build here instead of overriding specific symbols, but we'd need to assign the id/sig first
         inst._frostfx.AnimState:OverrideItemSkinSymbol("cold_air", inst:GetSkinName(), "cold_air", inst.GUID, "ice_box")
+        inst._frostfx.AnimState:OverrideItemSkinSymbol("blink_dot", inst:GetSkinName(), "blink_dot", inst.GUID, "ice_box")
     end
 end
 
@@ -1114,6 +1125,7 @@ function CreatePrefabSkin(name, info)
     prefab_skin.rarity              = info.rarity
     prefab_skin.rarity_modifier     = info.rarity_modifier
     prefab_skin.skins               = info.skins
+    prefab_skin.skin_sound          = info.skin_sound
     prefab_skin.is_restricted       = info.is_restricted
     prefab_skin.granted_items       = info.granted_items
 	prefab_skin.marketable			= info.marketable

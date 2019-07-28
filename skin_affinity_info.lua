@@ -2,6 +2,21 @@
 
 return 
 {
+	warly = 
+	{
+		"body_warly_fisherman",
+		"body_warly_rose",
+		"body_warly_victorian",
+		"feet_warly_fisherman",
+		"feet_warly_victorian",
+		"hand_warly_rose",
+		"legs_warly_fisherman",
+		"legs_warly_rose",
+		"legs_warly_victorian",
+		"warly_fisherman",
+		"warly_rose",
+		"warly_victorian",
+	},
 	wathgrithr = 
 	{
 		"body_wathgrithr_deerclops",

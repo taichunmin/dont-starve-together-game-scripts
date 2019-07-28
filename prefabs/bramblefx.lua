@@ -62,6 +62,9 @@ local function MakeFX(name, anim, damage)
 
         inst:AddTag("FX")
         inst:AddTag("thorny")
+        if name == "bramblefx_trap" then
+            inst:AddTag("trapdamage")
+        end
 
         inst.Transform:SetFourFaced()
 

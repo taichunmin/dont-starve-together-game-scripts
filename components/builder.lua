@@ -153,7 +153,7 @@ function Builder:EvaluateTechTrees()
 
     local prototyper_active = false
     for i, v in ipairs(ents) do
-        if v.components.prototyper ~= nil then
+        if v.components.prototyper ~= nil and (v.components.prototyper.restrictedtag == nil or self.inst:HasTag(v.components.prototyper.restrictedtag)) then
             if not prototyper_active then
                 --activate the first machine in the list. This will be the one you're closest to.
                 v.components.prototyper:TurnOn(self.inst)

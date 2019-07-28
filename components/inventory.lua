@@ -1684,7 +1684,12 @@ function Inventory:GetEquippedMoistureRate(slot)
 end
  
 function Inventory:GetWaterproofness(slot)
+    if self.inst.components.moisture ~= nil and self.inst.components.moisture:GetWaterproofInventory() then
+        return 1
+    end
+
     local waterproofness = 0
+
     if slot then
         local item = self:GetItemInSlot(slot)
         if item and item.components.waterproofer then

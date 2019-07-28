@@ -479,7 +479,10 @@ local actionhandlers =
                 or "dolongaction"
         end),
     ActionHandler(ACTIONS.SHAVE, "shave"),
-    ActionHandler(ACTIONS.COOK, "dolongaction"),
+    ActionHandler(ACTIONS.COOK,
+        function(inst, action)
+            return inst:HasTag("expertchef") and "domediumaction" or "dolongaction"
+        end),
     ActionHandler(ACTIONS.FILL, "dolongaction"),
     ActionHandler(ACTIONS.PICKUP,
         function(inst, action)
@@ -622,6 +625,7 @@ local actionhandlers =
         end),
     ActionHandler(ACTIONS.STARTCHANNELING, "startchanneling"),
     ActionHandler(ACTIONS.REVIVE_CORPSE, "revivecorpse"),
+    ActionHandler(ACTIONS.DISMANTLE, "dolongaction"),
 
     --Quagmire
     ActionHandler(ACTIONS.TILL, "till_start"),
@@ -2985,10 +2989,12 @@ local states =
 
         timeline =
         {
-            TimeEvent(10*FRAMES, function(inst) 
-                inst:PerformBufferedAction() 
-                inst.sg:RemoveStateTag("prenet") 
-                inst.SoundEmitter:PlaySound("dontstarve/wilson/dig")
+            TimeEvent(10*FRAMES, function(inst)
+                local buffaction = inst:GetBufferedAction()
+                local tool = buffaction ~= nil and buffaction.invobject or nil
+                inst:PerformBufferedAction()
+                inst.sg:RemoveStateTag("prenet")
+                inst.SoundEmitter:PlaySound(tool ~= nil and tool.overridebugnetsound or "dontstarve/wilson/dig")
             end),
         },
 

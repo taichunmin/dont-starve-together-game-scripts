@@ -1145,7 +1145,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         Asset("ANIM", "anim/player_actions_till.zip"),
         Asset("ANIM", "anim/player_bush_hat.zip"),
         Asset("ANIM", "anim/player_attacks.zip"),
-        Asset("ANIM", "anim/player_idles.zip"),
+        --Asset("ANIM", "anim/player_idles.zip"),--Moved to global.lua for use in Item Collection
         Asset("ANIM", "anim/player_rebirth.zip"),
         Asset("ANIM", "anim/player_jump.zip"),
         Asset("ANIM", "anim/player_amulet_resurrect.zip"),
@@ -1184,7 +1184,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         Asset("SOUND", "sound/sfx.fsb"),
         Asset("SOUND", "sound/wilson.fsb"),
 
-        Asset("ANIM", "anim/player_ghost_withhat.zip"),
+        --Asset("ANIM", "anim/player_ghost_withhat.zip"),--Moved to global.lua for use in Item Collection
         Asset("ANIM", "anim/player_revive_ghosthat.zip"),
         Asset("ANIM", "anim/player_revive_to_character.zip"),
         Asset("ANIM", "anim/player_revive_from_corpse.zip"),
@@ -1211,9 +1211,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
 
         Asset("ANIM", "anim/player_sandstorm.zip"),
         Asset("ANIM", "anim/player_tiptoe.zip"),
-
-        Asset("ANIM", "anim/corner_dude.zip"),
-
+		
         Asset("IMAGE", "images/colour_cubes/ghost_cc.tex"),
         Asset("IMAGE", "images/colour_cubes/mole_vision_on_cc.tex"),
         Asset("IMAGE", "images/colour_cubes/mole_vision_off_cc.tex"),
@@ -1612,6 +1610,8 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst:AddComponent("pinnable")
         inst:AddComponent("debuffable")
         inst.components.debuffable:SetFollowSymbol("headbase", 0, -200, 0)
+
+        inst:AddComponent("workmultiplier")
 
         inst:AddComponent("grogginess")
         inst.components.grogginess:SetResistance(3)

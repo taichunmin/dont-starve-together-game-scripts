@@ -3211,6 +3211,10 @@ function PlayerController:GetSceneItemControllerAction(item)
 end
 
 function PlayerController:GetGroundUseAction(position)
+    if self.inst.components.playeractionpicker:HasContainerWidgetAction() then
+        return
+    end
+
     local islocal = position == nil
     position = position or
         (self.reticule ~= nil and self.reticule.inst ~= self.inst and self.reticule.targetpos) or

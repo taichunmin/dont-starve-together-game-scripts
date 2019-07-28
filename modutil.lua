@@ -63,7 +63,7 @@ local function DoesCharacterExistInGendersTable(charactername)
     return false
 end
 
-local function AddModCharacter(name, gender)
+local function AddModCharacter(name, gender, modes)
     table.insert(MODCHARACTERLIST, name)
     if not DoesCharacterExistInGendersTable(name) then
 		if gender == nil then
@@ -78,6 +78,8 @@ local function AddModCharacter(name, gender)
 	else
 		print( "Warning: Mod Character " .. name .. " already exists in the CHARACTER_GENDERS table. It was either added previously, or added twice. You only need to call AddModCharacter now." )
 	end
+
+	MODCHARACTERMODES[name] = modes
 end
 
 local function RemoveDefaultCharacter(name)
@@ -466,9 +468,9 @@ local function InsertPostInitFunctions(env, isworldgen)
 	    end
 	end
 
-	env.AddModCharacter = function(name, gender)
-		initprint("AddModCharacter", name, gender)
-		AddModCharacter(name, gender)
+	env.AddModCharacter = function(name, gender, modes)
+		initprint("AddModCharacter", name, gender, modes)
+		AddModCharacter(name, gender, modes)
 	end
 
 	env.RemoveDefaultCharacter = function (name)

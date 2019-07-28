@@ -9,6 +9,10 @@ function UIAnim:GetAnimState()
     return self.inst.AnimState
 end
 
+function UIAnim:SetFacing(dir)
+	self.inst.UITransform:SetFacing(dir)
+end
+
 function UIAnim:DebugDraw_AddSection(dbui, panel)
     UIAnim._base.DebugDraw_AddSection(self, dbui, panel)
 

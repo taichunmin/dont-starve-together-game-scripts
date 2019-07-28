@@ -1010,6 +1010,10 @@ function Tune(overrides)
             MADSCIENCE = TechTree.Create({
                 MADSCIENCE = 1,
             }),
+
+            FOODPROCESSING = TechTree.Create({
+                FOODPROCESSING = 1,
+            }),
         },
 
         RABBIT_HEALTH = 25 * multiplayer_attack_modifier,
@@ -1496,6 +1500,7 @@ function Tune(overrides)
         PERISH_COLD_FROZEN_MULT = 0, -- frozen things don't spoil in an ice box or if it's cold out
         PERISH_FROZEN_FIRE_MULT = 30, -- frozen things spoil very quickly if near a fire
         PERISH_FRIDGE_MULT = .5,
+        PERISH_FOOD_PRESERVER_MULT = .75,
         PERISH_GROUND_MULT = 1.5,
         PERISH_WET_MULT = 1.3,
         PERISH_CAGE_MULT = 0.25,
@@ -1705,7 +1710,9 @@ function Tune(overrides)
         TREE_SHADE_COOLING_THRESHOLD = 63,
 
         HOT_FOOD_BONUS_TEMP = 40,
+        HOT_FOOD_WARMING_THRESHOLD = 62, --don't actually overheat, but still triggers heat idles
         COLD_FOOD_BONUS_TEMP = -40,
+        COLD_FOOD_CHILLING_THRESHOLD = 5,
         FOOD_TEMP_BRIEF = 5,
         FOOD_TEMP_AVERAGE = 10,
         FOOD_TEMP_LONG = 15,
@@ -2630,6 +2637,8 @@ function Tune(overrides)
             WEBBER = 150,
             WINONA = 200,
             WORTOX = 200, --VITO do something here
+            WORMWOOD = 200, --TODO
+            WARLY = 200, --TODO
         },
 
 		GAMEMODE_STARTING_ITEMS =
@@ -2649,6 +2658,8 @@ function Tune(overrides)
 				WEBBER = { "blowdart_lava", "lavaarena_armorlightspeed" },
 				WINONA = { "hammer_mjolnir", "lavaarena_armormedium" },
                 WORTOX = {}, --VITO do something here
+                WORMWOOD = {}, --TODO
+                WARLY = {}, --TODO
 			},
 			QUAGMIRE =
 			{
@@ -2665,6 +2676,8 @@ function Tune(overrides)
 				WEBBER = {},
 				WINONA = {},
                 WORTOX = {}, --VITO do something here
+                WORMWOOD = {}, --TODO
+                WARLY = {}, --TODO
 			},
 		},
 
@@ -2683,6 +2696,8 @@ function Tune(overrides)
             WEBBER = 1,
             WINONA = 1,
             WORTOX = 1, --VITO do something here
+            WORMWOOD = 1, --TODO
+            WARLY = 1, --TODO
         },
 
 	    LAVAARENA_BERNIE_SCALE = 1.2,
@@ -2810,6 +2825,30 @@ function Tune(overrides)
         COMPOSTWRAP_WITHEREDCYCLES = 2,
         COMPOSTWRAP_FERTILIZE = day_time * 6,
         POOP_FERTILIZE_HEALTH = 2,
+
+        --v2 Warly
+        WARLY_HUNGER = 250,
+        WARLY_HUNGER_RATE_MODIFIER = 1.2,
+        WARLY_SAME_OLD_COOLDOWN = total_day_time * 2,
+        WARLY_SAME_OLD_MULTIPLIERS = { .9, .8, .65, .5, .3 },
+        PORTABLE_COOK_POT_TIME_MULTIPLIER = .8, --multiplier for cook time, NOT speed! (less time means faster)
+
+        -- Multipliers can be temperaturedelta, temperatureduration, health, sanity or hunger
+        SPICE_MULTIPLIERS =
+        {
+            --currently not used, but still supported (for future use)
+        },
+
+        BUFF_ATTACK_DURATION = total_day_time * .5,
+        BUFF_PLAYERABSORPTION_DURATION = total_day_time * .5,
+        BUFF_WORKEFFECTIVENESS_DURATION = total_day_time * .5,
+        BUFF_MOISTUREIMMUNITY_DURATION = day_time,
+        BUFF_ELECTRICATTACK_DURATION = day_time,
+        BUFF_FOOD_TEMP_DURATION = day_time,
+
+        BUFF_ATTACK_MULTIPLIER = 1.2,
+        BUFF_PLAYERABSORPTION_MODIFIER = 1 / 3,
+        BUFF_WORKEFFECTIVENESS_MODIFIER = 2,
     }
 end
 

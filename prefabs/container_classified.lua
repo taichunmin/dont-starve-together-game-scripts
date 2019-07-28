@@ -564,7 +564,11 @@ local function ReceiveItem(inst, item, count, forceslot)
     if not IsBusy(inst) and (forceslot == nil or (forceslot >= 1 and forceslot <= #inst._items)) then
         local isstackable = item.replica.stackable ~= nil
         local originalstacksize = isstackable and item.replica.stackable:StackSize() or 1
-        if not isstackable or inst._parent.replica.container == nil or not inst._parent.replica.container:AcceptsStacks() then
+        local container = inst._parent.replica.container
+        if forceslot == nil and container ~= nil then
+            forceslot = container:GetSpecificSlotForItem(item)
+        end
+        if not isstackable or container == nil or not container:AcceptsStacks() then
             for i = forceslot or 1, forceslot or #inst._items do
                 if inst._items[i]:value() == nil then
                     local giveitem = SlotItem(item, i)

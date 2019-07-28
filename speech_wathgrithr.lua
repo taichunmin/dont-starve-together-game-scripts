@@ -31,6 +31,7 @@ return {
             GENERIC = "It is already brimming with goods.",
             NOTALLOWED = "I fear that does not go there.",
             INUSE = "My stalwart companion currently has use of that.",
+            NOTMASTERCHEF = "T'would not do to meddle with my ally's effects.",
         },
         CONSTRUCT =
         {
@@ -43,6 +44,7 @@ return {
         {   
             GENERIC = "That is not a job for a warrior!",
             INUSE = "True warriors wait their turn.",   
+            NOTMASTERCHEF = "T'would not do to meddle with my ally's effects.",
         },
         COOK =
         {
@@ -279,6 +281,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "The god of the sky has been angered!",
     QUAGMIRE_ANNOUNCE_WIN = "We shall live to fight another day!",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I've been granted the power of Thor!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "My warrior's spirit is invigorated!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "Ha! No attack frightens me!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "Stand aside, I'll have this done in no time!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "A little water is nothing to a Viking!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "I... suppose I was unworthy.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Back to merely my usual level of fearsomeness.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "I've lost my defensive advantage!",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "I think I've done my share.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "The tides have turned for the wetter.",
+    
     BATTLECRY_BLOODLUST =
     {
         "Blessings of Tyr!",
@@ -442,6 +456,15 @@ return {
             REVIVER = "%s is a kind and formidable healer.",
             GHOST = "My dear friend hath fallen in battle!",
             FIRESTARTER = "%s is sure to be scalded by Hel's flames!",
+        },
+        WARLY =
+        {
+            GENERIC = "Hail, %s, blessed feast-forge!",
+            ATTACKER = "What nefarious plots doth %s stew upon?",
+            MURDERER = "We will hold a valorous feast at your defeat!",
+            REVIVER = "%s's heart is as full as his belly.",
+            GHOST = "The feast hall of Valhalla will one day welcome you. But not today.",
+            FIRESTARTER = "%s's summoned Hel's flames this day!",
         },
 
         LAVA_POND_ROCK = "Stone belched forth by the earth's fiery heart!",
@@ -1575,7 +1598,6 @@ return {
         POMEGRANATE_SEEDS = "Tiny nature bits.",
         POND = "Something lurks in the deep.",
         POOP = "If only I could use it as camouflage from predators.",
-        --PORTABLECOOKPOT_ITEM = "Cooking, a noble profession.",
         FERTILIZER = "Its stench could raise the fallen.",
         PUMPKIN = "It might make a good bludgeon, at least.",
         PUMPKINCOOKIE = "Baked all the life out of it.",
@@ -1755,7 +1777,7 @@ return {
         TWIGGY_NUT_SAPLING = "Grow tall and strong.",
         INSPECTSELF = "Who is that incredible warrior in the mirror?",
         TWIGGY_OLD = "It will soon return to the earth.",
-        TWIGGY_NUT = "It will one one day rival Yggdrasil!",
+        TWIGGY_NUT = "It will one day rival Yggdrasil!",
         SEEDS = "Tiny nature bits.",
         SEEDS_COOKED = "Tiny nature bits, cooked to death.",
         SEWING_KIT = "I am no seamstress, but repairs are sometimes necessary.",
@@ -2486,6 +2508,71 @@ return {
         COMPOSTWRAP = "I question my ally's tastes.",
         ARMOR_BRAMBLE = "My ally is surely a strong warrior.",
         TRAP_BRAMBLE = "A most clever trap for one's foes.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "Cooking, a noble profession.",
+            DONE = "Is there meat to be consumed?",
+        },
+        PORTABLEBLENDER_ITEM = "It does battle with food.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "A formidable weapon against bad meals.",
+            DONE = "Its task has come to an end.",
+        },
+        SPICE_GARLIC = "Its pungent smell offends mine nostrils.",
+        SPICE_SUGAR = "The sweet juice of an enemy.",
+        SPICE_CHILI = "Full of a fiery extract.",
+        SPICEPACK = "I'll use this to carry delicious meats!",
+        MONSTERTARTARE = "Still quivering.", --can eat
+        FRESHFRUITCREPES = "So light and airy!",
+        FROGFISHBOWL = "My ally is a god among men.", --can eat
+        POTATOTORNADO = "Blech.",
+        DRAGONCHILISALAD = "Yeuch! I was promised a feast!",
+        GLOWBERRYMOUSSE = "A repulsive vegetable concoction.",
+        VOLTGOATJELLY = "Well, it is technically made from a beast.", --will probably eat
+        NIGHTMAREPIE = "I am wary of this pie.",
+        BONESOUP = "A feast fit for the gods!", --can eat
+        MASHEDPOTATOES = "I'll not be fooled by your new mash-ed form, vegetable!",
+        POTATOSOUFFLE = "What treachery is this?",
+        MOQUECA = "A treat for mine senses!", --can eat
+        GAZPACHO = "My mind doth question Warly's allegiances.",
+        ASPARAGUSSOUP = "I shall not consume it!",
+        VEGSTINGER = "Its spiciness intrigues me not!",
+        BANANAPOP = "I've somehow found a way to make it even LESS appealing!",
+        CEVICHE = "Fancy for my taste, but it'll do.",
+        SALSA = "A disappointing mush.",
+        PEPPERPOPPER = "Back, vile vegetables!",
+
+        TURNIP = "I shall not consume it!",
+        TURNIP_COOKED = "Ach! I shall not eat thee!",
+        TURNIP_SEEDS = "'Tis a handful of seeds, for not-meat.",
+        --
+        GARLIC = "Foul ingredient!",
+        GARLIC_COOKED = "The stench!",
+        GARLIC_SEEDS = "'Tis a handful of seeds, for not-meat.",
+        --
+        ONION = "I dare thee, provoke tears from mine eyes!",
+        ONION_COOKED = "It has been vanquished with fire.",
+        ONION_SEEDS = "'Tis a handful of seeds, for not-meat.",
+        --
+        POTATO = "Vileness emerged from the earth.",
+        POTATO_COOKED = "It is of no use to me.",
+        POTATO_SEEDS = "'Tis a handful of seeds, for not-meat.",
+        --
+        TOMATO = "It will not pass my lips!",
+        TOMATO_COOKED = "It boasts reddest guts, yet 'tis not meat!",
+        TOMATO_SEEDS = "'Tis a handful of seeds, for not-meat.",
+
+        ASPARAGUS = "Vegetable! I will not consume you!", 
+        ASPARAGUS_COOKED = "Fire does not make it more palatable.", 
+        ASPARAGUS_SEEDS = "These serve me no purpose!",
+
+        PEPPER = "Its mere presence offends me.",
+        PEPPER_COOKED = "It is not worthy of my consumption.",
+        PEPPER_SEEDS = "Smaller versions of vegetables still offend me.",
+
     },
     DESCRIBE_GENERIC = "It is an artifact of this realm.",
     DESCRIBE_TOODARK = "Too dark, even for battle.",

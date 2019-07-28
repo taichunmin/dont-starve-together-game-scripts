@@ -108,11 +108,13 @@ local function deactivate(inst)
     end
 end
 
-local function bernie_swap_object_helper( animstate, skin_build, symbol, guid )
+local function bernie_swap_object_helper(owner, skin_build, symbol, guid)
     if skin_build ~= nil then
-        animstate:OverrideItemSkinSymbol("swap_object", skin_build, symbol, guid, symbol)
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, symbol, guid, "bernie_build")
+        owner.AnimState:OverrideItemSkinSymbol("swap_object_bernie", skin_build, symbol.."_idle_willow", guid, "bernie_build")
     else
-        animstate:OverrideSymbol("swap_object", "bernie_build", symbol)
+        owner.AnimState:OverrideSymbol("swap_object", "bernie_build", symbol)
+        owner.AnimState:OverrideSymbol("swap_object_bernie", "bernie_build", symbol.."_idle_willow")
     end
 end
 
@@ -132,7 +134,7 @@ local function onfuelchange(section, oldsection, inst)
                 deactivate(inst)
                 startdecay(inst)
             elseif inst.components.equippable:IsEquipped() then
-                bernie_swap_object_helper( inst.components.inventoryitem.owner.AnimState, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID )
+                bernie_swap_object_helper(inst.components.inventoryitem.owner, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID)
             end
         end
     elseif inst._isdeadstate then
@@ -147,7 +149,7 @@ local function onfuelchange(section, oldsection, inst)
                 activate(inst)
             end
         elseif inst.components.equippable:IsEquipped() then
-            bernie_swap_object_helper( inst.components.inventoryitem.owner.AnimState, inst:GetSkinBuild(), "swap_bernie", inst.GUID )
+            bernie_swap_object_helper(inst.components.inventoryitem.owner, inst:GetSkinBuild(), "swap_bernie", inst.GUID)
             inst.components.fueled:StartConsuming()
         end
     end
@@ -180,9 +182,9 @@ local function OnEquip(inst, owner)
     end
 
     if inst.components.fueled:IsEmpty() then
-        bernie_swap_object_helper( owner.AnimState, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID )
+        bernie_swap_object_helper(owner, inst:GetSkinBuild(), "swap_bernie_dead", inst.GUID)
     else
-        bernie_swap_object_helper( owner.AnimState, inst:GetSkinBuild(), "swap_bernie", inst.GUID )
+        bernie_swap_object_helper(owner, inst:GetSkinBuild(), "swap_bernie", inst.GUID)
         inst.components.fueled:StartConsuming()
     end
 

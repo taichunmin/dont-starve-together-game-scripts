@@ -71,10 +71,13 @@ local Health = Class(function(self, inst)
     self.firedamagecaptimer = 0
     self.nofadeout = false
     self.penalty = 0
-    self.absorb = 0
-    self.playerabsorb = 0
-    self.destroytime = nil
 
+    self.absorb = 0 -- DEPRECATED, please use externalabsorbmodifiers instead
+    self.playerabsorb = 0 -- DEPRECATED, please use externalabsorbmodifiers instead
+
+    self.externalabsorbmodifiers = SourceModifierList(inst, 0, SourceModifierList.additive)
+
+    self.destroytime = nil
     self.canmurder = true
     self.canheal = true
 end,
@@ -364,7 +367,7 @@ function Health:DoDelta(amount, overtime, cause, ignore_invincible, afflicter, i
     elseif not ignore_invincible and (self.invincible or self.inst.is_teleporting) then
         return 0
     elseif amount < 0 and not ignore_absorb then
-        amount = amount - amount * (self.playerabsorb ~= 0 and afflicter ~= nil and afflicter:HasTag("player") and self.playerabsorb + self.absorb or self.absorb)
+        amount = amount - amount * (self.playerabsorb ~= 0 and afflicter ~= nil and afflicter:HasTag("player") and self.playerabsorb + self.absorb + self.externalabsorbmodifiers:Get() or self.absorb + self.externalabsorbmodifiers:Get())
     end
 
     local old_percent = self:GetPercent()

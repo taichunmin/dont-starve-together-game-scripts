@@ -37,6 +37,7 @@ return
             GENERIC = "It's full to the brim, I'm afraid.",
             NOTALLOWED = "Nonsense.",
             INUSE = "I do hope you're keeping organized, my dear.",
+            NOTMASTERCHEF = "It would be rude of me to tamper with it.",
         },
         CONSTRUCT =
         {
@@ -54,6 +55,7 @@ return
         {   
             GENERIC = "I've other things on my mind currently.",
             INUSE = "Be sure to sort by color and weight, dear.",   
+            NOTMASTERCHEF = "It would be rude of me to tamper with it.",
         },
         DRAW =
         {
@@ -295,6 +297,18 @@ return
     QUAGMIRE_ANNOUNCE_LOSE = "We've failed.",
     QUAGMIRE_ANNOUNCE_WIN = "We best be on our way. Ta!",
 
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I seem to have been rendered conductive!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "My, I feel full of vim and vigor!",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "I daresay I'm tougher than I may appear!",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "I'll have everything done in a snap!",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "I feel so pleasantly dry!",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "Back to the the natural state of things",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "Oh my, what came over me?",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "It appears my defense has weakened.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "I can only work tirelessly for so long.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Did I just feel a raindrop?",
+    
     BATTLECRY =
     {
         GENERIC = "Combat!",
@@ -452,6 +466,15 @@ return
             REVIVER = "You're a very good friend, %s.",
             GHOST = "Tsk, well that's no good. No good at all.",
             FIRESTARTER = "Do you want to singe your leaves off, %s?",
+        },
+        WARLY =
+        {
+            GENERIC = "Ah, greetings, dear %s!",
+            ATTACKER = "No need to cause a ruckus now, %s.",
+            MURDERER = "I smell fresh baked murder on the air. Attack!",
+            REVIVER = "Excellent work today, %s.",
+            GHOST = "We'd best get you back on your feet, dear.",
+            FIRESTARTER = "I know that fire wasn't for cooking, dear.",
         },
 
         MULTIPLAYER_PORTAL = "Hmm... This may require further reading.",
@@ -1489,7 +1512,6 @@ return
         GOLDENSHOVEL = "The most malleable of metals, but let's see how this digs.",
         GOLDNUGGET = "A small lump of gold. Atomic number 79.",
         POOP = "A quantity of animal feces. How fragrant.",
-        --PORTABLECOOKPOT_ITEM = "It will be nice to eat some properly prepared food.",
         SCORCHED_SKELETON = "You don't inspire a great deal of confidence, dear.",
         PUMPKIN = "Cucurbita pepo.",
         PUMPKINCOOKIE = "Pumpkin biscuits, goody!",
@@ -2511,6 +2533,70 @@ return
         COMPOSTWRAP = "Oh dear. Those are some large droppings.",
         ARMOR_BRAMBLE = "I believe our friend knit it himself.",
         TRAP_BRAMBLE = "Microscopic barbs on the thorns make them quite unpleasant.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "It will be nice to eat some properly prepared food.",
+            DONE = "Smells nourishing.",
+        },
+        PORTABLEBLENDER_ITEM = "Quite a lively cooking instrument.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "It'll need some elbow grease.",
+            DONE = "The flavoring is ready for use.",
+        },
+        SPICEPACK = "This should keep my provisions from spoiling!",
+        SPICE_GARLIC = "My goodness that smell is pungent!",
+        SPICE_SUGAR = "A treacle of fruits.",
+        SPICE_CHILI = "I'm not a fan of spicy food.",
+        MONSTERTARTARE = "Monster meat, dressed up fancy.",
+        FRESHFRUITCREPES = "Sticky fingers will ensue.",
+        FROGFISHBOWL = "I'll happily volunteer to taste-test.",
+        POTATOTORNADO = "How creative!",
+        DRAGONCHILISALAD = "I do like fresh greens.",
+        GLOWBERRYMOUSSE = "A brand new recipe I see. Marvelous!",
+        VOLTGOATJELLY = "His ingenuity with limited materials is very impressive.",
+        NIGHTMAREPIE = "It tastes a bit like magic.",
+        BONESOUP = "Extremely savory. I wouldn't mind seconds.",
+        MASHEDPOTATOES = "I wouldn't mind a bite or two, myself.",
+        POTATOSOUFFLE = "It looks lovely, dear.",
+        MOQUECA = "He's so very talented.",
+        GAZPACHO = "Ah! A classic Spanish cuisine.",
+        ASPARAGUSSOUP = "Smelly, but quite nutritious.",
+        VEGSTINGER = "It's quite piquant.",
+        BANANAPOP = "Well, isn't that refreshing?",
+        CEVICHE = "Could use a little more sauce.",
+        SALSA = "My goodness, that has some zest to it!",
+        PEPPERPOPPER = "Just a tad spicy for me!",
+
+        TURNIP = "Edible root of Brassica rapa.",
+        TURNIP_COOKED = "Roast Brassica rapa.",
+        TURNIP_SEEDS = "Mutated seed of Brassica rapa.",
+        --
+        GARLIC = "Edible bulb of Allium cepa.",
+        GARLIC_COOKED = "Roast Allium cepa.",
+        GARLIC_SEEDS = "Mutated seed of Allium cepa.",
+        --
+        ONION = "Allium sativum, a close relative of Allium cepa.",
+        ONION_COOKED = "Roast Allium sativum.",
+        ONION_SEEDS = "Mutated seed of Allium sativum.",
+        --
+        POTATO = "Solanum tuberosum, a staple in some cultures.",
+        POTATO_COOKED = "Roasted Solanum tuberosum.",
+        POTATO_SEEDS = "Mutated seed of Solanum tuberosum.",
+        --
+        TOMATO = "Fruit of Solanum lycopersicum.",
+        TOMATO_COOKED = "Roasted Solanum lycopersicum.",
+        TOMATO_SEEDS = "Mutated seed of Solanum lycopersicum.",
+
+        ASPARAGUS = "A great source of dietary fiber.", 
+        ASPARAGUS_COOKED = "It releases sulfur compounds when it's digested.",
+        ASPARAGUS_SEEDS = "Ah. This will grow some fresh vegetables.",
+
+        PEPPER = "Of the genus Capsicum, if I'm not mistaken.",
+        PEPPER_COOKED = "I must be careful not to rub my eyes.",
+        PEPPER_SEEDS = "A Capsicum seed.",
     },
 
     EAT_FOOD =

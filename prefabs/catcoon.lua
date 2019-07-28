@@ -43,6 +43,12 @@ local prefabs =
 	"pomegranate_seeds",
 	"dragonfruit_seeds",
 	"watermelon_seeds",
+    "potato_seeds",
+    "tomato_seeds",
+    "asparagus_seeds",
+    "onion_seeds",
+    "garlic_seeds",
+    "pepper_seeds",
 	"butterfly",
 	"robin",
 	"robin_winter",
@@ -114,6 +120,8 @@ local friendGiftPrefabs =
 	{ -- tier 1 (basic seeds)
 		"carrot_seeds",
 		"corn_seeds",
+        "potato_seeds",
+        "tomato_seeds",
 	},
 	{ -- tier 2 (basic, generic stuff)
 		"flint",
@@ -139,6 +147,10 @@ local friendGiftPrefabs =
 		"pomegranate_seeds",
 		"dragonfruit_seeds",
 		"watermelon_seeds",
+        "asparagus_seeds",
+        "onion_seeds",
+        "garlic_seeds",
+        "pepper_seeds",
 	},
 	{ --tier 5 (food)
 		"ice",

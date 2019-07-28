@@ -761,7 +761,7 @@ local function purple()
 end
 
 local function yellow()
-    local inst = commonfn("yellow", { "nopunch" })
+    local inst = commonfn("yellow", { "nopunch" }, true)
 
     inst:AddComponent("reticule")
     inst.components.reticule.targetfn = light_reticuletargetfn
@@ -839,7 +839,7 @@ local function orange()
 end
 
 local function opal()
-    local inst = commonfn("opal", { "nopunch" })
+    local inst = commonfn("opal", { "nopunch" }, true)
 
     inst:AddComponent("reticule")
     inst.components.reticule.targetfn = light_reticuletargetfn

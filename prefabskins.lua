@@ -57,6 +57,7 @@ PREFAB_SKINS = {
 		"backpack_camping_orange_carrot",
 		"backpack_camping_red_koalefant",
 		"backpack_catcoon",
+		"backpack_chester",
 		"backpack_crab",
 		"backpack_deerclops",
 		"backpack_dragonfly_fire",
@@ -112,6 +113,7 @@ PREFAB_SKINS = {
 	bugnet = 
 	{
 		"bugnet_spider",
+		"bugnet_spider_white",
 	},
 	cane = 
 	{
@@ -198,6 +200,10 @@ PREFAB_SKINS = {
 		"endtable_dragonfly",
 		"endtable_vintage",
 	},
+	eyebrellahat = 
+	{
+		"eyebrellahat_crystal",
+	},
 	featherhat = 
 	{
 		"featherhat_circus",
@@ -261,6 +267,7 @@ PREFAB_SKINS = {
 	icebox = 
 	{
 		"icebox_coffin",
+		"icebox_crystal",
 		"icebox_victorian",
 	},
 	icestaff = 
@@ -283,6 +290,10 @@ PREFAB_SKINS = {
 	{
 		"minerhat_cowboy",
 		"minerhat_floppy",
+	},
+	opalstaff = 
+	{
+		"moonstaff_crystal",
 	},
 	orangestaff = 
 	{
@@ -388,6 +399,13 @@ PREFAB_SKINS = {
 	wardrobe = 
 	{
 		"wardrobe_heart",
+	},
+	warly = 
+	{
+		"warly_fisherman",
+		"warly_none",
+		"warly_rose",
+		"warly_victorian",
 	},
 	watermelonhat = 
 	{
@@ -634,6 +652,10 @@ PREFAB_SKINS = {
 		"wx78_survivor",
 		"wx78_victorian",
 		"wx78_wip",
+	},
+	yellowstaff = 
+	{
+		"starstaff_crystal",
 	},
 
 }

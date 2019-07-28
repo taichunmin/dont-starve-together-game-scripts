@@ -465,6 +465,8 @@ function PurchasePackScreen:DoInit()
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.PURCHASEPACKSCREEN.TITLE, ""))
     self.onlinestatus = self.root:AddChild(OnlineStatus(true))
 
+	self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     self.purchase_root = self:_BuildPurchasePanel()
     
     --use the initial item key to set the filters

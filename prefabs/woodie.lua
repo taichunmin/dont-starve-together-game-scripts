@@ -6,8 +6,6 @@ local assets =
     Asset("SCRIPT", "scripts/prefabs/player_common.lua"),
     Asset("SOUND", "sound/woodie.fsb"),
 
-    Asset("ANIM", "anim/werebeaver_build.zip"),
-    Asset("ANIM", "anim/werebeaver_basic.zip"),
     Asset("ANIM", "anim/werebeaver_groggy.zip"),
     Asset("ANIM", "anim/werebeaver_dance.zip"),
     Asset("ANIM", "anim/player_revive_to_werebeaver.zip"),
@@ -17,8 +15,6 @@ local assets =
     Asset("ATLAS", "images/woodie.xml"),
     Asset("IMAGE", "images/woodie.tex"),
     Asset("IMAGE", "images/colour_cubes/beaver_vision_cc.tex"),
-
-    Asset("ANIM", "anim/ghost_werebeaver_build.zip"),
 }
 
 local prefabs =

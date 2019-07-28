@@ -41,6 +41,7 @@ return {
 			GENERIC = "It wouldn't fit.",
 			NOTALLOWED = "I must mind my manners.",
 			INUSE = "Can I use that after you?",
+            NOTMASTERCHEF = "That belongs to Warly.",
 		},
 		CONSTRUCT =
         {
@@ -53,6 +54,7 @@ return {
         {   
             GENERIC = "Must everything in life be hard?",
             INUSE = "I can come back later...",   
+            NOTMASTERCHEF = "That belongs to Warly.",
         },
         DRAW =
         {
@@ -275,6 +277,18 @@ return {
     QUAGMIRE_ANNOUNCE_LOSE = "What a horrible place to have a curse.",
     QUAGMIRE_ANNOUNCE_WIN = "Let us depart this terrible place.",
    
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "I feel the thrill of power!",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "It must be my imagination, but I feel a little stronger...",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "My pain has been dulled, for the moment.",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "I suppose I might as well make myself useful.",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "At least I'll stay dry through my misery.",
+    
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "The storm has passed.",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "My strength is fading.",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "Ah. It couldn't last.",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "It seems my zeal was short-lived.",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "Once more I'm left defenseless against the elements.",
+   
 	BATTLECRY =
 	{
 		GENERIC = "Death will find you!",
@@ -444,6 +458,15 @@ return {
             REVIVER = "%s's friendship extends beyond the veil.",
             GHOST = "You were too good for this world, %s.",
             FIRESTARTER = "If you play with fire, you're liable to get burned...",
+        },
+        WARLY =
+        {
+            GENERIC = "How do you do, %s?",
+            ATTACKER = "What if he was just fattening us up, all along?",
+            MURDERER = "Your treachery ends here, %s.",
+            REVIVER = "Sometimes he shows he cares without cooking.",
+            GHOST = "I'll mourn you, %s.",
+            FIRESTARTER = "Abby and I know what you've been doing.",
         },
 
 		GLOMMER = "Well aren't you a happy little fuzzball. Die.",
@@ -1647,7 +1670,6 @@ return {
 		POND = "Ophelia? Are you down there?",
 		POOP = "Life is blood and this.",
 		SCORCHED_SKELETON = "The flame has cleansed this poor wretched soul.",
-		--PORTABLECOOKPOT_ITEM = "For when the hunger gnaws at my tiny stomach...",
 		PUMPKIN = "It's as big as the hole where my heart once was.",
 		PUMPKINCOOKIE = "Why indulge in such childish things?",
 		PUMPKIN_COOKED = "It shriveled a tiny bit from the heat. I like that.",
@@ -2457,6 +2479,70 @@ return {
         COMPOSTWRAP = "It's poop. Sigh.",
         ARMOR_BRAMBLE = "So my outside matches my inside.",
         TRAP_BRAMBLE = "To prick and ensnare.",
+
+        --v2 Warly
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "For when the hunger gnaws at my tiny stomach...",
+            DONE = "Another menial task has been completed.",
+        },
+        PORTABLEBLENDER_ITEM = "Inflicts chaos and turmoil on food.",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "If only it could spice up my life.",
+            DONE = "Finished.",
+        },
+        SPICEPACK = "To fend off the ravages of decay... for my food at least.",
+        SPICE_GARLIC = "It's smell is good for keeping people at a distance.",
+        SPICE_SUGAR = "Not as sweet as Abigail.",
+        SPICE_CHILI = "Full of more vitality than I'm used to.",
+        MONSTERTARTARE = "Looks good, tastes horrible.",
+        FRESHFRUITCREPES = "Could I get this a la mode?",
+        FROGFISHBOWL = "It's actually... really good...",
+        POTATOTORNADO = "Spiralling, just like my life.",
+        DRAGONCHILISALAD = "I missed having someone make me dinner...",
+        GLOWBERRYMOUSSE = "It swirls like the endless abyss.",
+        VOLTGOATJELLY = "It zaps your tongue.",
+        NIGHTMAREPIE = "It tastes like melancholy. Mmm.",
+        BONESOUP = "Supper looks good.",
+        MASHEDPOTATOES = "My stomach rumbles just looking at it...",
+        POTATOSOUFFLE = "A dish as delicate as life itself.",
+        MOQUECA = "Thank-you, Warly.",
+        GAZPACHO = "Cold and watery like a sailor's grave.",
+        ASPARAGUSSOUP = "Soup.",
+        VEGSTINGER = "Doesn't spice up my life.",
+        BANANAPOP = "I used to eat these with Abigail...",
+        CEVICHE = "All I taste is my sadness...",
+        SALSA = "I don't feel much like dancing.",
+        PEPPERPOPPER = "They're so good I almost forgot my crushing grief.",
+
+        TURNIP = "It's... a turnip.",
+        TURNIP_COOKED = "The turnip is now cooked.",
+        TURNIP_SEEDS = "The life they contain is a mystery.",
+        --
+        GARLIC = "It gives food flavor.",
+        GARLIC_COOKED = "It smells a bit nice.",
+        GARLIC_SEEDS = "The life they contain is a mystery.",
+        --
+        ONION = "I never cry.",
+        ONION_COOKED = "It will never make anyone cry again.",
+        ONION_SEEDS = "The life they contain is a mystery.",
+        --
+        POTATO = "It has eyes, yet it never cries.",
+        POTATO_COOKED = "Now its eyes will never open.",
+        POTATO_SEEDS = "The life they contain is a mystery.",
+        --
+        TOMATO = "Red as heart's blood.",
+        TOMATO_COOKED = "Its flesh is far more bloody now.",
+        TOMATO_SEEDS = "The life they contain is a mystery.",
+
+        ASPARAGUS = "Vegetables are good for you, but what do I care?", 
+        ASPARAGUS_COOKED = "If I ever feel like eating anything, I'll eat it.",
+        ASPARAGUS_SEEDS = "Will I live to see this grow?", 
+
+        PEPPER = "It looks so tiny and insignificant.",
+        PEPPER_COOKED = "What can this tiny plant possibly do to fill my empty life?",
+        PEPPER_SEEDS = "Will I live to see this grow?",
     },
     DESCRIBE_GENERIC = "Sigh... I don't know.",
     DESCRIBE_TOODARK = "The darkness! It is too dark!",

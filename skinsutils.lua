@@ -951,12 +951,8 @@ function GetInventorySkinsList( do_sort )
 		table.insert(skins_list, data)
 	end
 
-	print("################################### GetInventorySkinsList", #skins_list)
-	--dumptable(skins_list)
-
 	if do_sort then
 		table.sort(skins_list, function(a,b)
-			--return a.item > b.item
 			return CompareItemDataForSortByRarity( a.item, b.item )
 		end)
 	end
@@ -1592,4 +1588,39 @@ function DisplayInventoryFailedPopup( screen )
 		})
 		TheFrontEnd:PushScreen(unowned_popup)		
     end
+end
+
+local ghost_preview_y_offset = -25
+local ghost_preview_scale = 0.75
+local skintypesbycharacter = nil
+
+function GetSkinModes(character)
+	if skintypesbycharacter == nil then
+		skintypesbycharacter = {
+			woodie = { { type = "normal_skin" }, { type = "werebeaver_skin", scale = 0.82 }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }, { type = "ghost_werebeaver_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
+			wolfgang = { { type = "normal_skin" }, { type = "wimpy_skin", scale = 0.9 }, { type = "mighty_skin", scale = 1.25 }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
+			wormwood = { { type = "normal_skin" }, { type = "stage_2" }, { type = "stage_3" }, { type = "stage_4" }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
+
+			default = { { type = "normal_skin" }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } }
+		}
+	end
+	return skintypesbycharacter[character] or skintypesbycharacter.default
+end
+
+function GetSkinModeFromBuild(player)
+	--this relies on builds not being shared across states
+	local build = player.AnimState:GetBuild()
+
+	if PREFAB_SKINS[player.prefab] == nil then return nil end
+
+	for _,skin in pairs(PREFAB_SKINS[player.prefab]) do
+		local skindata = GetSkinData(skin)
+		for skintype,skinbuild in pairs(skindata.skins) do
+			if build == skinbuild then
+				 return skintype
+			end
+		end
+	end
+
+	return nil
 end

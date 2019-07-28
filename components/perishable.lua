@@ -57,7 +57,6 @@ end
 
 local function Update(inst, dt)
     if inst.components.perishable then
-		
 		local modifier = 1
 		local owner = inst.components.inventoryitem and inst.components.inventoryitem.owner or nil
         if not owner and inst.components.occupier then
@@ -71,20 +70,21 @@ local function Update(inst, dt)
 				else
 					modifier = TUNING.PERISH_FRIDGE_MULT
 				end
+            elseif owner:HasTag("foodpreserver") then
+                modifier = TUNING.PERISH_FOOD_PRESERVER_MULT
 			elseif owner:HasTag("spoiler") then
-				modifier = TUNING.PERISH_GROUND_MULT 
+				modifier = TUNING.PERISH_GROUND_MULT
 			elseif owner:HasTag("cage") and inst:HasTag("small_livestock") then
                 modifier = TUNING.PERISH_CAGE_MULT
             end
 		else
-			modifier = TUNING.PERISH_GROUND_MULT 
+			modifier = TUNING.PERISH_GROUND_MULT
 		end
 
 		if inst:GetIsWet() then
 			modifier = modifier * TUNING.PERISH_WET_MULT
 		end
 
-		
 		if TheWorld.state.temperature < 0 then
 			if inst:HasTag("frozen") and not inst.components.perishable.frozenfiremult then
 				modifier = TUNING.PERISH_COLD_FROZEN_MULT
@@ -114,18 +114,16 @@ local function Update(inst, dt)
 		    end
 		end
 
-		-- Cool off hot foods over time (faster if in a fridge)
-		if inst.components.edible and inst.components.edible.temperaturedelta and inst.components.edible.temperaturedelta > 0 then
-			if owner and owner:HasTag("fridge") then
-				if not owner:HasTag("nocool") then
-					inst.components.edible.temperatureduration = inst.components.edible.temperatureduration - 1
-				end
-			elseif TheWorld.state.temperature < TUNING.OVERHEAT_TEMP - 5 then
-				inst.components.edible.temperatureduration = inst.components.edible.temperatureduration - .25
-			end
-			if inst.components.edible.temperatureduration < 0 then inst.components.edible.temperatureduration = 0 end
-		end
-        
+        --Cool off hot foods over time (faster if in a fridge)
+        --Skip and retain heat in containers with "nocool" tag
+        if inst.components.edible ~= nil and inst.components.edible.temperaturedelta ~= nil and inst.components.edible.temperaturedelta > 0 and not (owner ~= nil and owner:HasTag("nocool")) then
+            if owner ~= nil and owner:HasTag("fridge") then
+                inst.components.edible:AddChill(1)
+            elseif TheWorld.state.temperature < TUNING.OVERHEAT_TEMP - 5 then
+                inst.components.edible:AddChill(.25)
+            end
+        end
+
         --trigger the next callback
         if inst.components.perishable.perishremainingtime and inst.components.perishable.perishremainingtime <= 0 then
 			inst.components.perishable:Perish()

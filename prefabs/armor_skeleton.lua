@@ -15,6 +15,7 @@ local RESISTANCES =
     "explosive",
     "quakedebris",
     "caveindebris",
+    "trapdamage",
 }
 
 for j = 0, 3, 3 do

@@ -10,6 +10,12 @@ local prefabs =
     "impact",
 }
 
+local prefabs_yellow =
+{
+    "impact",
+    "electrichitsparks",
+}
+
 local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_object", "swap_blowdart", "swap_blowdart")
     owner.AnimState:Show("ARM_carry")
@@ -227,13 +233,10 @@ local function yellowthrown(inst)
 end
 
 local function yellowattack(inst, attacker, target)
-    if not target:IsValid() then
-        --target killed or removed in combat damage phase
-        return
+    --target could be killed or removed in combat damage phase
+    if target:IsValid() then
+        SpawnPrefab("electrichitsparks"):AlignToTarget(target, inst)
     end
-
-    local x, y, z = inst.Transform:GetWorldPosition()
-    SpawnPrefab("sparks").Transform:SetPosition(x, y - .5, z)
 end
 
 local function yellow()
@@ -280,5 +283,5 @@ end
 return Prefab("blowdart_sleep", sleep, assets, prefabs),
        Prefab("blowdart_fire", fire, assets, prefabs),
        Prefab("blowdart_pipe", pipe, assets, prefabs),
-       Prefab("blowdart_yellow", yellow, assets, prefabs),
+       Prefab("blowdart_yellow", yellow, assets, prefabs_yellow),
        Prefab("blowdart_walrus", walrus, assets, prefabs)

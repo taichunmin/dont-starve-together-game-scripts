@@ -13,7 +13,7 @@ require("util")
 require("networking")
 require("stringutil")
 
-local LoadoutSelect = Class(Widget, function(self, user_profile, character)
+local LoadoutSelect = Class(Widget, function(self, user_profile, character, initial_skintype)
     Widget._ctor(self, "LoadoutSelect")
     self.user_profile = user_profile
 
@@ -56,14 +56,56 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character)
 
         self.puppet = self.puppet_root:AddChild(Puppet())
         self.puppet:AddShadow()
-        self.puppet:SetPosition(0, -160)
-        self.puppet:SetScale(4.5)
+		self.puppet_base_offset = { 0, -160 }
+		self.puppet:SetPosition(self.puppet_base_offset[1], self.puppet_base_offset[2])
+		self.puppet_default_scale = 4.5
+        self.puppet:SetScale(self.puppet_default_scale)
         self.puppet:SetClickable(false)	
     else
         self.heroportrait:Show()
     end
         
     self:_LoadSavedSkins()
+
+
+	if IsPrefabSkinned(self.currentcharacter) then
+		self.skintypes = GetSkinModes(self.currentcharacter)
+	else
+		self.skintypes = {}
+		table.insert(self.skintypes, GetSkinModes("default")[1])
+
+		if MODCHARACTERMODES[self.currentcharacter] ~= nil then
+			for _,v in pairs(MODCHARACTERMODES[self.currentcharacter]) do
+				table.insert(self.skintypes,
+				{
+					type = {
+						build = v.build,
+						bank = v.bank,
+						idle_anim = v.idle_anim,
+						play_emotes = v.play_emotes,
+					},
+					scale = v.scale,
+					offset = v.offset,
+				})
+			end
+		end
+	end
+	self.view_index = 1
+	self.selected_skintype = self.skintypes[self.view_index].type
+
+	-- Portrait view index must be 1 < ind <= #self.skintypes+1
+	self.portrait_view_index = #self.skintypes + 1
+
+	if initial_skintype ~= nil and initial_skintype ~= "normal_skin" then
+		for i,v in ipairs(self.skintypes) do
+			if v.type == initial_skintype then
+				self.view_index = i
+				self:_SetSkintype(v)
+				break
+			end
+		end
+	end
+
 
     if not TheNet:IsOnlineMode() then
 		self.bg_group = self.loadout_root:AddChild(Widget("bg_group"))
@@ -128,7 +170,7 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character)
     
         self.subscreener:SetPostMenuSelectionAction( function(selection)
             if selection ~= "base" then
-                self:_TogglePortrait(true)
+                self:_CycleView(true)
             end
         end )
 
@@ -142,8 +184,8 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character)
     
     if not TheInput:ControllerAttached() then
         if self.show_puppet then
-            self.portraitbutton = self.loadout_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "player_info.tex", STRINGS.UI.LOBBYSCREEN.TOGGLE_PORTRAIT, false, false, function()
-			        self:_TogglePortrait()
+            self.portraitbutton = self.loadout_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "player_info.tex", STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW, false, false, function()
+			        self:_CycleView()
 		        end
 	        ))
 	        self.portraitbutton:SetPosition(-260, 270)
@@ -165,6 +207,17 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character)
     end
 end)
 
+function LoadoutSelect:_SetSkintype(skintypedata)
+	self.selected_skintype = skintypedata.type
+	self:_ApplySkins(self.preview_skins, true, self.selected_skintype)
+	self.puppet:SetScale((skintypedata.scale or 1) * self.puppet_default_scale)
+	if skintypedata.offset ~= nil then
+		self.puppet:SetPosition(self.puppet_base_offset[1] + (skintypedata.offset[1] or 0), self.puppet_base_offset[2] + (skintypedata.offset[2] or 0))
+	else
+		self.puppet:SetPosition(self.puppet_base_offset[1], self.puppet_base_offset[2])
+	end
+end
+
 function LoadoutSelect:SetDefaultMenuOption()
     if self.subscreener then
         if self.have_base_option then
@@ -175,18 +228,49 @@ function LoadoutSelect:SetDefaultMenuOption()
     end
 end
 
-function LoadoutSelect:_TogglePortrait(force_off)
-    if self.puppet_root ~= nil then
-        if self.showing_portrait or force_off then
-            self.heroportrait:Hide()
-            self.puppet_root:Show()
-            self.showing_portrait = false
-        else
-            self.heroportrait:Show()
-            self.puppet_root:Hide()
-            self.showing_portrait = true
-        end
-    end
+function LoadoutSelect:_CycleView(reset)
+	--[[
+		When the cycle view button is clicked an index is incremented,
+		EXCEPT when the index is about to become the same as the portrait
+		view index, in which case the portrait is toggled on. On the next
+		interaction the index increments and the portrait is toggled off,
+		i.e. skintypes[portrait_index] still contains skintype data and
+		is not overridden.
+	]]
+	if reset then
+		if self.showing_portrait then
+			self:_SetShowPortrait(false)
+
+			self.view_index = 1
+			self:_SetSkintype(self.skintypes[self.view_index])
+		end
+		return
+	end
+
+	if self.view_index == self.portrait_view_index - 1 and not self.showing_portrait then
+		self:_SetShowPortrait(true)
+	else
+		if self.showing_portrait then self:_SetShowPortrait(false) end
+
+		self.view_index = self.view_index + 1
+		if self.view_index > #self.skintypes then
+			self.view_index = 1
+		end
+
+		self:_SetSkintype(self.skintypes[self.view_index])
+	end
+end
+
+function LoadoutSelect:_SetShowPortrait(show)
+	if show then
+		self.heroportrait:Show()
+		self.puppet_root:Hide()
+		self.showing_portrait = true
+	else
+		self.heroportrait:Hide()
+		self.puppet_root:Show()
+		self.showing_portrait = false
+	end
 end
 
 function LoadoutSelect:_MakeMenu(subscreener)
@@ -283,16 +367,18 @@ function LoadoutSelect:_RefreshAfterSkinsLoad()
     -- Creating the subscreens requires skins to be loaded, so we might not have subscreener yet.
     if self.subscreener then
         for key,item in pairs(self.preview_skins) do
-            self.subscreener.sub_screens[key]:RefreshInventory()
+            if self.subscreener.sub_screens[key] ~= nil then
+                self.subscreener.sub_screens[key]:RefreshInventory()
+            end
         end
     end
-    self:_ApplySkins(self.preview_skins, true)
+    self:_ApplySkins(self.preview_skins, false)
     self:_UpdateMenu(self.selected_skins)
 end
 
 function LoadoutSelect:_SelectSkin(item_type, item_key, is_selected, is_owned)
     if item_type ~= "base" then
-        self:_TogglePortrait(true)
+        self:_CycleView(true)
     end
 
     local is_previewing = is_selected or not is_owned
@@ -314,7 +400,7 @@ function LoadoutSelect:_ApplySkins(skins, skip_change_emote)
 
     self:_SetPortrait()
     if self.show_puppet then
-        self.puppet:SetSkins(self.currentcharacter, skins.base, skins, skip_change_emote)
+		self.puppet:SetSkins(self.currentcharacter, skins.base, skins, skip_change_emote, self.selected_skintype)
     end
 end
 
@@ -381,7 +467,7 @@ function LoadoutSelect:OnControl(control, down)
 
     if not down then
         if control == CONTROL_MENU_MISC_3 then
-            self:_TogglePortrait()
+            self:_CycleView()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
         elseif control == CONTROL_MENU_MISC_1 and TheNet:IsOnlineMode() then
@@ -403,7 +489,7 @@ function LoadoutSelect:GetHelpText()
 		local controller_id = TheInput:GetControllerID()
 		local t = {}
 
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_3) .. " " .. STRINGS.UI.LOBBYSCREEN.TOGGLE_PORTRAIT)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_3) .. " " .. STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW)
         if TheNet:IsOnlineMode() then
 		    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SKIN_PRESETS.TITLE)
         end

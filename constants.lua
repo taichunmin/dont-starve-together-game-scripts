@@ -290,20 +290,36 @@ FADE_OUT = false
 FADE_IN = true
 
 --Legacy table, not for DST
-MAIN_CHARACTERLIST = 
+MAIN_CHARACTERLIST =
 {
-	"wilson", "willow", "wolfgang", "wendy", "wx78", "wickerbottom", "woodie", "wes", "waxwell",
+    "wilson", "willow", "wolfgang", "wendy", "wx78", "wickerbottom", "woodie", "wes", "waxwell",
 }
 
 --Legacy table, not for DST
 ROG_CHARACTERLIST =
 {
-	"wathgrithr", "webber",
+    "wathgrithr", "webber",
 }
 
+--When adding new characters with alternate states, be sure to update skinsutils.lua function GetSkinModes.
 DST_CHARACTERLIST =
 {
-    "wilson", "willow", "wolfgang", "wendy", "wx78", "wickerbottom", "woodie", "wes", "waxwell", "wathgrithr", "webber", "winona", "wortox", "wormwood",
+    "wilson",
+    "willow",
+    "wolfgang",
+    "wendy",
+    "wx78",
+    "wickerbottom",
+    "woodie",
+    "wes",
+    "waxwell",
+    "wathgrithr",
+    "webber",
+    "winona",
+    "warly",
+    --DLC chars:
+    "wortox",
+    "wormwood",
 }
 
 require("prefabskins")
@@ -314,87 +330,93 @@ require("item_blacklist")
 
 CLOTHING.body_default1 =
 {
-	type = "body",
+    type = "body",
     skin_tags = {},
     is_default = true,
-	release_group = 999,
-}        
+    release_group = 999,
+}
 CLOTHING.hand_default1 =
 {
-	type = "hand",
+    type = "hand",
     skin_tags = {},
     is_default = true,
-	release_group = 999,
-}        
+    release_group = 999,
+}
 CLOTHING.legs_default1 =
 {
-	type = "legs",
+    type = "legs",
     skin_tags = {},
     is_default = true,
-	release_group = 999,
+    release_group = 999,
 }
 CLOTHING.feet_default1 =
 {
-	type = "feet",
+    type = "feet",
     skin_tags = {},
     is_default = true,
-	release_group = 999,
+    release_group = 999,
 }
 
-MAINSCREEN_TOOL_LIST = 
+MAINSCREEN_TOOL_LIST =
 {
-	"swap_axe", "swap_spear", "swap_pickaxe", "swap_shovel", "swap_staffs", "swap_cane", "swap_fishingrod", "swap_hammer", "swap_batbat", "swap_ham_bat",
+    "swap_axe", "swap_spear", "swap_pickaxe", "swap_shovel", "swap_staffs", "swap_cane", "swap_fishingrod", "swap_hammer", "swap_batbat", "swap_ham_bat",
 }
 
 
-MAINSCREEN_TORSO_LIST = 
+MAINSCREEN_TORSO_LIST =
 {
-	"", "", "", "", "armor_wood", "armor_sweatervest", "torso_amulets", "armor_trunkvest_winter", "armor_ruins", "torso_dragonfly", "torso_hawaiian"
+    "", "", "", "", "armor_wood", "armor_sweatervest", "torso_amulets", "armor_trunkvest_winter", "armor_ruins", "torso_dragonfly", "torso_hawaiian"
 }
 
 
-MAINSCREEN_HAT_LIST = 
+MAINSCREEN_HAT_LIST =
 {
-	"", "", "", "", "hat_top", "hat_beefalo", "hat_football", "hat_winter", "hat_spider", "hat_catcoon", "hat_mole", "hat_ice", "hat_watermelon"
+    "", "", "", "", "hat_top", "hat_beefalo", "hat_football", "hat_winter", "hat_spider", "hat_catcoon", "hat_mole", "hat_ice", "hat_watermelon"
 }
 
 
-MODCHARACTERLIST = 
+MODCHARACTERLIST =
 {
-	-- this gets populated by mods
+    -- this gets populated by mods
 }
 
-MODCHARACTEREXCEPTIONS_DST = 
+MODCHARACTEREXCEPTIONS_DST =
 {
-	-- this also gets populated by mods
+    -- this also gets populated by mods
 }
 
-CHARACTER_GENDERS = 
+CHARACTER_GENDERS =
 {
-	FEMALE = {
-		"willow",
-		"wendy",
-		"wickerbottom",
-		"wathgrithr",
-		"winona",
-	},
-	MALE = {
-		"wilson",
-		"woodie",
-		"waxwell",
-		"wolfgang",
-		"wes",
-		"webber",
-		"wortox",
-		"wormwood",
-	},
-	ROBOT = {
-		"wx78",
-		"pyro",
-	},
-	NEUTRAL = {}, --empty, for modders to add to
-	PLURAL = {}, --empty, for modders to add to
+    FEMALE =
+    {
+        "willow",
+        "wendy",
+        "wickerbottom",
+        "wathgrithr",
+        "winona",
+    },
+    MALE =
+    {
+        "wilson",
+        "woodie",
+        "waxwell",
+        "wolfgang",
+        "wes",
+        "webber",
+        "warly",
+        "wortox",
+        "wormwood",
+    },
+    ROBOT =
+    {
+        "wx78",
+        "pyro",
+    },
+    NEUTRAL = {}, --empty, for modders to add to
+    PLURAL = {}, --empty, for modders to add to
 }
+
+MODCHARACTERMODES = {} --empty, for modders to add to
 
 MAXITEMSLOTS = 15
 
@@ -478,7 +500,7 @@ GROUND =
 	FUNGUS_NOISE = 127,
 
 	UNDERGROUND = 128,
-	
+
 	WALL_ROCKY = 151,
 	WALL_DIRT = 152,
 	WALL_MARSH = 153,
@@ -761,6 +783,7 @@ TECH =
     WARGOFFERING_THREE = { WARGOFFERING = 3 },
     PIGOFFERING_THREE = { PIGOFFERING = 3 },
     MADSCIENCE_ONE = { MADSCIENCE = 1 },
+    FOODPROCESSING_ONE = { FOODPROCESSING = 1 },
 
     HALLOWED_NIGHTS = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
     WINTERS_FEAST = { SCIENCE = 10 }, -- ApplySpecialEvent() will change this from lost to 0
@@ -963,6 +986,7 @@ RECIPETABS =
     ORPHANAGE =     { str = "ORPHANAGE",    sort = 10,  icon = "tab_orphanage.tex",         crafting_station = true },
     PERDOFFERING =  { str = "PERDOFFERING", sort = 10,  icon = "tab_perd_offering.tex",     crafting_station = true },
     MADSCIENCE =    { str = "MADSCIENCE",   sort = 10,  icon = "tab_madscience_lab.tex",	crafting_station = true, manufacturing_station = true },
+    FOODPROCESSING = { str = "FOODPROCESSING", sort = 10, icon = "tab_foodprocessing.tex",  crafting_station = true },
 }
 
 CUSTOM_RECIPETABS =
@@ -1170,8 +1194,11 @@ CHARACTER_COLOURS =
     wathgrithr   = WEBCOLOURS.OTHERBLUE,
     webber       = WEBCOLOURS.SPRINGGREEN,
     winona       = WEBCOLOURS.CRIMSON,
+    warly        = WEBCOLOURS.RED, --TODO
+    --DLC chars:
     wortox       = WEBCOLOURS.RED, --VITO do something here
     wormwood     = WEBCOLOURS.RED, --VITO do something here
+    --
     default      = WEBCOLOURS.THISTLE,
 }
 

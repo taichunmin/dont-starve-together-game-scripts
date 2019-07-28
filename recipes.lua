@@ -73,7 +73,12 @@ Recipe("fertilizer", {Ingredient("poop",3), Ingredient("boneshard", 2), Ingredie
 Recipe("mushroom_farm", {Ingredient("spoiled_food", 8),Ingredient("poop", 5),Ingredient("livinglog", 2)}, RECIPETABS.FARM, TECH.SCIENCE_ONE, "mushroom_farm_placer", 2.5)
 Recipe("beebox", {Ingredient("boards", 2),Ingredient("honeycomb", 1),Ingredient("bee", 4)}, RECIPETABS.FARM, TECH.SCIENCE_ONE, "beebox_placer")
 Recipe("meatrack", {Ingredient("twigs", 3),Ingredient("charcoal", 2), Ingredient("rope", 3)}, RECIPETABS.FARM, TECH.SCIENCE_ONE, "meatrack_placer")
-Recipe("cookpot", {Ingredient("cutstone", 3),Ingredient("charcoal", 6), Ingredient("twigs", 6)}, RECIPETABS.FARM,  TECH.SCIENCE_ONE, "cookpot_placer")
+Recipe("cookpot", {Ingredient("cutstone", 3), Ingredient("charcoal", 6), Ingredient("twigs", 6)}, RECIPETABS.FARM,  TECH.SCIENCE_ONE, "cookpot_placer")
+--NOTE: add portable cookware to UNCRAFTABLE section as well!
+Recipe("portablecookpot_item", {Ingredient("goldnugget", 2), Ingredient("charcoal", 6), Ingredient("twigs", 6)}, RECIPETABS.FARM, TECH.NONE, nil, nil, nil, nil, "masterchef")
+Recipe("portableblender_item", {Ingredient("goldnugget", 2), Ingredient("transistor", 2), Ingredient("twigs", 4)}, RECIPETABS.FARM, TECH.NONE, nil, nil, nil, nil, "masterchef")
+Recipe("portablespicer_item",  {Ingredient("goldnugget", 2), Ingredient("cutstone", 3), Ingredient("twigs", 6)}, RECIPETABS.FARM, TECH.NONE, nil, nil, nil, nil, "masterchef")
+--
 Recipe("icebox", {Ingredient("goldnugget", 2), Ingredient("gears", 1), Ingredient("cutstone", 1)}, RECIPETABS.FARM,  TECH.SCIENCE_TWO, "icebox_placer", 1.5)
 
 --SURVIVAL
@@ -94,16 +99,17 @@ Recipe("compass", {Ingredient("goldnugget", 1), Ingredient("flint", 1)}, RECIPET
 Recipe("heatrock", {Ingredient("rocks", 10),Ingredient("pickaxe", 1), Ingredient("flint", 3)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
 Recipe("giftwrap", {Ingredient("papyrus", 1), Ingredient("petals", 1)}, RECIPETABS.SURVIVAL, TECH.WINTERS_FEAST, nil, nil, nil, 4)
 Recipe("bundlewrap", {Ingredient("waxpaper", 1), Ingredient("rope", 1)}, RECIPETABS.SURVIVAL, TECH.LOST)
+Recipe("spicepack", {Ingredient("cutgrass", 4), Ingredient("twigs", 4), Ingredient("nitre", 2)}, RECIPETABS.SURVIVAL, TECH.NONE, nil, nil, nil, nil, "masterchef")
 Recipe("backpack", {Ingredient("cutgrass", 4), Ingredient("twigs", 4)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_ONE)
 Recipe("candybag", {Ingredient("cutgrass", 6)}, RECIPETABS.SURVIVAL, TECH.HALLOWED_NIGHTS)
 Recipe("piggyback", {Ingredient("pigskin", 4), Ingredient("silk", 6), Ingredient("rope", 2)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
+Recipe("icepack", {Ingredient("bearger_fur", 1), Ingredient("gears", 3), Ingredient("transistor", 3)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
 Recipe("bedroll_straw", {Ingredient("cutgrass", 6), Ingredient("rope", 1)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_ONE)
 Recipe("bedroll_furry", {Ingredient("bedroll_straw", 1), Ingredient("manrabbit_tail", 2)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
 Recipe("tent", {Ingredient("silk", 6),Ingredient("twigs", 4),Ingredient("rope", 3)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO, "tent_placer")
 Recipe("siestahut", {Ingredient("silk", 2),Ingredient("boards", 4),Ingredient("rope", 3)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO, "siestahut_placer")
 Recipe("minifan", {Ingredient("twigs", 3), Ingredient("petals",1)}, RECIPETABS.SURVIVAL, TECH.NONE)
 Recipe("featherfan", {Ingredient("goose_feather", 5), Ingredient("cutreeds", 2), Ingredient("rope", 2)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
-Recipe("icepack", {Ingredient("bearger_fur", 1), Ingredient("gears", 3), Ingredient("transistor", 3)}, RECIPETABS.SURVIVAL, TECH.SCIENCE_TWO)
 
 --TOOLS
 Recipe("axe", {Ingredient("twigs", 1),Ingredient("flint", 1)}, RECIPETABS.TOOLS, TECH.NONE)
@@ -354,10 +360,19 @@ Recipe("halloween_experiment_sanity", {Ingredient("crow", 1), Ingredient("petals
 Recipe("halloween_experiment_volatile", {Ingredient("rottenegg", 1), Ingredient("charcoal", 1), Ingredient(CHARACTER_INGREDIENT.SANITY, 10)}, RECIPETABS.MADSCIENCE, TECH.MADSCIENCE_ONE, nil, nil, true, nil, nil, nil, "halloweenpotion_embers.tex")
 Recipe("halloween_experiment_root", {Ingredient("batwing", 1), Ingredient("livinglog", 1), Ingredient(CHARACTER_INGREDIENT.SANITY, 20)}, RECIPETABS.MADSCIENCE, TECH.MADSCIENCE_ONE, nil, nil, true, nil, nil, nil, "livingtree_root.tex")
 
+----FOODPROCESSING-----
+Recipe("spice_garlic", {Ingredient("garlic", 3, nil, nil, "quagmire_garlic.tex")}, RECIPETABS.FOODPROCESSING, TECH.FOODPROCESSING_ONE, nil, nil, true, 2, "professionalchef")
+Recipe("spice_sugar", {Ingredient("honey", 3)}, RECIPETABS.FOODPROCESSING, TECH.FOODPROCESSING_ONE, nil, nil, true, 2, "professionalchef")
+Recipe("spice_chili", {Ingredient("pepper", 3)}, RECIPETABS.FOODPROCESSING, TECH.FOODPROCESSING_ONE, nil, nil, true, 2, "professionalchef")
+
 ----UNCRAFTABLE----
 --NOTE: These recipes are not supposed to be craftable!
 Recipe("pighead", {Ingredient("pigskin", 4), Ingredient("twigs", 4)}, nil, TECH.LOST, nil, nil, true)
 Recipe("mermhead", {Ingredient("spoiled_food", 4), Ingredient("twigs", 4)}, nil, TECH.LOST, nil, nil, true)
+--this is so you can use deconstruction staff on portable cookware when deployed
+Recipe("portablecookpot", {Ingredient("goldnugget", 2), Ingredient("charcoal",   6), Ingredient("twigs", 6)}, nil, TECH.LOST, nil, nil, true)
+Recipe("portableblender", {Ingredient("goldnugget", 2), Ingredient("transistor", 2), Ingredient("twigs", 4)}, nil, TECH.LOST, nil, nil, true)
+Recipe("portablespicer",  {Ingredient("goldnugget", 2), Ingredient("cutstone",   3), Ingredient("twigs", 6)}, nil, TECH.LOST, nil, nil, true)
 
 Recipe("purplemooneye", {Ingredient("moonrockcrater", 1), Ingredient("purplegem", 1)}, nil, TECH.LOST, nil, nil, true)
 Recipe("bluemooneye", {Ingredient("moonrockcrater", 1), Ingredient("bluegem", 1)}, nil, TECH.LOST, nil, nil, true)
