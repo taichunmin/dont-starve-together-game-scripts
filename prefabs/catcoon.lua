@@ -395,6 +395,10 @@ local function fn()
 	inst:AddComponent("locomotor")
 	inst.components.locomotor.walkspeed = 3
 
+    -- boat hopping
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+    inst:AddComponent("embarker")
+
 	inst:WatchWorldState("israining", OnIsRaining)
 
 	MakeSmallBurnableCharacter(inst, "catcoon_torso", Vector3(1,0,1))

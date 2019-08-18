@@ -41,6 +41,7 @@ local function master_postinit(inst)
 
     if inst.components.eater ~= nil then
         inst.components.eater:SetPrefersEatingTag("preparedfood")
+        inst.components.eater:SetPrefersEatingTag("pre-preparedfood")
     end
 
     inst:AddComponent("foodmemory")

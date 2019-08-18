@@ -133,6 +133,7 @@ function Projectile:Throw(owner, target, attacker)
     self.target = target
     self.start = owner:GetPosition()
     self.dest = target:GetPosition()
+    self.inst.Physics:ClearCollidesWith(COLLISION.LIMITS)
 
     if attacker ~= nil and self.launchoffset ~= nil then
         local x, y, z = self.inst.Transform:GetWorldPosition()
@@ -177,6 +178,8 @@ function Projectile:Miss(target)
 end
 
 function Projectile:Stop()
+    self.inst.Physics:CollidesWith(COLLISION.LIMITS)
+    
     self.inst:StopUpdatingComponent(self)
     self.target = nil
     self.owner = nil

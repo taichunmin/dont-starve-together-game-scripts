@@ -19,6 +19,7 @@ local SnapshotTab = Class(Widget, function(self, cb)
     self.session_id = nil
     self.online_mode = nil
     self.multi_level = nil
+    self.use_cluster_path = nil
     self.cb = cb
 
     self.snapshots = nil
@@ -198,7 +199,7 @@ function SnapshotTab:OnClickSnapshot(snapshot_num)
             cb = function()
                 local truncate_to_id = self.snapshots[snapshot_num].snapshot_id
                 if truncate_to_id ~= nil and truncate_to_id > 0 then
-                    if self.multi_level then
+                    if self.multi_level or self.use_cluster_path then
                         TheNet:TruncateSnapshotsInClusterSlot(self.save_slot, "Master", self.session_id, truncate_to_id)
                         --slaves will auto-truncate to synchornize at startup
                     else
@@ -231,7 +232,7 @@ function SnapshotTab:ListSnapshots(force)
     else
         self.snapshots = {}
         local snapshot_infos, has_more
-        if self.multi_level then
+        if self.multi_level or self.use_cluster_path then
             snapshot_infos, has_more = TheNet:ListSnapshotsInClusterSlot(self.save_slot, "Master", self.session_id, self.online_mode, 10)
         else
             snapshot_infos, has_more = TheNet:ListSnapshots(self.session_id, self.online_mode, 10)
@@ -268,7 +269,7 @@ function SnapshotTab:ListSnapshots(force)
                             end
                         end
                     end
-                    if self.multi_level then
+                    if self.multi_level or self.use_cluster_path then
                         TheSim:GetPersistentStringInClusterSlot(self.save_slot, "Master", v.world_file, onreadworldfile)
                     else
                         TheSim:GetPersistentString(v.world_file, onreadworldfile)
@@ -303,9 +304,11 @@ function SnapshotTab:SetSaveSlot(save_slot, prev_slot, fromDelete)
             or nil
     end
 
+    local server_data = SaveGameIndex:GetSlotServerData(save_slot)
     self.session_id = SaveGameIndex:GetSlotSession(save_slot)
-    self.online_mode = SaveGameIndex:GetSlotServerData(save_slot).online_mode ~= false
+    self.online_mode = server_data.online_mode ~= false
     self.multi_level = SaveGameIndex:IsSlotMultiLevel(save_slot)
+    self.use_cluster_path = server_data.use_cluster_path == true
 
     self:ListSnapshots(fromDelete)
     self:RefreshSnapshots()

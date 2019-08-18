@@ -1,5 +1,5 @@
 --V2C: component for adding generic onupdate loops to entities
---     since we found out that DoPeriodiTask(0) doesn't trigger precisely every frame
+--     since we found out that DoPeriodicTask(0) doesn't trigger precisely every frame
 
 local UpdateLooper = Class(function(self, inst)
     self.inst = inst

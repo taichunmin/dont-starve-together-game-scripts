@@ -36,7 +36,10 @@ local function fn()
 
     inst:AddComponent("tradable")
     inst:AddComponent("inspectable")
+
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
+
     inst:AddComponent("stackable")
 
     MakeHauntableLaunchAndSmash(inst)

@@ -85,6 +85,7 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetOnPutInInventoryFn(OnPutInInventory)
     inst.components.inventoryitem:SetOnDroppedFn(OnDropped)
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(TUNING.BIRD_HEALTH)

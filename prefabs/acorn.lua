@@ -76,6 +76,8 @@ local function fn()
     --cookable (from cookable component) added to pristine state for optimization
     inst:AddTag("cookable")
 
+    MakeInventoryFloatable(inst, "small", 0.15)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -134,6 +136,8 @@ local function cooked()
     inst.AnimState:SetBank("acorn")
     inst.AnimState:SetBuild("acorn")
     inst.AnimState:PlayAnimation("cooked")
+
+    MakeInventoryFloatable(inst, "small", 0.1)
 
     inst.entity:SetPristine()
 

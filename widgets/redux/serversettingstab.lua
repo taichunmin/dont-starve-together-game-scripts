@@ -251,6 +251,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
 
     --Internal data
     self.encode_user_path = true
+    self.use_cluster_path = true
 end)
 
 function ServerSettingsTab:RefreshPrivacyButtons()
@@ -432,6 +433,7 @@ function ServerSettingsTab:UpdateDetails(slotnum, prevslot, fromDelete)
         self.server_desc.textbox:SetString(self.slotdata[slotnum] and self.slotdata[slotnum].server_desc or "")
         self.privacy_type.buttons:SetSelected(self.slotdata[slotnum] and self.slotdata[slotnum].privacy_type or PRIVACY_TYPE.PUBLIC)
         self.encode_user_path = true
+        self.use_cluster_path = true
 
         self:SetServerIntention(self.slotdata[slotnum] and self.slotdata[slotnum].intention or nil)
         self:SetOnlineWidgets(online)
@@ -457,6 +459,7 @@ function ServerSettingsTab:UpdateDetails(slotnum, prevslot, fromDelete)
             self.server_desc.textbox:SetString(self.slotdata[slotnum] and self.slotdata[slotnum].description or server_data.description)
             self.privacy_type.buttons:SetSelected(self.slotdata[slotnum] and self.slotdata[slotnum].privacy_type or server_data.privacy_type)
             self.encode_user_path = (self.slotdata[slotnum] or server_data).encode_user_path == true
+            self.use_cluster_path = (self.slotdata[slotnum] or server_data).use_cluster_path == true
 
             if self.privacy_type.buttons:GetSelectedData() == PRIVACY_TYPE.CLAN then
                 local claninfo = self.slotdata[slotnum] and self.slotdata[slotnum].clan or server_data.clan
@@ -469,6 +472,7 @@ function ServerSettingsTab:UpdateDetails(slotnum, prevslot, fromDelete)
             self:SetOnlineWidgets(server_data.online_mode) -- always load from the server data
         else
             self.encode_user_path = true
+            self.use_cluster_path = true
             self:SetServerIntention(nil)
         end
 
@@ -525,6 +529,10 @@ function ServerSettingsTab:GetEncodeUserPath()
     return self.encode_user_path
 end
 
+function ServerSettingsTab:GetUseClusterPath()
+    return self.use_cluster_path
+end
+
 function ServerSettingsTab:GetServerData()
     return {
         intention = self.server_intention.button.data,
@@ -532,6 +540,7 @@ function ServerSettingsTab:GetServerData()
         game_mode = self:GetGameMode(),
         online_mode = self:GetOnlineMode(),
         encode_user_path = self:GetEncodeUserPath(),
+        use_cluster_path = self:GetUseClusterPath(),
         max_players = self:GetMaxPlayers(),
         name = self:GetServerName(),
         password = self:GetPassword(),

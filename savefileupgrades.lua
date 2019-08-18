@@ -81,6 +81,23 @@ t = {
 
             return preset
         end,
+        UpgradeUserPresetFromV3toV4 = function(preset, custompresets)
+            if preset.version == nil or preset.version ~= 3 then
+                return preset
+            end
+
+            print(string.format("Upgrading user preset data for '%s' from v2 to v3 (Return of Them: Turn of Tides).", tostring(preset.id)))
+			if preset.location == "forest" and preset.overrides.has_ocean ~= true then
+				preset.overrides.has_ocean = true
+				preset.overrides.keep_disconnected_tiles = true
+				preset.overrides.no_wormholes_to_disconnected_tiles = true
+				preset.overrides.no_joining_islands = true
+				print("  New ocean enabled")
+			end
+
+			preset.version = 4
+			dumptable(preset, 1, 1)
+		end,
         UpgradeSavedLevelFromV1toV2 = function(level, master_world)
             if level.version ~= nil and level.version >= 2 then
                 return level
@@ -165,6 +182,22 @@ t = {
 
 			level.version = 3
             return level        
+        end,
+        UpgradeSavedLevelFromV3toV4 = function(level, master_world)
+            if level.version ~= 3 then
+                return level
+            end
+
+			if level.location == "forest" and level.overrides.has_ocean ~= true then
+	            print(string.format("Upgrading saved level data for '%s' from v3 to v4 (Return of Them: Turn of Tides).", tostring(level.id)))
+				level.overrides.has_ocean = true
+				level.overrides.keep_disconnected_tiles = true
+				level.overrides.no_wormholes_to_disconnected_tiles = true
+				level.overrides.no_joining_islands = true
+			end
+
+			level.version = 4
+			return level
         end,
         UpgradeWorldgenoverrideFromV1toV2 = function(wgo)
             local validfields = {
@@ -622,6 +655,53 @@ t = {
 				end
             end,
         },
+
+        {
+            version = 5.00, -- RoT: Turn of Tides
+            fn = function(savedata)
+                if savedata == nil then
+                    return
+                end
+
+                if savedata.map ~= nil and savedata.map.prefab == "forest" and savedata.map.persistdata ~= nil then
+					if not savedata.map.has_ocean then
+						savedata.map.has_ocean = true
+
+						if savedata.map.persistdata.retrofitforestmap_anr == nil then
+							savedata.map.persistdata.retrofitforestmap_anr = {}
+						end
+						savedata.map.persistdata.retrofitforestmap_anr.retrofit_turnoftides = true
+						savedata.retrofit_oceantiles = true -- since we have a large number of tiles to convert to the ocean, it needs to be done before the map is finalized
+					end
+                end
+             end,
+        },
+
+        {
+            version = 5.01, -- RoT: Turn of Tides - adds the ocean and island to the nav grid for pathfinding
+            fn = function(savedata)
+                if savedata ~= nil and savedata.map ~= nil and savedata.map.prefab == "forest" and savedata.map.persistdata ~= nil then
+					if savedata.map.persistdata.retrofitforestmap_anr == nil then
+						savedata.map.persistdata.retrofitforestmap_anr = {}
+					end
+					savedata.map.persistdata.retrofitforestmap_anr.retrofit_turnoftides_betaupdate1 = true
+                end
+             end,
+        },
+
+        {
+            version = 5.02, -- RoT: Turn of Tides - repopulate the seastacks to something slightly more interesting
+            fn = function(savedata)
+                if savedata ~= nil and savedata.map ~= nil and savedata.map.prefab == "forest" and savedata.map.persistdata ~= nil then
+					if savedata.map.persistdata.retrofitforestmap_anr == nil then
+						savedata.map.persistdata.retrofitforestmap_anr = {}
+					end
+					savedata.map.persistdata.retrofitforestmap_anr.retrofit_turnoftides_seastacks = true
+                end
+             end,
+        },
+
+		
 
     },
 }

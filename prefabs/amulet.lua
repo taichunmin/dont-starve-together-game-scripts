@@ -228,7 +228,7 @@ local function unimplementeditem(inst)
 end
 --]]
 
-local function commonfn(anim, tag)
+local function commonfn(anim, tag, should_sink)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -247,6 +247,10 @@ local function commonfn(anim, tag)
 
     inst.foleysound = "dontstarve/movement/foley/jewlery"
 
+    if not should_sink then
+        MakeInventoryFloatable(inst, "med", nil, 0.6)
+    end
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -260,12 +264,15 @@ local function commonfn(anim, tag)
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
 
     inst:AddComponent("inventoryitem")
+    if should_sink then
+        inst.components.inventoryitem:SetSinks(true)
+    end
 
     return inst
 end
 
 local function red()
-    local inst = commonfn("redamulet", "resurrector")
+    local inst = commonfn("redamulet", "resurrector", true)
 
     if not TheWorld.ismastersim then
         return inst

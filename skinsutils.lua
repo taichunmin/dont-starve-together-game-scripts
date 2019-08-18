@@ -256,30 +256,32 @@ function IsPackABundle(item_key)
     local sub_packs = _GetSubPacks(item_key)
 
     local value = 0
-    
-    if IsSteam() then
-        local iap_defs = TheItems:GetIAPDefs()
-        for _,iap in pairs(iap_defs) do
-            if sub_packs[iap.item_type] then
-                value = value + iap.cents
-            end
-        end
-    elseif IsRail() then
-        local iap_defs = TheItems:GetIAPDefs()
-        for _,iap in pairs(iap_defs) do
-            if sub_packs[iap.item_type] then
-                value = value + tonumber(iap.rail_price)
-            end
-        end
-    else
-        print("Error!!! Figure out iap for this platform.")
-    end
-    
+
+	local iap_defs = TheItems:GetIAPDefs()
+	for _,iap in pairs(iap_defs) do
+		if sub_packs[iap.item_type] then
+			if iap.virtual_currency_cost ~= nil then
+				value = value + iap.virtual_currency_cost
+			elseif IsSteam() then
+				value = value + iap.cents
+			elseif IsRail() then
+				value = value + tonumber(iap.rail_price)
+			else
+				print("Error!!! Figure out iap for this platform.")
+			end
+		end
+	end    
     return (value > 0), value 
 end
 
-local getPriceFromIAPDef = function( iap_def, sale_active )
-	if IsSteam() then
+function GetPriceFromIAPDef( iap_def, sale_active )
+	if iap_def.iap_type == IAP_TYPE_VIRTUAL then
+		if sale_active then
+			return iap_def.virtual_currency_sale_cost
+		else
+			return iap_def.virtual_currency_cost
+		end
+	elseif IsSteam() then
 		if sale_active then
 			return iap_def.sale_cents
 		else
@@ -294,12 +296,15 @@ local getPriceFromIAPDef = function( iap_def, sale_active )
 	end
 end
 
-function BuildPriceStr( value, currency_code, sale_active )
-    if type(value) ~= "number" then
-		value = getPriceFromIAPDef( value, sale_active )
-    end
+function BuildPriceStr( value, iap_def, sale_active )
+	if type(value) ~= "number" then
+		value = GetPriceFromIAPDef( value, sale_active )
+	end
 
-	if IsSteam() then
+	if iap_def.iap_type == IAP_TYPE_VIRTUAL then
+		return string.format( "%0.0f %s", value, STRINGS.UI.PURCHASEPACKSCREEN.VIRTUAL_CURRENCY_SHORT )
+	elseif IsSteam() then
+		local currency_code = iap_def.currency_code
 		if currency_code == "JPY" or
 			currency_code == "IDR" or
 			currency_code == "VND" or
@@ -319,11 +324,11 @@ function BuildPriceStr( value, currency_code, sale_active )
 		
 			return string.format( "%s %1.2f", currency_code, value / 100 )
 		end
-    elseif IsRail() then
-        return tostring(value) .. " RMB"
-    else
-        print("Error!!! Figure out the pricing for the new platform.")
-    end
+	elseif IsRail() then
+		return tostring(value) .. " RMB"
+	else
+		print("Error!!! Figure out the pricing for the new platform.")
+	end
 end
 
 function IsSaleActive( iap_def )
@@ -339,9 +344,9 @@ end
 
 function GetPackSavings(iap_def, total_value, sale_active )
     if IsSteam() then
-        return math.floor(100 * (1 - (getPriceFromIAPDef(iap_def, sale_active) / total_value)))
+        return math.floor(100 * (1 - (GetPriceFromIAPDef(iap_def, sale_active) / total_value)))
     elseif IsRail() then
-        return math.floor(100 * (1 - (tonumber(getPriceFromIAPDef(iap_def, sale_active)) / total_value)))
+        return math.floor(100 * (1 - (tonumber(GetPriceFromIAPDef(iap_def, sale_active)) / total_value)))
     else
         print("Error!!! Figure out iap for this platform.")
     end
@@ -392,6 +397,18 @@ function OwnsSkinPack(item_key)
 	end
 
 	return true
+end
+
+function IsPurchasePackCurrency(item_key)
+	if MISC_ITEMS[item_key] and MISC_ITEMS[item_key].output_klei_currency_cost then
+		return true
+	else
+		return false
+	end
+end
+
+function GetPurchasePackCurrencyOutput(item_key)
+    return MISC_ITEMS[item_key] and MISC_ITEMS[item_key].output_klei_currency_cost or nil
 end
 
 function GetPurchasePackDisplayItems(item_key)

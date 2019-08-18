@@ -126,7 +126,7 @@ local function OnAttacked(inst, data)
                     data.attacker.sg:GoToState("electrocute")
                 end
             end
-        elseif data.weapon ~= nil and data.weapon.components.weapon ~= nil and data.weapon.components.weapon.stimuli == "electric" then
+        elseif data.stimuli == "electric" or (data.weapon ~= nil and data.weapon.components.weapon ~= nil and data.weapon.components.weapon.stimuli == "electric") then
             setcharged(inst)
         end
 

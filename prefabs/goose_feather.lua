@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("goose_feather")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", 0.05, 0.68)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

@@ -72,7 +72,7 @@ local function OnInit(inst, self)
 end
 
 local function OnAreaChanged(inst, data)
-    inst.components.playervision:SetNightmareVision(data.tags ~= nil and table.contains(data.tags, "Nightmare"))
+    inst.components.playervision:SetNightmareVision(data ~= nil and data.tags ~= nil and table.contains(data.tags, "Nightmare"))
 end
 
 local PlayerVision = Class(function(self, inst)

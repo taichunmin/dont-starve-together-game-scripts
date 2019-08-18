@@ -12,7 +12,7 @@ local TOOCLOSE = 6
 local function CanSteal(item)
     return item.components.inventoryitem ~= nil
         and item.components.inventoryitem.canbepickedup
-        and item:IsOnValidGround()
+        and item:IsOnValidGround()      -- NOTE: If Krampus learns to hop on boats or travel over water, this should change to include water.
         and not item:IsNearPlayer(TOOCLOSE)
 end
 
@@ -33,6 +33,7 @@ local function CanHammer(item)
         and item.components.container ~= nil
         and not item.components.container:IsEmpty()
         and not item:IsNearPlayer(TOOCLOSE)
+        and item:IsOnValidGround()      -- NOTE: If Krampus learns to hop on boats or travel over water, this should change to include water.
 end
 
 local function EmptyChest(inst)
@@ -85,7 +86,7 @@ function KrampusBrain:OnStart()
 
     local stealnode = PriorityNode(
     {
-        DoAction(self.inst, function() return StealAction(self.inst) end, "steal", true ),        
+        DoAction(self.inst, function() return StealAction(self.inst) end, "steal", true ),
         DoAction(self.inst, function() return EmptyChest(self.inst) end, "emptychest", true )
     }, 2)
 

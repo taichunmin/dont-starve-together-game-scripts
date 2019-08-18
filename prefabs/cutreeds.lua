@@ -16,6 +16,8 @@ local function fn()
     inst.AnimState:SetBuild("cutreeds")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.6)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

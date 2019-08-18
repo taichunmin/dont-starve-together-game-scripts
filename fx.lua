@@ -92,6 +92,13 @@ local fx =
         anim = "melted",
     },
     {
+        name = "splash_water",
+        bank = "splash_water",
+        build = "splash_water",
+        sound = "turnoftides/common/together/water/splash/small",
+        anim = "idle",
+    },    
+    {
         name = "small_puff",
         bank = "small_puff",
         build = "smoke_puff_small",
@@ -292,6 +299,12 @@ local fx =
         build = "tree_leaf_fx_quagmire_withered",
         anim = "chop",
         sound = "dontstarve_DLC001/fall/leaf_rustle",
+    },
+    {
+        name = "tree_petal_fx_chop",
+        bank = "tree_petal_fx",
+        build = "tree_petal_fx",
+        anim = "chop",
     },
     {
         name = "dr_warm_loop_1",
@@ -921,7 +934,65 @@ local fx =
         anim = "anim",
         fn = FinalOffset1,
     },
+    {
+        name = "fx_boat_crackle",
+        bank = "fx_boat_crack",
+        build = "fx_boat_crackle",
+        anim = "crackle",
+    },
+    {
+        name = "fx_boat_pop",
+        bank = "fx_boat_pop",
+        build = "fx_boat_pop",
+        anim = "pop",
+    },
+    {
+        name = "boat_mast_sink_fx",
+        bank = "mast_01",
+        build = "boat_mast2",
+        anim = "sink",
+    },
+    {
+        name = "mining_moonglass_fx",
+        bank = "glass_mining_fx",
+        build = "glass_mining_fx",
+        anim = "anim",
+    },
+    {
+        name = "splash_sink",
+        bank = "splash_water_drop",
+        build = "splash_water_drop",
+        anim = "idle_sink",
+        fn = function(inst) inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT) end,
+    },
+    {
+        name = "washashore_puddle_fx",
+        bank = "water_puddle",
+        build = "water_puddle",
+        anim = "puddle",
+        fn = function(inst) inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND) inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround) end,
+    },
 }
+
+for cratersteamindex = 1, 4 do
+    table.insert(fx, {
+        name = "crater_steam_fx"..cratersteamindex,
+        bank = "crater_steam",
+        build = "crater_steam",
+        anim = "steam"..cratersteamindex,
+        fn = FinalOffset1,
+    })
+end
+
+for slowsteamindex = 1, 5 do
+    table.insert(fx, {
+        name = "slow_steam_fx"..slowsteamindex,
+        bank = "slow_steam",
+        build = "slow_steam",
+        anim = "steam"..slowsteamindex,
+        fn = FinalOffset1,
+    })
+end
 
 for j = 0, 3, 3 do
     for i = 1, 3 do

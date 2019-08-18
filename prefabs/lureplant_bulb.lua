@@ -30,6 +30,8 @@ local function fn()
     inst.AnimState:SetBuild("eyeplant_bulb")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "small", 0.05, 0.95)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

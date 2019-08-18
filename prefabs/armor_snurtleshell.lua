@@ -90,6 +90,8 @@ local function fn()
 
     inst.foleysound = "dontstarve/movement/foley/shellarmour"
 
+    MakeInventoryFloatable(inst, "med", 0.2, 0.70)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

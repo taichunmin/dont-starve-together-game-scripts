@@ -183,6 +183,18 @@ self:SetSpawningForType("mushtree_small", "mushtree_small", TUNING.MUSHTREE_REGR
     return (not _worldstate.isspring and 0) or 1
 end)
 
+local moon_tree_mult =
+{
+    new = 0,
+    quarter = 0.5,
+    half = 1.0,
+    threequarter = 1.5,
+    full = 2.0,
+}
+self:SetSpawningForType("moon_tree", "moonbutterfly_sapling", TUNING.EVERGREEN_REGROWTH.DESOLATION_RESPAWN_TIME, {"moon_tree"}, function()
+    return moon_tree_mult[_worldstate.moonphase] or 0
+end)
+
 inst:DoTaskInTime(0, PopulateAreaDataFromReplacements)
 
 --------------------------------------------------------------------------

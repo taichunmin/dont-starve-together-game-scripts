@@ -18,6 +18,8 @@ local function fn()
 
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst, "small", 0.05)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -25,6 +27,7 @@ local function fn()
     end
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("inspectable")
     inst:AddComponent("stackable")
 

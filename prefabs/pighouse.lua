@@ -9,6 +9,7 @@ local assets =
 local prefabs =
 {
     "pigman",
+    "splash_sink",
 }
 
 --Client update
@@ -136,10 +137,19 @@ local function onvacate(inst, child)
             if child.components.werebeast ~= nil then
                 child.components.werebeast:ResetTriggers()
             end
-            if child.components.health ~= nil then
-                child.components.health:SetPercent(1)
+
+            local child_platform = child:GetCurrentPlatform()
+            if (child_platform == nil and not child:IsOnValidGround()) then
+                local fx = SpawnPrefab("splash_sink")
+                fx.Transform:SetPosition(child.Transform:GetWorldPosition())
+
+                child:Remove()
+            else
+                if child.components.health ~= nil then
+                    child.components.health:SetPercent(1)
+                end
+			    child:PushEvent("onvacatehome")
             end
-			child:PushEvent("onvacatehome")
         end
     end
 end
@@ -383,6 +393,7 @@ local function fn()
     inst.components.spawner:Configure("pigman", TUNING.TOTAL_DAY_TIME*4)
     inst.components.spawner.onoccupied = onoccupied
     inst.components.spawner.onvacate = onvacate
+    inst.components.spawner:SetWaterSpawning(false, true)
     inst.components.spawner:CancelSpawning()
 
     inst:AddComponent("playerprox")

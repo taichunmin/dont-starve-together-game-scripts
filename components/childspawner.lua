@@ -408,7 +408,7 @@ end
 -- This should only be called interally
 function ChildSpawner:DoSpawnChild(target, prefab, radius)
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, (radius or self.spawnradius or .5) + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles)
+    local offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, (radius or self.spawnradius or .5) + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles, self.allowwater, self.allowboats)
     if offset == nil then
         return
     end

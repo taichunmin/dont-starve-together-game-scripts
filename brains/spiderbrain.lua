@@ -65,7 +65,7 @@ local function GoHomeAction(inst)
     return home ~= nil
         and home:IsValid()
         and home.components.childspawner ~= nil
-        and not home.components.health:IsDead()
+        and (home.components.health == nil or not home.components.health:IsDead())
         and BufferedAction(inst, home, ACTIONS.GOHOME)
         or nil
 end

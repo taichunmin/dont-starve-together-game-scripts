@@ -20,6 +20,8 @@ local function makefeather(name)
 
         inst:AddTag("cattoy")
 
+        MakeInventoryFloatable(inst, "small", 0.05, 0.95)
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then

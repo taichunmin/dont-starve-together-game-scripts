@@ -38,6 +38,8 @@ local AMBIENT_SOUNDS =
     [GROUND.DECIDUOUS] = {sound = "dontstarve/forest/forestAMB", wintersound = "dontstarve/winter/winterforestAMB", springsound = "dontstarve/forest/forestAMB", summersound = "dontstarve_DLC001/summer/summerforestAMB", rainsound = "dontstarve/rain/rainforestAMB"},
     [GROUND.DESERT_DIRT] = {sound = "dontstarve/badland/badlandAMB", wintersound = "dontstarve/winter/winterbadlandAMB", springsound = "dontstarve/badland/badlandAMB", summersound = "dontstarve_DLC001/summer/summerbadlandAMB", rainsound = "dontstarve/rain/rainbadlandAMB"},
     [GROUND.CHECKER] = {sound = "dontstarve/chess/chessAMB", wintersound = "dontstarve/winter/winterchessAMB", springsound = "dontstarve/chess/chessAMB", summersound = "dontstarve_DLC001/summer/summerchessAMB", rainsound = "dontstarve/rain/rainchessAMB"},--springsound = "dontstarve_DLC001/spring/springchessAMB", summersound = "dontstarve_DLC001/summer/summerchessAMB", rainsound = "dontstarve/rain/rainchessAMB"},
+    [GROUND.METEOR] = {sound = "turnoftides/together_amb/moon_island/fall", wintersound = "turnoftides/together_amb/moon_island/winter", springsound = "turnoftides/together_amb/moon_island/spring", summersound = "turnoftides/together_amb/moon_island/summer", rainsound = "dontstarve/rain/rainchessAMB"},
+    [GROUND.PEBBLEBEACH] = {sound = "turnoftides/together_amb/moon_island/fall", wintersound = "turnoftides/together_amb/moon_island/winter", springsound = "turnoftides/together_amb/moon_island/spring", summersound = "turnoftides/together_amb/moon_island/summer", rainsound = "dontstarve/rain/rainbadlandAMB"},--springsound = "dontstarve_DLC001/spring/springbadlandAMB", summersound = "dontstarve_DLC001/summer/summerbadlandAMB", rainsound = "dontstarve/rain/rainbadlandAMB"},
     [GROUND.CAVE] = {sound = "dontstarve/cave/caveAMB"},
 
     [GROUND.FUNGUS] = { sound = "dontstarve/cave/fungusforestAMB" },
@@ -55,9 +57,15 @@ local AMBIENT_SOUNDS =
     [GROUND.TRIM] = { sound = "dontstarve/cave/ruinsAMB" },
     [GROUND.TRIM_GLOW] = { sound = "dontstarve/cave/ruinsAMB" },
 
+	[GROUND.OCEAN_COASTAL] =       { sound = "turnoftides/together_amb/ocean/shallow", rainsound = "turnoftides/together_amb/ocean/shallow_rain" },
+	[GROUND.OCEAN_SWELL] =         { sound = "turnoftides/together_amb/ocean/shallow", rainsound = "turnoftides/together_amb/ocean/shallow_rain" },
+	[GROUND.OCEAN_ROUGH] =         { sound = "turnoftides/together_amb/ocean/deep",    rainsound = "turnoftides/together_amb/ocean/deep_rain" },
+	[GROUND.OCEAN_REEF] =          { sound = "turnoftides/together_amb/ocean/deep",    rainsound = "turnoftides/together_amb/ocean/deep_rain" },
+	[GROUND.OCEAN_HAZARDOUS] =     { sound = "turnoftides/together_amb/ocean/deep",    rainsound = "turnoftides/together_amb/ocean/deep_rain" },
+
     [GROUND.LAVAARENA_FLOOR] = { sound = "dontstarve/lava_arena_amb/arena_day" },
     [GROUND.LAVAARENA_TRIM] = { sound = "dontstarve/lava_arena_amb/arena_day" },
-
+	
     [GROUND.QUAGMIRE_PEATFOREST] = {sound = "dontstarve/quagmire/amb/peat_forest"},
     [GROUND.QUAGMIRE_PARKFIELD] = {sound = "dontstarve/quagmire/amb/park_field"},
     [GROUND.QUAGMIRE_PARKSTONE] = {sound = "dontstarve/quagmire/amb/park_field"},
@@ -363,7 +371,7 @@ function self:OnUpdate(dt)
     end
 
     local sanity = player ~= nil and player.replica.sanity or nil
-    local sanityparam = sanity ~= nil and (1 - sanity:GetPercent()) or 0
+    local sanityparam = (sanity ~= nil and sanity:IsInsanityMode()) and (1 - sanity:GetPercent()) or 0
     if player ~= nil and player:HasTag("dappereffects") then
         sanityparam = sanityparam * sanityparam
     end

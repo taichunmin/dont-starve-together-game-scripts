@@ -54,7 +54,7 @@ local function OnHungerDelta(parent, data)
 end
 
 local function UpdateAnimOverrideSanity(parent)
-    parent.AnimState:SetClientSideBuildOverrideFlag("insane", parent.replica.sanity:GetPercentNetworked() <= (parent:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY))
+    parent.AnimState:SetClientSideBuildOverrideFlag("insane", parent.replica.sanity:IsInsanityMode() and (parent.replica.sanity:GetPercentNetworked() <= (parent:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY)))
 end
 
 local function OnSanityDelta(parent, data)
@@ -141,6 +141,10 @@ end
 
 local function OnWormholeTravel(parent, wormholetype)
     SetDirty(parent.player_classified.wormholetravelevent, wormholetype)
+end
+
+local function OnHoundWarning(parent, houndwarningtype)
+    SetDirty(parent.player_classified.houndwarningevent, houndwarningtype)
 end
 
 local function OnMakeFriend(parent)
@@ -302,6 +306,7 @@ local function OnSanityDirty(inst)
             overtime =
                 not (inst.issanitypulseup:value() and percent > oldpercent) and
                 not (inst.issanitypulsedown:value() and percent < oldpercent),
+			sanitymode = inst._parent.replica.sanity:GetSanityMode(),
         }
         inst._oldsanitypercent = percent
         inst.issanitypulseup:set_local(false)
@@ -701,6 +706,32 @@ local function OnWormholeTravelDirty(inst)
     end
 end
 
+local function OnHoundWarningDirty(inst)
+    if inst._parent ~= nil and inst._parent.HUD ~= nil then
+        local soundprefab = nil        
+        if inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1 then            
+            soundprefab = "houndwarning_lvl1"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2 then            
+            soundprefab = "houndwarning_lvl2"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3 then            
+            soundprefab = "houndwarning_lvl3"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4 then            
+            soundprefab = "houndwarning_lvl4"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1_WORM then            
+            soundprefab = "wormwarning_lvl1"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2_WORM then            
+            soundprefab = "wormwarning_lvl2"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3_WORM then            
+            soundprefab = "wormwarning_lvl3"
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4_WORM then            
+            soundprefab = "wormwarning_lvl4"            
+        end        
+        if soundprefab then       
+            local sound = SpawnPrefab(soundprefab)
+        end
+    end
+end
+
 local function OnMakeFriendEvent(inst)
     if inst._parent ~= nil and TheFocalPoint.entity:GetParent() == inst._parent then
         TheFocalPoint.SoundEmitter:PlaySound("dontstarve/common/makeFriend")
@@ -786,6 +817,7 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("wormholetravel", OnWormholeTravel, inst._parent)
         inst:ListenForEvent("makefriend", OnMakeFriend, inst._parent)
         inst:ListenForEvent("feedincontainer", OnFeedInContainer, inst._parent)
+        inst:ListenForEvent("houndwarning", OnHoundWarning, inst._parent)        
     else
         inst.ishealthpulseup:set_local(false)
         inst.ishealthpulsedown:set_local(false)
@@ -848,6 +880,7 @@ local function RegisterNetListeners(inst)
     inst:ListenForEvent("leader.makefriend", OnMakeFriendEvent)
     inst:ListenForEvent("eater.feedincontainer", OnFeedInContainerEvent)
     inst:ListenForEvent("morguedirty", OnMorgueDirty)
+    inst:ListenForEvent("houndwarningdirty", OnHoundWarningDirty)    
     OnSandstormLevelDirty(inst)
     OnGiftsDirty(inst)
     OnMountHurtDirty(inst)
@@ -960,6 +993,7 @@ local function fn()
     inst.fadetime = net_smallbyte(inst.GUID, "frontend.fadetime", "playerfadedirty")
     inst.screenflash = net_tinybyte(inst.GUID, "frontend.screenflash", "playerscreenflashdirty")
     inst.wormholetravelevent = net_tinybyte(inst.GUID, "frontend.wormholetravel", "wormholetraveldirty")
+    inst.houndwarningevent = net_tinybyte(inst.GUID, "frontend.houndwarning", "houndwarningdirty")    
     inst.isfadein:set(true)
 
     --Builder variables

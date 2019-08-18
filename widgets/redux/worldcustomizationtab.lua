@@ -8,29 +8,12 @@ local TEMPLATES = require "widgets/redux/templates"
 local Customise = require "map/customise"
 local Levels = require "map/levels"
 
--- global for modding
--- note that the automatic portal linking isn't affected by this and always assumes 2 levels!
-SERVER_LEVEL_LOCATIONS =
-{
-    "forest",
-    "cave",
-}
-
-EVENTSERVER_LEVEL_LOCATIONS =
-{
-	[LEVELTYPE.LAVAARENA] = { "lavaarena" },
-	[LEVELTYPE.QUAGMIRE] = { "quagmire" },
-}
-
-local CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
-
-
 local WorldCustomizationTab = Class(Widget, function(self, tab_location_index, servercreationscreen)
     Widget._ctor(self, "WorldCustomizationTab")
     self.tab_location_index = tab_location_index
 
-	CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
-    assert(CURRENT_LEVEL_LOCATIONS[self.tab_location_index])
+	self.current_level_locations = SERVER_LEVEL_LOCATIONS
+    assert(self.current_level_locations[self.tab_location_index])
 
     self.slotoptions = {}
     self.slot = -1
@@ -225,15 +208,20 @@ function WorldCustomizationTab:OnChangeGameMode(gamemode)
 	local leveltype = GetLevelType(gamemode)
 
     if EVENTSERVER_LEVEL_LOCATIONS[leveltype] ~= nil then
-		CURRENT_LEVEL_LOCATIONS = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
+		self.current_level_locations = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
 	else
-		CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
+		self.current_level_locations = SERVER_LEVEL_LOCATIONS
 	end
 
-    if CURRENT_LEVEL_LOCATIONS[self.tab_location_index] == nil and self:IsLevelEnabled(self.tab_location_index) then
+    if self.current_level_locations[self.tab_location_index] == nil and self:IsLevelEnabled(self.tab_location_index) then
 		self:RemoveMultiLevel(self.tab_location_index)
     end
 
+    self:Refresh()
+end
+
+function WorldCustomizationTab:OnChangeLevelLocations(level_locations)
+	self.current_level_locations = level_locations
     self:Refresh()
 end
 
@@ -244,7 +232,7 @@ function WorldCustomizationTab:Refresh()
 end
 
 function WorldCustomizationTab:UpdatePresetList()
-    if not self.current_option_settings[self.tab_location_index] or not CURRENT_LEVEL_LOCATIONS[self.tab_location_index] then
+    if not self.current_option_settings[self.tab_location_index] or not self.current_level_locations[self.tab_location_index] then
         -- Our tab doesn't exist or represents an invalid level.
         return
     end
@@ -266,7 +254,7 @@ function WorldCustomizationTab:UpdatePresetList()
         self.presetspinner.spinner:SetSelected(level.id)
     else
         local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
-        presets = Levels.GetLevelList(level_type, CURRENT_LEVEL_LOCATIONS[self.currentmultilevel], true)
+        presets = Levels.GetLevelList(level_type, self.current_level_locations[self.currentmultilevel], true)
         self.presetspinner.spinner:SetOptions(presets)
         self.presetspinner.spinner:SetSelected(self.current_option_settings[self.currentmultilevel].preset)
         -- In case our preset disappeared, grab whatever is in the spinner.
@@ -332,7 +320,7 @@ function WorldCustomizationTab:GetLocationForLevel(level)
     return (self.current_option_settings[level] ~= nil
             and self.current_option_settings[level].preset ~= nil
             and Levels.GetLocationForLevelID(self.current_option_settings[level].preset))
-        or CURRENT_LEVEL_LOCATIONS[level]
+        or self.current_level_locations[level]
 end
 
 function WorldCustomizationTab:GetLocationStringID(level)
@@ -344,7 +332,7 @@ function WorldCustomizationTab:GetLocationStringID(level)
     end
 
     -- if there is no preset yet, use the default
-    return string.upper(CURRENT_LEVEL_LOCATIONS[level])
+    return string.upper(self.current_level_locations[level])
 end
 
 function WorldCustomizationTab:GetLocationName(level)
@@ -356,7 +344,7 @@ end
 
 function WorldCustomizationTab:BuildMenuEntry()
     local locationname,tabname = self:GetLocationName(self.tab_location_index)
-    return { key = CURRENT_LEVEL_LOCATIONS[self.tab_location_index], text = tabname, }
+    return { key = self.current_level_locations[self.tab_location_index], text = tabname, }
 end
 
 function WorldCustomizationTab:UpdateMultilevelUI()
@@ -368,7 +356,7 @@ function WorldCustomizationTab:UpdateMultilevelUI()
     end
 
     local i = self.tab_location_index
-    local valid_level = CURRENT_LEVEL_LOCATIONS[i] ~= nil
+    local valid_level = self.current_level_locations[i] ~= nil
 
     if valid_level then
         local locationname, tabname = self:GetLocationName(self.currentmultilevel)
@@ -468,7 +456,7 @@ function WorldCustomizationTab:LoadPreset(preset)
         presetdata = Levels.GetDataForLevelID(preset)
     else
         local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
-        local location = CURRENT_LEVEL_LOCATIONS[self.tab_location_index]
+        local location = self.current_level_locations[self.tab_location_index]
         presetdata = Levels.GetDefaultLevelData(level_type, location)
     end
 
@@ -577,8 +565,9 @@ function WorldCustomizationTab:CollectOptions()
     local ret = nil
     local level_index,level = self.tab_location_index, self.current_option_settings[self.tab_location_index]
     if level then
-        ret = Levels.GetDataForLevelID(level.preset)
-        local options = Customise.GetOptionsWithLocationDefaults(Levels.GetLocationForLevelID(level.preset), level_index == 1)
+		local preset = level.preset
+        ret = Levels.GetDataForLevelID(preset)
+        local options = Customise.GetOptionsWithLocationDefaults(Levels.GetLocationForLevelID(preset), level_index == 1)
         for i,option in ipairs(options) do
             ret.overrides[option.name] = self:GetValueForOption(level_index, option.name)
         end
@@ -621,7 +610,7 @@ function WorldCustomizationTab:UpdateSlot(slotnum, prevslot, delete)
         local options = SaveGameIndex:GetSlotGenOptions(slotnum)
         if options == nil or GetTableSize(options) == 0 then
             -- Ruh roh! Bad data. Fill in with a default.
-            local location = CURRENT_LEVEL_LOCATIONS[1]
+            local location = self.current_level_locations[1]
             local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
             local presetdata = Levels.GetDefaultLevelData(level_type, location)
             self.slotoptions[slotnum] = { presetdata }

@@ -51,6 +51,7 @@ local ItemBoxOpenerPopup = Class(Screen, function(self, options, open_box_fn, co
     Screen._ctor(self, "ItemBoxOpenerPopup")
 
     self.allow_cancel = options.allow_cancel
+    self.bolts_source = options.bolts_source
     self.open_box_fn = open_box_fn
 	self.completed_cb = completed_cb
 
@@ -102,6 +103,9 @@ local ItemBoxOpenerPopup = Class(Screen, function(self, options, open_box_fn, co
     self.bundle:GetAnimState():SetBank("box_shared")
     if options.box_build ~= nil and options.box_build ~= "box_shared" then
         self.bundle:GetAnimState():AddOverrideBuild(options.box_build)
+    end
+    if options.bolts_source ~= nil then
+        self.bundle:GetAnimState():AddOverrideBuild("box_bolt")
     end
 
     if self.allow_cancel and not TheInput:ControllerAttached() then
@@ -180,7 +184,7 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
                     self.bundle:GetAnimState():GetCurrentAnimationTime() + FRAMES > self.bundle:GetAnimState():GetCurrentAnimationLength()
                 )
             ) then
-        if self.items ~= nil then
+        if self.items ~= nil or self.bolts_source ~= nil then
             self.ui_state = "BUNDLE_OPENING"
             self.bundle:GetAnimState():PlayAnimation("open_pst")
             self.bundle:GetAnimState():PushAnimation("skin_loop", true)
@@ -189,38 +193,48 @@ function ItemBoxOpenerPopup:OnUpdate(dt)
     elseif self.ui_state == "BUNDLE_OPENING" and self.bundle:GetAnimState():IsCurrentAnimation("skin_loop") then
         self.ui_state = "WAIT_ON_NEXT"
 
-        local item_widget = self:GetItem(self.active_item_idx)
-        assert(item_widget)
-        item_widget:Show()
+        if self.bolts_source ~= nil then
+            self.current_item_summary:UpdateSummary(self.bolts_source)
+            TheFrontEnd:GetSound():PlaySound( RARITY_SOUND["Elegant"] )
+        else
+            local item_widget = self:GetItem(self.active_item_idx)
+            assert(item_widget)
+            item_widget:Show()
 
-        local item_key = self.items[self.active_item_idx]
-        self.current_item_summary:UpdateSummary(item_key)
+            local item_key = self.items[self.active_item_idx]
+            self.current_item_summary:UpdateSummary(item_key)
 
-        TheFrontEnd:GetSound():PlaySound( RARITY_SOUND[GetRarityForItem(item_key)] or RARITY_SOUND["Elegant"] )
+            TheFrontEnd:GetSound():PlaySound( RARITY_SOUND[GetRarityForItem(item_key)] or RARITY_SOUND["Elegant"] )
+        end
 
     -- WAIT_ON_NEXT state is progressed by OnControl
     elseif self.ui_state == "BUNDLE_CLOSING" and self.bundle:GetAnimState():AnimDone() then
         self.ui_state = "BUNDLE_REVIEW"
 
-        if self.resize_root then
-            self.bundle_root:SetPosition(0,90)
-            self.bundle_root:SetScale(0.9,0.9)
+        if self.bolts_source ~= nil then
+            --no review for currency
+            self:_Close()
+        else
+            if self.resize_root then
+                self.bundle_root:SetPosition(0,90)
+                self.bundle_root:SetScale(0.9,0.9)
+            end
+            if self.resize_root_small then
+                self.bundle_root:SetPosition(0,150)
+                self.bundle_root:SetScale(0.7,0.7)
+            end
+
+            -- update the background size
+            local rows = math.ceil(#self.items/columns)
+            self.frame:SetSize(columns * COLUMN_WIDTH + bg_frame_w_offset, rows * COLUMN_HEIGHT + bg_frame_h_offset)
+            self.frame:SetPosition(0,bg_frame_initial_y - rows*COLUMN_HEIGHT/2)
+
+            self.opened_item_display:SetPosition(item_grid_initial_x-(columns*COLUMN_WIDTH/2),210)
+
+            self.frame:Show()
+            self.opened_item_display:Show()
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/music/reveal")
         end
-        if self.resize_root_small then
-            self.bundle_root:SetPosition(0,150)
-            self.bundle_root:SetScale(0.7,0.7)
-        end
-
-        -- update the background size
-        local rows = math.ceil(#self.items/columns)
-        self.frame:SetSize(columns * COLUMN_WIDTH + bg_frame_w_offset, rows * COLUMN_HEIGHT + bg_frame_h_offset)
-        self.frame:SetPosition(0,bg_frame_initial_y - rows*COLUMN_HEIGHT/2)
-
-        self.opened_item_display:SetPosition(item_grid_initial_x-(columns*COLUMN_WIDTH/2),210)
-
-        self.frame:Show()
-        self.opened_item_display:Show()
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/music/reveal")
     end
 
     self:EvaluateButtons()
@@ -255,6 +269,7 @@ function ItemBoxOpenerPopup:_HasNextItem()
 end
 
 function ItemBoxOpenerPopup:_UpdateSwapIcon(index)
+    
     local item_key = self.items[index]
     local desired_symbol = "SWAP_ICON"
     local build = GetBuildForItem(item_key)
@@ -274,43 +289,47 @@ function ItemBoxOpenerPopup:_OpenItemBox()
     self.ui_state = "WAIT_ON_ITEMS"
 
     self.open_box_fn(function(item_types)
-        self.items = item_types
-
-        local item_images = {}
-        for i,item_key in ipairs(item_types) do
-            local item_type = GetTypeForItem(item_key)
-            local item_widget = TEMPLATES.ItemImageVerticalText(item_type, item_key, 150)
-            table.insert(item_images, item_widget)
-        end
-
-        -- Decide how many columns there should be
-        if #item_types == 1 then
-            columns = 1
-        elseif #item_types == 2 or #item_types == 4 then
-            columns = 2
-        elseif #item_types == 3 or #item_types == 6 then
-            columns = 3
-        elseif #item_types == 7 or #item_types == 8 then
-            columns = 4
-        elseif #item_types == 5 or #item_types == 10 or #item_types == 9 then
-            columns = 5
-        elseif #item_types == 12 or #item_types == 11 then
-			columns = 6
-        elseif #item_types == 16 then
-			columns = 6
-            self.resize_root = true
-        elseif #item_types == 19 then
-			columns = 7
-            self.resize_root = true
-        elseif #item_types == 35 then
-			columns = 9
-            self.resize_root_small = true
+        if self.bolts_source ~= nil then
+            self.bundle:GetAnimState():OverrideSkinSymbol("SWAP_ICON", "box_bolt", self.bolts_source)
         else
-            print("Warning: Found an unexpected number of items in a box.", #item_types)
-        end
+            self.items = item_types
 
-        self.opened_item_display:FillGrid(columns, COLUMN_WIDTH, COLUMN_HEIGHT, item_images)
-        self:_UpdateSwapIcon(1)
+            local item_images = {}
+            for i,item_key in ipairs(item_types) do
+                local item_type = GetTypeForItem(item_key)
+                local item_widget = TEMPLATES.ItemImageVerticalText(item_type, item_key, 150)
+                table.insert(item_images, item_widget)
+            end
+
+            -- Decide how many columns there should be
+            if #item_types == 1 then
+                columns = 1
+            elseif #item_types == 2 or #item_types == 4 then
+                columns = 2
+            elseif #item_types == 3 or #item_types == 6 then
+                columns = 3
+            elseif #item_types == 7 or #item_types == 8 then
+                columns = 4
+            elseif #item_types == 5 or #item_types == 10 or #item_types == 9 then
+                columns = 5
+            elseif #item_types == 12 or #item_types == 11 then
+                columns = 6
+            elseif #item_types == 16 then
+                columns = 6
+                self.resize_root = true
+            elseif #item_types == 19 then
+                columns = 7
+                self.resize_root = true
+            elseif #item_types == 35 then
+                columns = 9
+                self.resize_root_small = true
+            else
+                print("Warning: Found an unexpected number of items in a box.", #item_types)
+            end
+
+            self.opened_item_display:FillGrid(columns, COLUMN_WIDTH, COLUMN_HEIGHT, item_images)
+            self:_UpdateSwapIcon(1)
+        end
     end)
 
     self.bundle:GetAnimState():PlayAnimation("open")
@@ -323,7 +342,7 @@ function ItemBoxOpenerPopup:_RevealNextItem()
     -- Hide summary during item transition.
     self.current_item_summary:Hide()
 
-    if self:_HasNextItem() then
+    if self.bolts_source == nil and self:_HasNextItem() then
         self.bundle:GetAnimState():PlayAnimation("skin_next")
         self.bundle:GetAnimState():PushAnimation("skin_loop", true)
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/collectionscreen/mysterybox/hit3")

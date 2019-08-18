@@ -6,7 +6,7 @@ AddLevel(LEVELTYPE.QUAGMIRE, {
         name = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.QUAGMIRE,
         desc = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.QUAGMIRE,
         location = "quagmire", -- this is actually the prefab name
-        version = 3,
+        version = 4,
         overrides={
 			boons = "never",
 			touchstone = "never",

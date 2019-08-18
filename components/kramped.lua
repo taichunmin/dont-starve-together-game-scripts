@@ -25,6 +25,7 @@ local NAUGHTY_VALUE =
     ["robin_winter"] = 2,
     ["canary"] = 2,
     ["butterfly"] = 1,
+    ["moonbutterfly"] = 1,
     ["rabbit"] = 1,
     ["mole"] = 1,
     ["tallbird"] = 2,

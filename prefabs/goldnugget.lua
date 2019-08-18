@@ -43,6 +43,8 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
+
     inst:AddComponent("stackable")
     inst:AddComponent("bait")
 
@@ -122,6 +124,8 @@ local function luckyfn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
+
     inst:AddComponent("stackable")
 
     MakeHauntableLaunch(inst)

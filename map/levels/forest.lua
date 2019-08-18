@@ -10,10 +10,10 @@ local survival_together = {
 		name = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_TOGETHER,
 		desc = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.SURVIVAL_TOGETHER,
         location = "forest",
-        version = 3,
+        version = 4,
 		overrides = {
 		},		
-		ordered_story_setpieces = {
+		required_setpieces = {
 			"Sculptures_1",
 			"Maxwell5",
 		},
@@ -62,7 +62,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 		name = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_TOGETHER_CLASSIC,
 		desc = STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.SURVIVAL_TOGETHER_CLASSIC,
         location = "forest",
-        version = 3,
+        version = 4,
         overrides = {
             task_set = "classic",
             spring = "noseason",
@@ -85,7 +85,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 
             cactus = "never",
         },
-		ordered_story_setpieces = {
+		required_setpieces = {
 			"Sculptures_1",
 			"Maxwell5",
 		},
@@ -124,7 +124,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 		name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_DEFAULT_PLUS,
 		desc= STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.SURVIVAL_DEFAULT_PLUS,
         location = "forest",
-        version = 3,
+        version = 4,
         overrides={
             start_location = "plus",
 
@@ -133,7 +133,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 
             rabbits = "rare",
         },
-		ordered_story_setpieces = {
+		required_setpieces = {
 			"Sculptures_1",
 			"Maxwell5",
 		},
@@ -171,7 +171,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 		name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.SURVIVAL_DEFAULT_PLUS,
 		desc= STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.SURVIVAL_DEFAULT_PLUS,
         location = "forest",
-        version = 3,
+        version = 4,
         overrides={
             start_location = "plus",
             boons = "often",
@@ -183,7 +183,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 
             rabbits = "rare",
         },
-		ordered_story_setpieces = {
+		required_setpieces = {
 			"Sculptures_1",
 			"Maxwell5",
 		},
@@ -221,12 +221,12 @@ AddLevel(LEVELTYPE.SURVIVAL, {
 		name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.COMPLETE_DARKNESS,
 		desc= STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.COMPLETE_DARKNESS,
         location = "forest",
-        version = 3,
+        version = 4,
         overrides={
             start_location = "darkness",
             day = "onlynight",
         },
-		ordered_story_setpieces = {
+		required_setpieces = {
 			"Sculptures_1",
 			"Maxwell5",
 		},

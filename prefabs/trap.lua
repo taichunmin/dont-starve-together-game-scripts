@@ -18,6 +18,14 @@ local function onharvested(inst)
     end
 end
 
+local function on_float(inst)
+    inst.AnimState:PlayAnimation("side")
+end
+
+local function on_not_float(inst)
+    inst.AnimState:PlayAnimation("idle")
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -37,6 +45,8 @@ local function fn()
 
     inst:AddTag("trap")
 
+    MakeInventoryFloatable(inst, "med", 0.05, {0.8, 0.5, 0.8})
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -46,6 +56,7 @@ local function fn()
     inst.sounds = sounds
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("inspectable")
 
     if TheNet:GetServerGameMode() ~= "quagmire" then
@@ -59,6 +70,9 @@ local function fn()
     inst.components.trap.targettag = "canbetrapped"
     inst.components.trap:SetOnHarvestFn(onharvested)
     inst.components.trap.baitsortorder = 1
+
+    inst:ListenForEvent("floater_startfloating", on_float)
+    inst:ListenForEvent("floater_stopfloating", on_not_float)
 
     MakeHauntableLaunch(inst)
 

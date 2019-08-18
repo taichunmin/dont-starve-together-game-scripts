@@ -98,6 +98,13 @@ function MakeBanner(self)
         end
         anim.inst:ListenForEvent("animover", onanimover)
         onanimover(anim.inst)
+	elseif true then
+		-- beta banner
+		anim:GetAnimState():SetBuild("dst_menu_lunacy")
+        anim:GetAnimState():SetBank("dst_menu_lunacy")
+        anim:GetAnimState():PlayAnimation("loop", true)
+        anim:SetScale(.667)
+        anim:SetPosition(0, 0)
 	else
 		--[[anim:GetAnimState():SetBuild("dst_menu")
 		anim:GetAnimState():SetBank("dst_menu")
@@ -142,41 +149,26 @@ function MakeBanner(self)
 		self.logo:SetTint(unpack(FRONTEND_TITLE_COLOUR))
 	end
 	
-
-	local body_str = nil
-	local title_str = nil
-
-	if body_str ~= nil then
-		local font_size = 20
-		body = baner_root:AddChild(Text(self.info_font, font_size, "", UICOLOURS.GOLD_SELECTED))
-		body:SetMultilineTruncatedString(body_str, 10, 200, nil, true)
-		body:SetHAlign(ANCHOR_LEFT)
-		local w, h = body:GetRegionSize()
-		local body_x, body_y = x + w/2 - cell_size.width/2 + text_padding, y -cell_size.height / 2 + h/2 + text_padding
-		body:SetPosition(body_x, body_y)
-
-		local shadow = baner_root:AddChild(Text(self.info_font, font_size, "", UICOLOURS.BLACK))
-		shadow:SetMultilineTruncatedString(body_str, 10, cell_size.width - text_padding * 2, nil, true)
-		shadow:SetHAlign(ANCHOR_LEFT)
-		shadow:SetPosition(body_x + 1.5, body_y - 1.5)
-		shadow:MoveToBack()
-	end
-
+--[[
+	local title_str = STRINGS.UI.MAINSCREEN.MAINBANNER_ROT_BETA_TITLE
 	if title_str ~= nil then
-		local font_size = 32
+		local x = 165
+		local y = -140
+		local text_width = 880
+
+		local font_size = 22
 		local title = baner_root:AddChild(Text(self.info_font, font_size, title_str, UICOLOURS.HIGHLIGHT_GOLD))
-		title:SetRegionSize(cell_size.width - text_padding * 2, font_size + 2)
-		title:SetHAlign(ANCHOR_LEFT)
-		title:SetPosition(x, y + cell_size.height / 2 - font_size / 2 - text_padding + 4)
+		title:SetRegionSize(text_width, font_size + 2)
+		title:SetHAlign(ANCHOR_RIGHT)
+		title:SetPosition(x, y + 4)
 
 		local shadow = baner_root:AddChild(Text(self.info_font, font_size, title_str, UICOLOURS.BLACK))
-		shadow:SetRegionSize(cell_size.width - text_padding * 2, font_size + 2)
-		shadow:SetHAlign(ANCHOR_LEFT)
-		shadow:SetPosition(x + 1.5, y + cell_size.height / 2 - font_size / 2 - text_padding + 4 - 1.5)
+		shadow:SetRegionSize(text_width, font_size + 2)
+		shadow:SetHAlign(ANCHOR_RIGHT)
+		shadow:SetPosition(x + 1.5, y - 1.5)
 		shadow:MoveToBack()
 	end
-
-
+]]
 
 	return baner_root
 end

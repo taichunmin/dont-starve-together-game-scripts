@@ -5,15 +5,15 @@ local assets =
 
 local foodinfo =
 {
-    {food=FOODTYPE.GOODIES, health=0,     hunger=3,  sanity=1, treeornament=true}, -- Gingerbread Cookies
-    {food=FOODTYPE.GOODIES, health=0,     hunger=2,  sanity=2, treeornament=true}, -- Sugar Cookies
-    {food=FOODTYPE.GOODIES, health=2,     hunger=0,  sanity=2, treeornament=true}, -- Candy Cane
-    {food=FOODTYPE.VEGGIE,  health=-2,    hunger=6,  sanity=-2, treeornament=true}, -- Fruitcake
-    {food=FOODTYPE.GOODIES, health=1,     hunger=2,  sanity=1, treeornament=true}, -- chocolate log cake
-    {food=FOODTYPE.VEGGIE,  health=0,     hunger=4,  sanity=0, treeornament=false}, -- plum pudding
-    {food=FOODTYPE.VEGGIE,  health=2,     hunger=0,  sanity=1, treeornament=false, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot apple cider
-    {food=FOODTYPE.GOODIES, health=1,     hunger=0,  sanity=2, treeornament=false, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot coco
-    {food=FOODTYPE.MEAT,    health=0,     hunger=3,  sanity=0, treeornament=false, temperature = TUNING.COLD_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- eggnog
+    {food=FOODTYPE.GOODIES, health=0,     hunger=3,  sanity=1, treeornament=true, floater={"med", 0.65}}, -- Gingerbread Cookies
+    {food=FOODTYPE.GOODIES, health=0,     hunger=2,  sanity=2, treeornament=true, floater={"small", 0.90}}, -- Sugar Cookies
+    {food=FOODTYPE.GOODIES, health=2,     hunger=0,  sanity=2, treeornament=true, floater={"med", 0.65}}, -- Candy Cane
+    {food=FOODTYPE.VEGGIE,  health=-2,    hunger=6,  sanity=-2, treeornament=true, floater={"med", 0.83}}, -- Fruitcake
+    {food=FOODTYPE.GOODIES, health=1,     hunger=2,  sanity=1, treeornament=true, floater={"med", 0.65}}, -- chocolate log cake
+    {food=FOODTYPE.VEGGIE,  health=0,     hunger=4,  sanity=0, treeornament=false, floater={"small", 0.80}}, -- plum pudding
+    {food=FOODTYPE.VEGGIE,  health=2,     hunger=0,  sanity=1, treeornament=false, floater={"small", 0.93}, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot apple cider
+    {food=FOODTYPE.GOODIES, health=1,     hunger=0,  sanity=2, treeornament=false, floater={"small", 0.55}, temperature = TUNING.HOT_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- hot coco
+    {food=FOODTYPE.MEAT,    health=0,     hunger=3,  sanity=0, treeornament=false, floater={"small", 0.45}, temperature = TUNING.COLD_FOOD_BONUS_TEMP, temperatureduration = TUNING.FOOD_TEMP_LONG}, -- eggnog
 }
 
 assert(#foodinfo == NUM_WINTERFOOD)
@@ -35,6 +35,7 @@ local function MakeFood(num)
 
         inst:AddTag("cattoy")
         inst:AddTag("wintersfeastfood")
+        inst:AddTag("pre-preparedfood")
 
         if foodinfo[num].treeornament then
             inst:AddTag("winter_ornament")
@@ -45,6 +46,13 @@ local function MakeFood(num)
             for _,v in ipairs(foodinfo[num].tags) do
                 inst:AddTag(v)
             end
+        end
+
+        MakeInventoryFloatable(inst)
+
+        if foodinfo[num].floater ~= nil then
+            inst.components.floater:SetSize(foodinfo[num].floater[1])
+            inst.components.floater:SetScale(foodinfo[num].floater[2])
         end
 
         inst.entity:SetPristine()

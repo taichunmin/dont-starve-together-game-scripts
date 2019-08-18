@@ -18,6 +18,9 @@ local SKETCHES =
     { item = "chesspiece_dragonfly",    recipe = "chesspiece_dragonfly_builder" },
     { item = "chesspiece_clayhound",    recipe = "chesspiece_clayhound_builder",    image = "chesspiece_clayhound_sketch" },
     { item = "chesspiece_claywarg",     recipe = "chesspiece_claywarg_builder",     image = "chesspiece_claywarg_sketch" },
+    { item = "chesspiece_butterfly",    recipe = "chesspiece_butterfly_builder",    image = "chesspiece_butterfly_sketch" },
+    { item = "chesspiece_anchor",       recipe = "chesspiece_anchor_builder",       image = "chesspiece_anchor_sketch" },
+    { item = "chesspiece_moon",         recipe = "chesspiece_moon_builder",         image = "chesspiece_moon_sketch" },
 }
 
 local function onload(inst, data)
@@ -60,6 +63,8 @@ local function fn()
     inst:AddTag("sketch")
 
     inst:SetPrefabName("sketch")
+
+    MakeInventoryFloatable(inst, "med", nil, 0.75)
 
     inst.entity:SetPristine()
 

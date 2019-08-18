@@ -23,6 +23,21 @@ local LIGHT_DATA =
     { colour = Vector3(1, 1, 1) },
 }
 
+local FANCY_FLOATER_SCALES =
+{
+    0.65,
+    0.75,
+    0.60,
+    0.60,
+    0.75,
+    0.75,
+    0.70,
+    0.70,
+}
+
+local PLAIN_FLOATER_SCALE = 0.65
+local LIGHT_FLOATER_SCALE = 0.70
+
 function GetAllWinterOrnamentPrefabs()
     local decor =
     {
@@ -155,7 +170,7 @@ local function onload(inst, data)
     end
 end
 
-local function MakeOrnament(ornamentid, overridename, lightdata, build)
+local function MakeOrnament(ornamentid, overridename, lightdata, build, float_scale)
 	build = build or "winter_ornaments"
 
 	local assets =
@@ -199,6 +214,8 @@ local function MakeOrnament(ornamentid, overridename, lightdata, build)
             inst.AnimState:PlayAnimation(tostring(ornamentid))
         end
 
+        MakeInventoryFloatable(inst)
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
@@ -207,6 +224,10 @@ local function MakeOrnament(ornamentid, overridename, lightdata, build)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+
+        if float_scale ~= nil then
+            inst.components.floater:SetScale(float_scale)
+        end
 
         inst:AddComponent("tradable")
         inst.components.tradable.goldvalue = ORNAMENT_GOLD_VALUE[string.sub(ornamentid, 1, 5)] or 1
@@ -253,32 +274,32 @@ end
 
 local ornament = {}
 for i = 1, NUM_BASIC_ORNAMENT do
-    table.insert(ornament, MakeOrnament("plain"..i, "winter_ornament"))
+    table.insert(ornament, MakeOrnament("plain"..i, "winter_ornament", nil, nil, PLAIN_FLOATER_SCALE))
 end
 for i = 1, NUM_FANCY_ORNAMENT do
-    table.insert(ornament, MakeOrnament("fancy"..i, "winter_ornament"))
+    table.insert(ornament, MakeOrnament("fancy"..i, "winter_ornament", nil, nil, FANCY_FLOATER_SCALES[i]))
 end
 for i = 1, NUM_LIGHT_ORNAMENT do
-    table.insert(ornament, MakeOrnament("light"..i, "winter_ornamentlight", LIGHT_DATA[((i - 1) % 4) + 1]))
+    table.insert(ornament, MakeOrnament("light"..i, "winter_ornamentlight", LIGHT_DATA[((i - 1) % 4) + 1], nil, LIGHT_FLOATER_SCALE))
 end
 
-table.insert(ornament, MakeOrnament("festivalevents1", "winter_ornamentforge", nil, "winter_ornaments2018"))
-table.insert(ornament, MakeOrnament("festivalevents2", "winter_ornamentforge", nil, "winter_ornaments2018"))
-table.insert(ornament, MakeOrnament("festivalevents3", "winter_ornamentforge", nil, "winter_ornaments2018"))
-table.insert(ornament, MakeOrnament("festivalevents4", "winter_ornamentgorge", nil, "winter_ornaments2018"))
-table.insert(ornament, MakeOrnament("festivalevents5", "winter_ornamentgorge", nil, "winter_ornaments2018"))
+table.insert(ornament, MakeOrnament("festivalevents1", "winter_ornamentforge", nil, "winter_ornaments2018", 0.95))
+table.insert(ornament, MakeOrnament("festivalevents2", "winter_ornamentforge", nil, "winter_ornaments2018", 0.95))
+table.insert(ornament, MakeOrnament("festivalevents3", "winter_ornamentforge", nil, "winter_ornaments2018", 1.00))
+table.insert(ornament, MakeOrnament("festivalevents4", "winter_ornamentgorge", nil, "winter_ornaments2018", 0.80))
+table.insert(ornament, MakeOrnament("festivalevents5", "winter_ornamentgorge", nil, "winter_ornaments2018", 0.80))
 
-table.insert(ornament, MakeOrnament("boss_antlion", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_bearger", "winter_ornamentboss"))
+table.insert(ornament, MakeOrnament("boss_antlion", "winter_ornamentboss", nil, nil, 0.70))
+table.insert(ornament, MakeOrnament("boss_bearger", "winter_ornamentboss", nil, nil, 0.75))
 table.insert(ornament, MakeOrnament("boss_beequeen", "winter_ornamentboss"))
 table.insert(ornament, MakeOrnament("boss_deerclops", "winter_ornamentboss"))
 table.insert(ornament, MakeOrnament("boss_dragonfly", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_fuelweaver", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_klaus", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_krampus", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_moose", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_noeyeblue", "winter_ornamentboss"))
-table.insert(ornament, MakeOrnament("boss_noeyered", "winter_ornamentboss"))
+table.insert(ornament, MakeOrnament("boss_fuelweaver", "winter_ornamentboss", nil, nil, 0.60))
+table.insert(ornament, MakeOrnament("boss_klaus", "winter_ornamentboss", nil, nil, 0.90))
+table.insert(ornament, MakeOrnament("boss_krampus", "winter_ornamentboss", nil, nil, 0.65))
+table.insert(ornament, MakeOrnament("boss_moose", "winter_ornamentboss", nil, nil, 0.70))
+table.insert(ornament, MakeOrnament("boss_noeyeblue", "winter_ornamentboss", nil, nil, 0.90))
+table.insert(ornament, MakeOrnament("boss_noeyered", "winter_ornamentboss", nil, nil, 0.90))
 table.insert(ornament, MakeOrnament("boss_toadstool", "winter_ornamentboss"))
 
 return unpack(ornament)

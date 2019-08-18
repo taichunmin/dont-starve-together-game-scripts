@@ -36,6 +36,8 @@ local function fn()
     inst.AnimState:SetBuild("torso_bearger")
     inst.AnimState:PlayAnimation("anim")
 
+    MakeInventoryFloatable(inst, "small", 0.2, 0.9)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

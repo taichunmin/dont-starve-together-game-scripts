@@ -13,8 +13,8 @@ function GetWanderAwayPoint(pt)
     for i = 1, 12 do
         local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
         local wander_point = pt + offset
-        
-        if ground.Map:IsPassableAtPoint(wander_point:Get()) and
+        local wx, wy, wz = wander_point:Get()
+        if ground.Map:IsPassableAtPoint(wx, wy, wz, false, true) and
             ground.Pathfinder:IsClear(
                 pt.x, pt.y, pt.z,
                 wander_point.x, wander_point.y, wander_point.z,

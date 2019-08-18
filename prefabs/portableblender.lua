@@ -197,6 +197,14 @@ local function ondeploy(inst, pt, deployer)
     end
 end
 
+local function on_start_float(inst)
+    inst.AnimState:HideSymbol("shadow_ground")
+end
+
+local function on_stop_float(inst)
+    inst.AnimState:ShowSymbol("shadow_ground")
+end
+
 local function itemfn()
     local inst = CreateEntity()
 
@@ -212,6 +220,8 @@ local function itemfn()
     inst.AnimState:PlayAnimation("idle_ground")
 
     inst:AddTag("portableitem")
+
+    MakeInventoryFloatable(inst, nil, 0.05, 0.7)
 
     inst.entity:SetPristine()
 
@@ -234,6 +244,9 @@ local function itemfn()
 
     MakeMediumBurnable(inst)
     MakeSmallPropagator(inst)
+
+    inst:ListenForEvent("floater_startfloating", on_start_float)
+    inst:ListenForEvent("floater_stopfloating", on_stop_float)
 
     return inst
 end

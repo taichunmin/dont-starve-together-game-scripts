@@ -51,7 +51,7 @@ function Badge:SetPercent(val, max)
     val = val or self.percent
     max = max or 100
 
-    self.anim:GetAnimState():SetPercent("anim", 1 - val)
+    self.anim:GetAnimState():SetPercent(self.anim_override or "anim", 1 - val)
     -- print(val, max, val * max)
     self.num:SetString(tostring(math.ceil(val * max)))
 

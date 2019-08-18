@@ -627,8 +627,12 @@ function Widget:SetFocus()
   --  print ("SET FOCUS ", self)
     if self.focus_forward and type(self.focus_forward) == "function" then
         local widg = self.focus_forward()
-        widg:SetFocus()
-        return
+		if widg ~= nil then
+	        widg:SetFocus()
+		    return
+		else
+			print ("Warning: Widget:SetFocus called on '"..tostring(self).. "' failled to find widget to focus_forward to.")
+		end
     elseif self.focus_forward then
         self.focus_forward:SetFocus()
         return

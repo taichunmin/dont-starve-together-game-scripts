@@ -98,7 +98,7 @@ function Grogginess:HasGrogginess()
 end
 
 function Grogginess:GetDebugString()
-    return string.format("%s, knockouttime=%2.2f Groggy: %d/%d",
+    return string.format("%s, KO time=%2.2f Groggy: %d/%d",
             self:IsKnockedOut() and "KNOCKED OUT" or "AWAKE",
             self.knockouttime,
             self.grog_amount,

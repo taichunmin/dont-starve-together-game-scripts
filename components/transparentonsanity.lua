@@ -1,11 +1,14 @@
 --NOTE: This is a client side component. No server
 --      logic should be driven off this component!
 
-local function PushAlpha(inst, alpha, most_alpha)
-    inst.AnimState:OverrideMultColour(alpha, alpha, alpha, alpha)
-    if inst.SoundEmitter ~= nil then
-        inst.SoundEmitter:OverrideVolumeMultiplier(alpha / most_alpha)
+local function PushAlpha(self, alpha, most_alpha)
+    self.inst.AnimState:OverrideMultColour(alpha, alpha, alpha, alpha)
+    if self.inst.SoundEmitter ~= nil then
+        self.inst.SoundEmitter:OverrideVolumeMultiplier(alpha / most_alpha)
     end
+	if self.onalphachangedfn ~= nil then
+		self.onalphachangedfn(self.inst, alpha, most_alpha)
+	end
 end
 
 local TransparentOnSanity = Class(function(self, inst)
@@ -17,7 +20,7 @@ local TransparentOnSanity = Class(function(self, inst)
     self.most_alpha = .4
     self.target_alpha = nil
 
-    PushAlpha(inst, 0, .4)
+    PushAlpha(self, 0, .4)
     inst:StartUpdatingComponent(self)
 end)
 
@@ -30,7 +33,7 @@ function TransparentOnSanity:OnUpdate(dt)
     else
         self.offset = self.offset + dt
         self.target_alpha =
-            (1 - player.replica.sanity:GetPercent()) *  --insanity factor
+            (self.calc_percent_fn and self.calc_percent_fn(self.inst, player) or (1 - player.replica.sanity:GetPercent())) *  --insanity factor
             self.most_alpha *                           --max alpha value
             (1 + self.osc_amp * (math.sin(self.offset * self.osc_speed) - 1)) --variance
     end
@@ -39,7 +42,7 @@ function TransparentOnSanity:OnUpdate(dt)
         self.alpha = self.alpha > self.target_alpha and
             math.max(self.target_alpha, self.alpha - dt) or
             math.min(self.target_alpha, self.alpha + dt)
-        PushAlpha(self.inst, self.alpha, self.most_alpha)
+        PushAlpha(self, self.alpha, self.most_alpha)
     end
 end
 

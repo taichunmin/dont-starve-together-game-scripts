@@ -30,7 +30,7 @@ GAME_MODES =
         ghost_enabled = false,
         portal_rez = false,
         reset_time = nil,
-        invalid_recipes = { "lifeinjector", "resurrectionstatue", "reviver" },
+        invalid_recipes = { "resurrectionstatue", "reviver" },
     },
     endless =
     {

@@ -38,6 +38,8 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
     --inst.AnimState:SetMultColour(1, 1, 1, 0.5)
 
+    MakeInventoryFloatable(inst, "small", 0.05, 0.8)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

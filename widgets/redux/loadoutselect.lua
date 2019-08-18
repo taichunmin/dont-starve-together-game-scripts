@@ -204,7 +204,7 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
                 self.presetsbutton:SetFocusChangeDir(MOVE_DOWN, self.subscreener:GetActiveSubscreenFn())
             end
         end
-    end
+	end
 end)
 
 function LoadoutSelect:_SetSkintype(skintypedata)
@@ -313,7 +313,9 @@ function LoadoutSelect:_SaveLoadout()
 end
 
 function LoadoutSelect:_LoadSkinPresetsScreen()
-    TheFrontEnd:PushScreen( SkinPresetsPopup( self.user_profile, self.currentcharacter, self.selected_skins, function(skins) self:ApplySkinPresets(skins) end ) )
+	local scr = SkinPresetsPopup( self.user_profile, self.currentcharacter, self.selected_skins, function(skins) self:ApplySkinPresets(skins) end )
+	scr.owned_by_wardrobe = true
+    TheFrontEnd:PushScreen( scr )
 end
 
 function LoadoutSelect:ApplySkinPresets(skins) 
@@ -467,15 +469,17 @@ function LoadoutSelect:OnControl(control, down)
 
     if not down then
         if control == CONTROL_MENU_MISC_3 then
-            self:_CycleView()
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-            return true
+            if self.show_puppet then
+                self:_CycleView()
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+                return true
+            end
         elseif control == CONTROL_MENU_MISC_1 and TheNet:IsOnlineMode() then
             self:_LoadSkinPresetsScreen()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
         end
-    end
+	end
 
     return false
 end
@@ -489,7 +493,9 @@ function LoadoutSelect:GetHelpText()
 		local controller_id = TheInput:GetControllerID()
 		local t = {}
 
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_3) .. " " .. STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW)
+        if self.show_puppet then
+            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_3) .. " " .. STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW)
+        end
         if TheNet:IsOnlineMode() then
 		    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SKIN_PRESETS.TITLE)
         end

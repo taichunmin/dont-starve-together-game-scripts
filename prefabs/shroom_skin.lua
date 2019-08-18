@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("shroom_skin")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "large", nil, 0.6)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

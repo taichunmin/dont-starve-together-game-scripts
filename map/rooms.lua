@@ -82,6 +82,8 @@ require("map/rooms/forest/terrain_marsh")
 require("map/rooms/forest/terrain_noise")
 require("map/rooms/forest/terrain_rocky")
 require("map/rooms/forest/terrain_savanna")
+require("map/rooms/forest/terrain_moonisland")
+require("map/rooms/forest/terrain_ocean")
 
 require("map/rooms/cave/terrain_mazes")
 
@@ -108,7 +110,7 @@ AddRoom("Exit", {
 -- BLANK ROOM ----------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 AddRoom("Blank", {
-					colour={r=0.0,g=0.0,b=0.0,a=0.1},
+					colour={r=1.0,g=1.0,b=1.0,a=0.1},
 					value = GROUND.IMPASSABLE, 
                     type = NODE_TYPE.Blank,
 					contents =  {

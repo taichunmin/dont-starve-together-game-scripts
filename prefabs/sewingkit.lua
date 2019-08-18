@@ -20,6 +20,8 @@ local function fn()
     inst.AnimState:SetBuild("sewing_kit")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "small", 0.05, 0.8)
+    
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

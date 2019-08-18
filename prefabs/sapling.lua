@@ -5,10 +5,26 @@ local assets =
     Asset("SOUND", "sound/common.fsb"),
 }
 
+local moon_assets =
+{
+    Asset("ANIM", "anim/sapling_moon.zip"),
+    Asset("ANIM", "anim/sapling_diseased_moon.zip"),
+    Asset("SOUND", "sound/common.fsb"),
+}
+
 local prefabs =
 {
     "twigs",
     "dug_sapling",
+    "disease_puff",
+    "diseaseflies",
+    "spoiled_food",
+}
+
+local moon_prefabs =
+{
+    "twigs",
+    "dug_sapling_moon",
     "disease_puff",
     "diseaseflies",
     "spoiled_food",
@@ -19,7 +35,7 @@ local function SpawnDiseasePuff(inst)
 end
 
 local function SetDiseaseBuild(inst)
-    inst.AnimState:SetBuild("sapling_diseased_build")
+    inst.AnimState:SetBuild((inst._is_moon and "sapling_diseased_moon") or "sapling_diseased_build")
 end
 
 local function ondiseasedfn(inst)
@@ -76,17 +92,16 @@ local function dig_up(inst, worker)
         end
 
         inst.components.lootdropper:SpawnLootPrefab(
-            (withered or diseased) and
-            "twigs" or
-            "dug_sapling"
+            ((withered or diseased) and "twigs")
+            or (inst._is_moon and "dug_sapling_moon")
+            or "dug_sapling"
         )
     end
     inst:Remove()
 end
 
 local function onpickedfn(inst, picker)
-    inst.AnimState:PlayAnimation("rustle")
-    inst.AnimState:PushAnimation("picked", false)
+    inst.AnimState:PlayAnimation("picked", false)
     if inst.components.diseaseable ~= nil then
         if inst.components.diseaseable:IsDiseased() then
             SpawnDiseasePuff(inst)
@@ -135,9 +150,7 @@ local function OnPreLoad(inst, data)
     end
 end
 
-local function fn()
-    local inst = CreateEntity()
-
+local function sapling_common(inst, is_moon)
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddMiniMapEntity()
@@ -146,8 +159,9 @@ local function fn()
     inst.MiniMapEntity:SetIcon("sapling.png")
 
     inst.AnimState:SetRayTestOnBB(true)
-    inst.AnimState:SetBank("sapling")
-    inst.AnimState:SetBuild("sapling")
+    local anims_name = (is_moon and "sapling_moon") or "sapling"
+    inst.AnimState:SetBank(anims_name)
+    inst.AnimState:SetBuild(anims_name)
     inst.AnimState:PlayAnimation("sway", true)
 
     inst:AddTag("plant")
@@ -195,12 +209,34 @@ local function fn()
 
     inst.OnPreLoad = OnPreLoad
     inst.MakeDiseaseable = makediseaseable
+    inst._is_moon = is_moon
 
     if TheNet:GetServerGameMode() == "quagmire" then
         event_server_data("quagmire", "prefabs/sapling").master_postinit(inst)
+    end
+end
+
+local function fn()
+    local inst = CreateEntity()
+
+    sapling_common(inst, false)
+
+    return inst
+end
+
+local function moon_fn()
+    local inst  = CreateEntity()
+
+    sapling_common(inst, true)
+
+	inst:SetPrefabNameOverride("sapling")
+
+    if not TheWorld.ismastersim then
+        return inst
     end
 
     return inst
 end
 
-return Prefab("sapling", fn, assets, prefabs)
+return Prefab("sapling", fn, assets, prefabs),
+        Prefab("sapling_moon", moon_fn, moon_assets, moon_prefabs)

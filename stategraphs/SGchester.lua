@@ -36,6 +36,7 @@ local events=
     CommonHandlers.OnStep(),
     CommonHandlers.OnSleep(),
     CommonHandlers.OnLocomote(false,true),
+    CommonHandlers.OnHop(),
     EventHandler("attacked", function(inst)
         if inst.components.health and not inst.components.health:IsDead() then
             inst.sg:GoToState("hit")
@@ -395,6 +396,27 @@ CommonStates.AddWalkStates(states, {
     },
 
 }, nil, true)
+
+CommonStates.AddHopStates(states, true, nil, 
+{
+    hop_pre = 
+    {
+        TimeEvent(0, function(inst) 
+            -- TODO(DANY):  This is when Chester starts jumping on the boat. There are a few other creatures that can jump on the boat
+            --              but I thought it would make sense to just get chester working properly and then we can look at hooking up 
+            --              the other ones after.
+            inst.SoundEmitter:PlaySound("dontstarve/common/dropGeneric") 
+            end),
+    },
+
+    hop_pre = 
+    {
+        TimeEvent(0, function(inst) 
+            -- TODO(DANY):  This is when Chester lands on the boat.
+            inst.SoundEmitter:PlaySound("dontstarve/common/dropGeneric") 
+            end),
+    }    
+})
 
 CommonStates.AddSleepStates(states,
 {

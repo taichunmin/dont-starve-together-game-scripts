@@ -631,7 +631,7 @@ function EntityScript:GetIsWet()
     if replica ~= nil then
         return replica:IsWet()
     end
-    return self:HasTag("wet") or TheWorld.state.iswet
+    return self:HasTag("wet") or TheWorld.state.iswet or self:HasTag("swimming")
 end
 
 function EntityScript:GetSkinBuild()
@@ -1435,12 +1435,27 @@ function EntityScript:CanDoAction(action)
     end
 end
 
-function EntityScript:IsOnValidGround()
-    local tile = self:GetCurrentTileType()
-    return tile ~= nil and tile ~= GROUND.IMPASSABLE
+function EntityScript:IsOnValidGround() -- this currently does not support boats. IsOnPassablePoint may be what you actually want to call
+	return TheWorld.Map:IsVisualGroundAtPoint(self.Transform:GetWorldPosition())
+end
+
+function EntityScript:IsOnPassablePoint(include_water, floating_platforms_are_not_passable)
+    local x, y, z = self.Transform:GetWorldPosition()
+    return TheWorld.Map:IsPassableAtPoint(x, y, z, include_water or false, floating_platforms_are_not_passable or false)
+end
+
+function EntityScript:GetCurrentPlatform()
+    local x, y, z = self.Transform:GetWorldPosition()
+    local platform = TheWorld.Map:GetPlatformAtPoint(x, z)
+
+    if platform ~= nil and platform.components.walkableplatform:CanBeWalkedOn() then
+        return platform
+    end
+    return nil
 end
 
 function EntityScript:GetCurrentTileType()
+-- WARNING: This function is only an approximate, if you only care if the ground is valid or not then call IsOnValidGround()
     local map = TheWorld.Map
     local ptx, pty, ptz = self.Transform:GetWorldPosition()
     local tilecenter_x, tilecenter_y, tilecenter_z  = map:GetTileCenterPoint(ptx, 0, ptz)
@@ -1448,9 +1463,9 @@ function EntityScript:GetCurrentTileType()
     local actual_tile = map:GetTile(tx, ty)
 
     if actual_tile ~= nil and tilecenter_x ~= nil and tilecenter_z ~= nil then
-        if actual_tile == GROUND.IMPASSABLE then
-            local xpercent = (tilecenter_x - ptx) / TILE_SCALE + .5
-            local ypercent = (tilecenter_z - ptz) / TILE_SCALE + .5
+        if actual_tile >= GROUND.UNDERGROUND then
+            local xpercent = (tilecenter_x - ptx) / TILE_SCALE + .25
+            local ypercent = (tilecenter_z - ptz) / TILE_SCALE + .25
 
             local x_min = xpercent > .666 and -1 or 0
             local x_max = xpercent < .333 and 1 or 0
@@ -1479,7 +1494,8 @@ function EntityScript:GetCurrentTileType()
 end
 
 function EntityScript:PutBackOnGround()
-    if not self:IsOnValidGround() then
+	local x, y, z = self.Transform:GetWorldPosition()
+    if not TheWorld.Map:IsPassableAtPoint(x, y, z, true) then
         local dest = FindNearbyLand(self:GetPosition(), 8)
         if dest ~= nil then
             if self.Physics ~= nil then

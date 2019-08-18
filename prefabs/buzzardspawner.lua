@@ -99,21 +99,23 @@ local function LookForFood(inst)
     local food = FindEntity(inst, 25, CanBeHunted, nil, NO_TAGS, FOOD_TAGS)
     if food ~= nil then
         local buzzard = inst.components.childspawner:SpawnChild()
-        local x, y, z = food.Transform:GetWorldPosition()
-        buzzard.Transform:SetPosition(x + math.random() * 3 - 1.5, 30, z + math.random() * 3 - 1.5)
-        buzzard:FacePoint(x, y, z)
+		if buzzard ~= nil then
+			local x, y, z = food.Transform:GetWorldPosition()
+			buzzard.Transform:SetPosition(x + math.random() * 3 - 1.5, 30, z + math.random() * 3 - 1.5)
+			buzzard:FacePoint(x, y, z)
 
-        if food:HasTag("prey") then
-            buzzard.sg.statemem.target = food
-        end
+			if food:HasTag("prey") then
+				buzzard.sg.statemem.target = food
+			end
 
-        food.buzzardHunted = buzzard
-        buzzard.foodHunted = food
-        food:ListenForEvent("onpickup", stophuntingfood)
-        food:ListenForEvent("onremove", stophuntingfood)
-        buzzard:ListenForEvent("onremove", stophuntingfood)
+			food.buzzardHunted = buzzard
+			buzzard.foodHunted = food
+			food:ListenForEvent("onpickup", stophuntingfood)
+			food:ListenForEvent("onremove", stophuntingfood)
+			buzzard:ListenForEvent("onremove", stophuntingfood)
 
-        inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/buzzard/distant")
+			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/buzzard/distant")
+		end
     end
 end
 
@@ -148,7 +150,7 @@ local function OnEntityWake(inst)
         inst.waketask = inst:DoTaskInTime(.5, OnWakeTask)
     end
     if inst.foodtask == nil then
-        inst.foodTask = inst:DoPeriodicTask(math.random(20, 40) * .1, LookForFood)
+        inst.foodtask = inst:DoPeriodicTask(math.random(20, 40) * .1, LookForFood)
     end
 end
 

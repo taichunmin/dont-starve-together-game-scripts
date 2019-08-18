@@ -28,7 +28,14 @@ end
 
 local function EatFoodAction(inst)
 
-    local target = FindEntity(inst, SEE_BAIT_DIST, function(item) return inst.components.eater:CanEat(item) and item.components.bait and not item:HasTag("planted") and not (item.components.inventoryitem and item.components.inventoryitem:IsHeld()) end)
+    local target = FindEntity(inst, SEE_BAIT_DIST, function(item, i)
+            return i.components.eater:CanEat(item) and
+                item.components.bait and
+                not item:HasTag("planted") and
+                not (item.components.inventoryitem and item.components.inventoryitem:IsHeld()) and
+                item:IsOnPassablePoint() and
+                item:GetCurrentPlatform() == i:GetCurrentPlatform()
+        end)
     if target then
         local act = BufferedAction(inst, target, ACTIONS.EAT)
         act.validfn = function() return not (target.components.inventoryitem and target.components.inventoryitem:IsHeld()) end

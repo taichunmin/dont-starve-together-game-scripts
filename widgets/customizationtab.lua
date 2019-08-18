@@ -11,23 +11,6 @@ local TEMPLATES = require "widgets/templates"
 local Customise = require "map/customise"
 local Levels = require "map/levels"
 
--- global for modding
--- note that the automatic portal linking isn't affected by this and always assumes 2 levels!
-SERVER_LEVEL_LOCATIONS =
-{
-    "forest",
-    "cave",
-}
-
-EVENTSERVER_LEVEL_LOCATIONS =
-{
-	[LEVELTYPE.LAVAARENA] = "lavaarena",
-	[LEVELTYPE.QUAGMIRE] = "quagmire",
-}
-
-local CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
-
-
 local function OnClickTab(self, level)
     if level ~= 1 and not self:IsLevelEnabled(level) then
         local locationid = self:GetLocationStringID(level)
@@ -67,7 +50,7 @@ end
 local CustomizationTab = Class(Widget, function(self, servercreationscreen)
     Widget._ctor(self, "CustomizationTab")
 
-	CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
+	self.current_level_locations = SERVER_LEVEL_LOCATIONS
 
     self.slotoptions = {}
     self.slot = -1
@@ -104,8 +87,8 @@ local CustomizationTab = Class(Widget, function(self, servercreationscreen)
     self.multileveltabs.tabs = {}
     local tabboxwidth = 310
     local tabboxspacing = 5
-    for i,location in ipairs(CURRENT_LEVEL_LOCATIONS) do
-        local tabwidth = tabboxwidth/#CURRENT_LEVEL_LOCATIONS - tabboxspacing
+    for i,location in ipairs(self.current_level_locations) do
+        local tabwidth = tabboxwidth/#self.current_level_locations - tabboxspacing
         local tabpos = (-tabboxwidth/2)+(tabwidth/2)+(tabwidth)*(i-1)+(tabboxspacing*i)-(tabboxspacing/2)
         self.multileveltabs.tabs[i] = self.multileveltabs:AddChild(TEMPLATES.TabButton(tabpos, 0, "", function() OnClickTab(self, i) end, "small"))
         self.multileveltabs.tabs[i]:SetTextSize(24)
@@ -230,15 +213,20 @@ end)
 function CustomizationTab:OnChangeGameMode(gamemode)
 	local leveltype = GetLevelType(gamemode)
     if EVENTSERVER_LEVEL_LOCATIONS[leveltype] ~= nil then
-		CURRENT_LEVEL_LOCATIONS = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
+		self.current_level_locations = EVENTSERVER_LEVEL_LOCATIONS[leveltype]
 		self.currentmultilevel = 1
 		if self:IsLevelEnabled(2) then
 			self:RemoveMultiLevel(2)
 		end
 	else
-		CURRENT_LEVEL_LOCATIONS = SERVER_LEVEL_LOCATIONS
+		self.current_level_locations = SERVER_LEVEL_LOCATIONS
 	end
 
+    self:Refresh()
+end
+
+function CustomizationTab:OnChangeLevelLocations(level_locations)
+	self.current_level_locations = level_locations
     self:Refresh()
 end
 
@@ -265,7 +253,7 @@ function CustomizationTab:UpdatePresetList()
         self.presetspinner.spinner:SetSelected(self.slotoptions[self.slot][self.currentmultilevel].id)
     else
         local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
-        presets = Levels.GetLevelList(level_type, CURRENT_LEVEL_LOCATIONS[self.currentmultilevel], true)
+        presets = Levels.GetLevelList(level_type, self.current_level_locations[self.currentmultilevel], true)
         self.presetspinner.spinner:SetOptions(presets)
         self.presetspinner.spinner:SetSelected(self.current_option_settings[self.currentmultilevel].preset)
         -- In case our preset disappeared, grab whatever is in the spinner.
@@ -335,7 +323,7 @@ function CustomizationTab:GetLocationForLevel(level)
     return (self.current_option_settings[level] ~= nil
             and self.current_option_settings[level].preset ~= nil
             and Levels.GetLocationForLevelID(self.current_option_settings[level].preset))
-        or CURRENT_LEVEL_LOCATIONS[level]
+        or self.current_level_locations[level]
 end
 
 function CustomizationTab:GetLocationStringID(level)
@@ -347,7 +335,7 @@ function CustomizationTab:GetLocationStringID(level)
     end
 
     -- if there is no preset yet, use the default
-    return string.upper(CURRENT_LEVEL_LOCATIONS[level])
+    return string.upper(self.current_level_locations[level])
 end
 
 
@@ -370,7 +358,7 @@ function CustomizationTab:UpdateMultilevelUI()
     self.removemultilevel:SetText(string.format(STRINGS.UI.SANDBOXMENU.REMOVELEVEL, locationname))
 
     for i, tabbtn in ipairs(self.multileveltabs.tabs) do
-		local valid_level = CURRENT_LEVEL_LOCATIONS[i] ~= nil
+		local valid_level = self.current_level_locations[i] ~= nil
 		
         local locationid = valid_level and self:GetLocationStringID(i) or nil
         local locationname = locationid and STRINGS.UI.SANDBOXMENU.LOCATIONTABNAME[locationid] or ""
@@ -504,7 +492,7 @@ function CustomizationTab:LoadPreset(level, preset)
         presetdata = Levels.GetDataForLevelID(preset)
     else
         local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
-        local location = CURRENT_LEVEL_LOCATIONS[level]
+        local location = self.current_level_locations[level]
         presetdata = Levels.GetDefaultLevelData(level_type, location)
     end
 
@@ -652,7 +640,7 @@ function CustomizationTab:UpdateSlot(slotnum, prevslot, delete)
                 self.current_option_settings[i].tweaks = deepcopy(prev.tweaks)
             end
         else
-            local location = CURRENT_LEVEL_LOCATIONS[1]
+            local location = self.current_level_locations[1]
             
             self:LoadPreset(1, nil)
         end
@@ -661,7 +649,7 @@ function CustomizationTab:UpdateSlot(slotnum, prevslot, delete)
         local options = SaveGameIndex:GetSlotGenOptions(slotnum)
         if options == nil or GetTableSize(options) == 0 then
             -- Ruh roh! Bad data. Fill in with a default.
-            local location = CURRENT_LEVEL_LOCATIONS[1]
+            local location = self.current_level_locations[1]
             local level_type = GetLevelType( self.servercreationscreen:GetGameMode() )
             local presetdata = Levels.GetDefaultLevelData(level_type, location)
             self.slotoptions[slotnum] = { presetdata }

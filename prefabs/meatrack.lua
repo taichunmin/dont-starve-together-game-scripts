@@ -14,6 +14,7 @@ local assets =
     Asset("ANIM", "anim/batwing.zip"),
     Asset("ANIM", "anim/plant_meat.zip"),
     Asset("ANIM", "anim/eel.zip"),
+    Asset("ANIM", "anim/kelp.zip"),
 }
 
 local prefabs =
@@ -33,6 +34,8 @@ local prefabs =
     "froglegs", -- uses smallmeat_dried
     "eel",
     "collapse_small",
+    "kelp",
+    "kelp_dried",
 }
 
 local function onhammered(inst, worker)
@@ -69,31 +72,32 @@ local function getstatus(inst)
     if inst:HasTag("burnt") then
         return "BURNT"
     elseif inst.components.dryer ~= nil then
-        return (inst.components.dryer:IsDone() and "DONE")
+		local pst = inst.components.dryer.foodtype == FOODTYPE.MEAT and "" or "_NOTMEAT"
+        return (inst.components.dryer:IsDone() and "DONE"..pst)
             or (inst.components.dryer:IsDrying() and
-                (TheWorld.state.israining and "DRYINGINRAIN" or "DRYING"))
+                (TheWorld.state.israining and "DRYINGINRAIN"..pst or "DRYING"..pst))
             or nil
     end
 end
 
-local function onstartdrying(inst, ingredient)
+local function onstartdrying(inst, ingredient, buildfile)
     if POPULATING then
         inst.AnimState:PlayAnimation("drying_loop", true)
     else
         inst.AnimState:PlayAnimation("drying_pre")
         inst.AnimState:PushAnimation("drying_loop", true)
     end
-    inst.AnimState:OverrideSymbol("swap_dried", "meat_rack_food", ingredient)
+    inst.AnimState:OverrideSymbol("swap_dried", buildfile or "meat_rack_food", ingredient)
 end
 
-local function ondonedrying(inst, product)
+local function ondonedrying(inst, product, buildfile)
     if POPULATING then
         inst.AnimState:PlayAnimation("idle_full")
     else
         inst.AnimState:PlayAnimation("drying_pst")
         inst.AnimState:PushAnimation("idle_full", false)
     end
-    inst.AnimState:OverrideSymbol("swap_dried", "meat_rack_food", product)
+    inst.AnimState:OverrideSymbol("swap_dried", buildfile or "meat_rack_food", product)
 end
 
 local function onharvested(inst)

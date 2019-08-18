@@ -34,6 +34,8 @@ local function commonfn(anim, dryable, cookable)
         inst:AddTag("cookable")
     end
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

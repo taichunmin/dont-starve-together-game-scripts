@@ -24,6 +24,11 @@ local INSANITY_COLOURCUBES =
     full_moon = "images/colour_cubes/insane_night_cc.tex",
 }
 
+local LUNACY_COLOURCUBES = 
+{
+	regular = "images/colour_cubes/lunacy_regular_cc.tex",
+}
+
 local SEASON_COLOURCUBES =
 {
     autumn =
@@ -86,8 +91,10 @@ local _fullmoonphase = nil
 local _season = "autumn"
 local _ambientcctable = _iscave and CAVE_COLOURCUBES or SEASON_COLOURCUBES.autumn
 local _insanitycctable = INSANITY_COLOURCUBES
+local _lunacycctable = LUNACY_COLOURCUBES
 local _ambientcc = { _ambientcctable[_phase], _ambientcctable[_phase] }
 local _insanitycc = { _insanitycctable[_phase], _insanitycctable[_phase] }
+local _lunacycc = {_lunacycctable["regular"], _lunacycctable["regular"]}
 local _overridecc = nil
 local _overridecctable = nil
 local _overridephase = nil
@@ -117,10 +124,15 @@ local function GetInsanityPhase()
         or (_phase == "night" and _fullmoonphase or _phase)
 end
 
+local function GetLunacyPhase()
+    return "regular"
+end
+
 local function Blend(time)
     local ambientcctarget = _ambientcctable[GetCCPhase()] or IDENTITY_COLOURCUBE
     local insanitycctarget = _insanitycctable[GetInsanityPhase()] or IDENTITY_COLOURCUBE
-
+    local lunacycctarget = _lunacycctable[GetLunacyPhase()] or IDENTITY_COLOURCUBE
+	
     if _overridecc ~= nil then
         _ambientcc[2] = ambientcctarget
         _insanitycc[2] = insanitycctarget
@@ -136,10 +148,12 @@ local function Blend(time)
             _ambientcc[2] = ambientcctarget
             _insanitycc[1] = _insanitycc[2]
             _insanitycc[2] = insanitycctarget
+            _lunacycc[2] = lunacycctarget
             _remainingblendtime = time
             _totalblendtime = time
             PostProcessor:SetColourCubeData(0, _ambientcc[1], _ambientcc[2])
             PostProcessor:SetColourCubeData(1, _insanitycc[1], _insanitycc[2])
+            PostProcessor:SetColourCubeData(2, _lunacycc[1], _lunacycc[2])
             PostProcessor:SetColourCubeLerp(0, 0)
         end
     elseif newtarget then
@@ -147,14 +161,17 @@ local function Blend(time)
         if _remainingblendtime < _totalblendtime then
             _ambientcc[1] = _ambientcc[2]
             _insanitycc[1] = _insanitycc[2]
+            _lunacycc[1] = _lunacycc[2]
             PostProcessor:SetColourCubeLerp(0, 0)
         end
         _ambientcc[2] = ambientcctarget
         _insanitycc[2] = insanitycctarget
+        _lunacycc[2] = lunacycctarget
         _remainingblendtime = time
         _totalblendtime = time
         PostProcessor:SetColourCubeData(0, _ambientcc[1], _ambientcc[2])
         PostProcessor:SetColourCubeData(1, _insanitycc[1], _insanitycc[2])
+        PostProcessor:SetColourCubeData(2, _lunacycc[1], _lunacycc[2])
     elseif _remainingblendtime >= _totalblendtime and time < _totalblendtime then
         --Same target, but hasn't ticked yet, so switch to the faster time
         _remainingblendtime = time
@@ -182,13 +199,34 @@ local function OnOverridePhaseEvent(inst)
 end
 
 local function OnSanityDelta(player, data)
-    local distortion = 1 - easing.outQuad(data.newpercent, 0, 1, 1)
-    if player ~= nil and player:HasTag("dappereffects") then
-        distortion = distortion * distortion
-    end
-    PostProcessor:SetColourCubeLerp(1, distortion)
-    PostProcessor:SetDistortionFactor(1 - distortion)
-    _fxspeed = easing.outQuad(1 - data.newpercent, 0, .2, 1)
+    local is_lunacy = ThePlayer.replica.sanity:IsLunacyMode()
+    local distortion_target = is_lunacy and (1 - ThePlayer.replica.sanity:GetPercentWithPenalty()) or data.newpercent
+
+    PostProcessor:SetOverlayTex("images/overlays_lunacy.tex")    
+
+	local distortion = 1 - easing.outQuad(distortion_target, 0, 1, 1)
+	if player ~= nil and player:HasTag("dappereffects") then
+		distortion = distortion * distortion
+	end
+
+	local sanity_cc_idx = 1
+	local lunacy_cc_idx = 2
+
+	if is_lunacy then
+		PostProcessor:SetColourCubeLerp(sanity_cc_idx, 0)
+		PostProcessor:SetColourCubeLerp(lunacy_cc_idx, distortion)
+		PostProcessor:SetDistortionFactor(1)
+        PostProcessor:SetOverlayBlend(distortion)
+        PostProcessor:SetLunacyEnabled(true)
+	else
+		PostProcessor:SetColourCubeLerp(sanity_cc_idx, distortion)
+		PostProcessor:SetColourCubeLerp(lunacy_cc_idx, 0)
+		PostProcessor:SetDistortionFactor(1 - distortion)
+        PostProcessor:SetOverlayBlend(0)
+        PostProcessor:SetLunacyEnabled(false)
+	end
+
+	_fxspeed = easing.outQuad(1 - distortion_target, 0, .2, 1)
 end
 
 local function OnOverrideCCTable(player, cctable)
@@ -233,7 +271,7 @@ local function OnPlayerActivated(inst, player)
     inst:ListenForEvent("ccoverrides", OnOverrideCCTable, player)
     inst:ListenForEvent("ccphasefn", OnOverrideCCPhaseFn, player)
     if player.replica.sanity ~= nil then
-        OnSanityDelta(player, { newpercent = player.replica.sanity:GetPercent() })
+        OnSanityDelta(player, { newpercent = player.replica.sanity:GetPercent(), sanitymode = player.replica.sanity:GetSanityMode() })
     end
     OnOverrideCCTable(player, player.components.playervision ~= nil and player.components.playervision:GetCCTable() or nil)
     OnOverrideCCPhaseFn(player, player.components.playervision ~= nil and player.components.playervision:GetCCPhaseFn() or nil)
@@ -243,7 +281,7 @@ local function OnPlayerDeactivated(inst, player)
     inst:RemoveEventCallback("sanitydelta", OnSanityDelta, player)
     inst:RemoveEventCallback("ccoverrides", OnOverrideCCTable, player)
     inst:RemoveEventCallback("ccphasefn", OnOverrideCCPhaseFn, player)
-    OnSanityDelta(player, { newpercent = 1 })
+    OnSanityDelta(player, { newpercent = 1, sanitymode = SANITY_MODE_INSANITY })
     OnOverrideCCTable(player, nil)
     if player == _activatedplayer then
         _activatedplayer = nil
@@ -307,8 +345,10 @@ end
 
 --Channel 0: ambient colour cube
 --Channel 1: insanity colour cube
+--Channel 2: lunacy colour cube
 PostProcessor:SetColourCubeData(0, _ambientcc[1], _ambientcc[2])
 PostProcessor:SetColourCubeData(1, _insanitycc[1], _insanitycc[2])
+PostProcessor:SetColourCubeData(2, _lunacycc[1], _lunacycc[2])
 PostProcessor:SetColourCubeLerp(0, 1)
 PostProcessor:SetColourCubeLerp(1, 0)
 PostProcessor:SetDistortionRadii(0.5, 0.685)

@@ -3,6 +3,17 @@ local assets =
     Asset("ANIM", "anim/gems.zip"),
 }
 
+local FLOATER_PROPERTIES =
+{
+    ["purple"]  = {0.10, 0.80},
+    ["blue"]    = {0.10, 0.80},
+    ["red"]     = {0.10, 0.80},
+    ["orange"]  = {0.10, 0.82},
+    ["yellow"]  = {0.10, 0.85},
+    ["green"]   = {0.05, 0.75},
+    ["opal"]    = {0.10, 0.87},
+}
+
 local function buildgem(colour, precious)
     local function Sparkle(inst)
         if not inst.AnimState:IsCurrentAnimation(colour.."gem_sparkle") then
@@ -28,6 +39,9 @@ local function buildgem(colour, precious)
 
         inst:AddTag("molebait")
         inst:AddTag("quakedebris")
+
+        local fp = FLOATER_PROPERTIES[colour]
+        MakeInventoryFloatable(inst, "small", fp[1], fp[2])
 
         inst.entity:SetPristine()
 

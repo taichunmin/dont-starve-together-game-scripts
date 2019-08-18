@@ -96,12 +96,16 @@ function MotdManager:DownloadNewMotdImages(motd_info, remaining_retries)
 				print("[MOTD] Failed to download (" .. failed_images .. ") MOTD images. Using default image.")
 			end
 
+			if self.motd_info ~= nil and self.motd_info.most_recent_seen ~= nil then
+				motd_info.last_seen = self.motd_info.most_recent_seen
+			end
+			motd_info.most_recent_seen = os.time()
+
 			motd_info.version = nil
 			motd_info.version = hash(json.encode(motd_info))
 
-	 		if self.motd_info == nil or motd_info.version ~= self.motd_info.version then
-				SavePersistentString(CACHE_FILE_NAME, json.encode(motd_info), ENCODE_SAVES)
-			end
+			SavePersistentString(CACHE_FILE_NAME, json.encode(motd_info), ENCODE_SAVES)
+
 			self:SetLoadingDone(motd_info)
 		else
 			print("[MOTD] Failed to download (" .. failed_images .. ") MOTD images. Remaining retries: " .. tostring(remaining_retries) .. ".")

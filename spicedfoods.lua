@@ -50,6 +50,7 @@ function GenerateSpicedFoods(foods)
             newdata.spice = spicenameupper
             newdata.basename = foodname
             newdata.name = foodname.."_"..spicename
+            newdata.floater = {"med", nil, {0.85, 0.7, 0.85}}
             spicedfoods[newdata.name] = newdata
 
             if spicename == "spice_chili" then

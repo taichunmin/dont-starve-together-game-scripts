@@ -31,6 +31,9 @@ local TimeMultipliers = {
     ["mushtree_small"] = function()
         return (not TheWorld.state.isspring and 0) or 1
     end,
+    ["moon_tree"] = function()
+        return (not TheWorld.state.isspring and 0) or 1
+    end,
 }
 
 local function DoUpdate()

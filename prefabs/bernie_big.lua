@@ -161,6 +161,10 @@ local function fn()
     inst.components.locomotor.walkspeed = TUNING.BERNIE_BIG_WALK_SPEED
     inst.components.locomotor.runspeed = TUNING.BERNIE_BIG_RUN_SPEED
 
+    -- Enable boat hopping
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+    inst:AddComponent("embarker")
+
     inst:AddComponent("combat")
     inst.components.combat:SetDefaultDamage(TUNING.BERNIE_BIG_DAMAGE)
     inst.components.combat:SetAttackPeriod(TUNING.BERNIE_BIG_ATTACK_PERIOD)

@@ -139,8 +139,32 @@ return {
             MISMATCH = "Food need different dish.", 
             SAMEDISH = "Wolfgang already put on dish.", 
         },
+        SAIL =
+        {
+            REPAIR = "Tiny boat is strong, no need.",
+        },
+        ROW_FAIL =
+        {
+            BAD_TIMING0 = "Need to paddle at right time!",
+            BAD_TIMING1 = "Wolfgang need to concentrate.",
+            BAD_TIMING2 = "Is easy! That was just practice run.",
+        },
+        LOWER_SAIL_FAIL =
+        {
+            "Tiny wind cloth not listening to Wolfgang!",
+            "Wolfgang will show tiny boat who's mightier!",
+            "Argh! Taking down big circus tent was easier than this!",
+        }, 
+        BATHBOMB =
+        {
+            GLASSED = "Is covered in see-through sharp stuff!",
+            ALREADY_BOMBED = "Is already prettified.",
+        },
     },
     ACTIONFAIL_GENERIC = "I am not mighty enough to do that.",
+    ANNOUNCE_BOAT_LEAK = "Drippy drops is come through boat!",
+    ANNOUNCE_BOAT_SINK = "Wolfgang cannot swim!",
+    ANNOUNCE_WASHED_ASHORE = "Wolfgang lucky to be alive.",
     ANNOUNCE_DIG_DISEASE_WARNING = "Ha! Dirt spoon fix it!",
     ANNOUNCE_PICK_DISEASE_WARNING = "Bah! Tiny plant is smell terrible!",
     ANNOUNCE_MOUNT_LOWHEALTH = "What is wrong, hair beast? Feeling not-so-mighty?",
@@ -219,6 +243,22 @@ return {
     ANNOUNCE_KLAUS_ENRAGE = "Wolfgang is sorry about little deer friends!",
     ANNOUNCE_KLAUS_UNCHAINED = "Do not hold back! Wolfgang can take you!",
     ANNOUNCE_KLAUS_CALLFORHELP = "Wimpy monster has called for help!",
+
+    ANNOUNCE_MOONALTAR_MINE =
+    {
+        GLASS_MED = "Do not fear! Wolfgang will save you!",
+        GLASS_LOW = "Wolfgang is close!",
+        GLASS_REVEAL = "You have been saved! By Wolfgang!",
+        IDOL_MED = "Do not fear! Wolfgang will save you!",
+        IDOL_LOW = "Wolfgang is close!",
+        IDOL_REVEAL = "You have been saved! By Wolfgang!",
+        SEED_MED = "Do not fear! Wolfgang will save you!",
+        SEED_LOW = "Wolfgang is close!",
+        SEED_REVEAL = "You have been saved! By Wolfgang!",
+    },
+
+    ANNOUNCE_FLARE_SEEN = "Sky fire! Wolfgang is coming, dear friend!",
+    ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "Wolfgang does not like scary shadow!",
 
     ANNOUNCE_SNARED = "Wolfgang does not like bones!",
     ANNOUNCE_REPELLED = "Strong bubble protects beast!",
@@ -621,6 +661,9 @@ return {
             DRYINGINRAIN = "Go away, rain! Meat is drying!",
             GENERIC = "For drying many meats!",
             BURNT = "Cannot dry meat now.",
+            DONE_NOTMEAT = "Is very good and dry now!",
+            DRYING_NOTMEAT = "Wolfgang could punch water out, maybe?",
+            DRYINGINRAIN_NOTMEAT = "Sky tears is re-wetting Wolfgang's dry things!",
         },
         MERMHEAD = 
         {
@@ -1046,6 +1089,8 @@ return {
         TURF_DESERTDIRT = "Step stones.",
         TURF_FUNGUS_GREEN = "Step stones.",
         TURF_FUNGUS_RED = "Step stones.",
+        TURF_METEOR = "Step stones.",
+        TURF_PEBBLEBEACH = "Step stones.",
 
         POWCAKE = "Is made of nothings!",
         CAVE_ENTRANCE = "Even I am not that mighty.",
@@ -1255,6 +1300,9 @@ return {
         CHESSPIECE_BEARGER = "Terrifying beast statue!",
         CHESSPIECE_MOOSEGOOSE = "Bad monster made of stone.",
         CHESSPIECE_DRAGONFLY = "Is fiery killbeast, but stone.",
+        CHESSPIECE_BUTTERFLY = "Is look like little flutterby, but bigger!",
+        CHESSPIECE_ANCHOR = "Is big. And heavy. Wolfgang would like to lift.",
+        CHESSPIECE_MOON = "Is look just like sky cheese!",
         CHESSJUNK1 = "Metal junk.",
         CHESSJUNK2 = "Metal junk.",
         CHESSJUNK3 = "Metal junk.",
@@ -1284,6 +1332,7 @@ return {
         CRITTER_PUPPY = "I am call him Pupgang!",
         CRITTER_KITTEN = "Small fur is Wolfgang's friend.",
         CRITTER_PERDLING = "Bird baby is weak, but good.",
+        CRITTER_LUNARMOTHLING = "Strong Wolfgang will protect soft flutterby.",
 
         CROW =
         {
@@ -1524,6 +1573,12 @@ return {
         HONEYNUGGETS = "Small meats with sweet still is good meat.",
         HORN = "Is hair-cow horn. Wolfgang hear hair-cow.",
         HOUND = "Woof!",
+        HOUNDCORPSE =
+        {
+             GENERIC = "Wolfgang does not like look of this.",
+             BURNING = "Fire is make yucky puppy go away.",
+             REVIVING = "Wolfgang would like to run now!",
+        },
         HOUNDMOUND = "Is house of bones.",
         HOUNDBONE = "Wimpy woof dog was not strong enough.",
         ICEBOX = "Box what makes cold!",
@@ -2449,21 +2504,21 @@ return {
         QUAGMIRE_LAMP_SHORT = "Wolfgang loves lamp.",
 
         --v2 Winona
-        WINONA_CATAPULT =
+        WINONA_CATAPULT = 
         {
             GENERIC = "Little fixing lady has very big brainmeats.",
             OFF = "Is not working.",
             BURNING = "Is burning!",
             BURNT = "Is all burned up.",
         },
-        WINONA_SPOTLIGHT =
+        WINONA_SPOTLIGHT = 
         {
             GENERIC = "Fixing lady knows Wolfgang not like dark.",
             OFF = "Is not working.",
             BURNING = "Is burning!",
             BURNT = "Is all burned up.",
         },
-        WINONA_BATTERY_LOW =
+        WINONA_BATTERY_LOW = 
         {
             GENERIC = "Thingamabob made by fixing lady.",
             LOWPOWER = "Is supposed to look like that?",
@@ -2471,7 +2526,7 @@ return {
             BURNING = "Is burning!",
             BURNT = "Is all burned up.",
         },
-        WINONA_BATTERY_HIGH =
+        WINONA_BATTERY_HIGH = 
         {
             GENERIC = "Fixing lady doohickeys.",
             LOWPOWER = "It does not look so good.",
@@ -2485,12 +2540,176 @@ return {
         ARMOR_BRAMBLE = "Mighty Wolfgang does not need armor!",
         TRAP_BRAMBLE = "Is sharp plant for hurting feets.",
 
+        BOATFRAGMENT03 = "Weak boat is woodchips now!",
+        BOATFRAGMENT04 = "Weak boat is woodchips now!",
+        BOATFRAGMENT05 = "Weak boat is woodchips now!",
+        BOAT_LEAK = "Wolfgang will plug hole with mighty fists!",
+        MAST = "Wooden wind catcher!",
+        SEASTACK = "Is a big watery rock.",
+        FISHINGNET = "I will catch many tasty fish!",
+        ANTCHOVIES = "Is little squirmy sea bug.",
+        STEERINGWHEEL = "Wolfgang does not know where he is going.",
+        ANCHOR = "Is good for weightlift. Build muscle.",
+        BOATPATCH = "Mighty Wolfgang will fix all boats!",
+        DRIFTWOOD_TREE = 
+        {
+            BURNING = "Is burning!",
+            BURNT = "Is burnt up.",
+            CHOPPED = "All chopped up.",
+            GENERIC = "Is tree from the sea.",
+        },
+
+        DRIFTWOOD_LOG = "Small log is practically fit in palm of my hand!",
+
+        MOON_TREE = 
+        {
+            BURNING = "Is burning!",
+            BURNT = "Is burnt up.",
+            CHOPPED = "Is stumpy stump now.",
+            GENERIC = "Roly poly weird tree.",
+        },
+
+        MOONBUTTERFLY = 
+        {
+            GENERIC = "Flutterby is big and green!",
+            HELD = "Green flutterby is soft.",
+        },
+        MOONBUTTERFLYWINGS = "Flutterby flappers.",
+        MOONBUTTERFLY_SAPLING = "Puny little tree!",
+        ROCK_AVOCADO_FRUIT = "Why little fruit hurt mouth?",
+        ROCK_AVOCADO_FRUIT_RIPE = "Is soft for the eatings now.",
+        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "Mushy and warm. Yum.",
+        ROCK_AVOCADO_FRUIT_SPROUT = "Little bush is tiny and weak.",
+        ROCK_AVOCADO_BUSH = 
+        {
+            BARREN = "It no longer makes the tiny fruits.",
+            WITHERED = "Is very hot out.",
+            GENERIC = "No fruit is too strong for Wolfgang's mighty jaw!",
+            PICKED = "No little fruits today.",
+            DISEASED = "Little bush is sick!",
+            DISEASING = "Is not look very good.",
+            BURNING = "Is burning!",
+        },
+        DEAD_SEA_BONES = "Big fish is very dead.",
+        HOTSPRING = 
+        {
+            GENERIC = "Is hot puddle.",
+            BOMBED = "Puddle stinks with good smells now.",
+            GLASS = "Mighty Wolfgang will punch through silly glass!",
+        },
+        MOONGLASS = "Is clear green sharp-stuff.",
+        MOONGLASS_ROCK = "Sharp stuff that fell from sky cheese.",
+        BATHBOMB = "Is for prettifying little hotbath.",
+        TRAP_STARFISH =
+        {
+            GENERIC = "Wolfgang be careful not to step on.",
+            CLOSED = "Ha ha! You is no match for mighty Wolfgang!",
+        },
+        DUG_TRAP_STARFISH = "Is not bite Wolfgang toesies now.",
+        SPIDER_MOON = 
+        {
+            GENERIC = "Wolfgang does not like that!",
+            SLEEPING = "Wolfgang will not disturb.",
+            DEAD = "Goodbye!",
+        },
+        MOONSPIDERDEN = "Scary things is inside maybe.",
+        FRUITDRAGON =
+        {
+            GENERIC = "Is little planty scrambler!",
+            RIPE = "Planty scrambler smells delicious today.",
+            SLEEPING = "Wolfgang will not disturb.",
+        },
+        PUFFIN =
+        {
+            GENERIC = "Feather bird likes water.",
+            HELD = "You is small, feather friend.",
+            SLEEPING = "Wolfgang will not disturb.",
+        },
+
+        MOONGLASSAXE = "Is for swing and chop.",
+        GLASSCUTTER = "My new friend taught me how to make.",
+
+        ICEBERG =
+        {
+            GENERIC = "Is big freezy cube.",
+            MELTED = "Is all melty!",
+        },
+        ICEBERG_MELTED = "Is all melty!",
+
+        MINIFLARE = "Is tiny sky boom!",
+
+        MOON_FISSURE = 
+        {
+            GENERIC = "Wolfgang is frighten, but happy.",
+            NOLIGHT = "Tiny ground is crack apart!",
+        },
+        MOON_ALTAR =
+        {
+            MOON_ALTAR_WIP = "Wolfgang like to help new friends.",
+            GENERIC = "You have secrets for Wolfgang, friend?",
+        },
+
+        MOON_ALTAR_IDOL = "Wolfgang is here to help, yes.",
+        MOON_ALTAR_GLASS = "Tell Wolfgang where you go and he will take you.",
+        MOON_ALTAR_SEED = "Yes, Wolfgang will carry you.",
+
+        MOON_ALTAR_ROCK_IDOL = "Special things is trapped inside!",
+        MOON_ALTAR_ROCK_GLASS = "Special things is trapped inside!",
+        MOON_ALTAR_ROCK_SEED = "Special things is trapped inside!",
+
+        SEAFARING_PROTOTYPER = 
+        {
+            GENERIC = "Wolfgang need help thinking on scary water.",
+            BURNT = "Is burny stuff now.",
+        },
+        SEAFARER_KIT = "Wolfgang wishes to ride a boat!",
+        BOAT_ITEM = "Is for making very nice boat.",
+        MAST_ITEM = "Is for making big sail-stick.",
+        STEERINGWHEEL_ITEM = "Is for making little whirly steer-wheel.",
+        ANCHOR_ITEM = "Is for making big boat weight.",
+        MUTATEDHOUND = 
+        {
+            DEAD = "Wolfgang would like to stay far away.",
+            GENERIC = "Meaty puppy is very scary!",
+            SLEEPING = "Wolfgang does not like meaty puppy.",
+        },
+
+        MUTATED_PENGUIN = 
+        {
+            DEAD = "Is dead, but still scary.",
+            GENERIC = "Is too scary!",
+            SLEEPING = "Please do not wake up.",
+        },
+
+        CARRAT = 
+        {
+            DEAD = "Is dead.",
+            GENERIC = "Leggy carrot is getting away!",
+            HELD = "You are safe now, leggy carrot.",
+            SLEEPING = "Leggy carrot is sleeping.",
+        },
+        GESTALT = "Wolfgang's brainmeats have never been so mighty!",
+
+        BULLKELP_PLANT = 
+        {
+            GENERIC = "Big pond is growing hair.",
+            PICKED = "All gone.",
+        },
+        BULLKELP_ROOT = "Is not very good weapon, I think.",
+        KELPHAT = "This make Wolfgang uneasy.",
+        KELP = "Slimy sea spinach!",
+        KELP_COOKED = "Sea spinach make Wolfgang strong to the finish.",
+        KELP_DRIED = "Little sea flakes make Wolfgang grow strong!",
+
+        WALKINGPLANK = "Maybe Wolfgang go for dip.",
+        OAR = "Wolfgang will be mighty rower!",
+        OAR_DRIFTWOOD = "Oar feels so light in Wolfgang's mighty hands!",
+
         --v2 Warly
         PORTABLECOOKPOT_ITEM =
         {
             GENERIC = "Wolfgang will cook good meal for friends, meal like home!",
-            DONE = "A meal with friends!",
-        },
+            DONE = "A meal with friends!",        },
         PORTABLEBLENDER_ITEM = "Wolfgang could smash food like that if he wanted.",
         PORTABLESPICER_ITEM =
         {

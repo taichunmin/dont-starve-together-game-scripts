@@ -781,6 +781,7 @@ function GetDefaultServerData()
         game_mode = TheNet:GetDefaultGameMode(),
         online_mode = TheNet:IsOnlineMode(),
         encode_user_path = TheNet:GetDefaultEncodeUserPath(),
+        use_cluster_path = true,
         max_players = TheNet:GetDefaultMaxPlayers(),
         name = TheNet:GetDefaultServerName(),
         password = TheNet:GetDefaultServerPassword(),
@@ -822,11 +823,13 @@ function StartDedicatedServer()
         if SaveGameIndex:IsSlotEmpty(slot) then
             SaveGameIndex:StartSurvivalMode(slot, nil, serverdata, onsaved)
         else
-            if not serverdata.encode_user_path and TheNet:GetServerIsClientHosted() then
+            if TheNet:GetServerIsClientHosted() then
                 local slot_server_data = SaveGameIndex:GetSlotServerData(slot)
-                if slot_server_data ~= nil and slot_server_data.encode_user_path then
+                --V2C: new flags added, with backward compatibility
+                if not serverdata.encode_user_path and slot_server_data ~= nil and slot_server_data.encode_user_path then
                     serverdata.encode_user_path = TheNet:TryDefaultEncodeUserPath()
                 end
+                serverdata.use_cluster_path = slot_server_data ~= nil and slot_server_data.use_cluster_path
             end
             SaveGameIndex:UpdateServerData(slot, serverdata, onsaved)
         end

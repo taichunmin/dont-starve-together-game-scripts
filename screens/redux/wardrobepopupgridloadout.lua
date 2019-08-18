@@ -104,13 +104,16 @@ function GridWardrobePopupScreen:OnDestroy()
 
 	self.profile:SetSkinsForCharacter(self.loadout.currentcharacter, self.previous_default_skins)
 
-	print( "Note(Peter): Disable subscree cleanup for now" )
-	--Removing the cleanup for now
-	--local i = 0
-	--while TheFrontEnd:GetActiveScreen() ~= self.previous_active_screen and i < 50 do
-	--	i = i + 1
-	--	TheFrontEnd:PopScreen()
-	--end
+	-- All popups that are spawned from the wardrobe should be tagged with owned_by_wardrobe = true
+	-- to ensure they are included when all screens are popped, with the exception of the server
+	-- contact messages that need to stay up until the server communication is complete.
+
+	local active_screen = TheFrontEnd:GetActiveScreen()
+	while active_screen.owned_by_wardrobe do
+		TheFrontEnd:PopScreen(active_screen)
+
+		active_screen = TheFrontEnd:GetActiveScreen()
+	end
 end
 
 function GridWardrobePopupScreen:OnBecomeActive()

@@ -60,8 +60,30 @@ local function CanSpawnBearger()
 			(not _lastBeargerKillDay or ((TheWorld.state.cycles - _lastBeargerKillDay) > TUNING.NO_BOSS_TIME)))
 end
 
+local function IsEligible(player)
+	local area = player.components.areaaware
+	return player:IsValid()
+			and TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())
+			and area:GetCurrentArea() ~= nil 
+			and not area:CurrentlyInTag("nohasslers")
+end
+
 local function PickPlayer()
-	local playeri = math.min(math.floor(easing.inQuint(math.random(), 1, #_activeplayers, 1)), #_activeplayers)
+	_targetplayer = nil
+
+	local playerlist = {}
+	if TheWorld ~= nil and TheWorld.Map ~= nil then
+		for i, v in ipairs(_activeplayers) do
+			if IsEligible(v) then
+				table.insert(playerlist, i)
+			end
+		end
+	end
+	if #playerlist == 0 then
+		return
+	end
+
+	local playeri = playerlist[math.min(math.floor(easing.inQuint(math.random(), 1, #playerlist, 1)), #playerlist)]
 	local player = _activeplayers[playeri]
 	table.remove(_activeplayers, playeri)
 	table.insert(_activeplayers, player)

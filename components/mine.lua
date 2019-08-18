@@ -52,6 +52,7 @@ local Mine = Class(function(self, inst)
     self.onexplode = nil
     self.onreset = nil
     self.onsetsprung = nil
+    self.testtimefn = nil
     self.target = nil
     self.inactive = true
     self.issprung = false
@@ -73,6 +74,7 @@ function Mine:OnRemoveFromEntity()
     self.inst:RemoveEventCallback("onpickup", OnPickup)
     self.inst:RemoveTag("minesprung")
     self.inst:RemoveTag("mineactive")
+    self.inst:RemoveTag("mine_not_reusable")
 end
 
 function Mine:SetRadius(radius)
@@ -95,12 +97,20 @@ function Mine:SetOnDeactivateFn(fn)
     self.ondeactivate = fn
 end
 
+function Mine:SetTestTimeFn(fn)
+    self.testtimefn = fn
+end
+
 function Mine:SetAlignment(alignment)
     self.alignment = alignment
 end
 
 function Mine:SetReusable(reusable)
-    self.canreset = reusable
+    if reusable then
+        self.inst:RemoveTag("mine_not_reusable")
+    else
+        self.inst:AddTag("mine_not_reusable")
+    end
 end
 
 function Mine:Reset()
@@ -118,7 +128,9 @@ function Mine:StartTesting()
     if self.testtask ~= nil then
         self.testtask:Cancel()
     end
-    self.testtask = self.inst:DoPeriodicTask(1 + math.random(), MineTest, .9 + math.random() * .1, self)
+
+    local next_test_time = self.testtimefn ~= nil and self.testtimefn(self.inst) or (1 + math.random())
+    self.testtask = self.inst:DoPeriodicTask(next_test_time, MineTest, .9 + math.random() * .1, self)
 end
 
 function Mine:StopTesting()
@@ -146,9 +158,18 @@ end
 function Mine:Deactivate()
     self:StopTesting()
     self.issprung = false
-    self.inactive = true    
+    self.inactive = true
     if self.ondeactivate ~= nil then
         self.ondeactivate(self.inst)
+    end
+end
+
+function Mine:Spring()
+    self.inactive = false
+    self.issprung = true
+    self:StopTesting()
+    if self.onsetsprung ~= nil then
+        self.onsetsprung(self.inst)
     end
 end
 
@@ -175,12 +196,7 @@ end
 
 function Mine:OnLoad(data)
     if data.sprung then
-        self.inactive = false
-        self.issprung = true
-        self:StopTesting()
-        if self.onsetsprung ~= nil then
-            self.onsetsprung(self.inst)
-        end
+        self:Spring()
     elseif data.inactive then
         self:Deactivate()
     else

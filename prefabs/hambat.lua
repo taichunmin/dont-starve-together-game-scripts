@@ -2,6 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/ham_bat.zip"),
     Asset("ANIM", "anim/swap_ham_bat.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function UpdateDamage(inst)
@@ -58,6 +59,9 @@ local function fn()
 
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
+
+    local swap_data = {sym_build = "swap_ham_bat", bank = "ham_bat"}
+    MakeInventoryFloatable(inst, "med", nil, {1.0, 0.5, 1.0}, true, -13, swap_data)
 
     inst.entity:SetPristine()
 

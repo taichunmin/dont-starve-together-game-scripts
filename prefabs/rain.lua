@@ -131,7 +131,7 @@ local function fn()
             x = x + dx
             z = z + dz
 
-            if map:IsPassableAtPoint(x, y, z) then
+            --if map:IsPassableAtPoint(x, y, z) then
                 local raindrop = SpawnPrefab("raindrop")
                 raindrop.Transform:SetPosition(x, y, z)
 
@@ -139,7 +139,7 @@ local function fn()
                     raindrop.AnimState:FastForward(fastforward)
                 end
 
-            end
+            --end
             inst.num_splashes_to_emit = inst.num_splashes_to_emit - 1
         end
 

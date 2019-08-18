@@ -28,6 +28,8 @@ local function fn()
 
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -76,6 +78,7 @@ local function cooked_fn()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
+    MakeInventoryFloatable(inst)
 
     inst.AnimState:SetBank("foliage")
     inst.AnimState:SetBuild("foliage")

@@ -20,7 +20,7 @@ local Eater = Class(function(self, inst)
     self.eater = false
     self.strongstomach = false
     self.preferseating = { FOODGROUP.OMNI }
-    --self.perferseatingtag = nil
+    --self.perferseatingtags = nil
     self.caneat = { FOODGROUP.OMNI }
     self.oneatfn = nil
     self.lasteattime = nil
@@ -101,7 +101,11 @@ function Eater:SetCanEatRaw()
 end
 
 function Eater:SetPrefersEatingTag(tag)
-    self.preferseatingtag = tag
+    if self.preferseatingtags == nil then
+        self.preferseatingtags = { tag }
+    else
+        table.insert(self.preferseatingtags, tag)
+    end
 end
 
 function Eater:SetOnEatFn(fn)
@@ -208,7 +212,7 @@ function Eater:Eat(food, feeder)
 
         self.lasteattime = GetTime()
 
-        if self.inst.components.foodmemory ~= nil then
+        if self.inst.components.foodmemory ~= nil and not food:HasTag("potion") then
             self.inst.components.foodmemory:RememberFood(food.prefab)
         end
 
@@ -233,11 +237,23 @@ function Eater:TestFood(food, testvalues)
 end
 
 function Eater:PrefersToEat(inst)
-    --V2C: fruitcake hack. see how long this code stays untouched - _-"
-    --V2C: now it has the warly hack for only eating prepared foods ;-D
-    return not (inst.prefab == "winter_food4" and self.inst:HasTag("player"))
-        and (self.preferseatingtag == nil or inst:HasTag(self.preferseatingtag))
-        and self:TestFood(inst, self.preferseating)
+    if inst.prefab == "winter_food4" and self.inst:HasTag("player") then
+        --V2C: fruitcake hack. see how long this code stays untouched - _-"
+        return false
+    elseif self.preferseatingtags ~= nil then
+        --V2C: now it has the warly hack for only eating prepared foods ;-D
+        local preferred = false
+        for i, v in ipairs(self.preferseatingtags) do
+            if inst:HasTag(v) then
+                preferred = true
+                break
+            end
+        end
+        if not preferred then
+            return false
+        end
+    end
+    return self:TestFood(inst, self.preferseating)
 end
 
 function Eater:CanEat(inst)

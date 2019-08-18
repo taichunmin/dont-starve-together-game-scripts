@@ -29,7 +29,7 @@ local loadfn = function(modulename)
     end
   return errmsg    
 end
-table.insert(package.loaders, 1, loadfn)
+table.insert(package.loaders, 2, loadfn)
 
 local basedir = "./"
 --patch this function because NACL has no fopen
@@ -84,11 +84,12 @@ AddPrintLogger(function(...) WorldSim:LuaPrint(...) end)
 require("debugtools")
 require("json")
 require("vector3")
-require("tuning")
 require("class")
 require("util")
+require("ocean_util")
 require("dlcsupport_worldgen")
 require("constants")
+require("tuning")
 require("strings")
 require("dlcsupport_strings")
 require("prefabs")
@@ -242,13 +243,13 @@ local function GetRandomFromLayouts( layouts )
 	return target
 end
 
-local function GetAreasForChoice(area, level)
+local function GetAreasForChoice(area, task_set)
 	local areas = {}
 
-	for i, task_name in ipairs(level.tasks) do
-		local task = tasks.GetTaskByName(task_name, tasks.taskdefinitions)
-		if area == "Any" or area == "Rare" or  area == task.room_bg then
-			table.insert(areas, task_name)
+	for i, t in ipairs(task_set) do
+		local task = tasks.GetTaskByName(t.id, tasks.taskdefinitions)
+		if area == "Any" or area == "Rare" or area == task.room_bg then
+			table.insert(areas, t.id)
 		end
 	end
 	if #areas ==0 then
@@ -266,7 +267,7 @@ local function AddSingleSetPeice(level, choicefile)
 			level.set_pieces = {}
 		end
 
-		local areas = GetAreasForChoice(chosen.target_area, level)
+		local areas = GetAreasForChoice(chosen.target_area, level:GetTasksForLevelSetPieces())
 		if areas then
 			local num_peices = 1
 			if level.set_pieces[chosen.choice] ~= nil then
@@ -367,7 +368,7 @@ function GenerateNew(debug, world_gen_data)
     })
     ]]
 
-    level:ChooseTasks(tasks.taskdefinitions)
+    level:ChooseTasks()
     AddSetPeices(level)
     level:ChooseSetPieces()
 

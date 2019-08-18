@@ -128,6 +128,7 @@ require("map/tasks/maxwell")
 require("map/tasks/island_hopping")
 
 require("map/tasks/forest")
+require("map/tasks/moonisland_tasks")
 require("map/tasks/caves")
 require("map/tasks/ruins")
 require("map/tasks/DLCtasks")

@@ -72,7 +72,7 @@ local function StartTracking(hallucination, ent)
 end
 
 HALLUCINATION_TYPES.creepyeyes.spawnfn = function(inst, hallucination)
-    local sanity = _player.replica.sanity:GetPercent()
+    local sanity = _player.replica.sanity:IsInsanityMode() and _player.replica.sanity:GetPercent() or 1
     if sanity > .6 then
         --Sanity too high, restart
         RestartHallucination(hallucination)
@@ -102,7 +102,7 @@ HALLUCINATION_TYPES.creepyeyes.spawnfn = function(inst, hallucination)
 end
 
 HALLUCINATION_TYPES.shadowwatcher.spawnfn = function(inst, hallucination)
-    local sanity = _player.replica.sanity:GetPercent()
+    local sanity = _player.replica.sanity:IsInsanityMode() and _player.replica.sanity:GetPercent() or 1
     if sanity > .5 then
         --Sanity too high, restart
         RestartHallucination(hallucination)
@@ -133,7 +133,7 @@ HALLUCINATION_TYPES.shadowwatcher.spawnfn = function(inst, hallucination)
 end
 
 HALLUCINATION_TYPES.shadowskittish.spawnfn = function(inst, hallucination)
-    local sanity = _player.replica.sanity:GetPercent()
+    local sanity = _player.replica.sanity:IsInsanityMode() and _player.replica.sanity:GetPercent() or 1
     if sanity > .8 then
         --Sanity too high, restart
         RestartHallucination(hallucination)

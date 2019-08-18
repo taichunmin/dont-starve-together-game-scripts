@@ -89,10 +89,19 @@ function FollowCamera:SetMinDistance(distance)
     self.mindist = distance
 end
 
+function FollowCamera:SetMaxDistance(distance)
+    self.maxdist = distance
+end
+
 function FollowCamera:SetGains(pan, heading, distance)
-    self.distancegain = distance
     self.pangain = pan
     self.headinggain = heading
+    self.distancegain = distance    
+    
+end
+
+function FollowCamera:GetGains(pan, heading, distance)
+    return self.pangain, self.headinggain, self.distancegain
 end
 
 function FollowCamera:IsControllable()
@@ -234,13 +243,13 @@ function FollowCamera:SetHeadingTarget(r)
     self.headingtarget = r
 end
 
-function FollowCamera:ZoomIn()
-    self.distancetarget = math.max(self.mindist, self.distancetarget - self.zoomstep)
+function FollowCamera:ZoomIn(step)
+    self.distancetarget = math.max(self.mindist, self.distancetarget - (step or self.zoomstep))
     self.time_since_zoom = 0
 end
 
-function FollowCamera:ZoomOut()
-    self.distancetarget = math.min(self.maxdist, self.distancetarget + self.zoomstep)
+function FollowCamera:ZoomOut(step)
+    self.distancetarget = math.min(self.maxdist, self.distancetarget + (step or self.zoomstep))
     self.time_since_zoom = 0
 end
 
@@ -293,6 +302,9 @@ function FollowCamera:Update(dt)
         end
 
         if self.target ~= nil then
+			if self.target.components.focalpoint then
+				self.target.components.focalpoint:CameraUpdate(dt)
+			end
             local x, y, z = self.target.Transform:GetWorldPosition()
             self.targetpos.x = x + self.targetoffset.x
             self.targetpos.y = y + self.targetoffset.y

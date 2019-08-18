@@ -89,6 +89,8 @@ local function invfn()
 
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.8)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

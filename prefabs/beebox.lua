@@ -243,6 +243,7 @@ local function fn()
 
     inst:AddComponent("childspawner")
     inst.components.childspawner.childname = "bee"
+    inst.components.childspawner.allowwater = true
     SeasonalSpawnChanges(inst, TheWorld.state.season)
     inst:WatchWorldState("season", SeasonalSpawnChanges)
 

@@ -78,6 +78,8 @@ local function fn()
     inst.AnimState:SetBuild("nightmare_timepiece")
     inst.AnimState:PlayAnimation("idle_1")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.62)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

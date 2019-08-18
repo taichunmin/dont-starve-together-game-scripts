@@ -25,6 +25,10 @@ local function Dissipate(inst)
         inst.task:Cancel()
         inst.task = nil
     end
+    if inst._distance_test_task ~= nil then
+        inst._distance_test_task:Cancel()
+        inst._distance_test_task = nil
+    end
     if inst.arm ~= nil then
         inst.arm.AnimState:PlayAnimation("arm_scare")
     end
@@ -56,6 +60,12 @@ local function ConsumeFire(inst, fire)
         end
         inst.AnimState:PlayAnimation("grab")
         inst.AnimState:PushAnimation("grab_pst", false)
+
+        -- We're removing the on-fire-removed callback, so we also need to stop our position update that tests its location!
+        if inst._distance_test_task ~= nil then
+            inst._distance_test_task:Cancel()
+            inst._distance_test_task = nil
+        end
         inst:RemoveEventCallback("onextinguish", inst.dissipatefn, fire)
         inst:RemoveEventCallback("onremove", inst.dissipatefn, fire)
         if inst.components.playerprox ~= nil then
@@ -111,6 +121,20 @@ local function HandleAction(inst, data)
     end
 end
 
+local MAX_ARM_DISTANCE_SQ = 2000
+local function FireDistanceTest(inst)
+    if inst.fire == nil then
+        return
+    end
+
+    local fire_x, fire_y, fire_z = inst.fire.Transform:GetWorldPosition()
+    local origin = inst.components.knownlocations:GetLocation("origin")
+    local fire_distance_sq = distsq(fire_x, fire_z, origin.x, origin.z)
+    if fire_distance_sq > MAX_ARM_DISTANCE_SQ then
+        Dissipate(inst)
+    end
+end
+
 local function SetTargetFire(inst, fire)
     if inst.fire ~= nil or fire == nil or inst.dissipating then
         return
@@ -138,6 +162,14 @@ local function SetTargetFire(inst, fire)
     inst:ListenForEvent("startaction", HandleAction)
 
     StartCreeping(inst)
+
+    -- Also start a low-frequency distance-testing task, so that if our target
+    -- manages to get far away from us, we also dissipate.
+    if inst._distance_test_task ~= nil then
+        inst._distance_test_task:Cancel()
+        inst._distance_test_task = nil
+    end
+    inst._distance_test_task = inst:DoPeriodicTask(0.5, FireDistanceTest)
 end
 
 local function OnRemove(inst)
@@ -160,6 +192,8 @@ local function create_hand()
     RemovePhysicsColliders(inst)
 
     inst:AddTag("shadowhand")
+    inst:AddTag("NOCLICK")
+    inst:AddTag("ignorewalkableplatforms")
 
     inst.AnimState:SetBank("shadowcreatures")
     inst.AnimState:SetBuild("shadow_creatures_ground")

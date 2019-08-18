@@ -1,4 +1,3 @@
-require "mods"
 require "playerdeaths"
 require "playerhistory"
 require "serverpreferences"
@@ -12,6 +11,8 @@ require "knownerrors"
 require "usercommands"
 require "builtinusercommands"
 require "emotes"
+
+require "map/ocean_gen" -- for retrofitting the ocean tiles
 
 local EquipSlot = require("equipslotutil")
 local GroundTiles = require("worldtiledefs")
@@ -367,19 +368,69 @@ local function PopulateWorld(savedata, profile)
             print("Total "..tostring(#Settings.loaded_characters).." character(s) loaded")
         end
 
+        world.has_ocean = savedata.map.has_ocean
+
+		if world.components.oceancolor ~= nil then
+			world.components.oceancolor:Initialize(world.has_ocean)
+		end
+
+        local map = world.Map
+
+        if world.has_ocean then            
+            local tuning = TUNING.OCEAN_SHADER
+            map:SetOceanEnabled(true)
+			map:SetOceanTextureBlurParameters(tuning.TEXTURE_BLUR_PASS_SIZE, tuning.TEXTURE_BLUR_PASS_COUNT)
+            map:SetOceanNoiseParameters0(tuning.NOISE[1].ANGLE, tuning.NOISE[1].SPEED, tuning.NOISE[1].SCALE, tuning.NOISE[1].FREQUENCY)
+            map:SetOceanNoiseParameters1(tuning.NOISE[2].ANGLE, tuning.NOISE[2].SPEED, tuning.NOISE[2].SCALE, tuning.NOISE[2].FREQUENCY)
+            map:SetOceanNoiseParameters2(tuning.NOISE[3].ANGLE, tuning.NOISE[3].SPEED, tuning.NOISE[3].SCALE, tuning.NOISE[3].FREQUENCY)
+        end
+
+        local waterfall_tuning = TUNING.WATERFALL_SHADER.NOISE
+
+        map:SetWaterfallFadeParameters(TUNING.WATERFALL_SHADER.FADE_COLOR[1] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[2] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[3] / 255, TUNING.WATERFALL_SHADER.FADE_START)
+        map:SetWaterfallNoiseParameters0(waterfall_tuning[1].SCALE, waterfall_tuning[1].SPEED, waterfall_tuning[1].OPACITY, waterfall_tuning[1].FADE_START)
+        map:SetWaterfallNoiseParameters1(waterfall_tuning[2].SCALE, waterfall_tuning[2].SPEED, waterfall_tuning[2].OPACITY, waterfall_tuning[2].FADE_START)
+
+        local minimap_ocean_tuning = TUNING.OCEAN_MINIMAP_SHADER
+
+        map:SetMinimapOceanEdgeColor0(minimap_ocean_tuning.EDGE_COLOR0[1] / 255, minimap_ocean_tuning.EDGE_COLOR0[2] / 255, minimap_ocean_tuning.EDGE_COLOR0[3] / 255)
+        map:SetMinimapOceanEdgeParams0(minimap_ocean_tuning.EDGE_PARAMS0.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS0.HALF_THRESHOLD_RANGE)
+
+        map:SetMinimapOceanEdgeColor1(minimap_ocean_tuning.EDGE_COLOR1[1] / 255, minimap_ocean_tuning.EDGE_COLOR1[2] / 255, minimap_ocean_tuning.EDGE_COLOR1[3] / 255)
+        map:SetMinimapOceanEdgeParams1(minimap_ocean_tuning.EDGE_PARAMS1.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS1.HALF_THRESHOLD_RANGE)
+
+        map:SetMinimapOceanEdgeShadowColor(minimap_ocean_tuning.EDGE_SHADOW_COLOR[1] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[2] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[3] / 255)
+        map:SetMinimapOceanEdgeShadowParams(minimap_ocean_tuning.EDGE_SHADOW_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_X, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_Y)
+
+        map:SetMinimapOceanEdgeFadeParams(minimap_ocean_tuning.EDGE_FADE_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_FADE_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_FADE_PARAMS.MASK_INSET)
+
+        map:SetMinimapOceanEdgeNoiseParams(minimap_ocean_tuning.EDGE_NOISE_PARAMS.UV_SCALE)
+		
+        map:SetMinimapOceanTextureBlurParameters(minimap_ocean_tuning.TEXTURE_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_BLUR_PASS_COUNT, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_PASS_COUNT)
+        map:SetMinimapOceanMaskBlurParameters(minimap_ocean_tuning.MASK_BLUR_SIZE, minimap_ocean_tuning.MASK_BLUR_PASS_COUNT)
+
+
         --this was spawned by the level file. kinda lame - we should just do everything from in here.
-        world.Map:SetSize(savedata.map.width, savedata.map.height)
-        world.Map:SetFromString(savedata.map.tiles)
-        world.Map:ResetVisited()
+        map:SetSize(savedata.map.width, savedata.map.height)
+        map:SetFromString(savedata.map.tiles)
+        map:ResetVisited()
+
+		if savedata.retrofit_oceantiles then
+			savedata.retrofit_oceantiles = nil
+			print ("Retrofitting for Return Of Them: Turn of Tides - Converting Ocean...")
+			Ocean_SetWorldForOceanGen(TheWorld.Map)
+			Ocean_ConvertImpassibleToWater(savedata.map.width, savedata.map.height, require("map/ocean_gen_config"))
+			print ("Retrofitting for Return Of Them: Turn of Tides - Converting Ocean done")
+			require("map/ocean_retrofit_island").TurnOfTidesRetrofitting_MoonIsland(TheWorld.Map, savedata)
+		end
+
         if savedata.map.prefab == "cave" then
-            world.Map:SetPhysicsWallDistance(0.75)--0) -- TEMP for STREAM
             TheFrontEnd:GetGraphicsOptions():DisableStencil()
             TheFrontEnd:GetGraphicsOptions():DisableLightMapComponent()
             -- TheFrontEnd:GetGraphicsOptions():EnableStencil()
             -- TheFrontEnd:GetGraphicsOptions():EnableLightMapComponent()
             world.Map:Finalize(1)
         else
-            world.Map:SetPhysicsWallDistance(0)--0.75)
             TheFrontEnd:GetGraphicsOptions():DisableStencil()
             TheFrontEnd:GetGraphicsOptions():DisableLightMapComponent()
             world.Map:Finalize(0)
@@ -398,6 +449,10 @@ local function PopulateWorld(savedata, profile)
         world.generated = savedata.map.generated
         world.meta = savedata.meta
         assert(savedata.map.topology.ids, "[MALFORMED SAVE DATA] Map missing topology information. This save file is too old, and is missing neccessary information.")
+
+		if savedata.meta ~= nil then
+			print("World generated on version " .. tostring(savedata.meta.build_version) .. ", using seed: " .. tostring(savedata.meta.seed))
+		end
 
         for i=#savedata.map.topology.ids,1, -1 do
             local name = savedata.map.topology.ids[i]

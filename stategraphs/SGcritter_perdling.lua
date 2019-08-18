@@ -14,6 +14,7 @@ local events =
     CommonHandlers.OnSleepEx(),
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnLocomote(false, true),
+    CommonHandlers.OnHop(),
 }
 
 local states =
@@ -101,5 +102,7 @@ CommonStates.AddSleepExStates(states,
             TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/sleep_out") end),
         },
     })
+
+CommonStates.AddHopStates(states, true)
 
 return StateGraph("SGcritter_perdling", states, events, "idle", actionhandlers)

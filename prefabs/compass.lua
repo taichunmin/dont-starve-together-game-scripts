@@ -104,6 +104,8 @@ local function fn()
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
 
+    MakeInventoryFloatable(inst, "med", 0.1, 0.6)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -111,6 +113,7 @@ local function fn()
     end
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("inspectable")
     --inst.components.inspectable.noanim = true
     --inst.components.inspectable.getstatus = GetStatus

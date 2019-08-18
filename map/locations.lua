@@ -10,6 +10,10 @@ AddLocation({
         layout_mode = "LinkNodesByKeys",
         wormhole_prefab = "wormhole",
         roads = "default",
+		keep_disconnected_tiles = true,
+		no_wormholes_to_disconnected_tiles = true,
+		no_joining_islands = true,
+		has_ocean = true,
     },
     required_prefabs = {
         "multiplayer_portal",
@@ -42,9 +46,11 @@ AddLocation({
         season_start = "default",
         world_size = "small",
         layout_mode = "RestrictNodesByKey",
-        keep_disconnected_tiles = true,
         wormhole_prefab = nil,
         roads = "never",
+        keep_disconnected_tiles = true,
+		no_wormholes_to_disconnected_tiles = true,
+		no_joining_islands = true,
     },
     required_prefabs = {
         "lavaarena_portal",
@@ -60,13 +66,16 @@ AddLocation({
         season_start = "default",
         world_size = "small",
         layout_mode = "RestrictNodesByKey",
-        keep_disconnected_tiles = false,
         wormhole_prefab = nil,
         roads = "never",
         loop_percent = 0,
 	    branching = "random",
+        keep_disconnected_tiles = false,
+		no_wormholes_to_disconnected_tiles = true,
+		no_joining_islands = true,
     },
     required_prefabs = {
         "quagmire_portal",
     },
 })
+

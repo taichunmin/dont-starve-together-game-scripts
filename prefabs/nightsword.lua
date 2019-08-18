@@ -2,6 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/nightmaresword.zip"),
     Asset("ANIM", "anim/swap_nightmaresword.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip(inst, owner)
@@ -27,13 +28,16 @@ local function fn()
     inst.AnimState:SetBank("nightmaresword")
     inst.AnimState:SetBuild("nightmaresword")
     inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetMultColour(1, 1, 1, .6)
+    --inst.AnimState:SetMultColour(1, 1, 1, .6)
 
     inst:AddTag("shadow")
     inst:AddTag("sharp")
 
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
+
+    local swap_data = {sym_build = "swap_nightmaresword", bank = "nightmaresword"}
+    MakeInventoryFloatable(inst, "med", 0.05, {1.0, 0.4, 1.0}, true, -17.5, swap_data)
 
     inst.entity:SetPristine()
 

@@ -141,10 +141,10 @@ local wormspawn =
     --Key = time, Value = sound prefab
     warning_sound_thresholds =
     {
-        { time = 30, sound = "wormwarning_lvl4" },
-        { time = 60, sound = "wormwarning_lvl3" },
-        { time = 90, sound = "wormwarning_lvl2" },
-        { time = 500, sound = "wormwarning_lvl1" },
+        { time = 30, sound = "LVL4_WORM" },
+        { time = 60, sound = "LVL3_WORM" },
+        { time = 90, sound = "LVL2_WORM" },
+        { time = 500, sound = "LVL1_WORM" },
     },
 }
 
@@ -163,6 +163,8 @@ local function common_postinit(inst)
         inst:AddComponent("colourcube")
         inst:AddComponent("hallucinations")
     end
+
+    TheWorld.Map:SetUndergroundFadeHeight(5)
 end
 
 local function master_postinit(inst)

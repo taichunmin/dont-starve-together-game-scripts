@@ -238,28 +238,33 @@ function ModIndex:UpdateSingleModInfo(modname)
 end
 
 function ModIndex:LoadModOverides()
-	local overrides = {}
-	
-	local filename = "../modoverrides.lua"
-	TheSim:GetPersistentString( filename,
-		function(load_success, str)
-    		if load_success == true then
-				local fn, message = loadstring(str)
-				if fn ~= nil then
-					local env = {}
-					local success, r = RunInEnvironment( fn, env )
-					if success and type(r)=="table" then
-						overrides = r
-					else
-						print("ERROR: Failed to run code from modoverrides.lua")					
-					end
-				else
-					print("ERROR: Failed to load modoverrides.lua")
-				end
-			end
-		end)
+    local overrides = {}
+    local filename = "../modoverrides.lua"
 
-	return overrides
+    local function onload(load_success, str)
+        if load_success == true then
+            local fn, message = loadstring(str)
+            if fn ~= nil then
+                local env = {}
+                local success, r = RunInEnvironment(fn, env)
+                if success and type(r) == "table" then
+                    overrides = r
+                else
+                    print("ERROR: Failed to run code from modoverrides.lua")
+                end
+            else
+                print("ERROR: Failed to load modoverrides.lua")
+            end
+        end
+    end
+
+    if not TheNet:IsDedicated() and SaveIndex:GetSlotServerData(SaveIndex:GetCurrentSaveSlot()).use_cluster_path then
+        TheSim:GetPersistentStringInClusterSlot(SaveIndex:GetCurrentSaveSlot(), "Master", filename, onload)
+    else
+        TheSim:GetPersistentString(filename, onload)
+    end
+
+    return overrides
 end
 
 local workshop_prefix = "workshop-"

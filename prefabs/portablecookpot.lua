@@ -31,7 +31,7 @@ local prefabs_item =
 
 local function ChangeToItem(inst)
     if inst.components.stewer.product ~= nil and inst.components.stewer:IsDone() then
-        inst.components.lootdropper:SpawnLootPrefab(inst.components.stewer.product)
+        inst.components.stewer:Harvest()
     end
     if inst.components.container ~= nil then
         inst.components.container:DropEverything()
@@ -336,6 +336,8 @@ local function itemfn()
     inst.AnimState:PlayAnimation("idle_ground")
 
     inst:AddTag("portableitem")
+
+    MakeInventoryFloatable(inst, "med", 0.1, 0.8)
 
     inst.entity:SetPristine()
 

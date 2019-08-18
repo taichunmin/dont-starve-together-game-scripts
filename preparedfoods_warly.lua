@@ -22,6 +22,7 @@ local foods =
             end
         end,
         tags = { "masterfood", "unsafefood" },
+        floater = {nil, 0.1, 0.9},
     },
 
 	-- Lightning attack
@@ -46,6 +47,7 @@ local foods =
                 eater.components.debuffable:AddDebuff("buff_electricattack", "buff_electricattack")
             end
        	end,
+        floater = {"med", nil, 0.65},
 	},
 
     -- Produces light
@@ -84,6 +86,7 @@ local foods =
             end
         end,
         tags = { "masterfood" },
+        floater = {nil, 0.1, 0.75},
     },
 
     frogfishbowl =
@@ -106,6 +109,7 @@ local foods =
                 eater.components.debuffable:AddDebuff("buff_moistureimmunity", "buff_moistureimmunity")
             end
        	end,
+        floater = {nil, 0.1},
     },
 
     dragonchilisalad =
@@ -123,6 +127,7 @@ local foods =
         cooktime = 0.75,
         potlevel = "low",
         tags = { "masterfood" },
+        floater = {nil, 0.1, 0.7},
     },
 
     gazpacho =
@@ -139,6 +144,7 @@ local foods =
         cooktime = 0.5,
         potlevel = "low",
         tags = { "masterfood" },
+        floater = {nil, 0.1, 0.7},
     },
 
 
@@ -155,6 +161,7 @@ local foods =
         cooktime = 2,
         potlevel = "low",
         tags = { "masterfood" },
+        floater = {nil, 0.1, 0.65},
     },
 
     -- Slightly better version of monster lasagna
@@ -169,6 +176,7 @@ local foods =
         sanity = -TUNING.SANITY_MEDLARGE,
         cooktime = 0.5,
         tags = { "masterfood", "monstermeat" },
+        floater = {"med", nil, {0.65, 0.5, 0.65}},
     },
 
 
@@ -184,6 +192,7 @@ local foods =
         cooktime = 2,
         potlevel = "high",
         tags = { "masterfood" },
+        --floater = nil,
     },
 
     bonesoup =
@@ -198,6 +207,7 @@ local foods =
         cooktime = 2,
         potlevel = "low",
         tags = { "masterfood" },
+        floater = {nil, 0.05},
     },
 
     moqueca =
@@ -212,6 +222,7 @@ local foods =
         cooktime = 2,
         potlevel = "low",
         tags = { "masterfood" },
+        floater = {nil, 0.1},
     },
 
 }

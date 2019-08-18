@@ -2,6 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/hammer.zip"),
     Asset("ANIM", "anim/swap_hammer.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip(inst, owner)
@@ -40,6 +41,8 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("hammer")
+
+    MakeInventoryFloatable(inst, "med", 0.05, {0.7, 0.4, 0.7}, true, -13, {sym_build = "swap_hammer"})
 
     --tool (from tool component) added to pristine state for optimization
     inst:AddTag("tool")

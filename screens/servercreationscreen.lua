@@ -203,7 +203,7 @@ function ServerCreationScreen:UpdateTitle(slotnum, fromTextEntered)
                     end
                 end
             end
-            if SaveGameIndex:IsSlotMultiLevel(slotnum) then
+            if SaveGameIndex:IsSlotMultiLevel(slotnum) or SaveGameIndex:GetSlotServerData(slotnum).use_cluster_path then
                 local file = TheNet:GetWorldSessionFileInClusterSlot(slotnum, "Master", session_id)
                 if file ~= nil then
                     TheSim:GetPersistentStringInClusterSlot(slotnum, "Master", file, onreadworldfile)
@@ -430,6 +430,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
 
                 local is_multi_level = SaveGameIndex:IsSlotMultiLevel(self.saveslot)
                 local encode_user_path = serverdata.encode_user_path == true
+                local use_cluster_path = serverdata.use_cluster_path == true
                 local launchingServerPopup = nil
 
                 if is_multi_level then
@@ -450,7 +451,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                 end
 
                 -- Note: StartDedicatedServers launches both dedicated and non-dedicated servers... ~gjans
-                if not TheSystemService:StartDedicatedServers(self.saveslot, is_multi_level, cluster_info, encode_user_path) then
+                if not TheSystemService:StartDedicatedServers(self.saveslot, is_multi_level, cluster_info, encode_user_path, use_cluster_path) then
                     if launchingServerPopup ~= nil then
                         launchingServerPopup:SetErrorStartingServers()
                     end

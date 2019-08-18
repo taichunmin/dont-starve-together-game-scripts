@@ -18,6 +18,8 @@ local function fn()
 
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.75)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

@@ -23,7 +23,7 @@ local function EatFoodAction(inst)
     if target == nil then
         target = FindEntity(inst, SEE_FOOD_DIST, function(item) return inst.components.eater:CanEat(item) end, { "edible_VEGGIE" }, { "INLIMBO" })
         --check for scary things near the food
-        if target ~= nil and GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) ~= nil then
+        if target ~= nil and (GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) ~= nil or not target:IsOnValidGround()) then  -- NOTE this ValidGround check should be removed if merms start swimming
             target = nil
         end
     end

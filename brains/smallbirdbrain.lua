@@ -36,10 +36,10 @@ local function ShouldStandStill(inst)
 end
 
 local function CanSeeFood(inst)
-    local target = FindEntity(inst, SEE_FOOD_DIST, function(item) return inst.components.eater:CanEat(item) end)
-    if target then
-        --print("CanSeeFood", inst.name, target.name)
-    end
+    local target = FindEntity(inst, SEE_FOOD_DIST, function(item) return inst.components.eater:CanEat(item) and item:IsOnValidGround() end)
+    --[[if target then
+        print("CanSeeFood", inst.name, target.name)
+    end]]
     return target
 end
 

@@ -304,6 +304,8 @@ local function capcommonfn(data)
     inst:AddTag("cookable")
     inst:AddTag("mushroom")
 
+    MakeInventoryFloatable(inst, "small", 0.1, 0.88)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -354,6 +356,8 @@ local function cookedcommonfn(data)
     inst.AnimState:SetBank("mushrooms")
     inst.AnimState:SetBuild("mushrooms")
     inst.AnimState:PlayAnimation(data.pickloot.."_cooked")
+
+    MakeInventoryFloatable(inst, "small", 0.05, 0.9)
 
     inst.entity:SetPristine()
 

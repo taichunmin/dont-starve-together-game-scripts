@@ -118,6 +118,10 @@ function Stewer:CanCook()
     return self.inst.components.container ~= nil and self.inst.components.container:IsFull()
 end
 
+function Stewer:GetRecipeForProduct()
+	return self.product ~= nil and cooking.GetRecipe(self.inst.prefab, self.product) or nil
+end
+
 function Stewer:StartCooking()
     if self.targettime == nil and self.inst.components.container ~= nil then
         self.done = nil

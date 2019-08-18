@@ -214,6 +214,8 @@ local function MakeItem(name, drawn)
             inst:SetPrefabNameOverride("minisign")
         end
 
+        MakeInventoryFloatable(inst, "med", 0.05, 0.65)
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then

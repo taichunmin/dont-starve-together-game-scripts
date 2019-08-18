@@ -20,6 +20,8 @@ local function MakeSpice(name)
 
         inst:AddTag("spice")
 
+        MakeInventoryFloatable(inst, "med", nil, (name == "spice_garlic" and 0.85) or 0.7)
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then

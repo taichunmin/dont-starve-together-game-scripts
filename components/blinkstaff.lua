@@ -21,7 +21,7 @@ function BlinkStaff:SpawnEffect(inst)
     end
 end
 
-local function OnBlinked(caster, self, pt)
+local function OnBlinked(caster, self, dpt)
     if caster.sg == nil then
         caster:Show()
         if caster.components.health ~= nil then
@@ -33,14 +33,17 @@ local function OnBlinked(caster, self, pt)
     elseif caster.sg.statemem.onstopblinking ~= nil then
         caster.sg.statemem.onstopblinking()
     end
-    caster.Physics:Teleport(pt:Get())
+	local pt = dpt:GetPosition()
+	if pt ~= nil and TheWorld.Map:IsPassableAtPoint(pt:Get()) and not TheWorld.Map:IsGroundTargetBlocked(pt) then
+	    caster.Physics:Teleport(pt:Get())
+	end
     self:SpawnEffect(caster)
     caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
 end
 
 function BlinkStaff:Blink(pt, caster)
     if (caster.sg ~= nil and caster.sg.currentstate.name ~= "quicktele") or
-        not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) or
+        not TheWorld.Map:IsPassableAtPoint(pt:Get()) or
         TheWorld.Map:IsGroundTargetBlocked(pt) then
         return false
     elseif self.blinktask ~= nil then
@@ -51,18 +54,18 @@ function BlinkStaff:Blink(pt, caster)
     caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
 
     if caster.sg == nil then
-        caster:Hide()
-        if caster.DynamicShadow ~= nil then
-            caster.DynamicShadow:Enable(false)
-        end
-        if caster.components.health ~= nil then
-            caster.components.health:SetInvincible(true)
-        end
+    caster:Hide()
+    if caster.DynamicShadow ~= nil then
+        caster.DynamicShadow:Enable(false)
+    end
+    if caster.components.health ~= nil then
+        caster.components.health:SetInvincible(true)
+    end
     elseif caster.sg.statemem.onstartblinking ~= nil then
         caster.sg.statemem.onstartblinking()
     end
 
-    self.blinktask = caster:DoTaskInTime(.25, OnBlinked, self, pt)
+    self.blinktask = caster:DoTaskInTime(.25, OnBlinked, self, DynamicPosition(pt))
 
     if self.onblinkfn ~= nil then
         self.onblinkfn(self.inst, pt, caster)

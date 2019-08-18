@@ -69,6 +69,27 @@ function FindClosestPlayerToInst(inst, range, isalive)
     return FindClosestPlayerInRange(x, y, z, range, isalive)
 end
 
+function FindClosestPlayerOnLandInRangeSq(x, y, z, rangesq, isalive)
+    local closestPlayer = nil
+    for i, v in ipairs(AllPlayers) do
+        if (isalive == nil or isalive ~= (v.replica.health:IsDead() or v:HasTag("playerghost"))) and
+                v.entity:IsVisible() and
+                v:IsOnValidGround() then
+            local distsq = v:GetDistanceSqToPoint(x, y, z)
+            if distsq < rangesq then
+                rangesq = distsq
+                closestPlayer = v
+            end
+        end
+    end
+    return closestPlayer, closestPlayer ~= nil and rangesq or nil
+end
+
+function FindClosestPlayerToInstOnLand(inst, range, isalive)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    return FindClosestPlayerOnLandInRangeSq(x, y, z, range * range, isalive)
+end
+
 function FindPlayersInRangeSq(x, y, z, rangesq, isalive)
     local players = {}
     for i, v in ipairs(AllPlayers) do
@@ -214,13 +235,30 @@ end
 -- This function fans out a search from a starting position/direction and looks for a walkable
 -- position, and returns the valid offset, valid angle and whether the original angle was obstructed.
 -- starting_angle is in radians
-function FindWalkableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn)
+function FindWalkableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn, allow_water, allow_boats)
     return FindValidPositionByFan(start_angle, radius, attempts,
             function(offset)
                 local x = position.x + offset.x
                 local y = position.y + offset.y
                 local z = position.z + offset.z
-                return TheWorld.Map:IsAboveGroundAtPoint(x, y, z)
+                return (TheWorld.Map:IsAboveGroundAtPoint(x, y, z, allow_water) or (allow_boats and TheWorld.Map:GetPlatformAtPoint(x,z) ~= nil))
+                    and (not check_los or
+                        TheWorld.Pathfinder:IsClear(
+                            position.x, position.y, position.z,
+                            x, y, z,
+                            { ignorewalls = ignore_walls ~= false, ignorecreep = true }))
+                    and (customcheckfn == nil or customcheckfn(Vector3(x, y, z)))
+            end)
+end
+
+-- like FindWalkableOffset but only in the ocean
+function FindSwimmableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn)
+    return FindValidPositionByFan(start_angle, radius, attempts,
+            function(offset)
+                local x = position.x + offset.x
+                local y = position.y + offset.y
+                local z = position.z + offset.z
+                return (not TheWorld.Map:IsPassableAtPoint(x, y, z))
                     and (not check_los or
                         TheWorld.Pathfinder:IsClear(
                             position.x, position.y, position.z,

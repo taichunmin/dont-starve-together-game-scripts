@@ -1524,6 +1524,8 @@ local skin_assets =
 	Asset("PKGREF", "anim/dynamic/loading_woodie_victorian.dyn"),
 	Asset("DYNAMIC_ANIM", "anim/dynamic/loading_wx_magma.zip"),
 	Asset("PKGREF", "anim/dynamic/loading_wx_magma.dyn"),
+	Asset("DYNAMIC_ANIM", "anim/dynamic/mast_rose.zip"),
+	Asset("PKGREF", "anim/dynamic/mast_rose.dyn"),
 	Asset("DYNAMIC_ANIM", "anim/dynamic/minerhat_cowboy.zip"),
 	Asset("PKGREF", "anim/dynamic/minerhat_cowboy.dyn"),
 	Asset("DYNAMIC_ANIM", "anim/dynamic/minerhat_floppy.zip"),

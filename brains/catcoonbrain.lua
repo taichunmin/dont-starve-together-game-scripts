@@ -34,7 +34,7 @@ local function PlayAction(inst)
 
     local target = nil
     local pt = inst:GetPosition()
-    target = FindEntity(inst, TUNING.CATCOON_TARGET_DIST, nil, nil, NO_TAGS, PLAY_TAGS)
+    target = FindEntity(inst, TUNING.CATCOON_TARGET_DIST, function(item) return item:IsOnPassablePoint() end, nil, NO_TAGS, PLAY_TAGS)
 
     if target and target:HasTag("cattoyairborne") and not (target.sg and (target.sg:HasStateTag("landing") or target.sg:HasStateTag("landed"))) then
         if inst.last_play_air_time and (GetTime() - inst.last_play_air_time) < 15 then return end

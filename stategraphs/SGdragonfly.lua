@@ -71,7 +71,7 @@ local function SwitchToFlyOverPhysics(inst)
         inst.sg.mem.last_hit_time = GetTime()
         inst.hit_recovery = TUNING.DRAGONFLY_FLYING_HIT_RECOVERY
         inst.Physics:ClearCollisionMask()
-        inst.Physics:CollidesWith(COLLISION.WORLD)
+        inst.Physics:CollidesWith(COLLISION.GROUND)
         inst.Physics:CollidesWith(COLLISION.GIANTS)
     end
 end
@@ -81,7 +81,7 @@ local function SwitchToCombatPhysics(inst)
         inst.sg.mem.flyoverphysics = false
         inst.hit_recovery = TUNING.DRAGONFLY_HIT_RECOVERY
         inst.Physics:ClearCollisionMask()
-        inst.Physics:CollidesWith(COLLISION.WORLD)
+        inst.Physics:CollidesWith(COLLISION.GROUND)
         inst.Physics:CollidesWith(COLLISION.CHARACTERS)
         inst.Physics:CollidesWith(COLLISION.GIANTS)
     end
@@ -412,7 +412,7 @@ local states =
         tags = { "flight", "busy", "nosleep", "nofreeze" },
 
         onenter = function(inst)
-            inst.Physics:Stop()
+            inst.components.locomotor:Stop()
             inst.DynamicShadow:Enable(false)
             inst.components.health:SetInvincible(true)
 
@@ -427,7 +427,8 @@ local states =
         timeline =
         {
             TimeEvent(75*FRAMES, function(inst)
-                inst.Physics:SetMotorVel(math.random()*4,7+math.random()*2,math.random()*4)
+                local x, y, z = 0.5019684438612,7.5216834009827,2.7178563798944
+                inst.Physics:SetMotorVel(x, y, z)
             end),
             TimeEvent(6, function(inst) 
                 inst:DoDespawn()

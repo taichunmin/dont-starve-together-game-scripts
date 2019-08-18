@@ -34,16 +34,24 @@ end
 
 function GetProfilerSave(results)
     if TheWorld ~= nil and TheWorld.ismastersim then
-        local session_id = SaveGameIndex:GetSlotSession()
+        local slotnum = SaveGameIndex:GetCurrentSaveSlot()
+        local session_id = SaveGameIndex:GetSlotSession(slotnum)
         if session_id ~= nil then
-            local filename = TheNet:GetWorldSessionFile(session_id)
-            if filename ~= nil then
-                TheSim:GetPersistentString(filename,
-                    function(load_success, str)
-                        if load_success == true then
-                            results.levelstring = str
-                        end
-                    end)
+            local function onreadworldfile(load_success, str)
+                if load_success == true then
+                    results.levelstring = str
+                end
+            end
+            if not TheNet:IsDedicated() and (SaveGameIndex:IsSlotMultiLevel(slotnum) or SaveGameIndex:GetSlotServerData(slotnum).use_cluster_path) then
+                local file = TheNet:GetWorldSessionFileInClusterSlot(slotnum, "Master", session_id)
+                if file ~= nil then
+                    TheSim:GetPersistentStringInClusterSlot(slotnum, "Master", file, onreadworldfile)
+                end
+            else
+                local file = TheNet:GetWorldSessionFile(session_id)
+                if file ~= nil then
+                    TheSim:GetPersistentString(file, onreadworldfile)
+                end
             end
         end
     end
@@ -106,7 +114,7 @@ function ExpandWorldFromProfile()
 	local profile
 	TheSim:GetPersistentString( "../profile.json",	
 		function(load_success, str)
-    			if load_success == true then
+    		if load_success == true then
 				profile = str
 			end
 		end)

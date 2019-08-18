@@ -93,6 +93,8 @@ local function fn()
         inst.AnimState:Hide("eye")
     end
 
+    MakeInventoryFloatable(inst, "small", 0.2)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

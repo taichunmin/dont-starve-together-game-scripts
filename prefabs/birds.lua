@@ -174,13 +174,21 @@ end
 
 --------------------------------------------------------------------------
 
-local function makebird(name, soundname, no_feather)
+local function makebird(name, soundname, no_feather, bank, custom_loot_setup, water_bank)
     local assets =
     {
         Asset("ANIM", "anim/crow.zip"),
         Asset("ANIM", "anim/"..name.."_build.zip"),
         Asset("SOUND", "sound/birds.fsb"),
     }
+
+    if bank ~= nil then
+        table.insert(assets, Asset("ANIM", "anim/"..bank..".zip"))
+    end
+
+    if water_bank ~= nil then
+        table.insert(assets, Asset("ANIM", "anim/"..water_bank..".zip"))
+    end
 
     local prefabs = name == "quagmire_pigeon" and
     {
@@ -206,6 +214,12 @@ local function makebird(name, soundname, no_feather)
         table.insert(prefabs, "canary_poisoned")
     end
 
+	local soundbank = "dontstarve"
+	if type(soundname) == "table" then
+		soundbank = soundname.bank
+		soundname = soundname.name
+	end
+
     local function fn()
         local inst = CreateEntity()
 
@@ -221,7 +235,12 @@ local function makebird(name, soundname, no_feather)
         --Initialize physics
         inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
         inst.Physics:ClearCollisionMask()
-        inst.Physics:CollidesWith(COLLISION.WORLD)
+        if water_bank ~= nil then
+            -- Birds that float can pass through LIMITS walls, i.e. when hopping.
+            inst.Physics:CollidesWith(COLLISION.GROUND)
+        else
+            inst.Physics:CollidesWith(COLLISION.WORLD)
+        end
         inst.Physics:SetMass(1)
         inst.Physics:SetSphere(1)
 
@@ -234,7 +253,7 @@ local function makebird(name, soundname, no_feather)
 
         inst.Transform:SetTwoFaced()
 
-        inst.AnimState:SetBank("crow")
+        inst.AnimState:SetBank(bank or "crow")
         inst.AnimState:SetBuild(name.."_build")
         inst.AnimState:PlayAnimation("idle")
 
@@ -242,6 +261,10 @@ local function makebird(name, soundname, no_feather)
         inst.DynamicShadow:Enable(false)
 
         MakeFeedableSmallLivestockPristine(inst)
+
+        if water_bank ~= nil then
+            MakeInventoryFloatable(inst)
+        end
 
         inst.entity:SetPristine()
 
@@ -251,8 +274,8 @@ local function makebird(name, soundname, no_feather)
 
         inst.sounds =
         {
-            takeoff = "dontstarve/birds/takeoff_"..soundname,
-            chirp = "dontstarve/birds/chirp_"..soundname,
+            takeoff = soundbank.."/birds/takeoff_"..soundname,
+            chirp = soundbank.."/birds/chirp_"..soundname,
             flyin = "dontstarve/birds/flyin",
         }
 
@@ -264,11 +287,15 @@ local function makebird(name, soundname, no_feather)
         inst:SetStateGraph("SGbird")
 
         inst:AddComponent("lootdropper")
-		if not no_feather then
-			inst.components.lootdropper:AddRandomLoot("feather_"..name, name == "canary" and .1 or 1)
+		if custom_loot_setup ~= nil then
+			custom_loot_setup(inst, prefabs)
+		else
+			if not no_feather then
+				inst.components.lootdropper:AddRandomLoot("feather_"..name, name == "canary" and .1 or 1)
+			end
+			inst.components.lootdropper:AddRandomLoot(name == "quagmire_pigeon" and "quagmire_smallmeat" or "smallmeat", 1)
+			inst.components.lootdropper.numrandomloot = 1
 		end
-        inst.components.lootdropper:AddRandomLoot(name == "quagmire_pigeon" and "quagmire_smallmeat" or "smallmeat", 1)
-        inst.components.lootdropper.numrandomloot = 1
 
         inst:AddComponent("occupier")
 
@@ -282,6 +309,9 @@ local function makebird(name, soundname, no_feather)
         inst.components.inventoryitem.nobounce = true
         inst.components.inventoryitem.canbepickedup = false
         inst.components.inventoryitem.canbepickedupalive = true
+        if water_bank == nil then
+            inst.components.inventoryitem:SetSinks(true)
+        end
 
         inst:AddComponent("cookable")
         inst.components.cookable.product = name == "quagmire_pigeon" and "quagmire_cookedsmallmeat" or "cookedsmallmeat"
@@ -291,6 +321,12 @@ local function makebird(name, soundname, no_feather)
         inst.components.health.murdersound = "dontstarve/wilson/hit_animal"
 
         inst:AddComponent("inspectable")
+
+        if water_bank ~= nil then
+            inst.flyawaydistance = TUNING.WATERBIRD_SEE_THREAT_DISTANCE
+        else
+            inst.flyawaydistance = TUNING.BIRD_SEE_THREAT_DISTANCE
+        end
 
         if TheNet:GetServerGameMode() ~= "quagmire" then
             inst:AddComponent("combat")
@@ -343,14 +379,28 @@ local function makebird(name, soundname, no_feather)
             inst.OnLoad = OnCanaryLoad
         end
 
+        if water_bank ~= nil then
+            inst:ListenForEvent("floater_startfloating", function(inst) inst.AnimState:SetBank(water_bank) end)
+            inst:ListenForEvent("floater_stopfloating", function(inst) inst.AnimState:SetBank(bank or "crow") end)
+        end
+
         return inst
     end
 
     return Prefab(name, fn, assets, prefabs)
 end
 
+local function puffin_loot_setup(inst, prefab_deps)
+	inst.components.lootdropper:AddRandomLoot("feather_crow", 1)
+	inst.components.lootdropper:AddRandomLoot("smallmeat", 1)
+	inst.components.lootdropper.numrandomloot = 1
+
+    table.insert(prefab_deps, "feather_crow")
+end
+
 return makebird("crow", "crow"),
     makebird("robin", "robin"),
     makebird("robin_winter", "junco"),
     makebird("canary", "canary"),
-    makebird("quagmire_pigeon", "quagmire_pigeon", true)
+    makebird("quagmire_pigeon", "quagmire_pigeon", true),
+    makebird("puffin", {name="puffin", bank="turnoftides"}, true, "puffin", puffin_loot_setup, "puffin_water")

@@ -24,7 +24,7 @@ function Firebug:Disable()
 end
 
 function Firebug:OnUpdate(dt)
-    if self.sanity_threshold ~= nil and self.inst.components.sanity:GetPercent() >= self.sanity_threshold then
+    if self.sanity_threshold ~= nil and self.inst.components.sanity:IsInsanityMode() and self.inst.components.sanity:GetPercent() >= self.sanity_threshold then
         return
     elseif self.time_to_fire > dt then
         self.time_to_fire = self.time_to_fire - dt

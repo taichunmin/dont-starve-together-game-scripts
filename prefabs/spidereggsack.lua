@@ -40,6 +40,8 @@ local function fn()
 
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst, "med", 0.05, {0.85, 0.6, 0.85})
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -58,6 +60,7 @@ local function fn()
     MakeHauntableLaunchAndIgnite(inst)
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("tradable")
 
     inst.components.inventoryitem:SetOnPickupFn(onpickup)

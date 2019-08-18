@@ -170,7 +170,7 @@ local CraftTabs = Class(Widget, function(self, owner, top_root)
 
 		table.sort(tabnames, function(a,b) return a.sort < b.sort end)
 
-	    self.tabs.spacing = 750 / numtabslots
+	    self.tabs.spacing = 760 / numtabslots
 	end
 
     self.tabbyfilter = {}

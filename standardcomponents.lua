@@ -23,11 +23,15 @@ function DefaultBurntFn(inst)
         inst.components.workable:SetWorkLeft(0)
     end
 
-    local ash = SpawnPrefab("ash")
-    ash.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    local my_x, my_y, my_z = inst.Transform:GetWorldPosition()
 
-    if inst.components.stackable ~= nil then
-        ash.components.stackable.stacksize = math.min(ash.components.stackable.maxsize, inst.components.stackable.stacksize)
+    if TheWorld.Map:IsVisualGroundAtPoint(my_x, my_y, my_z) then
+        local ash = SpawnPrefab("ash")
+        ash.Transform:SetPosition(inst.Transform:GetWorldPosition())
+
+        if inst.components.stackable ~= nil then
+            ash.components.stackable.stacksize = math.min(ash.components.stackable.maxsize, inst.components.stackable.stacksize)
+        end
     end
 
     inst:Remove()
@@ -127,11 +131,11 @@ function MakeSmallBurnable(inst, time, offset, structure, sym)
     end
 end
 
-function MakeMediumBurnable(inst, time, offset, structure)
+function MakeMediumBurnable(inst, time, offset, structure, sym)
     inst:AddComponent("burnable")
     inst.components.burnable:SetFXLevel(3)
     inst.components.burnable:SetBurnTime(time or 20)
-    inst.components.burnable:AddBurnFX(burnfx.generic, offset or Vector3(0, 0, 0) )
+    inst.components.burnable:AddBurnFX(burnfx.generic, offset or Vector3(0, 0, 0), sym )
     inst.components.burnable:SetOnIgniteFn(DefaultBurnFn)
     inst.components.burnable:SetOnExtinguishFn(DefaultExtinguishFn)
     if structure then
@@ -141,11 +145,11 @@ function MakeMediumBurnable(inst, time, offset, structure)
     end
 end
 
-function MakeLargeBurnable(inst, time, offset, structure)
+function MakeLargeBurnable(inst, time, offset, structure, sym)
     inst:AddComponent("burnable")
     inst.components.burnable:SetFXLevel(4)
     inst.components.burnable:SetBurnTime(time or 30)
-    inst.components.burnable:AddBurnFX(burnfx.generic, offset or Vector3(0, 0, 0) )
+    inst.components.burnable:AddBurnFX(burnfx.generic, offset or Vector3(0, 0, 0), sym )
     inst.components.burnable:SetOnIgniteFn(DefaultBurnFn)
     inst.components.burnable:SetOnExtinguishFn(DefaultExtinguishFn)
     if structure then
@@ -262,9 +266,11 @@ function MakeHugeFreezableCharacter(inst, sym, offset)
     inst.components.freezable:AddShatterFX(shatterfx.character, offset or Vector3(0, 0, 0), sym)
 end
 
-function MakeInventoryPhysics(inst)
+function MakeInventoryPhysics(inst, mass, rad)
+    mass = mass or 1
+    rad = rad or .5
 	local phys = inst.entity:AddPhysics()
-	phys:SetMass(1)
+	phys:SetMass(mass)
 	phys:SetFriction(.1)
 	phys:SetDamping(0)
 	phys:SetRestitution(.5)
@@ -273,7 +279,8 @@ function MakeInventoryPhysics(inst)
 	phys:CollidesWith(COLLISION.WORLD)
 	phys:CollidesWith(COLLISION.OBSTACLES)
 	phys:CollidesWith(COLLISION.SMALLOBSTACLES)
-	phys:SetSphere(.5)
+	phys:SetSphere(rad)
+    return phys
 end
 
 function MakeCharacterPhysics(inst, mass, rad)
@@ -289,6 +296,7 @@ function MakeCharacterPhysics(inst, mass, rad)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function MakeFlyingCharacterPhysics(inst, mass, rad)
@@ -298,9 +306,10 @@ function MakeFlyingCharacterPhysics(inst, mass, rad)
     phys:SetDamping(5)
     phys:SetCollisionGroup(COLLISION.FLYERS)
     phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
     phys:CollidesWith(COLLISION.FLYERS)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function MakeTinyFlyingCharacterPhysics(inst, mass, rad)
@@ -310,8 +319,9 @@ function MakeTinyFlyingCharacterPhysics(inst, mass, rad)
     phys:SetDamping(5)
     phys:SetCollisionGroup(COLLISION.FLYERS)
     phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function MakeGiantCharacterPhysics(inst, mass, rad)
@@ -326,6 +336,7 @@ function MakeGiantCharacterPhysics(inst, mass, rad)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function MakeFlyingGiantCharacterPhysics(inst, mass, rad)
@@ -335,11 +346,12 @@ function MakeFlyingGiantCharacterPhysics(inst, mass, rad)
     phys:SetDamping(5)
     phys:SetCollisionGroup(COLLISION.GIANTS)
     phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
     --phys:CollidesWith(COLLISION.OBSTACLES)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function MakeGhostPhysics(inst, mass, rad)
@@ -349,21 +361,23 @@ function MakeGhostPhysics(inst, mass, rad)
     phys:SetDamping(5)
     phys:SetCollisionGroup(COLLISION.CHARACTERS)
     phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
     --phys:CollidesWith(COLLISION.OBSTACLES)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, 1)
+    return phys
 end
 
 function ChangeToGhostPhysics(inst)
     local phys = inst.Physics
     phys:SetCollisionGroup(COLLISION.CHARACTERS)
     phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
     --phys:CollidesWith(COLLISION.OBSTACLES)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
+    return phys
 end
 
 function ChangeToCharacterPhysics(inst)
@@ -375,6 +389,7 @@ function ChangeToCharacterPhysics(inst)
     phys:CollidesWith(COLLISION.SMALLOBSTACLES)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
+    return phys
 end
 
 function ChangeToObstaclePhysics(inst)
@@ -386,6 +401,13 @@ function ChangeToObstaclePhysics(inst)
     phys:CollidesWith(COLLISION.ITEMS)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
+    return phys
+end
+
+function ChangeToWaterObstaclePhysics(inst)
+    local phys = ChangeToObstaclePhysics(inst)
+    phys:CollidesWith(COLLISION.OBSTACLES)
+    return phys
 end
 
 function ChangeToInventoryPhysics(inst)
@@ -395,6 +417,7 @@ function ChangeToInventoryPhysics(inst)
     phys:CollidesWith(COLLISION.WORLD)
     phys:CollidesWith(COLLISION.OBSTACLES)
     phys:CollidesWith(COLLISION.SMALLOBSTACLES)
+    return phys
 end
 
 function MakeObstaclePhysics(inst, rad, height)
@@ -407,6 +430,25 @@ function MakeObstaclePhysics(inst, rad, height)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, height or 2)
+    return phys
+end
+
+function MakeWaterObstaclePhysics(inst, rad, height, restitution)
+    inst:AddTag("blocker")
+    local phys = inst.entity:AddPhysics()
+    phys:SetMass(0) --Bullet wants 0 mass for static objects
+    phys:SetCollisionGroup(COLLISION.OBSTACLES)
+    phys:ClearCollisionMask()
+    phys:CollidesWith(COLLISION.ITEMS)
+    phys:CollidesWith(COLLISION.CHARACTERS)
+    phys:CollidesWith(COLLISION.GIANTS)
+    phys:CollidesWith(COLLISION.OBSTACLES)
+    phys:SetCapsule(rad, height)
+
+    inst:AddComponent("waterphysics")
+    inst.components.waterphysics.restitution = restitution
+
+    return phys
 end
 
 function MakeSmallObstaclePhysics(inst, rad, height)
@@ -418,6 +460,7 @@ function MakeSmallObstaclePhysics(inst, rad, height)
     phys:CollidesWith(COLLISION.ITEMS)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:SetCapsule(rad, height or 2)
+    return phys
 end
 
 --Heavy obstacles can be heavy lifted, changing to inventoryitem.
@@ -437,6 +480,7 @@ function MakeHeavyObstaclePhysics(inst, rad, height)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:CollidesWith(COLLISION.GIANTS)
     phys:SetCapsule(rad, height or 2)
+    return phys
 end
 
 --Heavy obstacles can be heavy lifted, changing to inventoryitem.
@@ -455,6 +499,7 @@ function MakeSmallHeavyObstaclePhysics(inst, rad, height)
     phys:CollidesWith(COLLISION.ITEMS)
     phys:CollidesWith(COLLISION.CHARACTERS)
     phys:SetCapsule(rad, height or 2)
+    return phys
 end
 
 function RemovePhysicsColliders(inst)
@@ -1219,3 +1264,34 @@ function PreventTargetingOnAttacked(inst, attacker, tag)
     end
     return false
 end
+
+--------------------------------------------------------------------------
+
+function AddDefaultRippleSymbols(inst, ripple, shadow)
+    -- used if something has the ripple effects but it's an inventory item
+	if ripple then
+	    inst.AnimState:OverrideSymbol("water_ripple", "swimming_ripple", "water_ripple")
+	end
+	if shadow then
+	    inst.AnimState:OverrideSymbol("water_shadow", "swimming_ripple", "water_shadow")
+	end
+end
+
+function MakeInventoryFloatable(inst, size, offset, scale, swap_bank, float_index, swap_data)
+    inst:AddComponent("floater")
+    inst.components.floater:SetSize(size or "small")
+
+    if offset ~= nil then
+        inst.components.floater:SetVerticalOffset(offset)
+    end
+
+    if scale ~= nil then
+        inst.components.floater:SetScale(scale)
+    end
+
+    if swap_bank then
+        inst.components.floater:SetBankSwapOnFloat(swap_bank, float_index, swap_data)
+    end
+end
+
+--------------------------------------------------------------------------

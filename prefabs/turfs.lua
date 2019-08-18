@@ -1,10 +1,5 @@
 local GroundTiles = require("worldtiledefs")
 
-local assets =
-{
-    Asset("ANIM", "anim/turf.zip"),
-}
-
 local prefabs =
 {
     "gridplacer",
@@ -41,12 +36,14 @@ local function make_turf(tile, data)
 
         MakeInventoryPhysics(inst)
 
-        inst.AnimState:SetBank("turf")
-        inst.AnimState:SetBuild("turf")
+        inst.AnimState:SetBank(data.bank_build)
+        inst.AnimState:SetBuild(data.bank_build)
         inst.AnimState:PlayAnimation(data.anim)
 
         inst:AddTag("groundtile")
         inst:AddTag("molebait")
+
+        MakeInventoryFloatable(inst, "med", nil, 0.65)
 
         inst.entity:SetPristine()
 
@@ -77,6 +74,11 @@ local function make_turf(tile, data)
         return inst
     end
 
+    local assets =
+    {
+        Asset("ANIM", "anim/"..data.bank_build..".zip"),
+        Asset("INV_IMAGE", "turf_"..data.name)
+    }
     return Prefab("turf_"..data.name, fn, assets, prefabs)
 end
 

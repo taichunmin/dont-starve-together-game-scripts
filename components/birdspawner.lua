@@ -21,6 +21,14 @@ local BIRD_TYPES =
     [GROUND.GRASS] = { "robin" },
     [GROUND.FOREST] = { "robin", "crow" },
     [GROUND.MARSH] = { "crow" },
+    
+    [GROUND.OCEAN_COASTAL] = {"puffin"},
+    [GROUND.OCEAN_COASTAL_SHORE] = {"puffin"},
+    [GROUND.OCEAN_SWELL] = {"puffin"},
+    [GROUND.OCEAN_ROUGH] = {"puffin"},
+    [GROUND.OCEAN_REEF] = {"puffin"},
+    [GROUND.OCEAN_REEF_SHORE] = {"puffin"},
+    [GROUND.OCEAN_HAZARDOUS] = {"puffin"},
 }
 
 --------------------------------------------------------------------------
@@ -237,10 +245,12 @@ end
 function self:GetSpawnPoint(pt)
     --We have to use custom test function because birds can't land on creep
     local function TestSpawnPoint(offset)
-        local spawnpoint = pt + offset
-        return _map:IsPassableAtPoint(spawnpoint:Get()) and 
-               not _groundcreep:OnCreep(spawnpoint:Get()) and 
-               #(TheSim:FindEntities(spawnpoint.x, 0, spawnpoint.z, 4, { "birdblocker" })) == 0
+        local spawnpoint_x, spawnpoint_y, spawnpoint_z = (pt + offset):Get()
+        local allow_water = true
+        return _map:IsPassableAtPoint(spawnpoint_x, spawnpoint_y, spawnpoint_z, allow_water) and
+               _map:GetTileAtPoint(spawnpoint_x, spawnpoint_y, spawnpoint_z) ~= GROUND.OCEAN_COASTAL_SHORE and
+               not _groundcreep:OnCreep(spawnpoint_x, spawnpoint_y, spawnpoint_z) and
+               #(TheSim:FindEntities(spawnpoint_x, 0, spawnpoint_z, 4, { "birdblocker" })) == 0
     end
 
     local theta = math.random() * 2 * PI
@@ -274,7 +284,8 @@ function self:SpawnBird(spawnpoint, ignorebait)
             if bird.components.eater:CanEat(v) and
                 v.components.bait and
                 not (v.components.inventoryitem and v.components.inventoryitem:IsHeld()) and
-                not IsDangerNearby(x, y, z) then
+                not IsDangerNearby(x, y, z) and
+                (bird.components.floater ~= nil or _map:IsPassableAtPoint(x, y, z)) then
                 spawnpoint.x, spawnpoint.z = x, z
                 bird.bufferedaction = BufferedAction(bird, v, ACTIONS.EAT)
                 break

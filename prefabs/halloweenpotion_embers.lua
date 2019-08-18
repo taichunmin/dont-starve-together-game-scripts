@@ -46,6 +46,8 @@ local function potion_fn(anim, buff_prefab)
     inst.AnimState:SetBuild("halloween_potions")
     inst.AnimState:PlayAnimation(anim)
 
+    MakeInventoryFloatable(inst, "small", 0.15, 0.65)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

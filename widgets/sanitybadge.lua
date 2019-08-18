@@ -8,13 +8,22 @@ local function OnGhostDeactivated(inst)
 end
 
 local SanityBadge = Class(Badge, function(self, owner)
-    Badge._ctor(self, "sanity", owner)
+	self.sanitymode = SANITY_MODE_INSANITY
+    self.anim_override = "sanity"
+	Badge._ctor(self, "sanity", owner)
 
     self.topperanim = self.underNumber:AddChild(UIAnim())
     self.topperanim:GetAnimState():SetBank("effigy_topper")
     self.topperanim:GetAnimState():SetBuild("effigy_topper")
     self.topperanim:GetAnimState():PlayAnimation("anim")
     self.topperanim:SetClickable(false)
+    self.topperanim:GetAnimState():Hide("frame")
+
+    self.frame = self.underNumber:AddChild(UIAnim())
+    self.frame:GetAnimState():SetBank("sanity")
+    self.frame:GetAnimState():SetBuild("sanity")
+    self.frame:GetAnimState():PlayAnimation("frame")
+    self.frame:SetClickable(false)
 
     self.sanityarrow = self.underNumber:AddChild(UIAnim())
     self.sanityarrow:GetAnimState():SetBank("sanity_arrow")
@@ -22,8 +31,6 @@ local SanityBadge = Class(Badge, function(self, owner)
     self.sanityarrow:GetAnimState():PlayAnimation("neutral")
     self.sanityarrow:SetClickable(false)
 
-    --Hide the original frame since it is now overlapped by the topperanim
-    self.anim:GetAnimState():Hide("frame")
 
     self.ghostanim = self.underNumber:AddChild(UIAnim())
     self.ghostanim:GetAnimState():SetBank("sanity_ghost")
@@ -41,6 +48,16 @@ local SanityBadge = Class(Badge, function(self, owner)
     self:StartUpdating()
 end)
 
+function SanityBadge:DoTransition()
+	local new_sanity_mode = self.owner.replica.sanity:GetSanityMode()
+	if self.sanitymode ~= new_sanity_mode then
+		self.sanitymode = new_sanity_mode
+		self.anim_override = self.sanitymode == SANITY_MODE_INSANITY and "sanity" or "lunacy"
+	    Badge.SetPercent(self, self.val, self.max) -- refresh the animation
+	end
+	self.transition_task = nil
+end
+
 function SanityBadge:SetPercent(val, max, penaltypercent)
     self.val = val
     self.max = max
@@ -48,6 +65,39 @@ function SanityBadge:SetPercent(val, max, penaltypercent)
 
     self.penaltypercent = penaltypercent or 0
     self.topperanim:GetAnimState():SetPercent("anim", self.penaltypercent)
+
+	local sanity = self.owner.replica.sanity
+
+	if sanity:GetSanityMode() ~= self.sanitymode then
+		if self.transition_task ~= nil then
+			self.transition_task:Cancel()
+			self.transition_task = nil
+			self:DoTransition()
+		end
+		if self:IsVisible() then
+			self.frame:GetAnimState():PlayAnimation(self.sanitymode ~= SANITY_MODE_INSANITY and "transition_sanity" or "transition_lunacy")
+			self.frame:GetAnimState():PushAnimation("frame", false)
+			self.transition_task = self.owner:DoTaskInTime(6*FRAMES, function() self:DoTransition() end)
+		else
+			self:DoTransition()
+		end
+    end
+end
+
+function SanityBadge:PulseGreen()
+	if self.sanitymode == SANITY_MODE_LUNACY then
+		Badge.PulseRed(self)
+	else
+		Badge.PulseGreen(self)
+	end
+end
+
+function SanityBadge:PulseRed()
+	if self.sanitymode == SANITY_MODE_LUNACY then
+		Badge.PulseGreen(self)
+	else
+		Badge.PulseRed(self)
+	end
 end
 
 local RATE_SCALE_ANIM =

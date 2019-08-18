@@ -63,6 +63,8 @@ local function common(anim, cookable)
         inst:AddTag("cookable")
     end
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -121,6 +123,8 @@ end
 
 local function cooked()
     local inst = common("cooked")
+
+    inst.components.floater:SetScale(0.8)
 
     if not TheWorld.ismastersim then
         return inst

@@ -79,7 +79,7 @@ local function StealFoodAction(inst)
     for i, v in ipairs(ents) do
         --go through player inv and find valid food
         local inv = v.components.inventory
-        if inv then
+        if inv and v:IsOnValidGround() then
             local pack = inv:GetEquippedItem(EQUIPSLOTS.BODY)
             local validfood = {}
             if pack and pack.components.container then

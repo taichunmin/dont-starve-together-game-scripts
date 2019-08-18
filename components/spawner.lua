@@ -25,6 +25,8 @@ local Spawner = Class(function(self, inst)
     self.onoccupied = nil
     self.onvacate = nil
     self.spawnoffscreen = nil
+    --self.spawn_in_water
+    --self.spawn_on_boats
     
     self.task = nil
     self.nextspawntime = nil
@@ -63,6 +65,11 @@ end
 
 function Spawner:SetOnVacateFn(fn)
     self.onvacate = fn
+end
+
+function Spawner:SetWaterSpawning(spawn_in_water, spawn_on_boats)
+    self.spawn_in_water = spawn_in_water
+    self.spawn_on_boats = spawn_on_boats
 end
 
 function Spawner:SetOnlySpawnOffscreen(offscreen)
@@ -207,7 +214,7 @@ function Spawner:ReleaseChild()
             local x, y, z = self.inst.Transform:GetWorldPosition()
             local start_angle = math.random() * 2 * PI
 
-            local offset = FindWalkableOffset(Vector3(x, 0, z), start_angle, rad, 8, false, true, NoHoles)
+            local offset = FindWalkableOffset(Vector3(x, 0, z), start_angle, rad, 8, false, true, NoHoles, self.spawn_in_water or false, self.spawn_on_boats or false)
             if offset == nil then
                 -- well it's gotta go somewhere!
                 --print(self.inst, "Spawner:ReleaseChild() no good place to spawn child: ", self.child)

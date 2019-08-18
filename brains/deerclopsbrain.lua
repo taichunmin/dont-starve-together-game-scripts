@@ -12,12 +12,18 @@ local SEE_DIST = 40
 local CHASE_DIST = 32
 local CHASE_TIME = 20
 
+local OUTSIDE_CATAPULT_RANGE = TUNING.WINONA_CATAPULT_MAX_RANGE + TUNING.WINONA_CATAPULT_KEEP_TARGET_BUFFER + TUNING.MAX_WALKABLE_PLATFORM_RADIUS + 1
+local function OceanChaseWaryDistance(inst, target)
+    -- We already know the target is on water. We'll approach if our attack can reach, but stay away otherwise.
+    return (CanProbablyReachTargetFromShore(inst, target, TUNING.DEERCLOPS_ATTACK_RANGE - 0.25) and 0) or OUTSIDE_CATAPULT_RANGE
+end
+
 local function BaseDestroy(inst)
     if inst.components.knownlocations:GetLocation("targetbase") then
     	local target = FindEntity(inst, SEE_DIST, function(item) 
     			if item.components.workable and item:HasTag("structure")
-    				and item.components.workable.action == ACTIONS.HAMMER
-    			then
+    				    and item.components.workable.action == ACTIONS.HAMMER
+                        and item:IsOnValidGround() then
     				return true
     			end
     		end, nil, {"wall"})
@@ -81,8 +87,8 @@ function DeerclopsBrain:OnStart()
         PriorityNode(
         {
             AttackWall(self.inst),
-            ChaseAndAttack(self.inst, CHASE_TIME, CHASE_DIST),
-            DoAction(self.inst, function() return BaseDestroy(self.inst) end, "DestroyBase", true),
+            ChaseAndAttack(self.inst, CHASE_TIME, CHASE_DIST, nil, nil, nil, OceanChaseWaryDistance),
+            DoAction(self.inst, BaseDestroy, "DestroyBase", true),
             WhileNode(function() return self.inst:WantsToLeave() end, "Trying To Leave", 
                 Wander(self.inst, GetHomePos, 30)),
 

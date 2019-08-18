@@ -187,7 +187,7 @@ function Propagator:OnUpdate(dt)
 end
 
 function Propagator:GetDebugString()
-    return string.format("range: %.2f output: %.2f heatresistance: %.2f flashpoint: %.2f delay: %s -- spreading: %s acceptsheat: %s currentheat: %s", self.propagaterange, self.heatoutput, self:GetHeatResistance(), self.flashpoint, tostring(self.delay ~= nil), tostring(self.spreading), tostring(self.acceptsheat)..(self.pauseheating and " (paused)" or ""), tostring(self.currentheat))
+    return string.format("range: %.2f output: %.2f heatresist: %.2f flashpoint: %.2f delay: %s, spread: %s acceptheat: %s curheat: %s", self.propagaterange, self.heatoutput, self:GetHeatResistance(), self.flashpoint, tostring(self.delay ~= nil), tostring(self.spreading), tostring(self.acceptsheat)..(self.pauseheating and " (paused)" or ""), tostring(self.currentheat))
 end
 
 return Propagator

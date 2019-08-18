@@ -964,6 +964,16 @@ function FrontEnd:GetActiveScreen()
     return #self.screenstack > 0 and self.screenstack[#self.screenstack] or nil
 end
 
+function FrontEnd:GetOpenScreenOfType(screenname)
+	for _,v in pairs(self.screenstack) do
+		if v.name == screenname then
+			return v
+		end
+	end
+
+	return nil
+end
+
 function FrontEnd:GetScreenStackSize()
     return #self.screenstack
 end

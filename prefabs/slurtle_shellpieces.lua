@@ -16,6 +16,8 @@ local function fn()
     inst.AnimState:SetBuild("slurtle_shellpieces")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.75)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

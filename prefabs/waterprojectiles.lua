@@ -49,7 +49,7 @@ local function common_fn(bank, build, anim, tag, isinventoryitem)
         inst.Physics:SetDamping(0)
         inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
         inst.Physics:ClearCollisionMask()
-        inst.Physics:CollidesWith(COLLISION.WORLD)
+        inst.Physics:CollidesWith(COLLISION.GROUND)
         inst.Physics:SetCapsule(0.2, 0.2)
         inst.Physics:SetDontRemoveOnSleep(true) -- so the object can land and put out the fire, also an optimization due to how this moves through the world
     end
@@ -126,7 +126,7 @@ local function onthrown(inst)
     inst.Physics:SetDamping(0)
     inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
     inst.Physics:ClearCollisionMask()
-    inst.Physics:CollidesWith(COLLISION.WORLD)
+    inst.Physics:CollidesWith(COLLISION.GROUND)
     inst.Physics:CollidesWith(COLLISION.OBSTACLES)
     inst.Physics:CollidesWith(COLLISION.ITEMS)
 end
@@ -153,6 +153,8 @@ local function waterballoon_fn()
     inst:AddComponent("reticule")
     inst.components.reticule.targetfn = ReticuleTargetFn
     inst.components.reticule.ease = true
+
+    MakeInventoryFloatable(inst, "med", 0.05, 0.65)
 
     if not TheWorld.ismastersim then
         return inst

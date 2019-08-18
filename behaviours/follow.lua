@@ -36,6 +36,17 @@ local function _distsq(inst, targ)
     return dx * dx + dy * dy + dz * dz, Vector3(x1, y1, z1)
 end
 
+function Follow:AreDifferentPlatforms(my_x, my_z, target_x, target_z)
+    local different_platforms = false
+    if self.inst.components.locomotor.allow_platform_hopping then
+        local map = TheWorld.Map
+        local my_platform = map:GetPlatformAtPoint(my_x, my_z)
+        local target_platform = map:GetPlatformAtPoint(target_x, target_z)
+        return my_platform ~= target_platform
+    end    
+    return false
+end
+
 function Follow:Visit()
     --cached in case we need to use this multiple times
     local dist_sq, target_pos
@@ -44,10 +55,16 @@ function Follow:Visit()
         self.currenttarget = self:GetTarget()
         if self.currenttarget ~= nil then
             dist_sq, target_pos = _distsq(self.inst, self.currenttarget)
-            if dist_sq < self.min_dist * self.min_dist then
+
+            local my_x, my_y, my_z = self.inst.Transform:GetWorldPosition()
+            local target_x, target_y, target_z = self.currenttarget.Transform:GetWorldPosition()
+
+            local on_different_platforms = self:AreDifferentPlatforms(my_x, my_z, target_x, target_z)
+
+            if not on_different_platforms and dist_sq < self.min_dist * self.min_dist then
                 self.status = RUNNING
                 self.action = "BACKOFF"
-            elseif dist_sq > self.max_dist * self.max_dist then
+            elseif dist_sq > self.max_dist * self.max_dist or on_different_platforms then
                 self.status = RUNNING
                 self.action = "APPROACH"
             else
@@ -72,11 +89,22 @@ function Follow:Visit()
             if dist_sq == nil then
                 dist_sq, target_pos = _distsq(self.inst, self.currenttarget)
             end
-            if dist_sq < self.target_dist * self.target_dist then
+
+            local my_x, my_y, my_z = self.inst.Transform:GetWorldPosition()
+            local target_x, target_y, target_z = self.currenttarget.Transform:GetWorldPosition()
+
+            local different_platforms = self:AreDifferentPlatforms(my_x, my_z, target_x, target_z)
+
+            if not different_platforms and dist_sq < self.target_dist * self.target_dist then
                 self.status = SUCCESS
                 return
             end
+
             local max_dist = self.max_dist * .75
+
+            if different_platforms then
+                max_dist = 0
+            end
             if self.canrun and (dist_sq > max_dist * max_dist or self.inst.sg:HasStateTag("running")) then
                 self.inst.components.locomotor:GoToPoint(target_pos, nil, true)
             else

@@ -24,7 +24,7 @@ local events=
     CommonHandlers.OnAttack(),
     CommonHandlers.OnAttacked(),
     CommonHandlers.OnDeath(),
-    CommonHandlers.OnSleep(),
+    CommonHandlers.OnSleepEx(),
 }
 
 local states =
@@ -252,7 +252,7 @@ CommonStates.AddWalkStates(states,
 }, walkanims, true)
 
 
-CommonStates.AddSleepStates(states,
+CommonStates.AddSleepExStates(states,
 {
     starttimeline =
     {
@@ -269,6 +269,10 @@ CommonStates.AddSleepStates(states,
     {
         TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/flap") end ),
     },
+},
+{
+    onsleeping = LandFlyingCreature,
+    onexitsleeping = RaiseFlyingCreature,
 })
 
 CommonStates.AddCombatStates(states,
@@ -278,8 +282,8 @@ CommonStates.AddCombatStates(states,
 
         TimeEvent(8* FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/bite") end),
         TimeEvent(11*FRAMES, function(inst)
-        inst.components.combat:DoAttack()
-        inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/flap")
+            inst.components.combat:DoAttack()
+            inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/flap")
         end),
     },
 
@@ -293,10 +297,10 @@ CommonStates.AddCombatStates(states,
     {
         TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/death") end),
         TimeEvent(4*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/bat/flap") end ),
+        TimeEvent(15*FRAMES, LandFlyingCreature),
     },
 })
 
-CommonStates.AddFrozenStates(states)
-
+CommonStates.AddFrozenStates(states, LandFlyingCreature, RaiseFlyingCreature)
 
 return StateGraph("bat", states, events, "idle", actionhandlers)

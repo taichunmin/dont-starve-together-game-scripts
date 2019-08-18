@@ -34,6 +34,7 @@ local function makefn(name, frame)
         inst:AddComponent("inspectable")
 
         inst:AddComponent("inventoryitem")
+        inst.components.inventoryitem:SetSinks(true)
 
         inst.AnimState:SetBuild("teleportato_parts_build")
 

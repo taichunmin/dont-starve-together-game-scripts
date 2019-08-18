@@ -139,8 +139,32 @@ return {
             MISMATCH = "Clearly this is the wrong dish.", 
             SAMEDISH = "I've already put this on a dish.", 
         },
+        SAIL =
+        {
+        	REPAIR = "It looks fine to me as is.",
+        },
+        ROW_FAIL =
+        {
+            BAD_TIMING0 = "I must time this perfectly if I'm to succeed.",
+            BAD_TIMING1 = "This isn't exactly my forte.",
+            BAD_TIMING2 = "Hmph. Physical labor is more suited to underlings.",
+        },
+        LOWER_SAIL_FAIL =
+        {
+            "Well, that didn't quite work as I planned.",
+            "How inconvenient.",
+            "Blast it!",
+        }, 
+        BATHBOMB =
+        {
+            GLASSED = "I can't do that while it's covered in moon glass.",
+            ALREADY_BOMBED = "No need to do it twice.",
+        },
 	},
 	ACTIONFAIL_GENERIC = "That didn't work.",
+	ANNOUNCE_WASHED_ASHORE = "My suit is drenched in salt water.",
+	ANNOUNCE_BOAT_LEAK = "We've sprung a leak!",
+	ANNOUNCE_BOAT_SINK = "Oh dear.",
 	ANNOUNCE_DIG_DISEASE_WARNING = "That takes care of that.",
 	ANNOUNCE_PICK_DISEASE_WARNING = "How putrid!",
 	ANNOUNCE_MOUNT_LOWHEALTH = "Say, pal, you don't look so good.",
@@ -151,6 +175,22 @@ return {
 	ANNOUNCE_KLAUS_ENRAGE = "Time to beat a hasty retreat!",
 	ANNOUNCE_KLAUS_UNCHAINED = "Its true power has been unlocked!",
 	ANNOUNCE_KLAUS_CALLFORHELP = "The coward has summoned its minions.",
+
+	ANNOUNCE_MOONALTAR_MINE =
+	{
+		GLASS_MED = "I hear you in there.",
+		GLASS_LOW = "I must have your knowledge.",
+		GLASS_REVEAL = "A-ha!",
+		IDOL_MED = "I hear you in there.",
+		IDOL_LOW = "I must have your knowledge.",
+		IDOL_REVEAL = "A-ha!",
+		SEED_MED = "I hear you in there.",
+		SEED_LOW = "I must have your knowledge.",
+		SEED_REVEAL = "A-ha!",
+	},
+
+	ANNOUNCE_FLARE_SEEN = "Am I supposed to come running every time I spot a flare?",
+	ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "We're in for some trouble.",
 
 	ANNOUNCE_NODANGERAFK = "I must be ever vigilant!",
 	ANNOUNCE_NODANGERGIFT = "That's a terrible idea right now.",
@@ -655,6 +695,9 @@ return {
 			DRYINGINRAIN = "Moist and staying that way.",
 			GENERIC = "It can dry meats so they'll last longer.",
 			BURNT = "It's too brittle to hang meat on now.",
+			DONE_NOTMEAT = "Like the desert.",
+			DRYING_NOTMEAT = "Still moist.",
+			DRYINGINRAIN_NOTMEAT = "Moist and staying that way.",
 		},
 		MERMHEAD = 
 		{
@@ -784,7 +827,7 @@ return {
 		},
 		LIVINGTREE = "It's got a face.",
 		ICESTAFF = "Cool staff.",
-		WAXWELLJOURNAL = "I'm so sorry Charlie.",
+		WAXWELLJOURNAL = "I'm so sorry, Charlie.",
 		WORMLIGHT = "What a neat trick.",
 		WORMLIGHT_LESSER = "This one isn't very good.",
 		WORM =
@@ -1225,6 +1268,9 @@ return {
         CHESSPIECE_BEARGER = "A brute.",
         CHESSPIECE_MOOSEGOOSE = "What an imbecilic expression.",
         CHESSPIECE_DRAGONFLY = "It never stood a chance.",
+        CHESSPIECE_BUTTERFLY = "Rather elegant, I'd say.",
+        CHESSPIECE_ANCHOR = "How kitsch.",
+        CHESSPIECE_MOON = "I'm fairly partial to this one.",
         CHESSJUNK1 = "There's a reason I never finished that.",
         CHESSJUNK2 = "That one was a jerk.",
         CHESSJUNK3 = "Didn't like that one's face.",
@@ -1254,6 +1300,7 @@ return {
         CRITTER_PUPPY = "You're a slobbery little chap, aren't you?",
         CRITTER_KITTEN = "A wholly agreeable animal.",
         CRITTER_PERDLING = "You're as fowl as I am!",
+        CRITTER_LUNARMOTHLING = "You had better not chew holes in my suit.",
 
 		CROW =
 		{
@@ -1508,6 +1555,12 @@ return {
 		HONEYNUGGETS = "These look childish, but they're delicious.",
 		HORN = "Call forth the beasts!",
 		HOUND = "They don't recognize me!",
+		HOUNDCORPSE =
+		{
+			 GENERIC = "I wish we'd get rid of that.",
+			 BURNING = "Good riddance.",
+			 REVIVING = "It's coming alive again!",
+		},
 		HOUNDBONE = "Hungry devils, aren't they?",
 		HOUNDMOUND = "It's a tunnel down to the hounds' nest.",
 		ICEBOX = "A little piece of winter in a box.",
@@ -2054,6 +2107,10 @@ return {
 		TURF_FUNGUS_GREEN = "Turf.",
 		TURF_FUNGUS_RED = "Turf.",
 		TURF_DRAGONFLY = "It's warm, but quells flame.",
+
+		TURF_METEOR = "Turf.",
+        TURF_PEBBLEBEACH = "Turf.",
+		
 		INSPECTSELF = "I still look dapper, right? As if I need to check.",
 		TURKEYDINNER = "How festive.",
 		TWIGS = "Common, but useful.",
@@ -2449,32 +2506,32 @@ return {
         QUAGMIRE_LAMP_SHORT = "A little civility.",
 
         --v2 Winona
-        WINONA_CATAPULT =
+        WINONA_CATAPULT = 
         {
-            GENERIC = "I could have thought of that.",
-            OFF = "It's useless out here without power.",
-            BURNING = "I'm going to pretend I don't see it.",
-            BURNT = "Oh. What a pity.",
+        	GENERIC = "I could have thought of that.",
+        	OFF = "It's useless out here without power.",
+        	BURNING = "I'm going to pretend I don't see it.",
+        	BURNT = "Oh. What a pity.",
         },
-        WINONA_SPOTLIGHT =
+        WINONA_SPOTLIGHT = 
         {
-            GENERIC = "Well sure, if you want to take the easy way out.",
-            OFF = "It's useless out here without power.",
-            BURNING = "I'm going to pretend I don't see it.",
-            BURNT = "Oh. What a pity.",
+        	GENERIC = "Well sure, if you want to take the easy way out.",
+        	OFF = "It's useless out here without power.",
+        	BURNING = "I'm going to pretend I don't see it.",
+        	BURNT = "Oh. What a pity.",
         },
-        WINONA_BATTERY_LOW =
+        WINONA_BATTERY_LOW = 
         {
-            GENERIC = "Where does she find the time to build all this.",
-            LOWPOWER = "I think it's losing power.",
+        	GENERIC = "Where does she find the time to build all this.",
+        	LOWPOWER = "I think it's losing power.",
             OFF = "See? It wasn't so great after all.",
             BURNING = "I'm going to pretend I don't see it.",
             BURNT = "Oh. What a pity.",
         },
-        WINONA_BATTERY_HIGH =
+        WINONA_BATTERY_HIGH = 
         {
-            GENERIC = "At least she has the sense to use gems.",
-            LOWPOWER = "I think it's losing power.",
+        	GENERIC = "At least she has the sense to use gems.",
+        	LOWPOWER = "I think it's losing power.",
             OFF = "Magic isn't so easy, is it?",
             BURNING = "I'm going to pretend I don't see it.",
             BURNT = "Oh. What a pity.",
@@ -2485,12 +2542,179 @@ return {
         ARMOR_BRAMBLE = "Who's frail now?",
         TRAP_BRAMBLE = "Best laid traps.",
 
+        DRIFTWOOD_TREE = 
+        {
+            BURNING = "It seems to be burning.",
+            BURNT = "It's in utter ruin.",
+            CHOPPED = "We've chopped it up already.",
+            GENERIC = "It appears to be a piece of drifted wood.",
+        },
+
+        BOATFRAGMENT03 = "Merely smithereens.",
+        BOATFRAGMENT04 = "Merely smithereens.",
+        BOATFRAGMENT05 = "Merely smithereens.",
+        BOAT_LEAK = "Oh, great. Now we're going to drown.",
+        MAST = "Every vessel mast have one.",
+        SEASTACK = "It would be easy to wreck a vessel on one of those.",
+        FISHINGNET = "Not my preferred way to ensnare enemies.",
+        ANTCHOVIES = "What a miserable thing.",
+        STEERINGWHEEL = "Why yes, you may call me the \"Captain\".",
+        ANCHOR = "I can drop it to keep the boat in place.",
+        BOATPATCH = "I detest such work.",
+        DRIFTWOOD_LOG = "Oh good. More wood.",
+
+        MOON_TREE = 
+        {
+            BURNING = "It's burning.",
+            BURNT = "A burnt tree stump.",
+            CHOPPED = "Someone's chopped it down already.",
+            GENERIC = "It's a moon tree.",
+        },
+
+        MOONBUTTERFLY = 
+        {
+        	GENERIC = "How wretchedly graceful.",
+        	HELD = "You can't escape my villainous grasp!",
+        },
+		MOONBUTTERFLYWINGS = "What am I supposed to do with these?",
+        MOONBUTTERFLY_SAPLING = "It's a small moon tree.",
+        ROCK_AVOCADO_FRUIT = "I'd rather not shatter my teeth on that.",
+        ROCK_AVOCADO_FRUIT_RIPE = "It's ripe enough to eat now.",
+        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "It looks almost appetizing.",
+        ROCK_AVOCADO_FRUIT_SPROUT = "How off-putting. It's grown a sprout.",
+        ROCK_AVOCADO_BUSH = 
+        {
+            BARREN = "It is fruitless and useless now.",
+            WITHERED = "It resembles Woodie, does it not?",
+            GENERIC = "It labors to make my dinner.",
+            PICKED = "What use are you to me if you don't have fruit?",
+            DISEASED = "It's ill.",
+            DISEASING = "I think it's sick or something.",
+            BURNING = "Well that's a shame.",
+        },
+        DEAD_SEA_BONES = "Adapt or perish.",
+        HOTSPRING = 
+        {
+        	GENERIC = "I miss a good long bath.",
+        	BOMBED = "How posh.",
+        	GLASS = "I could make use of that glass.",
+        },
+        MOONGLASS = "But does it look as sharp as me?",
+        MOONGLASS_ROCK = "\"Moon\" detritus.",
+        BATHBOMB = "It smells quite nice, if I'm honest.",
+        TRAP_STARFISH = 
+        {
+        	GENERIC = "It's just a silly starfish.",
+            CLOSED = "Devious thing.",
+        },
+        DUG_TRAP_STARFISH = "What would be the most devilish place to put it?",
+        SPIDER_MOON = 
+        {
+            GENERIC = "How monstrous.",
+            SLEEPING = "I'd rather not wake it.",
+            DEAD = "Good riddance.",
+        },
+        MOONSPIDERDEN = "I'd rather not peek inside.",
+        FRUITDRAGON =
+        {
+            GENERIC = "They aren't very sociable.",
+            RIPE = "I bet it's delicious.",
+            SLEEPING = "Sleep is only a temporary escape.",
+        },
+        PUFFIN =
+        {
+            GENERIC = "It's a puffin.",
+            HELD = "I'm gonna turn you into puffin' stuff.",
+            SLEEPING = "Sleep is only a temporary escape.",
+        },
+
+        MOONGLASSAXE = "Go on. Axe me what the moon's made of.",
+        GLASSCUTTER = "Sharp like my wit.",
+
+        ICEBERG =
+        {
+            GENERIC = "Ice, ice, maybe.",
+            MELTED = "It's melted.",
+        },
+        ICEBERG_MELTED = "It's melted.",
+
+        MINIFLARE = "For those with a flare for the dramatic.",
+
+        MOON_FISSURE = 
+        {
+        	GENERIC = "It's not shadow magic.",
+        	NOLIGHT = "I've more important things to deal with than holes in the ground.",
+		},
+        MOON_ALTAR =
+        {
+            MOON_ALTAR_WIP = "There is powerful energy pouring out of it.",
+            GENERIC = "Yes. I desire the knowledge of the moon.",
+        },
+
+        MOON_ALTAR_IDOL = "Let me know your wishes, and I will oblige.",
+        MOON_ALTAR_GLASS = "This is not its desired destination.",
+        MOON_ALTAR_SEED = "Where shall I take you?",
+
+        MOON_ALTAR_ROCK_IDOL = "The thing inside wants out.",
+        MOON_ALTAR_ROCK_GLASS = "The thing inside wants out.",
+        MOON_ALTAR_ROCK_SEED = "The thing inside wants out.",
+
+        SEAFARING_PROTOTYPER = 
+        {
+        	GENERIC = "Now to see if Higgsbury's ideas hold water.",
+        	BURNT = "Well, it's useless now.",
+        },
+        SEAFARER_KIT = "A collection of boat-related bric-à-brac.",
+        BOAT_ITEM = "I've been reduced to a common shipyard laborer.",
+        MAST_ITEM = "Do I look like a shipyard laborer?",
+        STEERINGWHEEL_ITEM = "Hard labor? Isn't that Winona's forte?",
+        ANCHOR_ITEM = "Can't someone else assemble it?",
+        MUTATEDHOUND = 
+        {
+        	DEAD = "That is probably for the best.",
+        	GENERIC = "If anything ever looked evil, it's that.",
+        	SLEEPING = "I don't desire to rouse it.",
+        },
+
+        MUTATED_PENGUIN = 
+        {
+			DEAD = "Good riddance.",
+			GENERIC = "What an atrocious beast.",
+			SLEEPING = "May you never wake.",
+		},
+
+		CARRAT = 
+        {
+        	DEAD = "Disgusting.",
+        	GENERIC = "That carrot is revolting!",
+        	HELD = "You thought you could fool me?",
+        	SLEEPING = "I'm sure it is diseased.",
+        },
+        GESTALT = "It communes with us through them.",
+
+        BULLKELP_PLANT = 
+        {
+            GENERIC = "Disgusting. I'll have someone else pick it.",
+            PICKED = "We already took the food parts.",
+        },
+		BULLKELP_ROOT = "For keeping the peasantry in line.",
+        KELPHAT = "You really expect me to wear this?",
+		KELP = "Can I eat something that's not slimy for once?",
+		KELP_COOKED = "This was not an improvement.",
+		KELP_DRIED = "Sadly, I've eaten worse out here.",
+        --PARSNIP_SEEDS = "Such labor is beneath me.",
+        --PARSNIP_COOKED = "Well I'm not going to eat it raw, am I?",
+        --PARSNIP_PLANTED  = "Make one of the other riffraff pick it.",
+
+        WALKINGPLANK = "Jumping off would ruin what's left of my suit.",
+        OAR = "I have no desire to toil like a common sailor.",
+        OAR_DRIFTWOOD = "Hmph. I've never been one for manual lab-oar.",
+
         --v2 Warly
         PORTABLECOOKPOT_ITEM =
         {
             GENERIC = "An instrument of the dark culinary arts.",
-            DONE = "Let's hope something palatable has come of it.",
-        },
+            DONE = "Let's hope something palatable has come of it.",        },
         PORTABLEBLENDER_ITEM = "Does it have to make such a horrible racket?",
         PORTABLESPICER_ITEM =
         {

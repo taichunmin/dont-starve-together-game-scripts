@@ -63,8 +63,8 @@ end
 
 local function EatFoodAction(inst)
     local target = FindEntity(inst, SEE_FOOD_DIST, nil, { "edible_MEAT" })
-    --check for scary things near the food
-    if target ~= nil and GetClosestInstWithTag("character", target, RUN_START_DIST) ~= nil then
+    --check for scary things near the food, or if it's in the water
+    if target ~= nil and (not target:IsOnValidGround() or GetClosestInstWithTag("character", target, RUN_START_DIST) ~= nil) then
         target = nil
     end
     if target ~= nil then

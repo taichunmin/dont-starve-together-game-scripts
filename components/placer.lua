@@ -12,6 +12,7 @@ local Placer = Class(function(self, inst)
     self.oncanbuild = nil
     self.oncannotbuild = nil
     self.linked = {}
+    self.offset = 1
 end)
 
 function Placer:SetBuilder(builder, recipe, invobject)
@@ -50,16 +51,16 @@ function Placer:OnUpdate(dt)
         --Using an offset in this causes a bug in the terraformer functionality while using a controller.
         self.inst.Transform:SetPosition(TheWorld.Map:GetTileCenterPoint(ThePlayer.entity:LocalToWorldSpace(0, 0, 0)))
     elseif self.snap_to_meters then
-        local x, y, z = ThePlayer.entity:LocalToWorldSpace(1, 0, 0)
+        local x, y, z = ThePlayer.entity:LocalToWorldSpace(self.offset, 0, 0)
         self.inst.Transform:SetPosition(math.floor(x) + .5, 0, math.floor(z) + .5)
     elseif self.onground then
         --V2C: this will keep ground orientation accurate and smooth,
         --     but unfortunately position will be choppy compared to parenting
         --V2C: switched to WallUpdate, so should be smooth now
-        self.inst.Transform:SetPosition(ThePlayer.entity:LocalToWorldSpace(1, 0, 0))
+        self.inst.Transform:SetPosition(ThePlayer.entity:LocalToWorldSpace(self.offset, 0, 0))
     elseif self.inst.parent == nil then
         ThePlayer:AddChild(self.inst)
-        self.inst.Transform:SetPosition(1, 0, 0)
+        self.inst.Transform:SetPosition(self.offset, 0, 0)
     end
 
     if self.fixedcameraoffset ~= nil then

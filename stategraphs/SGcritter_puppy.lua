@@ -14,6 +14,7 @@ local events =
     CommonHandlers.OnSleepEx(),
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnLocomote(false,true),
+    CommonHandlers.OnHop(),
 }
 
 local states =
@@ -128,5 +129,7 @@ CommonStates.AddSleepExStates(states,
 			TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/sleep") end),
 		},
 	})
+
+CommonStates.AddHopStates(states, true)
 
 return StateGraph("SGcritter_puppy", states, events, "idle", actionhandlers)

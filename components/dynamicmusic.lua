@@ -287,12 +287,23 @@ local function OnInsane()
     end
 end
 
+local function OnEnlightened()
+	-- TEMP
+    if _dangertask == nil and _isenabled then
+        _soundemitter:PlaySound("dontstarve/sanity/gonecrazy_stinger")
+        StopBusy()
+        --Repurpose this as a delay before stingers or busy can start again
+        _extendtime = GetTime() + 15
+    end
+end
+
 local function StartPlayerListeners(player)
     inst:ListenForEvent("buildsuccess", StartBusy, player)
     inst:ListenForEvent("gotnewitem", ExtendBusy, player)
     inst:ListenForEvent("performaction", CheckAction, player)
     inst:ListenForEvent("attacked", OnAttacked, player)
     inst:ListenForEvent("goinsane", OnInsane, player)
+    inst:ListenForEvent("goenlightened", OnEnlightened, player)
     inst:ListenForEvent("triggeredevent", StartTriggeredDanger, player)
 end
 
@@ -302,6 +313,7 @@ local function StopPlayerListeners(player)
     inst:RemoveEventCallback("performaction", CheckAction, player)
     inst:RemoveEventCallback("attacked", OnAttacked, player)
     inst:RemoveEventCallback("goinsane", OnInsane, player)
+    inst:RemoveEventCallback("goenlightened", OnEnlightened, player)
     inst:RemoveEventCallback("triggeredevent", StartTriggeredDanger, player)
 end
 

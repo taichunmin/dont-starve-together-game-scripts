@@ -88,6 +88,8 @@ local function fn()
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.9)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

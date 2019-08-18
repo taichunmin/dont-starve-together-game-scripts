@@ -1,6 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/sewing_tape.zip"),
+    Asset("ANIM", "anim/boat_repair_tape_build.zip"),
 }
 
 local function onsewn(inst, target, doer)
@@ -22,11 +23,19 @@ local function fn()
 
 	inst:AddTag("tape")
 
+    --boat_patch (from boatpatch component) added to pristine state for optimization
+    inst:AddTag("boat_patch")
+
+    MakeInventoryFloatable(inst, "small", nil, 0.8)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst:AddComponent("boatpatch")
+    inst.components.boatpatch.patch_type = "tape"
 
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM

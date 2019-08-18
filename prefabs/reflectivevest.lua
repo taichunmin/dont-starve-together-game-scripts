@@ -31,6 +31,8 @@ local function fn()
     --waterproofer (from waterproofer component) added to pristine state for optimization
     inst:AddTag("waterproofer")
 
+    MakeInventoryFloatable(inst, "small", nil, 0.8)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

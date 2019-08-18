@@ -19,6 +19,8 @@ local function fn()
 
     inst:AddTag("molebait")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.7)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

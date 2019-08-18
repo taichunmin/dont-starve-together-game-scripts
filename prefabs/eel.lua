@@ -90,6 +90,8 @@ end
 local function rawfn(build)
     local inst = commonfn(build, "idle", true, true, true)
 
+    MakeInventoryFloatable(inst, "med", 0.05, {1.25, 0.6, 1.25})
+
     if not TheWorld.ismastersim then
         return inst
     end
@@ -107,6 +109,8 @@ end
 
 local function cookedfn(build)
     local inst = commonfn(build, "cooked")
+
+    MakeInventoryFloatable(inst, "small", 0.1, 0.82)
 
     if not TheWorld.ismastersim then
         return inst

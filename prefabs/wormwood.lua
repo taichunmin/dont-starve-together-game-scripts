@@ -545,7 +545,12 @@ local function common_postinit(inst)
     inst.AnimState:AddOverrideBuild("player_wormwood")
     inst.AnimState:AddOverrideBuild("player_wormwood_fertilizer")
 
-    inst.components.talker.fontsize = 40
+    if LOC.GetTextScale() == 1 then
+        --Note(Peter): if statement is hack/guess to make the talker not resize for users that are likely to be speaking using the fallback font.
+        --Doesn't work for users across multiple languages or if they speak in english despite having a UI set to something else, but it's more likely to be correct, and is safer than modifying the talker
+
+        inst.components.talker.fontsize = 40
+    end
     inst.components.talker.font = TALKINGFONT_WORMWOOD
 
     inst.pollen = net_tinybyte(inst.GUID, "wormwood.pollen", "pollendirty")

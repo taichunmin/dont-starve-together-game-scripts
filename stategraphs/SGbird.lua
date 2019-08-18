@@ -169,6 +169,9 @@ local states =
                 inst.Physics:Teleport(x, 0, z)
                 inst.AnimState:PlayAnimation("land")
                 inst.DynamicShadow:Enable(true)
+                if inst.components.floater ~= nil then
+                    inst:PushEvent("on_landed")
+                end
                 inst.sg:GoToState("idle", true)
             end
         end,
@@ -221,6 +224,9 @@ local states =
         tags = { "flight", "busy" },
 
         onenter = function(inst)
+            if inst.components.floater ~= nil then
+                inst:PushEvent("on_no_longer_landed")
+            end
             inst.Physics:Stop()
             inst.sg:SetTimeout(.1 + math.random() * .2)
             inst.sg.statemem.vert = math.random() < .5
@@ -266,6 +272,11 @@ local states =
         {
             TimeEvent(8 * FRAMES, function(inst)
                 inst.Physics:Stop()
+                if inst.components.floater ~= nil then
+                    inst:PushEvent("on_landed")
+                elseif inst.components.inventoryitem ~= nil then
+                    inst.components.inventoryitem:TryToSink()
+                end
             end),
         },
 
@@ -315,6 +326,9 @@ local states =
                 inst.Physics:Teleport(x, 0, z)
                 inst.DynamicShadow:Enable(true)
                 inst.sg:GoToState("stunned")
+                if inst.components.floater ~= nil then
+                    inst:PushEvent("on_landed")
+                end
             end
         end,
     },

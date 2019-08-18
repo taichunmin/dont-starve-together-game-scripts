@@ -28,7 +28,17 @@ local function OnUpdatePlacerHelper(helperinst)
         helperinst.components.updatelooper:RemoveOnUpdateFn(OnUpdatePlacerHelper)
         helperinst.AnimState:SetAddColour(0, 0, 0, 0)
     elseif helperinst:IsNear(helperinst.placerinst, TUNING.WINONA_BATTERY_RANGE) then
-        helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
+        local hp = helperinst:GetPosition()
+        local p1 = TheWorld.Map:GetPlatformAtPoint(hp.x, hp.z)
+
+        local pp = helperinst.placerinst:GetPosition()
+        local p2 = TheWorld.Map:GetPlatformAtPoint(pp.x, pp.z)
+
+        if p1 == p2 then
+            helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
+        else
+            helperinst.AnimState:SetAddColour(0, 0, 0, 0)
+        end
     else
         helperinst.AnimState:SetAddColour(0, 0, 0, 0)
     end
@@ -777,6 +787,7 @@ local function fn()
     inst.components.circuitnode:SetRange(TUNING.WINONA_BATTERY_RANGE)
     inst.components.circuitnode:SetOnConnectFn(OnConnectCircuit)
     inst.components.circuitnode:SetOnDisconnectFn(OnDisconnectCircuit)
+    inst.components.circuitnode.connectsacrossplatforms = false
 
     inst:ListenForEvent("onbuilt", OnBuilt)
     inst:ListenForEvent("engineeringcircuitchanged", OnCircuitChanged)

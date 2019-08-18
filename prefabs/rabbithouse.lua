@@ -9,6 +9,7 @@ local assets =
 local prefabs =
 {
     "bunnyman",
+    "splash_sink",
 }
 
 local function getstatus(inst)
@@ -29,10 +30,16 @@ local function onvacate(inst, child)
     --inst.SoundEmitter:PlaySound("dontstarve/common/pighouse_door")
     --inst.SoundEmitter:KillSound("pigsound")
 
-    if not inst:HasTag("burnt") and
-        child ~= nil and
-        child.components.health ~= nil then
-        child.components.health:SetPercent(1)
+    if not inst:HasTag("burnt") and child ~= nil then
+        local child_platform = child:GetCurrentPlatform()
+        if (child_platform == nil and not child:IsOnValidGround()) then
+            local fx = SpawnPrefab("splash_sink")
+            fx.Transform:SetPosition(child.Transform:GetWorldPosition())
+
+            child:Remove()
+        elseif child.components.health ~= nil then
+            child.components.health:SetPercent(1)
+        end
     end
 end
 

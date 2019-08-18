@@ -11,7 +11,7 @@ local events =
 {
     EventHandler("attacked", function(inst)
         if not inst.components.health:IsDead() then
-            if inst:HasTag("spider_warrior") or inst:HasTag("spider_spitter") then
+            if inst:HasTag("spider_warrior") or inst:HasTag("spider_spitter") or inst:HasTag("spider_moon") then
                 if not inst.sg:HasStateTag("attack") then -- don't interrupt attack or exit shield
                     inst.sg:GoToState("hit") -- can still attack
                 end
@@ -36,6 +36,14 @@ local events =
                     data.target:IsValid()
                     and not inst:IsNear(data.target, TUNING.SPIDER_SPITTER_MELEE_RANGE)
                     and "spitter_attack" --Do spit attack
+                    or "attack",
+                    data.target
+                )
+			elseif inst:HasTag("spider_moon") then
+                inst.sg:GoToState(
+                    data.target:IsValid()
+                    and not inst:IsNear(data.target, TUNING.SPIDER_WARRIOR_MELEE_RANGE)
+                    and "spike_attack"
                     or "attack",
                     data.target
                 )
@@ -74,7 +82,9 @@ local events =
 local function SoundPath(inst, event)
     local creature = "spider"
 
-    if inst:HasTag("spider_warrior") then
+    if inst:HasTag("spider_moon") then
+		return "turnoftides/creatures/together/spider_moon/" .. event
+    elseif inst:HasTag("spider_warrior") then
         creature = "spiderwarrior"
     elseif inst:HasTag("spider_hider") or inst:HasTag("spider_spitter") then
         creature = "cavespider"
@@ -341,13 +351,58 @@ local states =
             inst.SoundEmitter:PlaySound(SoundPath(inst, "spit_web")) end),
 
             TimeEvent(21*FRAMES, function(inst) inst.components.combat:DoAttack(inst.sg.statemem.target)
-            inst.SoundEmitter:PlaySound(SoundPath(inst, "spit_voice"))
-             end),
+                inst.SoundEmitter:PlaySound(SoundPath(inst, "spit_voice"))
+            end),
         },
 
         events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("taunt") end),
+        },
+    },
+
+    State{
+        name = "spike_attack",
+        tags = {"attack", "busy"},
+
+        onenter = function(inst, target)
+            inst.Physics:Stop()
+            inst.components.combat:StartAttack()
+            inst.AnimState:PlayAnimation("hide")
+
+            inst.sg.statemem.target = target:GetPosition()
+        end,
+
+        timeline=
+        {
+            TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound(SoundPath(inst, "Attack")) end),
+            TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound(SoundPath(inst, "attack_grunt")) end),
+            TimeEvent(14*FRAMES, function(inst) inst:DoSpikeAttack(inst.sg.statemem.target) end),
+        },
+
+        events=
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("spike_attack_pst") end),
+        },
+    },
+
+    State{
+        name = "spike_attack_pst",
+        tags = {"attack", "busy"},
+
+        onenter = function(inst, target)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("hit_shield")
+            inst.AnimState:PushAnimation("unhide", false)
+        end,
+
+        timeline=
+        {
+        },
+
+        events=
+        {
+            EventHandler("animqueueover", function(inst) inst.sg:GoToState("idle") end),
         },
     },
 

@@ -130,8 +130,6 @@ local ExampleLayout =
 								construction_area = function() return PickSome(2, { "birdcage", "cookpot", "firepit", "homesign", "beebox", "meatrack", "icebox", "tent" }) end,
 							},
 						}),
-		["Grotto"] = StaticLayout.Get("map/static_layouts/grotto"),
-
 
 		["ResurrectionStone"] = StaticLayout.Get("map/static_layouts/resurrectionstone"),
 		["ResurrectionStoneLit"] = StaticLayout.Get("map/static_layouts/resurrectionstonelit"),
@@ -297,11 +295,7 @@ local ExampleLayout =
 		["Maxwell2"] = StaticLayout.Get("map/static_layouts/maxwell_2"),
 		["Maxwell3"] = StaticLayout.Get("map/static_layouts/maxwell_3"),
 		["Maxwell4"] = StaticLayout.Get("map/static_layouts/maxwell_4"),
-		["Maxwell5"] = StaticLayout.Get("map/static_layouts/maxwell_5",
-		{
-			start_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-			fill_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-		}),
+		["Maxwell5"] = StaticLayout.Get("map/static_layouts/maxwell_5"),
 		["Maxwell6"] = StaticLayout.Get("map/static_layouts/maxwell_6"),
 		["Maxwell7"] = StaticLayout.Get("map/static_layouts/maxwell_7"),
 
@@ -570,15 +564,11 @@ local ExampleLayout =
 -- CAVES 
 --------------------------------------------------------------------------------
 
-    ["CaveEntrance"] = StaticLayout.Get("map/static_layouts/cave_entrance", {
-        start_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        fill_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        layout_position = LAYOUT_POSITION.RANDOM,
-    }),
+    ["CaveEntrance"] = StaticLayout.Get("map/static_layouts/cave_entrance"),
     ["CaveExit"] = StaticLayout.Get("map/static_layouts/cave_exit", {
         start_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
         fill_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        layout_position = LAYOUT_POSITION.RANDOM,
+        layout_position = LAYOUT_POSITION.CENTER,
     }),
 	["CaveBase"] = StaticLayout.Get("map/static_layouts/cave_base_1"),
 	["MushBase"] = StaticLayout.Get("map/static_layouts/cave_base_2"),
@@ -587,16 +577,8 @@ local ExampleLayout =
 	["RabbitHermit"] = StaticLayout.Get("map/static_layouts/rabbithermit"),
 	["CaveArtTest"] = StaticLayout.Get("map/static_layouts/cave_art_test_start"),
 	["Mudlights"] = StaticLayout.Get("map/static_layouts/mudlights"),
-    ["RabbitCity"] = StaticLayout.Get("map/static_layouts/rabbitcity", {
-        start_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        fill_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        layout_position = LAYOUT_POSITION.RANDOM,
-    }),
-    ["TorchRabbitking"] = StaticLayout.Get("map/static_layouts/torch_rabbit_cave", {
-        start_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        fill_mask = PLACE_MASK.IGNORE_IMPASSABLE_BARREN_RESERVED,
-        layout_position = LAYOUT_POSITION.RANDOM,
-    }),
+    ["RabbitCity"] = StaticLayout.Get("map/static_layouts/rabbitcity"),
+    ["TorchRabbitking"] = StaticLayout.Get("map/static_layouts/torch_rabbit_cave"),
     ["EvergreenSinkhole"] = StaticLayout.Get("map/static_layouts/evergreensinkhole", {
         areas = {
             lights = {"cavelight", "cavelight"},
@@ -780,17 +762,9 @@ local ExampleLayout =
 			disable_transform = true
 	}),
 
-	["StagehandGarden"] = StaticLayout.Get("map/static_layouts/stagehandgarden",
-	{
-		start_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-		fill_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-	}),
+	["StagehandGarden"] = StaticLayout.Get("map/static_layouts/stagehandgarden"),
 	
-	["Sculptures_1"] = StaticLayout.Get("map/static_layouts/sculptures_1",
-	{
-		start_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-		fill_mask = PLACE_MASK.IGNORE_BARREN_RESERVED,
-	}),
+	["Sculptures_1"] = StaticLayout.Get("map/static_layouts/sculptures_1"),
 	
 	["Sculptures_2"] = StaticLayout.Get("map/static_layouts/sculptures_2",
 	{
@@ -875,6 +849,102 @@ local ExampleLayout =
 
 
 --------------------------------------------------------------------------------
+-- METEOR ISLAND
+--------------------------------------------------------------------------------
+
+	["moontrees_2"] = StaticLayout.Get("map/static_layouts/moontrees_2", {
+		areas =
+		{
+			tree_area = function() return math.random() < 0.9 and {"moon_tree"} or nil end,
+			fissure_area = {"moon_fissure"},
+		}
+    }),
+
+    ["MoonTreeHiddenAxe"] = StaticLayout.Get("map/static_layouts/moontreehiddenaxe"),
+
+	["MoonAltarRockGlass"] = StaticLayout.Get("map/static_layouts/moonaltarrockglass"),
+	["MoonAltarRockIdol"] = StaticLayout.Get("map/static_layouts/moonaltarrockidol"),
+	["MoonAltarRockSeed"] = StaticLayout.Get("map/static_layouts/moonaltarrockseed"),
+
+    ["BathbombedHotspring"] = StaticLayout.Get("map/static_layouts/bathbombedhotspring"),
+
+
+--------------------------------------------------------------------------------
+-- Ocean
+--------------------------------------------------------------------------------
+	["AbandonedWarf1"] = StaticLayout.Get("map/static_layouts/abandonedwarf",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+	}),
+
+	["AbandonedWarf2"] = StaticLayout.Get("map/static_layouts/abandonedwarf2",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+	}),
+
+	["AbandonedWarf3"] = StaticLayout.Get("map/static_layouts/abandonedwarf3",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+	}),
+
+	["BullkelpFarmSmall"] = StaticLayout.Get("map/static_layouts/bullkelpfarmsmall", {
+		areas =
+		{
+			kelp_area = function() return math.random() < 0.9 and {"bullkelp_plant"} or nil end,
+		}
+    }),
+	
+	["BullkelpFarmMedium"] = StaticLayout.Get("map/static_layouts/bullkelpfarmmedium", {
+		areas =
+		{
+			kelp_area = function() return math.random() < 0.9 and {"bullkelp_plant"} or nil end,
+		}
+    }),
+
+
+--------------------------------------------------------------------------------
+-- Return of Them Retrofitting
+--------------------------------------------------------------------------------
+	["retrofit_moonisland_small"] = StaticLayout.Get("map/static_layouts/retrofit_moonisland_small",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		areas =
+		{
+			tree_area = function() return math.random() < 0.9 and {"moon_tree"} or nil end,
+			fissure_area = {"moon_fissure"},
+		},
+	}),
+
+	["retrofit_moonisland_medium"] = StaticLayout.Get("map/static_layouts/retrofit_moonisland_medium",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		areas =
+		{
+			tree_area = function() return math.random() < 0.9 and {"moon_tree"} or nil end,
+			fissure_area = {"moon_fissure"},
+		},
+	}),
+	
+	["retrofit_moonisland_large"] = StaticLayout.Get("map/static_layouts/retrofit_moonisland_large",
+	{
+		start_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		fill_mask = PLACE_MASK.IGNORE_IMPASSABLE,
+		areas =
+		{
+			tree_area = function() return math.random() < 0.9 and {"moon_tree"} or nil end,
+			fissure_area = {"moon_fissure"},
+		},
+	}),
+	
+	
+	
+--------------------------------------------------------------------------------
+
 }
 
 return {Layouts = ExampleLayout}

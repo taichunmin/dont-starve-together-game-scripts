@@ -251,6 +251,7 @@ local function fn()
     inst.components.inspectable.getstatus = getstatus
 
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("equippable")
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL

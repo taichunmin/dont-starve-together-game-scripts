@@ -64,7 +64,7 @@ local function SpawnHand(player, params)
         Reschedule(player, params)
         return
     end
-    local sanity = player.replica.sanity:GetPercent()
+    local sanity = player.replica.sanity:IsInsanityMode() and player.replica.sanity:GetPercent() or 1
     if sanity > .75 then
         --Sanity too high, retry with delay
         Retry(player, params)

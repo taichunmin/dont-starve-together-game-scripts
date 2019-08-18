@@ -1,13 +1,14 @@
 local assets =
 {
     Asset("ANIM", "anim/yotp_food.zip"),
+    Asset("ANIM", "anim/yotp_food_water.zip"),
 }
 
 local foodinfo =
 {
-    {food=FOODTYPE.MEAT,		hunger = TUNING.CALORIES_SUPERHUGE,			health = TUNING.HEALING_SMALL*4,	sanity = TUNING.SANITY_TINY,		perishtime = TUNING.PERISH_SLOW},	-- tribute roast (same tuning as bonestew)
-    {food=FOODTYPE.HORRIBLE,	hunger = TUNING.CALORIES_SUPERHUGE,			health = 0,							sanity = 0},															-- mud pie
-    {food=FOODTYPE.MEAT,		hunger = TUNING.CALORIES_HUGE,				health = TUNING.HEALING_SMALL*2,	sanity = TUNING.SANITY_SUPERTINY,	perishtime = TUNING.PERISH_SLOW},	-- fish head skewers
+    {food=FOODTYPE.MEAT,		hunger = TUNING.CALORIES_SUPERHUGE,			health = TUNING.HEALING_SMALL*4,	sanity = TUNING.SANITY_TINY,		perishtime = TUNING.PERISH_SLOW,    floater = {"med", 0.9, false}},     -- tribute roast (same tuning as bonestew)
+    {food=FOODTYPE.HORRIBLE,	hunger = TUNING.CALORIES_SUPERHUGE,			health = 0,							sanity = 0},															                                    -- mud pie
+    {food=FOODTYPE.MEAT,		hunger = TUNING.CALORIES_HUGE,				health = TUNING.HEALING_SMALL*2,	sanity = TUNING.SANITY_SUPERTINY,	perishtime = TUNING.PERISH_SLOW,    floater = {"med", {0.8, 0.5, 0.8}, true}},    -- fish head skewers
 }
 
 local function MakeFood(num)
@@ -25,11 +26,26 @@ local function MakeFood(num)
 
         inst.AnimState:SetBank("yotp_food")
         inst.AnimState:SetBuild("yotp_food")
-        inst.AnimState:PlayAnimation("food"..tostring(num))
+
+        local anim_name = "food"..tostring(num)
+        inst.AnimState:PlayAnimation(anim_name)
 
         if data.tags ~= nil then
             for _,v in ipairs(data.tags) do
                 inst:AddTag(v)
+            end
+        end
+        inst:AddTag("pre-preparedfood")
+
+        MakeInventoryFloatable(inst)
+
+        if data.floater ~= nil then
+            inst.components.floater:SetSize(data.floater[1])
+            inst.components.floater:SetScale(data.floater[2])
+
+            -- The bool in slot 3 means "uses an override anim"
+            if data.floater[3] then
+                inst.AnimState:AddOverrideBuild("yotp_food_water")
             end
         end
 
@@ -60,6 +76,12 @@ local function MakeFood(num)
         inst:AddComponent("tradable")
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+
+        if data.floater ~= nil and data.floater[3] then
+            -- The bool in slot 3 means "uses an override anim"
+            inst:ListenForEvent("floater_startfloating", function(inst) inst.AnimState:PlayAnimation(anim_name.."_float") end)
+            inst:ListenForEvent("floater_stopfloating", function(inst) inst.AnimState:PlayAnimation(anim_name) end)
+        end
 
         MakeHauntableLaunch(inst)
 

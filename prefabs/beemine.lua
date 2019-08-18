@@ -231,6 +231,7 @@ local function BeeMine(name, alignment, skin, spawnprefab, isinventory)
             inst:AddComponent("inventoryitem")
             inst.components.inventoryitem:SetOnPutInInventoryFn(StopRattling)
             inst.components.inventoryitem:SetOnDroppedFn(OnDropped)
+            inst.components.inventoryitem:SetSinks(true)
 
             inst:AddComponent("deployable")
             inst.components.deployable.ondeploy = ondeploy

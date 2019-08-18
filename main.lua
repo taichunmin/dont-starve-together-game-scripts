@@ -110,7 +110,7 @@ local loadfn = function(modulename)
     end
   return errmsg    
 end
-table.insert(package.loaders, 1, loadfn)
+table.insert(package.loaders, 2, loadfn)
 
 --patch this function because NACL has no fopen
 if TheSim then
@@ -163,6 +163,7 @@ require("actions")
 require("debugtools")
 require("simutil")
 require("util")
+require("ocean_util")
 require("scheduler")
 require("stategraph")
 require("behaviourtree")
@@ -345,6 +346,7 @@ local function ModSafeStartup()
 	local IDENTITY_COLOURCUBE = "images/colour_cubes/identity_colourcube.tex"
 	PostProcessor:SetColourCubeData( 0, IDENTITY_COLOURCUBE, IDENTITY_COLOURCUBE )
 	PostProcessor:SetColourCubeData( 1, IDENTITY_COLOURCUBE, IDENTITY_COLOURCUBE )
+	PostProcessor:SetColourCubeData( 2, IDENTITY_COLOURCUBE, IDENTITY_COLOURCUBE )
 
 	FontManager = TheGlobalInstance.entity:AddFontManager()
 	MapLayerManager = TheGlobalInstance.entity:AddMapLayerManager()

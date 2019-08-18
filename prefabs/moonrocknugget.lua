@@ -35,6 +35,7 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("repairer")
     inst.components.repairer.repairmaterial = MATERIALS.MOONROCK

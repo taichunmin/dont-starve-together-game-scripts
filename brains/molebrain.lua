@@ -63,7 +63,7 @@ local function TakeBaitAction(inst)
     end
 
     local target = FindEntity(inst, SEE_BAIT_DIST, IsMoleBait, { "molebait" }, { "outofreach", "INLIMBO", "fire" })
-    if target ~= nil and not target.selectedasmoletarget then
+    if target ~= nil and not target.selectedasmoletarget and target:IsOnValidGround() then
         target.selectedasmoletarget = true
         target:DoTaskInTime(5, SelectedTargetTimeout)
         local act = BufferedAction(inst, target, ACTIONS.STEALMOLEBAIT)

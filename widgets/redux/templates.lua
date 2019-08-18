@@ -879,9 +879,9 @@ function TEMPLATES.DoodadCounter(number_of_doodads)
     doodad.image:GetAnimState():PlayAnimation("idle", true)
 
 	doodad.doodad_count = doodad:AddChild(Text(CHATFONT_OUTLINE, 35, nil, UICOLOURS.WHITE))
-    doodad.doodad_count:SetPosition(-10, -60)
+    doodad.doodad_count:SetPosition(0, -60)
     doodad.doodad_count:SetRegionSize(120, 43)
-    doodad.doodad_count:SetHAlign(ANCHOR_LEFT)
+    doodad.doodad_count:SetHAlign(ANCHOR_MIDDLE)
 
     doodad._CountFn = function(self)
         if self.num_display_doodads ~= self.num_doodads then
@@ -921,6 +921,59 @@ function TEMPLATES.DoodadCounter(number_of_doodads)
     doodad:SetCount(number_of_doodads)
 
     return doodad
+end
+
+function TEMPLATES.BoltCounter(number_of_bolts)
+    local bolt = Widget("BoltCounter")
+    bolt.image = bolt:AddChild(UIAnim())
+    bolt.image:GetAnimState():SetBank("cloth")
+    bolt.image:GetAnimState():SetBuild("bolt_of_cloth")
+    bolt.image:GetAnimState():PlayAnimation("idle", true)
+    bolt.image:SetScale(1.3)
+
+	bolt.bolt_count = bolt:AddChild(Text(CHATFONT_OUTLINE, 35, nil, UICOLOURS.WHITE))
+    bolt.bolt_count:SetPosition(0, -60)
+    bolt.bolt_count:SetRegionSize(120, 43)
+    bolt.bolt_count:SetHAlign(ANCHOR_MIDDLE)
+
+    bolt._CountFn = function(self)
+        if self.num_display_bolts ~= self.num_bolts then
+            local step = (self.num_bolts - self.num_display_bolts)/24
+            
+            if self.num_bolts > self.num_display_bolts then
+                step = math.ceil(step)
+            else
+                step = math.floor(step)
+            end
+
+            self.num_display_bolts = self.num_display_bolts + step
+
+            self.inst:DoTaskInTime(FRAMES, function() 
+                self:_CountFn()
+            end)
+        end
+
+        self.bolt_count:SetString("x"..self.num_display_bolts)
+    end
+
+    bolt.SetCount = function(self, new_count, animatebolt)
+        local should_skip = self.num_bolts == nil or not animatebolt
+        self.num_display_bolts = self.num_bolts
+        self.num_bolts = new_count
+        if not should_skip then
+            bolt.image:GetAnimState():PlayAnimation("use")
+            bolt.image:GetAnimState():PushAnimation("idle", true)
+            self:_CountFn()
+        else
+            self.num_display_bolts = new_count
+            self.num_bolts = new_count
+            self.bolt_count:SetString("x"..new_count)
+        end
+    end
+
+    bolt:SetCount(number_of_bolts)
+
+    return bolt
 end
 
 -- Unlabelled text entry box

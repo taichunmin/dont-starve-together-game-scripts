@@ -13,6 +13,9 @@ local assets =
     Asset("ATLAS", "images/fx3.xml"),
     Asset("IMAGE", "images/fx3.tex"),
 
+    Asset("ATLAS", "images/fx4.xml"),
+    Asset("IMAGE", "images/fx4.tex"),
+
     Asset("ANIM", "anim/sand_over.zip"),
     Asset("ANIM", "anim/mind_control_overlay.zip"),
 
@@ -53,8 +56,11 @@ local assets =
     Asset("IMAGE", "images/serverbrowser.tex"),
     --
 
-    Asset("ANIM", "anim/wet_meter_player.zip"), 
+    Asset("ANIM", "anim/wet_meter_player.zip"),     
     Asset("ANIM", "anim/wet_meter.zip"),
+
+    Asset("ANIM", "anim/boat_meter.zip"),
+    Asset("ANIM", "anim/boat_meter_leak.zip"),
 
     Asset("ANIM", "anim/tab_gift.zip"),
 

@@ -267,7 +267,7 @@ function HudCompass:OnUpdate(dt)
 
     -- Offsets from sanity
     local sanity = self.owner.replica.sanity
-    local sanity_t = math.clamp(sanity:GetPercentWithPenalty() * 3, 0, 1)
+    local sanity_t = math.clamp((sanity:IsInsanityMode() and sanity:GetPercentWithPenalty() or (1.0 - sanity:GetPercentWithPenalty())) * 3, 0, 1)
     local sanity_offset = math.sin(t*0.2) * Lerp(720, 0, sanity_t)
 
     -- Offset from full moon

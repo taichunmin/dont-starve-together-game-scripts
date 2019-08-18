@@ -4,6 +4,7 @@ local assets =
     Asset("ANIM", "anim/manrabbit_actions.zip"),
     Asset("ANIM", "anim/manrabbit_attacks.zip"),
     Asset("ANIM", "anim/manrabbit_build.zip"),
+    Asset("ANIM", "anim/manrabbit_boat_jump.zip"),
 
     Asset("ANIM", "anim/manrabbit_beard_build.zip"),
     Asset("ANIM", "anim/manrabbit_beard_basic.zip"),
@@ -30,7 +31,7 @@ local SHARE_TARGET_DIST = 30
 
 local function IsCrazyGuy(guy)
     local sanity = guy ~= nil and guy.replica.sanity or nil
-    return sanity ~= nil and sanity:GetPercentNetworked() <= (guy:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY)
+    return sanity ~= nil and sanity:IsInsanityMode() and sanity:GetPercentNetworked() <= (guy:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY)
 end
 
 local function ontalk(inst)
@@ -254,6 +255,10 @@ local function fn()
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
     inst.components.locomotor.runspeed = TUNING.PIG_RUN_SPEED * 2.2 -- account for them being stopped for part of their anim
     inst.components.locomotor.walkspeed = TUNING.PIG_WALK_SPEED * 1.9 -- account for them being stopped for part of their anim
+
+    -- boat hopping setup
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+    inst:AddComponent("embarker")
 
     inst:AddComponent("bloomer")
 

@@ -61,6 +61,8 @@ local function fn()
     inst.AnimState:SetBuild("torso_dragonfly")
     inst.AnimState:PlayAnimation("anim")
 
+    MakeInventoryFloatable(inst, "small", 0.2, 0.80)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

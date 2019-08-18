@@ -14,6 +14,7 @@ local SKIN_GIFT_TYPES =
 	heatrock_fire = "TWITCH_DROP",
 	icebox_crystal = "TWITCH_DROP",
 	lantern_winter = "WINTER",
+	mast_rose = "TOT",
 	pack_hamlet_wormwood = "HAMLET",
 	pack_rog_gift = "ROG",
 	pack_sw_gift = "SW",
@@ -110,6 +111,13 @@ local SKIN_GIFT_POPUPDATA =
 		image = {"thankyou_lunar.tex"},
 		title = STRINGS.THANKS_POPUP.LUNAR,
 		titleoffset = {0, -30, 0},
+	},
+	TOT =
+	{
+		atlas = "images/thankyou_item_event2.xml",
+		image = {"thankyou_rot.tex"},
+		title = STRINGS.THANKS_POPUP.TOT,
+		titleoffset = {0, -20, 0},
 	},
 	TWITCH_DROP =
 	{

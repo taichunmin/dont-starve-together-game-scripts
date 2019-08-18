@@ -5,11 +5,20 @@ local SinkholeSpawner = Class(function(self, inst)
     self.targets = {}
 end)
 
+local function GetPlayerFromClientTable(c)
+    for _, v in ipairs(AllPlayers) do
+        if v.userid == c.userid then
+            return v
+        end
+    end
+end
+
 function SinkholeSpawner:StartSinkholes()
     local weighted_players = {}
     local num_players = 0
     for i, v in ipairs(TheNet:GetClientTable()) do
-        if #v.prefab > 0 then
+		local player = GetPlayerFromClientTable(v)
+        if #v.prefab > 0 and (player == nil or TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())) then
             weighted_players[v] = math.sqrt(v.playerage or 1)
             num_players = num_players + 1
         end
@@ -186,7 +195,9 @@ function SinkholeSpawner:OnUpdate(dt)
     for i, v in ipairs(self.targets) do
         if v.client ~= nil then
             if v.player ~= nil and v.player:IsValid() then
-                v.pos.x, v.pos.y, v.pos.z = v.player.Transform:GetWorldPosition()
+				if not TheWorld.has_ocean or TheWorld.Map:IsVisualGroundAtPoint(v.player.Transform:GetWorldPosition()) then
+	                v.pos.x, v.pos.y, v.pos.z = v.player.Transform:GetWorldPosition()
+				end
             else
                 v.client = TheNet:GetClientTableForUser(v.client.userid)
                 if v.client ~= nil and #v.client.prefab > 0 then

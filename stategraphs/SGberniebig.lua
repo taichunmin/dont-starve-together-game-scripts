@@ -30,6 +30,7 @@ end
 local events =
 {
     CommonHandlers.OnLocomote(true, true),
+    CommonHandlers.OnHop(),
     EventHandler("death", function(inst, data)
         if not inst.sg:HasStateTag("deactivating") then
             inst.sg:GoToState("death", data)
@@ -463,5 +464,7 @@ CommonStates.AddRunStates(states,
         TimeEvent(0 * FRAMES, DoStopFootStep),
     },
 })
+
+CommonStates.AddHopStates(states, true, {pre = "run_pre", loop = "run_loop", pst = "run_pst"})
 
 return StateGraph("berniebig", states, events, "activate")

@@ -883,9 +883,8 @@ function Graph:ProcessInsanityWormholes(entities, width, height)
 end
 
 function Graph:SwapOutWormholeMarkers(entities, width, height)
-    --assert(self.wormholeprefab ~= nil, "Level must specify a wormhole prefab.")
-		
 	if entities["wormhole_MARKER"] ~= nil then
+		assert(self.wormholeprefab ~= nil, "Level must specify a wormhole prefab when wormholes are used.")
 
 		if entities[self.wormholeprefab] == nil then
 			entities[self.wormholeprefab] = {}
@@ -981,7 +980,7 @@ function Graph:ApplyPoisonTag()
 			WorldSim:ClearNodeLinks(node.id)
 			
 			-- TODO: Move this to a more generic location
-			WorldSim:SetNodeType(node.id, 1) -- BLANK
+			--WorldSim:SetNodeType(node.id, 1) -- BLANK
 		end
 		local flags = 0
 		if IsNodeTagged(node, "ForceConnected") then 

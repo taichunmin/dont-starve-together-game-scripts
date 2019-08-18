@@ -28,6 +28,8 @@ local function MakeSaddle(name, data)
 
         inst.mounted_foleysound = "dontstarve/beefalo/saddle/"..data.foley
 
+        MakeInventoryFloatable(inst, data.floater[1], data.floater[2], data.floater[3])
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
@@ -62,18 +64,21 @@ local data = {
         foley = "regular_foley",
         uses = TUNING.SADDLE_BASIC_USES,
         speedmult = TUNING.SADDLE_BASIC_SPEEDMULT,
+        floater = {"med", 0.1, 1.0},
     },
     war = {
         bonusdamage = TUNING.SADDLE_WAR_BONUS_DAMAGE,
         foley = "war_foley",
         uses = TUNING.SADDLE_WAR_USES,
         speedmult = TUNING.SADDLE_WAR_SPEEDMULT,
+        floater = {"small", 0.1, 0.7},
     },
     race = {
         bonusdamage = TUNING.SADDLE_RACE_BONUS_DAMAGE,
         foley = "race_foley",
         uses = TUNING.SADDLE_RACE_USES,
         speedmult = TUNING.SADDLE_RACE_SPEEDMULT,
+        floater = {"large", 0.05, 0.68},
     },
 }
 

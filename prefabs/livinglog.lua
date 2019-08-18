@@ -31,6 +31,8 @@ local function fn()
     inst.AnimState:SetBuild("livinglog")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", 0.1, 0.7)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

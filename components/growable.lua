@@ -6,6 +6,7 @@ local Growable = Class(function(self, inst)
     self.growonly = false
     self.springgrowth = false
     --self.growoffscreen = false
+    self.magicgrowable = false
 end)
 
 function Growable:GetDebugString()
@@ -119,6 +120,10 @@ function Growable:ExtendGrowTime(extra_time)
         self.task:Cancel()
         self.task = self.inst:DoTaskInTime(self.targettime - GetTime(), ongrow, self)
     end
+end
+
+function Growable:GetStage()
+    return self.stage
 end
 
 function Growable:SetStage(stage)

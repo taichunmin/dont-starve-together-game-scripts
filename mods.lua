@@ -17,6 +17,7 @@ AddModReleaseID( "R04_ANR_CUTEFUZZYANIMALS" )
 AddModReleaseID( "R05_ANR_HERDMENTALITY" )
 AddModReleaseID( "R06_ANR_AGAINSTTHEGRAIN" )
 AddModReleaseID( "R07_ANR_HEARTOFTHERUINS" )
+AddModReleaseID( "R08_ROT_TURNOFTIDES" )
 
 -----------------------------------------------------------------------------------------------
 

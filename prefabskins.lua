@@ -286,6 +286,14 @@ PREFAB_SKINS = {
 	{
 		"lighter_haunteddoll",
 	},
+	mast = 
+	{
+		"mast_rose",
+	},
+	mast_item = 
+	{
+		"mast_rose_item",
+	},
 	minerhat = 
 	{
 		"minerhat_cowboy",

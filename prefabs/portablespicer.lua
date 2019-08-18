@@ -33,7 +33,7 @@ local prefabs_item =
 
 local function ChangeToItem(inst)
     if inst.components.stewer.product ~= nil and inst.components.stewer:IsDone() then
-        inst.components.lootdropper:SpawnLootPrefab(inst.components.stewer.product)
+        inst.components.stewer:Harvest()
     end
     if inst.components.container ~= nil then
         inst.components.container:DropEverything()
@@ -143,7 +143,7 @@ local function ShowProduct(inst)
             inst.AnimState:ClearOverrideSymbol("swap_plate")
             inst.AnimState:ClearOverrideSymbol("swap_garnish")
         end
-        if IsModCookingProduct(inst.prefab, product) then
+        if IsModCookingProduct(inst.prefab, inst.components.stewer.product) then
             inst.AnimState:OverrideSymbol("swap_cooked", product, product)
         else
             inst.AnimState:OverrideSymbol("swap_cooked", "cook_pot_food", product)
@@ -332,6 +332,8 @@ local function itemfn()
     inst.AnimState:PlayAnimation("idle_ground")
 
     inst:AddTag("portableitem")
+
+    MakeInventoryFloatable(inst, "med")
 
     inst.entity:SetPristine()
 

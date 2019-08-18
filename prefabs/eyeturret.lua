@@ -165,6 +165,7 @@ local function itemfn()
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem:SetSinks(true)
 
     MakeHauntableLaunch(inst)
 
@@ -277,6 +278,8 @@ local function basefn()
     inst.AnimState:PlayAnimation("idle_loop")
 
     inst.entity:SetPristine()
+
+	inst:AddTag("DECOR")
 
     if not TheWorld.ismastersim then
         return inst

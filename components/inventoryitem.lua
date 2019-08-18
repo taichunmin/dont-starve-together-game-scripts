@@ -29,6 +29,16 @@ local function OnStackSizeChange(inst, data)
     end
 end
 
+local function OnEnterLimbo(inst, data)
+    local self = inst.components.inventoryitem
+    self:SetLanded(false, false)
+end
+
+local function OnExitLimbo(inst, data)
+    local self = inst.components.inventoryitem
+    self:SetLanded(false, true)    
+end
+
 local InventoryItem = Class(function(self, inst)
     self.inst = inst
 
@@ -45,12 +55,19 @@ local InventoryItem = Class(function(self, inst)
     self.imagename = nil
     self.onactiveitemfn = nil
     self.trappable = true
+    self.sinks = false
+
+    self.pushlandedevents = true
+    self:SetLanded(false, true)
 
     self.inst:ListenForEvent("stacksizechange", OnStackSizeChange)
+    self.inst:ListenForEvent("enterlimbo", OnEnterLimbo)
+    self.inst:ListenForEvent("exitlimbo", OnExitLimbo)
 
     if self.inst.components.waterproofer == nil then
         self:EnableMoisture(true)
     end
+
 end,
 nil,
 {
@@ -129,6 +146,15 @@ function InventoryItem:SetOnPutInInventoryFn(fn)
     self.onputininventoryfn = fn
 end
 
+function InventoryItem:SetSinks(should_sink)
+    self.sinks = should_sink
+
+    -- If we've already landed, check to see if the new value should make us sink.
+    if self.is_landed then
+        self:TryToSink()
+    end
+end
+
 function InventoryItem:GetSlotNum()
     if self.owner ~= nil then
         local ct = self.owner.components.container or self.owner.components.inventory
@@ -203,6 +229,9 @@ function InventoryItem:OnDropped(randomdir, speedmult)
 end
 
 function InventoryItem:DoDropPhysics(x, y, z, randomdir, speedmult)
+    
+    self:SetLanded(false, true)
+
     if self.inst.Physics ~= nil then
         local heavy = self.inst:HasTag("heavy")
         if not self.nobounce then
@@ -229,9 +258,12 @@ function InventoryItem:DoDropPhysics(x, y, z, randomdir, speedmult)
 end
 
 -- If this function retrns true then it has destroyed itself and you shouldnt give it to the player
-function InventoryItem:OnPickup(pickupguy)
+function InventoryItem:OnPickup(pickupguy, src_pos)
 -- not only the player can have inventory!   
-   if self.isnew and self.inst.prefab and pickupguy:HasTag("player") then
+
+    self:SetLanded(false, false)    
+
+    if self.isnew and self.inst.prefab and pickupguy:HasTag("player") then
         ProfileStatsAdd("collect_"..self.inst.prefab)
         self.isnew = false
     end
@@ -246,7 +278,7 @@ function InventoryItem:OnPickup(pickupguy)
 
     self.inst.Transform:SetPosition(0, 0, 0)
     self.inst:PushEvent("onpickup", { owner = pickupguy })
-    return type(self.onpickupfn) == "function" and self.onpickupfn(self.inst, pickupguy)
+    return type(self.onpickupfn) == "function" and self.onpickupfn(self.inst, pickupguy, src_pos)
 end
 
 function InventoryItem:IsHeld()
@@ -290,6 +322,66 @@ end
 function InventoryItem:IsSheltered()
     return self:IsHeld() and 
     ((self.owner.components.container) or (self.owner.components.inventory and self.owner.components.inventory:IsWaterproof()))
+end
+
+function InventoryItem:SetLanded(is_landed, should_poll_for_landing)
+    if not is_landed then
+        if should_poll_for_landing then
+            self.inst:StartUpdatingComponent(self)
+        end
+
+        -- If we're going from landed to not landed
+        if self.pushlandedevents and self.is_landed then
+            self.inst:PushEvent("on_no_longer_landed")
+        end
+    else
+        self.inst:StopUpdatingComponent(self)
+
+        -- If we're going from not landed to landed
+        if self.pushlandedevents and not self.is_landed then
+            self.inst:PushEvent("on_landed")
+            self:TryToSink()
+        end
+    end
+
+    self.is_landed = is_landed
+end
+
+function InventoryItem:ShouldSink()
+    if not self:IsHeld() and not self.inst:IsInLimbo() then
+        local px, _, pz = self.inst.Transform:GetWorldPosition()
+        return not TheWorld.Map:IsPassableAtPoint(px, 0, pz, not self.sinks)
+    end
+end
+
+function InventoryItem:TryToSink()
+    if ShouldEntitySink(self.inst, self.sinks) then
+        self.inst:DoTaskInTime(0, SinkEntity)
+    end
+end
+
+function InventoryItem:OnUpdate(dt)
+    local x,y,z = self.inst.Transform:GetWorldPosition()
+
+    if x and y and z then 
+        local vely = 0 
+        if self.inst.Physics then 
+            local vx, vy, vz = self.inst.Physics:GetVelocity()
+            vely = vy or 0
+
+            if (not vx) or (not vy) or (not vz) then
+                self:SetLanded(true, false)
+            elseif (vx == 0) and (vy == 0) and (vz == 0) then
+                self:SetLanded(true, false)
+            end
+        end
+
+        if y + vely * dt * 1.5 < 0.01 and vely <= 0 then
+            self:SetLanded(true, false)
+        end
+    else
+        self:SetLanded(true, false)
+    end
 end
 
 return InventoryItem

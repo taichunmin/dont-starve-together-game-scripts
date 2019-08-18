@@ -48,6 +48,8 @@ local function fn()
     inst.AnimState:SetBuild(TheWorld.worldprefab == "cave" and "mapscroll_cave" or "mapscroll")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.85)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

@@ -30,16 +30,17 @@ function SpiderQueenBrain:CanPlantNest()
 				end
 			end
 		end
-		
-		local den = GetClosestInstWithTag("spiderden", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)		
-		local queen = GetClosestInstWithTag("spiderqueen", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)		
+
+		local den = GetClosestInstWithTag("spiderden", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
+		local queen = GetClosestInstWithTag("spiderqueen", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
 		if den or queen then
 			return false
 		end
-		
-		
+
 		return true
 	end
+
+    return false
 end
 
 local MIN_FOLLOW = 10
@@ -47,22 +48,20 @@ local MAX_FOLLOW = 20
 local MED_FOLLOW = 15
 
 function SpiderQueenBrain:OnStart()
-    
-    
     local root = PriorityNode(
     {
     	WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
-        
+
         IfNode(function() return self:CanPlantNest() end, "can plant nest",
 			ActionNode(function() self.inst.sg:GoToState("makenest") end)),
-		
+
 		IfNode(function() return self:CanSpawnChild() end, "needs follower", 
 			ActionNode(function() self.inst.sg:GoToState("poop_pre") return SUCCESS end, "make child" )),
         
         --SPIDERQUEEN_MINDENSPACING
         
-        ChaseAndAttack(self.inst, 60, 40),
+        ChaseAndAttack(self.inst, 60, 40, nil, nil, nil, TUNING.WINONA_CATAPULT_MAX_RANGE + TUNING.MAX_WALKABLE_PLATFORM_RADIUS + TUNING.WINONA_CATAPULT_KEEP_TARGET_BUFFER + 1),
         Wander(self.inst),
     }, 2)
     

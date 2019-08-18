@@ -220,6 +220,19 @@ function MotdPanel:OnImagesLoaded()
 			icon_image:SetPosition(x + (w * icon_info.scale / 2) - cell_size.width/2 + text_padding + icon_info.x_offset, y + cell_size.height / 2 - h * icon_info.scale / 2 - text_padding - 20 + icon_info.y_offset)
 			icon_image:SetClickable(false)
 		end
+
+		local vignette = self.bg:AddChild(Image("images/bg_redux_dark_bottom_vignette1.xml", "dark_bottom_vignette1.tex"))
+		vignette:SetPosition(x, y)
+		vignette:SetScale(.669)--Should be the same as for bg_redux_dark_bottom instantiated further down.
+
+		if self.motd_info.last_seen ~= nil and data.time ~= nil and self.motd_info.last_seen <= tonumber(data.time) then
+			local image_is_new = self.fg:AddChild(Image("images/ui.xml", "new_label_motd.tex"))
+			local image_is_new_padding = 30
+			image_is_new:SetScale(.6)
+			image_is_new:SetPosition(x + cell_size.width / 2 - 20, y + cell_size.height / 2 - 28)
+
+			image_is_new:SetHoverText(STRINGS.UI.MAINSCREEN.MOTD_NEW_ANNOUNCEMENT)
+		end
 	end
 
 	local function AddAlert(data)

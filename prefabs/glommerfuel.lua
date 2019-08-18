@@ -16,6 +16,8 @@ local function fn()
     inst.AnimState:SetBuild("glommer_fuel")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

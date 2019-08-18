@@ -13,6 +13,11 @@ local function onratescale(self, ratescale)
     self.inst.replica.sanity:SetRateScale(ratescale)
 end
 
+
+local function onmode(self, mode)
+    self.inst.replica.sanity:SetSanityMode(mode)
+end
+
 local function onsane(self, sane)
     self.inst.replica.sanity:SetIsSane(not self.inducedinsanity and sane)
 end
@@ -30,10 +35,17 @@ local function onghostdrainmult(self, ghostdrainmult)
     self.inst.replica.sanity:SetGhostDrainMult(ghostdrainmult)
 end
 
+local function OnChangeArea(inst, area)
+	local area_sanity_mode = area ~= nil and area.tags and table.contains(area.tags, "lunacyarea") and SANITY_MODE_LUNACY or SANITY_MODE_INSANITY
+	inst.components.sanity:SetSanityMode(area_sanity_mode)
+end
+
 local Sanity = Class(function(self, inst)
     self.inst = inst
     self.max = 100
     self.current = self.max
+
+	self.mode = SANITY_MODE_INSANITY
     
     self.rate = 0
     self.ratescale = RATE_SCALE.NEUTRAL
@@ -62,12 +74,15 @@ local Sanity = Class(function(self, inst)
 
     self.inst:StartUpdatingComponent(self)
     self:RecalcGhostDrain()
+
+	self.inst:ListenForEvent("changearea", OnChangeArea)
 end,
 nil,
 {
     max = onmax,
     current = oncurrent,
     ratescale = onratescale,
+	mode = onmode,
     sane = onsane,
     inducedinsanity = oninducedinsanity,
     penalty = onpenalty,
@@ -75,12 +90,43 @@ nil,
 })
 
 function Sanity:IsSane()
-    return not self.inducedinsanity and self.sane
+    return (self.mode == SANITY_MODE_INSANITY and (not self.inducedinsanity and self.sane))
+			or (self.mode == SANITY_MODE_LUNACY and (self.inducedinsanity or self.sane))
+end
+
+function Sanity:IsInsane()
+    return self.mode == SANITY_MODE_INSANITY and (self.inducedinsanity or not self.sane)
+end
+
+function Sanity:IsEnlightened()
+	return self.mode == SANITY_MODE_LUNACY and (not self.inducedinsanity and not self.sane)
 end
 
 function Sanity:IsCrazy()
-    return self.inducedinsanity or not self.sane
+	-- deprecated
+    return self:IsInsane()
 end
+
+function Sanity:SetSanityMode(mode)
+	if self.mode ~= mode then
+		self.mode = mode
+        self.inst:PushEvent("sanitymodechanged", {mode = self.mode})
+		self:DoDelta(0)
+	end
+end
+
+function Sanity:IsInsanityMode()
+	return self.mode == SANITY_MODE_INSANITY
+end
+
+function Sanity:IsLunacyMode()
+	return self.mode == SANITY_MODE_LUNACY
+end
+
+function Sanity:GetSanityMode()
+	return self.mode
+end
+
 
 function Sanity:AddSanityPenalty(key, mod)
     self.sanity_penalties[key] = mod
@@ -111,6 +157,7 @@ function Sanity:OnSave()
     {
         current = self.current,
         sane = self.sane,
+        mode = self.mode,
     }
 end
 
@@ -118,6 +165,8 @@ function Sanity:OnLoad(data)
     if data.sane ~= nil then
         self.sane = data.sane
     end
+
+    self.mode = data.mode or 0
 
     if data.current ~= nil then
         self.current = data.current
@@ -144,7 +193,7 @@ function Sanity:SetPercent(per, overtime)
 end
 
 function Sanity:GetDebugString()
-    return string.format("%2.2f / %2.2f at %2.4f. Penalty of %2.2f", self.current, self.max, self.rate, self.penalty)
+    return string.format("%2.2f / %2.2f at %2.4f. Penalty %2.2f, Mode %s", self.current, self.max, self.rate, self.penalty, self.mode == SANITY_MODE_INSANITY and "INSANITY" or "LUNACY")
 end
 
 function Sanity:SetMax(amount)
@@ -194,24 +243,26 @@ function Sanity:DoDelta(delta, overtime)
         return
     end
 
-    local oldpct_ignoresinduced = self.current / self.max
     self.current = math.min(math.max(self.current + delta, 0), self.max - (self.max * self.penalty))
-    local newpct_ignoresinduced = self.current / self.max
 
-    --due to inducedinsanity hack...
-    if self.sane and oldpct_ignoresinduced > TUNING.SANITY_BECOME_INSANE_THRESH and newpct_ignoresinduced <= TUNING.SANITY_BECOME_INSANE_THRESH then
-        self.sane = false
-    elseif not self.sane and oldpct_ignoresinduced < TUNING.SANITY_BECOME_SANE_THRESH and newpct_ignoresinduced >= TUNING.SANITY_BECOME_SANE_THRESH then
-        self.sane = true
-    end
+    -- must calculate it due to inducedinsanity ...
+    local percent_ignoresinduced = self.current / self.max
+	if self.mode == SANITY_MODE_INSANITY then
+		if self.sane and percent_ignoresinduced <= TUNING.SANITY_BECOME_INSANE_THRESH then --30
+			self.sane = false
+		elseif not self.sane and percent_ignoresinduced >= TUNING.SANITY_BECOME_SANE_THRESH then --35
+			self.sane = true
+		end
+	else
+		if self.sane and percent_ignoresinduced >= TUNING.SANITY_BECOME_ENLIGHTENED_THRESH then
+			self.sane = false
+		elseif not self.sane and percent_ignoresinduced <= TUNING.SANITY_LOSE_ENLIGHTENMENT_THRESH then
+			self.sane = true
+		end
+	end
 
-    self.inst:PushEvent("sanitydelta", { oldpercent = self._oldpercent, newpercent = self:GetPercent(), overtime = overtime })
+    self.inst:PushEvent("sanitydelta", { oldpercent = self._oldpercent, newpercent = self:GetPercent(), overtime = overtime, sanitymode = self.mode })
     self._oldpercent = self:GetPercent()
-
---KAJ: TODO: taken out for now, stats
---    if delta > 0 and self.inst == ThePlayer then
---        ProfileStatsAdd("sane+", math.floor(delta))
---    end
 
     if self:IsSane() ~= self._oldissane then
         self._oldissane = self:IsSane()
@@ -222,11 +273,19 @@ function Sanity:DoDelta(delta, overtime)
             self.inst:PushEvent("gosane")
             ProfileStatsSet("went_sane", true)
         else
-            if self.onInsane ~= nil then
-                self.onInsane(self.inst)
-            end
-            self.inst:PushEvent("goinsane")
-            ProfileStatsSet("went_insane", true)
+			if self.mode == SANITY_MODE_INSANITY then
+				if self.onInsane ~= nil then
+					self.onInsane(self.inst)
+				end
+				self.inst:PushEvent("goinsane")
+				ProfileStatsSet("went_insane", true)
+			else --self.mode == SANITY_MODE_LUNACY
+				if self.onEnlightened ~= nil then
+					self.onEnlightened(self.inst)
+				end
+				self.inst:PushEvent("goenlightened")
+				ProfileStatsSet("went_enlightened", true)
+			end
         end
     end
 end
@@ -259,6 +318,22 @@ function Sanity:RecalcGhostDrain()
     end
 end
 
+local LIGHT_SANITY_DRAINS =
+{
+	[SANITY_MODE_INSANITY] = {
+		DAY = TUNING.SANITY_DAY_GAIN,
+		NIGHT_LIGHT = TUNING.SANITY_NIGHT_LIGHT,
+		NIGHT_DIM = TUNING.SANITY_NIGHT_MID,
+		NIGHT_DARK = TUNING.SANITY_NIGHT_DARK,
+	},
+	[SANITY_MODE_LUNACY] = {
+		DAY = TUNING.SANITY_LUNACY_DAY_GAIN,
+		NIGHT_LIGHT = TUNING.SANITY_LUNACY_NIGHT_LIGHT,
+		NIGHT_DIM = TUNING.SANITY_LUNACY_NIGHT_MID,
+		NIGHT_DARK = TUNING.SANITY_LUNACY_NIGHT_DARK,
+	},
+}
+
 function Sanity:Recalc(dt)
     local total_dapperness = self.dapperness
     for k, v in pairs(self.inst.components.inventory.equipslots) do
@@ -273,24 +348,25 @@ function Sanity:Recalc(dt)
 
     local moisture_delta = easing.inSine(self.inst.components.moisture:GetMoisture(), 0, TUNING.MOISTURE_SANITY_PENALTY_MAX, self.inst.components.moisture:GetMaxMoisture())
 
-    local light_delta
+    local light_sanity_drain = LIGHT_SANITY_DRAINS[self.mode]
+	local light_delta
     if TheWorld.state.isday and not TheWorld:HasTag("cave") then
-        light_delta = TUNING.SANITY_DAY_GAIN
+        light_delta = light_sanity_drain.DAY
     else
         local lightval = CanEntitySeeInDark(self.inst) and .9 or self.inst.LightWatcher:GetLightValue()
         light_delta =
-            (   (lightval > TUNING.SANITY_HIGH_LIGHT and TUNING.SANITY_NIGHT_LIGHT) or
-                (lightval < TUNING.SANITY_LOW_LIGHT and TUNING.SANITY_NIGHT_DARK) or
-                TUNING.SANITY_NIGHT_MID
+            (   (lightval > TUNING.SANITY_HIGH_LIGHT and light_sanity_drain.NIGHT_LIGHT) or
+                (lightval < TUNING.SANITY_LOW_LIGHT and light_sanity_drain.NIGHT_DARK) or
+                light_sanity_drain.NIGHT_DIM
             ) * self.night_drain_mult
     end
 
     local aura_delta = 0
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.SANITY_EFFECT_RANGE, nil, { "FX", "NOCLICK", "DECOR","INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.SANITY_AURA_SEACH_RANGE, { "sanityaura" }, { "FX", "NOCLICK", "DECOR","INLIMBO" })
     for i, v in ipairs(ents) do 
         if v.components.sanityaura ~= nil and v ~= self.inst then
-            local aura_val = v.components.sanityaura:GetAura(self.inst) / math.max(1, self.inst:GetDistanceSqToInst(v))
+            local aura_val = v.components.sanityaura:GetAura(self.inst)
             aura_delta = aura_delta + (aura_val < 0 and (self.neg_aura_absorb > 0 and self.neg_aura_absorb * -aura_val or aura_val) * self.neg_aura_mult or aura_val)
         end
     end

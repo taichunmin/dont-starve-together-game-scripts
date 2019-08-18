@@ -57,6 +57,18 @@ Story = Class(function(self, id, tasks, terrain, gen_params, level)
 	for k,task in pairs(tasks) do
 		self.tasks[task.id] = task
 	end
+
+	self.region_link_tasks = 1
+	self.region_tasksets = {}
+	for task_id, task in pairs(self.tasks) do
+		local region_id = task.region_id or "mainland"
+		if self.region_tasksets[region_id] == nil then
+			self.region_tasksets[region_id] = {}
+		end
+		self.region_tasksets[region_id][task_id] = task
+	end
+
+
 	self.GlobalTags = {}
 	self.TERRAIN = {}
 	self.terrain = terrain
@@ -77,8 +89,10 @@ function Story:GenerationPipeline()
 	local min_bg = self.level.background_node_range and self.level.background_node_range[1] or 0
 	local max_bg = self.level.background_node_range and self.level.background_node_range[2] or 2
 	self:AddBGNodes(min_bg, max_bg)
+	self:AddCoveNodes()
 	self:InsertAdditionalSetPieces()
-	self:ProcessExtraTags()
+	self:ProcessExtraTags() -- deprecated but leaving in for modders
+	self:ProcessOceanContent()
 end
 
 function Story:ModRoom(roomname, room)
@@ -102,6 +116,7 @@ function Story:GetRoom(roomname)
 end
 
 function Story:PlaceTeleportatoParts()
+	-- This is deprecated
 	local RemoveExitTag = function(node)
 		local newtags = {}
 		for i,tag in ipairs(node.data.tags) do
@@ -157,9 +172,9 @@ function Story:PlaceTeleportatoParts()
 
 	local parts = self.level.ordered_story_setpieces or {}
 	local maxdepth = -1
-	for id,task in pairs(self.rootNode:GetChildren()) do
-		if task.story_depth > maxdepth then
-			maxdepth = task.story_depth
+	for id, task_node in pairs(self.rootNode:GetChildren()) do
+		if task_node.story_depth > maxdepth then
+			maxdepth = task_node.story_depth
 		end
 	end
 	local partSpread = maxdepth/#parts
@@ -170,17 +185,45 @@ function Story:PlaceTeleportatoParts()
 end
 
 function Story:ProcessExtraTags()
+	-- This is deprecated
 	self:PlaceTeleportatoParts()
 end
 
+function Story:ProcessOceanContent()
+	if self.level.ocean_population then
+		print("[Ocean] Processing ocean fake room content.")
 
-function Story:InsertAdditionalSetPieces()
+		if self.ocean_population == nil then
+			self.ocean_population = {}
+		end
 
-	local tasks = self.rootNode:GetChildren()
+		for _, room in pairs(self.level.ocean_population) do
+			local data = self:GetRoom(room)
+			if data then
+				table.insert(self.ocean_population, {data = data})
+			end
+		end
+
+		if self.level.ocean_population_setpieces then
+			for k,v in ipairs(self.level.ocean_population_setpieces) do
+				local content = self.ocean_population[math.random(#self.ocean_population)]
+				if content.data.contents.countstaticlayouts == nil then
+					content.data.contents.countstaticlayouts = {}
+				end
+				if content.data.contents.countstaticlayouts[v] == nil then
+					content.data.contents.countstaticlayouts[v] = 0
+				end
+				content.data.contents.countstaticlayouts[v] = content.data.contents.countstaticlayouts[v] + 1
+			end
+		end
+	end
+end
+
+function Story:InsertAdditionalSetPieces(task_nodes)
+	local tasks = task_nodes or self.rootNode:GetChildren()
 	for id, task in pairs(tasks) do
 		if task.set_pieces ~= nil and #task.set_pieces >0 then
 			for i,setpiece_data  in ipairs(task.set_pieces) do
-
 
 				local is_entrance = function(room)
 					-- return true if the room is an entrance
@@ -254,7 +297,7 @@ function Story:InsertAdditionalSetPieces()
 end
 
 function Story:RestrictNodesByKey(startParentNode, unusedTasks)
-	print("##############################RestrictNodesByKey")
+    print("[Story Gen] RestrictNodesByKey")
 
 	local lastNode = startParentNode
 		
@@ -448,6 +491,7 @@ function Story:RestrictNodesByKey(startParentNode, unusedTasks)
 end
 
 function Story:LinkNodesByKeys(startParentNode, unusedTasks)
+    print("[Story Gen] LinkNodesByKeys")
 	print_lockandkey_ex("\n\n### START PARENT NODE:",startParentNode.id)
 	local lastNode = startParentNode
 	local availableKeys = {}
@@ -617,133 +661,298 @@ function Story:AddStartingSetPiece(starting_node_data)
 	end
 end
 
-function Story:GenerateNodesFromTasks()	
-	--print("Story:GenerateNodesFromTasks creating stories")
+function Story:FindMainlandNodesForNewRegion()
+	print("[Story Gen] Finding nodes on mainland to connect a region to.")
 
-    local randomStartTaskName = nil
-    if self.level.valid_start_tasks ~= nil then
-		randomStartTaskName = self.level.valid_start_tasks[math.random(#self.level.valid_start_tasks)]
-	end
-	
-	local unusedTasks = {}
-	
-	-- Generate all the TERRAIN
-	for k,task in pairs(self.tasks) do
-		--print("Story:GenerateNodesFromTasks k,task",k,task,  GetTableSize(self.TERRAIN))
-		local start_node_name = (randomStartTaskName == k) and self.gen_params.existing_start_node or nil
-		local task_node = self:GenerateNodesFromTask(task, task.crosslink_factor or 1, start_node_name)
-		self.TERRAIN[task.id] = task_node
-		unusedTasks[task.id] = task_node
-		
-		if start_node_name ~= nil then
-			self.startNode = task_node:GetNodeById("START")
+	local next_bucket = {	{{{x=2, y=1}, {x=1, y=2}}, {{x=1, y=1}, {x=3, y=1}}, {{x=2, y=1}, {x=3, y=2}}},
+							{{{x=1, y=1}, {x=1, y=3}}, {{x=2, y=2}, {x=2, y=2}}, {{x=3, y=1}, {x=3, y=3}}},
+							{{{x=1, y=2}, {x=2, y=3}}, {{x=1, y=3}, {x=3, y=3}}, {{x=2, y=3}, {x=3, y=2}}} }
+	local bucket_counts = {}
+	for x = 1, 3 do
+		for y = 1, 3 do
+			table.insert(bucket_counts, {x = x, y = y, count = 0})
 		end
 	end
-		
-	--print("Story:GenerateNodesFromTasks lock terrain")
-	
-	local startTasks = {}
-	for k,task in pairs(self.tasks) do
-		if #task.locks == 0 or task.locks[1] == LOCKS.NONE then
-			startTasks[task.id] = self.TERRAIN[task.id]
-		end
-	end
-	
-	--print("Story:GenerateNodesFromTasks finding start parent node")
 
-	local startParentNode = GetRandomItem(self.TERRAIN)
-	if  GetTableSize(startTasks) > 0 then
-		startParentNode = GetRandomItem(startTasks)
-	end
-
-	unusedTasks[startParentNode.id] = nil
-
-	local finalNode = startParentNode
-    assert(self.gen_params.layout_mode ~= nil, "Must specify a layout mode for your level.")
-    if string.upper(self.gen_params.layout_mode) == string.upper("RestrictNodesByKey") then
-
-        print("RestrictNodesByKey")
-        finalNode = self:RestrictNodesByKey(startParentNode, unusedTasks)
-    else
-        print("LinkNodesByKeys")
-        finalNode = self:LinkNodesByKeys(startParentNode, unusedTasks)
-    end
-	
-	if self.startNode == nil then
-		local randomStartTask = nil
-		local randomStartNode = nil
-		if randomStartTaskName ~= nil then
-			print("Finding valid start task...")
-			for id,task in pairs(self.rootNode:GetChildren()) do 
-				if id == randomStartTaskName then
-					print("   ...picked ", task.id)
-					randomStartTask = task
-					randomStartNode = task:GetRandomNodeForEntrance()
-					break
+	local function _GetOffsetPositionsAndSize(task_nodes)
+		local pos = {}
+		local min_x, max_x = math.huge, -math.huge
+		local min_y, max_y = math.huge, -math.huge
+		for t_id, t in pairs(task_nodes) do
+			for n_id, n in pairs(t.nodes) do
+				if n.data.task ~= nil then
+					local _x, _y = WorldSim:GetSite(n_id)
+					pos[n_id] = {x = _x, y = _y, node = n}
+					min_x, max_x = math.min(_x, min_x), math.max(_x, max_x)
+					min_y, max_y = math.min(_y, min_y), math.max(_y, max_y)
 				end
 			end
 		end
-		    
-		if randomStartNode == nil then
-			print("No valid start node, using first task.")
-			randomStartTask = startParentNode
-			randomStartNode = startParentNode:GetRandomNodeForEntrance()
-		end
-		
-		local start_node_data = {id="START"}
+		local padding = 5
+		min_x, max_x = math.floor(min_x - padding), math.ceil(max_x + padding)
+		min_y, max_y = math.floor(min_y - padding), math.ceil(max_y + padding)
 
-		if self.gen_params.start_node ~= nil then
-			print("Has start node", self.gen_params.start_node)
-			start_node_data.data = self:GetRoom(self.gen_params.start_node)
-			start_node_data.data.terrain_contents = start_node_data.data.contents		
+		local offset_x, offset_y = -min_x, -min_y
+
+		max_x = max_x - min_x
+		max_y = max_y - min_y
+		if max_y < max_x then
+			offset_y = offset_y + (max_x - max_y)/2
 		else
-			print("No start node!")
-			start_node_data.data = {
-									value = GROUND.GRASS,								
-									terrain_contents={
-										countprefabs = {
-											spawnpoint=1,
-											sapling=1,
-											twiggytree=1,
-											flint=1,
-											berrybush=1, 
-											berrybush_juicy = 0.5,
-											grass=function () return 2 + math.random(2) end
-										} 
-									}
-								 }
+			offset_x = offset_x + (max_y - max_x)/2
 		end
 
-		start_node_data.data.name = "START"
-		start_node_data.data.colour = {r=0,g=1,b=1,a=.80}
-		
-		self:AddStartingSetPiece(start_node_data.data)
-		
-		self.startNode = randomStartTask:AddNode(start_node_data)
+		for _, v in pairs(pos) do
+			v.x = v.x + offset_x
+			v.y = v.y + offset_y
+		end
 
-		--print("Story:GenerateNodesFromTasks adding start node link", self.startNode.id.." -> "..randomStartNode.id)
-		randomStartTask:AddEdge({node1id=self.startNode.id, node2id=randomStartNode.id})
+		return pos, math.max(max_x, max_y)
 	end
-	
-	-- form the map into a loop!
-	if self.gen_params.loop_percent ~= nil then
-		if math.random() < self.gen_params.loop_percent then
-			--print("Adding map loop")
-			self:SeperateStoryByBlanks(self.startNode, finalNode )
+
+	local function _FindBestNodes(node_pos, target_bucket, w)
+		local function GetClosestNode(point, exclude_task)
+			local closest_node = {node = nil, dist = math.huge}
+			for n_id, n in pairs(node_pos) do
+				if n.node.data.type ~= NODE_TYPE.Blank and (exclude_task == nil or node_pos[n_id].node.data.task ~= exclude_task)then
+					local dist = DistXYSq(point, n)
+					if dist < closest_node.dist then
+						closest_node.dist = dist
+						closest_node.node = node_pos[n_id]
+					end
+				end
+			end
+			return closest_node.node
 		end
-	else
-		if math.random() < 0.5 then
-			--print("Adding map loop")
-			self:SeperateStoryByBlanks(self.startNode, finalNode )
+
+		local bucket_outer_pt = {x = (target_bucket.x - 1) * w/2, y = (target_bucket.y - 1) * w/2}
+		local bucket_edge_pts = {	{{{x=0, y=w/3},   {x=w/3, y=0}},	{{x=w/3, y=0}, {x=2*w/3, y=0}}, {{x=2*w/3, y=0}, {x=w, y=w/3}}},
+									{{{x=0, y=w/3},   {x=0, y=2*w/3}},	{},								{{x=w, y=w/3},   {x=w, y=2*w/3}}},
+									{{{x=0, y=2*w/3}, {x=w/3, y=w}},	{{x=w/3, y=w}, {x=2*w/3, y=w}}, {{x=2*w/3, y=w}, {x=w, y=2*w/3}}}
+								}
+
+		local bucket_p1, bucket_p2 = unpack(bucket_edge_pts[target_bucket.y][target_bucket.x])
+		local closest_node1 = GetClosestNode(target_bucket.count == 0 and bucket_outer_pt or bucket_p1)
+
+		if target_bucket.count == 0 then
+			bucket_p2 = (DistXYSq(closest_node1, bucket_p1) < DistXYSq(closest_node1, bucket_p2)) and bucket_p2 or bucket_p1
+		end
+
+		local closest_node2 = GetClosestNode(bucket_p2, closest_node1.node.data.task)
+
+		return closest_node1, closest_node2 
+	end
+
+	local node_pos, w = _GetOffsetPositionsAndSize(self.TERRAIN)
+	
+	for n_id, n in pairs(node_pos) do
+		local x = 1 + math.max(0, math.floor(((n.x) / w) * 3))
+		local y = 1 + math.max(0, math.floor(((n.y) / w) * 3))
+		bucket_counts[(x-1) * 3 + y].count = bucket_counts[(x-1) * 3 + y].count + 1
+	end
+	shuffleArray(bucket_counts)
+	table.sort(bucket_counts, function(a, b) return a.count < b.count end)
+
+--	local str = "\n"
+--	for y = 1, 3 do for x = 1, 3 do str = str .. tostring(bucket_counts[(x-1) * 3 + y].count) .. "\t" end str = str .. "\n" end
+--	print(str)
+
+	local bucket = (bucket_counts[1].x == 2 and bucket_counts[1].y == 2) and bucket_counts[2] or bucket_counts[1] -- never pick the center bucket, even if it is the best
+	return _FindBestNodes(node_pos, bucket, w)
+end
+
+
+function Story:LinkRegions(n1, n2)
+	local task_id = "REGION_LINK_"..tostring(self.region_link_tasks)
+	local node_task = Graph(task_id, {parent=self.rootNode, default_bg=GROUND.IMPASSABLE, colour = {r=0,g=0,b=0,a=1}, background="BGImpassable" })
+	WorldSim:AddChild(self.rootNode.id, task_id, GROUND.IMPASSABLE, 0, 0, 0, 1, "blank")
+
+	local nodes = {}
+	local prev_node = nil
+	for i = 1, 4 do
+		WorldSim:AddChild(self.rootNode.id, task_id, GROUND.IMPASSABLE, 0, 0, 0, 1, "blank")
+		table.insert(nodes, node_task:AddNode({
+												id=task_id..":REGION_LINK_SUB_"..tostring(i), 
+												data={
+														type=NODE_TYPE.Background,
+														name="REGION_LINK_SUB",
+														tags = {"RoadPoison", "ForceDisconnected"},					 
+														colour={r=0.3,g=.8,b=.5,a=.50},
+														value = GROUND.OCEAN_COASTAL
+														}										
+											}))
+		if i > 1 then
+			node_task:AddEdge({node1id=nodes[#nodes-1].id, node2id=nodes[#nodes].id})
+		end
+	end
+	node_task:AddEdge({node1id=nodes[1].id, node2id=nodes[#nodes].id})
+	
+	self.rootNode:LockGraph(n1.node.data.task..'->'..nodes[1].id, 	n1.node, nodes[1], {type="none", key=KEYS.NONE, node=nil})
+	self.rootNode:LockGraph(task_id..'->'..n2.id, 	                nodes[3], n2, {type="none", key=KEYS.NONE, node=nil})
+
+	self.region_link_tasks = self.region_link_tasks + 1
+end
+
+function Story:AddRegionsToMainland(on_region_added_fn)
+	for region_id, region_taskset in pairs(self.region_tasksets) do
+		if region_id ~= "mainland" then
+			local c1, c2 = self:FindMainlandNodesForNewRegion()
+			local new_region = self:GenerateNodesForRegion(region_taskset, "RestrictNodesByKey")
+
+			local new_task_nodes = {}
+			for k, v in pairs(region_taskset) do
+				new_task_nodes[k] = self.TERRAIN[k]
+			end
+			self:AddCoveNodes(new_task_nodes)
+			self:InsertAdditionalSetPieces(new_task_nodes)
+
+			self:LinkRegions(c1, new_region.entranceNode)
+			self:LinkRegions(c2, new_region.finalNode)
+
+			if on_region_added_fn ~= nil then
+				on_region_added_fn()
+			end
 		end
 	end
 end
 
-function Story:AddBGNodes(min_count, max_count)
-	local tasksnodes = self.rootNode:GetChildren(false)
+function Story:GenerateNodesFromTasks()	
+	local g = self:GenerateNodesForRegion(self.region_tasksets["mainland"], self.gen_params.layout_mode)
+	self.startNode = self:_AddPlayerStartNode(g) -- Adds where the player portal will be spawned and used in placement.lua to force the starting point to be at the center of the map
+end
+
+function Story:_FindStartingTask(task_nodes)
+	local startTasks = {}
+	for task_id, nodes in pairs(task_nodes) do
+		if #self.tasks[task_id].locks == 0 or self.tasks[task_id].locks[1] == LOCKS.NONE then
+			table.insert(startTasks, nodes)
+		end
+	end
+	return #startTasks > 0 and startTasks[math.random(#startTasks)] or GetRandomItem(task_nodes).task
+end
+
+function Story:GenerateNodesForRegion(taskset, layout_mode)
+    assert(layout_mode ~= nil, "Must specify a layout mode for your level.")
+
+    if taskset == nil then return end
+
+	-- Generate all the TERRAIN
+	local task_nodes = {}
+	for k, task in pairs(taskset) do
+		assert(self.TERRAIN[task.id] == nil, "Cannot add the same task twice!")
+
+		local task_node = self:GenerateNodesFromTask(task, task.crosslink_factor or 1, nil)
+		self.TERRAIN[task.id] = task_node
+		task_nodes[task.id] = task_node
+	end
+
+	local startingTask = self:_FindStartingTask(task_nodes)
+	task_nodes[startingTask.id] = nil
+
+	print("[Story Gen] Generate nodes. Starting at: '" .. startingTask.id .. "'")
+	--dumptable(task_nodes, 1, 1)
+
+	local finalNode = nil
+    if string.upper(layout_mode) == string.upper("RestrictNodesByKey") then
+        finalNode = self:RestrictNodesByKey(startingTask, task_nodes)
+    else
+		finalNode = self:LinkNodesByKeys(startingTask, task_nodes)
+    end
+
+	local entranceNode = startingTask:GetRandomNodeForEntrance()
+
+
+	-- TODO: SeperateStoryByBlanks has bad names in the lock edge ID, might have bad rooms too!
+	--       This might be one of the sources of bad debug rendering!!!!
+
+	-- form the map into a loop!
+	if entranceNode.data.task ~= finalNode.data.task then
+		if self.gen_params.loop_percent ~= nil then
+			if math.random() < self.gen_params.loop_percent then
+				--print("Adding map loop")
+				self:SeperateStoryByBlanks(entranceNode, finalNode )
+			end
+		else
+			if math.random() < 0.5 then
+				--print("Adding map loop")
+				self:SeperateStoryByBlanks(entranceNode, finalNode )
+			end
+		end
+	end
+		
+	return {startingTask = startingTask, entranceNode = entranceNode, finalNode = finalNode}
+end
+
+function Story:_AddPlayerStartNode(mainland)
+	local randomStartTaskName = nil
+	if self.level.valid_start_tasks ~= nil then
+		randomStartTaskName = self.level.valid_start_tasks[math.random(#self.level.valid_start_tasks)]
+	end
+
+	local randomStartTask = nil
+	local randomStartNode = nil
+	if randomStartTaskName ~= nil then
+		print("Finding valid start task...")
+		for id,task in pairs(self.rootNode:GetChildren()) do 
+			if id == randomStartTaskName then
+				print("   ...picked ", task.id)
+				randomStartTask = task
+				randomStartNode = task:GetRandomNodeForEntrance()
+				break
+			end
+		end
+	end
+		    
+	if randomStartNode == nil then
+		print("No valid start node, using first task.")
+		randomStartTask = mainland.startingTask
+		randomStartNode = mainland.startingTask:GetRandomNodeForEntrance()
+	end
+		
+	local start_node_data = {id="START"}
+
+	if self.gen_params.start_node ~= nil then
+		print("Has start node", self.gen_params.start_node)
+		start_node_data.data = self:GetRoom(self.gen_params.start_node)
+		start_node_data.data.terrain_contents = start_node_data.data.contents		
+	else
+		print("No start node! Createing a default room.")
+		start_node_data.data = 
+		{
+			value = GROUND.GRASS,								
+			terrain_contents={
+				countprefabs = {
+					spawnpoint=1,
+					sapling=1,
+					twiggytree=1,
+					flint=1,
+					berrybush=1, 
+					berrybush_juicy = 0.5,
+					grass=function () return 2 + math.random(2) end
+				} 
+			}
+		}
+	end
+
+	start_node_data.data.name = "START"
+	start_node_data.data.colour = {r=0,g=1,b=1,a=.80}
+		
+	self:AddStartingSetPiece(start_node_data.data)
+		
+	local startNode = randomStartTask:AddNode(start_node_data)
+
+	--print("Story:_AddPlayerStartNode adding start node link", self.startNode.id.." -> "..randomStartNode.id)
+	randomStartTask:AddEdge({node1id=startNode.id, node2id=randomStartNode.id})
+
+	return startNode
+end
+
+function Story:AddBGNodes(min_count, max_count, task_nodes)
+	print("Adding Background Nodes")
+	task_nodes = task_nodes or self.rootNode:GetChildren(false)
 	local bg_idx = 0
 
-	for taskid, task in pairs(tasksnodes) do
+	for taskid, task in pairs(task_nodes) do
 		local background_template = self:GetRoom(task.data.background)
 		assert(background_template, "Couldn't find room with name "..(task.data.background or "<nil>").." from "..task.id)
 		local blocker_blank_template = self:GetRoom(self.level.blocker_blank_room_name)
@@ -844,6 +1053,69 @@ function Story:AddBGNodes(min_count, max_count)
 	end
 end
 
+function Story:AddCoveNodes(task_nodes) 
+	print("[Story Gen] Adding Cove Nodes")
+	task_nodes = task_nodes or self.rootNode:GetChildren(false)
+	local bg_idx = 0
+
+	for taskid, task_node in pairs(task_nodes) do
+		local task_def = self.tasks[taskid]
+		if task_def ~= nil then -- generated tasks like LOOP_BLANK_X and REGION_LINK_X do not need coves added to them
+			local cove_room_name = task_def.cove_room_name or "Blank"
+			local cove_room_template = self:GetRoom(cove_room_name)
+			assert(cove_room_template, "Couldn't find blank room with name "..(cove_room_name).." from "..taskid)
+
+			if cove_room_template.contents == nil then
+				cove_room_template.contents = {}
+			end
+
+			local cove_room_chance = task_def.cove_room_chance ~= nil and task_def.cove_room_chance or 0.35
+			local cove_room_max_edges = task_def.cove_room_max_edges ~= nil and task_def.cove_room_max_edges or 1
+			if cove_room_chance == 0 or cove_room_max_edges == 0 then
+				return
+			end
+
+			self:RunTaskSubstitution(task_node, cove_room_template.contents.distributeprefabs)
+
+			for nodeid, node in pairs(task_node:GetNodes(false)) do
+				if not node.data.entrance and node.data.type ~= NODE_TYPE.Blank and node.data.type ~= NODE_TYPE.BackgroundRoom and node.id ~= "START"
+					and (node.edges ~= nil and GetTableSize(node.edges) <= cove_room_max_edges) and math.random() < cove_room_chance then
+
+					local new_room = deepcopy(cove_room_template)
+					new_room.id = taskid..":COVE_"..bg_idx..":"..new_room.name
+					new_room.task = taskid
+					local extra_contents, extra_tags = self:GetExtrasForRoom(new_room)
+					local newNode = task_node:AddNode({
+										id=new_room.id, 
+										data={
+												type=(new_room.type == NODE_TYPE.Room and NODE_TYPE.BackgroundRoom)
+													or (new_room.type == NODE_TYPE.Default and NODE_TYPE.Background)
+													or new_room.type,
+												task = new_room.task,
+												name="background",
+												colour = new_room.colour,
+												value = new_room.value,
+												internal_type = new_room.internal_type,
+												tags = ArrayUnion(extra_tags, task_node.room_tags),
+												terrain_contents = new_room.contents,
+												terrain_contents_extra = extra_contents,
+												terrain_filter = self.terrain.filter,
+												entrance = new_room.entrance,
+												required_prefabs = new_room.required_prefabs
+												}										
+										})
+
+					task_node:AddEdge({node1id=newNode.id, node2id=nodeid})
+
+					bg_idx = bg_idx + 1
+				end
+			end
+
+			bg_idx = 0
+		end
+	end
+end
+
 function Story:SeperateStoryByBlanks(startnode, endnode )	
 	local blank_node = Graph("LOOP_BLANK"..tostring(self.loop_blanks), {parent=self.rootNode, default_bg=GROUND.IMPASSABLE, colour = {r=0,g=0,b=0,a=1}, background="BGImpassable" })
 	WorldSim:AddChild(self.rootNode.id, "LOOP_BLANK"..tostring(self.loop_blanks), GROUND.IMPASSABLE, 0, 0, 0, 1, "blank")
@@ -859,8 +1131,8 @@ function Story:SeperateStoryByBlanks(startnode, endnode )
 										})
 
 	self.loop_blanks = self.loop_blanks + 1
-	self.rootNode:LockGraph(startnode.id..'->'..blank_subnode.id, 	startnode, 	blank_subnode, {type="none", key=KEYS.NONE, node=nil})
-	self.rootNode:LockGraph(endnode.id..'->'..blank_subnode.id, 	endnode, 	blank_subnode, {type="none", key=KEYS.NONE, node=nil})
+	self.rootNode:LockGraph(startnode.data.task..'->'..blank_subnode.id, 	startnode, 	blank_subnode, {type="none", key=KEYS.NONE, node=nil})
+	self.rootNode:LockGraph(endnode.data.task..'->'..blank_subnode.id, 	endnode, 	blank_subnode, {type="none", key=KEYS.NONE, node=nil})
 end
 
 function Story:GetExtrasForRoom(next_room)
@@ -972,7 +1244,6 @@ function Story:GenerateNodesFromTask(task, crossLinkFactor, starting_node_name)
 			end
 		end
 	end
-
 
 	local task_node = Graph(task.id, {parent=self.rootNode, default_bg=task.room_bg, colour = task.colour, background=task.background_room, set_pieces=task.set_pieces, random_set_pieces=task.random_set_pieces, maze_tiles=task.maze_tiles, maze_tile_size=task.maze_tile_size, room_tags=task.room_tags, required_prefabs=task.required_prefabs})
 	task_node.substitutes = task.substitutes
@@ -1093,7 +1364,7 @@ function BuildStory(tasks, story_gen_params, level)
     --story.rootNode:Dump()
     --print("\n------------------------------------------------")
 
-    return {root=story.rootNode, startNode=story.startNode, GlobalTags = story.GlobalTags}
+    return {root=story.rootNode, startNode=story.startNode, GlobalTags = story.GlobalTags}, story
 end
 
 

@@ -34,6 +34,8 @@ local function commonfn(anim, cookable)
         inst:AddTag("cookable")
     end
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -84,6 +86,9 @@ local function defaultfn()
 
 	inst.components.tradable.rocktribute = 1
 
+    inst.components.floater:SetScale({0.55, 0.5, 0.55})
+    inst.components.floater:SetVerticalOffset(0.05)
+
     return inst
 end
 
@@ -97,7 +102,10 @@ local function cookedfn()
     inst.components.edible.healthvalue = 0
     inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
-    inst.components.perishable.onperishreplacement = "spoiled_food"    
+    inst.components.perishable.onperishreplacement = "spoiled_food"
+
+    inst.components.floater:SetSize("med")
+    inst.components.floater:SetScale(0.65)
 
     return inst
 end
@@ -118,6 +126,8 @@ local function rottenfn()
     inst:AddTag("icebox_valid")
     inst:AddTag("cattoy")
 
+    MakeInventoryFloatable(inst, "small", 0.25)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -131,6 +141,7 @@ local function rottenfn()
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
 

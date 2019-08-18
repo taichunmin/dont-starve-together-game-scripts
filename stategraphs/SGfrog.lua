@@ -12,6 +12,7 @@ local events=
     EventHandler("doattack", function(inst) if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then inst.sg:GoToState("attack") end end),
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
+    CommonHandlers.OnHop(),
     
     EventHandler("locomote", 
         function(inst) 
@@ -254,5 +255,6 @@ CommonStates.AddSleepStates(states,
 	},
 })
 CommonStates.AddFrozenStates(states)
+CommonStates.AddHopStates(states, true, {loop = "jump"})--, { pre = "boat_jump_pre", loop = "boat_jump_loop", pst = "boat_jump_pst"})
 
 return StateGraph("frog", states, events, "idle", actionhandlers)

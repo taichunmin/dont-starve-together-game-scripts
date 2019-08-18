@@ -8,7 +8,7 @@ local dst_cave = {
 	name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.DST_CAVE,
 	desc= STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.DST_CAVE,
 	location = "cave",
-	version = 3,
+	version = 4,
 	overrides={
 	},
 	background_node_range = {0,1},
@@ -23,7 +23,7 @@ AddLevel(LEVELTYPE.SURVIVAL, {
         name=STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELS.DST_CAVE_PLUS,
         desc= STRINGS.UI.CUSTOMIZATIONSCREEN.PRESETLEVELDESC.DST_CAVE_PLUS,
         location = "cave",
-        version = 3,
+        version = 4,
 
         overrides={
             boons = "often",

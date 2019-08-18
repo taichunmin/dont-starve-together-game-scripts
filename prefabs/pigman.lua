@@ -3,6 +3,7 @@ local assets =
     Asset("ANIM", "anim/ds_pig_basic.zip"),
     Asset("ANIM", "anim/ds_pig_actions.zip"),
     Asset("ANIM", "anim/ds_pig_attacks.zip"),
+    Asset("ANIM", "anim/ds_pig_boat_jump.zip"),
     Asset("ANIM", "anim/pig_build.zip"),
     Asset("ANIM", "anim/pigspotted_build.zip"),
     Asset("ANIM", "anim/pig_guard_build.zip"),
@@ -692,6 +693,10 @@ local function normal()
         return inst
     end
 
+    -- boat hopping setup
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+    inst:AddComponent("embarker")
+
     inst.build = builds[math.random(#builds)]
     inst.AnimState:SetBuild(inst.build)
     inst.components.werebeast:SetOnNormalFn(SetNormalPig)
@@ -707,6 +712,10 @@ local function guard()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    -- boat hopping setup
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+    inst:AddComponent("embarker")
 
     inst.build = guardbuilds[math.random(#guardbuilds)]
     inst.AnimState:SetBuild(inst.build)

@@ -95,6 +95,8 @@ local function MakeHat(name)
             custom_init(inst)
         end
 
+        MakeInventoryFloatable(inst)
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
@@ -102,6 +104,7 @@ local function MakeHat(name)
         end
 
         inst:AddComponent("inventoryitem")
+
         inst:AddComponent("inspectable")
 
         inst:AddComponent("tradable")
@@ -123,6 +126,9 @@ local function MakeHat(name)
 
     local function straw()
         local inst = simple(straw_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
 
         if not TheWorld.ismastersim then
             return inst
@@ -155,6 +161,9 @@ local function MakeHat(name)
     local function bee()
         local inst = simple(bee_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.73)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -178,6 +187,10 @@ local function MakeHat(name)
     local function earmuffs()
         local inst = simple(earmuffs_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.6)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -196,6 +209,10 @@ local function MakeHat(name)
 
     local function winter()
         local inst = simple()
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.6)
 
         if not TheWorld.ismastersim then
             return inst
@@ -425,6 +442,10 @@ local function MakeHat(name)
     local function beefalo()
         local inst = simple(beefalo_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.65)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -448,6 +469,9 @@ local function MakeHat(name)
 
     local function walrus()
         local inst = simple()
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.63)
 
         if not TheWorld.ismastersim then
             return inst
@@ -543,6 +567,9 @@ local function MakeHat(name)
 
     local function miner()
         local inst = simple(miner_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.6)
 
         if not TheWorld.ismastersim then
             return inst
@@ -650,6 +677,10 @@ local function MakeHat(name)
     local function spider()
         local inst = simple(spider_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.62)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -679,6 +710,10 @@ local function MakeHat(name)
 
     local function top()
         local inst = simple(top_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.65)
 
         if not TheWorld.ismastersim then
             return inst
@@ -759,6 +794,9 @@ local function MakeHat(name)
 
         inst.foleysound = "dontstarve/movement/foley/bushhat"
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.65)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -780,11 +818,41 @@ local function MakeHat(name)
     local function flower()
         local inst = simple(flower_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.68)
+
         if not TheWorld.ismastersim then
             return inst
         end
 
         inst.components.equippable.dapperness = TUNING.DAPPERNESS_TINY
+        inst.components.equippable:SetOnEquip(opentop_onequip)
+
+        inst:AddComponent("perishable")
+        inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
+        inst.components.perishable:StartPerishing()
+        inst.components.perishable:SetOnPerishFn(inst.Remove)
+
+        MakeHauntableLaunchAndPerish(inst)
+
+        return inst
+    end
+
+    local function kelp_custom_init(inst)
+        inst:AddTag("show_spoilage")
+    end
+
+    local function kelp()
+        local inst = simple(kelp_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.68)
+
+        if not TheWorld.ismastersim then
+            return inst
+        end
+
+        inst.components.equippable.dapperness = -TUNING.DAPPERNESS_TINY
         inst.components.equippable:SetOnEquip(opentop_onequip)
 
         inst:AddComponent("perishable")
@@ -840,6 +908,9 @@ local function MakeHat(name)
 
     local function rain()
         local inst = simple(rain_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.65)
 
         if not TheWorld.ismastersim then
             return inst
@@ -899,6 +970,9 @@ local function MakeHat(name)
 
     local function eyebrella()
         local inst = simple(eyebrella_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.95)
 
         if not TheWorld.ismastersim then
             return inst
@@ -960,6 +1034,9 @@ local function MakeHat(name)
     local function ice()
         local inst = simple(ice_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.66)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -1003,6 +1080,10 @@ local function MakeHat(name)
 
     local function catcoon()
         local inst = simple()
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetVerticalOffset(0.1)
+        inst.components.floater:SetScale(0.63)
 
         if not TheWorld.ismastersim then
             return inst
@@ -1059,6 +1140,8 @@ local function MakeHat(name)
         inst.components.waterproofer:SetEffectiveness(TUNING.WATERPROOFNESS_SMALL)
 
         inst.components.equippable.dapperness = -TUNING.DAPPERNESS_SMALL
+
+        inst.components.floater:SetVerticalOffset(0.1)
 
         return inst
     end
@@ -1188,6 +1271,9 @@ local function MakeHat(name)
     local function red_mushroom()
         local inst = common_mushroom("spore_medium")
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.95)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -1198,6 +1284,8 @@ local function MakeHat(name)
     local function green_mushroom()
         local inst = common_mushroom("spore_small")
 
+        inst.components.floater:SetSize("med")
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -1207,6 +1295,9 @@ local function MakeHat(name)
 
     local function blue_mushroom()
         local inst = common_mushroom("spore_tall")
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.7)
 
         if not TheWorld.ismastersim then
             return inst
@@ -1240,6 +1331,9 @@ local function MakeHat(name)
 
     local function hive()
         local inst = simple(hive_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.8)
 
         if not TheWorld.ismastersim then
             return inst
@@ -1342,6 +1436,9 @@ local function MakeHat(name)
     local function dragon()
         local inst = simple()
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.65)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -1370,6 +1467,9 @@ local function MakeHat(name)
     local function desert()
         local inst = simple(desert_custom_init)
 
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.72)
+
         if not TheWorld.ismastersim then
             return inst
         end
@@ -1395,6 +1495,9 @@ local function MakeHat(name)
 
     local function goggles()
         local inst = simple(goggles_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.68)
 
         if not TheWorld.ismastersim then
             return inst
@@ -1434,6 +1537,9 @@ local function MakeHat(name)
 
     local function skeleton()
         local inst = simple(skeleton_custom_init)
+
+        inst.components.floater:SetSize("med")
+        inst.components.floater:SetScale(0.68)
 
         if not TheWorld.ismastersim then
             return inst
@@ -1522,6 +1628,8 @@ local function MakeHat(name)
         fn = goggles
     elseif name == "skeleton" then
         fn = skeleton
+    elseif name == "kelp" then
+        fn = kelp
     end
 
     return Prefab(prefabname, fn or default, assets, prefabs)
@@ -1584,4 +1692,5 @@ return  MakeHat("straw"),
         MakeHat("desert"),
         MakeHat("goggles"),
         MakeHat("skeleton"),
+        MakeHat("kelp"),
         Prefab("minerhatlight", minerhatlightfn)

@@ -191,6 +191,8 @@ local function fn()
     --HASHEATER (from heater component) added to pristine state for optimization
     inst:AddTag("HASHEATER")
 
+    MakeInventoryFloatable(inst, "small", 0.2)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -201,6 +203,7 @@ local function fn()
     inst.components.inspectable.getstatus = GetStatus
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("tradable")
     inst.components.tradable.rocktribute = 6
 

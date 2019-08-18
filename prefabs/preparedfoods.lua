@@ -51,8 +51,8 @@ local function MakePreparedFood(data)
             inst.inv_image_bg = { image = (data.basename or data.name)..".tex" }
             inst.inv_image_bg.atlas = GetInventoryItemAtlas(inst.inv_image_bg.image)
         else
-            inst.AnimState:SetBuild("cook_pot_food")
-            inst.AnimState:SetBank("cook_pot_food")
+        inst.AnimState:SetBuild("cook_pot_food")
+        inst.AnimState:SetBank("cook_pot_food")
         end
         inst.AnimState:PlayAnimation("idle")
         inst.AnimState:OverrideSymbol("swap_food", "cook_pot_food", data.basename or data.name)
@@ -69,6 +69,12 @@ local function MakePreparedFood(data)
             if data.spice ~= nil then
                 inst.displaynamefn = DisplayNameFn
             end
+        end
+
+        if data.floater ~= nil then
+            MakeInventoryFloatable(inst, data.floater[1], data.floater[2], data.floater[3])
+        else
+            MakeInventoryFloatable(inst)
         end
 
         inst.entity:SetPristine()

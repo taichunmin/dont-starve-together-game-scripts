@@ -385,6 +385,12 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 		rcx = position[1]
 		rcy = position[2]
 	end
+
+	--print("ReserveAndPlaceLayout:", node_id, layout.layout_file, size, layout.start_mask, layout.fill_mask, layout.layout_position)
+	--print("     ", position and position[1] or "--", position and position[2] or "--")
+	--print("     ", rcx, rcy)
+
+
 	-- place objects however you like within the reserved loc
 	--print ("RESERVED", rcx,rcy, flip_x, flip_y)	
 	

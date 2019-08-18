@@ -24,11 +24,12 @@ Level = Class( function(self, data)
 	self.hideminimap = data.hideminimap or false
 	self.min_playlist_position = data.min_playlist_position or 0
 	self.max_playlist_position = data.max_playlist_position or 999
-	self.ordered_story_setpieces = data.ordered_story_setpieces
+	self.ordered_story_setpieces = data.ordered_story_setpieces -- Deprecated
 	self.required_prefabs = data.required_prefabs
 	self.background_node_range = data.background_node_range
 	self.blocker_blank_room_name = data.blocker_blank_room_name
 
+	self.required_setpieces = data.required_setpieces
 	self.numrandom_set_pieces = data.numrandom_set_pieces or 0
 	self.random_set_pieces = data.random_set_pieces or nil
 
@@ -83,7 +84,7 @@ function Level:GetTasksForLevel()
     return self.chosen_tasks
 end
 
-function Level:ChooseTasks(taskdefinitions)
+function Level:ChooseTasks()
 	--print("Getting tasks for level:", self.name)
 	local tasklist = {}
     assert(self.overrides["task_set"] ~= nil, "Must specify the task set for a level!")
@@ -146,25 +147,41 @@ function Level:ChooseTasks(taskdefinitions)
 	self.chosen_tasks = tasklist
 end
 
+function Level:GetTasksForLevelSetPieces()
+	local tasks = {}
+	for _, v in ipairs(self.chosen_tasks) do
+		if not v.level_set_piece_blocker then
+			table.insert(tasks, v)
+		end
+	end
+	return tasks
+end
+
 function Level:ChooseSetPieces()
     assert(self.chosen_tasks ~= nil, "Must call ChooseTasks before ChooseSetPieces")
 
-	for i = 1, self.numrandom_set_pieces do
-		--Add random setpiece each loop.
-
-		--Get random set piece to put in task
-		local set_piece = self.random_set_pieces[math.random(#self.random_set_pieces)]
-
-		--Get random task
-		local idx = math.random(#self.chosen_tasks)
-
-		if self.chosen_tasks[idx].random_set_pieces == nil then
-			self.chosen_tasks[idx].random_set_pieces = {}
+	local tasks = self:GetTasksForLevelSetPieces()
+	if #tasks > 0 then
+		local set_pieces = {}
+		if self.required_setpieces ~= nil then
+			set_pieces = deepcopy(self.required_setpieces)
+			for i = 1, self.numrandom_set_pieces do
+				--Get random set piece to put in task
+				table.insert(set_pieces, self.random_set_pieces[math.random(#self.random_set_pieces)])
+			end
 		end
-		print(set_piece,"added to",self.chosen_tasks[idx].id)
-		table.insert(self.chosen_tasks[idx].random_set_pieces, set_piece)
-	end
 
+		for _, set_piece in ipairs(set_pieces) do
+			--Get random task
+			local idx = math.random(#tasks)
+
+			if tasks[idx].random_set_pieces == nil then
+				tasks[idx].random_set_pieces = {}
+			end
+			print(set_piece .. " added to task " .. tasks[idx].id)
+			table.insert(tasks[idx].random_set_pieces, set_piece)
+		end
+	end
 	for name, choicedata in pairs(self.set_pieces or {}) do
         --print("Adding",name, choicedata.count)
 		local found = false

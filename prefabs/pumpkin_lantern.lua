@@ -216,6 +216,8 @@ local function fn()
     inst._fade = net_smallbyte(inst.GUID, "pumpkin_lantern._fade", "fadedirty")
     inst._fade:set(FADE_FRAMES * 2 + 1)
 
+    MakeInventoryFloatable(inst, "med", 0.1, 0.78)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

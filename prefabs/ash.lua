@@ -74,6 +74,7 @@ local function fn()
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetOnPutInInventoryFn(OnPickup)
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("named")
     inst.components.named.nameformat = STRINGS.NAMES.ASH_REMAINS

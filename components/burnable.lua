@@ -46,6 +46,8 @@ local Burnable = Class(function(self, inst)
     self.onignite = nil
     self.onextinguish = nil
     self.onburnt = nil
+    self.onsmoldering = nil
+    self.onstopsmoldering = nil
     self.canlight = true
 
     self.lightningimmune = false
@@ -62,6 +64,16 @@ nil,
     canlight = oncanlight,
     smoldering = onsmoldering,
 })
+
+--- Set the function that will be called when the object stops smoldering
+function Burnable:SetOnStopSmolderingFn(fn)
+    self.onstopsmoldering = fn
+end
+
+--- Set the function that will be called when the object starts smoldering
+function Burnable:SetOnSmolderingFn(fn)
+    self.onsmoldering = fn
+end
 
 --- Set the function that will be called when the object starts burning
 function Burnable:SetOnIgniteFn(fn)
@@ -218,6 +230,10 @@ end
 function Burnable:StartWildfire()
     if not (self.burning or self.smoldering or self.inst:HasTag("fireimmune")) then
         self.smoldering = true
+        if self.onsmoldering then
+            self.onsmoldering(self.inst)
+        end
+
         self.smoke = SpawnPrefab("smoke_plant")
         if self.smoke ~= nil then
             if #self.fxdata == 1 and self.fxdata[1].follow then
@@ -353,6 +369,10 @@ function Burnable:StopSmoldering(heatpct)
 
         if self.inst.components.propagator ~= nil then
             self.inst.components.propagator:StopSpreading(true, heatpct)
+        end
+
+        if self.onstopsmoldering ~= nil then
+            self.onstopsmoldering(self.inst)
         end
     end
 end

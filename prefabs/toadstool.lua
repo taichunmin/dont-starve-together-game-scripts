@@ -906,7 +906,10 @@ local function common_fn(build)
     inst:AddComponent("timer")
 
     inst:AddComponent("grouptargeter")
+
     inst:AddComponent("groundpounder")
+    inst.components.groundpounder.platformPushingRings = 0
+
     inst:AddComponent("knownlocations")
 
     MakeLargeBurnableCharacter(inst, "swap_fire")

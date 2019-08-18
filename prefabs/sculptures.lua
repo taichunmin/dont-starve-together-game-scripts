@@ -196,16 +196,18 @@ local function makesculpture(name, physics_radius, scale, second_piece_name)
         while not placed do
             local topology = TheWorld.topology
             local area = topology.nodes[math.random(#topology.nodes)]
-            local points_x, points_y = TheWorld.Map:GetRandomPointsForSite(area.x, area.y, area.poly, 1)
-            if #points_x == 1 and #points_y == 1 then
-                local x = points_x[1]
-                local z = points_y[1]
+			if not table.contains(area.tags, "not_mainland") then
+				local points_x, points_y = TheWorld.Map:GetRandomPointsForSite(area.x, area.y, area.poly, 1)
+				if #points_x == 1 and #points_y == 1 then
+					local x = points_x[1]
+					local z = points_y[1]
 
-                if TheWorld.Map:CanPlantAtPoint(x, 0, z) then
-                    second_piece.Transform:SetPosition(x, 0, z)
-                    placed = true
-                end
-            end
+					if TheWorld.Map:CanPlantAtPoint(x, 0, z) then
+						second_piece.Transform:SetPosition(x, 0, z)
+						placed = true
+					end
+				end
+			end
         end
     end or nil
 

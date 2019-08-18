@@ -30,7 +30,7 @@ function Pollinator:HasCollectedEnough()
 end
 
 function Pollinator:CreateFlower()
-    if self:HasCollectedEnough() then
+    if self:HasCollectedEnough() and self.inst:IsOnValidGround() then
         local parentFlower = GetRandomItem(self.flowers)
         local flower = SpawnPrefab(parentFlower.prefab)
         flower.planted = true
@@ -41,8 +41,8 @@ end
 
 function Pollinator:CheckFlowerDensity()
     local x,y,z = self.inst.Transform:GetWorldPosition()
-    local nearbyflowers = TheSim:FindEntities(x,y,z, self.distance, "flower")
-    return #nearbyflowers < self.maxdensity
+    local nearbyentities = TheSim:FindEntities(x,y,z, self.distance, nil, {"FX", "NOBLOCK", "INLIMBO", "DECOR"})
+    return #nearbyentities < self.maxdensity
 end
 
 function Pollinator:GetDebugString()

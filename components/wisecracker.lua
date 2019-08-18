@@ -44,6 +44,11 @@ local Wisecracker = Class(function(self, inst)
                             inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "SPOILED"))
                         end
                     end
+                else
+                    local count = inst.components.foodmemory ~= nil and inst.components.foodmemory:GetMemoryCount(data.food.prefab) or 0
+                    if count > 0 then
+                        inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "SAME_OLD_"..tostring(math.min(5, count))))
+                    end
                 end
             end
         end)
@@ -173,6 +178,14 @@ local Wisecracker = Class(function(self, inst)
     inst:ListenForEvent("pickdiseasing", function(inst)
         inst.components.talker:Say(GetString(inst, "ANNOUNCE_PICK_DISEASE_WARNING"))
     end)
+
+    inst:ListenForEvent("onpresink", function(inst)
+        inst.components.talker:Say(GetString(inst, "ANNOUNCE_BOAT_SINK"))
+    end)
+
+    inst:ListenForEvent("on_standing_on_new_leak", function(inst)
+        inst.components.talker:Say(GetString(inst, "ANNOUNCE_BOAT_LEAK"))
+    end)    
 
     inst:ListenForEvent("digdiseasing", function(inst)
         inst.components.talker:Say(GetString(inst, "ANNOUNCE_DIG_DISEASE_WARNING"))

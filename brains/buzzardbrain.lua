@@ -64,13 +64,19 @@ local function DealWithThreat(inst)
     --If you have some food then defend it! Otherwise... cheese it!
     if FindFood(inst, 1.5) ~= nil then
         local threat = FindThreat(inst, SEE_THREAT_DIST)
-        if threat ~= nil and not inst.components.combat:TargetIs(threat) then
-            inst.components.locomotor:Stop()
-            inst:ClearBufferedAction()
-            inst.components.combat:SetTarget(threat)
+        if threat ~= nil then
+            if not threat:IsOnValidGround() then
+                -- If our threat is out on the ocean, or otherwise somewhere we can't reach,
+                -- we should just go away. Sorry, "cheese it".
+                inst.shouldGoAway = true
+            elseif not inst.components.combat:TargetIs(threat) then
+                inst.components.locomotor:Stop()
+                inst:ClearBufferedAction()
+                inst.components.combat:SetTarget(threat)
+            end
         end
     else
-        inst.shouldGoAway = true       
+        inst.shouldGoAway = true
     end
 end
 

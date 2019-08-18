@@ -717,6 +717,7 @@ function SaveGame(isshutdown, cb)
         save.map.persistdata, new_refs = ground:GetPersistData()
         save.meta = ground.meta
         save.map.hideminimap = ground.hideminimap
+		save.map.has_ocean = ground.has_ocean
 
         if new_refs ~= nil then
             for k, v in pairs(new_refs) do

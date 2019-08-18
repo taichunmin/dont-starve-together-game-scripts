@@ -675,8 +675,13 @@ function c_findtag(tag, radius, inst)
 end
 
 function c_gonext(name)
-    name = string.lower(name)
-    return c_goto(c_findnext(name))
+    if name ~= nil then
+        local next = c_findnext(string.lower(name))
+        if next ~= nil and next.Transform ~= nil then
+            return c_goto(next)
+        end
+    end
+    return nil
 end
 
 function c_printtextureinfo( filename )
@@ -1173,4 +1178,139 @@ end
 
 function c_stopvote()
     TheNet:StopVote()
+end
+
+function c_makeboat()
+	local x, y, z = ConsoleWorldPosition():Get()
+
+	local inst = SpawnPrefab("boat")
+	inst.Transform:SetPosition(x, y, z)
+
+	local inst = SpawnPrefab("mast")
+	inst.Transform:SetPosition(x, y, z)
+	inst = SpawnPrefab("steeringwheel")
+	inst.Transform:SetPosition(x + 3.25, y, z)
+	inst = SpawnPrefab("anchor")
+	inst.Transform:SetPosition(x + 2.25, y, z + 2.25)
+
+	inst = SpawnPrefab("oar")
+	inst.Transform:SetPosition(x, y, z - 3.25)
+	inst = SpawnPrefab("oar_driftwood")
+	inst.Transform:SetPosition(x + 1, y, z - 1.25)
+
+	inst = SpawnPrefab("mast_item")
+	inst.Transform:SetPosition(x - 1, y, z + 1.25)
+	inst = SpawnPrefab("boatpatch")
+	inst.Transform:SetPosition(x, y, z + 1.25)
+	inst.components.stackable:SetStackSize(5)
+
+	inst = SpawnPrefab("lantern")
+	inst.Transform:SetPosition(x - 3.25, y, z)
+	
+end
+
+function c_makeboatspiral()
+    local items = {
+        boat_item = 1,
+        steeringwheel_item = 1,
+        anchor_item = 1,
+        mast_item = 2,
+        oar = 3,
+        oar_driftwood = 1,
+        propelomatic_item = 1,
+		miniflare = 3,
+		backpack = 3,
+		redmooneye = 1,
+        axe = 1,
+        hammer = 1,
+        pickaxe = 1,
+        meat_dried = {5, 5, 5},
+        boatpatch = 3,
+        torch = 4,
+        log = {20, 20}, 
+        boards = {10, 10}, 
+		lantern = 1,
+        goldnugget = {5,5},
+        rocks = {20,20},
+        researchlab = 1,
+    }
+
+    local chord = 1.5
+    local away_step = 0.25
+    local theta = 0
+
+    for prefab, stacks in pairs(items) do
+		stacks = type(stacks) == "table" and stacks or {stacks}
+		for _, count in pairs(stacks) do
+			for i = 1, count, 1 do            
+				local inst = DebugSpawn(prefab)
+				if inst ~= nil then
+
+					local away = away_step * theta
+
+					local x,y,z = inst.Transform:GetWorldPosition()
+					local spiral_x = math.cos(theta) * away
+					local spiral_z = math.sin(theta) * away
+
+					x = x + spiral_x
+					z = z + spiral_z
+					inst.Transform:SetPosition(x, y, z)
+
+					if away == 0 then
+						away = away_step
+					end
+
+					theta = theta + chord / away
+
+					if i == 1 and inst.components.stackable ~= nil then
+						inst.components.stackable:SetStackSize(count)
+						break
+					end
+				end
+			end
+		end
+    end
+end
+
+function c_autoteleportplayers()
+    TheWorld.auto_teleport_players = not TheWorld.auto_teleport_players
+    print("auto_teleport_players:", TheWorld.auto_teleport_players)
+end
+
+function c_dumpentities()
+
+    local ent_counts = {}
+
+	local first = true
+
+	local total = 0
+    for k,v in pairs(Ents) do        
+        local name = v.prefab or (v.widget and v.widget.name) or v.name
+		if name == nil then
+			name = "NONAME"
+		end
+        local count = ent_counts[name]
+        if count == nil then 
+            count = 1
+        else
+            count = count + 1
+        end
+        ent_counts[name] = count
+		total = total + 1
+    end
+
+    local sorted_ent_counts = {}
+
+    for ent, count in pairs(ent_counts) do
+        table.insert(sorted_ent_counts, {ent, count})
+    end
+
+    table.sort(sorted_ent_counts, function(a,b) return a[2] > b[2] end )
+
+	
+    print("Entity, Count")
+    for k,v in ipairs(sorted_ent_counts) do
+        print(v[1] .. ",", v[2])
+    end
+	print("Total: ", total)
 end

@@ -44,6 +44,7 @@ local function MakeWrap(name, containerprefab, tag, cheapfuel)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+        inst.components.inventoryitem:SetSinks(true)
 
         inst:AddComponent("bundlemaker")
         inst.components.bundlemaker:SetBundlingPrefabs(containerprefab, name)
@@ -246,6 +247,7 @@ local function MakeBundle(name, onesize, variations, loot, tossloot, setupdata)
         inst:AddComponent("inspectable")
 
         inst:AddComponent("inventoryitem")
+        inst.components.inventoryitem:SetSinks(true)
 
         if variations ~= nil or not onesize then
             inst.components.inventoryitem:ChangeImageName(

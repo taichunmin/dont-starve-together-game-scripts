@@ -33,7 +33,6 @@ local events=
     CommonHandlers.OnFreeze(),
 }
 
-
 local states=
 {
 
@@ -45,8 +44,7 @@ local states=
 			inst.components.locomotor:WalkForward()
             inst.AnimState:PlayAnimation("flight_cycle", true)
         end,
-    },    
-    
+    },
 
     State{
         name = "death",
@@ -55,14 +53,18 @@ local states=
         onenter = function(inst)
             inst.AnimState:PlayAnimation("death")
             inst.Physics:Stop()
-            RemovePhysicsColliders(inst)            
-            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+            RemovePhysicsColliders(inst)
+            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         end,
 
-    },    
+        timeline =
+        {
+            TimeEvent(10 * FRAMES, LandFlyingCreature),
+        },
+    },
     State{
         name = "idle",
-        tags = {"idle", "canrotate"},
+        tags = {"idle"},
         
         onenter = function(inst)
             inst.Physics:Stop()
@@ -88,6 +90,7 @@ local states=
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("land")
+            LandFlyingCreature(inst)
         end,
         
         events=
@@ -102,6 +105,8 @@ local states=
 				end
             end),
         },
+
+        onexit = RaiseFlyingCreature,
     },
     
     State{
@@ -110,7 +115,10 @@ local states=
         
         onenter = function(inst)
             inst.AnimState:PushAnimation("idle", true)
+            LandFlyingCreature(inst)
         end,
+
+        onexit = RaiseFlyingCreature,
     },
     
     State{
@@ -121,13 +129,16 @@ local states=
             inst.AnimState:PushAnimation("idle", true)
             inst:PerformBufferedAction()
             inst.sg:SetTimeout(GetRandomWithVariance(3, 1) )
+            LandFlyingCreature(inst)
         end,
         
         ontimeout = function(inst)
             inst.sg:GoToState("takeoff")
         end,
+
+        onexit = RaiseFlyingCreature,
     },
-    
+
     State{
         name = "takeoff",
         tags = {"busy"},
@@ -141,11 +152,10 @@ local states=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
-        
     },
 
 }
-CommonStates.AddFrozenStates(states)
-    
+CommonStates.AddFrozenStates(states, LandFlyingCreature, RaiseFlyingCreature)
+
 return StateGraph("butterfly", states, events, "takeoff", actionhandlers)
 

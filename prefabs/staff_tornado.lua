@@ -3,6 +3,7 @@ local assets =
     Asset("ANIM", "anim/tornado.zip"),
     Asset("ANIM", "anim/tornado_stick.zip"),
     Asset("ANIM", "anim/swap_tornado_stick.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =
@@ -62,6 +63,9 @@ local function staff_fn()
     inst:AddTag("quickcast")
 
     inst.spelltype = "SCIENCE"
+
+    local swap_data = {sym_build = "swap_tornado_stick", bank = "tornado_stick"}
+    MakeInventoryFloatable(inst, "med", 0.05, {1.0, 0.4, 1.0}, true, -20, swap_data)
 
     inst.entity:SetPristine()
 

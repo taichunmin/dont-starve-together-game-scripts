@@ -56,8 +56,9 @@ local function FindLeader(self)
     self._leader = nil
     local rangesq = LOSE_LEADER_DIST_SQ
     local x, y, z = self.inst.Transform:GetWorldPosition()
+    local my_platform = self.inst:GetCurrentPlatform()
     for i, v in ipairs(AllPlayers) do
-        if v.components.sanity:IsCrazy() and v.entity:IsVisible() then
+        if v.components.sanity:IsCrazy() and v.entity:IsVisible() and my_platform == v:GetCurrentPlatform() then
             local distsq = v:GetDistanceSqToPoint(x, y, z)
             if distsq < rangesq then
                 rangesq = distsq

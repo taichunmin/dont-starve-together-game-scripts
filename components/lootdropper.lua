@@ -192,24 +192,6 @@ function LootDropper:GenerateLoot()
     return loots
 end
 
-local function SplashOceanLoot(loot, cb)
-    if loot.components.inventoryitem == nil or not loot.components.inventoryitem:IsHeld() then
-        local x, y, z = loot.Transform:GetWorldPosition()
-        if not loot:IsOnValidGround() or TheWorld.Map:IsPointNearHole(Vector3(x, 0, z)) then
-            SpawnPrefab("splash_ocean").Transform:SetPosition(x, y, z)
-            if loot:HasTag("irreplaceable") then
-                loot.Transform:SetPosition(FindSafeSpawnLocation(x, y, z))
-            else
-                loot:Remove()
-            end
-            return
-        end
-    end
-    if cb ~= nil then
-        cb(loot)
-    end
-end
-
 function LootDropper:SetFlingTarget(pos, variance)
     self.flingtargetpos = pos
     self.flingtargetvariance = variance
@@ -223,9 +205,14 @@ function LootDropper:FlingItem(loot, pt, bouncedcb)
 
         loot.Transform:SetPosition(pt:Get())
 
+        local min_speed = self.min_speed or 0
+        local max_speed = self.max_speed or 2
+        local y_speed = self.y_speed or 8
+        local y_speed_variance = self.y_speed_variance or 4
+
         if loot.Physics ~= nil then
             local angle = self.flingtargetpos ~= nil and GetRandomWithVariance(self.inst:GetAngleToPoint(self.flingtargetpos), self.flingtargetvariance or 0) * DEGREES or math.random() * 2 * PI
-            local speed = math.random() * 2
+            local speed = min_speed + math.random() * (max_speed - min_speed)
             if loot:IsAsleep() then
                 local radius = .5 * speed + (self.inst.Physics ~= nil and loot:GetPhysicsRadius(1) + self.inst:GetPhysicsRadius(1) or 0)
                 loot.Transform:SetPosition(
@@ -233,23 +220,28 @@ function LootDropper:FlingItem(loot, pt, bouncedcb)
                     0,
                     pt.z - math.sin(angle) * radius
                 )
-
-                SplashOceanLoot(loot, bouncedcb)
             else
                 local sinangle = math.sin(angle)
                 local cosangle = math.cos(angle)
-                loot.Physics:SetVel(speed * cosangle, GetRandomWithVariance(8, 4), speed * -sinangle)
+                loot.Physics:SetVel(speed * cosangle, GetRandomWithVariance(y_speed, y_speed_variance), speed * -sinangle)
 
                 if self.inst ~= nil and self.inst.Physics ~= nil then
                     local radius = loot:GetPhysicsRadius(1) + self.inst:GetPhysicsRadius(1)
-                    loot.Transform:SetPosition(
-                        pt.x + cosangle * radius,
-                        pt.y,
-                        pt.z - sinangle * radius
-                    )
+                    if self.spawn_loot_inside_prefab then
+                        loot.Transform:SetPosition(
+                            pt.x + cosangle * radius,
+                            pt.y,
+                            pt.z - sinangle * radius
+                        )                                                
+                    else
+                        loot.Transform:SetPosition(
+                            pt.x + cosangle * radius * math.random(),
+                            pt.y + 0.5,
+                            pt.z - sinangle * radius * math.random()
+                        )                        
+                    end
                 end
 
-                loot:DoTaskInTime(1, SplashOceanLoot, bouncedcb)
             end
         end
     end
@@ -270,6 +262,8 @@ function LootDropper:SpawnLootPrefab(lootprefab, pt)
         -- here? so we can run a full drop loot?
             self:FlingItem(loot, pt)
 
+            loot.PushEvent("on_loot_dropped")
+
             return loot
         end
     end
@@ -284,7 +278,9 @@ function LootDropper:DropLoot(pt)
 
         local isstructure = self.inst:HasTag("structure")
         for k, v in pairs(prefabs) do
-            if PrefabExists(v.."_cooked") then
+            if TUNING.BURNED_LOOT_OVERRIDES[v] ~= nil then
+                prefabs[k] = TUNING.BURNED_LOOT_OVERRIDES[v]
+            elseif PrefabExists(v.."_cooked") then
                 prefabs[k] = v.."_cooked"
             elseif PrefabExists("cooked"..v) then
                 prefabs[k] = "cooked"..v

@@ -5,20 +5,20 @@ local assets =
 
 local candyinfo =
 {
-    {food=FOODTYPE.GOODIES, health=1, hunger=1, sanity=1}, -- Candy Apple
-    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2}, -- Candy Corn
-    {food=FOODTYPE.VEGGIE,  health=1, hunger=2, sanity=0}, -- Not-So-Candy Corn
-    {food=FOODTYPE.GOODIES, health=2, hunger=0, sanity=1}, -- Gummy Spider
-    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2}, -- Catcoon Candy
-    {food=FOODTYPE.VEGGIE,  health=2, hunger=1, sanity=0}, -- "Raisins"
-    {food=FOODTYPE.VEGGIE,  health=2, hunger=0, sanity=1}, -- Raisins
-    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2}, -- Ghost Pop
-    {food=FOODTYPE.GOODIES, health=1, hunger=2, sanity=0}, -- Jelly Worm
-    {food=FOODTYPE.GOODIES, health=2, hunger=0, sanity=1}, -- Tentacle Lolli
-    {food=FOODTYPE.GOODIES, health=1, hunger=1, sanity=1}, -- Choco Pigs
-    {food=FOODTYPE.GOODIES, health=1, hunger=2, sanity=0}, -- ONI
-    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2}, -- Griftlands
-    {food=FOODTYPE.VEGGIE,  health=0, hunger=1, sanity=2}, -- HotLava
+    {food=FOODTYPE.GOODIES, health=1, hunger=1, sanity=1, floater={"small", 0.10, 0.75 }}, -- Candy Apple
+    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2, floater={"small", nil,  nil  }}, -- Candy Corn
+    {food=FOODTYPE.VEGGIE,  health=1, hunger=2, sanity=0, floater={"small", 0.05, 0.75 }}, -- Not-So-Candy Corn
+    {food=FOODTYPE.GOODIES, health=2, hunger=0, sanity=1, floater={"small", nil,  nil  }}, -- Gummy Spider
+    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2, floater={"small", 0.10, nil  }}, -- Catcoon Candy
+    {food=FOODTYPE.VEGGIE,  health=2, hunger=1, sanity=0, floater={"med",   nil,  0.65 }}, -- "Raisins"
+    {food=FOODTYPE.VEGGIE,  health=2, hunger=0, sanity=1, floater={"med",   nil,  0.70 }}, -- Raisins
+    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2, floater={"med",   0.05, 0.65 }}, -- Ghost Pop
+    {food=FOODTYPE.GOODIES, health=1, hunger=2, sanity=0, floater={"small", 0.05, 0.90 }}, -- Jelly Worm
+    {food=FOODTYPE.GOODIES, health=2, hunger=0, sanity=1, floater={"small", 0.05, 0.90 }}, -- Tentacle Lolli
+    {food=FOODTYPE.GOODIES, health=1, hunger=1, sanity=1, floater={"small", 0.05, 0.95 }}, -- Choco Pigs
+    {food=FOODTYPE.GOODIES, health=1, hunger=2, sanity=0, floater={"med",   0.10, 0.60 }}, -- ONI
+    {food=FOODTYPE.GOODIES, health=1, hunger=0, sanity=2, floater={"small", 0.05, 0.90 }}, -- Griftlands
+    {food=FOODTYPE.VEGGIE,  health=0, hunger=1, sanity=2, floater={"small", 0.10, 0.85 }}, -- HotLava
 }
 
 assert(#candyinfo == NUM_HALLOWEENCANDY)
@@ -40,6 +40,10 @@ local function MakeCandy(num)
 
         inst:AddTag("cattoy")
         inst:AddTag("halloweencandy")
+        inst:AddTag("pre-preparedfood")
+
+        local fp = candyinfo[num].floater
+        MakeInventoryFloatable(inst, fp[1], fp[2], fp[3])
 
         inst.entity:SetPristine()
 

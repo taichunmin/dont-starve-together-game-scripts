@@ -22,7 +22,7 @@ local function onhammered(inst, worker)
         inst.components.burnable:Extinguish()
     end
     if not inst:HasTag("burnt") and inst.components.stewer.product ~= nil and inst.components.stewer:IsDone() then
-        inst.components.lootdropper:AddChanceLoot(inst.components.stewer.product, 1)
+        inst.components.stewer:Harvest()
     end
     if inst.components.container ~= nil then
         inst.components.container:DropEverything()

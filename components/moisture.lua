@@ -99,19 +99,19 @@ end
 
 function Moisture:AnnounceMoisture(oldSegs, newSegs)
     if self.inst.components.talker then
-    if oldSegs < 1 and newSegs >= 1 then
-        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_DAMP"))
-    elseif oldSegs < 2 and newSegs >= 2 then
-        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_WET"))
-    elseif oldSegs < 3 and newSegs >= 3 then
-        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_WETTER"))
-    elseif oldSegs < 4 and newSegs >= 4 then
-        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_SOAKED"))
-    end
+        if oldSegs < 1 and newSegs >= 1 then
+            self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_DAMP"))
+        elseif oldSegs < 2 and newSegs >= 2 then
+            self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_WET"))
+        elseif oldSegs < 3 and newSegs >= 3 then
+            self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_WETTER"))
+        elseif oldSegs < 4 and newSegs >= 4 then
+            self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_SOAKED"))
+        end
     end
 end
 
-function Moisture:DoDelta(num)
+function Moisture:DoDelta(num, no_announce)
     if self.forceddrymodifiers:Get() then
         return
     end
@@ -122,7 +122,9 @@ function Moisture:DoDelta(num)
     local newSegs = self:GetSegs()
     local delta = self.moisture - oldLevel
     self.wet = newSegs >= 2
-    self:AnnounceMoisture(oldSegs, newSegs)
+	if not no_announce then
+	    self:AnnounceMoisture(oldSegs, newSegs)
+	end
     self.inst:PushEvent("moisturedelta", { old = oldLevel, new = self.moisture })
 end
 

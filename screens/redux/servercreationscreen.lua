@@ -17,8 +17,6 @@ require("constants")
 require("tuning")
 
 
-local DEFAULT_WORLD_LOCATION = nil
-
 local num_rows = 9
 local row_height = 60
 local dialog_size_x = 830
@@ -33,7 +31,8 @@ local ServerCreationScreen = Class(Screen, function(self, prev_screen)
     -- Still not awesome, but mostly we require location indexes at this point
     -- and these names are just for tab labels. We only support worlds with 2
     -- locations through the UI.
-    DEFAULT_WORLD_LOCATION = SERVER_LEVEL_LOCATIONS[1]
+	self.current_level_locations = SERVER_LEVEL_LOCATIONS
+    self.default_world_location = SERVER_LEVEL_LOCATIONS[1]
 
     TheSim:PauseFileExistsAsync(true)
 
@@ -195,7 +194,7 @@ function ServerCreationScreen:_UpdateMenuButton(slotnum)
                     end
                 end
             end
-            if SaveGameIndex:IsSlotMultiLevel(slotnum) then
+            if SaveGameIndex:IsSlotMultiLevel(slotnum) or SaveGameIndex:GetSlotServerData(slotnum).use_cluster_path then
                 local file = TheNet:GetWorldSessionFileInClusterSlot(slotnum, "Master", session_id)
                 if file ~= nil then
                     TheSim:GetPersistentStringInClusterSlot(slotnum, "Master", file, onreadworldfile)
@@ -233,6 +232,8 @@ end
 
 function ServerCreationScreen:UpdateTabs(slotnum, prevslot, fromDelete)
     self.server_settings_tab:SavePrevSlot(prevslot) --needs to happen before mods_tab:SetSaveSlot so that we don't lose the current game mode selection when the next slot's mods are applied
+
+	self:SetLevelLocations(nil)
 
     self.mods_tab:SetSaveSlot(slotnum, fromDelete) --needs to happen before server_settings_tab:UpdateDetails
     
@@ -452,6 +453,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
 
                 local is_multi_level = SaveGameIndex:IsSlotMultiLevel(self.saveslot)
                 local encode_user_path = serverdata.encode_user_path == true
+                local use_cluster_path = serverdata.use_cluster_path == true
                 local launchingServerPopup = nil
 
                 if is_multi_level then
@@ -472,7 +474,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                 end
 
                 -- Note: StartDedicatedServers launches both dedicated and non-dedicated servers... ~gjans
-                if not TheSystemService:StartDedicatedServers(self.saveslot, is_multi_level, cluster_info, encode_user_path) then
+                if not TheSystemService:StartDedicatedServers(self.saveslot, is_multi_level, cluster_info, encode_user_path, use_cluster_path) then
                     if launchingServerPopup ~= nil then
                         launchingServerPopup:SetErrorStartingServers()
                     end
@@ -647,7 +649,7 @@ function ServerCreationScreen:ValidateSettings()
     -- Check if our season settings are valid (i.e. at least one season has a duration)
     elseif not self:_VerifyValidSeasonSettings() then
         TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.CUSTOMIZATIONSCREEN.INVALIDSEASONCOMBO_TITLE, STRINGS.UI.CUSTOMIZATIONSCREEN.INVALIDSEASONCOMBO_BODY,
-                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab(DEFAULT_WORLD_LOCATION) end}}))
+                    {{text=STRINGS.UI.CUSTOMIZATIONSCREEN.OKAY, cb = function() TheFrontEnd:PopScreen() self:SetTab(self.default_world_location) end}}))
         return false
     end
 
@@ -694,6 +696,21 @@ function ServerCreationScreen:OnChangeGameMode(selected_mode)
     end
 
     self:MakeDirty()
+end
+
+function ServerCreationScreen:SetLevelLocations(level_locations)
+	level_locations = level_locations or SERVER_LEVEL_LOCATIONS
+
+	if self.current_level_locations ~= level_locations then
+		self.current_level_locations = level_locations
+		self.default_world_location = level_locations[1]
+
+		for i, tab in ipairs(self.world_tabs) do
+			tab:OnChangeLevelLocations(level_locations)
+		end
+
+		self:MakeDirty()
+	end
 end
 
 function ServerCreationScreen:BuildModsMenu(menu_items, subscreener)

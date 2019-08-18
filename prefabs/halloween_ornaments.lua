@@ -3,6 +3,15 @@ local assets =
     Asset("ANIM", "anim/halloween_ornaments.zip"),
 }
 
+local FLOATER_PROPERTIES =
+{
+    {"small",   0.1,    0.95},
+    {"med",     0.1,    0.60},
+    {"small",   0.1,    0.95},
+    {"small",   0.1,    0.85},
+    {"small",   0.1,    0.95},
+    {"small",   0.1,    0.95},
+}
 
 local function MakeOrnament(ornamentid)
     local function fn()
@@ -21,6 +30,9 @@ local function MakeOrnament(ornamentid)
 		inst:AddTag("halloween_ornament")
         inst:AddTag("molebait")
         inst:AddTag("cattoy")
+
+        local fp = FLOATER_PROPERTIES[ornamentid]
+        MakeInventoryFloatable(inst, fp[1], fp[2], fp[3])
 
         inst.entity:SetPristine()
 

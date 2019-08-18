@@ -100,7 +100,7 @@ end
 local function OnConcealStateChanged(inst)
 	inst.conceal = inst.conceal_queued
 	if not inst.conceal then
-		LaunchAndClearArea(inst, COLLISION_SIZE, 0.5, 0.5, .2, COLLISION_SIZE, false)
+		LaunchAndClearArea(inst, COLLISION_SIZE, 0.5, 0.5, .2, COLLISION_SIZE)
 	end
 
 	OnActiveStateChanged(inst)
@@ -130,7 +130,7 @@ local function refresh(inst)
         for i, v in ipairs(AllPlayers) do
             if not v:HasTag("notarget") and
                 v.components.sanity ~= nil and
-                v.components.sanity:IsSane() == inst.activeonsane then
+                ((v.components.sanity:IsSane() and inst.activeonsane) or (v.components.sanity:IsInsane() and not inst.activeonsane)) then
                 local p1x, p1y, p1z = v.Transform:GetWorldPosition()
                 if distsq(x, z, p1x, p1z) < FAR_DIST_SQ then
 			        inst.active_queue = true
@@ -143,7 +143,7 @@ local function refresh(inst)
         for i, v in ipairs(AllPlayers) do
             if not v:HasTag("notarget") and
                 v.components.sanity ~= nil and
-                v.components.sanity:IsSane() == inst.activeonsane then
+                ((v.components.sanity:IsSane() and inst.activeonsane) or (v.components.sanity:IsInsane() and not inst.activeonsane)) then
                 local p1x, p1y, p1z = v.Transform:GetWorldPosition()
                 if distsq(x, z, p1x, p1z) < NEAR_DIST_SQ then
 			        inst.active_queue = true

@@ -598,6 +598,22 @@ end
 
 
 --------------------------------------------------------------------------
+--[[ Mast skin functions ]]
+--------------------------------------------------------------------------
+function mast_item_init_fn(inst, build_name)
+    inst.linked_skinname = build_name --hack that relies on the build name to match the linked skinname
+    inst.AnimState:SetSkin(build_name, "seafarer_mast") --same hack is used here by the deployable code in player controller
+    inst.components.inventoryitem:ChangeImageName(inst:GetSkinName())
+end
+function mast_init_fn(inst, build_name)
+    if inst.components.placer == nil and not TheWorld.ismastersim then
+        return
+    end
+    inst.AnimState:SetSkin(build_name, "boat_mast2")
+end
+
+
+--------------------------------------------------------------------------
 --[[ Bernie skin functions ]]
 --------------------------------------------------------------------------
 function bernie_inactive_init_fn(inst, build_name)

@@ -14,6 +14,7 @@ local function OnIsSpectatingDirty(inst)
         self.lasttarget = nil
         self.str = nil
         self.inst:StopUpdatingComponent(self)
+		TheFocalPoint.components.focalpoint:StopFocusSource(self.inst, "CorpseCam")
     end
 end
 
@@ -98,7 +99,7 @@ function SpectatorCorpse:OnUpdate()
             if v ~= self.inst and not (v.replica.health:IsDead() or v:HasTag("playerghost")) and v.entity:IsVisible() then
                 local distsq = v:GetDistanceSqToPoint(x, y, z)
                 if v == self.lasttarget then
-                    distsq = math.sqrt(distsq) - 4
+                    distsq = math.sqrt(distsq) - 4 -- priority for last target
                     distsq = distsq > 0 and distsq * distsq or 0
                 end
                 if distsq < rangesq then
@@ -108,7 +109,9 @@ function SpectatorCorpse:OnUpdate()
             end
         end
         if target ~= nil then
-            TheFocalPoint.components.focalpoint:PushTempFocus(target, 0, self.str, self.priority)
+			TheFocalPoint.components.focalpoint:StartFocusSource(self.inst, "CorpseCam", target, 0, self.str, self.priority)
+		else
+			TheFocalPoint.components.focalpoint:StopFocusSource(self.inst, "CorpseCam")
         end
         self.lasttarget = target
     end

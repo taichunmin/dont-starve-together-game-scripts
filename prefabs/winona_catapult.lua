@@ -16,8 +16,6 @@ local prefabs =
 
 local brain = require("brains/winonacatapultbrain")
 
-local KEEP_TARGET_BUFFER_DISTANCE = 5
-
 local function RetargetFn(inst)
     local target = inst.components.combat.target
     if target ~= nil and
@@ -63,7 +61,7 @@ local function ShouldKeepTarget(inst, target)
         and target:IsValid()
         and target.components.health ~= nil
         and not target.components.health:IsDead()
-        and inst:IsNear(target, TUNING.WINONA_CATAPULT_MAX_RANGE + KEEP_TARGET_BUFFER_DISTANCE)
+        and inst:IsNear(target, TUNING.WINONA_CATAPULT_MAX_RANGE + TUNING.WINONA_CATAPULT_KEEP_TARGET_BUFFER)
 end
 
 local function ShareTargetFn(dude)
@@ -210,7 +208,17 @@ local function OnUpdatePlacerHelper(helperinst)
         helperinst.components.updatelooper:RemoveOnUpdateFn(OnUpdatePlacerHelper)
         helperinst.AnimState:SetAddColour(0, 0, 0, 0)
     elseif helperinst:IsNear(helperinst.placerinst, TUNING.WINONA_BATTERY_RANGE) then
-        helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
+        local hp = helperinst:GetPosition()
+        local p1 = TheWorld.Map:GetPlatformAtPoint(hp.x, hp.z)
+
+        local pp = helperinst.placerinst:GetPosition()
+        local p2 = TheWorld.Map:GetPlatformAtPoint(pp.x, pp.z)
+
+        if p1 == p2 then
+            helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
+        else
+            helperinst.AnimState:SetAddColour(0, 0, 0, 0)
+        end
     else
         helperinst.AnimState:SetAddColour(0, 0, 0, 0)
     end
@@ -469,6 +477,7 @@ local function fn()
     inst.components.circuitnode:SetRange(TUNING.WINONA_BATTERY_RANGE)
     inst.components.circuitnode:SetOnConnectFn(OnConnectCircuit)
     inst.components.circuitnode:SetOnDisconnectFn(OnDisconnectCircuit)
+    inst.components.circuitnode.connectsacrossplatforms = false
 
     inst:ListenForEvent("onbuilt", OnBuilt)
     inst:ListenForEvent("attacked", OnAttacked)

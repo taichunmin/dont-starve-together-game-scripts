@@ -71,7 +71,6 @@ local function fn()
 
     inst:AddTag("structure")
     inst:AddTag("sign")
-    inst:AddTag("nointerpolate")
 
     --Sneak these into pristine state for optimization
     inst:AddTag("_writeable")
@@ -123,7 +122,6 @@ local function panelfn()
 
     inst.Transform:SetEightFaced()
 
-    inst:AddTag("nointerpolate")
     inst:AddTag("sign")
 
     MakeSnowCoveredPristine(inst)

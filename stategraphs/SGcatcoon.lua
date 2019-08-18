@@ -17,6 +17,7 @@ local events=
     CommonHandlers.OnAttacked(true),
     CommonHandlers.OnDeath(),
     CommonHandlers.OnLocomote(false,true),
+    CommonHandlers.OnHop(),
     EventHandler("doattack", function(inst, data) 
         if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then 
             if data.target:HasTag("cattoyairborne") then
@@ -525,5 +526,6 @@ CommonStates.AddSleepStates(states,
     },
 })
 CommonStates.AddFrozenStates(states)
+CommonStates.AddHopStates(states, true, {pre = "walK_pre", loop = "jump_atk", pst = "walk_pst"})
   
 return StateGraph("catcoon", states, events, "idle", actionhandlers)

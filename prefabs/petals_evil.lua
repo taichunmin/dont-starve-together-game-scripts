@@ -26,6 +26,8 @@ local function fn()
     inst.AnimState:SetBuild("flower_petals_evil")
     inst.AnimState:PlayAnimation("anim")
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

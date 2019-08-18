@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("bearger_fur")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.77)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

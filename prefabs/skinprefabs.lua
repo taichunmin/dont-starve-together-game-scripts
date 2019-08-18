@@ -846,7 +846,7 @@ table.insert(prefs, CreatePrefabSkin("fence_factory_item",
 	rarity = "Elegant",
 	rarity_modifier = "Woven",
 	init_fn = function(inst) fence_item_init_fn(inst, "fence_factory") end,
-	skin_tags = { "CRAFTABLE", },
+	skin_tags = { },
 	release_group = 60,
 }))
 
@@ -1396,6 +1396,27 @@ table.insert(prefs, CreatePrefabSkin("lighter_haunteddoll",
 	skin_tags = { "LIGHTER", "HAUNTEDDOLL", "CRAFTABLE", },
 	fx_prefab = { "lighterfire_haunteddoll", },
 	release_group = 65,
+}))
+
+table.insert(prefs, CreatePrefabSkin("mast_rose",
+{
+	base_prefab = "mast",
+	type = "item",
+	rarity = "Loyal",
+	init_fn = function(inst) mast_init_fn(inst, "mast_rose") end,
+	skin_tags = { "MAST", "ROSE", "CRAFTABLE", },
+	release_group = 72,
+}))
+
+table.insert(prefs, CreatePrefabSkin("mast_rose_item",
+{
+	base_prefab = "mast_item",
+	type = "item",
+	build_name_override = "mast_rose",
+	rarity = "Loyal",
+	init_fn = function(inst) mast_item_init_fn(inst, "mast_rose") end,
+	skin_tags = { },
+	release_group = 72,
 }))
 
 table.insert(prefs, CreatePrefabSkin("minerhat_cowboy",

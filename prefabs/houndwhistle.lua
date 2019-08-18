@@ -1,6 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/houndwhistle.zip"),
+    Asset("ANIM", "anim/houndwhistle_water.zip"),
 }
 
 local function TryAddFollower(leader, follower)
@@ -52,6 +53,8 @@ local function fn()
     inst.AnimState:SetBuild("houndwhistle")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "small", 0.025, {1.1, 0.7, 1.1})
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -75,6 +78,9 @@ local function fn()
     inst:AddComponent("inventoryitem")
 
     MakeHauntableLaunch(inst)
+
+    inst:ListenForEvent("floater_startfloating", function(inst) inst.AnimState:PlayAnimation("float") end)
+    inst:ListenForEvent("floater_stopfloating", function(inst) inst.AnimState:PlayAnimation("idle") end)
 
     return inst
 end

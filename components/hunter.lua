@@ -270,6 +270,14 @@ local function IsNearHunt(player)
     return false
 end
 
+local function IsEligible(player)
+	local area = player.components.areaaware
+	return TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())
+			and area:GetCurrentArea() ~= nil 
+			and not area:CurrentlyInTag("nohunt")
+			and not area:CurrentlyInTag("moonhunt")
+end
+
 -- something went unrecoverably wrong, try again after a brief pause
 ResetHunt = function(hunt, washedaway)
     assert(hunt)
@@ -326,7 +334,7 @@ OnUpdateHunt = function(inst, hunt)
 
         local eligiblePlayers = {}
         for i,v in ipairs(_activeplayers) do
-            if not huntingPlayers[v] and not IsNearHunt(v) then
+            if not huntingPlayers[v] and not IsNearHunt(v) and IsEligible(v) then
                 table.insert(eligiblePlayers, v)
             end
         end

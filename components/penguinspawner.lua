@@ -147,7 +147,12 @@ local function SpawnPenguin(inst,spawner,colonyNum,pos,angle)
         return
     end
 
-    local pengu = SpawnPrefab("penguin")
+    local pengu_prefab = "penguin"
+    if colonyNum ~= nil and _colonies[colonyNum] ~= nil and _colonies[colonyNum].is_mutated then
+        pengu_prefab = "mutated_penguin"
+    end
+
+    local pengu = SpawnPrefab(pengu_prefab)
     if pengu then
         --print(TheCamera:GetHeading()," spawnPenguin at",pos,"angle:",angle)
 
@@ -255,10 +260,22 @@ local function EstablishColony(loc)
     end
     
     if newFlock.rookery then
+        for i, node in ipairs(TheWorld.topology.nodes) do
+            if TheSim:WorldPointInPoly(loc.x, loc.z, node.poly) then
+                if node.tags ~= nil and table.contains(node.tags, "moonhunt") then
+                    newFlock.is_mutated = true
+                end
+                break
+            end
+        end
+
         newFlock.rookery = newFlock.rookery + loc
         newFlock.ice = SpawnPrefab("penguin_ice")
         newFlock.ice.Transform:SetPosition(newFlock.rookery:Get())
         newFlock.ice.spawner = self
+		if newFlock.is_mutated then
+		    newFlock.ice.MiniMapEntity:SetIcon("mutated_penguin.png")
+		end
 
         local numboulders = math.random(math.floor(_numBoulders/2), _numBoulders)
         local sectorsize = 360 / numboulders
@@ -376,7 +393,10 @@ local function OnLoadColonies(data)
                 ice.Transform:SetPosition(v[1],v[2],v[3])
                 ice.spawner = self
             end
-            _colonies[i] = { rookery = Vector3(v[1],v[2],v[3]), members={}, ice=ice }
+            _colonies[i] = { rookery = Vector3(v[1],v[2],v[3]), members={}, ice=ice, is_mutated = v[4] }
+			if _colonies[i].is_mutated and ice ~= nil then
+				ice.MiniMapEntity:SetIcon("mutated_penguin.png")
+			end
         end
     end
 end
@@ -497,7 +517,7 @@ function self:OnSave()
     if #_colonies >= 1 then
         data.colonies = {}
         for i,v in ipairs(_colonies) do
-            data.colonies[i] = {v.rookery.x,v.rookery.y,v.rookery.z}
+            data.colonies[i] = {v.rookery.x,v.rookery.y,v.rookery.z,v.is_mutated}
         end
     else
         --print("__NO COLONIES")

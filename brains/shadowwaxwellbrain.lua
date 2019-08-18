@@ -64,6 +64,7 @@ local function FindEntityToWorkAction(inst, action, addtltags)
             not (target:IsInLimbo() or
                 target:HasTag("NOCLICK") or
                 target:HasTag("event_trigger")) and
+            target:IsOnValidGround() and
             target.components.workable ~= nil and
             target.components.workable:CanBeWorked() and
             target.components.workable:GetWorkAction() == action and

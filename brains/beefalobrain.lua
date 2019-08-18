@@ -69,7 +69,7 @@ local function GetLoiterTarget(inst)
 end
 
 local function GetGreetTarget(inst)
-    return FindClosestPlayerToInst(inst, GREET_SEARCH_RADIUS, true)
+    return FindClosestPlayerToInstOnLand(inst, GREET_SEARCH_RADIUS, true)
 end
 
 local function GetGreetTargetPosition(inst)
@@ -174,7 +174,13 @@ function BeefaloBrain:OnStart()
         IfNode(function() return self.inst.components.combat.target ~= nil end, "hastarget",
             AttackWall(self.inst)),
         ChaseAndAttack(self.inst, MAX_CHASE_TIME),
-        Follow(self.inst, function() return self.inst.components.follower ~= nil and self.inst.components.follower.leader or nil end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST, false),
+        Follow(self.inst, function()
+                return (self.inst.components.follower ~= nil and
+                        self.inst.components.follower.leader ~= nil and
+                        self.inst.components.follower.leader:IsOnValidGround() and
+                        self.inst.components.follower.leader)
+                        or nil
+            end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST, false),
         FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
 
         -- hanging around herd

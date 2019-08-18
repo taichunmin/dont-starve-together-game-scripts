@@ -26,6 +26,7 @@ local function FindNearestBush(inst)
     local emptybush = nil
     for i, v in ipairs(ents) do
         if v ~= inst and v.entity:IsVisible() and v.components.pickable ~= nil then
+            -- NOTE: if a bush that can be in the ocean gets made, we should test for that here (unless perds learn to swim!)
             if v.components.pickable:CanBePicked() then
                 return v
             elseif emptybush == nil then
@@ -60,11 +61,9 @@ local function EatFoodAction(inst, checksafety)
 
     if target == nil then
         target = FindEntity(inst, SEE_FOOD_DIST, nil, { "edible_"..FOODTYPE.VEGGIE }, { "INLIMBO" })
-        --check for scary things near the food
-        if target == nil or
-            (   checksafety and
-                GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) ~= nil
-            ) then
+        --check for scary things near the food, or if it's in the water
+        if target == nil or not target:IsOnValidGround() or
+                ( checksafety and GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) ~= nil ) then
             return nil
         end
     end

@@ -536,6 +536,10 @@ function ServerSettingsTab:GetEncodeUserPath()
     return self.encode_user_path
 end
 
+function ServerSettingsTab:GetUseClusterPath()
+    return self.use_cluster_path
+end
+
 function ServerSettingsTab:GetServerData()
     return {
         intention = self.server_intention.button.data,
@@ -543,6 +547,7 @@ function ServerSettingsTab:GetServerData()
         game_mode = self:GetGameMode(),
         online_mode = self:GetOnlineMode(),
         encode_user_path = self:GetEncodeUserPath(),
+        use_cluster_path = self:GetUseClusterPath(),
         max_players = self:GetMaxPlayers(),
         name = self:GetServerName(),
         password = self:GetPassword(),

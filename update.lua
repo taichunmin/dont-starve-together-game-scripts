@@ -131,7 +131,17 @@ end
 function PostUpdate(dt)
     --TheSim:ProfilerPush("LuaPostUpdate")
     EmitterManager:PostUpdate()
+
     --TheSim:ProfilerPop()
+end
+
+function PostPhysicsWallUpdate(dt)
+    if TheWorld ~= nil then
+        local walkable_platform_manager = TheWorld.components.walkableplatformmanager
+        if walkable_platform_manager ~= nil then
+            walkable_platform_manager:PostUpdate(dt)
+        end
+    end    
 end
 
 local StaticComponentLongUpdates = {}
@@ -184,8 +194,8 @@ function Update(dt)
 
     TheSim:ProfilerPush("updating components")
     for k, v in pairs(UpdatingEnts) do
-        --TheSim:ProfilerPush(v.prefab)
         if v.updatecomponents then
+            --TheSim:ProfilerPush(v.prefab or "unknown")
             for cmp in pairs(v.updatecomponents) do
                 --TheSim:ProfilerPush(v:GetComponentName(cmp))
                 if cmp.OnUpdate and not StopUpdatingComponents[cmp] then
@@ -193,8 +203,8 @@ function Update(dt)
                 end
                 --TheSim:ProfilerPop()
             end
+            --TheSim:ProfilerPop()
         end
-        --TheSim:ProfilerPop()
     end
 
     if next(NewUpdatingEnts) ~= nil then

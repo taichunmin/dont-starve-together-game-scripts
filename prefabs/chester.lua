@@ -280,6 +280,9 @@ local function create_chester()
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = 3
     inst.components.locomotor.runspeed = 7
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+
+    inst:AddComponent("embarker")
 
     inst:AddComponent("follower")
     inst:ListenForEvent("stopfollowing", OnStopFollowing)

@@ -358,6 +358,16 @@ function MainScreen:OnJoinButton()
     ShowLoading()
 end
 
+function MainScreen:OnJoinPlayTestButton()
+    CacheCurrentVanityItems(self.profile)
+    local play_test_ip = TheSim:GetLocalSetting('misc', 'play_test_ip')
+    local start_worked = TheNet:StartClient(play_test_ip)
+    if start_worked then
+        DisableAllDLC()
+    end
+    ShowLoading()
+end
+
 function MainScreen:MakeDebugButtons()
 	-- For Debugging/Testing
 	if DEBUG_MODE then
@@ -372,6 +382,15 @@ function MainScreen:MakeDebugButtons()
         join_button:SetPosition(lcol-100+140, 250)
         join_button:SetText(STRINGS.UI.MAINSCREEN.JOIN)
         join_button:SetOnClick( function() self:OnJoinButton() end )
+
+        local play_test_ip = TheSim:GetLocalSetting('misc', 'play_test_ip')
+        if play_test_ip ~= nil then
+            local join_play_test_button = self.fixed_root:AddChild(ImageButton())
+            join_play_test_button:SetScale(.8)
+            join_play_test_button:SetPosition(lcol-100+300, 250)
+            join_play_test_button:SetText(STRINGS.UI.MAINSCREEN.JOIN_PLAY_TEST)
+            join_play_test_button:SetOnClick( function() self:OnJoinPlayTestButton() end )        
+        end
 	end
 end
 

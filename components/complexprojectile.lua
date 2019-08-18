@@ -114,6 +114,14 @@ function ComplexProjectile:Launch(targetPos, attacker, owningweapon)
 
     self:CalculateTrajectory(pos, targetPos, self.horizontalSpeed)
 
+	-- if the attacker is standing on a moving platform, then inherit it's velocity too
+	local attacker_platform = attacker ~= nil and attacker:GetCurrentPlatform() or nil
+	if attacker_platform ~= nil then
+		local vx, vy, vz = attacker_platform.Physics:GetVelocity()
+	    self.velocity.x = self.velocity.x + vx
+	    self.velocity.z = self.velocity.z + vz
+	end
+
     if self.onlaunchfn ~= nil then
         self.onlaunchfn(self.inst)
     end

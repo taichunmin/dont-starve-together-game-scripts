@@ -11,6 +11,7 @@ local events =
     EventHandler("death", function(inst) inst.sg:GoToState("death", inst.sg.statemem.dead) end),
     EventHandler("doattack", function(inst, data) if not inst.components.health:IsDead() and (inst.sg:HasStateTag("hit") or not inst.sg:HasStateTag("busy")) then inst.sg:GoToState("attack", data.target) end end),
     CommonHandlers.OnSleep(),
+    CommonHandlers.OnHop(),
     CommonHandlers.OnLocomote(true, false),
     CommonHandlers.OnFreeze(),
 
@@ -285,6 +286,9 @@ local states =
                 inst.AnimState:Pause()
             else
                 inst.AnimState:PlayAnimation("death")
+				if inst.components.amphibiouscreature ~= nil and inst.components.amphibiouscreature.in_water then
+		            inst.AnimState:PushAnimation("death_idle", true)
+				end			
             end
             inst.Physics:Stop()
             RemovePhysicsColliders(inst)
@@ -310,6 +314,17 @@ local states =
                 end
             end),
         },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+				if inst._CanMutateFromCorpse ~= nil and inst:_CanMutateFromCorpse() then
+					SpawnPrefab("houndcorpse").Transform:SetPosition(inst.Transform:GetWorldPosition())
+					inst:Remove()
+				end
+            end),
+        },
+		
 
         onexit = function(inst)
             if not inst:IsInLimbo() then
@@ -541,7 +556,64 @@ local states =
             end
         end,
     },
+
+	
+    State{
+        name = "mutated_spawn",
+        tags = { "busy" },
+
+        onenter = function(inst, data)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("mutated_hound_spawn")
+        end,
+
+        timeline =
+        {
+            TimeEvent(TUNING.GARGOYLE_REANIMATE_DELAY, function(inst)
+            end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("taunt")
+            end),
+        },
+
+        onexit = function(inst)
+        end,
+    },
 }
+
+CommonStates.AddAmphibiousCreatureHopStates(states, 
+{ -- config
+	swimming_clear_collision_frame = 9 * FRAMES,
+},
+{ -- anims
+},
+{ -- timeline
+	hop_pre =
+	{
+		TimeEvent(0, function(inst) 
+			if inst:HasTag("swimming") then 
+				SpawnPrefab("splash").Transform:SetPosition(inst.Transform:GetWorldPosition()) 
+			end
+		end),
+	},
+	hop_pst = {
+		TimeEvent(4 * FRAMES, function(inst) 
+			if inst:HasTag("swimming") then 
+				inst.components.locomotor:Stop()
+				SpawnPrefab("splash").Transform:SetPosition(inst.Transform:GetWorldPosition()) 
+			end
+		end),
+		TimeEvent(6 * FRAMES, function(inst) 
+			if not inst:HasTag("swimming") then 
+                inst.components.locomotor:StopMoving()
+			end
+		end),
+	}
+})
 
 CommonStates.AddSleepStates(states,
 {

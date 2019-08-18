@@ -1,6 +1,8 @@
 local assets =
 {
     Asset("ANIM", "anim/razor.zip"),
+    Asset("ANIM", "anim/swap_razor.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function fn()
@@ -16,6 +18,8 @@ local function fn()
     inst.AnimState:SetBuild("razor")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "small", 0.08, {0.9, 0.7, 0.9}, true, -2, {sym_build = "swap_razor"})
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -24,6 +28,7 @@ local function fn()
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("shaver")
 
     MakeHauntableLaunch(inst)

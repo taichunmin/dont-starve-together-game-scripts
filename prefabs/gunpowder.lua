@@ -71,6 +71,7 @@ local function fn()
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetOnPutInInventoryFn(OnPutInInv)
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("bait")
 

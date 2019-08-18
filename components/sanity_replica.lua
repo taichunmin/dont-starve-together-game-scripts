@@ -1,8 +1,10 @@
 local Sanity = Class(function(self, inst)
     self.inst = inst
 
-    self._oldisinsane = false
-    self._isinsane = net_bool(inst.GUID, "sanity._isinsane", "isinsanedirty")
+    self._oldissane = true
+	self._oldisinsanitymode = true
+    self._issane = net_bool(inst.GUID, "sanity._issane", "issanedirty")
+    self._isinsanitymode = net_bool(inst.GUID, "sanity._isinsanitymode", "isinsanitymodedirty") -- bool because there are currently 2 states (SANITY_MODE_INSANITY and SANITY_MODE_LUNACY)
 
     if TheWorld.ismastersim then
         self.classified = inst.player_classified
@@ -26,12 +28,29 @@ end
 
 Sanity.OnRemoveEntity = Sanity.OnRemoveFromEntity
 
-local function OnIsInsaneDirty(inst)
+local function OnIsSaneDirty(inst)
     local self = inst.replica.sanity
     if self ~= nil then
-        if self._oldisinsane ~= self._isinsane:value() then
-            inst:PushEvent(self._oldisinsane and "gosane" or "goinsane")
-            self._oldisinsane = not self._oldisinsane
+        if self._oldissane ~= self._issane:value() then
+            inst:PushEvent(not self._oldissane and "gosane"
+							or self._oldisinsanitymode and "goinsane" 
+							or "goenlightened")
+            self._oldissane = not self._oldissane
+        end
+    end
+end
+
+local function OnModeDirty(inst)
+    local self = inst.replica.sanity
+    if self ~= nil then
+        if self._oldisinsanitymode ~= self._isinsanitymode:value() then
+            self._oldisinsanitymode = not self._oldisinsanitymode
+            inst:PushEvent("sanitymodechanged", {mode = self._oldisinsanitymode})
+
+			if self.classified ~= nil then
+				-- force the client to update its sanity state
+				self.classified:PushEvent("sanitydirty")
+			end
         end
     end
 end
@@ -40,14 +59,17 @@ function Sanity:AttachClassified(classified)
     self.classified = classified
     self.ondetachclassified = function() self:DetachClassified() end
     self.inst:ListenForEvent("onremove", self.ondetachclassified, classified)
-    self.inst:ListenForEvent("isinsanedirty", OnIsInsaneDirty)
-    OnIsInsaneDirty(self.inst)
+    self.inst:ListenForEvent("issanedirty", OnIsSaneDirty)
+    self.inst:ListenForEvent("isinsanitymodedirty", OnModeDirty)
+    OnModeDirty(self.inst)
+    OnIsSaneDirty(self.inst)
 end
 
 function Sanity:DetachClassified()
     self.classified = nil
     self.ondetachclassified = nil
-    self.inst:RemoveEventCallback("isinsanedirty", OnIsInsaneDirty)
+    self.inst:RemoveEventCallback("issanedirty", OnIsSaneDirty)
+    self.inst:RemoveEventCallback("isinsanitymodedirty", OnModeDirty)
 end
 
 --------------------------------------------------------------------------
@@ -163,16 +185,41 @@ function Sanity:GetRateScale()
     end
 end
 
+function Sanity:SetSanityMode(mode)
+    self._isinsanitymode:set(mode == SANITY_MODE_INSANITY)
+end
+
 function Sanity:SetIsSane(sane)
-    self._isinsane:set(not sane)
+    self._issane:set(sane)
 end
 
 function Sanity:IsSane()
-    return not self._isinsane:value()
+    return not self._issane:value()
+end
+
+function Sanity:IsInsane()
+    return self._isinsanitymode:value() and not self._issane:value()
+end
+
+function Sanity:IsEnlightened()
+    return not self._isinsanitymode:value() and not self._issane:value()
 end
 
 function Sanity:IsCrazy()
-    return self._isinsane:value()
+	-- deprecated
+    return self:IsInsane()
+end
+
+function Sanity:GetSanityMode()
+    return self._isinsanitymode:value() and SANITY_MODE_INSANITY or SANITY_MODE_LUNACY
+end
+
+function Sanity:IsInsanityMode()
+    return self._isinsanitymode:value()
+end
+
+function Sanity:IsLunacyMode()
+    return not self._isinsanitymode:value()
 end
 
 function Sanity:SetGhostDrainMult(ghostdrainmult)

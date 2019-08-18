@@ -139,8 +139,32 @@ return {
             MISMATCH = "Like my soul, this food doesn't belong in this vessel.", 
             SAMEDISH = "I've already put this on a dish.", 
         },
+        SAIL =
+        {
+        	REPAIR = "It looks okay to me.",
+        },
+        ROW_FAIL =
+        {
+            BAD_TIMING0 = "As usual, I seem to be out of step with the world.",
+            BAD_TIMING1 = "Abigail, perhaps you could take a turn rowing?",
+            BAD_TIMING2 = "That was pathetic...",
+        },
+        LOWER_SAIL_FAIL =
+        {
+            "Well... that was a futile effort.",
+            "As expected... utter failure.",
+            "It seems I'm not cut out for a life of sailing.",
+        },
+        BATHBOMB =
+        {
+            GLASSED = "It's covered in glass...",
+            ALREADY_BOMBED = "It's already been done.",
+        },
 	},
 	ACTIONFAIL_GENERIC = "I can't do anything right.",
+	ANNOUNCE_BOAT_LEAK = "Our boat weeps salty tears.",
+	ANNOUNCE_BOAT_SINK = "Here I come, Ophelia.",
+    ANNOUNCE_WASHED_ASHORE = "Oh good... I lived.",
 	ANNOUNCE_DIG_DISEASE_WARNING = "Your death has been delayed another day.",
 	ANNOUNCE_PICK_DISEASE_WARNING = "Smells like death.",
 	ANNOUNCE_MOUNT_LOWHEALTH = "This beast... is not long for this world.",
@@ -195,6 +219,22 @@ return {
 	ANNOUNCE_KLAUS_ENRAGE = "Death walks among us.",
 	ANNOUNCE_KLAUS_UNCHAINED = "The beast returns unchained.",
 	ANNOUNCE_KLAUS_CALLFORHELP = "Your pleas will fall on deaf ears.",
+
+	ANNOUNCE_MOONALTAR_MINE =
+	{
+		GLASS_MED = "I'll get you out...",
+		GLASS_LOW = "Almost.",
+		GLASS_REVEAL = "There.",
+		IDOL_MED = "I'll get you out...",
+		IDOL_LOW = "Almost.",
+		IDOL_REVEAL = "There.",
+		SEED_MED = "I'll get you out...",
+		SEED_LOW = "Almost.",
+		SEED_REVEAL = "There.",
+	},
+
+	ANNOUNCE_FLARE_SEEN = "Someone just shot a flare...",
+    ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "Death casts its black shadow upon us.",
 
 	ANNOUNCE_SNARED = "I am caged!",
 	ANNOUNCE_REPELLED = "It has spirits to protect it...",
@@ -622,6 +662,9 @@ return {
 			DRYINGINRAIN = "The rain is keeping it from drying.",
 			GENERIC = "I can hang meat here.",
 			BURNT = "It's done drying. Forever.",
+			DONE_NOTMEAT = "The drying is over.",
+			DRYING_NOTMEAT = "It sways in the drying wind.",
+			DRYINGINRAIN_NOTMEAT = "The rain is keeping it from drying.",
 		},
 		MERMHEAD = 
 		{
@@ -1062,6 +1105,9 @@ return {
 		TURF_FUNGUS_GREEN = "Some ground.",
 		TURF_FUNGUS_RED = "Some ground.",
 
+		TURF_METEOR = "Some ground.",
+        TURF_PEBBLEBEACH = "Some ground.",
+
 		POWCAKE = "I would have to be desperate.",		
 		CAVE_ENTRANCE = "Someone is trying to keep the underground at bay.",
 		CAVE_ENTRANCE_RUINS = "Someone is trying to keep the underground at bay.",
@@ -1270,6 +1316,9 @@ return {
         CHESSPIECE_BEARGER = "Ashes to ashes, bust to bust. Oh.",
         CHESSPIECE_MOOSEGOOSE = "Such expression in her eyes.",
         CHESSPIECE_DRAGONFLY = "She now lies, cold as stone.",
+        CHESSPIECE_BUTTERFLY = "But a simulacrum of life. Sigh.",
+        CHESSPIECE_ANCHOR = "Why did we sculpt an anchor.",
+        CHESSPIECE_MOON = "I'd prefer to look at this over the real thing.",
         CHESSJUNK1 = "Cold, dead artificial life.",
         CHESSJUNK2 = "Cold, dead artificial life.",
         CHESSJUNK3 = "Cold, dead artificial life.",
@@ -1299,6 +1348,7 @@ return {
         CRITTER_PUPPY = "Blissfully unaware of mortal troubles...",
         CRITTER_KITTEN = "Cursed with nine lives. Poor thing.",
         CRITTER_PERDLING = "It's so happy.",
+        CRITTER_LUNARMOTHLING = "Your beauty will fade too, you know.",
 
 		CROW =
 		{
@@ -1429,7 +1479,7 @@ return {
 		EYEPLANT = "They follow their master's every wish.",
 		FEATHERHAT = "Ca-caw!",
 		FEATHER_CANARY = "A canary feather, golden as the gilded cage.",
-		FEATHER_CROW = "A crow feather, black like eternal darkness.",
+		FEATHER_CROW = "A soft feather, black like eternal darkness.",
 		FEATHER_ROBIN = "A redbird feather, red like blood.",
 		FEATHER_ROBIN_WINTER = "A snowbird feather, white as the light at the end of the tunnel.",
 		FEATHERPENCIL = "M...maybe I'll doodle something... When no one's looking.",
@@ -1527,6 +1577,12 @@ return {
 		HONEYNUGGETS = "Meat cut into tiny pieces. Just like my heart.",
 		HORN = "It sounds like there's a beefalo trapped inside.",
 		HOUND = "Stay back, foul minion of evil!",
+        HOUNDCORPSE =
+        {
+             GENERIC = "It's dead.",
+             BURNING = "Fare thee well.",
+             REVIVING = "You should have stayed dead.",
+        },
 		HOUNDBONE = "The remains of an evil beast.",
 		HOUNDMOUND = "Home to the foulest creatures.",
 		ICEBOX = "It is as cold as my heart.",
@@ -2444,35 +2500,35 @@ return {
         QUAGMIRE_LAMP_SHORT = "The only light in my life is Abigail.",
 
         --v2 Winona
-        WINONA_CATAPULT =
+        WINONA_CATAPULT = 
         {
-            GENERIC = "It visits death upon intruders.",
-            OFF = "It's dead...",
-            BURNING = "Oh no...",
-            BURNT = "It all crumbles to ash, in the end.",
+        	GENERIC = "It visits death upon intruders.",
+        	OFF = "It's dead...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
         },
-        WINONA_SPOTLIGHT =
+        WINONA_SPOTLIGHT = 
         {
-            GENERIC = "But what if I liked the dark?",
-            OFF = "It's dead...",
-            BURNING = "Oh no...",
-            BURNT = "It all crumbles to ash, in the end.",
+        	GENERIC = "But what if I liked the dark?",
+        	OFF = "It's dead...",
+			BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
         },
-        WINONA_BATTERY_LOW =
+        WINONA_BATTERY_LOW = 
         {
-            GENERIC = "It's a kind of electrical box.",
-            LOWPOWER = "It's not long for this world.",
-            OFF = "What did Winona put in it again? Oh...",
-            BURNING = "Oh no...",
-            BURNT = "It all crumbles to ash, in the end.",
+        	GENERIC = "It's a kind of electrical box.",
+        	LOWPOWER = "It's not long for this world.",
+        	OFF = "What did Winona put in it again? Oh...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
         },
-        WINONA_BATTERY_HIGH =
+        WINONA_BATTERY_HIGH = 
         {
-            GENERIC = "This one looks odd.",
-            LOWPOWER = "It's slowly dying.",
-            OFF = "I think it wants... gems...",
-            BURNING = "Oh no...",
-            BURNT = "It all crumbles to ash, in the end.",
+        	GENERIC = "This one looks odd.",
+        	LOWPOWER = "It's slowly dying.",
+        	OFF = "I think it wants... gems...",
+        	BURNING = "Oh no...",
+        	BURNT = "It all crumbles to ash, in the end.",
         },
 
         --Wormwood
@@ -2480,12 +2536,176 @@ return {
         ARMOR_BRAMBLE = "So my outside matches my inside.",
         TRAP_BRAMBLE = "To prick and ensnare.",
 
+        BOATFRAGMENT03 = "Wreckage is all that remains.",
+        BOATFRAGMENT04 = "Wreckage is all that remains.",
+        BOATFRAGMENT05 = "Wreckage is all that remains.",
+        BOAT_LEAK = "I always knew the ocean floor would be my final resting place.",
+        MAST = "If we sailed forever we would never reach the horizon.",
+        SEASTACK = "I could steer toward it and resign myself to a watery fate.",
+        FISHINGNET = "To ensnare fish and tear them from their peaceful lives.",
+        ANTCHOVIES = "Death would be a kindness.",
+        STEERINGWHEEL = "Yet still I am directionless.",
+        ANCHOR = "For when I feel I can go no further.",
+        BOATPATCH = "To mend what the cruel seas have crushed.",
+        DRIFTWOOD_TREE = 
+        {
+            BURNING = "Oh. It's burning.",
+            BURNT = "Your suffering is over now.",
+            CHOPPED = "It's met its end at our hands.",
+            GENERIC = "The bleached remains of a dead tree.",
+        },
+
+        DRIFTWOOD_LOG = "Bleached like bones left in the sun.",
+
+        MOON_TREE = 
+        {
+            BURNING = "Oh. It's burning.",
+            BURNT = "Your suffering is over now.",
+            CHOPPED = "It's met its end at our hands.",
+            GENERIC = "A fleeting beauty.",
+        },
+
+        MOONBUTTERFLY = 
+        {
+        	GENERIC = "Such beauty can never last.",
+        	HELD = "Give up. You won't escape my grasp.",
+        },
+		MOONBUTTERFLYWINGS = "It's the way of all things.",
+        MOONBUTTERFLY_SAPLING = "It grows, against all odds.",
+        ROCK_AVOCADO_FRUIT = "It grew on a tree, but it looks like a rock.",
+        ROCK_AVOCADO_FRUIT_RIPE = "I can eat it now.",
+        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "It might actually taste good at this point.",
+        ROCK_AVOCADO_FRUIT_SPROUT = "Why do you persevere?",
+        ROCK_AVOCADO_BUSH = 
+        {
+        	BARREN = "It will never again bear fruit.",
+			WITHERED = "I feel much the same.",
+			GENERIC = "It's born fruit.",
+			PICKED = "It has nothing to offer me.",
+			DISEASED = "It is corrupt. Tainted.",
+			DISEASING = "Vileness spreads within it.",
+			BURNING = "Oh. It's burning.",
+		},
+        DEAD_SEA_BONES = "The sea rejects its dead.",
+        HOTSPRING = 
+        {
+        	GENERIC = "When I gaze upon my reflection, a ghost stares back at me.",
+        	BOMBED = "I don't see how this helped.",
+        	GLASS = "The top is solid glass.",
+        },
+        MOONGLASS = "Its sharp edge would end this quickly.",
+        MOONGLASS_ROCK = "What a sickly color.",
+        BATHBOMB = "To mask the smell of sorrow and death.",
+        TRAP_STARFISH = 
+        {
+            GENERIC = "It's a starfish.",
+            CLOSED = "If only it had swallowed me whole.",
+        },
+        DUG_TRAP_STARFISH = "A pity it didn't crunch me up when it had the chance.",
+        SPIDER_MOON = 
+        {
+        	GENERIC = "Death on legs.",
+        	SLEEPING = "It slumbers soundly.",
+        	DEAD = "It's the way of all things.",
+        },
+        MOONSPIDERDEN = "Terrible creatures lurk within.",
+		FRUITDRAGON =
+		{
+			GENERIC = "It prefers to be alone.",
+			RIPE = "You simply look too delicious.",
+			SLEEPING = "It is arrested by deepest sleep.",
+		},
+        PUFFIN =
+        {
+            GENERIC = "Oh, to be so carefree.",
+            HELD = "Life is not fair, is it?",
+            SLEEPING = "It slumbers soundly.",
+        },
+
+		MOONGLASSAXE = "Death is so anticlimactic for trees.",
+		GLASSCUTTER = "It visits death upon all who face it.",
+
+        ICEBERG =
+        {
+            GENERIC = "Oh that my ship would dash across it.",
+            MELTED = "It melted down a bit.",
+        },
+        ICEBERG_MELTED = "It melted down a bit.",
+
+        MINIFLARE = "Why? No one will come.",
+
+        MOON_FISSURE = 
+        {
+        	GENERIC = "I see the light.",
+        	NOLIGHT = "Even the earth is falling apart under the pressure.",
+		},
+        MOON_ALTAR =
+        {
+            MOON_ALTAR_WIP = "It doesn't feel good to be incomplete.",
+            GENERIC = "Heehee. Yes, I'd love to hear a secret.",
+        },
+
+        MOON_ALTAR_IDOL = "Abby and I will help put you back together.",
+        MOON_ALTAR_GLASS = "It wants to find its missing pieces.",
+        MOON_ALTAR_SEED = "It wants some sort of energy.",
+
+        MOON_ALTAR_ROCK_IDOL = "I sense a presence within...",
+        MOON_ALTAR_ROCK_GLASS = "I sense a presence within...",
+        MOON_ALTAR_ROCK_SEED = "I sense a presence within...",
+
+        SEAFARING_PROTOTYPER = 
+        {
+        	GENERIC = "Thinking on the waves makes me nauseous.",
+        	BURNT = "Another entry in a long line of unfortunate occurrences.",
+        },
+        SEAFARER_KIT = "What's the point of doing anything in a place like this?",
+        BOAT_ITEM = "It's for making a boat.",
+        MAST_ITEM = "It's for making a mast.",
+        STEERINGWHEEL_ITEM = "It would make a steering wheel...",
+        ANCHOR_ITEM = "It's for a burdensome boat anchor.",
+        MUTATEDHOUND = 
+        {
+        	DEAD = "It's better this way.",
+        	GENERIC = "For this creature, to live is to suffer.",
+        	SLEEPING = "Don't wake up.",
+        },
+
+        MUTATED_PENGUIN = 
+        {
+			DEAD = "It's better this way.",
+			GENERIC = "To let it live would be a cruelty.",
+			SLEEPING = "Don't wake up.",
+		},
+
+		CARRAT = 
+        {
+        	DEAD = "It is no more.",
+        	GENERIC = "I despise how it skitters...",
+        	HELD = "Freedom is not for you.",
+        	SLEEPING = "It is arrested by deepest sleep.",
+        },
+        GESTALT = "I can feel their fear and loneliness.",
+
+        BULLKELP_PLANT = 
+        {
+            GENERIC = "It's just seaweed.",
+            PICKED = "There's no more seaweed here.",
+        },
+        BULLKELP_ROOT = "It's like a very slimy whip.",
+        KELPHAT = "The strands are so slippery, it's barely holding together.",
+        KELP = "It's... I don't know. Sigh.",
+        KELP_COOKED = "The things we do for sustenance.",
+        KELP_DRIED = "We took it out of the ocean, then took the ocean out of it.",
+
+        WALKINGPLANK = "That would be too easy.",
+        OAR = "I'd prefer to be stranded at sea.",
+        OAR_DRIFTWOOD = "Just when it thought it had escaped the ocean...",
+
         --v2 Warly
         PORTABLECOOKPOT_ITEM =
         {
             GENERIC = "For when the hunger gnaws at my tiny stomach...",
-            DONE = "Another menial task has been completed.",
-        },
+            DONE = "Another menial task has been completed.",        },
         PORTABLEBLENDER_ITEM = "Inflicts chaos and turmoil on food.",
         PORTABLESPICER_ITEM =
         {
@@ -2544,6 +2764,7 @@ return {
         PEPPER_COOKED = "What can this tiny plant possibly do to fill my empty life?",
         PEPPER_SEEDS = "Will I live to see this grow?",
     },
+
     DESCRIBE_GENERIC = "Sigh... I don't know.",
     DESCRIBE_TOODARK = "The darkness! It is too dark!",
     DESCRIBE_SMOLDERING = "It's about to be swallowed by flames.",

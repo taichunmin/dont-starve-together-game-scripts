@@ -40,7 +40,7 @@ end
 
 local function oncollide(inst, other)    
     if (inst:IsValid() and Vector3(inst.Physics:GetVelocity()):LengthSq() > .1) or
-        (other ~= nil and other:IsValid() and Vector3(other.Physics:GetVelocity()):LengthSq() > .1) then
+        (other ~= nil and other:IsValid() and other.Physics ~= nil and Vector3(other.Physics:GetVelocity()):LengthSq() > .1) then
         inst.AnimState:PlayAnimation("hit")
         inst.AnimState:PushAnimation("idle", true)
         --inst.SoundEmitter:PlaySound("dontstarve/common/balloon_bounce")

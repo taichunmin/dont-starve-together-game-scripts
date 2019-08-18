@@ -68,6 +68,7 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetOnDroppedFn(ondropped)
     inst.components.inventoryitem:SetOnPutInInventoryFn(onpickup)
+    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("inspectable")
     inst:AddComponent("tradable")

@@ -28,6 +28,15 @@ local rock_moon_shell_assets =
     Asset("MINIMAP_IMAGE", "rock_moon"),
 }
 
+local rock_moon_glass_assets =
+{
+    Asset("ANIM", "anim/moonglass_rock.zip"),
+    Asset("ANIM", "anim/moonglass_rock2.zip"),
+    Asset("ANIM", "anim/moonglass_rock3.zip"),
+    Asset("ANIM", "anim/moonglass_rock4.zip"),
+    Asset("MINIMAP_IMAGE", "rock_moonglass"),
+}
+
 local rock_petrified_tree_assets =
 {
     Asset("ANIM", "anim/petrified_tree.zip"),
@@ -44,7 +53,8 @@ local prefabs =
     "flint",
     "goldnugget",
     "moonrocknugget",
-	"moonrockseed",
+    "moonglass",
+    "moonrockseed",
     "rock_break_fx",
     "collapse_small",
 }
@@ -113,6 +123,13 @@ SetSharedLootTable( 'rock_moon_shell',
     {'moonrocknugget',  1.00},
     {'moonrocknugget',  1.00},
     {'moonrocknugget',  0.3},
+})
+
+SetSharedLootTable( 'rock_moon_glass',
+{
+    {'moonglass',       1.00},
+    {'moonglass',       1.00},
+    {'moonglass',       0.25},
 })
 
 SetSharedLootTable( 'rock_petrified_tree',
@@ -210,7 +227,7 @@ local function onload(inst, data)
     end
 end
 
-local function baserock_fn(bank, build, anim, icon, tag)
+local function baserock_fn(bank, build, anim, icon, tag, multcolour)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -260,8 +277,14 @@ local function baserock_fn(bank, build, anim, icon, tag)
     inst.components.workable:SetWorkLeft(TUNING.ROCKS_MINE)
     inst.components.workable:SetOnWorkCallback(OnWork)
 
-    local color = 0.5 + math.random() * 0.5
-    inst.AnimState:SetMultColour(color, color, color, 1)
+    if multcolour == nil or (0 <= multcolour and multcolour < 1) then
+        if multcolour == nil then
+            multcolour = 0.5
+        end
+
+        local color = multcolour + math.random() * (1.0 - multcolour)
+        inst.AnimState:SetMultColour(color, color, color, 1)
+    end
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.nameoverride = "ROCK"
@@ -380,6 +403,45 @@ local function rock_moon_shell()
     return inst
 end
 
+local function on_save_moonglass(inst, data)
+    data.rock_type = inst.rock_type
+end
+
+local function set_moonglass_type(inst, new_type)
+    inst.rock_type = new_type
+    local anim_name = (inst.rock_type == 1 and "moonglass_rock") or "moonglass_rock"..tostring(new_type)
+    inst.AnimState:SetBuild(anim_name)
+    inst.AnimState:SetBank(anim_name)
+end
+
+local function on_load_moonglass(inst, data)
+    if data ~= nil and data.rock_type ~= nil then
+        set_moonglass_type(inst, data.rock_type)
+    end
+end
+
+local function rock_moon_glass()
+    local inst = baserock_fn("moonglass_rock", "moonglass_rock", "full", "rock_moonglass.png", nil, 1.0)
+
+    inst:SetPrefabName("moonglass_rock")
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst:AddTag("moonglass")
+
+    set_moonglass_type(inst, math.random(4))
+
+    inst.components.inspectable.nameoverride = "MOONGLASS_ROCK"
+    inst.components.lootdropper:SetChanceLootTable('rock_moon_glass')
+
+    inst.OnSave = on_save_moonglass
+    inst.OnLoad = on_load_moonglass
+
+    return inst
+end
+
 local function rock_petrified_tree_common(size)
     local inst = baserock_fn("petrified_tree", "petrified_tree", { "petrify_in", "full" }, "petrified_tree.png", "shelter")
 
@@ -443,6 +505,7 @@ return Prefab("rock1", rock1_fn, rock1_assets, prefabs),
     Prefab("rock_flintless_low", rock_flintless_low, rock_flintless_assets, prefabs),
     Prefab("rock_moon", rock_moon, rock_moon_assets, prefabs),
     Prefab("rock_moon_shell", rock_moon_shell, rock_moon_shell_assets, prefabs),
+    Prefab("moonglass_rock", rock_moon_glass, rock_moon_glass_assets, prefabs),
     Prefab("rock_petrified_tree", rock_petrified_tree, rock_petrified_tree_assets, prefabs),
     Prefab("rock_petrified_tree_med", rock_petrified_tree_med, rock_petrified_tree_assets, prefabs),
     Prefab("rock_petrified_tree_tall", rock_petrified_tree_tall, rock_petrified_tree_assets, prefabs),

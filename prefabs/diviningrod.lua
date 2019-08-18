@@ -3,6 +3,7 @@ local assets =
     Asset("ANIM", "anim/diviningrod.zip"),
     Asset("ANIM", "anim/swap_diviningrod.zip"),
     Asset("ANIM", "anim/diviningrod_fx.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =
@@ -160,6 +161,9 @@ local function fn()
     inst:AddTag("nonpotatable")
     inst:AddTag("diviningrod")
     inst:AddTag("nopunch")
+
+    local swap_data = {sym_build = "swap_diviningrod", anim = "dropped"}
+    MakeInventoryFloatable(inst, "large", 0.1, {0.8, 0.5, 0.8}, true, -30, swap_data)
 
     inst.entity:SetPristine()
 

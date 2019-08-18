@@ -65,8 +65,8 @@ local WorldGenScreen = Class(Screen, function(self, profile, cb, world_gen_data,
 
 			TheFrontEnd:GetSound():PlaySound( "dontstarve/HUD/caveGen", "worldgensound" )
 		else
-			self.worldanim:GetAnimState():SetBuild("generating_world")
-			self.worldanim:GetAnimState():SetBank("generating_world")
+			self.worldanim:GetAnimState():SetBuild("generating_forest")
+			self.worldanim:GetAnimState():SetBank("generating_forest")
 			self.worldgentext:SetString(STRINGS.UI.WORLDGEN.TITLE)
 
 			TheFrontEnd:GetSound():PlaySound( "dontstarve/HUD/worldGen", "worldgensound" )

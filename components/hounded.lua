@@ -43,6 +43,7 @@ self.inst = inst
 
 --Private
 local _activeplayers = {}
+local _targetableplayers = {}
 local _warning = false
 local _timetoattack = 0
 local _warnduration = 30
@@ -77,10 +78,10 @@ local _spawndata =
 		warning_speech = "ANNOUNCE_HOUND",
 		warning_sound_thresholds =
 		{	--Key = time, Value = sound prefab
-			{time = 30, sound = "houndwarning_lvl4"},
-			{time = 60, sound = "houndwarning_lvl3"},
-			{time = 90, sound = "houndwarning_lvl2"},
-			{time = 500, sound = "houndwarning_lvl1"},
+			{time = 30, sound =  "LVL4"},
+			{time = 60, sound =  "LVL3"},
+			{time = 90, sound =  "LVL2"},
+			{time = 500, sound = "LVL1"},
 		},
 	}
 
@@ -138,7 +139,14 @@ local function CalcPlayerAttackSize(player)
         or _spawndata.attack_levels.crazy.numspawns()
 end
 
-local function PlanNextAttack()
+local function ClearWaterImunity()	
+	for GUID,data in pairs(_targetableplayers) do
+		_targetableplayers[GUID] = nil
+	end
+end
+
+local function PlanNextAttack()	
+	ClearWaterImunity()
 	if _timetoattack > 0 then
 		-- we came in through a savegame that already had an attack scheduled
 		return
@@ -243,15 +251,31 @@ local function NoHoles(pt)
 end
 
 local function GetSpawnPoint(pt)
-    if not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) then
-        pt = FindNearbyLand(pt, 1) or pt
-    end
-    local offset = FindWalkableOffset(pt, math.random() * 2 * PI, SPAWN_DIST, 12, true, true, NoHoles)
-    if offset ~= nil then
-        offset.x = offset.x + pt.x
-        offset.z = offset.z + pt.z
-        return offset
-    end
+	if TheWorld.has_ocean then
+		local function OceanSpawnPoint(offset)
+			local x = pt.x + offset.x
+			local y = pt.y + offset.y
+			local z = pt.z + offset.z
+			return TheWorld.Map:IsAboveGroundAtPoint(x, y, z, true) and NoHoles(pt)
+		end
+
+		local offset = FindValidPositionByFan(math.random() * 2 * PI, SPAWN_DIST, 12, OceanSpawnPoint)
+		if offset ~= nil then
+			offset.x = offset.x + pt.x
+			offset.z = offset.z + pt.z
+			return offset
+		end
+	else
+		if not TheWorld.Map:IsAboveGroundAtPoint(pt:Get()) then
+			pt = FindNearbyLand(pt, 1) or pt
+		end
+		local offset = FindWalkableOffset(pt, math.random() * 2 * PI, SPAWN_DIST, 12, true, true, NoHoles)
+		if offset ~= nil then
+			offset.x = offset.x + pt.x
+			offset.z = offset.z + pt.z
+			return offset
+		end
+	end
 end
 
 local function GetSpecialSpawnChance()
@@ -286,12 +310,15 @@ local function SummonSpawn(pt)
     end
 end
 
-local function ReleaseSpawn(target)
-    local spawn = SummonSpawn(target:GetPosition())
-    if spawn ~= nil then
-        spawn.components.combat:SuggestTarget(target)
-        return true
-    end
+local function ReleaseSpawn(target)	
+	if not _targetableplayers[target.GUID] or _targetableplayers[target.GUID] == "land" then
+	    local spawn = SummonSpawn(target:GetPosition())
+	    if spawn ~= nil then
+	        spawn.components.combat:SuggestTarget(target)
+	        return true
+	    end
+	end
+
     return false
 end
 
@@ -326,13 +353,16 @@ local function OnPlayerJoined(src, player)
 end
 
 local function OnPlayerLeft(src, player)
+	if _targetableplayers[player.GUID] then
+		_targetableplayers[player.GUID] = nil
+	end
     for i, v in ipairs(_activeplayers) do
         if v == player then
 			RemovePendingSpawns(player)
             table.remove(_activeplayers, i)
             return
         end
-    end
+    end    
 end
 
 local function OnPauseHounded(src, data)
@@ -345,6 +375,25 @@ local function OnUnpauseHounded(src, data)
     if data ~= nil and data.source ~= nil then
         _pausesources:RemoveModifier(data.source, data.reason)
     end
+end
+
+local function CheckForWaterImunity(player)	
+	
+    if not _targetableplayers[player.GUID] then
+		-- block hound wave targeting when target is on water.. for now. 
+		local x,y,z = player.Transform:GetWorldPosition()
+		if TheWorld.Map:IsVisualGroundAtPoint(x,y,z) then			
+			_targetableplayers[player.GUID] = "land"
+		else			
+			_targetableplayers[player.GUID] = "water"
+		end
+    end
+end
+
+local function CheckForWaterImunityAllPlayers()	
+	for i, v in ipairs(_activeplayers) do 
+		CheckForWaterImunity(v)
+	end
 end
 
 --------------------------------------------------------------------------
@@ -437,9 +486,10 @@ function self:SummonSpawn(pt)
 end
 
 -- Spawns the next wave for debugging
+-- TheWorld.components.hounded:ForceNextWave()
 function self:ForceNextWave()
 	PlanNextAttack()
-	_timetoattack = 0
+	_timetoattack = 0	
 	self:OnUpdate(1)
 end
 
@@ -448,15 +498,25 @@ local function _DoWarningSpeech(player)
 end
 
 function self:DoWarningSpeech()
-    for i, v in ipairs(_activeplayers) do
-        v:DoTaskInTime(math.random() * 2, _DoWarningSpeech)
+    --for i, v in ipairs(_activeplayers) do
+    for GUID,data in pairs(_targetableplayers) do	    	
+    	if data == "land" then
+    		local player = Ents[GUID]    		
+        	player:DoTaskInTime(math.random() * 2, _DoWarningSpeech)        
+    	end
     end
 end
 
 function self:DoWarningSound()
     for k,v in pairs(_spawndata.warning_sound_thresholds) do
     	if _timetoattack <= v.time or _timetoattack == nil then
-    		SpawnPrefab(v.sound)
+    		for GUID,data in pairs(_targetableplayers)do
+    			local player = Ents[GUID]
+    			if player and data == "land" then    	
+    				player:PushEvent("houndwarning",HOUNDWARNINGTYPE[v.sound])
+    			end
+    		end
+    		break
     	end
     end
 end
@@ -490,12 +550,13 @@ function self:OnUpdate(dt)
 
 		local groupsdone = {}
 		for i, spawninforec in ipairs(_spawninfo) do
+			CheckForWaterImunityAllPlayers()
 			spawninforec.timetonext = spawninforec.timetonext - dt
 			if spawninforec.spawnstorelease > 0 and spawninforec.timetonext < 0 then
 				-- hounds can attack anyone in the group, even new players.
 				-- That's the risk you take!
 				local playeridx = math.random(#spawninforec.players)
-				ReleaseSpawn(spawninforec.players[playeridx])
+				ReleaseSpawn(spawninforec.players[playeridx])				
 				spawninforec.spawnstorelease = spawninforec.spawnstorelease - 1
 
 				local day = spawninforec.averageplayerage / TUNING.TOTAL_DAY_TIME
@@ -509,16 +570,18 @@ function self:OnUpdate(dt)
 					spawninforec.timetonext = .5 + math.random()*1
 				end
 
-			end
+			end			
 			if spawninforec.spawnstorelease <= 0 then
 				table.insert(groupsdone, 1, i)
 			end
 		end
+
 		for i, v in ipairs(groupsdone) do
 			table.remove(_spawninfo, v)
 		end
 		if #_spawninfo <= 0 then
 			_spawninfo = nil
+
 			PlanNextAttack()
 		end
 	elseif not _warning and _timetoattack < _warnduration then
@@ -526,10 +589,12 @@ function self:OnUpdate(dt)
 		_timetonextwarningsound = 0
 	end
 
-    if _warning then
+    if _warning then        	
+
         _timetonextwarningsound	= _timetonextwarningsound - dt
 
         if _timetonextwarningsound <= 0 then
+        	CheckForWaterImunityAllPlayers()
             _announcewarningsoundinterval = _announcewarningsoundinterval - 1
             if _announcewarningsoundinterval <= 0 then
                 _announcewarningsoundinterval = 10 + math.random(5)
@@ -541,6 +606,7 @@ function self:OnUpdate(dt)
                 (_timetoattack < 60 and 2 + math.random(1)) or
                 (_timetoattack < 90 and 4 + math.random(2)) or
                                         5 + math.random(4)
+
             self:DoWarningSound()
         end
     end

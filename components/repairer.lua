@@ -35,6 +35,8 @@ local Repairer = Class(function(self, inst)
     self.healthrepairpercent = 0
     self.perishrepairpercent = 0
     self.repairmaterial = nil
+    
+    self.inst:AddTag("repairer")
 end,
 nil,
 {

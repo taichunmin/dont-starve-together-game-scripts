@@ -69,11 +69,12 @@ local function FindPlaymate(self)
     local find_dist = is_playful and MAX_DOMINANTTRAIT_PLAYFUL_FIND_DIST or MAX_PLAYFUL_FIND_DIST
 
     -- Find a new playmate
+    local we_fly = self.inst:HasTag("flying")
     self.playfultarget = can_play and
         not owner.components.locomotor:WantsToMoveForward() and
         FindEntity(self.inst, find_dist, 
             function(v)
-                return (v.IsPlayful == nil or v:IsPlayful()) and v:IsNear(owner, max_dist_from_owner)
+                return (v.IsPlayful == nil or v:IsPlayful()) and v:IsNear(owner, max_dist_from_owner) and (we_fly or v:IsOnPassablePoint())
             end, nil, nil, self.inst.playmatetags)
         or nil
 

@@ -55,6 +55,8 @@ local function fn()
     inst.AnimState:SetBuild("poop")
     inst.AnimState:PlayAnimation("dump")
 
+    MakeInventoryFloatable(inst, "med", 0.1, 0.73)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

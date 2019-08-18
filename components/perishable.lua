@@ -288,9 +288,14 @@ function Perishable:OnSave()
 end
 
 function Perishable:OnLoad(data)
-    if data ~= nil and data.time ~= nil then
-        self.perishremainingtime = data.time
-        if not data.paused then
+    if data ~= nil then
+		if data.time ~= nil then
+	        self.perishremainingtime = data.time
+		end
+
+        if data.paused then
+            self:StopPerishing()
+		elseif data.time ~= nil then
             self:StartPerishing()
         end
     end

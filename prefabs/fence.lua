@@ -492,7 +492,6 @@ local function MakeWall(name, builds, isdoor, klaussackkeyid)
         inst:AddTag("wall")
         inst:AddTag("alignwall")
         inst:AddTag("noauradamage")
-        inst:AddTag("nointerpolate")
 
         if isdoor then
             inst.isdoor = true
@@ -630,7 +629,6 @@ local function MakeWallAnim(name, builds, isdoor)
         inst.AnimState:PlayAnimation("idle")
 
         inst:AddTag("FX")
-        inst:AddTag("nointerpolate")
 
         if isdoor then
             inst.AnimState:Hide("mouseover")
@@ -710,6 +708,7 @@ local function MakeInvItem(name, placement, animdata, isdoor)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+        inst.components.inventoryitem:SetSinks(true)
 
         inst:AddComponent("deployable")
         inst.components.deployable.ondeploy = ondeploywall

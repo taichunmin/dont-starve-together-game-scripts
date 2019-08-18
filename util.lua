@@ -279,6 +279,7 @@ function GetRandomItem(choices)
 	return picked
 end
 
+-- This is actually GetRandomItemWithKey
 function GetRandomItemWithIndex(choices)
     local choice = math.random(GetTableSize(choices)) -1
     
@@ -976,6 +977,48 @@ function RingBuffer:Resize(newsize)
     self.entries = #nb
     self.pos = #nb
 
+end
+
+------------------------------
+-- Class DynamicPosition (a position that is relative to a moveable platform)
+-- DynamicPosition is for handling a point in the world that should follow a moving walkable_platform.
+-- pt is in world space, walkable_platform is optional, if nil, the constructor will search for a platform at pt.
+-- GetPosition() will return nil if a platform was being tracked but no longer exists.
+DynamicPosition = Class(function(self, pt, walkable_platform)
+	if pt ~= nil then		
+		self.walkable_platform = walkable_platform or TheWorld.Map:GetPlatformAtPoint(pt.x, pt.z)
+		if self.walkable_platform ~= nil then
+			self.local_pt = pt - self.walkable_platform:GetPosition()
+		else
+			self.local_pt = pt
+		end
+	end
+end)
+
+function DynamicPosition:__eq( rhs )
+    return self.walkable_platform == rhs.walkable_platform and self.local_pt.x == rhs.local_pt.x and self.local_pt.z == rhs.local_pt.z
+end
+
+function DynamicPosition:__tostring()
+	local pt = self:GetPosition()
+    return pt ~= nil 
+		and string.format("%2.2f, %2.2f on %s", pt.x, pt.z, tostring(self.walkable_platform))
+        or "nil"
+end
+
+function DynamicPosition:GetPosition()
+	if self.walkable_platform ~= nil then
+		if self.walkable_platform:IsValid() then
+			local x, y, z = self.walkable_platform.Transform:GetWorldPosition()
+			return Vector3(x + self.local_pt.x, y + self.local_pt.y, z + self.local_pt.z)
+		else
+			self.walkable_platform = nil
+			self.local_pt = nil
+		end
+	elseif self.local_pt ~= nil then
+	    return self.local_pt
+	end
+    return nil
 end
 
 -----------------------------------------------------------------

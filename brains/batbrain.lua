@@ -56,7 +56,7 @@ local function EatFoodAction(inst)
         SEE_FOOD_DIST,
         function(item)
             return item:GetTimeAlive() >= 8
-                and item:IsOnValidGround()
+                and item:IsOnPassablePoint(true)
                 and inst.components.eater:CanEat(item)
         end,
         nil,

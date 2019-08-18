@@ -185,18 +185,14 @@ function Node:IsConnectedTo(node)
 	return false
 end
 
-function Node:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
-
-	WorldSim:ReserveTile(points_x[current_pos_idx], points_y[current_pos_idx])
-	
-	local x = (points_x[current_pos_idx] - width/2.0)*TILE_SCALE
-	local y = (points_y[current_pos_idx] - height/2.0)*TILE_SCALE
-
-	local tile = WorldSim:GetVisualTileAtPosition(points_x[current_pos_idx], points_y[current_pos_idx])
-	if  tile <= GROUND.IMPASSABLE or tile >= GROUND.UNDERGROUND then
-		return
+function PopulateWorld_AddEntity(prefab, tile_x, tile_y, tile_value, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
+	if _G.WorldSim ~= nil then
+		WorldSim:ReserveTile(tile_x, tile_y)
 	end
-	
+
+	local x = (tile_x - width/2.0)*TILE_SCALE
+	local y = (tile_y - height/2.0)*TILE_SCALE
+
 	if rand_offset == nil or rand_offset == true then
 		x = x + math.random()*2-1
 		y = y + math.random()*2-1
@@ -235,6 +231,17 @@ function Node:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut
 		prefab_list[prefab] = 0
 	end
 	prefab_list[prefab] = prefab_list[prefab] + 1
+
+end
+
+
+function Node:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
+	local tile = WorldSim:GetTile(points_x[current_pos_idx], points_y[current_pos_idx]) 
+	if tile <= GROUND.IMPASSABLE or tile >= GROUND.UNDERGROUND then
+		return
+	end
+	
+	PopulateWorld_AddEntity(prefab, points_x[current_pos_idx], points_y[current_pos_idx], tile, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
 end
 
 function Node:ConvertGround(spawnFn, entitiesOut, width, height, world_gen_choices)
@@ -249,6 +256,8 @@ function Node:ConvertGround(spawnFn, entitiesOut, width, height, world_gen_choic
 	local obj_layout = require("map/object_layout")
 	local prefab_list = {}
 	
+	local area = WorldSim:GetSiteArea(self.id)
+
 	-- Get the list of special items for this node
 	local add_fn = {fn=function(...) self:AddEntity(...) end,args={entitiesOut=entitiesOut, width=width, height=height, rand_offset = false, debug_prefab_list=prefab_list}}
 
@@ -256,7 +265,7 @@ function Node:ConvertGround(spawnFn, entitiesOut, width, height, world_gen_choic
 		for k,count in pairs(self.data.terrain_contents.countstaticlayouts) do
             --print("STATIC LAYOUTS: adding a "..k.." to "..self.id)
 			if type(count) == "function" then
-				count = count()
+				count = count(area)
 			end
 			
 			for i=1, count do
@@ -349,10 +358,12 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 	
 	--print("Number of points returned: " .. tostring(#points_x) .. " for site " .. self.id)	
 
+	local area = #points_x
+
 	if self.data.terrain_contents.countprefabs ~= nil then
 		for prefab, count in pairs(self.data.terrain_contents.countprefabs) do
 			if type(count) == "function" then
-				count = count()
+				count = count(area)
 			end
 			generate_these[prefab] = count
 			pos_needed = pos_needed + count

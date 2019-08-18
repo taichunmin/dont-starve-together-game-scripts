@@ -87,7 +87,7 @@ local function FindFoodAction(inst)
                 and item.prefab ~= "mandrake"
                 and item.components.edible ~= nil
                 and (not noveggie or item.components.edible.foodtype == FOODTYPE.MEAT)
-                and item:IsOnValidGround()
+                and item:IsOnPassablePoint()
                 and inst.components.eater:CanEat(item)
         end,
         nil,
@@ -105,7 +105,7 @@ local function FindFoodAction(inst)
                 and item.components.shelf.cantakeitem
                 and item.components.shelf.itemonshelf.components.edible ~= nil
                 and (not noveggie or item.components.shelf.itemonshelf.components.edible.foodtype == FOODTYPE.MEAT)
-                and item:IsOnValidGround()
+                and item:IsOnPassablePoint()
                 and inst.components.eater:CanEat(item.components.shelf.itemonshelf)
         end,
         nil,

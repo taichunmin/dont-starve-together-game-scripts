@@ -48,6 +48,8 @@ local function fn()
     inst.Light:Enable(true)
     --]]
 
+    MakeInventoryFloatable(inst, "med", nil, 0.73)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

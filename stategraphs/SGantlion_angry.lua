@@ -77,7 +77,8 @@ local function SpawnSpikes(inst, pos, count)
             local offset = FindWalkableOffset(pos, theta, 2 + math.random() * 2, 3, false, true,
                 function(pt)
                     return CanSpawnSpikeAt(pt, size)
-                end)
+                end,
+                false, true)
             if offset ~= nil then
                 SpawnPrefab("sandspike_"..size).Transform:SetPosition(pos.x + offset.x, 0, pos.z + offset.z)
             end

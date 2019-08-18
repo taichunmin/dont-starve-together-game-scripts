@@ -24,7 +24,7 @@ SGCritterEvents.OnTraitChanged = function()
 end
 
 --------------------------------------------------------------------------
-SGCritterStates.AddIdle = function(states, num_emotes, timeline)
+SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
     table.insert(states, State
     {
         name = "idle",
@@ -50,7 +50,11 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline)
 					inst.sg.mem.prevemotetime = curtime
 					inst.sg:GoToState("combat_pre")
 				else
-					inst.AnimState:PlayAnimation("idle_loop")
+					if idle_anim_fn ~= nil then
+						inst.AnimState:PlayAnimation(idle_anim_fn(inst))
+					else
+						inst.AnimState:PlayAnimation("idle_loop")
+					end
 				end
 			elseif inst.sg.mem.queuedplayfultarget ~= nil then
 				inst.sg.mem.prevemotetime = curtime
@@ -73,7 +77,11 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline)
         			end
 
 				else
-					inst.AnimState:PlayAnimation("idle_loop")
+					if idle_anim_fn ~= nil then
+						inst.AnimState:PlayAnimation(idle_anim_fn(inst))
+					else
+						inst.AnimState:PlayAnimation("idle_loop")
+					end
 				end
 			end
         end,

@@ -57,6 +57,8 @@ local function buildeye(colour)
         inst.AnimState:PlayAnimation(colour.."gem_idle")
         inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 
+        MakeInventoryFloatable(inst, "small", 0.05, {0.8, 0.75, 0.8})
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then

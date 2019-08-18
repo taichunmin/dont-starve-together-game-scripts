@@ -5,6 +5,12 @@ local atlas_info_filename = "minimap/minimap_data.xml"
 
 local MINIMAP_GROUND_PROPERTIES =
 {
+    { GROUND.PEBBLEBEACH,{ name = "map_edge",      noise_texture = "levels/textures/mini_pebblebeach.tex" } },
+    { GROUND.OCEAN_COASTAL_SHORE,      { name = "map_edge",      noise_texture = "levels/textures/mini_water_shallow.tex" } },
+    { GROUND.OCEAN_REEF_SHORE,      { name = "map_edge",      noise_texture = "levels/textures/mini_water_coral.tex" } },
+
+    { GROUND.METEOR,	 { name = "map_edge",      noise_texture = "levels/textures/mini_meteor.tex" } },
+
     { GROUND.ROAD,       { name = "map_edge",      noise_texture = "levels/textures/mini_cobblestone_noise.tex" } },
     { GROUND.MARSH,      { name = "map_edge",      noise_texture = "levels/textures/mini_marsh_noise.tex" } },
     { GROUND.ROCKY,      { name = "map_edge",      noise_texture = "levels/textures/mini_rocky_noise.tex" } },
@@ -18,10 +24,6 @@ local MINIMAP_GROUND_PROPERTIES =
     { GROUND.DECIDUOUS,  { name = "map_edge",      noise_texture = "levels/textures/mini_deciduous_noise.tex"} },
     { GROUND.DESERT_DIRT,{ name = "map_edge",      noise_texture = "levels/textures/mini_desert_dirt_noise.tex"} },
     { GROUND.SCALE,      { name = "map_edge",      noise_texture = "levels/textures/mini_dragonfly_noise.tex"} },
-
-    -- { GROUND.WALL_MARSH, { name = "map_edge",      noise_texture = "levels/textures/mini_marsh_wall_noise.tex" } },
-    -- { GROUND.WALL_ROCKY, { name = "map_edge",      noise_texture = "levels/textures/mini_rocky_wall_noise.tex" } },
-    -- { GROUND.WALL_DIRT,  { name = "map_edge",      noise_texture = "levels/textures/mini_dirt_wall_noise.tex" } },
 
     { GROUND.CAVE,       { name = "map_edge",      noise_texture = "levels/textures/mini_cave_noise.tex" } },
     { GROUND.FUNGUS,     { name = "map_edge",      noise_texture = "levels/textures/mini_fungus_noise.tex" } },
@@ -43,11 +45,12 @@ local MINIMAP_GROUND_PROPERTIES =
     { GROUND.QUAGMIRE_CITYSTONE,   { name = "map_edge",      noise_texture = "levels/textures/quagmire_citystone_mini.tex" } },
     { GROUND.QUAGMIRE_GATEWAY,     { name = "map_edge",      noise_texture = "levels/textures/quagmire_gateway_mini.tex" } },
     { GROUND.QUAGMIRE_SOIL,        { name = "map_edge",      noise_texture = "levels/textures/quagmire_soil_mini.tex" } },
-    
 
-    -- { GROUND.WALL_CAVE,    { name = "map_edge",      noise_texture = "levels/textures/mini_cave_wall_noise.tex" } },
-    -- { GROUND.WALL_FUNGUS,  { name = "map_edge",      noise_texture = "levels/textures/mini_fungus_wall_noise.tex" } },
-    -- { GROUND.WALL_SINKHOLE,{ name = "map_edge",      noise_texture = "levels/textures/mini_sinkhole_wall_noise.tex" } },
+    { GROUND.OCEAN_COASTAL,    { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_REEF,       { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_SWELL,      { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_ROUGH,      { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_HAZARDOUS,  { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
 }
 
 local assets =
@@ -60,6 +63,8 @@ local assets =
 
     Asset( "SHADER", shader_filename ),
     Asset( "SHADER", fs_shader ),
+
+    Asset( "IMAGE", "images/minimap_paper.tex" ),
 }
 
 function GroundImage( name )

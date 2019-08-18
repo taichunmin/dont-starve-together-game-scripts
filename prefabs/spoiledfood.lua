@@ -19,6 +19,8 @@ local function fn()
     inst:AddTag("icebox_valid")
     inst:AddTag("show_spoiled")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.73)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

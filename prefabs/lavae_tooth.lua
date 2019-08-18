@@ -61,6 +61,8 @@ local function fn()
 
     inst.Transform:SetScale(0.75, 0.75, 0.75)
 
+    MakeInventoryFloatable(inst, "small", 0.05)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -68,6 +70,7 @@ local function fn()
     end
 
     inst:AddComponent("inventoryitem")
+
     inst:AddComponent("inspectable")
     inst:AddComponent("leader")
 

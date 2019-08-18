@@ -139,8 +139,32 @@ return {
             MISMATCH = "This food doth need a different dish.", 
             SAMEDISH = "I hath used a dish already.", 
         },
+        SAIL =
+        {
+            REPAIR = "No need, the ship's spirit is strong.",
+        },
+        ROW_FAIL =
+        {
+            BAD_TIMING0 = "I must take heed of the ocean's rhythm.",
+            BAD_TIMING1 = "A Viking never gives up!",
+            BAD_TIMING2 = "Patience is a warrior's friend!",
+        },
+        LOWER_SAIL_FAIL =
+        {
+            "By Aegir, you will bend to my will!",
+            "Oh-ho! Feisty, are we?",
+            "I will not be defeated by my own vessel!",
+        }, 
+        BATHBOMB =
+        {
+            GLASSED = "'Tis shielded!",
+            ALREADY_BOMBED = "Someone has enchanted it already.",
+        },
     },
     ACTIONFAIL_GENERIC = "If I can't do it, it can't be done!",
+    ANNOUNCE_WASHED_ASHORE = "The sea did not claim me this day.",
+    ANNOUNCE_BOAT_LEAK = "Our vessel hath sprung a leak!",
+    ANNOUNCE_BOAT_SINK = "A Viking shalln't abandon her ship!",
     ANNOUNCE_DIG_DISEASE_WARNING = "Be banished, beastly blight!",
     ANNOUNCE_PICK_DISEASE_WARNING = "Foul!",
     ANNOUNCE_MOUNT_LOWHEALTH = "Don't give up, beast! Fight!",
@@ -210,6 +234,22 @@ return {
     ANNOUNCE_KLAUS_ENRAGE = "RUN AWAY!",
     ANNOUNCE_KLAUS_UNCHAINED = "Now the true battle begins!",
     ANNOUNCE_KLAUS_CALLFORHELP = "Call thy hordes, they shan't protect thee!",
+
+    ANNOUNCE_MOONALTAR_MINE =
+    {
+        GLASS_MED = "It calls from within!",
+        GLASS_LOW = "Thy form takes shape!",
+        GLASS_REVEAL = "Taste thy freedom!",
+        IDOL_MED = "It calls from within!",
+        IDOL_LOW = "Thy form takes shape!",
+        IDOL_REVEAL = "Taste thy freedom!",
+        SEED_MED = "It calls from within!",
+        SEED_LOW = "Thy form takes shape!",
+        SEED_REVEAL = "Taste thy freedom!",
+    },
+
+    ANNOUNCE_FLARE_SEEN = "My allies beckon me!",
+    ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "A gargantuan foe approaches!",
 
     ANNOUNCE_SNARED = "No cage can hold me!",
     ANNOUNCE_REPELLED = "Foul magics block mine blows!",
@@ -795,6 +835,9 @@ return {
         TURF_FUNGUS_RED = "A piece of the battlefield.",
         TURF_SANDY = "A piece of the battlefield.",
         TURF_DRAGONFLY = "A warm piece of the battlefield.",
+        TURF_METEOR = "A piece of the battlefield.",
+        TURF_PEBBLEBEACH = "A piece of the battlefield.",
+
         PIGTENT = "It smells of breakfast!",
         BIGFOOT = "That's something completely different!",
         BISHOP_CHARGE_HIT = "Rrraugh!",
@@ -1068,6 +1111,9 @@ return {
         CHESSPIECE_BEARGER = "Twas a battle to sing of.",
         CHESSPIECE_MOOSEGOOSE = "Twas an honor to fight thee.",
         CHESSPIECE_DRAGONFLY = "Tis the trophy of glorious battle!",
+        CHESSPIECE_BUTTERFLY = "To celebrate the moon's messenger!",
+        CHESSPIECE_ANCHOR = "'Twas made in honor of our stalwart vessel!",
+        CHESSPIECE_MOON = "Offered in honor of our beauteous moon!",
         CHESSJUNK1 = "It's only a pile of fallen warriors.",
         CHESSJUNK2 = "More fallen mechanical warriors.",
         CHESSJUNK3 = "Someone should really clean this place up.",
@@ -1106,6 +1152,7 @@ return {
         CRITTER_PUPPY = "I shall defend this hound to the death.",
         CRITTER_KITTEN = "She is a magnificent hunter!",
         CRITTER_PERDLING = "Not a raven, but wise nonetheless.",
+        CRITTER_LUNARMOTHLING = "Mine lunar friend!",
 
         CROW =
         {
@@ -1402,6 +1449,12 @@ return {
         HONEYNUGGETS = "A feast!",
         HORN = "How I long for battle.",
         HOUND = "Fenrir's spawn!",
+        HOUNDCORPSE =
+        {
+             GENERIC = "Rest well, fallen foe.",
+             BURNING = "Burial by fire.",
+             REVIVING = "The dead walk again!",
+        },
         HOUNDBONE = "A fallen foe.",
         HOUNDMOUND = "These hounds are true warriors.",
         ICEBOX = "Winter dwells inside!",
@@ -1490,6 +1543,9 @@ return {
             DRYINGINRAIN = "All this rain isn't helping.",
             GENERIC = "Ah! A dangly rack for my meats!",
             BURNT = "Such a shame.",
+            DONE_NOTMEAT = "Tis as dry as an empty well!",
+            DRYING_NOTMEAT = "It's drying out nicely.",
+            DRYINGINRAIN_NOTMEAT = "All this rain isn't helping.",
         },
         MEAT_DRIED = "Excellent battle provisions.",
         MERM = "Die soggy beast fish!",
@@ -2473,21 +2529,21 @@ return {
         QUAGMIRE_LAMP_SHORT = "'Tis a magic light of short stature.",
 
         --v2 Winona
-        WINONA_CATAPULT =
+        WINONA_CATAPULT = 
         {
             GENERIC = "Reinforcements hath arrived! To battle!",
             OFF = "It has no fighting spirit.",
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_SPOTLIGHT =
+        WINONA_SPOTLIGHT = 
         {
             GENERIC = "It can't get enough of me!",
             OFF = "It has no fighting spirit.",
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_BATTERY_LOW =
+        WINONA_BATTERY_LOW = 
         {
             GENERIC = "The tinkerer hath many tricks.",
             LOWPOWER = "T'will not hold out much longer!",
@@ -2495,7 +2551,7 @@ return {
             BURNING = "Tis engulfed in flame!",
             BURNT = "Twas devoured by Hel's fire!",
         },
-        WINONA_BATTERY_HIGH =
+        WINONA_BATTERY_HIGH = 
         {
             GENERIC = "Tis fueled by glorious magic.",
             LOWPOWER = "T'will not hold out much longer!",
@@ -2509,12 +2565,176 @@ return {
         ARMOR_BRAMBLE = "My ally is surely a strong warrior.",
         TRAP_BRAMBLE = "A most clever trap for one's foes.",
 
+        BOATFRAGMENT03 = "The ship hath met a valiant end.",
+        BOATFRAGMENT04 = "The ship hath met a valiant end.",
+        BOATFRAGMENT05 = "The ship hath met a valiant end.",
+        BOAT_LEAK = "My vessel hath been wounded!",
+        MAST = "T'will harness Njord's mighty breath.",
+        SEASTACK = "I shall not dash mine ship upon thee!",
+        FISHINGNET = "I shall feed all my allies for a day!",
+        ANTCHOVIES = "I wrested them from the sea.",
+        STEERINGWHEEL = "Njord guide our journey.",
+        ANCHOR = "Tis light as a feather thanks to my Viking's strength!",
+        BOATPATCH = "If a Viking cares for her vessel, t'will do the same in return.",
+        DRIFTWOOD_TREE = 
+        {
+            BURNING = "Tis consumed by flame!",
+            BURNT = "Consumed by Hel's flames.",
+            CHOPPED = "Thank you for your bounty, tree.",
+            GENERIC = "A rare beauty to be sure, but tis no Yggdrasil.",
+        },
+
+        DRIFTWOOD_LOG = "'Tis wood, forged in the sea's depths!",
+
+        MOON_TREE = 
+        {
+            BURNING = "Tis consumed by flame!",
+            BURNT = "This tree, twas burnt to the ground.",
+            CHOPPED = "Chopped by the warrior of the woods!",
+            GENERIC = "Tis lovely as Yggdrasil's picture in my mind.",
+        },
+
+        MOONBUTTERFLY = 
+        {
+            GENERIC = "Tis light as a feather on the breeze!",
+            HELD = "It is my ward, now.",
+        },
+        MOONBUTTERFLYWINGS = "Fare thee well, little moth.",
+        MOONBUTTERFLY_SAPLING = "Tis but a small tree.",
+        ROCK_AVOCADO_FRUIT = "Tis either a rock or vegetable. Neither are food.",
+        ROCK_AVOCADO_FRUIT_RIPE = "Yuck.",
+        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "I shall not eat that.",
+        ROCK_AVOCADO_FRUIT_SPROUT = "The rock veggie is sprouting.",
+        ROCK_AVOCADO_BUSH = 
+        {
+            BARREN = "Tis barren as the rainless desert.",
+            WITHERED = "It had not the strength to withstand this heat.",
+            GENERIC = "Hark, be wary! Tis fruit I see.",
+            PICKED = "It hath been stripped of its bounty.",
+            DISEASED = "The plague hath overwhelmed it completely!",
+            DISEASING = "A plague festers within it!",
+            BURNING = "Tis consumed by flame!",
+        },
+        DEAD_SEA_BONES = "Njord's depths hold many secrets.",
+        HOTSPRING = 
+        {
+            GENERIC = "Perhaps a fire giant slumbers beneath!",
+            BOMBED = "'Tis imbued with the power of the moon!",
+            GLASS = "Oh no! The giant is trapped!",
+        },
+        MOONGLASS = "Tis a most divine substance.",
+        MOONGLASS_ROCK = "Mani sent it down himself.",
+        BATHBOMB = "I shall toss thee in the earth's cauldron!",
+        TRAP_STARFISH = 
+        {
+            GENERIC = "My warrior's instinct sounds - but why!",
+            CLOSED = "I shalln't be vanquished that easily.",
+        },
+        DUG_TRAP_STARFISH = "A most wicked trap I could set for my foes.",
+        SPIDER_MOON = 
+        {
+            GENERIC = "One of Hel's beasts, surely!",
+            SLEEPING = "It slumbers.",
+            DEAD = "It has breathed its last.",
+        },
+        MOONSPIDERDEN = "I sense battle on the horizon.",
+        FRUITDRAGON =
+        {
+            GENERIC = "Meat impostor!",
+            RIPE = "I have no need for your fake meat.",
+            SLEEPING = "Grabbest thy shut eye!",
+        },
+        PUFFIN =
+        {
+            GENERIC = "Cutest flying meat.",
+            HELD = "Thou art safe with me, sea meat.",
+            SLEEPING = "Grabbest thy shut eye!",
+        },
+
+        MOONGLASSAXE = "Spirits of the woods stand no chance against me.",
+        GLASSCUTTER = "T'will win any battle, surely!",
+
+        ICEBERG =
+        {
+            GENERIC = "A trap left by the dastardly ice giants, no doubt.",
+            MELTED = "Twas no match for this great heat.",
+        },
+        ICEBERG_MELTED = "Twas no match for this great heat.",
+
+        MINIFLARE = "Never split thy party!",
+
+        MOON_FISSURE = 
+        {
+            GENERIC = "An eternal light shines from within!",
+            NOLIGHT = "But a crack in the earth.",
+        },
+        MOON_ALTAR =
+        {
+            MOON_ALTAR_WIP = "You shall soon be complete once more.",
+            GENERIC = "Tis a direct line to Mani himself!",
+        },
+
+        MOON_ALTAR_IDOL = "Make thy will known to me, idol!",
+        MOON_ALTAR_GLASS = "What doth thou want, fair jewel?",
+        MOON_ALTAR_SEED = "The gods commune to me through thee.",
+
+        MOON_ALTAR_ROCK_IDOL = "The gods call me to it, I shall not resist.",
+        MOON_ALTAR_ROCK_GLASS = "The gods call me to it, I shall not resist.",
+        MOON_ALTAR_ROCK_SEED = "The gods call me to it, I shall not resist.",
+
+        SEAFARING_PROTOTYPER = 
+        {
+            GENERIC = "A seafaring Viking is keen of mind and sharp of wit.",
+            BURNT = "Tis no more.",
+        },
+        SEAFARER_KIT = "I shall build a most valorous vessel!",
+        BOAT_ITEM = "Ship building is in my bones!",
+        MAST_ITEM = "To harness the winds upon mine vessel!",
+        STEERINGWHEEL_ITEM = "A vital piece of a glorious vessel.",
+        ANCHOR_ITEM = "I will craft the finest ship in the land!",
+        MUTATEDHOUND = 
+        {
+            DEAD = "May you find rest.",
+            GENERIC = "What infernal creature doth mine eyes see!",
+            SLEEPING = "The beast slumbers soundly.",
+        },
+
+        MUTATED_PENGUIN = 
+        {
+            DEAD = "Rest well, wicked spirit.",
+            GENERIC = "Hel's influence has corrupted thee, no doubt!",
+            SLEEPING = "It slumbers soundly.",
+        },
+
+        CARRAT = 
+        {
+            DEAD = "It has breathed its last.",
+            GENERIC = "Vegetables are not to be trusted!",
+            HELD = "I have you now, wicked vegetable.",
+            SLEEPING = "A deceptive vegetable with no honor.",
+        },
+        GESTALT = "Goddess of the moon, shine thy smile upon me!",
+
+        BULLKELP_PLANT = 
+        {
+            GENERIC = "Ah! The sea hath sent its foul veggies!",
+            PICKED = "It is defeated.",
+        },
+        BULLKELP_ROOT = "I'll turn the sea's dark forces against it!",
+        KELPHAT = "I'd never trade mine helm for this.",
+        KELP = "Ridiculous sea vegetable.",
+        KELP_COOKED = "Tis even worse than before.",
+        KELP_DRIED = "I despise it.",
+
+        WALKINGPLANK = "I shall never abandon my vessel!",
+        OAR = "The Norseman's way to sail!",
+        OAR_DRIFTWOOD = "Back to the sea!",
+
         --v2 Warly
         PORTABLECOOKPOT_ITEM =
         {
             GENERIC = "Cooking, a noble profession.",
-            DONE = "Is there meat to be consumed?",
-        },
+            DONE = "Is there meat to be consumed?",        },
         PORTABLEBLENDER_ITEM = "It does battle with food.",
         PORTABLESPICER_ITEM =
         {

@@ -26,6 +26,8 @@ local function create()
 
     inst:AddTag("show_spoilage")
 
+    MakeInventoryFloatable(inst, "small", 0.1, 0.77)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

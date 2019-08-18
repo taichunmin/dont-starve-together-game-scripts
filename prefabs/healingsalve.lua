@@ -16,6 +16,8 @@ local function fn()
     inst.AnimState:SetBuild("spider_gland_salve")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "small", 0.05, 0.95)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

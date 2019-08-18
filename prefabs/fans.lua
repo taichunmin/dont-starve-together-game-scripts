@@ -3,6 +3,12 @@ local assets =
     Asset("ANIM", "anim/fan.zip"),
 }
 
+local assets_perd =
+{
+    Asset("ANIM", "anim/fan.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
+}
+
 local prefabs_perd =
 {
     "tornado",
@@ -89,6 +95,8 @@ local function common_fn(overridesymbol, onchannelingfn)
         inst:AddTag("channelingfan")
     end
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -119,6 +127,9 @@ end
 local function feather_fn()
     local inst = common_fn()
 
+    inst.components.floater:SetSize("med")
+    inst.components.floater:SetVerticalOffset(0.05)
+
     if not TheWorld.ismastersim then
         return inst
     end
@@ -126,11 +137,18 @@ local function feather_fn()
     inst.components.finiteuses:SetMaxUses(TUNING.FEATHERFAN_USES)
     inst.components.finiteuses:SetUses(TUNING.FEATHERFAN_USES)
 
+
     return inst
 end
 
 local function perd_fn()
     local inst = common_fn("swap_fan_perd", OnChanneling)
+
+    local swap_data = {sym_build = "fan", sym_name = "swap_fan_perd", bank = "fan"}
+    inst.components.floater:SetBankSwapOnFloat(true, -15, swap_data)
+    inst.components.floater:SetSize("large")
+    inst.components.floater:SetVerticalOffset(0.15)
+    inst.components.floater:SetScale({0.55, 0.5, 0.55})
 
     if not TheWorld.ismastersim then
         return inst
@@ -143,4 +161,4 @@ local function perd_fn()
 end
 
 return Prefab("featherfan", feather_fn, assets),
-    Prefab("perdfan", perd_fn, assets, prefabs_perd)
+    Prefab("perdfan", perd_fn, assets_perd, prefabs_perd)

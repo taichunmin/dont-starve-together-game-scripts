@@ -380,7 +380,7 @@ function Builder:MakeRecipe(recipe, pt, rot, skin, onsuccess)
         self.inst:PushEvent("makerecipe", { recipe = recipe })
         if self:IsBuildBuffered(recipe.name) or self:CanBuild(recipe.name) then
             self.inst.components.locomotor:Stop()
-            local buffaction = BufferedAction(self.inst, nil, ACTIONS.BUILD, nil, pt or self.inst:GetPosition(), recipe.name, 1, nil, rot)
+            local buffaction = BufferedAction(self.inst, nil, ACTIONS.BUILD, nil, pt or self.inst:GetPosition(), recipe.name, recipe.build_distance, nil, rot)
             buffaction.skin = skin
             if onsuccess ~= nil then
                 buffaction:AddSuccessAction(onsuccess)
@@ -506,7 +506,7 @@ function Builder:DoBuild(recname, pt, rotation, skin)
                 --     have not been updated to support placement rotation yet
                 prod.Transform:SetRotation(rotation or 0)
                 self.inst:PushEvent("buildstructure", { item = prod, recipe = recipe, skin = skin })
-                prod:PushEvent("onbuilt", { builder = self.inst })
+                prod:PushEvent("onbuilt", { builder = self.inst, pos = pt })
                 ProfileStatsAdd("build_"..prod.prefab)
                 NotifyPlayerProgress("TotalItemsCrafted", 1, self.inst)
 

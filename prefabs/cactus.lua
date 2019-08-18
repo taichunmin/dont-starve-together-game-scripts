@@ -138,6 +138,8 @@ local function cactusflowerfn()
     inst.AnimState:SetBuild("cactus_flower")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

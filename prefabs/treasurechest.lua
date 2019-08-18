@@ -169,7 +169,20 @@ local function minotuar_custom_postinit(inst)
     end, TheWorld)
 end
 
+local function water_custom_postinit(inst)
+	MakeInventoryFloatable(inst, "med", nil, 0.74)
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+	inst:DoTaskInTime(0, function(inst)
+		inst.components.floater:OnLandedServer()
+	end)
+end
+
 return MakeChest("treasurechest", "chest", "treasure_chest", false, nil, { "collapse_small" }),
     MakePlacer("treasurechest_placer", "chest", "treasure_chest", "closed"),
     MakeChest("pandoraschest", "pandoras_chest", "pandoras_chest", true, pandora_custom_postinit, { "pandorachest_reset" }),
-    MakeChest("minotaurchest", "pandoras_chest_large", "pandoras_chest_large", true, minotuar_custom_postinit, { "collapse_small" })
+    MakeChest("minotaurchest", "pandoras_chest_large", "pandoras_chest_large", true, minotuar_custom_postinit, { "collapse_small" }),
+	MakeChest("waterchest", "chest", "treasure_chest", true, water_custom_postinit, { "collapse_small" })

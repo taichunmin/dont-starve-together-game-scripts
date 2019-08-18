@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("dragon_scales")
     inst.AnimState:PlayAnimation("idle")
 
+    MakeInventoryFloatable(inst, "med", nil, 0.82)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

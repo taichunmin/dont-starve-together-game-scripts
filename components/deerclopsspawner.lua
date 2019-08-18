@@ -55,20 +55,35 @@ local function AllowedToAttack()
                 TheWorld.state.season == "winter")
 end
 
+local function IsEligible(player)
+	local area = player.components.areaaware
+	return TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())
+			and area:GetCurrentArea() ~= nil 
+			and not area:CurrentlyInTag("nohasslers")
+end
+
 local function PickAttackTarget()
     _targetplayer = nil
     if #_activeplayers == 0 then
         return
     end
 
+	local playerlist = {}
+	for _, v in ipairs(_activeplayers) do
+		if IsEligible(v) then
+			table.insert(playerlist, v)
+		end
+	end
+	shuffleArray(playerlist)
+	if #playerlist == 0 then
+		return
+	end
+
 	local numStructures = 0
 	local loopCount = 0
 	local player = nil
-	while (numStructures <  STRUCTURES_PER_SPAWN) and (loopCount < (#_activeplayers + 3)) do 
-		local playeri = math.min(math.floor(easing.inQuint(math.random(), 1, #_activeplayers, 1)), #_activeplayers)
-		player = _activeplayers[playeri]
-		table.remove(_activeplayers, playeri)
-		table.insert(_activeplayers, player)
+	while (numStructures <  STRUCTURES_PER_SPAWN) and (loopCount < (#playerlist + 3)) do 
+		player = playerlist[1 + (loopCount % #playerlist)]
 
 		local x,y,z = player.Transform:GetWorldPosition()
 		local ents = TheSim:FindEntities(x,y,z, STRUCTURE_DIST, {"structure"}) 
@@ -77,7 +92,6 @@ local function PickAttackTarget()
 		numStructures = #ents
 		loopCount = loopCount + 1
 	end
-
 	--print("Deerclops picked target", player)
 	_targetplayer = player
 end
@@ -121,7 +135,7 @@ local function TryStartAttacks(killed)
 end
 
 local function TargetLost()
-    if _timetoattack < _warnduration and _warning then
+    if _timetoattack == nil or (_timetoattack < _warnduration and _warning) then
         _warning = false
         _timetoattack = _warnduration + 1
     end

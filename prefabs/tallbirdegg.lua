@@ -36,10 +36,13 @@ end
 local function CheckHatch(inst)
     --print("tallbirdegg - CheckHatch")
     if inst.components.playerprox ~= nil and
-        inst.components.playerprox:IsPlayerClose() and
-        inst.components.hatchable.state == "hatch" and
-        not inst.components.inventoryitem:IsHeld() then
-        Hatch(inst)
+            inst.components.playerprox:IsPlayerClose() and
+            inst.components.hatchable.state == "hatch" and
+            not inst.components.inventoryitem:IsHeld() then
+        local posx, _, posz = inst.Transform:GetWorldPosition()
+        if TheWorld.Map:IsVisualGroundAtPoint(posx, 0, posz) then
+            Hatch(inst)
+        end
     end
 end
 
@@ -167,6 +170,8 @@ local function commonfn(anim, withsound, cookable)
         inst:AddTag("cookable")
     end
 
+    MakeInventoryFloatable(inst)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -211,6 +216,9 @@ local function defaultfn(anim)
 
     inst.components.inspectable.getstatus = GetStatus
 
+    inst.components.floater:SetVerticalOffset(0.1)
+    inst.components.floater:SetScale(0.75)
+
     MakeHauntableLaunch(inst)
 
     inst.OnLoadPostPass = OnLoadPostPass
@@ -234,7 +242,7 @@ local function crackedfn()
     inst:AddComponent("playerprox")
     inst.components.playerprox:SetDist(4, 6)
     inst.components.playerprox:SetOnPlayerNear(CheckHatch)
-    
+
     inst.components.edible:SetOnEatenFn(OnEaten)
 
     return inst
@@ -242,6 +250,9 @@ end
 
 local function cookedfn()
     local inst = commonfn("cooked")
+
+    inst.components.floater:SetSize("med")
+    inst.components.floater:SetScale(0.75)
 
     if not TheWorld.ismastersim then
         return inst

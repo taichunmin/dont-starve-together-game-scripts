@@ -1,9 +1,14 @@
 local assets =
 {
     Asset("ANIM", "anim/hound_basic.zip"),
+    Asset("ANIM", "anim/hound_basic_water.zip"),
     Asset("ANIM", "anim/hound.zip"),
+    Asset("ANIM", "anim/hound_ocean.zip"),
     Asset("ANIM", "anim/hound_red.zip"),
+    Asset("ANIM", "anim/hound_red_ocean.zip"),
     Asset("ANIM", "anim/hound_ice.zip"),
+    Asset("ANIM", "anim/hound_ice_ocean.zip"),
+    Asset("ANIM", "anim/hound_mutated.zip"),
     Asset("SOUND", "sound/hound.fsb"),
 }
 
@@ -18,6 +23,7 @@ local prefabs =
     "monstermeat",
     "redgem",
     "bluegem",
+	"houndcorpse",
 }
 
 local prefabs_clay =
@@ -53,6 +59,7 @@ local sounds =
     sleep = "dontstarve/creatures/hound/sleep",
     growl = "dontstarve/creatures/hound/growl",
     howl = "dontstarve/creatures/together/clayhound/howl",
+    hurt = "dontstarve/creatures/hound/hurt",
 }
 
 local sounds_clay =
@@ -65,6 +72,21 @@ local sounds_clay =
     sleep = "dontstarve/creatures/together/clayhound/sleep",
     growl = "dontstarve/creatures/together/clayhound/growl",
     howl = "dontstarve/creatures/together/clayhound/howl",
+    hurt = "dontstarve/creatures/hound/hurt",
+}
+
+local sounds_mutated =
+{
+    pant = "turnoftides/creatures/together/mutated_hound/pant",
+    attack = "turnoftides/creatures/together/mutated_hound/attack",
+    bite = "turnoftides/creatures/together/mutated_hound/bite",
+    bark = "turnoftides/creatures/together/mutated_hound/bark",
+    --barkbark = "turnoftides/creatures/together/mutated_hound/barkbark", TODO @stevenm is this a thing???
+    death = "turnoftides/creatures/together/mutated_hound/death",
+    sleep = "dontstarve/creatures/hound/sleep",
+    growl = "turnoftides/creatures/together/mutated_hound/growl",
+    howl = "dontstarve/creatures/together/clayhound/howl",
+    hurt = "turnoftides/creatures/together/mutated_hound/hurt",
 }
 
 SetSharedLootTable('hound',
@@ -95,6 +117,13 @@ SetSharedLootTable('clayhound',
 {
     {'redpouch',    0.2},
     {'houndstooth', 0.1},
+})
+
+SetSharedLootTable('mutatedhound',
+{
+    {'monstermeat', 1.0},
+    {'houndstooth', 1.0},
+    {'houndstooth', 1.0},
 })
 
 local WAKE_TO_FOLLOW_DISTANCE = 8
@@ -344,7 +373,20 @@ local function OnStopFollowing(inst)
     end
 end
 
-local function fncommon(bank, build, morphlist, custombrain, tag)
+local function CanMutateFromCorpse(inst)
+	if (inst.components.amphibiouscreature == nil or not inst.components.amphibiouscreature.in_water)
+		and math.random() <= TUNING.MUTATEDHOUND_SPAWN_CHANCE 
+		and TheWorld.Map:IsVisualGroundAtPoint(inst.Transform:GetWorldPosition()) then
+
+		local node = TheWorld.Map:FindNodeAtPoint(inst.Transform:GetWorldPosition())
+		return node ~= nil and node.tags ~= nil and table.contains(node.tags, "lunacyarea")
+	end
+	return false
+end
+
+local function fncommon(bank, build, morphlist, custombrain, tag, data)
+	data = data or {}
+
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -385,11 +427,45 @@ local function fncommon(bank, build, morphlist, custombrain, tag)
         return inst
     end
 
-    inst.sounds = tag == "clay" and sounds_clay or sounds
+	inst._CanMutateFromCorpse = data.canmutatefn
+
+    inst.sounds = (tag == "clay" and sounds_clay) or (build == "hound_mutated" and sounds_mutated) or sounds
 
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
     inst.components.locomotor.runspeed = tag == "clay" and TUNING.CLAYHOUND_SPEED or TUNING.HOUND_SPEED
+
     inst:SetStateGraph("SGhound")
+
+    if data.amphibious then
+		inst:AddComponent("embarker")
+		inst.components.embarker.embark_speed = inst.components.locomotor.runspeed
+        inst.components.embarker.antic = true
+
+	    inst.components.locomotor:SetAllowPlatformHopping(true)
+
+		inst:AddComponent("amphibiouscreature")
+		inst.components.amphibiouscreature:SetBanks(bank, bank.."_water")
+        inst.components.amphibiouscreature:SetEnterWaterFn(
+            function(inst)
+                inst.landspeed = inst.components.locomotor.runspeed
+                inst.components.locomotor.runspeed = TUNING.HOUND_SWIM_SPEED
+                inst.hop_distance = inst.components.locomotor.hop_distance
+                inst.components.locomotor.hop_distance = 4
+            end)            
+        inst.components.amphibiouscreature:SetExitWaterFn(
+            function(inst)
+                if inst.landspeed then
+                    inst.components.locomotor.runspeed = inst.landspeed 
+                end
+                if inst.hop_distance then
+                    inst.components.locomotor.hop_distance = inst.hop_distance
+                end
+            end)
+
+		inst.components.locomotor.pathcaps = { allowocean = true }
+	end
+
+    
 
     inst:SetBrain(custombrain or brain)
 
@@ -407,7 +483,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag)
     inst.components.combat:SetAttackPeriod(TUNING.HOUND_ATTACK_PERIOD)
     inst.components.combat:SetRetargetFunction(3, retargetfn)
     inst.components.combat:SetKeepTargetFunction(KeepTarget)
-    inst.components.combat:SetHurtSound("dontstarve/creatures/hound/hurt")
+    inst.components.combat:SetHurtSound(inst.sounds.hurt)
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetChanceLootTable('hound')
@@ -456,7 +532,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag)
 end
 
 local function fndefault()
-    local inst = fncommon("hound", "hound", { "firehound", "icehound" })
+    local inst = fncommon("hound", "hound_ocean", { "firehound", "icehound" }, nil, nil, {amphibious = true, canmutatefn = CanMutateFromCorpse})
 
     if not TheWorld.ismastersim then
         return inst
@@ -473,7 +549,7 @@ local function PlayFireExplosionSound(inst)
 end
 
 local function fnfire()
-    local inst = fncommon("hound", "hound_red", { "hound", "icehound" })
+    local inst = fncommon("hound", "hound_red_ocean", { "hound", "icehound" }, nil, nil, {amphibious = true})
 
     if not TheWorld.ismastersim then
         return inst
@@ -511,7 +587,7 @@ local function DoIceExplosion(inst)
 end
 
 local function fncold()
-    local inst = fncommon("hound", "hound_ice", { "firehound", "hound" })
+    local inst = fncommon("hound", "hound_ice_ocean", { "firehound", "hound" }, nil, nil, {amphibious = true})
 
     if not TheWorld.ismastersim then
         return inst
@@ -550,7 +626,7 @@ local function OnMoonTransformed(inst, data)
 end
 
 local function fnmoon()
-    local inst = fncommon("hound", "hound", nil, moonbrain, "moonbeast")
+    local inst = fncommon("hound", "hound", nil, moonbrain, "moonbeast", false)
 
     inst:SetPrefabNameOverride("hound")
 
@@ -591,7 +667,7 @@ local function OnClayUpdateOffset(inst, offset)
 end
 
 local function fnclay()
-    local inst = fncommon("clayhound", "clayhound", nil, nil, "clay")
+    local inst = fncommon("clayhound", "clayhound", nil, nil, "clay", false)
 
     if not TheWorld.ismastersim then
         return inst
@@ -605,6 +681,26 @@ local function fnclay()
     inst.OnLoad = nil
     inst.OnPreLoad = OnClayPreLoad
     inst.OnUpdateOffset = OnClayUpdateOffset
+
+    return inst
+end
+
+local function fnmutated()
+    local inst = fncommon("hound", "hound_mutated", nil, nil, nil, {amphibious = true})
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    MakeMediumFreezableCharacter(inst, "hound_body")
+    MakeMediumBurnableCharacter(inst, "hound_body")
+
+    inst.components.health:SetMaxHealth(TUNING.MUTATEDHOUND_HEALTH)
+
+	inst.components.combat:SetDefaultDamage(TUNING.MUTATEDHOUND_DAMAGE)
+    inst.components.combat:SetAttackPeriod(TUNING.MUTATEDHOUND_ATTACK_PERIOD)
+
+    inst.components.lootdropper:SetChanceLootTable('mutatedhound')
 
     return inst
 end
@@ -639,5 +735,6 @@ return Prefab("hound", fndefault, assets, prefabs),
         Prefab("icehound", fncold, assets, prefabs),
         Prefab("moonhound", fnmoon, assets, prefabs_moon),
         Prefab("clayhound", fnclay, assets_clay, prefabs_clay),
+        Prefab("mutatedhound", fnmutated, assets, prefabs),
         --fx
         Prefab("houndfire", fnfiredrop, assets, prefabs)

@@ -1,14 +1,17 @@
 require "prefabutil"
 
-local function OnIsPathFindingDirty(inst)
-    if inst._ispathfinding:value() then
-        if inst._pfpos == nil then
-            inst._pfpos = inst:GetPosition()
-            TheWorld.Pathfinder:AddWall(inst._pfpos:Get())
+local function OnIsPathFindingDirty(inst)    
+    local wall_x, wall_y, wall_z = inst.Transform:GetWorldPosition()
+    if TheWorld.Map:GetPlatformAtPoint(wall_x, wall_z) == nil then        
+        if inst._ispathfinding:value() then
+            if inst._pfpos == nil then
+                inst._pfpos = Point(wall_x, wall_y, wall_z)
+                TheWorld.Pathfinder:AddWall(wall_x, wall_y, wall_z)
+            end
+        elseif inst._pfpos ~= nil then
+            TheWorld.Pathfinder:RemoveWall(wall_x, wall_y, wall_z)
+            inst._pfpos = nil
         end
-    elseif inst._pfpos ~= nil then
-        TheWorld.Pathfinder:RemoveWall(inst._pfpos:Get())
-        inst._pfpos = nil
     end
 end
 
@@ -148,6 +151,11 @@ function MakeWallType(data)
         inst.AnimState:SetBuild("wall_"..data.name)
         inst.AnimState:PlayAnimation("idle")
 
+        local item_floats = (data.name == "wood") or (data.name == "hay")
+        if item_floats then
+            MakeInventoryFloatable(inst)
+        end
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
@@ -159,6 +167,9 @@ function MakeWallType(data)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
+        if not item_floats then
+            inst.components.inventoryitem:SetSinks(true)
+        end
 
         inst:AddComponent("repairer")
 
@@ -219,7 +230,6 @@ function MakeWallType(data)
 
         inst:AddTag("wall")
         inst:AddTag("noauradamage")
-        inst:AddTag("nointerpolate")
 
         inst.AnimState:SetBank("wall")
         inst.AnimState:SetBuild("wall_"..data.name)

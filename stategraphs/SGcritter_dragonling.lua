@@ -25,9 +25,11 @@ local emotes =
 	{ anim="emote_bounce",
       timeline=
 		{
+            TimeEvent(12*FRAMES, LandFlyingCreature),
 			TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp") inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp_voice") end),
 			TimeEvent(28*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp") inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp_voice") end),
 			TimeEvent(43*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp") inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/buttstomp_voice") end),
+            TimeEvent(46*FRAMES, RaiseFlyingCreature),
 		},
 	},
 	{ anim="emote_yawn",
@@ -126,23 +128,36 @@ local function CleanupIfSleepInterrupted(inst)
     if not inst.sg.statemem.continuesleeping then
         RestoreFlapping(inst)
     end
+    RaiseFlyingCreature(inst)
 end
 
 SGCritterStates.AddPetEmote(states, 
 		{
 			TimeEvent(3*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
-            TimeEvent(4*FRAMES, StopFlapping),
+            TimeEvent(4*FRAMES, function(inst)
+                StopFlapping(inst)
+                LandFlyingCreature(inst)
+            end),
 			TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/emote") end),
-            TimeEvent(27*FRAMES, StartFlapping),
+            TimeEvent(27*FRAMES, function(inst)
+                StartFlapping(inst)
+                RaiseFlyingCreature(inst)
+            end),
 		},
-        RestoreFlapping)
+        function(inst)
+            RestoreFlapping(inst)
+            RaiseFlyingCreature(inst)
+        end)
 
 CommonStates.AddSleepExStates(states,
 		{
 			starttimeline =
 			{
 				TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep_pre") end),
-                TimeEvent(44*FRAMES, StopFlapping),
+                TimeEvent(44*FRAMES, function(inst)
+                    StopFlapping(inst)
+                    LandFlyingCreature(inst)
+                end),
 				TimeEvent(48*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 			},
 			sleeptimeline = 
@@ -150,17 +165,27 @@ CommonStates.AddSleepExStates(states,
 				TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 				TimeEvent(52*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 			},
-			endtimeline = 
+			waketimeline = 
 			{
 				TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
-                TimeEvent(12*FRAMES, StartFlapping),
+                TimeEvent(12*FRAMES, function(inst)
+                    StartFlapping(inst)
+                    RaiseFlyingCreature(inst)
+                end),
 			},
 		},
         {
             onexitsleep = CleanupIfSleepInterrupted,
             onexitsleeping = CleanupIfSleepInterrupted,
-            onexitwake = RestoreFlapping,
-            onwake = StopFlapping,
+            onsleeping = LandFlyingCreature,
+            onexitwake = function(inst)
+                RestoreFlapping(inst)
+                RaiseFlyingCreature(inst)
+            end,
+            onwake = function(inst)
+                StopFlapping(inst)
+                LandFlyingCreature(inst)
+            end,
         })
 
 return StateGraph("SGcritter_dragonling", states, events, "idle", actionhandlers)

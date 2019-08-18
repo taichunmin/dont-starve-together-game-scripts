@@ -23,6 +23,8 @@ local function MakePlans(name, targets)
         inst.AnimState:SetBuild("construction_plans")
         inst.AnimState:PlayAnimation(constr_name)
 
+        MakeInventoryFloatable(inst)
+
         for i, v in ipairs(targets) do
             --"XXXXX_plans" (from constructionplans component) added to pristine state for optimization
             inst:AddTag(v.."_plans")

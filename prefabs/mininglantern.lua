@@ -237,6 +237,8 @@ local function fn()
 
     inst:AddTag("light")
 
+    MakeInventoryFloatable(inst, "med", 0.2, 0.65)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

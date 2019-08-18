@@ -79,6 +79,8 @@ local assets =
     Asset("IMAGE", "images/bg_redux_dark_bottom.tex"),
     Asset("ATLAS", "images/bg_redux_dark_bottom_solid.xml"),
     Asset("IMAGE", "images/bg_redux_dark_bottom_solid.tex"),
+	Asset("ATLAS", "images/bg_redux_dark_bottom_vignette1.xml"),
+	Asset("IMAGE", "images/bg_redux_dark_bottom_vignette1.tex"),
 
     --character portraits
     Asset("ATLAS", "images/saveslot_portraits.xml"),
@@ -177,6 +179,10 @@ local assets =
     Asset("PKGREF", "anim/dynamic/box_shared_spiral.dyn"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared.zip"),
     Asset("PKGREF", "anim/dynamic/box_shared.dyn"),
+
+    
+    Asset("DYNAMIC_ANIM", "anim/dynamic/box_bolt.zip"),
+    Asset("PKGREF", "anim/dynamic/box_bolt.dyn"),
 }
 
 --Including these here as well as global to ensure the exporter's resizing dependency works

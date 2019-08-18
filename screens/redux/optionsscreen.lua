@@ -222,6 +222,7 @@ local OptionsScreen = Class(Screen, function(self, prev_screen)
         movementprediction = Profile:GetMovementPredictionEnabled(),
 		automods = Profile:GetAutoSubscribeModsEnabled(),
 		wathgrithrfont = Profile:IsWathgrithrFontEnabled(),
+		boatcamera = Profile:IsBoatCameraEnabled(),
         lang_id = Profile:GetLanguageID(),
 	}
 
@@ -499,6 +500,7 @@ function OptionsScreen:Save(cb)
 	Profile:SetDistortionEnabled( self.options.distortion )
 	Profile:SetScreenShakeEnabled( self.options.screenshake )
 	Profile:SetWathgrithrFontEnabled( self.options.wathgrithrfont )
+	Profile:SetBoatCameraEnabled( self.options.boatcamera )
 	Profile:SetHUDSize( self.options.hudSize )
 	Profile:SetVibrationEnabled( self.options.vibration )
 	Profile:SetShowPasswordEnabled( self.options.showpassword )
@@ -606,6 +608,7 @@ function OptionsScreen:Apply()
 	gopts:SetSmallTexturesMode( self.working.smalltextures )
 	Profile:SetScreenShakeEnabled( self.working.screenshake )
 	Profile:SetWathgrithrFontEnabled( self.working.wathgrithrfont )
+	Profile:SetBoatCameraEnabled( self.working.boatcamera )
 	TheSim:SetNetbookMode(self.working.netbookmode)
 
 	TheInputProxy:ApplyControlMapping()
@@ -968,7 +971,7 @@ function OptionsScreen:_BuildSettings()
     -- NOTE: if we add more options, they should be made scrollable. Look
     -- at customization screen for an example.
     self.grid = settingsroot:AddChild(Grid())
-    self.grid:SetPosition(-90, 144, 0)
+    self.grid:SetPosition(-90, 164, 0)
 
 
 	--------------
@@ -1153,6 +1156,15 @@ function OptionsScreen:_BuildSettings()
 			self:UpdateMenu()
 		end
 
+	self.boatcameraSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.BOATCAMERA, enableDisableOptions)
+	self.boatcameraSpinner.OnChanged =
+		function( _, data )
+			this.working.boatcamera = data
+			--this:Apply()
+			self:UpdateMenu()
+		end
+		
+
 	if self.show_datacollection then
 		self.datacollectionCheckbox = CreateCheckBox(STRINGS.UI.OPTIONS.DATACOLLECTION,
 			function()
@@ -1247,6 +1259,7 @@ function OptionsScreen:_BuildSettings()
     table.insert( self.left_spinners, self.automodsSpinner )
     table.insert( self.left_spinners, self.wathgrithrfontSpinner)
     table.insert( self.left_spinners, self.hudSize)
+    table.insert( self.left_spinners, self.boatcameraSpinner)
 
 	if self.show_datacollection then
 		table.insert( self.left_spinners, self.datacollectionCheckbox)
@@ -1267,7 +1280,7 @@ function OptionsScreen:_BuildSettings()
 	end
 
 	self.grid:UseNaturalLayout()
-	self.grid:InitSize(2, 10, 440, 40)
+	self.grid:InitSize(2, math.max(#self.left_spinners, #self.right_spinners), 440, 40)
 
     -- Ugh. Using parent because the spinner lists contain a child of a
     -- composite widget.
@@ -1500,6 +1513,7 @@ function OptionsScreen:InitializeSpinners(first)
 	self.passwordSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.showpassword ) )
     self.movementpredictionSpinner:SetSelectedIndex(EnabledOptionsIndex(self.working.movementprediction))
 	self.wathgrithrfontSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.wathgrithrfont ) )
+	self.boatcameraSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.boatcamera ) )
 	
 	if self.show_datacollection then
 		--self.datacollectionCheckbox: -- the current behaviour does not reuqire this to be (re)initialized at any point after construction

@@ -14,7 +14,7 @@ local RUN_AWAY_DIST = 6
 local STOP_RUN_AWAY_DIST = 8
 
 local function FindFoodAction(inst)
-    local target = FindEntity(inst, SEE_FOOD_DIST, function(item) return inst.components.eater:CanEat(item) end)
+    local target = FindEntity(inst, SEE_FOOD_DIST, function(item) return inst.components.eater:CanEat(item) and item:IsOnPassablePoint() end)
     if target then
         return BufferedAction(inst, target, ACTIONS.EAT)
     end

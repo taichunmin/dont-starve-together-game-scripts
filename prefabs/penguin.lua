@@ -14,6 +14,21 @@ local prefabs =
     "teamleader",
 }
 
+local mutated_penguin_assets =
+{
+    Asset("ANIM", "anim/penguin.zip"),
+    Asset("ANIM", "anim/penguin_mutated_build.zip"),
+    Asset("SOUND", "sound/pengull.fsb"),
+}
+
+local mutated_penguin_prefabs =
+{
+    "rottenegg",
+    "ice",
+    "monstermeat",
+    "teamleader",
+}
+
 local brain = require "brains/penguinbrain"
 
 SetSharedLootTable( 'penguin',
@@ -21,6 +36,12 @@ SetSharedLootTable( 'penguin',
     {'feather_crow',  0.2},
     {'smallmeat',     0.1},
     {'drumstick',     0.1},
+})
+
+SetSharedLootTable( 'mutated_penguin',
+{
+    {'monstermeat',     0.25},
+    {'ice',             0.5},
 })
 
 local SLEEP_DIST_FROMHOME = 3
@@ -127,6 +148,27 @@ local function Retarget(inst)
             {"character","monster","wall"}
             )
 
+    if newtarget and ta and not ta.inteam and not ta:SearchForTeam() then
+        --print("===============================MakeTeam on Retarget")
+        MakeTeam(inst, newtarget)
+    end
+
+    if ta.inteam and not ta.teamleader:CanAttack() then
+        return newtarget
+    end
+
+end
+
+local function MutatedRetarget(inst)
+    local newtarget = FindEntity(inst, 4, function(guy)
+            return inst.components.combat:CanTarget(guy)
+            end,
+            nil,
+            {"penguin"},
+            {"character","monster","smallcreature","animal","wall"}
+            )
+
+    local ta = inst.components.teamattacker
     if newtarget and ta and not ta.inteam and not ta:SearchForTeam() then
         --print("===============================MakeTeam on Retarget")
         MakeTeam(inst, newtarget)
@@ -245,6 +287,8 @@ local function fn()
         return inst
     end
 
+	inst._soundpath = "dontstarve/creatures/pengull/"
+
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = 0.75
     inst.components.locomotor.directdrive = false
@@ -323,10 +367,133 @@ local function fn()
     inst.OnSave = OnSave
     inst.OnLoad = OnLoad
     inst.eggsLayed = 0
+	inst.eggprefab = "bird_egg"
 
     inst:DoTaskInTime(0, OnInit)
 
     return inst
 end
 
-return Prefab("penguin", fn, assets, prefabs)
+local function mutated_fn()
+    local inst = CreateEntity()
+
+    inst.entity:AddTransform()
+    inst.entity:AddAnimState()
+    inst.entity:AddSoundEmitter()
+    inst.entity:AddDynamicShadow()
+    inst.entity:AddNetwork()
+
+    MakeCharacterPhysics(inst, 50, .5)
+
+    inst.DynamicShadow:SetSize(1.5, .75)
+    inst.Transform:SetFourFaced()
+
+    inst.AnimState:SetBank("penguin")
+    inst.AnimState:SetBuild("penguin_mutated_build")
+
+    inst:AddTag("penguin")
+    inst:AddTag("scarytoprey")
+    inst:AddTag("animal")
+    inst:AddTag("smallcreature")
+
+    --herdmember (from herdmember component) added to pristine state for optimization
+    inst:AddTag("herdmember")
+
+    inst.entity:SetPristine()
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+	inst._soundpath = "turnoftides/creatures/together/mutated_penguin/"
+
+    inst:AddComponent("locomotor")
+    inst.components.locomotor.walkspeed = 0.75
+    inst.components.locomotor.directdrive = false
+
+    inst:SetStateGraph("SGpenguin")
+
+    inst:SetBrain(brain)
+
+    inst:AddComponent("combat")
+    inst.components.combat:SetDefaultDamage(TUNING.MUTATED_PENGUIN_DAMAGE)
+    inst.components.combat.hiteffectsymbol = "body"
+    inst.components.combat:SetAttackPeriod(TUNING.PENGUIN_ATTACK_PERIOD)
+    inst.components.combat:SetRange(TUNING.PENGUIN_ATTACK_DIST)
+    inst.components.combat:SetRetargetFunction(2, MutatedRetarget)
+    inst.components.combat:SetKeepTargetFunction(KeepTarget)
+    inst.components.combat:SetAttackPeriod(3)
+
+    inst:AddComponent("health")
+    inst.components.health:SetMaxHealth(TUNING.MUTATED_PENGUIN_HEALTH)
+
+    inst:AddComponent("hunger")
+    inst.components.hunger:SetMax(TUNING.PENGUIN_HUNGER)
+    inst.components.hunger:SetRate(TUNING.PENGUIN_HUNGER/TUNING.PENGUIN_STARVE_TIME)
+    inst.components.hunger:SetKillRate(TUNING.SMALLBIRD_HEALTH/TUNING.SMALLBIRD_STARVE_KILL_TIME)
+
+    inst:AddComponent("sanityaura")
+    inst.components.sanityaura.aura = -TUNING.SANITYAURA_SMALL
+
+    inst:AddComponent("lootdropper")
+    inst.components.lootdropper:SetChanceLootTable('mutated_penguin')
+
+    inst:AddComponent("homeseeker")
+
+    inst:AddComponent("knownlocations")
+    inst.components.knownlocations:RememberLocation("rookery", Vector3(0, 0, 0))
+    inst.components.knownlocations:RememberLocation("home", Vector3(0, 0, 0))
+    inst:DoTaskInTime(FRAMES, RememberKnownLocation)
+
+    inst:AddComponent("herdmember")
+    inst.components.herdmember.herdprefab = "penguinherd"
+
+    inst:AddComponent("teamattacker")
+    inst.components.teamattacker.team_type = "penguin"
+    inst.components.teamattacker.leashdistance = 99999
+
+    inst:AddComponent("eater")
+    inst.components.eater:SetDiet({ FOODGROUP.OMNI }, { FOODGROUP.OMNI })
+    inst.components.eater:SetCanEatHorrible()
+    inst.components.eater.strongstomach = true -- can eat monster meat!
+    inst.components.eater:SetOnEatFn(OnEat)
+
+    inst:AddComponent("sleeper")
+    inst.components.sleeper:SetResistance(3)
+    -- inst.components.sleeper:SetNocturnal(false)
+
+    inst:ListenForEvent("entermood", OnEnterMood)
+    inst:ListenForEvent("leavemood", OnLeaveMood)
+    inst:ListenForEvent("onignite", OnIgnite)
+    --inst.components.sleeper:SetSleepTest(ShouldSleep)
+    --inst.components.sleeper:SetWakeTest(ShouldWake)
+
+    MakeSmallBurnableCharacter(inst, "body")
+
+    MakeMediumFreezableCharacter(inst, "body")
+    inst.components.freezable:SetResistance(5)
+    inst.components.freezable:SetDefaultWearOffTime(1)
+
+    inst:AddComponent("inspectable")
+    inst.components.inspectable.getstatus = GetStatus
+
+    inst:AddComponent("inventory")
+    inst.components.inventory.maxslots = 1
+    inst.components.inventory.acceptsstacks = false
+
+    inst:ListenForEvent("attacked", OnAttacked)
+
+    MakeHauntablePanic(inst)
+
+    inst.OnSave = OnSave
+    inst.OnLoad = OnLoad
+    inst.eggsLayed = 0
+	inst.eggprefab = "rottenegg"
+
+    inst:DoTaskInTime(0, OnInit)
+
+    return inst
+end
+
+return Prefab("penguin", fn, assets, prefabs),
+        Prefab("mutated_penguin", mutated_fn, mutated_penguin_assets, mutated_penguin_prefabs)
