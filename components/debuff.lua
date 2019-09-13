@@ -5,6 +5,7 @@ local Debuff = Class(function(self, inst)
     self.onattachedfn = nil
     self.ondetachedfn = nil
     self.onextendedfn = nil
+    self.onchangefollowsymbolfn = nil
     --self.keepondespawn = nil
 end)
 
@@ -18,6 +19,10 @@ end
 
 function Debuff:SetExtendedFn(fn)
     self.onextendedfn = fn
+end
+
+function Debuff:SetChangeFollowSymbolFn(fn)
+    self.onchangefollowsymbolfn = fn
 end
 
 function Debuff:Stop()
@@ -48,6 +53,13 @@ end
 function Debuff:Extend(followsymbol, followoffset)
     if self.onextendedfn ~= nil then
         self.onextendedfn(self.inst, self.target, followsymbol, followoffset)
+    end
+end
+
+--Should only be called by debuffable component
+function Debuff:ChangeFollowSymbol(followsymbol, followoffset)
+    if self.onchangefollowsymbolfn ~= nil then
+        self.onchangefollowsymbolfn(self.inst, self.target, followsymbol, followoffset)
     end
 end
 

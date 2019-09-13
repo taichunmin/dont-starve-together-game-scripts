@@ -26,6 +26,8 @@ SKIN_RARITY_COLORS.HeirloomDistinguished  = SKIN_RARITY_COLORS.HeirloomElegant
 
 DEFAULT_SKIN_COLOR = SKIN_RARITY_COLORS["Common"]
 
+SKIN_DEBUGGING = false
+
 local SKIN_AFFINITY_INFO = require("skin_affinity_info")
 
 EVENT_ICONS =
@@ -746,14 +748,17 @@ local function _ItemStringRedirect(item)
     return item
 end
 function GetSkinName(item)
-    item = _ItemStringRedirect(item)
-	local nameStr = STRINGS.SKIN_NAMES[item] or STRINGS.SKIN_NAMES["missing"]
-	local alt = STRINGS.SKIN_NAMES[item.."_alt"]
-	if alt then
-		nameStr = GetRandomItem({nameStr, alt})
+	if SKIN_DEBUGGING then
+		return item
+	else
+	    item = _ItemStringRedirect(item)
+		local nameStr = STRINGS.SKIN_NAMES[item] or STRINGS.SKIN_NAMES["missing"]
+		local alt = STRINGS.SKIN_NAMES[item.."_alt"]
+		if alt then
+			nameStr = GetRandomItem({nameStr, alt})
+		end
+		return nameStr
 	end
-
-	return nameStr
 end
 
 function GetSkinDescription(item)
@@ -1614,11 +1619,32 @@ local skintypesbycharacter = nil
 function GetSkinModes(character)
 	if skintypesbycharacter == nil then
 		skintypesbycharacter = {
-			woodie = { { type = "normal_skin" }, { type = "werebeaver_skin", scale = 0.82 }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }, { type = "ghost_werebeaver_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
-			wolfgang = { { type = "normal_skin" }, { type = "wimpy_skin", scale = 0.9 }, { type = "mighty_skin", scale = 1.25 }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
-			wormwood = { { type = "normal_skin" }, { type = "stage_2" }, { type = "stage_3" }, { type = "stage_4" }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } },
+			woodie = {
+				{ type = "normal_skin", play_emotes = true  },								{ type = "ghost_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } },
+				{ type = "werebeaver_skin", anim_bank = "werebeaver", scale = 0.82 },		{ type = "ghost_werebeaver_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } },
+				{ type = "weregoose_skin",  anim_bank = "weregoose", scale = 0.82 },	{ type = "ghost_weregoose_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } },
+				{ type = "weremoose_skin", anim_bank = "weremoose", scale = 0.82 },	{ type = "ghost_weremoose_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }
+			},
 
-			default = { { type = "normal_skin" }, { type = "ghost_skin", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } } }
+			wolfgang = {
+				{ type = "normal_skin", play_emotes = true  },
+				{ type = "wimpy_skin", play_emotes = true , scale = 0.9 },
+				{ type = "mighty_skin", play_emotes = true , scale = 1.25 },
+				{ type = "ghost_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }
+			},
+
+			wormwood = {
+				{ type = "normal_skin", play_emotes = true  },
+				{ type = "stage_2", play_emotes = true  },
+				{ type = "stage_3", play_emotes = true  },
+				{ type = "stage_4", play_emotes = true  },
+				{ type = "ghost_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }
+			},
+
+			default = {
+				{ type = "normal_skin", play_emotes = true },
+				{ type = "ghost_skin", anim_bank = "ghost", idle_anim = "idle", scale = ghost_preview_scale, offset = { 0, ghost_preview_y_offset } }
+			}
 		}
 	end
 	return skintypesbycharacter[character] or skintypesbycharacter.default

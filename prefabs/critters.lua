@@ -152,6 +152,7 @@ local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
             inst.Physics:SetCapsule(.5, 1)
 
             inst:AddTag("flying")
+            inst:AddTag("ignorewalkableplatformdrowning")
 
             MakeInventoryFloatable(inst)
         else

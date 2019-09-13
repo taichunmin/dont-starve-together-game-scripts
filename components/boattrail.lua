@@ -1,8 +1,24 @@
+local function OnSleep(inst)
+    local boat_trail = inst.components.boattrail
+    inst:StopUpdatingComponent(boat_trail)
+end
+
+local function OnWake(inst)
+    local boat_trail = inst.components.boattrail
+    inst:StartUpdatingComponent(boat_trail)    
+    local x, y, z = inst.Transform:GetWorldPosition()
+    boat_trail.total_distance_traveled = 0
+    boat_trail.last_x = x
+    boat_trail.last_z = z    
+end
+
 local BoatTrail = Class(function(self, inst)
     self.inst = inst
 
     self.anim_idx = 0 -- zero based index
-    self.inst:StartUpdatingComponent(self)
+
+    inst:ListenForEvent("entitysleep", OnSleep)
+    inst:ListenForEvent("entitywake", OnWake)
 end)
 
 local ANIMS = { "idle_loop_1", "idle_loop_2", "idle_loop_3" }

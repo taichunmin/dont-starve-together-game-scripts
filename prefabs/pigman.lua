@@ -419,14 +419,14 @@ local function WerepigRetargetFn(inst)
                 and not (guy.sg ~= nil and guy.sg:HasStateTag("transform"))
         end,
         { "_combat" }, --See entityreplica.lua (re: "_combat" tag)
-        { "werepig", "alwaysblock", "beaver" }
+        { "werepig", "alwaysblock", "wereplayer" }
     )
 end
 
 local function WerepigKeepTargetFn(inst, target)
     return inst.components.combat:CanTarget(target)
            and not target:HasTag("werepig")
-           and not target:HasTag("beaver")
+           and not target:HasTag("wereplayer")
            and not (target.sg ~= nil and target.sg:HasStateTag("transform"))
 end
 
@@ -445,7 +445,7 @@ local function MoonpigRetargetFn(inst)
                         and not (guy.sg ~= nil and guy.sg:HasStateTag("transform"))
                 end,
                 { "_combat" }, --See entityreplica.lua (re: "_combat" tag)
-                { "werepig", "alwaysblock", "beaver", "moonbeast" }
+                { "werepig", "alwaysblock", "wereplayer", "moonbeast" }
             )
         or nil
 end

@@ -110,12 +110,16 @@ function Reticule:Blip()
 end
 
 function Reticule:OnUpdate(dt)
+    
     self.blipalpha = self.blipalpha + dt * 5
     if self.blipalpha >= 1 then
         self.blipalpha = 1
         self.inst:StopUpdatingComponent(self)
     end
-    self:UpdateColour()
+    if self.reticule then
+        self:UpdateColour()
+    end
+    
 end
 
 function Reticule:UpdateColour()
@@ -126,8 +130,9 @@ end
 function Reticule:UpdatePosition(dt)
     if self.targetpos ~= nil then
         local x, y, z = self.targetpos:Get()
-        if self.inst.components.aoetargeting ~= nil and self.inst.components.aoetargeting.alwaysvalid or
-            (TheWorld.Map:IsPassableAtPoint(x, y, z) and not TheWorld.Map:IsGroundTargetBlocked(self.targetpos)) then
+        if  self.ispassableatallpoints or 
+            ( self.inst.components.aoetargeting ~= nil and self.inst.components.aoetargeting.alwaysvalid or
+            (TheWorld.Map:IsPassableAtPoint(x, y, z) and not TheWorld.Map:IsGroundTargetBlocked(self.targetpos)) ) then
             self.currentcolour = self.validcolour
             self.reticule.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
         else

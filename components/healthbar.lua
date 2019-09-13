@@ -1,5 +1,5 @@
 local function CreateBG(self)
-    local inst = CreateEntity()
+    local inst = CreateEntity("HealthBarBG")
     --[[Non-networked entity]]
     inst.entity:AddTransform()
     inst.entity:AddImage()
@@ -20,7 +20,7 @@ local function CreateBG(self)
 end
 
 local function CreateBar(self)
-    local inst = CreateEntity()
+    local inst = CreateEntity("healthBar")
     --[[Non-networked entity]]
     inst.entity:AddTransform()
     inst.entity:AddImage()

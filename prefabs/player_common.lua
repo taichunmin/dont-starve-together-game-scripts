@@ -1349,6 +1349,28 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
             table.insert(assets, v)
         end
     end
+	
+	local function SetInstanceFunctions(inst)	
+		-- we're bumping against the limit of upvalues in a lua function so work around by breaking this assignment out into its own function
+        inst.AttachClassified = AttachClassified
+        inst.DetachClassified = DetachClassified
+        inst.OnRemoveEntity = OnRemoveEntity
+        inst.CanExamine = nil -- Can be overridden; Needs to be on client as well for actions
+        inst.ActionStringOverride = nil -- Can be overridden; Needs to be on client as well for actions
+        inst.CanUseTouchStone = CanUseTouchStone -- Didn't want to make touchstonetracker a networked component
+        inst.GetTemperature = GetTemperature -- Didn't want to make temperature a networked component
+        inst.IsFreezing = IsFreezing -- Didn't want to make temperature a networked component
+        inst.IsOverheating = IsOverheating -- Didn't want to make temperature a networked component
+        inst.GetMoisture = GetMoisture -- Didn't want to make moisture a networked component
+        inst.GetMaxMoisture = GetMaxMoisture -- Didn't want to make moisture a networked component
+        inst.GetMoistureRateScale = GetMoistureRateScale -- Didn't want to make moisture a networked component
+        inst.GetSandstormLevel = GetSandstormLevel -- Didn't want to make stormwatcher a networked component
+        inst.IsCarefulWalking = IsCarefulWalking -- Didn't want to make carefulwalking a networked component
+        inst.EnableMovementPrediction = EnableMovementPrediction
+        inst.ShakeCamera = ShakeCamera
+        inst.SetGhostMode = SetGhostMode
+        inst.IsActionsVisible = IsActionsVisible
+	end
 
     local function fn()
         local inst = CreateEntity()
@@ -1427,24 +1449,7 @@ local function MakePlayerCharacter(name, customprefabs, customassets, common_pos
         inst:AddTag("character")
         inst:AddTag("lightningtarget")
 
-        inst.AttachClassified = AttachClassified
-        inst.DetachClassified = DetachClassified
-        inst.OnRemoveEntity = OnRemoveEntity
-        inst.CanExamine = nil -- Can be overridden; Needs to be on client as well for actions
-        inst.ActionStringOverride = nil -- Can be overridden; Needs to be on client as well for actions
-        inst.CanUseTouchStone = CanUseTouchStone -- Didn't want to make touchstonetracker a networked component
-        inst.GetTemperature = GetTemperature -- Didn't want to make temperature a networked component
-        inst.IsFreezing = IsFreezing -- Didn't want to make temperature a networked component
-        inst.IsOverheating = IsOverheating -- Didn't want to make temperature a networked component
-        inst.GetMoisture = GetMoisture -- Didn't want to make moisture a networked component
-        inst.GetMaxMoisture = GetMaxMoisture -- Didn't want to make moisture a networked component
-        inst.GetMoistureRateScale = GetMoistureRateScale -- Didn't want to make moisture a networked component
-        inst.GetSandstormLevel = GetSandstormLevel -- Didn't want to make stormwatcher a networked component
-        inst.IsCarefulWalking = IsCarefulWalking -- Didn't want to make carefulwalking a networked component
-        inst.EnableMovementPrediction = EnableMovementPrediction
-        inst.ShakeCamera = ShakeCamera
-        inst.SetGhostMode = SetGhostMode
-        inst.IsActionsVisible = IsActionsVisible
+		SetInstanceFunctions(inst)
 
         inst.foleysound = nil --Characters may override this in common_postinit
         inst.playercolour = DEFAULT_PLAYER_COLOUR --Default player colour used in case it doesn't get set properly

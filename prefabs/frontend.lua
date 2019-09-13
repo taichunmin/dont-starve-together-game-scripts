@@ -152,15 +152,6 @@ local assets =
 
     Asset("ANIM", "anim/puff_spawning.zip"),
 
-    Asset("DYNAMIC_ATLAS", "images/thankyou_item_popup.xml"),
-    Asset("PKGREF", "images/thankyou_item_popup.tex"),
-    Asset("DYNAMIC_ATLAS", "images/thankyou_item_event.xml"),
-    Asset("PKGREF", "images/thankyou_item_event.tex"),
-    Asset("DYNAMIC_ATLAS", "images/thankyou_item_event2.xml"),
-    Asset("PKGREF", "images/thankyou_item_event2.tex"),
-    Asset("DYNAMIC_ATLAS", "images/thankyou_item_popup_rog.xml"),
-    Asset("PKGREF", "images/thankyou_item_popup_rog.tex"),
-
 	-- hard coded MotD for upsell (TODO: maybe try to fix this once we do proper MotD for non-Steam)
    	Asset("DYNAMIC_ATLAS", "images/stats_panel_motd.xml"),
    	Asset("PKGREF", "images/stats_panel_motd.tex"),
@@ -192,6 +183,14 @@ for item,data in pairs(MISC_ITEMS) do
 		table.insert(assets, Asset("PKGREF", "anim/dynamic/" .. data.box_build .. ".dyn"))
 	end
 end
+
+
+local SkinGifts = require("skin_gifts")
+for gifttype,data in pairs(SkinGifts.popupdata) do
+    table.insert(assets, Asset("DYNAMIC_ATLAS", data.atlas))
+    table.insert(assets, Asset("PKGREF", data.atlas:gsub(".xml", ".tex")))
+end
+
 
 if IsConsole() then
 	if TRUE_DEDICATED_SERVER == false then

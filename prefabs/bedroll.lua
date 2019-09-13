@@ -41,7 +41,7 @@ local function onwake(inst, sleeper, nostatechange)
 end
 
 local function onsleeptick(inst, sleeper)
-    local isstarving = sleeper.components.beaverness ~= nil and sleeper.components.beaverness:IsStarving()
+    local isstarving = false
 
     if sleeper.components.hunger ~= nil then
         sleeper.components.hunger:DoDelta(TUNING.SLEEP_HUNGER_PER_TICK, true, true)

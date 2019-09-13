@@ -37,16 +37,27 @@ end
 local function show_flare_hud(inst)
     -- While we don't access the HUD directly, we're trying to send a HUD event,
     -- so if the HUD isn't there we don't need to do any work.
-    if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
+    if ThePlayer ~= nil then
         local fx, fy, fz = inst.Transform:GetWorldPosition()
         local px, py, pz = ThePlayer.Transform:GetWorldPosition()
         local sq_dist_to_flare = distsq(fx, fz, px, pz)
 
-        if sq_dist_to_flare < TUNING.MINIFLARE.HUD_MAX_DISTANCE_SQ then
-            ThePlayer:PushEvent("startflareoverlay")
-		else
-			SetupHudIndicator(inst)
+        if ThePlayer.HUD ~= nil then
+            if sq_dist_to_flare < TUNING.MINIFLARE.HUD_MAX_DISTANCE_SQ then
+                ThePlayer:PushEvent("startflareoverlay")
+		    else
+			    SetupHudIndicator(inst)
+            end
         end
+
+        local near_audio_gate_distsq = TUNING.MINIFLARE.HUD_MAX_DISTANCE_SQ
+        local far_audio_gate_distsq = TUNING.MINIFLARE.FAR_AUDIO_GATE_DISTANCE_SQ
+        local volume = (sq_dist_to_flare > far_audio_gate_distsq and TUNING.MINIFLARE.BASE_VOLUME)
+                or (sq_dist_to_flare > near_audio_gate_distsq and 
+                        TUNING.MINIFLARE.BASE_VOLUME + (1 - Remap(sq_dist_to_flare, near_audio_gate_distsq, far_audio_gate_distsq, 0, 1)) * (1-TUNING.MINIFLARE.BASE_VOLUME)
+                    )
+                or 1.0
+        inst.SoundEmitter:PlaySound("turnoftides/common/together/miniflare/explode", nil, volume)
     end
 end
 
@@ -77,6 +88,7 @@ local function flare_minimap()
 
     inst.entity:AddTransform()
     inst.entity:AddMiniMapEntity()
+    inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
     inst.MiniMapEntity:SetCanUseCache(false)
@@ -144,6 +156,8 @@ local function on_ignite(inst)
 
     inst.AnimState:PlayAnimation("fire")
     inst:ListenForEvent("animover", on_ignite_over)
+
+    inst.SoundEmitter:PlaySound("turnoftides/common/together/miniflare/launch")
 end
 
 local function on_dropped(inst)

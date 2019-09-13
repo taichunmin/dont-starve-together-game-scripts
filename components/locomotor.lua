@@ -469,7 +469,13 @@ function LocoMotor:PreviewAction(bufferedaction, run, try_instant)
     elseif bufferedaction.action.instant or bufferedaction.action.do_not_locomote then
         self.inst:PreviewBufferedAction(bufferedaction)
     elseif bufferedaction.target ~= nil then
-        self:GoToEntity(bufferedaction.target, bufferedaction, run)
+        if bufferedaction.distance ~= nil and bufferedaction.distance >= math.huge then
+            --essentially instant
+            self.inst:FacePoint(bufferedaction.target.Transform:GetWorldPosition())
+            self.inst:PreviewBufferedAction(bufferedaction)
+        else
+            self:GoToEntity(bufferedaction.target, bufferedaction, run)
+        end
     elseif action_pos == nil then
         self.inst:PreviewBufferedAction(bufferedaction)
     elseif bufferedaction.action == ACTIONS.CASTAOE then
@@ -482,6 +488,10 @@ function LocoMotor:PreviewAction(bufferedaction, run, try_instant)
                 self.inst:PushEvent("bufferedcastaoe", bufferedaction)
             end
         end
+    elseif bufferedaction.distance ~= nil and bufferedaction.distance >= math.huge then
+        --essentially instant
+        self.inst:FacePoint(action_pos:Get())
+        self.inst:PreviewBufferedAction(bufferedaction)
     else
         self:GoToPoint(nil, bufferedaction, run)
     end
@@ -529,7 +539,13 @@ function LocoMotor:PushAction(bufferedaction, run, try_instant)
     elseif bufferedaction.action.instant or bufferedaction.action.do_not_locomote then
         self.inst:PushBufferedAction(bufferedaction)
     elseif bufferedaction.target ~= nil then
-        self:GoToEntity(bufferedaction.target, bufferedaction, run)
+        if bufferedaction.distance ~= nil and bufferedaction.distance >= math.huge then
+            --essentially instant
+            self.inst:FacePoint(bufferedaction.target.Transform:GetWorldPosition())
+            self.inst:PushBufferedAction(bufferedaction)
+        else
+            self:GoToEntity(bufferedaction.target, bufferedaction, run)
+        end
     elseif action_pos == nil then
         self.inst:PushBufferedAction(bufferedaction)
     elseif bufferedaction.action == ACTIONS.CASTAOE then
@@ -542,6 +558,10 @@ function LocoMotor:PushAction(bufferedaction, run, try_instant)
                 self.inst:PushEvent("bufferedcastaoe", bufferedaction)
             end
         end
+    elseif bufferedaction.distance ~= nil and bufferedaction.distance >= math.huge then
+        --essentially instant
+        self.inst:FacePoint(action_pos:Get())
+        self.inst:PushBufferedAction(bufferedaction)
     else
         self:GoToPoint(nil, bufferedaction, run)
     end

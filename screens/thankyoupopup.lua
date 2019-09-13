@@ -11,71 +11,6 @@ local SkinGifts = require("skin_gifts")
 
 require "skinsutils"
 
-GIFT_TYPE = {
-    EARLY_ACCESS = {
-        atlas="images/thankyou_item_popup.xml",
-        image="thankyou_gift.tex",
-        titleoffset={-70, 0, 0},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
-        secondtitle=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_SECONDTITLE.EARLY_ACCESS,
-    },
-    ROG = {
-        atlas="images/thankyou_item_popup_rog.xml",
-        image={"thankyou_ROG_1.tex", "thankyou_ROG_2.tex", "thankyou_ROG_3.tex", "thankyou_ROG_4.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
-        titleoffset={-70, 0, 0},
-    },
-    ROGR = {
-        atlas="images/thankyou_item_popup_rog.xml",
-        image={"thankyou_ROG_1.tex", "thankyou_ROG_2.tex", "thankyou_ROG_3.tex", "thankyou_ROG_4.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_ROGR,
-        title_size = 40,
-        titleoffset={-90, 0, 0},
-    },
-    SW = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_shipwrecked.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
-        titleoffset={-140, 0, 0},
-    },
-    SWR = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_shipwrecked.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_SWR,
-        title_size = 40,
-        titleoffset={-135, 0, 0},
-    },
-    TWITCH = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_twitch.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE_TWITCH,
-        titleoffset={0, -20, 0},
-    },
-    STORE = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_gift.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE_STORE,
-        titleoffset={0, -20, 0},
-    },
-    DEFAULT = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_gift.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE_DEFAULT,
-        titleoffset={0, -20, 0},
-    },
-    DAILY_GIFT = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_gift.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_DAILY,
-        titleoffset={0, -20, 0},
-    },
-    HAMLET = {
-        atlas="images/thankyou_item_popup.xml",
-        image={"thankyou_hamlet.tex"},
-        title=STRINGS.UI.ITEM_SCREEN.THANKS_POPUP_TITLE,
-        titleoffset={-120, 0, 0},
-    },
-}
 
 TRANSITION_DURATION = 0.5
 DEFAULT_TITLE_SIZE = 55
@@ -117,20 +52,6 @@ local ThankYouPopup = Class(Screen, function(self, items, callbackfn)
     --title 
     self.title = self.proot:AddChild(Text(TITLEFONT, DEFAULT_TITLE_SIZE))
     self.title:SetPosition(0, 235, 0)
-
-    ---- Logo
-    --self.logo_img = self.proot:AddChild(Image(logoatlas, logoimage))
-    --self.logo_img:SetVRegPoint(ANCHOR_MIDDLE)
-    --self.logo_img:SetHRegPoint(ANCHOR_MIDDLE)
-    --self.logo_img:SetScale(.9,.9,.9)
-    --self.logo_img:SetPosition(155, 215, 0)
-
-    self.side_title = self.proot:AddChild(Text(TITLEFONT, 90))
-    self.side_title:SetPosition(255, 138)
-    self.side_title:SetHAlign(ANCHOR_LEFT)
-    self.side_title:SetVAlign(ANCHOR_TOP)
-    self.side_title:SetRegionSize(300, 300)
-    self.side_title:Hide()
 
     -- Actual animation
     self.spawn_portal = self.proot:AddChild(UIAnim())
@@ -309,29 +230,21 @@ function ThankYouPopup:ChangeGift(offset)
     self.item_name:Hide()
     self.upper_banner_text:Hide()
     local gt = self.items[self.current_item].gifttype
-    local gifttype = GIFT_TYPE[gt] or SkinGifts.popupdata[gt] or GIFT_TYPE["DEFAULT"]
-    local backgroundimage = type(gifttype.image) == "table" and gifttype.image[math.random(#gifttype.image)] or gifttype.image
-    self.bg:SetTexture(gifttype.atlas, backgroundimage)
+    local gt_data = SkinGifts.popupdata[gt] or SkinGifts.popupdata["DEFAULT"]
+    self.bg:SetTexture(gt_data.atlas, gt_data.image)
 
 	local message = self.items[self.current_item].message
-    self.title:SetString( (message ~= "" and message) or gifttype.title)
-    self.title:SetSize( gifttype.title_size or DEFAULT_TITLE_SIZE )
+    self.title:SetString( (message ~= "" and message) or STRINGS.THANKS_POPUP[gt] )
+    self.title:SetSize( gt_data.title_size or DEFAULT_TITLE_SIZE )
     
-    if gifttype.titleoffset ~= nil then
+    if gt_data.titleoffset ~= nil then
         self.title:SetPosition(
-                gifttype.titleoffset[1] + 0,
-                gifttype.titleoffset[2] + 235,
-                gifttype.titleoffset[3] + 0
+                gt_data.titleoffset[1] + 0,
+                gt_data.titleoffset[2] + 235,
+                gt_data.titleoffset[3] + 0
             )
     else
         self.title:SetPosition(0,235,0)
-    end
-
-    if gifttype.secondtitle ~= nil then
-        self.side_title:SetString(gifttype.secondtitle)
-        self.side_title:Show()
-    else
-        self.side_title:Hide()
     end
 
     TheFrontEnd:GetSound():KillSound("gift_idle")

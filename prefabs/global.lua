@@ -271,10 +271,12 @@ local assets =
     Asset("ATLAS", "images/profileflair.xml"),
     Asset("IMAGE", "images/profileflair.tex"),
 
-	--Wardrobe previewing
-	Asset("ANIM", "anim/player_ghost_withhat.zip"),
-	Asset("ANIM", "anim/werebeaver_basic.zip"),
-	Asset("ANIM", "anim/player_idles.zip"),
+    --Wardrobe previewing
+    Asset("ANIM", "anim/player_ghost_withhat.zip"),
+    Asset("ANIM", "anim/werebeaver_basic.zip"),
+    Asset("ANIM", "anim/weremoose_basic.zip"),
+    Asset("ANIM", "anim/weregoose_basic.zip"),
+    Asset("ANIM", "anim/player_idles.zip"),
 
     Asset("DYNAMIC_ANIM", "anim/dynamic/body_default1.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/hand_default1.zip"),

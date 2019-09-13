@@ -541,18 +541,16 @@ local function chop_down_tree(inst, chopper)
     inst.AnimState:PushAnimation(inst.anims.stump)
 
     if GetBuild(inst).leif ~= nil then
-        local days_survived = TheWorld.state.cycles
+        local days_survived = chopper.components.age ~= nil and chopper.components.age:GetAgeInDays() or TheWorld.state.cycles
         if days_survived >= TUNING.LEIF_MIN_DAY then
-            if math.random() <= TUNING.LEIF_PERCENT_CHANCE then
-
-                local numleifs = 1
-                if days_survived > 30 then
-                    numleifs = math.random(2)
-                elseif days_survived > 80 then
-                    numleifs = math.random(3)
-                end
-
-                for k = 1,numleifs do
+            local chance = TUNING.LEIF_PERCENT_CHANCE
+            if chopper:HasTag("beaver") then
+                chance = chance * TUNING.BEAVER_LEIF_CHANCE_MOD
+            elseif chopper:HasTag("woodcutter") then
+                chance = chance * TUNING.WOODCUTTER_LEIF_CHANCE_MOD
+            end
+            if math.random() < chance then
+                for k = 1, (days_survived <= 30 and 1) or math.random(days_survived <= 80 and 2 or 3) do
                     local target = FindEntity(inst, TUNING.LEIF_MAXSPAWNDIST, find_leif_spawn_target, { "evergreens", "tree" }, { "leif", "stump", "burnt" })
                     if target ~= nil then
                         target.noleif = true

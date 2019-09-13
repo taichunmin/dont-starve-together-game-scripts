@@ -25,9 +25,9 @@ local SentientAxe = Class(function(self, inst)
     self.waslow = false
 
     self._onfinishedwork = function(owner, data) self:OnFinishedWork(data.target, data.action) end
-    self._onbeavernessdelta = function(owner, data) self:OnBeavernessDelta(data.oldpercent, data.newpercent) end
-    self._onstartbeaver = function() self:OnBecomeBeaver() end
-    self._onstopbeaver = function() self:OnBecomeHuman() end
+    self._onwereeaterchanged = function(owner, data) self:OnWereEaterChanged(data.old, data.new, data.istransforming) end
+    self._onstartwereplayer = function() self:OnBecomeWere() end
+    self._onstopwereplayer = function() self:OnBecomeHuman() end
 
     inst:ListenForEvent("axepossessedbyplayer", OnAxePossessedByPlayer)
     inst:ListenForEvent("axerejectedowner", OnAxeRejectedOwner)
@@ -59,9 +59,9 @@ function SentientAxe:SetOwner(owner)
             self.inst:RemoveEventCallback("ondropped", toground)
             self.inst:RemoveEventCallback("equipped", onequipped)
             self.inst:RemoveEventCallback("finishedwork", self._onfinishedwork, self.owner)
-            self.inst:RemoveEventCallback("beavernessdelta", self._onbeavernessdelta, self.owner)
-            self.inst:RemoveEventCallback("startbeaver", self._onstartbeaver, self.owner)
-            self.inst:RemoveEventCallback("stopbeaver", self._onstopbeaver, self.owner)
+            self.inst:RemoveEventCallback("wereeaterchanged", self._onwereeaterchanged, self.owner)
+            self.inst:RemoveEventCallback("startwereplayer", self._onstartwereplayer, self.owner)
+            self.inst:RemoveEventCallback("stopwereplayer", self._onstopwereplayer, self.owner)
         end
         self.owner = owner
         self.warnlevel = 0
@@ -70,9 +70,9 @@ function SentientAxe:SetOwner(owner)
             self.inst:ListenForEvent("ondropped", toground)
             self.inst:ListenForEvent("equipped", onequipped)
             self.inst:ListenForEvent("finishedwork", self._onfinishedwork, owner)
-            self.inst:ListenForEvent("beavernessdelta", self._onbeavernessdelta, owner)
-            self.inst:ListenForEvent("startbeaver", self._onstartbeaver, owner)
-            self.inst:ListenForEvent("stopbeaver", self._onstopbeaver, owner)
+            self.inst:ListenForEvent("wereeaterchanged", self._onwereeaterchanged, owner)
+            self.inst:ListenForEvent("startwereplayer", self._onstartwereplayer, owner)
+            self.inst:ListenForEvent("stopwereplayer", self._onstopwereplayer, owner)
             if self.inst.components.equippable:IsEquipped() then
                 self:Say(STRINGS.LUCY.on_pickedup)
             end
@@ -84,63 +84,19 @@ end
 function SentientAxe:OnFinishedWork(target, action)
     if self.owner ~= nil and
         action == ACTIONS.CHOP and
-        self.inst.components.equippable:IsEquipped() and
-        self.owner.components.beaverness ~= nil and
-        self.owner.components.beaverness:GetPercent() > .7 then
+        self.inst.components.equippable:IsEquipped() then
         self:Say(STRINGS.LUCY.on_chopped)
     end
 end
 
-local beaverness_thresholds = {
-    {
-        val = 0.74,
-        up_strings = STRINGS.LUCY.beaver_up_waslow,
-        needs_low = true, -- this will only trigger if low had been latched to true
-        low = false, -- latch low to false
-    },
-    {
-        val = 0.5833,
-        down_strings = STRINGS.LUCY.beaver_down_early,
-        down_audio = "dontstarve/characters/woodie/lucy_warn_1",
-    },
-    {
-        val = 0.4167,
-        down_strings = STRINGS.LUCY.beaver_down_mid,
-        down_audio = "dontstarve/characters/woodie/lucy_warn_2",
-        low = true, -- latch low to true
-    },
-    {
-        val = .30,
-        down_strings = STRINGS.LUCY.beaver_down_late,
-        down_audio = "dontstarve/characters/woodie/lucy_warn_3",
-    },
-}
-
-function SentientAxe:OnBeavernessDelta(old, new)
-    if not self.inst.components.inventoryitem:IsHeld() then
+function SentientAxe:OnWereEaterChanged(old, new, istransforming)
+    --NOTE: transforming will trigger another speech, so skip this one
+    if istransforming or new <= old or not self.inst.components.inventoryitem:IsHeld() then
         return
-    else
-        for i,threshold in ipairs(beaverness_thresholds) do
-
-            if threshold.down_strings and old >= threshold.val and new < threshold.val then
-                self:Say(threshold.down_strings, threshold.down_audio, FRAMES)
-                if threshold.low ~= nil then
-                    self.waslow = threshold.low
-                end
-                break
-            end
-
-            if threshold.up_strings and old <= threshold.val and new > threshold.val then
-                if not threshold.needs_low or self.waslow then
-                    self:Say(threshold.up_strings, threshold.up_audio, FRAMES)
-                end
-                if threshold.low ~= nil then
-                    self.waslow = threshold.low
-                end
-                break
-            end
-
-        end
+    elseif new == 1 then
+        self:Say(STRINGS.LUCY.beaver_down_early, "dontstarve/characters/woodie/lucy_warn_1")
+    elseif new == 2 then
+        self:Say(STRINGS.LUCY.beaver_down_late, "dontstarve/characters/woodie/lucy_warn_3")
     end
 end
 
@@ -153,7 +109,7 @@ function SentientAxe:OnBecomeHuman()
     end
 end
 
-function SentientAxe:OnBecomeBeaver()
+function SentientAxe:OnBecomeWere()
     if self.owner ~= nil and self.owner:IsNear(self.inst, TALK_TO_OWNER_DISTANCE) then
         self:Say(STRINGS.LUCY.transform_beaver, "dontstarve/characters/woodie/lucy_transform")
     elseif self.say_task ~= nil then
@@ -198,7 +154,7 @@ function SentientAxe:ShouldMakeConversation()
         and not (self.owner.components.health ~= nil and
                 self.owner.components.health:IsDead())
         and not (self.owner.sg:HasStateTag("transform") or
-                self.owner:HasTag("beaver") or
+                self.owner:HasTag("wereplayer") or
                 self.owner:HasTag("playerghost"))
 end
 

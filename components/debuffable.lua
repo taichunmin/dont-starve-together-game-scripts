@@ -55,7 +55,7 @@ function Debuffable:SetFollowSymbol(symbol, x, y, z)
     self.followoffset.z = z
     for k, v in pairs(self.debuffs) do
         if v.inst.components.debuff ~= nil then
-            v.inst.components.debuff:AttachTo(k, self.inst, symbol, self.followoffset)
+            v.inst.components.debuff:ChangeFollowSymbol(symbol, self.followoffset)
         end
     end
 end

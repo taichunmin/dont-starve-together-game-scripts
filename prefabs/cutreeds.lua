@@ -31,7 +31,6 @@ local function fn()
 
     inst:AddComponent("edible")
     inst.components.edible.foodtype = FOODTYPE.ROUGHAGE
-    inst.components.edible.woodiness = 1
     inst.components.edible.healthvalue = TUNING.HEALING_TINY
     inst.components.edible.hungervalue = TUNING.CALORIES_TINY/2
 

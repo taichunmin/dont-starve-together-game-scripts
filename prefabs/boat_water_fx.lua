@@ -27,6 +27,7 @@ local function fn()
     inst:AddComponent("boattrailmover")
 
     inst:ListenForEvent("animover", inst.Remove)
+	inst:DoTaskInTime(80 * FRAMES, inst.Remove)
 
     return inst
 end

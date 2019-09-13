@@ -54,28 +54,38 @@ local function pingfn()
     return inst
 end
 
-local function fn()
-    local inst = CreateEntity()
+local function MakeReticule(name)
+    local assets =
+    {
+        Asset("ANIM", "anim/"..name..".zip"),
+    }
 
-    inst:AddTag("FX")
-    inst:AddTag("NOCLICK")
-    --[[Non-networked entity]]
-    inst.entity:SetCanSleep(false)
-    inst.persists = false
+    local function fn()
+        local inst = CreateEntity()
 
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
+        inst:AddTag("FX")
+        inst:AddTag("NOCLICK")
+        --[[Non-networked entity]]
+        inst.entity:SetCanSleep(false)
+        inst.persists = false
 
-    inst.AnimState:SetBank("reticuleline")
-    inst.AnimState:SetBuild("reticuleline")
-    inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
-    inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
-    inst.AnimState:SetSortOrder(3)
-    inst.AnimState:SetScale(SCALE, SCALE)
+        inst.entity:AddTransform()
+        inst.entity:AddAnimState()
 
-    return inst
+        inst.AnimState:SetBank(name)
+        inst.AnimState:SetBuild(name)
+        inst.AnimState:PlayAnimation("idle")
+        inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
+        inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+        inst.AnimState:SetSortOrder(3)
+        inst.AnimState:SetScale(SCALE, SCALE)
+
+        return inst
+    end
+
+    return Prefab(name, fn, assets)
 end
 
-return Prefab("reticuleline", fn, assets),
+return MakeReticule("reticuleline"),
+    MakeReticule("reticuleline2"),
     Prefab("reticulelineping", pingfn, assets)

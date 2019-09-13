@@ -143,7 +143,9 @@ function PlayerActionPicker:GetSteeringActions(inst, pos, right)
     if right then
         return self:SortActionList({ ACTIONS.STOP_STEERING_BOAT }, pos)
     else
-        return self:SortActionList({ ACTIONS.SET_HEADING }, pos)
+        if not TheInput:ControllerAttached() then
+            return self:SortActionList({ ACTIONS.SET_HEADING }, pos)
+        end
     end
     
     return nil

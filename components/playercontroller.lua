@@ -939,6 +939,7 @@ function PlayerController:DoControllerAttackButton(target)
         if target == nil and (
             self.directwalking or
             self.inst:HasTag("playerghost") or
+            self.inst:HasTag("weregoose") or
             self.inst.replica.inventory:IsHeavyLifting() or
             GetGameModeProperty("no_air_attack")
         ) then
@@ -1157,6 +1158,9 @@ function PlayerController:RefreshReticule()
     self.reticule = item ~= nil and item.components.reticule or self.inst.components.reticule
     if self.reticule ~= nil and self.reticule.reticule == nil and (self.reticule.mouseenabled or TheInput:ControllerAttached()) then
         self.reticule:CreateReticule()
+        if self.reticule.reticule ~= nil and not self:IsEnabled() then
+            self.reticule.reticule:Hide()
+        end
     end
 end
 
@@ -1198,7 +1202,9 @@ local function ValidateAttackTarget(combat, target, force_attack, x, z, has_weap
 end
 
 function PlayerController:GetAttackTarget(force_attack, force_target, isretarget)
-    if self.inst:HasTag("playerghost") or self.inst.replica.inventory:IsHeavyLifting() then
+    if self.inst:HasTag("playerghost") or
+        self.inst:HasTag("weregoose") or
+        self.inst.replica.inventory:IsHeavyLifting() then
         return
     end
 
@@ -2062,10 +2068,14 @@ function PlayerController:OnUpdate(dt)
             self:IsControlPressed(CONTROL_CONTROLLER_ATTACK)) then
         self.controller_attack_override = nil
     end
-    --NOTE: isbusy is used further below as well
-    local isbusy = self:IsBusy()    
 
     self:DoPredictHopping(dt)
+
+    --NOTE: isbusy is used further below as well
+    local isbusy = self:IsBusy()
+	if isbusy and self.inst.sg ~= nil and self.inst:HasTag("jumping") then
+		isbusy = isbusy and self.inst.sg:HasStateTag("jumping")
+	end
 
     if isbusy or
         self:DoPredictWalking(dt) or
@@ -2073,9 +2083,26 @@ function PlayerController:OnUpdate(dt)
         self.bufferedcastaoe = nil
     else
         if not self.inst:HasTag("steeringboat") then
+            if self.wassteering then
+                -- end reticule
+                local boat = self.inst:GetCurrentPlatform()
+                if boat then
+                    boat:PushEvent("endsteeringreticule",{player=self.inst})
+                end
+                self.wassteering = nil
+            end
             self:DoDirectWalking(dt)            
         else
+            if not self.wassteering then
+                -- start reticule
+                local boat = self.inst:GetCurrentPlatform()
+                if boat then
+                    boat:PushEvent("starsteeringreticule",{player=self.inst})
+                end
+            end
+            self.wassteering = true
             self:DoBoatSteering(dt)
+            
         end
     end
 
@@ -2497,7 +2524,7 @@ local function UpdateControllerInteractionTarget(self, dt, x, y, z, dirx, dirz)
 end
 
 function PlayerController:UpdateControllerTargets(dt)
-    if self:IsAOETargeting() then
+    if self:IsAOETargeting() or self.inst:HasTag("weregoose") then
         self.controller_target = nil
         self.controller_target_age = 0
         self.controller_attack_target = nil

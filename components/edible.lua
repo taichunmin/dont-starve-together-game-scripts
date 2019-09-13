@@ -1,7 +1,5 @@
 local function oncheckbadfood(self)
-    if self.healthvalue < 0 or
-        (self.sanityvalue ~= nil and self.sanityvalue < 0) or
-        (self.woodiness ~= nil and self.woodiness < 0) then
+    if self.healthvalue < 0 or (self.sanityvalue ~= nil and self.sanityvalue < 0) then
         self.inst:AddTag("badfood")
     else
         self.inst:RemoveTag("badfood")
@@ -22,7 +20,6 @@ local Edible = Class(function(self, inst)
     self.healthvalue = 10
     self.hungervalue = 10
     self.sanityvalue = 0
-    self.woodiness = nil
     self.foodtype = FOODTYPE.GENERIC
     self.oneaten = nil
     self.degrades_with_spoilage = true
@@ -53,7 +50,6 @@ nil,
 {
     healthvalue = oncheckbadfood,
     sanityvalue = oncheckbadfood,
-    woodiness = oncheckbadfood,
     foodtype = onfoodtype,
 })
 
@@ -65,9 +61,9 @@ function Edible:OnRemoveFromEntity()
     self.inst:RemoveTag("edible_"..FOODTYPE.BERRY)
 end
 
-function Edible:GetWoodiness(eater)
-    return self.woodiness or 0
-end
+--Deprecated
+function Edible:GetWoodiness(eater) return 0 end
+--
 
 function Edible:GetSanity(eater)
     local ignore_spoilage = not self.degrades_with_spoilage or self.sanityvalue < 0 or (eater ~= nil and eater.components.eater ~= nil and eater.components.eater.ignoresspoilage)

@@ -131,6 +131,7 @@ local function fn()
 
     inst:AddTag("butterfly")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
     inst:AddTag("insect")
     inst:AddTag("smallcreature")
     inst:AddTag("cattoyairborne")

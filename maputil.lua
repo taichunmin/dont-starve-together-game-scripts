@@ -154,7 +154,7 @@ end
 function DrawWalkableGrid(graph)
 	local graph = graph or TheWorld.topology
 
-	local debugdrawmap = CreateEntity()
+	local debugdrawmap = CreateEntity("DrawWalkableGrid")
 	debugdrawmap.entity:AddTransform()
 	debugdrawmap.entity:SetCanSleep(false)
 	SetDebugEntity(debugdrawmap)
@@ -184,7 +184,7 @@ end
 function ShowWalkableGrid(graph)
 	local graph = graph or TheWorld.topology
 
-	local debugdrawmap = CreateEntity()
+	local debugdrawmap = CreateEntity("ShowWalkableGrid")
 	debugdrawmap.entity:AddTransform()
 	debugdrawmap.entity:SetCanSleep(false)
 	SetDebugEntity(debugdrawmap)

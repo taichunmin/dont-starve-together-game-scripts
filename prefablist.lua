@@ -783,6 +783,7 @@ PREFABFILES = {
   "webber",
   "webber_spider_minions",
   "wendy",
+  "wereitems",
   "wes",
   "whip",
   "wickerbottom",

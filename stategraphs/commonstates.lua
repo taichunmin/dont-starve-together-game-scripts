@@ -430,13 +430,17 @@ end
 CommonHandlers.OnHop = function()
     return EventHandler("onhop", 
         function(inst)
-			if (inst.components.health == nil or not inst.components.health:IsDead()) and not inst.sg:HasStateTag("jumping") and (inst.sg:HasStateTag("moving") or inst.sg:HasStateTag("idle")) then
-                if inst.components.embarker and inst.components.embarker.antic and inst:HasTag("swimming") then
-                    inst.sg:GoToState("hop_antic")
-                else
-                    inst.sg:GoToState("hop_pre")
+            if (inst.components.health == nil or not inst.components.health:IsDead()) and (inst.sg:HasStateTag("moving") or inst.sg:HasStateTag("idle")) then
+                if not inst.sg:HasStateTag("jumping") then
+                    if inst.components.embarker and inst.components.embarker.antic and inst:HasTag("swimming") then
+                        inst.sg:GoToState("hop_antic")
+                    else
+                        inst.sg:GoToState("hop_pre")
+                    end
                 end
-			end
+            elseif inst.components.embarker then
+                inst.components.embarker:Cancel()
+            end
         end)
 end
 
@@ -447,7 +451,7 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
     table.insert(states, State
     {
         name = "hop_pre",
-        tags = { "doing", "nointerrupt", "jumping", "autopredict", "nomorph", "nosleep" },
+        tags = { "doing", "nointerrupt", "busy", "jumping", "autopredict", "nomorph", "nosleep" },
 
         onenter = function(inst)
             inst.AnimState:PlayAnimation(anims.pre or "jump_pre", false)
@@ -482,15 +486,14 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
     table.insert(states, State
     {
         name = "hop_loop",
-        tags = { "doing", "nointerrupt", "jumping", "autopredict", "nomorph", "nosleep" },
+        tags = { "doing", "nointerrupt", "busy", "jumping", "autopredict", "nomorph", "nosleep" },
 
         onenter = function(inst, queued_post_land_state)
 			inst.sg.statemem.queued_post_land_state = queued_post_land_state
             inst.AnimState:PlayAnimation(anims.loop or "jump_loop", true)
-			if TheWorld.ismastersim then
-				inst.sg.statemem.collisionmask = inst.Physics:GetCollisionMask()
-	            inst.Physics:SetCollisionMask(COLLISION.GROUND)
-			else
+			inst.sg.statemem.collisionmask = inst.Physics:GetCollisionMask()
+	        inst.Physics:SetCollisionMask(COLLISION.GROUND)
+			if not TheWorld.ismastersim then
 	            inst.Physics:SetLocalCollisionMask(COLLISION.GROUND)
 			end
             inst.components.embarker:StartMoving()
@@ -517,6 +520,11 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
 			if not inst.sg.statemem.not_interrupted then
 	            inst.components.embarker:Cancel()
 			end
+
+			inst:RemoveTag("busy")
+			if inst.components.locomotor.isrunning then
+                inst:PushEvent("locomote")
+			end
 		end,
     })
 
@@ -529,6 +537,7 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
             inst.AnimState:PlayAnimation(anims.pst or "jump_pst", false)
 
             inst.components.embarker:Embark()
+			inst:RemoveTag("busy")
 
             local nextstate = "hop_pst_complete"
 			if data ~= nil then
@@ -553,6 +562,14 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
                 end
             end),
         },
+
+		onexit = function(inst)
+			-- here for now, should be moved into timeline
+            if land_sound and TheWorld.Map:GetPlatformAtPoint(inst.Transform:GetWorldPosition()) ~= nil then
+	            --For now we just have the land on boat sound
+                inst.SoundEmitter:PlaySound(land_sound)
+            end
+		end
     })  
 
     table.insert(states, State
@@ -562,7 +579,6 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
 
         onenter = function(inst)
 			if inst.components.locomotor.isrunning then
-                inst:PushEvent("locomote")
                 inst:DoTaskInTime(0,
                     function()
                         if inst.sg.currentstate.name == "hop_pst_complete" then
@@ -571,14 +587,6 @@ CommonStates.AddHopStates = function(states, wait_for_pre, anims, timelines, lan
                     end)
             else
                 inst.sg:GoToState("idle")
-            end
-
-            --For now we just have the land on boat sound:
-            if land_sound then
-                local x,y,z = inst.Transform:GetWorldPosition()
-                if TheWorld.Map:GetPlatformAtPoint(x,z) ~= nil then
-                    inst.SoundEmitter:PlaySound(land_sound)
-                end
             end
         end,
     })
@@ -1335,10 +1343,15 @@ CommonStates.AddRowStates = function(states, is_client)
 
         onenter = function(inst)
             local locomotor = inst.components.locomotor
-            local target_pos = locomotor.bufferedaction:GetActionPoint()
-            if target_pos == nil then
-                target_pos = locomotor.bufferedaction.target:GetPosition()
-                inst:ForceFacePoint(target_pos:Get())
+            local target_pos = nil
+            if locomotor.bufferedaction then
+                target_pos = locomotor.bufferedaction:GetActionPoint()
+                if target_pos == nil then
+                    target_pos = locomotor.bufferedaction.target:GetPosition()
+                    inst:ForceFacePoint(target_pos:Get())
+                end
+            else
+                target_pos = Vector3(inst.Transform:GetWorldPosition())                
             end
             inst:AddTag("is_rowing")
             inst.AnimState:PlayAnimation("row_pre")
@@ -1355,11 +1368,13 @@ CommonStates.AddRowStates = function(states, is_client)
                 inst:PerformPreviewBufferedAction()                
             end
     
-            local target_x, target_z = target_pos.x, target_pos.z
+            local target_x, target_z = nil,nil
 
             if inst.components.playercontroller.isclientcontrollerattached then
                 local dir_x, dir_z = VecUtil_Normalize(my_x - boat_x, my_z - boat_z)
                 target_x, target_z = my_x + dir_x, my_z + dir_z
+            else
+                target_x, target_z = target_pos.x, target_pos.z
             end                   
 
             local delta_target_x, delta_target_z = target_x- my_x, target_z - my_z

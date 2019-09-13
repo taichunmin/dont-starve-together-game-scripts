@@ -3,7 +3,7 @@ local Text = require "widgets/text"
 local easing = require "easing"
 local Widget = require "widgets/widget"
 
-local Badge = Class(Widget, function(self, anim, owner)
+local Badge = Class(Widget, function(self, anim, owner, tint, iconbuild)
     Widget._ctor(self, "Badge")
     self.owner = owner
 
@@ -23,17 +23,41 @@ local Badge = Class(Widget, function(self, anim, owner)
     self.warningstarted = nil
     self.warningdelaytask = nil
 
-    self.anim = self:AddChild(UIAnim())
+    if anim ~= nil then
+        self.anim = self:AddChild(UIAnim())
+        self.anim:GetAnimState():SetBank(anim)
+        self.anim:GetAnimState():SetBuild(anim)
+        self.anim:GetAnimState():PlayAnimation("anim")
+    else
+        --self.bg clashes with existing mods
+        self.backing = self:AddChild(UIAnim())
+        self.backing:GetAnimState():SetBank("status_meter")
+        self.backing:GetAnimState():SetBuild("status_meter")
+        self.backing:GetAnimState():PlayAnimation("bg")
 
-    self.anim:GetAnimState():SetBank(anim)
-    self.anim:GetAnimState():SetBuild(anim)
-    self.anim:GetAnimState():PlayAnimation("anim")
+        self.anim = self:AddChild(UIAnim())
+        self.anim:GetAnimState():SetBank("status_meter")
+        self.anim:GetAnimState():SetBuild("status_meter")
+        self.anim:GetAnimState():PlayAnimation("anim")
+        if tint ~= nil then
+            self.anim:GetAnimState():SetMultColour(unpack(tint))
+        end
+
+        --self.frame clashes with existing mods
+        self.circleframe = self:AddChild(UIAnim())
+        self.circleframe:GetAnimState():SetBank("status_meter")
+        self.circleframe:GetAnimState():SetBuild("status_meter")
+        self.circleframe:GetAnimState():PlayAnimation("frame")
+        if iconbuild ~= nil then
+            self.circleframe:GetAnimState():OverrideSymbol("icon", iconbuild, "icon")
+        end
+    end
 
     self.underNumber = self:AddChild(Widget("undernumber"))
 
     self.num = self:AddChild(Text(BODYTEXTFONT, 33))
     self.num:SetHAlign(ANCHOR_MIDDLE)
-    self.num:SetPosition(5, 0, 0)
+    self.num:SetPosition(3, 0, 0)
     self.num:Hide()
 end)
 
@@ -51,7 +75,10 @@ function Badge:SetPercent(val, max)
     val = val or self.percent
     max = max or 100
 
-    self.anim:GetAnimState():SetPercent(self.anim_override or "anim", 1 - val)
+    self.anim:GetAnimState():SetPercent("anim", 1 - val)
+    if self.circleframe ~= nil then
+        self.circleframe:GetAnimState():SetPercent("frame", 1 - val)
+    end
     -- print(val, max, val * max)
     self.num:SetString(tostring(math.ceil(val * max)))
 

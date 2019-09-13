@@ -33,6 +33,10 @@ local function on_hammered(inst, hammerer)
     inst:Remove()
 end
 
+local function onhit(inst)
+    inst:PushEvent("workinghit")
+end
+
 local function onburnt(inst)
     inst.SoundEmitter:KillSound("mooring")
     inst.sg:Stop()
@@ -89,6 +93,7 @@ local function fn()
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(3)
     inst.components.workable:SetOnFinishCallback(on_hammered)
+    inst.components.workable:SetOnWorkCallback(onhit)
 
 	inst.OnSave = onsave
     inst.OnLoad = onload

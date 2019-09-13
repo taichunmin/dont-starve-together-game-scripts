@@ -95,17 +95,14 @@ function Hunger:DoDelta(delta, overtime, ignore_invincible)
 
     self.inst:PushEvent("hungerdelta", { oldpercent = old / self.max, newpercent = self.current / self.max, overtime = overtime, delta = self.current-old })
 
-    --push starving event if beaverness value isn't currently starving
-    if not (self.inst.components.beaverness ~= nil and self.inst.components.beaverness:IsStarving()) then
-        if old > 0 then
-            if self.current <= 0 then
-                self.inst:PushEvent("startstarving")
-                ProfileStatsSet("started_starving", true)
-            end
-        elseif self.current > 0 then
-            self.inst:PushEvent("stopstarving")
-            ProfileStatsSet("stopped_starving", true)
+    if old > 0 then
+        if self.current <= 0 then
+            self.inst:PushEvent("startstarving")
+            ProfileStatsSet("started_starving", true)
         end
+    elseif self.current > 0 then
+        self.inst:PushEvent("stopstarving")
+        ProfileStatsSet("stopped_starving", true)
     end
 end
 
@@ -118,17 +115,14 @@ function Hunger:SetPercent(p, overtime)
     self.current  = p * self.max
     self.inst:PushEvent("hungerdelta", { oldpercent = old / self.max, newpercent = p, overtime = overtime })
 
-    --push starving event if beaverness value isn't currently starving
-    if not (self.inst.components.beaverness ~= nil and self.inst.components.beaverness:IsStarving()) then
-        if old > 0 then
-            if self.current <= 0 then
-                self.inst:PushEvent("startstarving")
-                ProfileStatsSet("started_starving", true)
-            end
-        elseif self.current > 0 then
-            self.inst:PushEvent("stopstarving")
-            ProfileStatsSet("stopped_starving", true)
+    if old > 0 then
+        if self.current <= 0 then
+            self.inst:PushEvent("startstarving")
+            ProfileStatsSet("started_starving", true)
         end
+    elseif self.current > 0 then
+        self.inst:PushEvent("stopstarving")
+        ProfileStatsSet("stopped_starving", true)
     end
 end
 

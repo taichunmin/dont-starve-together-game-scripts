@@ -35,7 +35,7 @@ local EMOTES =
     },
 
     ["dance"] = {
-        data = { anim = { "emoteXL_pre_dance0", "emoteXL_loop_dance0" }, loop = true, fx = false, beaver = true, mounted = true, mountsound = "curious", tags = { "dancing" } },
+        data = { anim = { "emoteXL_pre_dance0", "emoteXL_loop_dance0" }, loop = true, fx = false, beaver = true, moose = true, goose = true, mounted = true, mountsound = "curious", tags = { "dancing" } },
     },
 
     ["sit"] = {

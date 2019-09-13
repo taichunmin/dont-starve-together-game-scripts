@@ -26,7 +26,11 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 	end
 					
 	--if not ghost, then we need to apply the clothing
-	if skintype ~= "ghost_skin" and skintype ~= "werebeaver_skin" and skintype ~= "ghost_werebeaver_skin" then
+	if skintype == "normal_skin"
+	or skintype == "wimpy_skin" or skintype == "mighty_skin"
+	or skintype == "stage_2" or skintype == "stage_3" or skintype == "stage_4"
+	or skintype == "NO_BASE" then
+
 		local needs_legacy_fixup = not anim_state:BuildHasSymbol( "torso_pelvis" ) --support clothing on legacy mod characters
 		local torso_build = nil
 		local pelvis_build = nil
@@ -84,6 +88,8 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 			end
 		end
 		
+		local symbol_overridden = {}
+
 		for _,type in pairs( clothing_order ) do
 			local name = clothing_names[type]
 			if CLOTHING[name] ~= nil then
@@ -143,6 +149,7 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 							end
 							anim_state:ShowSymbol(sym)
 							anim_state:OverrideSkinSymbol(sym, real_build, src_sym )
+							symbol_overridden[sym] = true
 							--print("setting skin", sym, name )
 							
 							if sym == "leg" then
@@ -172,10 +179,18 @@ function SetSkinsOnAnim( anim_state, prefab, base_skin, clothing_names, skintype
 				if CLOTHING[name].torso_tuck ~= nil and allow_torso then
 					tuck_torso = CLOTHING[name].torso_tuck
 					--print("setting tuck_torso to", tuck_torso, name )
-				end				
+				end
+				
 				if CLOTHING[name].symbol_hides then
 					for _,sym in pairs(CLOTHING[name].symbol_hides) do
 						anim_state:HideSymbol(sym)
+					end
+				end
+				if CLOTHING[name].symbol_in_base_hides then
+					for _,sym in pairs(CLOTHING[name].symbol_in_base_hides) do
+						if not symbol_overridden[sym] then
+							anim_state:HideSymbol(sym)
+						end
 					end
 				end
 			end

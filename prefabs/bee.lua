@@ -152,6 +152,7 @@ local function commonfn(build, tags)
     inst:AddTag("smallcreature")
     inst:AddTag("cattoyairborne")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
     for i, v in ipairs(tags) do
         inst:AddTag(v)
     end

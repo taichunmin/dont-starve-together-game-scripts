@@ -393,7 +393,7 @@ end
 
 function DrawLine(pos1,pos2)
 	-- debug draw of new map gen
-	local debugdrawmap = CreateEntity()
+	local debugdrawmap = CreateEntity("DebugDrawMap")
 	local draw = debugdrawmap.entity:AddDebugRender()
 	draw:SetZ(0.1)
 	draw:Line(pos1.x, pos1.z, pos2.x,pos2.y, 255, 255, 255, 255)

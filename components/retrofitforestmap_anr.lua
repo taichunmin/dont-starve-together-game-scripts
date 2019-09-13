@@ -32,6 +32,10 @@ local retrofit_part1 = false
 --[[ Private member functions ]]
 --------------------------------------------------------------------------
 
+local function NoHoles(pt)
+    return not TheWorld.Map:IsPointNearHole(pt)
+end
+
 local function RetrofitNewContentPrefab(inst, prefab, min_space, dist_from_structures, canplacefn)
 	local attempt = 1
 	local topology = TheWorld.topology
@@ -565,6 +569,37 @@ function self:OnPostInit()
 		TurnOfTidesRetrofitting_CleanupOceanPoution(self.inst)
 	end
 	
+	if self.retrofit_fix_sculpture_pieces then
+		local count = 0
+		for _,obj in pairs(Ents) do
+			if obj:IsValid() then
+				if obj.prefab == "sculpture_knighthead" or obj.prefab == "sculpture_bishophead" or obj.prefab == "sculpture_rooknose" then
+					local x, y, z = obj.Transform:GetWorldPosition()
+					local bodies = TheSim:FindEntities(x, y, z, 1.6, {"sculpture"})
+					for _, body in ipairs(bodies) do
+						local radius = body.prefab == "sculpture_knightbody" and 0.8
+									or body.prefab == "sculpture_bishopbody" and 0.8
+									or body.prefab == "sculpture_rookbody" and 1.7
+									or nil
+						if radius ~= nil then
+							local offset = FindWalkableOffset(body:GetPosition(), math.random() * 2 * PI, radius, 60, false, false, NoHoles) or Vector3(2, 0, 0)
+							obj.Transform:SetPosition((body:GetPosition() + offset):Get())
+
+							count = count + 1
+							break
+						end
+					end
+				end
+			end
+		end
+
+		if count > 0 then
+			print("Retrofitting - Fixed "..tostring(count).." sculpture pieces positions.")
+		else
+			print("Retrofitting - No sculpture pieces required repositioning.")
+		end
+	end
+
 	---------------------------------------------------------------------------
 	if self.requiresreset then
 		print ("Retrofitting: Worldgen retrofitting requires the server to save and restart to fully take effect.")
@@ -603,6 +638,7 @@ function self:OnLoad(data)
         self.retrofit_turnoftides = data.retrofit_turnoftides or false
         self.retrofit_turnoftides_betaupdate1 = data.retrofit_turnoftides_betaupdate1 or false
         self.retrofit_turnoftides_seastacks = data.retrofit_turnoftides_seastacks or false
+		self.retrofit_fix_sculpture_pieces = data.retrofit_fix_sculpture_pieces or false
     end
 end
 

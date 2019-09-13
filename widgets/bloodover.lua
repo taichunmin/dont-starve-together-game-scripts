@@ -44,8 +44,7 @@ end)
 function BloodOver:UpdateState()
     if (self.owner.IsFreezing ~= nil and self.owner:IsFreezing()) or
         (self.owner.IsOverheating ~= nil and self.owner:IsOverheating()) or
-        (self.owner.replica.hunger ~= nil and self.owner.replica.hunger:IsStarving()) or
-        (self.owner.IsBeaverStarving ~= nil and self.owner:IsBeaverStarving()) then
+        (self.owner.replica.hunger ~= nil and self.owner.replica.hunger:IsStarving()) then
         self:TurnOn()
     else
         self:TurnOff()

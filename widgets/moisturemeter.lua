@@ -12,13 +12,31 @@ local MoistureMeter = Class(Widget, function(self, owner)
     self.moisturedelta = 0
     self.active = false
 
+    --self.bg clashes with existing mods
+    self.backing = self:AddChild(UIAnim())
+    self.backing:GetAnimState():SetBank("status_meter")
+    self.backing:GetAnimState():SetBuild("status_wet")
+    self.backing:GetAnimState():Hide("frame")
+    self.backing:GetAnimState():Hide("icon")
+    self.backing:SetClickable(true)
+
     self.anim = self:AddChild(UIAnim())
-    self.anim:GetAnimState():SetBank("wet")
-    self.anim:GetAnimState():SetBuild("wet_meter_player")
+    self.anim:GetAnimState():SetBank("status_meter")
+    self.anim:GetAnimState():SetBuild("status_meter")
+    self.anim:Hide("icon")
+    self.anim:GetAnimState():SetMultColour(48 / 255, 97 / 255, 169 / 255, 1)
     self.anim:SetClickable(true)
 
+    --self.frame clashes with existing mods
+    self.circleframe = self:AddChild(UIAnim())
+    self.circleframe:GetAnimState():SetBank("status_meter")
+    self.circleframe:GetAnimState():SetBuild("status_meter")
+    self.circleframe:GetAnimState():OverrideSymbol("icon", "status_wet", "icon")
+    self.circleframe:GetAnimState():Hide("bg")
+    self.circleframe:SetClickable(true)
+
     self.arrowdir = "neutral"
-    self.arrow = self.anim:AddChild(UIAnim())
+    self.arrow = self:AddChild(UIAnim())
     self.arrow:GetAnimState():SetBank("sanity_arrow")
     self.arrow:GetAnimState():SetBuild("sanity_arrow")
     self.arrow:GetAnimState():PlayAnimation(self.arrowdir)
@@ -26,18 +44,26 @@ local MoistureMeter = Class(Widget, function(self, owner)
 
     self.num = self:AddChild(Text(BODYTEXTFONT, 33))
     self.num:SetHAlign(ANCHOR_MIDDLE)
-    self.num:SetPosition(5, 0, 0)
+    self.num:SetPosition(3, 0, 0)
     self.num:SetClickable(false)
     self.num:Hide()
 end)
 
 function MoistureMeter:Activate()
-    self.anim:GetAnimState():PlayAnimation("open")
+    self.backing:GetAnimState():PlayAnimation("open")
+    self.circleframe:GetAnimState():PlayAnimation("open")
+    self.anim:Show()
+    self.animtime = 0
+    self:StartUpdating()
+    self:OnUpdate(0)
     TheFrontEnd:GetSound():PlaySound("dontstarve_DLC001/common/HUD_wet_open")
 end
 
 function MoistureMeter:Deactivate()
-    self.anim:GetAnimState():PlayAnimation("close")
+    self.backing:GetAnimState():PlayAnimation("close")
+    self.circleframe:GetAnimState():PlayAnimation("close")
+    self.anim:Hide()
+    self:StopUpdating()
     TheFrontEnd:GetSound():PlaySound("dontstarve_DLC001/common/HUD_wet_close")
 end
 
@@ -67,7 +93,7 @@ function MoistureMeter:SetValue(moisture, max, ratescale)
             self.active = true
             self:Activate()
         end
-        self.anim:GetAnimState():SetPercent("anim", moisture / max)
+        self.anim:GetAnimState():SetPercent("anim", 1 - moisture / max)
         self.num:SetString(tostring(math.ceil(moisture)))
     elseif self.active then
         self.active = false
@@ -92,6 +118,24 @@ function MoistureMeter:SetValue(moisture, max, ratescale)
     if self.arrowdir ~= anim then
         self.arrowdir = anim
         self.arrow:GetAnimState():PlayAnimation(anim, true)
+    end
+end
+
+function MoistureMeter:OnUpdate(dt)
+    local curframe = self.circleframe:GetAnimState():GetCurrentAnimationTime() / FRAMES
+    if curframe < 1 then
+        self.anim:SetScale(.955, .096, 1)
+    elseif curframe < 2 then
+        self.anim:SetScale(.977, .333, 1)
+    elseif curframe < 3 then
+        self.anim:SetScale(1.044, 1.044, 1)
+    elseif curframe < 4 then
+        self.anim:SetScale(1.019, 1.019, 1)
+    elseif curframe < 5 then
+        self.anim:SetScale(1.005, 1.005, 1)
+    else
+        self.anim:SetScale(1, 1, 1)
+        self:StopUpdating()
     end
 end
 

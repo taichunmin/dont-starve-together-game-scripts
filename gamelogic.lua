@@ -588,7 +588,7 @@ end
 
 local function DrawDebugGraph(graph)
 	-- debug draw of new map gen
-	local debugdrawmap = CreateEntity()
+	local debugdrawmap = CreateEntity("DrawDebugGraph")
 	local draw = debugdrawmap.entity:AddDebugRender()
 	draw:SetZ(0.1)
 	draw:SetRenderLoop(true)

@@ -305,7 +305,9 @@ local function ecounter_widget_constructor(context, i)
 					table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE)		
 				end
 
-				table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.CLEAR)
+                if w.widgets.delete_btn._userid ~= nil then
+                    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.CLEAR)
+                end
 			end
 
 			return table.concat(t, "  ")
@@ -321,8 +323,10 @@ local function ecounter_widget_constructor(context, i)
 					return true
 				end
 
-				if control == CONTROL_MENU_MISC_2 then			
-					PlayerHistory:RemoveUser(w.widgets.delete_btn._userid)
+                if control == CONTROL_MENU_MISC_2 then
+                    if w.widgets.delete_btn._userid ~= nil then
+                        PlayerHistory:RemoveUser(w.widgets.delete_btn._userid)
+                    end
 					context.screen:UpdatePlayerHistory()
 					return true
 				end

@@ -69,7 +69,6 @@ local function MakeFixed(inst)
     end
 
     inst.components.lootdropper:SetChanceLootTable(nil)
-    inst.components.lootdropper:SetLoot({ PIECE_NAME[inst.prefab] })
 
     CheckMorph(inst)
 end
@@ -105,16 +104,25 @@ local function getstatus(inst)
         or "COVERED"
 end
 
+local function NoHoles(pt)
+    return not TheWorld.Map:IsPointNearHole(pt)
+end
+
 local function onworkfinished(inst, worker)
     inst.SoundEmitter:PlaySound("dontstarve/wilson/rock_break")
-    inst.components.lootdropper:DropLoot(inst:GetPosition())
 
     MakeBroken(inst)
 
     if inst.components.lootdropper.chanceloottable ~= nil and
         worker ~= nil and worker.components.talker ~= nil then
+	    inst.components.lootdropper:DropLoot(inst:GetPosition())
         -- say the uncovered state description string
         worker.components.talker:Say(inst.components.inspectable:GetDescription(worker, inst, "UNCOVERED"))
+	else
+		local pos = inst:GetPosition()
+        local offset = FindWalkableOffset(pos, math.random() * 2 * PI, inst:GetPhysicsRadius(1) + 0.1, 60, false, false, NoHoles) or Vector3(2, 0, 0)
+		local piece = SpawnPrefab(PIECE_NAME[inst.prefab])
+		piece.Transform:SetPosition((pos + offset):Get())
     end
 end
 

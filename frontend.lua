@@ -178,7 +178,7 @@ FrontEnd = Class(function(self, name)
 
 	self:HideTitle()
 
-	self.gameinterface = CreateEntity()
+	self.gameinterface = CreateEntity("GameInterface")
 	self.gameinterface.entity:AddSoundEmitter()
 	self.gameinterface.entity:AddGraphicsOptions()
 	self.gameinterface.entity:AddTwitchOptions()

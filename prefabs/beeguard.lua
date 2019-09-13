@@ -236,6 +236,7 @@ local function fn()
     inst:AddTag("hostile")
     inst:AddTag("scarytoprey")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
 
     MakeInventoryFloatable(inst)
 

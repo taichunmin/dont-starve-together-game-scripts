@@ -83,7 +83,6 @@ function HealthSyncer:OnUpdate(dt)
         (self.inst.IsOverheating ~= nil and self.inst:IsOverheating()) or
         (self.inst.components.hunger ~= nil and self.inst.components.hunger:IsStarving()) or
         (self.inst.components.health ~= nil and self.inst.components.health.takingfiredamage) or
-        (self.inst.IsBeaverStarving ~= nil and self.inst:IsBeaverStarving()) or
         next(self.corrosives) ~= nil
 
     -- Show the up-arrow when we're sleeping (but not in a straw roll: that doesn't heal us)

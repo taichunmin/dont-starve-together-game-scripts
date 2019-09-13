@@ -327,7 +327,7 @@ local function ModSafeStartup()
 
 	--- GLOBAL ENTITY ---
     --[[Non-networked entity]]
-    TheGlobalInstance = CreateEntity()
+    TheGlobalInstance = CreateEntity("TheGlobalInstance")
     TheGlobalInstance.entity:AddTransform()
     TheGlobalInstance.entity:SetCanSleep(false)
     TheGlobalInstance.persists = false

@@ -472,6 +472,7 @@ local function fn()
     inst:AddTag("scarytoprey")
     inst:AddTag("largecreature")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
 
     inst.Light:Enable(false)
     inst.Light:SetRadius(2)

@@ -52,13 +52,26 @@ local function onsave(inst, data)
 	if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() or inst:HasTag("burnt") then
 		data.burnt = true
 	end
+
+	if inst.components.mast == nil or inst.components.mast.boat == nil then
+		data.rotation = inst.Transform:GetRotation()
+		data.is_sail_raised = inst.components.mast and inst.components.mast.is_sail_raised or nil
+	end
 end
 
 local function onload(inst, data)
-	if data ~= nil and data.burnt then
-        inst.components.burnable.onburnt(inst)
-		inst:PushEvent("onburnt")
-    end
+	if data ~= nil then
+		if data.burnt then
+			inst.components.burnable.onburnt(inst)
+			inst:PushEvent("onburnt")
+		end
+		if data.rotation then
+			inst.Transform:SetRotation(data.rotation)
+		end
+		if data.is_sail_raised and inst.components.mast ~= nil then
+			inst.components.mast:SailUnfurled()
+		end
+	end
 end
 
 local function fn()
@@ -123,6 +136,7 @@ local function ondeploy(inst, pt, deployer, rot)
         mast.AnimState:PushAnimation("closed", false)
         if rot then
             mast.Transform:SetRotation(rot)
+			mast.save_rotation = true
         end
         inst:Remove()
     end

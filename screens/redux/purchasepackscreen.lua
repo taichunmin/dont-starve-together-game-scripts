@@ -7,6 +7,7 @@ local OnlineStatus = require "widgets/onlinestatus"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
+local Stats = require("stats")
 
 local TEMPLATES = require("widgets/redux/templates")
 require("misc_items")
@@ -524,6 +525,14 @@ end
 
 
 PurchasePackScreen = Class(Screen, function(self, prev_screen, profile, filter_info)
+    
+    --track where in the UI we came from
+    local screen_flow_path = "ScreenFlow"
+    for i,screen_in_stack in pairs(TheFrontEnd.screenstack) do
+        screen_flow_path = screen_flow_path .. "_" .. screen_in_stack.name 
+    end
+    Stats.PushMetricsEvent("PurchasePackScreen.entered", TheNet:GetUserID(), { url = screen_flow_path }, "is_only_local_users_data")
+
     Screen._ctor(self, "PurchasePackScreen")
 
     if filter_info == nil then filter_info = {} end --in-case we get given a nil filter_info

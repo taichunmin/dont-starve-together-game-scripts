@@ -61,7 +61,7 @@ local WalkablePlatform = Class(function(self, inst)
     self.platform_radius = 4
 end)
 
-local IGNORE_WALKABLE_PLATFORM_TAGS_ON_REMOVE = { "ignorewalkableplatforms", "flying", "FX", "DECOR", "INLIMBO", "player" }
+local IGNORE_WALKABLE_PLATFORM_TAGS_ON_REMOVE = { "ignorewalkableplatforms", "ignorewalkableplatformdrowning", "flying", "FX", "DECOR", "INLIMBO", "player" }
 local IGNORE_WALKABLE_PLATFORM_TAGS = { "ignorewalkableplatforms", "flying", "FX", "DECOR", "INLIMBO" }
 
 

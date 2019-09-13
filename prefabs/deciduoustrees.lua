@@ -493,7 +493,7 @@ local function make_stump(inst)
 end
 
 local function chop_down_tree(inst, chopper)
-    local days_survived = TheWorld.state.cycles
+    local days_survived = chopper.components.age ~= nil and chopper.components.age:GetAgeInDays() or TheWorld.state.cycles
     if not inst.monster and inst.leaf_state ~= "barren" and inst.components.growable ~= nil and inst.components.growable.stage == 3 and days_survived >= TUNING.DECID_MONSTER_MIN_DAY then
         --print("Chance of making a monster")
         --winter should always be 0 (because barren trees can't become monsters), but is included in tuning values for consistency
@@ -511,9 +511,14 @@ local function chop_down_tree(inst, chopper)
             end
             chance_mod = TUNING.DECID_MONSTER_SPAWN_CHANCE_MOD[i + 1]
         end
+        if chopper:HasTag("beaver") then
+            chance_mod = chance_mod * TUNING.BEAVER_DECID_MONSTER_CHANCE_MOD
+        elseif chopper:HasTag("woodcutter") then
+            chance_mod = chance_mod * TUNING.WOODCUTTER_DECID_MONSTER_CHANCE_MOD
+        end
 
         --print("Chance is ", chance * chance_mod, TheWorld.state.season)
-        if math.random() <= chance * chance_mod then
+        if math.random() < chance * chance_mod then
             --print("Trying to spawn monster")
             local x, y, z = inst.Transform:GetWorldPosition()
             local ents = TheSim:FindEntities(x, y, z, 30, { "birchnut" }, { "fire", "stump", "burnt", "monster", "FX", "NOCLICK", "DECOR", "INLIMBO" })

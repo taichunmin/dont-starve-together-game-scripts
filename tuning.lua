@@ -182,8 +182,6 @@ function Tune(overrides)
         FISHINGROD_DAMAGE = wilson_attack*.125,
         UMBRELLA_DAMAGE = wilson_attack*.5,
         CANE_DAMAGE = wilson_attack*.5,
-        BEAVER_DAMAGE = wilson_attack*.8,
-        BEAVER_WOOD_DAMAGE = wilson_attack*.5, -- extra damage to wood things
         MULTITOOL_DAMAGE = wilson_attack*.9,
         RUINS_BAT_DAMAGE = wilson_attack * 1.75,
         NIGHTSTICK_DAMAGE = wilson_attack*.85, -- Due to the damage being electric, it will get multiplied by 1.5 against any mob
@@ -1511,17 +1509,6 @@ function Tune(overrides)
         SANITY_LARGE = 33,
         SANITY_HUGE = 50,
 
-        BEAVER_ABSORPTION = .25,
-        BEAVER_SANITY_PENALTY = -1.5,
-        BEAVER_DRAIN_TIME = 5*total_day_time, -- time it takes the log meter to drain to transform threshold
-        BEAVER_FULLMOON_DRAIN_MULTIPLIER = 5*8,
-        BEAVER_GNAW_GAIN = 1,
-        WOODIE_CHOP_DRAIN = -1.5,
-        WOODIE_PLANT_TREE_GAIN = 5,
-        WOODIE_TRANSFORM_TO_HUMAN = 0.99, -- because .99000001 shows as 100 in the HUD
-        WOODIE_TRANSFORM_TO_BEAVER = 0.25,
-        LOG_WOODINESS = 10,
-
         LUCY_REVERT_TIME = 90, -- seconds
         LUCY_BITE_DAMAGE = 5, -- amount of damage done to non-woodies who equip lucy
 
@@ -1775,7 +1762,7 @@ function Tune(overrides)
         HOT_FOOD_BONUS_TEMP = 40,
         HOT_FOOD_WARMING_THRESHOLD = 62, --don't actually overheat, but still triggers heat idles
         COLD_FOOD_BONUS_TEMP = -40,
-        COLD_FOOD_CHILLING_THRESHOLD = 5,
+        COLD_FOOD_CHILLING_THRESHOLD = 12,
         FOOD_TEMP_BRIEF = 5,
         FOOD_TEMP_AVERAGE = 10,
         FOOD_TEMP_LONG = 15,
@@ -2207,7 +2194,7 @@ function Tune(overrides)
         DECID_MONSTER_SPAWN_CHANCE_SUMMER = .033, -- low chance in summer since summer is hard anyway
         DECID_MONSTER_SPAWN_CHANCE_WINTER = 0, -- can't make monsters in winter, they have to have leaves
         DECID_MONSTER_DAY_THRESHOLDS = { 20, 35, 70 }, -- Ramp monster spawns a bit over time
-        DECID_MONSTER_SPAWN_CHANCE_MOD = { .2, .5, 1, 1.12},
+        DECID_MONSTER_SPAWN_CHANCE_MOD = { .2, .5, 1, 1.12 },
 
         DECID_MONSTER_TARGET_DIST = 7,
         DECID_MONSTER_ATTACK_PERIOD = 2.3,
@@ -3086,6 +3073,9 @@ function Tune(overrides)
             CHANCE_TO_NOTICE = 0.25,
             NEXT_NOTICE_DELAY = 30,
             HUD_MAX_DISTANCE_SQ = 35*35,
+
+            FAR_AUDIO_GATE_DISTANCE_SQ = 200*200,
+            BASE_VOLUME = 0.3,
         },
 
         MOON_ALTAR_COMPLETE_WORK = 3,
@@ -3177,9 +3167,9 @@ function Tune(overrides)
 				WETNESS = 100,
 			},
 
-			WEREBEAVER = 
+			WEREWOODIE = 
 			{
-				BEAVERNESS = 100,
+				WERENESS = 100,
 				WETNESS = 100,
 			},
 		},
@@ -3358,6 +3348,7 @@ function Tune(overrides)
         WATER_TURTLE_MATING_SEASON_BABYDELAY_VARIANCE = 0.5*total_day_time,
 
         ANCHOR_DEPTH_TIMES = {
+            LAND = 0,
             SHALLOW = 2,
             BASIC = 6,
             DEEP = 8,
@@ -3387,6 +3378,45 @@ function Tune(overrides)
         BUFF_ATTACK_MULTIPLIER = 1.2,
         BUFF_PLAYERABSORPTION_MODIFIER = 1 / 3,
         BUFF_WORKEFFECTIVENESS_MODIFIER = 2,
+
+        --v2 Woodie
+        WERE_SANITY_PENALTY = -.5,
+        WERE_FULLMOON_DRAIN_TIME_MULTIPLIER = 2,
+        WOODCUTTER_LEIF_CHANCE_MOD = 1.5,
+        WOODCUTTER_DECID_MONSTER_CHANCE_MOD = 1.5,
+        --
+        BEAVER_LEIF_CHANCE_MOD = 0,
+        BEAVER_DECID_MONSTER_CHANCE_MOD = 0,
+        BEAVER_DRAIN_TIME = 15,
+        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER2 = 5,
+        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER1 = 3,
+        BEAVER_WORKING_DRAIN_TIME_DURATION = 3, --time for the working mults to wear off
+        BEAVER_RUN_SPEED = 6.6, --x1.1 speed
+        BEAVER_ABSORPTION = .25,
+        BEAVER_DAMAGE = wilson_attack * .8,
+        BEAVER_WOOD_DAMAGE = wilson_attack * .5, -- extra damage to wood things
+        --
+        WEREMOOSE_DRAIN_TIME = 15,
+        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER2 = 6,
+        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER1 = 3,
+        WEREMOOSE_FIGHTING_DRAIN_TIME_DURATION = 3, --time for fighting mults to wear off
+        WEREMOOSE_RUN_SPEED = 5.4, --x0.9 speed
+        WEREMOOSE_ABSORPTION = .8,
+        WEREMOOSE_DAMAGE = wilson_attack * 1.75,
+        --
+        WEREGOOSE_DRAIN_TIME = 12,
+        WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER = 5,
+        WEREGOOSE_RUN_SPEED = 8.4, --x1.4 speed
+        --deprecated beaverness stuff
+        --BEAVER_DRAIN_TIME = 5 * total_day_time, -- time it takes the log meter to drain to transform threshold
+        BEAVER_FULLMOON_DRAIN_MULTIPLIER = 5 * 8,
+        WOODIE_TRANSFORM_TO_HUMAN = 0.99, -- because .99000001 shows as 100 in the HUD
+        WOODIE_TRANSFORM_TO_BEAVER = 0.25,
+        BEAVER_GNAW_GAIN = 1,
+        WOODIE_CHOP_DRAIN = -1.5,
+        WOODIE_PLANT_TREE_GAIN = 5,
+        LOG_WOODINESS = 10,
+        --
     }
 end
 

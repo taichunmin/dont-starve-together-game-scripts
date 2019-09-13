@@ -51,7 +51,7 @@ end
 
 local function getstatus(inst, viewer)
     return TheWorld:HasTag("cave") and "CAVE"
-            or (TheWorld.state.moonphase == "full" and viewer:HasTag("beaverness")) and "WEREBEAVER"
+            or (TheWorld.state.moonphase == "full" and viewer:HasTag("wereness")) and "WEREBEAVER"
             or (not TheWorld.state.isnight) and "GENERIC"
             or TheWorld.state.isnewmoon and "NIGHT_NEW"
             or TheWorld.state.isfullmoon and "NIGHT_FULL"

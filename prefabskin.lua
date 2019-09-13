@@ -574,11 +574,6 @@ function pighouse_init_fn(inst, build_name)
     end
 
     inst.AnimState:SetSkin(build_name, "pig_house")
-    
-    if inst._window ~= nil then --check to make sure these entitys exist, they don't on dedis, and on placers.
-         inst._window.AnimState:SetSkin(build_name)
-         inst._windowsnow.AnimState:SetSkin(build_name)
-    end
 end
 
 --------------------------------------------------------------------------

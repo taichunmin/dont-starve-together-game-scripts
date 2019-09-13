@@ -476,6 +476,7 @@ STRINGS =
             LAVAARENA_HEAVYBLADE = "Parry",
         },
         DISMANTLE = "Dismantle",
+        TACKLE = "Charge",
 
         --Quagmire
         TILL = "Till",
@@ -522,6 +523,7 @@ STRINGS =
         STOP_STEERING_BOAT = "Stop Steering",
         ROW_FAIL = "Row",
         ROW = "Row",
+        ROW_CONTROLLER = "Row",
         CAST_NET = "Cast Net",
         BATHBOMB = "Toss In",
 		OCEAN_FISHING_CAST = "Cast",
@@ -2051,10 +2053,14 @@ STRINGS =
         SALSA = "Salsa Fresca",
         PEPPERPOPPER = "Stuffed Pepper Poppers",
 
+        --v2 Woodie
+        WEREITEM_BEAVER = "Kitschy Beaver Idol",
+        WEREITEM_GOOSE =  "Kitschy Goose Idol",
+        WEREITEM_MOOSE =  "Kitschy Moose Idol",
+
 		-- new content
         BOAT = "Boat",
         BOAT_ITEM = "Boat Kit",
-        SEAFARER_KIT = "Seafarer's Kit",
         BOATFRAGMENT03 = "Boat Fragment",
         BOATFRAGMENT04 = "Boat Fragment",
         BOATFRAGMENT05 = "Boat Fragment",
@@ -2557,9 +2563,13 @@ STRINGS =
         SPICE_SUGAR = "A dash of sweetness for peace of mind.",
         SPICE_CHILI = "Spicy flakes that pack a punch.",
 
+        --v2 Woodie
+        WEREITEM_BEAVER = "Invokes the curse of the Werebeaver.",
+        WEREITEM_GOOSE =  "Invokes the curse of the Weregoose.",
+        WEREITEM_MOOSE =  "Invokes the curse of the Weremoose.",
+
         FISHINGNET = "Nothin' but net.",
         ANCHOR_ITEM = "Boat brakes.",
-        SEAFARER_KIT = "Build a boat to stay afloat.",
         STEERINGWHEEL_ITEM = "It's wheely important to have one.",
         BOAT_ITEM = "Let the seas be your domain.",
         MAST_ITEM = "Sail away, sail away.",
@@ -4701,13 +4711,6 @@ STRINGS.UI =
     
     ITEM_SCREEN =
     {
-        THANKS_POPUP_DAILY = "Welcome back!\nPlease enjoy this daily gift.",
-        THANKS_POPUP_TITLE_DEFAULT = "Thanks for playing",
-        THANKS_POPUP_SWR = "Thank you for buying the ShipWrecked DLC",
-        THANKS_POPUP_ROGR = "Thank you for buying the Reign of Giants DLC",
-        THANKS_POPUP_TITLE = "Thanks for playing",
-        THANKS_POPUP_TITLE_TWITCH = "Thanks for watching game streams",
-        THANKS_POPUP_TITLE_STORE = "Enjoy your gift",
         NORMAL_POPUP_TITLE = "received...",
         NEW_SKIN = "You got a skin for %s!",
         OK_BUTTON = "Close",
@@ -4721,10 +4724,6 @@ STRINGS.UI =
         RECEIVED = "You Received",
         ENABLED_TOAST_TOOLTIP = "Open",
         DISABLED_TOAST_TOOLTIP = "This requires more science!",
-        THANKS_POPUP_SECONDTITLE =
-        {
-            EARLY_ACCESS = "Early\nAccess",
-        },
     },
 
     STATSPANEL =
@@ -8529,16 +8528,16 @@ STRINGS.LUCY =
     },
     beaver_down_late =
     {
-        "No! Don't chop any more!",
-        "The transformation is starting!",
-        "One more chop and you're in trouble!",
+        --"No! Don't chop any more!",
+        --"The transformation is starting!",
+        --"One more chop and you're in trouble!",
         "You're overdoing it!",
         "You're not pacing yourself!",
         "You're about to change!",
         "Take it easy!",
-        "Ease up, you're looking a little bucktoothed!",
+        --"Ease up, you're looking a little bucktoothed!",
         "You've gotta slow down!",
-        "Stop chopping, I'm getting nervous!",
+        --"Stop chopping, I'm getting nervous!",
         "Slow down, I'm worried about you!",
         "Watch out! You're going to turn!",
     },

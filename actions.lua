@@ -220,6 +220,7 @@ ACTIONS =
     ABANDON = Action({ rmb=true }),
     PET = Action(),
     DISMANTLE = Action({ rmb=true }),
+    TACKLE = Action({ rmb=true, distance=math.huge }),
 
     CASTAOE = Action({ priority=10, rmb=true, distance=8 }),
 
@@ -253,6 +254,7 @@ ACTIONS =
     CAST_NET = Action({ priority=10, rmb=true, distance=12, mount_valid=true, disable_platform_hopping=true }),
     ROW_FAIL = Action({customarrivecheck=function() return true end, disable_platform_hopping=true, skip_locomotor_facing=true}),
     ROW = Action({priority=3, customarrivecheck=CheckRowRange, is_relative_to_platform=true, disable_platform_hopping=true}),
+    ROW_CONTROLLER = Action({priority=3, is_relative_to_platform=true, disable_platform_hopping=true, do_not_locomote=true}),    
 }
 
 ACTIONS_BY_ACTION_CODE = {}
@@ -546,7 +548,7 @@ ACTIONS.ROW_FAIL.fn = function(act)
     return true
 end
 
-ACTIONS.ROW.fn = function(act)
+local function row(act)
     local oar = act.doer.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
 
     if oar == nil then return false end
@@ -557,6 +559,13 @@ ACTIONS.ROW.fn = function(act)
     end
     oar.components.oar:Row(act.doer, pos)   
     return true
+end
+
+ACTIONS.ROW.fn = function(act)
+    return row(act)
+end
+ACTIONS.ROW_CONTROLLER.fn = function(act)
+    return row(act)
 end
 
 ACTIONS.TALKTO.fn = function(act)
@@ -1062,7 +1071,8 @@ ACTIONS.FEEDPLAYER.fn = function(act)
         not (act.target.sg:HasStateTag("busy") or
             act.target.sg:HasStateTag("attacking") or
             act.target.sg:HasStateTag("sleeping") or
-            act.target:HasTag("playerghost")) and
+            act.target:HasTag("playerghost") or
+            act.target:HasTag("wereplayer")) and
         act.target.components.eater ~= nil and
         act.invobject.components.edible ~= nil and
         act.target.components.eater:CanEat(act.invobject) and
@@ -1079,10 +1089,8 @@ ACTIONS.FEEDPLAYER.fn = function(act)
                 food.components.inventoryitem:HibernateLivingItem()
                 food.persists = false
                 act.target.sg:GoToState(
-                    (act.target:HasTag("beaver") and "beavereat") or
-                    (food.components.edible.foodtype == FOODTYPE.MEAT and "eat") or
-                    "quickeat",
-                    {feed=food,feeder=act.doer}
+                    food.components.edible.foodtype == FOODTYPE.MEAT and "eat" or "quickeat",
+                    { feed = food, feeder = act.doer }
                 )
                 return true
             end
@@ -2183,6 +2191,12 @@ ACTIONS.DISMANTLE.fn = function(act)
         act.target.components.portablecookware:Dismantle(act.doer)
         return true
     end
+end
+
+ACTIONS.TACKLE.fn = function(act)
+    return act.doer ~= nil
+        and act.doer.components.tackler ~= nil
+        and act.doer.components.tackler:StartTackle()
 end
 
 --Quagmire

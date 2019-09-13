@@ -69,18 +69,18 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 
 
 	if IsPrefabSkinned(self.currentcharacter) then
-		self.skintypes = GetSkinModes(self.currentcharacter)
+		self.skinmodes = GetSkinModes(self.currentcharacter)
 	else
-		self.skintypes = {}
-		table.insert(self.skintypes, GetSkinModes("default")[1])
+		self.skinmodes = {}
+		table.insert(self.skinmodes, GetSkinModes("default")[1])
 
 		if MODCHARACTERMODES[self.currentcharacter] ~= nil then
 			for _,v in pairs(MODCHARACTERMODES[self.currentcharacter]) do
-				table.insert(self.skintypes,
+				table.insert(self.skinmodes,
 				{
 					type = {
 						build = v.build,
-						bank = v.bank,
+						anim_bank = v.bank,
 						idle_anim = v.idle_anim,
 						play_emotes = v.play_emotes,
 					},
@@ -91,16 +91,16 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 		end
 	end
 	self.view_index = 1
-	self.selected_skintype = self.skintypes[self.view_index].type
+	self.selected_skinmode = self.skinmodes[self.view_index]
 
-	-- Portrait view index must be 1 < ind <= #self.skintypes+1
-	self.portrait_view_index = #self.skintypes + 1
+	-- Portrait view index must be 1 < ind <= #self.skinmodes+1
+	self.portrait_view_index = #self.skinmodes + 1
 
 	if initial_skintype ~= nil and initial_skintype ~= "normal_skin" then
-		for i,v in ipairs(self.skintypes) do
+		for i,v in ipairs(self.skinmodes) do
 			if v.type == initial_skintype then
 				self.view_index = i
-				self:_SetSkintype(v)
+				self:_SetSkinMode(v)
 				break
 			end
 		end
@@ -207,12 +207,12 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 	end
 end)
 
-function LoadoutSelect:_SetSkintype(skintypedata)
-	self.selected_skintype = skintypedata.type
-	self:_ApplySkins(self.preview_skins, true, self.selected_skintype)
-	self.puppet:SetScale((skintypedata.scale or 1) * self.puppet_default_scale)
-	if skintypedata.offset ~= nil then
-		self.puppet:SetPosition(self.puppet_base_offset[1] + (skintypedata.offset[1] or 0), self.puppet_base_offset[2] + (skintypedata.offset[2] or 0))
+function LoadoutSelect:_SetSkinMode(skinmode)
+	self.selected_skinmode = skinmode
+	self:_ApplySkins(self.preview_skins, true)
+	self.puppet:SetScale((skinmode.scale or 1) * self.puppet_default_scale)
+	if skinmode.offset ~= nil then
+		self.puppet:SetPosition(self.puppet_base_offset[1] + (skinmode.offset[1] or 0), self.puppet_base_offset[2] + (skinmode.offset[2] or 0))
 	else
 		self.puppet:SetPosition(self.puppet_base_offset[1], self.puppet_base_offset[2])
 	end
@@ -234,7 +234,7 @@ function LoadoutSelect:_CycleView(reset)
 		EXCEPT when the index is about to become the same as the portrait
 		view index, in which case the portrait is toggled on. On the next
 		interaction the index increments and the portrait is toggled off,
-		i.e. skintypes[portrait_index] still contains skintype data and
+		i.e. skinmodes[portrait_index] still contains skinmode data and
 		is not overridden.
 	]]
 	if reset then
@@ -242,7 +242,7 @@ function LoadoutSelect:_CycleView(reset)
 			self:_SetShowPortrait(false)
 
 			self.view_index = 1
-			self:_SetSkintype(self.skintypes[self.view_index])
+			self:_SetSkinMode(self.skinmodes[self.view_index])
 		end
 		return
 	end
@@ -253,11 +253,11 @@ function LoadoutSelect:_CycleView(reset)
 		if self.showing_portrait then self:_SetShowPortrait(false) end
 
 		self.view_index = self.view_index + 1
-		if self.view_index > #self.skintypes then
+		if self.view_index > #self.skinmodes then
 			self.view_index = 1
 		end
 
-		self:_SetSkintype(self.skintypes[self.view_index])
+		self:_SetSkinMode(self.skinmodes[self.view_index])
 	end
 end
 
@@ -402,7 +402,7 @@ function LoadoutSelect:_ApplySkins(skins, skip_change_emote)
 
     self:_SetPortrait()
     if self.show_puppet then
-		self.puppet:SetSkins(self.currentcharacter, skins.base, skins, skip_change_emote, self.selected_skintype)
+		self.puppet:SetSkins(self.currentcharacter, skins.base, skins, skip_change_emote, self.selected_skinmode)
     end
 end
 

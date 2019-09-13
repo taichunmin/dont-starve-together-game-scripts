@@ -2,7 +2,7 @@ local Widget = require "widgets/widget"
 local SanityBadge = require "widgets/sanitybadge"
 local HealthBadge = require "widgets/healthbadge"
 local HungerBadge = require "widgets/hungerbadge"
-local BeaverBadge = require "widgets/beaverbadge"
+local WereBadge = require "widgets/werebadge"
 local MoistureMeter = require "widgets/moisturemeter"
 local BoatMeter = require "widgets/boatmeter"
 local ResurrectButton = require "widgets/resurrectbutton"
@@ -48,10 +48,10 @@ local function OnSetPlayerMode(inst, self)
         self.inst:ListenForEvent("got_off_platform", self.ongotoffplatform, self.owner)
     end
 
-    if self.beaverness ~= nil and self.onbeavernessdelta == nil then
-        self.onbeavernessdelta = function(owner, data) self:BeavernessDelta(data) end
-        self.inst:ListenForEvent("beavernessdelta", self.onbeavernessdelta, self.owner)
-        self:SetBeavernessPercent(self.owner:GetBeaverness())
+    if self.wereness ~= nil and self.onwerenessdelta == nil then
+        self.onwerenessdelta = function(owner, data) self:WerenessDelta(data) end
+        self.inst:ListenForEvent("werenessdelta", self.onwerenessdelta, self.owner)
+        self:SetWerenessPercent(self.owner:GetWereness())
     end
 end
 
@@ -88,9 +88,9 @@ local function OnSetGhostMode(inst, self)
         
     end       
 
-    if self.onbeavernessdelta ~= nil then
-        self.inst:RemoveEventCallback("beavernessdelta", self.onbeavernessdelta, self.owner)
-        self.onbeavernessdelta = nil
+    if self.onwerenessdelta ~= nil then
+        self.inst:RemoveEventCallback("werenessdelta", self.onwerenessdelta, self.owner)
+        self.onwerenessdelta = nil
     end
 end
 
@@ -115,8 +115,8 @@ local StatusDisplays = Class(Widget, function(self, owner)
     Widget._ctor(self, "Status")
     self.owner = owner
 
-    self.beaverness = nil
-    self.onbeavernessdelta = nil
+    self.wereness = nil
+    self.onwerenessdelta = nil
 
     self.brain = self:AddChild(SanityBadge(owner))
     self.brain:SetPosition(0, -40, 0)
@@ -186,12 +186,9 @@ local StatusDisplays = Class(Widget, function(self, owner)
     self.isghostmode = true --force the initial SetGhostMode call to be dirty
     self:SetGhostMode(false)
 
-    if owner:HasTag("beaverness") then
-        self:AddBeaverness()
-	    self.boatmeter:SetPosition(-80, -113, 0)
+    if owner:HasTag("wereness") then
+        self:AddWereness()
     end
-
-	self.brain:MoveToFront() -- hack so the sanity mode change fx are on top of everything
 end)
 
 function StatusDisplays:ShowStatusNumbers()
@@ -200,8 +197,8 @@ function StatusDisplays:ShowStatusNumbers()
     self.heart.num:Show()
     self.moisturemeter.num:Show()
     self.boatmeter.num:Show()
-    if self.beaverness ~= nil then
-        self.beaverness.num:Show()
+    if self.wereness ~= nil then
+        self.wereness.num:Show()
     end
 end
 
@@ -211,52 +208,67 @@ function StatusDisplays:HideStatusNumbers()
     self.heart.num:Hide()
     self.moisturemeter.num:Hide()
     self.boatmeter.num:Hide()
-    if self.beaverness ~= nil then
-        self.beaverness.num:Hide()
-    end
-end
-
-function StatusDisplays:AddBeaverness()
-    if self.beaverness == nil then
-        self.beaverness = self:AddChild(BeaverBadge(self.owner))
-        self.beaverness:SetPosition(-80, -40, 0)
-
-        if self.isghostmode then
-            self.beaverness:Hide()
-        elseif self.modetask == nil and self.onbeavernessdelta == nil then
-            self.onbeavernessdelta = function(owner, data) self:BeavernessDelta(data) end
-            self.inst:ListenForEvent("beavernessdelta", self.onbeavernessdelta, self.owner)
-            self:SetBeavernessPercent(self.owner:GetBeaverness())
-        end
+    if self.wereness ~= nil then
+        self.wereness.num:Hide()
     end
 end
 
 function StatusDisplays:Layout()
-
 end
 
-function StatusDisplays:RemoveBeaverness()
-    if self.beaverness ~= nil then
-        if self.onbeavernessdelta ~= nil then
-            self.inst:RemoveEventCallback("beavernessdelta", self.onbeavernessdelta, self.owner)
-            self.onbeavernessdelta = nil
-        end
+--------------------------------------------------------------------------
+--[[ Deprecated ]]
+function StatusDisplays:AddBeaverness() end
+function StatusDisplays:RemoveBeaverness() end
+function StatusDisplays:SetBeaverMode() end
+function StatusDisplays:SetBeavernessPercent() end
+function StatusDisplays:BeavernessDelta() end
+--------------------------------------------------------------------------
 
-        self:SetBeaverMode(false)
-        self.beaverness:Kill()
-        self.beaverness = nil
+function StatusDisplays:AddWereness()
+    if self.wereness == nil then
+        self.wereness = self:AddChild(WereBadge(self.owner))
+        self.wereness:SetPosition(self.stomach:GetPosition())
+
+        if self.isghostmode then
+            self.wereness:Hide()
+        elseif self.modetask == nil and self.onwerenessdelta == nil then
+            self.onwerenessdelta = function(owner, data) self:WerenessDelta(data) end
+            self.inst:ListenForEvent("werenessdelta", self.onwerenessdelta, self.owner)
+            self:SetWerenessPercent(self.owner:GetWereness())
+        end
     end
 end
 
-function StatusDisplays:SetBeaverMode(beavermode)
-    if self.isghostmode or self.beaverness == nil then
+function StatusDisplays:RemoveWereness()
+    if self.wereness ~= nil then
+        if self.onwerenessdelta ~= nil then
+            self.inst:RemoveEventCallback("werenessdelta", self.onwerenessdelta, self.owner)
+            self.onwerenessdelta = nil
+        end
+
+        self:SetWereMode(false)
+        self.wereness:Kill()
+        self.wereness = nil
+    end
+end
+
+function StatusDisplays:SetWereMode(weremode, nofx)
+    if self.isghostmode or self.wereness == nil then
         return
-    elseif beavermode then
+    elseif weremode then
         self.stomach:Hide()
-        self.beaverness:SetPosition(-40, 20, 0)
+        self.wereness:Show()
+        self.wereness:SetPosition(self.stomach:GetPosition())
+        if not nofx then
+            self.wereness:SpawnNewFX()
+        end
     else
         self.stomach:Show()
-        self.beaverness:SetPosition(-80, -40, 0)
+        self.wereness:Hide()
+        if not nofx then
+            self.wereness:SpawnShatterFX()
+        end
     end
 end
 
@@ -276,9 +288,9 @@ function StatusDisplays:SetGhostMode(ghostmode)
         self.stomach:StopWarning()
         self.brain:StopWarning()
 
-        if self.beaverness ~= nil then
-            self.beaverness:Hide()
-            self.beaverness:StopWarning()
+        if self.wereness ~= nil then
+            self.wereness:Hide()
+            self.wereness:StopWarning()
         end
     else
         self.isghostmode = nil
@@ -289,8 +301,8 @@ function StatusDisplays:SetGhostMode(ghostmode)
         self.moisturemeter:Show()
         self.boatmeter:Show()
 
-        if self.beaverness ~= nil then
-            self.beaverness:Show()
+        if self.wereness ~= nil then
+            self.wereness:Show()
         end
     end
 
@@ -388,20 +400,20 @@ function StatusDisplays:SanityDelta(data)
     end
 end
 
-function StatusDisplays:SetBeavernessPercent(pct)
-    self.beaverness:SetPercent(pct)
+function StatusDisplays:SetWerenessPercent(pct)
+    self.wereness:SetPercent(pct)
 end
 
-function StatusDisplays:BeavernessDelta(data)
-    self:SetBeavernessPercent(data.newpercent)
+function StatusDisplays:WerenessDelta(data)
+    self:SetWerenessPercent(data.newpercent)
 
     if not data.overtime then
         if data.newpercent > data.oldpercent then
-            self.beaverness:PulseGreen()
+            self.wereness:PulseGreen()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")
         elseif data.newpercent < data.oldpercent then
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_down")
-            self.beaverness:PulseRed()
+            self.wereness:PulseRed()
         end
     end
 end

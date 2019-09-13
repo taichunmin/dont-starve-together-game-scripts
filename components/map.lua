@@ -247,12 +247,14 @@ function Map:IsSurroundedByWater(x, y, z, radius)
     -- TheSim:ProfilerPush("isSurroundedByWater")
     
     for i = -radius, radius, 1 do
-        if self:IsVisualGroundAtPoint(x - radius, y, z + i) or self:IsVisualGroundAtPoint(x + radius, y, z + i) then
+        if self:IsVisualGroundAtPoint(x - radius, y, z + i) or self:IsVisualGroundAtPoint(x + radius, y, z + i) 
+			or not self:IsValidTileAtPoint(x - radius, y, z + i) or not self:IsValidTileAtPoint(x + radius, y, z + i) then
             return false
         end
     end
     for i = -(radius - 1), radius - 1, 1 do
-        if self:IsVisualGroundAtPoint(x + i, y, z -radius) or self:IsVisualGroundAtPoint(x + i, y, z + radius) then
+        if self:IsVisualGroundAtPoint(x + i, y, z -radius) or self:IsVisualGroundAtPoint(x + i, y, z + radius) 
+			or not self:IsValidTileAtPoint(x + i, y, z -radius) or not self:IsValidTileAtPoint(x + i, y, z + radius) then
             return false
         end
     end
@@ -292,8 +294,12 @@ function Map:GetNearestPointOnWater(x, z, radius, iterations)
     return false, 0, 0
 end
 
-function Map:InternalIsPointOnWater(test_x, test_z)
-    if self:IsVisualGroundAtPoint(test_x, 0, test_z) or self:GetPlatformAtPoint(test_x, test_z) ~= nil then
+function Map:InternalIsPointOnWater(test_x, test_y, test_z)
+	if test_z == nil then -- to support passing in (x, z) instead of (x, y, x)
+		test_z = test_y
+		test_y = 0
+	end
+    if self:IsVisualGroundAtPoint(test_x, test_y, test_z) or self:GetPlatformAtPoint(test_x, test_y, test_z) ~= nil then
         return false
     else        
         return true
@@ -302,8 +308,12 @@ end
 
 local WALKABLE_PLATFORM_TAGS = {"walkableplatform"}
 
-function Map:GetPlatformAtPoint(pos_x, pos_z)
-    local entities = TheSim:FindEntities(pos_x, 0, pos_z, TUNING.MAX_WALKABLE_PLATFORM_RADIUS, WALKABLE_PLATFORM_TAGS)
+function Map:GetPlatformAtPoint(pos_x, pos_y, pos_z)
+	if pos_z == nil then -- to support passing in (x, z) instead of (x, y, x)
+		pos_z = pos_y
+		pos_y = 0
+	end
+    local entities = TheSim:FindEntities(pos_x, pos_y, pos_z, TUNING.MAX_WALKABLE_PLATFORM_RADIUS, WALKABLE_PLATFORM_TAGS)
     for i, v in ipairs(entities) do
         return v 
     end

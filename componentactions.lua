@@ -51,7 +51,7 @@ local function Row(inst, doer, pos, actions)
             local test_x, test_z = doer_x + dir_x * test_length, doer_z + dir_z * test_length
             local found_water = not map:IsVisualGroundAtPoint(test_x, 0, test_z) and map:GetPlatformAtPoint(test_x, test_z) == nil
             if found_water then
-                table.insert(actions, ACTIONS.ROW)
+                table.insert(actions, ACTIONS.ROW_CONTROLLER)
             end
         end
     end
@@ -525,10 +525,11 @@ local COMPONENT_ACTIONS =
 
         edible = function(inst, doer, target, actions, right)
             local iscritter = target:HasTag("critter")
-            if right or iscritter and
+            if (right or iscritter) and
                 not (target.replica.rider ~= nil and target.replica.rider:IsRiding()) and
                 not (doer.replica.rider ~= nil and doer.replica.rider:IsRiding() and
-                    not (target.replica.inventoryitem ~= nil and target.replica.inventoryitem:IsGrandOwner(doer))) then
+                    not (target.replica.inventoryitem ~= nil and target.replica.inventoryitem:IsGrandOwner(doer))) and
+                not target:HasTag("wereplayer") then
                 for k, v in pairs(FOODGROUP) do
                     if target:HasTag(v.name.."_eater") then
                         for i, v2 in ipairs(v.types) do
@@ -539,7 +540,7 @@ local COMPONENT_ACTIONS =
                                     end
                                 elseif target:HasTag("player") then
                                     if TheNet:GetPVPEnabled() or not (inst:HasTag("badfood") or inst:HasTag("unsafefood") or inst:HasTag("spoiled")) then
-                                    table.insert(actions, ACTIONS.FEEDPLAYER)
+                                        table.insert(actions, ACTIONS.FEEDPLAYER)
                                     end
                                 elseif target:HasTag("small_livestock")
                                     and target.replica.inventoryitem ~= nil
@@ -666,6 +667,7 @@ local COMPONENT_ACTIONS =
                 end
             elseif target:HasTag("player") then
                 if not (target.replica.rider ~= nil and target.replica.rider:IsRiding()) and
+                    not target:HasTag("wereplayer") and
                     not (GetGameModeProperty("non_item_equips") and inst.replica.equippable ~= nil) then
                     table.insert(actions,
                         not (doer.components.playercontroller ~= nil and
@@ -981,7 +983,7 @@ local COMPONENT_ACTIONS =
     {
         blinkstaff = function(inst, doer, pos, actions, right)
             local x,y,z = pos:Get()
-            if right and (TheWorld.Map:IsAboveGroundAtPoint(x,y,z) or TheWorld.Map:GetPlatformAtPoint(x,z) ~= nil) and not TheWorld.Map:IsGroundTargetBlocked(pos) then
+            if right and (TheWorld.Map:IsAboveGroundAtPoint(x,y,z) or TheWorld.Map:GetPlatformAtPoint(x,z) ~= nil) and not TheWorld.Map:IsGroundTargetBlocked(pos) and not doer:HasTag("steeringboat") then
                 table.insert(actions, ACTIONS.BLINK)
             end
         end,
@@ -1019,7 +1021,7 @@ local COMPONENT_ACTIONS =
         spellcaster = function(inst, doer, pos, actions, right)
             if right and inst:HasTag("castonpoint") then
                 local px, py, pz = pos:Get()
-                if TheWorld.Map:IsAboveGroundAtPoint(px, py, pz, inst:HasTag("castonpointwater")) and not TheWorld.Map:IsGroundTargetBlocked(pos) then
+                if TheWorld.Map:IsAboveGroundAtPoint(px, py, pz, inst:HasTag("castonpointwater")) and not TheWorld.Map:IsGroundTargetBlocked(pos) and not doer:HasTag("steeringboat") then
                     table.insert(actions, ACTIONS.CASTSPELL)
                 end
             end

@@ -269,7 +269,7 @@ local function fxfn()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
 
-    inst.AnimState:SetBank("researchlab2_pod_alt_fx")
+    inst.AnimState:SetBank("researchlab2_pod_fx")
     inst.AnimState:SetBuild("researchlab2")
     inst.AnimState:PlayAnimation("idle")
     inst.AnimState:SetFinalOffset(1)
@@ -298,4 +298,4 @@ return createmachine(1, "researchlab", "lvl1", TUNING.PROTOTYPER_TREES.SCIENCEMA
     MakePlacer("researchlab_placer", "researchlab", "researchlab", "idle" ),
     MakePlacer("researchlab2_placer", "researchlab2", "researchlab2", "idle"),
     --Skin FX
-    Prefab("researchlab2_pod_alt_fx", fxfn)
+    Prefab("researchlab2_pod_fx", fxfn)

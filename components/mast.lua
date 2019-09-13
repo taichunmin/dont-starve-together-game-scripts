@@ -34,7 +34,6 @@ local Mast = Class(function(self, inst)
     self.is_sail_raised = false
     self.sail_force = TUNING.BOAT.MAST.BASIC.SAIL_FORCE
     self.has_speed = false
-    self.lowered_anchor_count = 0
     self.boat = nil
     self.rudder = nil
     self.max_velocity_mod = TUNING.BOAT.MAST.BASIC.MAX_VELOCITY_MOD
@@ -134,9 +133,13 @@ function Mast:UnfurlSail()
 end
 
 function Mast:SailFurled()
+	self.furlunits = self.furlunits_max
     self.is_sail_transitioning = nil
     self.inst:RemoveTag("sail_transitioning")
-    if not self.is_sail_raised then return end
+    if not self.is_sail_raised then
+		return
+	end
+
     self.is_sail_raised = false
     self.inst.AnimState:PlayAnimation("knot_tie", false)
     self.inst.AnimState:PushAnimation("closed", false)
@@ -148,6 +151,7 @@ function Mast:SailFurled()
 end
 
 function Mast:SailUnfurled()
+	self.furlunits = 0
     self.is_sail_transitioning = nil
     self.inst:RemoveTag("sail_transitioning")
     self.is_sail_raised = true
@@ -171,7 +175,6 @@ function Mast:OnUpdate(dt)
                 self.furlunits = math.min(self.furlunits_max,self.furlunits + (dt*self:GetCurrentFurlUnits()))
 
                 if self.furlunits >= self.furlunits_max * 0.95 then
-                    self.furlunits = self.furlunits_max
                     self:SailFurled()
                 end
             else

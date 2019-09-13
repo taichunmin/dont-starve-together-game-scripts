@@ -367,7 +367,7 @@ function Health:DoDelta(amount, overtime, cause, ignore_invincible, afflicter, i
     elseif not ignore_invincible and (self.invincible or self.inst.is_teleporting) then
         return 0
     elseif amount < 0 and not ignore_absorb then
-        amount = amount - amount * (self.playerabsorb ~= 0 and afflicter ~= nil and afflicter:HasTag("player") and self.playerabsorb + self.absorb + self.externalabsorbmodifiers:Get() or self.absorb + self.externalabsorbmodifiers:Get())
+        amount = amount * math.clamp(1 - (self.playerabsorb ~= 0 and afflicter ~= nil and afflicter:HasTag("player") and self.playerabsorb + self.absorb or self.absorb), 0, 1) * math.clamp(1 - self.externalabsorbmodifiers:Get(), 0, 1)
     end
 
     local old_percent = self:GetPercent()

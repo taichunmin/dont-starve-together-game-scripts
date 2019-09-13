@@ -47,7 +47,7 @@ end)
 function Spooked:ShouldSpook()
     if self.spookedlevel <= self.spookedthreshold or
         (self.inst.components.debuffable ~= nil and self.inst.components.debuffable:HasDebuff("halloweenpotion_bravery_buff")) or
-        self.inst:HasTag("beaver") then
+        self.inst:HasTag("wereplayer") then
         return false
     end
     local k = (self.spookedlevel - self.spookedthreshold) / (self.maxspookedlevel - self.spookedthreshold)

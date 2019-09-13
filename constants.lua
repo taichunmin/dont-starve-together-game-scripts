@@ -1385,7 +1385,6 @@ FOODTYPE =
 {
     GENERIC = "GENERIC",
     MEAT = "MEAT",
-    WOOD = "WOOD",
     VEGGIE = "VEGGIE",
     ELEMENTAL = "ELEMENTAL",
     GEARS = "GEARS",
@@ -1411,21 +1410,6 @@ FOODGROUP =
             FOODTYPE.INSECT,
             FOODTYPE.SEEDS,
             FOODTYPE.GENERIC,
-            FOODTYPE.GOODIES,
-        },
-    },
-    WOODIE =
-    {
-        name = "WOODIE",
-        types =
-        {
-            FOODTYPE.MEAT,
-            FOODTYPE.VEGGIE,
-            FOODTYPE.INSECT,
-            FOODTYPE.SEEDS,
-            FOODTYPE.GENERIC,
-            FOODTYPE.WOOD,
-            FOODTYPE.ROUGHAGE,
             FOODTYPE.GOODIES,
         },
     },
@@ -1855,7 +1839,7 @@ INVENTORY_PROGRESS =
 	CHECK_INVENTORY = 5,
 }
 
-CURRENT_BETA = 0 -- set to 0 if there is no beta. Note: release builds wont use this so only staging and dev really care
+CURRENT_BETA = 1 -- set to 0 if there is no beta. Note: release builds wont use this so only staging and dev really care
 BETA_INFO =
 {
     {

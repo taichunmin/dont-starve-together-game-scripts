@@ -1,9 +1,12 @@
 local Widget = Class(function(self, name)
+	name = name or "widget"
     self.children = {}
     self.callbacks = {}
-    self.name = name or "widget"
+    self.name = name
+
     self.inst = CreateEntity()
     self.inst.widget = self
+	self.inst.name = name
 
     self.inst:AddTag("widget")
     self.inst:AddTag("UI")

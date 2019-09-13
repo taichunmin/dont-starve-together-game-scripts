@@ -71,12 +71,12 @@ function WardrobeScreen:_DoInit()
     -- Can't load skins until above widgets exist. Can't create ClothingExplorerPanel until skins are loaded.
 	self:_LoadSavedSkins()
 
-	self.skintypes = GetSkinModes(self.currentcharacter)
+	self.skinmodes = GetSkinModes(self.currentcharacter)
 	self.view_index = 1
-	self.selected_skintype = self.skintypes[self.view_index].type
+	self.selected_skinmode = self.skinmodes[self.view_index]
 
-	-- Portrait view index must be 1 < ind <= #self.skintypes+1
-	self.portrait_view_index = #self.skintypes + 1
+	-- Portrait view index must be 1 < ind <= #self.skinmodes+1
+	self.portrait_view_index = #self.skinmodes + 1
 
     local reader = function(item_key)
         return table.contains(self.selected_skins, item_key)
@@ -135,12 +135,12 @@ function WardrobeScreen:_DoInit()
     end
 end
 
-function WardrobeScreen:_SetSkintype(skintypedata)
-	self.selected_skintype = skintypedata.type
-	self:_ApplySkins(self.preview_skins, true, self.selected_skintype)
-	self.puppet:SetScale((skintypedata.scale or 1) * self.puppet_default_scale)
-	if skintypedata.offset ~= nil then
-		self.puppet:SetPosition(self.puppet_base_offset[1] + (skintypedata.offset[1] or 0), self.puppet_base_offset[2] + (skintypedata.offset[2] or 0))
+function WardrobeScreen:_SetSkinMode(skinmode)
+	self.selected_skinmode = skinmode
+	self:_ApplySkins(self.preview_skins)
+	self.puppet:SetScale((skinmode.scale or 1) * self.puppet_default_scale)
+	if skinmode.offset ~= nil then
+		self.puppet:SetPosition(self.puppet_base_offset[1] + (skinmode.offset[1] or 0), self.puppet_base_offset[2] + (skinmode.offset[2] or 0))
 	else
 		self.puppet:SetPosition(self.puppet_base_offset[1], self.puppet_base_offset[2])
 	end
@@ -152,14 +152,14 @@ function WardrobeScreen:_CycleView(reset)
 	--EXCEPT when the index is about to become the same as the portrait
 	--view index, in which case the portrait is toggled on. On the next
 	--interaction the index increments and the portrait is toggled off,
-	--i.e. skintypes[portrait_index] still contains skintype data and
+	--i.e. skinmodes[portrait_index] still contains skinmode data and
 	--is not overridden.
 	if reset then
 		if self.showing_portrait then
 			self:_SetShowPortrait(false)
 
 			self.view_index = 1
-			self:_SetSkintype(self.skintypes[self.view_index])
+			self:_SetSkinMode(self.skinmodes[self.view_index])
 		end
 		return
 	end
@@ -170,11 +170,11 @@ function WardrobeScreen:_CycleView(reset)
 		if self.showing_portrait then self:_SetShowPortrait(false) end
 
 		self.view_index = self.view_index + 1
-		if self.view_index > #self.skintypes then
+		if self.view_index > #self.skinmodes then
 			self.view_index = 1
 		end
 
-		self:_SetSkintype(self.skintypes[self.view_index])
+		self:_SetSkinMode(self.skinmodes[self.view_index])
 	end
 end
 
@@ -323,7 +323,7 @@ function WardrobeScreen:_ApplySkins(skins)
     ValidateItemsLocal(self.currentcharacter, self.selected_skins)
     ValidatePreviewItems(self.currentcharacter, skins)
 
-	self.puppet:SetSkins(self.currentcharacter, skins.base, skins, nil, self.selected_skintype)
+    self.puppet:SetSkins(self.currentcharacter, skins.base, skins, nil, self.selected_skinmode)
 	self:_SetPortrait()
     self:_CheckDirty()
 end

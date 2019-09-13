@@ -77,19 +77,19 @@ local function OnSanityDelta(parent, data)
     end
 end
 
-local function OnBeavernessDelta(parent, data)
+local function OnWerenessDelta(parent, data)
     if data.overtime then
         --V2C: Don't clear: it's redundant as player_classified shouldn't
         --     get constructed remotely more than once, and this would've
         --     also resulted in lost pulses if network hasn't ticked yet.
-        --parent.player_classified.isbeavernesspulseup:set_local(false)
-        --parent.player_classified.isbeavernesspulsedown:set_local(false)
+        --parent.player_classified.iswerenesspulseup:set_local(false)
+        --parent.player_classified.iswerenesspulsedown:set_local(false)
     elseif data.newpercent > data.oldpercent then
         --Force dirty, we just want to trigger an event on the client
-        SetDirty(parent.player_classified.isbeavernesspulseup, true)
+        SetDirty(parent.player_classified.iswerenesspulseup, true)
     elseif data.newpercent < data.oldpercent then
         --Force dirty, we just want to trigger an event on the client
-        SetDirty(parent.player_classified.isbeavernesspulsedown, true)
+        SetDirty(parent.player_classified.iswerenesspulsedown, true)
     end
 end
 
@@ -278,15 +278,12 @@ local function OnHungerDirty(inst)
         inst.ishungerpulseup:set_local(false)
         inst.ishungerpulsedown:set_local(false)
         inst._parent:PushEvent("hungerdelta", data)
-        --push starving event if beaverness value isn't currently starving
-        if inst._oldbeavernesspercent > 0 then
-            if oldpercent > 0 then
-                if percent <= 0 then
-                    inst._parent:PushEvent("startstarving")
-                end
-            elseif percent > 0 then
-                inst._parent:PushEvent("stopstarving")
+        if oldpercent > 0 then
+            if percent <= 0 then
+                inst._parent:PushEvent("startstarving")
             end
+        elseif percent > 0 then
+            inst._parent:PushEvent("stopstarving")
         end
     else
         inst._oldhungerpercent = 1
@@ -321,36 +318,26 @@ local function OnSanityDirty(inst)
     end
 end
 
-local function OnBeavernessDirty(inst)
+local function OnWerenessDirty(inst)
     if inst._parent ~= nil then
-        local oldpercent = inst._oldbeavernesspercent
-        local percent = inst.currentbeaverness:value() * .01
+        local oldpercent = inst._oldwerenesspercent
+        local percent = inst.currentwereness:value() * .01
         local data =
         {
             oldpercent = oldpercent,
             newpercent = percent,
             overtime =
-                not (inst.isbeavernesspulseup:value() and percent > oldpercent) and
-                not (inst.isbeavernesspulsedown:value() and percent < oldpercent),
+                not (inst.iswerenesspulseup:value() and percent > oldpercent) and
+                not (inst.iswerenesspulsedown:value() and percent < oldpercent),
         }
-        inst._oldbeavernesspercent = percent
-        inst.isbeavernesspulseup:set_local(false)
-        inst.isbeavernesspulsedown:set_local(false)
-        inst._parent:PushEvent("beavernessdelta", data)
-        --push starving event if hunger value isn't currently starving
-        if inst._oldhungerpercent > 0 then
-            if oldpercent > 0 then
-                if percent <= 0 then
-                    inst._parent:PushEvent("startstarving")
-                end
-            elseif percent > 0 then
-                inst._parent:PushEvent("stopstarving")
-            end
-        end
+        inst._oldwerenesspercent = percent
+        inst.iswerenesspulseup:set_local(false)
+        inst.iswerenesspulsedown:set_local(false)
+        inst._parent:PushEvent("werenessdelta", data)
     else
-        inst._oldbeavernesspercent = 1
-        inst.isbeavernesspulseup:set_local(false)
-        inst.isbeavernesspulsedown:set_local(false)
+        inst._oldwerenesspercent = 0
+        inst.iswerenesspulseup:set_local(false)
+        inst.iswerenesspulsedown:set_local(false)
     end
 end
 
@@ -803,7 +790,7 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("healthdelta", OnHealthDelta, inst._parent)
         inst:ListenForEvent("hungerdelta", OnHungerDelta, inst._parent)
         inst:ListenForEvent("sanitydelta", OnSanityDelta, inst._parent)
-        inst:ListenForEvent("beavernessdelta", OnBeavernessDelta, inst._parent)
+        inst:ListenForEvent("werenessdelta", OnWerenessDelta, inst._parent)
         inst:ListenForEvent("attacked", OnAttacked, inst._parent)
         inst:ListenForEvent("builditem", OnBuildSuccess, inst._parent)
         inst:ListenForEvent("buildstructure", OnBuildSuccess, inst._parent)
@@ -825,8 +812,8 @@ local function RegisterNetListeners(inst)
         inst.ishungerpulsedown:set_local(false)
         inst.issanitypulseup:set_local(false)
         inst.issanitypulsedown:set_local(false)
-        inst.isbeavernesspulseup:set_local(false)
-        inst.isbeavernesspulsedown:set_local(false)
+        inst.iswerenesspulseup:set_local(false)
+        inst.iswerenesspulsedown:set_local(false)
         inst.pausepredictionframes:set_local(0)
         inst:ListenForEvent("healthdirty", OnHealthDirty)
         inst:ListenForEvent("istakingfiredamagedirty", OnIsTakingFireDamageDirty)
@@ -834,7 +821,7 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("combat.attackedpulse", OnAttackedPulseEvent)
         inst:ListenForEvent("hungerdirty", OnHungerDirty)
         inst:ListenForEvent("sanitydirty", OnSanityDirty)
-        inst:ListenForEvent("beavernessdirty", OnBeavernessDirty)
+        inst:ListenForEvent("werenessdirty", OnWerenessDirty)
         inst:ListenForEvent("temperaturedirty", OnTemperatureDirty)
         inst:ListenForEvent("moisturedirty", OnMoistureDirty)
         inst:ListenForEvent("techtreesdirty", OnTechTreesDirty)
@@ -859,7 +846,7 @@ local function RegisterNetListeners(inst)
             inst._oldhealthpercent = inst.maxhealth:value() > 0 and inst.currenthealth:value() / inst.maxhealth:value() or 0
             inst._oldhungerpercent = inst.maxhunger:value() > 0 and inst.currenthunger:value() / inst.maxhunger:value() or 0
             inst._oldsanitypercent = inst.maxsanity:value() > 0 and inst.currentsanity:value() / inst.maxsanity:value() or 0
-            inst._oldbeavernesspercent = inst.currentbeaverness:value() * .01
+            inst._oldwerenesspercent = inst.currentwereness:value() * .01
             inst._oldmoisture = inst.moisture:value()
             UpdateAnimOverrideSanity(inst._parent)
         end
@@ -938,12 +925,12 @@ local function fn()
     inst.currentsanity:set(100)
     inst.maxsanity:set(100)
 
-    --Beaverness variables
-    inst._oldbeavernesspercent = 1
-    inst.currentbeaverness = net_byte(inst.GUID, "beaverness.current", "beavernessdirty")
-    inst.isbeavernesspulseup = net_bool(inst.GUID, "beaverness.dodeltaovertime(up)", "beavernessdirty")
-    inst.isbeavernesspulsedown = net_bool(inst.GUID, "beaverness.dodeltaovertime(down)", "beavernessdirty")
-    inst.currentbeaverness:set(100)
+    --Wereness variables
+    inst._oldwerenesspercent = 0
+    inst.currentwereness = net_byte(inst.GUID, "wereness.current", "werenessdirty")
+    inst.iswerenesspulseup = net_bool(inst.GUID, "wereness.dodeltaovertime(up)", "werenessdirty")
+    inst.iswerenesspulsedown = net_bool(inst.GUID, "wereness.dodeltaovertime(down)", "werenessdirty")
+    inst.werenessdrainrate = net_smallbyte(inst.GUID, "wereness.drainrate")
 
     --Temperature variables
     inst._oldtemperature = TUNING.STARTING_TEMP

@@ -10,7 +10,7 @@ local function MakeFx(t)
 
     local function startfx(proxy)
         --print ("SPAWN", debugstack())
-        local inst = CreateEntity()
+        local inst = CreateEntity(t.name)
 
         inst.entity:AddTransform()
         inst.entity:AddAnimState()

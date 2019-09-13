@@ -926,6 +926,17 @@ table.insert(prefs, CreatePrefabSkin("firestaff_gungnir",
 	release_group = 51,
 }))
 
+table.insert(prefs, CreatePrefabSkin("firestaff_hockey",
+{
+	base_prefab = "firestaff",
+	type = "item",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	init_fn = function(inst) firestaff_init_fn(inst, "firestaff_hockey") end,
+	skin_tags = { "STAFF", "CRAFTABLE", },
+	release_group = 73,
+}))
+
 table.insert(prefs, CreatePrefabSkin("firestaff_lance",
 {
 	base_prefab = "firestaff",
@@ -1043,6 +1054,17 @@ table.insert(prefs, CreatePrefabSkin("footballhat_combathelm2",
 	init_fn = function(inst) footballhat_init_fn(inst, "footballhat_combathelm2") end,
 	skin_tags = { "FOOTBALLHAT", "LAVA", "CRAFTABLE", },
 	release_group = 51,
+}))
+
+table.insert(prefs, CreatePrefabSkin("footballhat_hockey",
+{
+	base_prefab = "footballhat",
+	type = "item",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	init_fn = function(inst) footballhat_init_fn(inst, "footballhat_hockey") end,
+	skin_tags = { "FOOTBALLHAT", "HOCKEY", "CRAFTABLE", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("glomling_beardeddragon",
@@ -1270,6 +1292,17 @@ table.insert(prefs, CreatePrefabSkin("icestaff_gungnir",
 	init_fn = function(inst) icestaff_init_fn(inst, "icestaff_gungnir") end,
 	skin_tags = { "STAFF", "LAVA", "CRAFTABLE", },
 	release_group = 51,
+}))
+
+table.insert(prefs, CreatePrefabSkin("icestaff_hockey",
+{
+	base_prefab = "icestaff",
+	type = "item",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	init_fn = function(inst) icestaff_init_fn(inst, "icestaff_hockey") end,
+	skin_tags = { "STAFF", "CRAFTABLE", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("icestaff_lance",
@@ -1520,6 +1553,17 @@ table.insert(prefs, CreatePrefabSkin("perdling_winter_builder",
 	release_group = 35,
 }))
 
+table.insert(prefs, CreatePrefabSkin("pighouse_logcabin",
+{
+	base_prefab = "pighouse",
+	type = "item",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	init_fn = function(inst) pighouse_init_fn(inst, "pighouse_logcabin") end,
+	skin_tags = { "HOCKEY", "PIGHOUSE", "CRAFTABLE", },
+	release_group = 73,
+}))
+
 table.insert(prefs, CreatePrefabSkin("puppy_chow",
 {
 	base_prefab = "critter_puppy",
@@ -1624,22 +1668,10 @@ table.insert(prefs, CreatePrefabSkin("researchlab2_pod",
 	base_prefab = "researchlab2",
 	type = "item",
 	rarity = "Elegant",
+	prefabs = { "researchlab2_pod_fx", },
 	init_fn = function(inst) researchlab2_init_fn(inst, "researchlab2_pod") end,
 	skin_tags = { "ALCHEMY", "CRAFTABLE", },
-	marketable = true,
-	release_group = 29,
-}))
-
-table.insert(prefs, CreatePrefabSkin("researchlab2_pod_alt",
-{
-	base_prefab = "researchlab2",
-	type = "item",
-	rarity = "Elegant",
-	rarity_modifier = "Lustrous",
-	prefabs = { "researchlab2_pod_alt_fx", },
-	init_fn = function(inst) researchlab2_init_fn(inst, "researchlab2_pod_alt") end,
-	skin_tags = { "ALCHEMY", "CRAFTABLE", },
-	fx_prefab = { "researchlab2_pod_alt_fx", },
+	fx_prefab = { "researchlab2_pod_fx", },
 	marketable = true,
 	release_group = 29,
 }))
@@ -1816,6 +1848,18 @@ table.insert(prefs, CreatePrefabSkin("spear_forge_lance",
 	skin_tags = { "SPEAR", "LAVA", "CRAFTABLE", },
 	release_group = 51,
 	granted_items = { "firestaff_lance", "icestaff_lance", },
+}))
+
+table.insert(prefs, CreatePrefabSkin("spear_hockey",
+{
+	base_prefab = "spear",
+	type = "item",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	init_fn = function(inst) spear_init_fn(inst, "spear_hockey") end,
+	skin_tags = { "SPEAR", "HOCKEY", "CRAFTABLE", },
+	release_group = 73,
+	granted_items = { "firestaff_hockey", "icestaff_hockey", },
 }))
 
 table.insert(prefs, CreatePrefabSkin("spear_rose",
@@ -4079,7 +4123,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_combatant",
 	type = "base",
 	rarity = "Event",
 	skin_tags = { "LAVA", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_combatant", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_combatant", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 32,
 }))
 
@@ -4089,7 +4133,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_cook",
 	type = "base",
 	rarity = "Event",
 	skin_tags = { "VICTORIAN", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_cook", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_cook", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	feet_cuff_size = { woodie_cook = 3, },
 	release_group = 43,
 }))
@@ -4098,11 +4142,24 @@ table.insert(prefs, CreatePrefabSkin("woodie_formal",
 {
 	base_prefab = "woodie",
 	type = "base",
-	rarity = "Elegant",
+	rarity = "HeirloomElegant",
 	skin_tags = { "FORMAL", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_formal", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_formal", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	marketable = true,
 	release_group = 2,
+}))
+
+table.insert(prefs, CreatePrefabSkin("woodie_formalp",
+{
+	base_prefab = "woodie",
+	type = "base",
+	build_name_override = "woodie_formal",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	skin_tags = { "FORMAL", "BASE", "WOODIE", },
+	bigportrait = { build = "bigportraits/woodie_formal.xml", symbol = "woodie_formal_oval.tex"},
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_formal", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("woodie_gladiator",
@@ -4113,8 +4170,20 @@ table.insert(prefs, CreatePrefabSkin("woodie_gladiator",
 	rarity_modifier = "Woven",
 	skin_tags = { "LAVA", "BASE", "WOODIE", },
 	bigportrait = { build = "bigportraits/woodie_gladiator.xml", symbol = "woodie_gladiator_oval.tex"},
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_gladiator", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_gladiator", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 32,
+}))
+
+table.insert(prefs, CreatePrefabSkin("woodie_hockey",
+{
+	base_prefab = "woodie",
+	type = "base",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	skin_tags = { "HOCKEY", "BASE", "WOODIE", },
+	bigportrait = { build = "bigportraits/woodie_hockey.xml", symbol = "woodie_hockey_oval.tex"},
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_hockey", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("woodie_magma",
@@ -4125,7 +4194,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_magma",
 	rarity_modifier = "Woven",
 	skin_tags = { "LAVA", "BASE", "WOODIE", },
 	bigportrait = { build = "bigportraits/woodie_magma.xml", symbol = "woodie_magma_oval.tex"},
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_magma", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_magma", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 51,
 }))
 
@@ -4137,7 +4206,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_nature",
 	rarity_modifier = "Woven",
 	skin_tags = { "VARG", "BASE", "WOODIE", },
 	bigportrait = { build = "bigportraits/woodie_nature.xml", symbol = "woodie_nature_oval.tex"},
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_nature", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_nature", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 40,
 }))
 
@@ -4148,7 +4217,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_none",
 	build_name_override = "woodie",
 	rarity = "Character",
 	skin_tags = { "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	feet_cuff_size = { woodie = 3, },
 	release_group = 0,
 }))
@@ -4157,33 +4226,72 @@ table.insert(prefs, CreatePrefabSkin("woodie_rose",
 {
 	base_prefab = "woodie",
 	type = "base",
-	rarity = "Elegant",
+	rarity = "HeirloomElegant",
 	skin_tags = { "ROSE", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_rose", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_rose", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	marketable = true,
 	release_group = 10,
+}))
+
+table.insert(prefs, CreatePrefabSkin("woodie_rosep",
+{
+	base_prefab = "woodie",
+	type = "base",
+	build_name_override = "woodie_rose",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	skin_tags = { "ROSE", "BASE", "WOODIE", },
+	bigportrait = { build = "bigportraits/woodie_rose.xml", symbol = "woodie_rose_oval.tex"},
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_rose", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("woodie_shadow",
 {
 	base_prefab = "woodie",
 	type = "base",
-	rarity = "Elegant",
+	rarity = "HeirloomElegant",
 	skin_tags = { "SHADOW", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_shadow", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_shadow", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	marketable = true,
 	release_group = 6,
+}))
+
+table.insert(prefs, CreatePrefabSkin("woodie_shadowp",
+{
+	base_prefab = "woodie",
+	type = "base",
+	build_name_override = "woodie_shadow",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	skin_tags = { "SHADOW", "BASE", "WOODIE", },
+	bigportrait = { build = "bigportraits/woodie_shadow.xml", symbol = "woodie_shadow_oval.tex"},
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_shadow", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("woodie_survivor",
 {
 	base_prefab = "woodie",
 	type = "base",
-	rarity = "Elegant",
+	rarity = "HeirloomElegant",
 	skin_tags = { "SURVIVOR", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_survivor", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_survivor", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	marketable = true,
 	release_group = 4,
+}))
+
+table.insert(prefs, CreatePrefabSkin("woodie_survivorp",
+{
+	base_prefab = "woodie",
+	type = "base",
+	build_name_override = "woodie_survivor",
+	rarity = "Elegant",
+	rarity_modifier = "Woven",
+	skin_tags = { "SURVIVOR", "BASE", "WOODIE", },
+	bigportrait = { build = "bigportraits/woodie_survivor.xml", symbol = "woodie_survivor_oval.tex"},
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_survivor", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
+	release_group = 73,
 }))
 
 table.insert(prefs, CreatePrefabSkin("woodie_treeguard",
@@ -4192,7 +4300,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_treeguard",
 	type = "base",
 	rarity = "Event",
 	skin_tags = { "COSTUME", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_treeguard", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_treeguard", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 15,
 }))
 
@@ -4202,7 +4310,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_treeguard_d",
 	type = "base",
 	rarity = "Elegant",
 	skin_tags = { "COSTUME", "BASE", "WOODIE", },
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_treeguard_d", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_treeguard_d", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	marketable = true,
 	release_group = 31,
 }))
@@ -4215,7 +4323,7 @@ table.insert(prefs, CreatePrefabSkin("woodie_victorian",
 	rarity_modifier = "Woven",
 	skin_tags = { "VICTORIAN", "BASE", "WOODIE", },
 	bigportrait = { build = "bigportraits/woodie_victorian.xml", symbol = "woodie_victorian_oval.tex"},
-	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", normal_skin = "woodie_victorian", werebeaver_skin = "werebeaver_build", },
+	skins = { ghost_skin = "ghost_woodie_build", ghost_werebeaver_skin = "ghost_werebeaver_build", ghost_weregoose_skin = "ghost_weregoose_build", ghost_weremoose_skin = "ghost_weremoose_build", normal_skin = "woodie_victorian", werebeaver_skin = "werebeaver_build", weregoose_skin = "weregoose_build", weremoose_skin = "weremoose_build", },
 	release_group = 43,
 }))
 

@@ -40,7 +40,7 @@ local DemoOverPopup = Class(Screen, function(self, callbackfn)
 	self.bg:SetVRegPoint(ANCHOR_MIDDLE)
     self.bg:SetHRegPoint(ANCHOR_MIDDLE)
     self.bg:SetScale(.97)
-    self.bg:SetTexture("images/thankyou_item_popup.xml", "thankyou_beta_1.tex")
+    self.bg:SetTexture("images/thankyou_gift.xml", "gift.tex")
 
     --title 
     self.title = self.proot:AddChild(Text(TITLEFONT, 60))

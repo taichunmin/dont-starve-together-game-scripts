@@ -701,6 +701,18 @@ t = {
              end,
         },
 
+        {
+            version = 5.021, -- Reposition the sculture pieces that are inside the physics radius of a body
+            fn = function(savedata)
+                if savedata ~= nil and savedata.map ~= nil and savedata.map.prefab == "forest" and savedata.map.persistdata ~= nil then
+					if savedata.map.persistdata.retrofitforestmap_anr == nil then
+						savedata.map.persistdata.retrofitforestmap_anr = {}
+					end
+					savedata.map.persistdata.retrofitforestmap_anr.retrofit_fix_sculpture_pieces = true
+                end
+             end,
+        },
+
 		
 
     },

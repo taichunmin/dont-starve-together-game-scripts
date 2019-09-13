@@ -149,6 +149,9 @@ Recipe("firesuppressor", {Ingredient("gears", 2),Ingredient("ice", 15),Ingredien
 
 --MAGIC
 Recipe("abigail_flower", {Ingredient("petals", 6), Ingredient("nightmarefuel", 1)}, RECIPETABS.MAGIC, TECH.NONE, nil, nil, nil, nil, "ghostlyfriend")
+Recipe("wereitem_goose", {Ingredient("monstermeat", 3), Ingredient("seeds", 3)}, RECIPETABS.MAGIC, TECH.NONE, nil, nil, nil, nil, "werehuman")
+Recipe("wereitem_beaver", {Ingredient("monstermeat", 3), Ingredient("log", 2)}, RECIPETABS.MAGIC, TECH.NONE, nil, nil, nil, nil, "werehuman")
+Recipe("wereitem_moose", {Ingredient("monstermeat", 3), Ingredient("cutgrass", 2)}, RECIPETABS.MAGIC, TECH.NONE, nil, nil, nil, nil, "werehuman")
 Recipe("researchlab4", {Ingredient("rabbit", 4), Ingredient("boards", 4), Ingredient("tophat", 1)}, RECIPETABS.MAGIC, TECH.SCIENCE_ONE, "researchlab4_placer")
 Recipe("researchlab3", {Ingredient("livinglog", 3), Ingredient("purplegem", 1), Ingredient("nightmarefuel", 7)}, RECIPETABS.MAGIC, TECH.MAGIC_TWO, "researchlab3_placer")
 Recipe("resurrectionstatue", {Ingredient("boards", 4),Ingredient("beardhair", 4), Ingredient(CHARACTER_INGREDIENT.HEALTH, TUNING.EFFIGY_HEALTH_PENALTY)}, RECIPETABS.MAGIC,  TECH.MAGIC_TWO, "resurrectionstatue_placer")

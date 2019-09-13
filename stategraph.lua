@@ -447,6 +447,7 @@ local SGTagsToEntTags =
     ["pausepredict"] = true,
     ["sleeping"] = true,
     ["working"] = true,
+    ["jumping"] = true,
 }
 
 function StateGraphInstance:HasState(statename)

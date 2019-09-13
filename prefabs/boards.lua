@@ -29,12 +29,6 @@ local function fn()
 
     inst:AddComponent("inspectable")
 
-    inst:AddComponent("edible")
-    inst.components.edible.foodtype = FOODTYPE.WOOD
-    inst.components.edible.woodiness = 15
-    inst.components.edible.healthvalue = 0
-    inst.components.edible.hungervalue = 0
-
     MakeSmallBurnable(inst, TUNING.LARGE_BURNTIME)
     MakeSmallPropagator(inst)
 

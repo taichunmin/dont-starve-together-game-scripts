@@ -828,7 +828,7 @@ function Story:_FindStartingTask(task_nodes)
 			table.insert(startTasks, nodes)
 		end
 	end
-	return #startTasks > 0 and startTasks[math.random(#startTasks)] or GetRandomItem(task_nodes).task
+	return #startTasks > 0 and startTasks[math.random(#startTasks)] or GetRandomItem(task_nodes)
 end
 
 function Story:GenerateNodesForRegion(taskset, layout_mode)
@@ -1367,4 +1367,4 @@ function BuildStory(tasks, story_gen_params, level)
     return {root=story.rootNode, startNode=story.startNode, GlobalTags = story.GlobalTags}, story
 end
 
-
+return Story

@@ -228,6 +228,7 @@ PREFAB_SKINS = {
 	{
 		"firestaff_bee",
 		"firestaff_gungnir",
+		"firestaff_hockey",
 		"firestaff_lance",
 		"firestaff_meteor",
 		"firestaff_rose",
@@ -248,6 +249,7 @@ PREFAB_SKINS = {
 	{
 		"footballhat_combathelm",
 		"footballhat_combathelm2",
+		"footballhat_hockey",
 		"hat_dog_helm",
 	},
 	hambat = 
@@ -274,6 +276,7 @@ PREFAB_SKINS = {
 	{
 		"icestaff_bee",
 		"icestaff_gungnir",
+		"icestaff_hockey",
 		"icestaff_lance",
 		"icestaff_rose",
 	},
@@ -308,6 +311,10 @@ PREFAB_SKINS = {
 		"orangestaff_ancient",
 		"orangestaff_victorian",
 	},
+	pighouse = 
+	{
+		"pighouse_logcabin",
+	},
 	rainhat = 
 	{
 		"rainhat_cowboy",
@@ -320,7 +327,6 @@ PREFAB_SKINS = {
 	researchlab2 = 
 	{
 		"researchlab2_pod",
-		"researchlab2_pod_alt",
 	},
 	researchlab4 = 
 	{
@@ -352,6 +358,7 @@ PREFAB_SKINS = {
 		"spear_bee",
 		"spear_forge_gungnir",
 		"spear_forge_lance",
+		"spear_hockey",
 		"spear_rose",
 	},
 	spear_wathgrithr = 
@@ -619,13 +626,18 @@ PREFAB_SKINS = {
 		"woodie_combatant",
 		"woodie_cook",
 		"woodie_formal",
+		"woodie_formalp",
 		"woodie_gladiator",
+		"woodie_hockey",
 		"woodie_magma",
 		"woodie_nature",
 		"woodie_none",
 		"woodie_rose",
+		"woodie_rosep",
 		"woodie_shadow",
+		"woodie_shadowp",
 		"woodie_survivor",
+		"woodie_survivorp",
 		"woodie_treeguard",
 		"woodie_treeguard_d",
 		"woodie_victorian",

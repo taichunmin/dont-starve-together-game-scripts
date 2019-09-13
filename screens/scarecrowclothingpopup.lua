@@ -118,7 +118,7 @@ end
 function ScarecrowClothingPopupScreen:Close(apply_skins)
 	-- Gets the current skin names (and sets them as the character default)
 	local skins = self.dressup:GetSkinsForGameStart()
-	
+    
     local data = {}
     if TheNet:IsOnlineMode() and apply_skins then
 		data = skins

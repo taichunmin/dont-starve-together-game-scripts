@@ -346,11 +346,16 @@ function c_sethunger(n)
     end
 end
 
-function c_setbeaverness(n)
+function c_setwereness(n)
     local player = ConsoleCommandPlayer()
-    if player ~= nil and player.components.beaverness ~= nil and not player:HasTag("playerghost") then
-        SuUsed("c_setbeaverness", true)
-        player.components.beaverness:SetPercent(math.min(n, 1))
+    if player ~= nil and player.components.wereness ~= nil and not player:HasTag("playerghost") then
+        SuUsed("c_setwereness", true)
+        if type(n) == "number" then
+            player.components.wereness:SetPercent(math.min(n, 1))
+        else
+            player.components.wereness:SetWereMode(n)
+            player.components.wereness:SetPercent(1, true)
+        end
     end
 end
 
@@ -427,6 +432,9 @@ end
 function c_teleport(x, y, z, inst)
     inst = ListingOrConsolePlayer(inst)
     if inst ~= nil then
+		if x == nil then
+			x, y, z = ConsoleWorldPosition():Get()
+		end
         inst.Transform:SetPosition(x, y, z)
         SuUsed("c_teleport", true)
     end
@@ -1286,6 +1294,12 @@ function c_dumpentities()
 	local total = 0
     for k,v in pairs(Ents) do        
         local name = v.prefab or (v.widget and v.widget.name) or v.name
+
+        if(type(name) == "table") then
+            name = tostring(name)
+        end
+
+
 		if name == nil then
 			name = "NONAME"
 		end

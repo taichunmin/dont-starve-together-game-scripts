@@ -9,7 +9,6 @@ local SKIN_GIFT_TYPES =
 	emote_swoon = "CUPID",
 	eyebrellahat_crystal = "TWITCH_DROP",
 	featherhat_circus = "TWITCH_DROP",
-	firepit_hole = "EARLY_ACCESS",
 	firesuppressor_circus = "TWITCH_DROP",
 	heatrock_fire = "TWITCH_DROP",
 	icebox_crystal = "TWITCH_DROP",
@@ -72,79 +71,124 @@ local SKIN_GIFT_POPUPDATA =
 {
 	ANRARG =
 	{
-		atlas = "images/thankyou_item_event.xml",
-		image = {"thankyou_anrarg.tex"},
-		title = STRINGS.THANKS_POPUP.ANRARG,
+		atlas = "images/thankyou_anrarg.xml",
+		image = "anrarg.tex",
 		titleoffset = {0, -20, 0},
 	},
 	ARG =
 	{
-		atlas = "images/thankyou_item_popup.xml",
-		image = {"thankyou_gift.tex"},
-		title = STRINGS.THANKS_POPUP.ARG,
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
 		titleoffset = {0, -20, 0},
 	},
 	CUPID =
 	{
-		atlas = "images/thankyou_item_popup.xml",
-		image = {"thankyou_gift.tex"},
-		title = STRINGS.THANKS_POPUP.CUPID,
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
 		titleoffset = {0, -30, 0},
+	},
+	DAILY_GIFT =
+	{
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
+		titleoffset = {0, -20, 0},
+	},
+	DEFAULT =
+	{
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
+		titleoffset = {0, -20, 0},
 	},
 	GORGE =
 	{
-		atlas = "images/thankyou_item_event2.xml",
-		image = {"thankyou_gorge.tex"},
-		title = STRINGS.THANKS_POPUP.GORGE,
+		atlas = "images/thankyou_gorge.xml",
+		image = "gorge.tex",
 		titleoffset = {0, -20, 0},
 	},
 	GORGE_TOURNAMENT =
 	{
-		atlas = "images/thankyou_item_popup.xml",
-		image = {"thankyou_gift.tex"},
-		title = STRINGS.THANKS_POPUP.GORGE_TOURNAMENT,
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
 		titleoffset = {0, -20, 0},
+	},
+	HAMLET =
+	{
+		atlas = "images/thankyou_hamlet.xml",
+		image = "hamlet.tex",
+		titleoffset = {-120, 0, 0},
 	},
 	LUNAR =
 	{
-		atlas = "images/thankyou_item_event.xml",
-		image = {"thankyou_lunar.tex"},
-		title = STRINGS.THANKS_POPUP.LUNAR,
+		atlas = "images/thankyou_lunar.xml",
+		image = "lunar.tex",
 		titleoffset = {0, -30, 0},
+	},
+	ROG =
+	{
+		atlas = "images/thankyou_rog_1.xml",
+		image = "rog_1.tex",
+		titleoffset = {-70, 0, 0},
+	},
+	ROGR =
+	{
+		atlas = "images/thankyou_rog_1.xml",
+		image = "rog_1.tex",
+		title_size = 40,
+		titleoffset = {-90, 0, 0},
+	},
+	STORE =
+	{
+		atlas = "images/thankyou_gift.xml",
+		image = "gift.tex",
+		titleoffset = {0, -20, 0},
+	},
+	SW =
+	{
+		atlas = "images/thankyou_sw.xml",
+		image = "sw.tex",
+		titleoffset = {-140, 0, 0},
+	},
+	SWR =
+	{
+		atlas = "images/thankyou_sw.xml",
+		image = "sw.tex",
+		title_size = 40,
+		titleoffset = {-135, 0, 0},
 	},
 	TOT =
 	{
-		atlas = "images/thankyou_item_event2.xml",
-		image = {"thankyou_rot.tex"},
-		title = STRINGS.THANKS_POPUP.TOT,
+		atlas = "images/thankyou_rot.xml",
+		image = "rot.tex",
+		titleoffset = {0, -20, 0},
+	},
+	TWITCH =
+	{
+		atlas = "images/thankyou_twitch.xml",
+		image = "twitch.tex",
 		titleoffset = {0, -20, 0},
 	},
 	TWITCH_DROP =
 	{
-		atlas = "images/thankyou_item_popup.xml",
-		image = {"thankyou_twitch.tex"},
-		title = STRINGS.THANKS_POPUP.TWITCH_DROP,
+		atlas = "images/thankyou_twitch.xml",
+		image = "twitch.tex",
 		titleoffset = {0, -20, 0},
 	},
 	VARG =
 	{
-		atlas = "images/thankyou_item_event.xml",
-		image = {"thankyou_varg.tex"},
-		title = STRINGS.THANKS_POPUP.VARG,
+		atlas = "images/thankyou_varg.xml",
+		image = "varg.tex",
 		titleoffset = {0, -20, 0},
 	},
 	WINTER =
 	{
-		atlas = "images/thankyou_item_event.xml",
-		image = {"thankyou_winter.tex"},
-		title = STRINGS.THANKS_POPUP.WINTER,
+		atlas = "images/thankyou_winter.xml",
+		image = "winter.tex",
 		titleoffset = {0, -30, 0},
 	},
 	YOTP =
 	{
-		atlas = "images/thankyou_item_event2.xml",
-		image = {"thankyou_yotp.tex"},
-		title = STRINGS.THANKS_POPUP.YOTP,
+		atlas = "images/thankyou_yotp.xml",
+		image = "yotp.tex",
 		titleoffset = {0, -20, 0},
 	},
 }

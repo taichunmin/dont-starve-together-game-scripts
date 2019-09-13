@@ -145,41 +145,28 @@ function Eater:Eat(food, feeder)
     -- their mouth, they bail and "spit it out" so to speak.
     if self:PrefersToEat(food) then
         local stack_mult = self.eatwholestack and food.components.stackable ~= nil and food.components.stackable:StackSize() or 1
+        local base_mult = self.inst.components.foodmemory ~= nil and self.inst.components.foodmemory:GetFoodMultiplier(food.prefab) or 1
 
-        local iswoodiness = false
-        if self.inst.components.beaverness ~= nil then
-            local delta = food.components.edible:GetWoodiness(self.inst)
+        if self.inst.components.health ~= nil and
+            (food.components.edible.healthvalue >= 0 or self:DoFoodEffects(food)) then
+            local delta = food.components.edible:GetHealth(self.inst) * base_mult * self.healthabsorption
             if delta ~= 0 then
-                self.inst.components.beaverness:DoDelta(delta * stack_mult)
-                iswoodiness = true
+                self.inst.components.health:DoDelta(delta * stack_mult, nil, food.prefab)
             end
         end
 
-        --If gained woodiness from eating, then don't gain any other stats
-        if not iswoodiness then
-            local base_mult = self.inst.components.foodmemory ~= nil and self.inst.components.foodmemory:GetFoodMultiplier(food.prefab) or 1
-
-            if self.inst.components.health ~= nil and
-                (food.components.edible.healthvalue >= 0 or self:DoFoodEffects(food)) then
-                local delta = food.components.edible:GetHealth(self.inst) * base_mult * self.healthabsorption
-                if delta ~= 0 then
-                    self.inst.components.health:DoDelta(delta * stack_mult, nil, food.prefab)
-                end
+        if self.inst.components.hunger ~= nil then
+            local delta = food.components.edible:GetHunger(self.inst) * base_mult * self.hungerabsorption
+            if delta ~= 0 then
+                self.inst.components.hunger:DoDelta(delta * stack_mult)
             end
+        end
 
-            if self.inst.components.hunger ~= nil then
-                local delta = food.components.edible:GetHunger(self.inst) * base_mult * self.hungerabsorption
-                if delta ~= 0 then
-                    self.inst.components.hunger:DoDelta(delta * stack_mult)
-                end
-            end
-
-            if self.inst.components.sanity ~= nil and
-                (food.components.edible.sanityvalue >= 0 or self:DoFoodEffects(food)) then
-                local delta = food.components.edible:GetSanity(self.inst) * base_mult * self.sanityabsorption
-                if delta ~= 0 then
-                    self.inst.components.sanity:DoDelta(delta * stack_mult)
-                end
+        if self.inst.components.sanity ~= nil and
+            (food.components.edible.sanityvalue >= 0 or self:DoFoodEffects(food)) then
+            local delta = food.components.edible:GetSanity(self.inst) * base_mult * self.sanityabsorption
+            if delta ~= 0 then
+                self.inst.components.sanity:DoDelta(delta * stack_mult)
             end
         end
 

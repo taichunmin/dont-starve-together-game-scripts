@@ -98,7 +98,7 @@ function MakeBanner(self)
         end
         anim.inst:ListenForEvent("animover", onanimover)
         onanimover(anim.inst)
-	elseif true then
+	elseif BRANCH == "staging" and CURRENT_BETA > 0 and BETA_INFO[CURRENT_BETA].NAME == "ROTBETA" then
 		-- beta banner
 		anim:GetAnimState():SetBuild("dst_menu_lunacy")
         anim:GetAnimState():SetBank("dst_menu_lunacy")
@@ -131,8 +131,13 @@ function MakeBanner(self)
         anim:GetAnimState():PlayAnimation("loop", true)
         anim:SetScale(.667)
         anim:SetPosition(0, 0)]]
-        anim:GetAnimState():SetBuild("dst_menu_warly")
+        --[[anim:GetAnimState():SetBuild("dst_menu_warly")
         anim:GetAnimState():SetBank("dst_menu_warly")
+        anim:GetAnimState():PlayAnimation("loop", true)
+        anim:SetScale(.667)
+        anim:SetPosition(0, 0)]]
+        anim:GetAnimState():SetBuild("dst_menu_woodie")
+        anim:GetAnimState():SetBank("dst_menu_woodie")
         anim:GetAnimState():PlayAnimation("loop", true)
         anim:SetScale(.667)
         anim:SetPosition(0, 0)

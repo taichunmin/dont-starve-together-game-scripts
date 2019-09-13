@@ -33,6 +33,7 @@ local function fn()
     inst:AddTag("elemental")
     inst:AddTag("companion")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
     inst:AddTag("notraptrigger")
     inst:AddTag("NOCLICK")
 

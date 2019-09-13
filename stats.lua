@@ -286,7 +286,7 @@ local function SuccesfulConnect(account_event, success, event_code, custom_messa
 end
 
 local function InitStats()
-	statsEventListener = CreateEntity()
+	statsEventListener = CreateEntity("StatsEventListener")
 	statsEventListener.OnAccountEvent = SuccesfulConnect
 	RegisterOnAccountEventListener(statsEventListener)
 end

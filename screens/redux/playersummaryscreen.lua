@@ -1,5 +1,6 @@
 local AchievementsPopup = require "screens/redux/achievementspopup"
 local CollectionScreen = require "screens/redux/collectionscreen"
+local SkinDebugScreen = require "screens/redux/skindebugscreen"
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
 local MorgueScreen = require "screens/redux/morguescreen"
@@ -396,6 +397,11 @@ function PlayerSummaryScreen:_BuildMenu()
 	local redeem_button = TEMPLATES.MenuButton(STRINGS.UI.REDEEMDIALOG.MENU_BUTTON_TITLE, function() self:_FadeToScreen(RedeemDialog, {}) end, STRINGS.UI.REDEEMDIALOG.MENU_BUTTON_DESC, self.tooltip, menu_button_style)
     table.insert(menu_items, 1, {widget = redeem_button})
     table.insert(self.waiting_for_inventory, 1, redeem_button)
+
+    if SKIN_DEBUGGING then
+        local skinsdebug_button = TEMPLATES.MenuButton("SKIN DEBUG", function() self:_FadeToScreen(SkinDebugScreen, {}) end, "SKIN DEBUG", self.tooltip, menu_button_style)
+        table.insert(menu_items, 1, {widget = skinsdebug_button})
+    end
 
 	if self.can_shop then
 		local purchase_button   = TEMPLATES.MenuButton(STRINGS.UI.PLAYERSUMMARYSCREEN.PURCHASE, function() self:_FadeToScreen(PurchasePackScreen, {}) end, STRINGS.UI.PLAYERSUMMARYSCREEN.TOOLTIP_PURCHASE, self.tooltip, menu_button_style)	

@@ -351,10 +351,13 @@ function SpawnSaveRecord(saved, newents)
     return inst
 end
 
-function CreateEntity()
+function CreateEntity(name)
     local ent = TheSim:CreateEntity()
     local guid = ent:GetGUID()
     local scr = EntityScript(ent)
+    if name ~= nil then
+        scr.name = name
+    end
     Ents[guid] = scr
     NumEnts = NumEnts + 1
     return scr

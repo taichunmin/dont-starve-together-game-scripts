@@ -140,6 +140,54 @@ local function AddConstrainedPhysicsObj(boat, physics_obj)
 	end)
 end
 
+local function on_start_steering(inst)
+    if ThePlayer and ThePlayer.components.playercontroller ~= nil and ThePlayer.components.playercontroller.isclientcontrollerattached then
+        inst.components.reticule:CreateReticule()    
+    end
+end
+
+local function on_stop_steering(inst)    
+    if ThePlayer and ThePlayer.components.playercontroller ~= nil and ThePlayer.components.playercontroller.isclientcontrollerattached then
+        inst.lastreticuleangle = nil
+        inst.components.reticule:DestroyReticule()        
+    end
+end
+
+local function ReticuleTargetFn(inst)
+
+    local range = 7
+    local pos = Vector3(inst.Transform:GetWorldPosition())   
+
+    local dir = Vector3()
+    dir.x = TheInput:GetAnalogControlValue(CONTROL_MOVE_RIGHT) - TheInput:GetAnalogControlValue(CONTROL_MOVE_LEFT)
+    dir.y = 0
+    dir.z = TheInput:GetAnalogControlValue(CONTROL_MOVE_UP) - TheInput:GetAnalogControlValue(CONTROL_MOVE_DOWN)
+    local deadzone = .3    
+
+    if math.abs(dir.x) >= deadzone or math.abs(dir.z) >= deadzone then    
+        dir = dir:GetNormalized()             
+
+        inst.lastreticuleangle = dir
+    else
+        if inst.lastreticuleangle then
+            dir = inst.lastreticuleangle
+        else 
+            return nil
+        end
+    end
+
+    local Camangle = TheCamera:GetHeading()/180        
+    local theta = -PI *(0.5 - Camangle)
+
+    local newx = dir.x * math.cos(theta) - dir.z *math.sin(theta)
+    local newz = dir.x * math.sin(theta) + dir.z *math.cos(theta)
+
+    pos.x = pos.x - (newx * range) 
+    pos.z = pos.z - (newz * range) 
+
+    return pos
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -179,21 +227,30 @@ local function fn()
     inst.components.walkableplatform.radius = radius
 
     inst:AddComponent("healthsyncer")    
-    inst:AddComponent("boattrail")
+
     inst.components.healthsyncer.max_health = max_health
 
 	AddConstrainedPhysicsObj(inst, SpawnPrefab("boat_item_collision")) -- hack until physics constraints are networked
 
     inst:AddComponent("waterphysics")
-    inst.components.waterphysics.restitution = 1.75
-	
+    inst.components.waterphysics.restitution = 1.75    
 
+    inst:AddComponent("reticule")
+    inst.components.reticule.targetfn = ReticuleTargetFn
+    inst.components.reticule.ispassableatallpoints = true
+    inst.on_start_steering = on_start_steering
+    inst.on_stop_steering = on_stop_steering
 
 	if not TheNet:IsDedicated() then
 		-- dedicated server doesnt need to handle camera settings
 		inst.StartBoatCamera = StartBoatCamera
 		inst:ListenForEvent("obj_got_on_platform", OnObjGotOnPlatform)
 		inst:ListenForEvent("obj_got_off_platform", OnObjGotOffPlatform)
+
+        inst:ListenForEvent("endsteeringreticule", function(inst,data)  if ThePlayer and ThePlayer == data.player then inst:on_stop_steering() end end)
+        inst:ListenForEvent("starsteeringreticule", function(inst,data) if ThePlayer and ThePlayer == data.player then inst:on_start_steering() end end)
+
+        inst:AddComponent("boattrail")
 	end
 
 	inst.entity:SetPristine()

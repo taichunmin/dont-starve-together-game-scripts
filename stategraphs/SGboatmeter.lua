@@ -10,7 +10,9 @@ local states =
     {
         name = "open",
         onenter = function(inst)
+            inst.widget.backing:Show()
             inst.widget.badge:Show()
+            inst.widget.icon:Show()
             inst.widget.leak_anim:Show()
         end,
 
@@ -28,7 +30,7 @@ local states =
 
         events =
         {
-            EventHandler("animqueueover", function(inst) inst.sg:GoToState("open_pst") end),
+            EventHandler("animover", function(inst) inst.sg:GoToState("open_pst") end),
         },
     },
 
@@ -37,13 +39,15 @@ local states =
         name = "open_pst",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("open_pst")
+            inst.widget.backing:Show()
             inst.widget.badge:Show()
+            inst.widget.icon:Show()
             inst.widget.leak_anim:Show()
         end,
 
         events =
         {
-            EventHandler("animqueueover", function(inst) inst.sg:GoToState("open") end),
+            EventHandler("animover", function(inst) inst.sg:GoToState("open") end),
         },
     },
 
@@ -56,7 +60,7 @@ local states =
 
         events =
         {
-            EventHandler("animqueueover", function(inst) inst.sg:GoToState("close_pst") end),
+            EventHandler("animover", function(inst) inst.sg:GoToState("close_pst") end),
         },
     },
 
@@ -65,13 +69,15 @@ local states =
         name = "close_pst",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("close_pst")
+            inst.widget.backing:Hide()
             inst.widget.badge:Hide()
+            inst.widget.icon:Hide()
             inst.widget.leak_anim:Hide()
         end,
 
         events =
         {
-            EventHandler("animqueueover", function(inst) inst.sg:GoToState("closed") end),
+            EventHandler("animover", function(inst) inst.sg:GoToState("closed") end),
         },
     },
 
@@ -79,7 +85,9 @@ local states =
     {
         name = "closed",
         onenter = function(inst)
+            inst.widget.backing:Hide()
             inst.widget.badge:Hide()
+            inst.widget.icon:Hide()
             inst.widget.leak_anim:Hide()
         end,
     },

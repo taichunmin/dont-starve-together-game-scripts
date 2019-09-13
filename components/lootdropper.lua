@@ -227,18 +227,19 @@ function LootDropper:FlingItem(loot, pt, bouncedcb)
 
                 if self.inst ~= nil and self.inst.Physics ~= nil then
                     local radius = loot:GetPhysicsRadius(1) + self.inst:GetPhysicsRadius(1)
-                    if self.spawn_loot_inside_prefab then
+                    if not self.spawn_loot_inside_prefab then
                         loot.Transform:SetPosition(
                             pt.x + cosangle * radius,
                             pt.y,
                             pt.z - sinangle * radius
-                        )                                                
+                        )
                     else
+                        radius = radius * math.random()
                         loot.Transform:SetPosition(
-                            pt.x + cosangle * radius * math.random(),
+                            pt.x + cosangle * radius,
                             pt.y + 0.5,
-                            pt.z - sinangle * radius * math.random()
-                        )                        
+                            pt.z - sinangle * radius
+                        )
                     end
                 end
 

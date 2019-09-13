@@ -134,6 +134,7 @@ local function mosquito()
     inst:AddTag("mosquito")
     inst:AddTag("insect")
     inst:AddTag("flying")
+    inst:AddTag("ignorewalkableplatformdrowning")
     inst:AddTag("smallcreature")
     inst:AddTag("cattoyairborne")
 
