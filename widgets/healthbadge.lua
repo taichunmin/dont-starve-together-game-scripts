@@ -18,7 +18,12 @@ local HealthBadge = Class(Badge, function(self, owner, art)
     self.topperanim:SetScale(1, -1, 1)
     self.topperanim:SetClickable(false)
 
-    self.circleframe:GetAnimState():Hide("frame")
+    if self.circleframe ~= nil then
+        self.circleframe:GetAnimState():Hide("frame")
+    else
+        self.anim:GetAnimState():Hide("frame")
+    end
+
     self.circleframe2 = self.underNumber:AddChild(UIAnim())
     self.circleframe2:GetAnimState():SetBank("status_meter")
     self.circleframe2:GetAnimState():SetBuild("status_meter")

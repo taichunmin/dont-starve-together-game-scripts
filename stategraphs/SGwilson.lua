@@ -48,6 +48,26 @@ local function DoMooseRunSounds(inst)
     DoRunSounds(inst)
 end
 
+local function DoGooseStepFX(inst)
+    if inst.components.drownable ~= nil and inst.components.drownable:IsOverWater() then
+        SpawnPrefab("weregoose_splash_med"..tostring(math.random(2))).entity:SetParent(inst.entity)
+    end
+end
+
+local function DoGooseWalkFX(inst)
+    if inst.components.drownable ~= nil and inst.components.drownable:IsOverWater() then
+        SpawnPrefab("weregoose_splash_less"..tostring(math.random(2))).entity:SetParent(inst.entity)
+    end
+end
+
+local function DoGooseRunFX(inst)
+    if inst.components.drownable ~= nil and inst.components.drownable:IsOverWater() then
+        SpawnPrefab("weregoose_splash").entity:SetParent(inst.entity)
+    else
+        SpawnPrefab("weregoose_feathers"..tostring(math.random(3))).entity:SetParent(inst.entity)
+    end
+end
+
 local function DoHurtSound(inst)
     if inst.hurtsoundoverride ~= nil then
         inst.SoundEmitter:PlaySound(inst.hurtsoundoverride, nil, inst.hurtsoundvolume)
@@ -1691,6 +1711,9 @@ local states =
                         inst.sg.statemem.cb(inst)
                         inst.AnimState:PlayAnimation("revert_weregoose_pst")
                         PlayFootstep(inst)
+                        if inst.components.drownable ~= nil and inst.components.drownable:IsOverWater() then
+                            SpawnPrefab("weregoose_splash").entity:SetParent(inst.entity)
+                        end
                         SpawnPrefab("weregoose_transform_fx").Transform:SetPosition(inst.Transform:GetWorldPosition())
                         inst.components.inventory:Open()
                         inst:SetCameraDistance()
@@ -2089,6 +2112,7 @@ local states =
                 t = math.floor((t - math.floor(t / len) * len) / FRAMES + .5)
                 if (t == 5 or t == 14) and t ~= inst.sg.statemem.gooseframe then
                     PlayFootstep(inst, .5, false)
+                    DoGooseStepFX(inst)
                 end
                 inst.sg.statemem.gooseframe = t
             end
@@ -6060,7 +6084,7 @@ local states =
                 elseif inst.sg.statemem.goose then
                     DoRunSounds(inst)
                     DoFoleySounds(inst)
-                    SpawnPrefab("weregoose_feathers"..tostring(math.random(3))).Transform:SetPosition(inst.Transform:GetWorldPosition())
+                    DoGooseRunFX(inst)
                 end
             end),
             TimeEvent(12 * FRAMES, function(inst)
@@ -6150,14 +6174,14 @@ local states =
                 if inst.sg.statemem.goose then
                     DoRunSounds(inst)
                     DoFoleySounds(inst)
-                    SpawnPrefab("weregoose_feathers"..tostring(math.random(3))).Transform:SetPosition(inst.Transform:GetWorldPosition())
+                    DoGooseRunFX(inst)
                 end
             end),]]
             TimeEvent(9 * FRAMES, function(inst)
                 if inst.sg.statemem.goose then
                     DoRunSounds(inst)
                     DoFoleySounds(inst)
-                    SpawnPrefab("weregoose_feathers"..tostring(math.random(3))).Transform:SetPosition(inst.Transform:GetWorldPosition())
+                    DoGooseRunFX(inst)
                 end
             end),
 
@@ -6166,12 +6190,14 @@ local states =
                 if inst.sg.statemem.goosegroggy then
                     DoRunSounds(inst)
                     DoFoleySounds(inst)
+                    DoGooseWalkFX(inst)
                 end
             end),
             TimeEvent(17 * FRAMES, function(inst)
                 if inst.sg.statemem.goosegroggy then
                     DoRunSounds(inst)
                     DoFoleySounds(inst)
+                    DoGooseWalkFX(inst)
                 end
             end),
         },
@@ -6246,6 +6272,11 @@ local states =
                 if inst.sg.statemem.goose or inst.sg.statemem.goosegroggy then
                     PlayFootstep(inst, .5, true)
                     DoFoleySounds(inst)
+                    if inst.sg.statemem.goosegroggy then
+                        DoGooseWalkFX(inst)
+                    else
+                        DoGooseStepFX(inst)
+                    end
                 end
             end),
         },

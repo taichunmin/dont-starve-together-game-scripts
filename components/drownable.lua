@@ -3,6 +3,8 @@ local Drownable = Class(function(self, inst)
 
 	self.enabled = nil
 
+    --V2C: weregoose hacks will set this to false on load.
+    --     Please refactor this block to use POST LOAD timing instead.
 	self.inst:DoTaskInTime(0, function() if self.enabled == nil then self.enabled = true end end) -- delaying the enable until after the character is finished being set up so that the idle state doesnt sink the player while loading
 
 --	self.customtuningsfn = nil
@@ -17,14 +19,17 @@ function Drownable:SetCustomTuningsFn(fn)
 	self.customtuningsfn = fn
 end
 
+function Drownable:IsOverWater()
+    local x, y, z = self.inst.Transform:GetWorldPosition()
+    return not TheWorld.Map:IsVisualGroundAtPoint(x, y, z)
+        and TheWorld.Map:GetTileAtPoint(x, y, z) ~= GROUND.INVALID -- allow players to be out of bounds so that a number of mods will still work
+        and self.inst:GetCurrentPlatform() == nil
+end
+
 function Drownable:ShouldDrown()
-	if self.enabled then
-		local x, y, z = self.inst.Transform:GetWorldPosition()
-		return not TheWorld.Map:IsVisualGroundAtPoint(x, y, z) 
-				and TheWorld.Map:GetTileAtPoint(x, y, z) ~= GROUND.INVALID -- allow players to be out of bounds so that a number of mods will still work
-				and self.inst:GetCurrentPlatform() == nil
-				and (self.inst.components.health == nil or not self.inst.components.health:IsInvincible()) -- god mode check
-	end
+    return self.enabled
+        and self:IsOverWater()
+        and (self.inst.components.health == nil or not self.inst.components.health:IsInvincible()) -- god mode check
 end
 
 local function NoHoles(pt)

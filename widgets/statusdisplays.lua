@@ -196,7 +196,9 @@ function StatusDisplays:ShowStatusNumbers()
     self.stomach.num:Show()
     self.heart.num:Show()
     self.moisturemeter.num:Show()
-    self.boatmeter.num:Show()
+    if self.boatmeter.boat then
+        self.boatmeter.num:Show()
+    end
     if self.wereness ~= nil then
         self.wereness.num:Show()
     end

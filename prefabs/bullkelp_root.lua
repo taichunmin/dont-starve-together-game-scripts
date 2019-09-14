@@ -121,4 +121,4 @@ local function fn()
 end
 
 return Prefab("bullkelp_root", fn, assets),
-		MakePlacer("bullkelp_root_placer", "bullkelp", "bullkelp", "preview", false, false, false, nil, nil, nil, nil, 4)
+		MakePlacer("bullkelp_root_placer", "bullkelp", "bullkelp", "preview", false, false, false, nil, nil, nil, nil, 2)

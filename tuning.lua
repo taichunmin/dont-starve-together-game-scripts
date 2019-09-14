@@ -3380,7 +3380,7 @@ function Tune(overrides)
         BUFF_WORKEFFECTIVENESS_MODIFIER = 2,
 
         --v2 Woodie
-        WERE_SANITY_PENALTY = -.5,
+        WERE_SANITY_PENALTY = -.1,
         WERE_FULLMOON_DRAIN_TIME_MULTIPLIER = 2,
         WOODCUTTER_LEIF_CHANCE_MOD = 1.5,
         WOODCUTTER_DECID_MONSTER_CHANCE_MOD = 1.5,
@@ -3388,24 +3388,26 @@ function Tune(overrides)
         BEAVER_LEIF_CHANCE_MOD = 0,
         BEAVER_DECID_MONSTER_CHANCE_MOD = 0,
         BEAVER_DRAIN_TIME = 15,
-        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER2 = 5,
-        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER1 = 3,
-        BEAVER_WORKING_DRAIN_TIME_DURATION = 3, --time for the working mults to wear off
+        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER2 = 16,
+        BEAVER_WORKING_DRAIN_TIME_MULTIPLIER1 = 10,
+        BEAVER_WORKING_DRAIN_TIME_DURATION = 4, --time for the working mults to wear off
         BEAVER_RUN_SPEED = 6.6, --x1.1 speed
         BEAVER_ABSORPTION = .25,
         BEAVER_DAMAGE = wilson_attack * .8,
         BEAVER_WOOD_DAMAGE = wilson_attack * .5, -- extra damage to wood things
         --
         WEREMOOSE_DRAIN_TIME = 15,
-        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER2 = 6,
-        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER1 = 3,
-        WEREMOOSE_FIGHTING_DRAIN_TIME_DURATION = 3, --time for fighting mults to wear off
+        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER2 = 16,
+        WEREMOOSE_FIGHTING_DRAIN_TIME_MULTIPLIER1 = 10,
+        WEREMOOSE_FIGHTING_DRAIN_TIME_DURATION = 6, --time for fighting mults to wear off
         WEREMOOSE_RUN_SPEED = 5.4, --x0.9 speed
-        WEREMOOSE_ABSORPTION = .8,
+        WEREMOOSE_ABSORPTION = .9,
         WEREMOOSE_DAMAGE = wilson_attack * 1.75,
         --
-        WEREGOOSE_DRAIN_TIME = 12,
-        WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER = 5,
+        WEREGOOSE_DRAIN_TIME = 15,
+        WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER2 = 16,
+        WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER1 = 10,
+        WEREGOOSE_RUN_DRAIN_TIME_DURATION = 2, --time for running mults to wear off
         WEREGOOSE_RUN_SPEED = 8.4, --x1.4 speed
         --deprecated beaverness stuff
         --BEAVER_DRAIN_TIME = 5 * total_day_time, -- time it takes the log meter to drain to transform threshold

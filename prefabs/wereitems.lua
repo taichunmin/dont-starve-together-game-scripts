@@ -40,9 +40,9 @@ local function MakeWereItem(were_mode)
         inst:AddComponent("edible")
         inst.components.edible.ismeat = true
         inst.components.edible.foodtype = FOODTYPE.MEAT
-        inst.components.edible.healthvalue = -TUNING.HEALING_MEDLARGE
+        inst.components.edible.healthvalue = -TUNING.HEALING_MED
         inst.components.edible.hungervalue = TUNING.CALORIES_MED
-        inst.components.edible.sanityvalue = -TUNING.SANITY_MEDLARGE
+        inst.components.edible.sanityvalue = -TUNING.SANITY_MED
 
         inst:AddComponent("bait")
         inst:AddComponent("tradable")

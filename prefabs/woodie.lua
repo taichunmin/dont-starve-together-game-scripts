@@ -27,6 +27,7 @@ local assets =
     Asset("ANIM", "anim/weregoose_boat_plank.zip"),
     Asset("ANIM", "anim/weregoose_boat_sink.zip"),
     Asset("ANIM", "anim/weregoose_fx.zip"), --the fx uses werebeaver_build, so doesn't auto-generate dependency (needs this build for override symbol)
+    Asset("ANIM", "anim/splash_weregoose_fx.zip"), --the fx uses splash_water_drop build, so doesn't auto-generate dependency (needs this bank)
     Asset("ANIM", "anim/player_revive_to_werebeaver.zip"),
     Asset("ANIM", "anim/player_revive_to_weremoose.zip"),
     Asset("ANIM", "anim/player_revive_to_weregoose.zip"),
@@ -68,6 +69,13 @@ local prefabs =
     "weregoose_feathers1",
     "weregoose_feathers2",
     "weregoose_feathers3",
+    "weregoose_splash",
+    "weregoose_splash_med1",
+    "weregoose_splash_med2",
+    "weregoose_splash_less1",
+    "weregoose_splash_less2",
+    "weregoose_ripple1",
+    "weregoose_ripple2",
     --
     "reticuleline2",
 }
@@ -470,6 +478,17 @@ local function beaverbonusdamagefn(inst, target, damage, weapon)
     return (target:HasTag("tree") or target:HasTag("beaverchewable")) and TUNING.BEAVER_WOOD_DAMAGE or 0
 end
 
+local function OnGooseRunningOver(inst, CalculateWerenessDrainRate)
+    if inst._gooserunninglevel > 1 then
+        inst._gooserunninglevel = inst._gooserunninglevel - 1
+        inst._gooserunning = inst:DoTaskInTime(TUNING.WEREGOOSE_RUN_DRAIN_TIME_DURATION, OnGooseRunningOver, CalculateWerenessDrainRate)
+    else
+        inst._gooserunning = nil
+        inst._gooserunninglevel = nil
+    end
+    inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.GOOSE, TheWorld.state.isfullmoon))
+end
+
 local function CalculateWerenessDrainRate(inst, mode, isfullmoon)
     local t = isfullmoon and TUNING.WERE_FULLMOON_DRAIN_TIME_MULTIPLIER or 1
     if mode == WEREMODES.BEAVER then
@@ -485,7 +504,14 @@ local function CalculateWerenessDrainRate(inst, mode, isfullmoon)
     else--if mode == WEREMODES.GOOSE then
         t = t * TUNING.WEREGOOSE_DRAIN_TIME
         if inst.sg:HasStateTag("moving") then
-            t = t * TUNING.WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER
+            if inst._gooserunning ~= nil then
+                inst._gooserunning:Cancel()
+            end
+            inst._gooserunning = inst:DoTaskInTime(TUNING.WEREGOOSE_RUN_DRAIN_TIME_DURATION, OnGooseRunningOver, CalculateWerenessDrainRate)
+            inst._gooserunninglevel = 2
+        end
+        if inst._gooserunninglevel ~= nil then
+            t = t * (inst._gooserunninglevel > 1 and TUNING.WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER2 or TUNING.WEREGOOSE_RUN_DRAIN_TIME_MULTIPLIER1)
         end
     end
     return -100 / t
@@ -543,6 +569,53 @@ end
 
 --------------------------------------------------------------------------
 
+local function SetWereDrowning(inst, mode)
+    --V2C: drownable HACKS, using "false" to override "nil" load behaviour
+    --     Please refactor drownable to use POST LOAD timing.
+    if inst.components.drownable ~= nil then
+        if mode == WEREMODES.GOOSE then
+            if inst.components.drownable.enabled ~= false then
+                inst.components.drownable.enabled = false
+                inst.Physics:ClearCollisionMask()
+                inst.Physics:CollidesWith(COLLISION.GROUND)
+                inst.Physics:CollidesWith(COLLISION.OBSTACLES)
+                inst.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+                inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+                inst.Physics:CollidesWith(COLLISION.GIANTS)
+                inst.Physics:Teleport(inst.Transform:GetWorldPosition())
+            end
+        elseif inst.components.drownable.enabled == false then
+            inst.components.drownable.enabled = true
+            if not inst:HasTag("playerghost") then
+                inst.Physics:ClearCollisionMask()
+                inst.Physics:CollidesWith(COLLISION.WORLD)
+                inst.Physics:CollidesWith(COLLISION.OBSTACLES)
+                inst.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+                inst.Physics:CollidesWith(COLLISION.CHARACTERS)
+                inst.Physics:CollidesWith(COLLISION.GIANTS)
+                inst.Physics:Teleport(inst.Transform:GetWorldPosition())
+            end
+        end
+    end
+end
+
+local function SetWereRunner(inst, mode)
+    if mode == WEREMODES.GOOSE then
+        if inst._gooserunning ~= nil then
+            inst._gooserunning:Cancel()
+        end
+        inst._gooserunning = inst:DoTaskInTime(TUNING.WEREGOOSE_RUN_DRAIN_TIME_DURATION, OnGooseRunningOver, CalculateWerenessDrainRate)
+        inst._gooserunninglevel = 2
+        inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.GOOSE, TheWorld.state.isfullmoon))
+    elseif inst._gooserunning ~= nil then
+        inst._gooserunning:Cancel()
+        inst._gooserunning = nil
+        inst._gooserunninglevel = nil
+    end
+end
+
+--------------------------------------------------------------------------
+
 local function OnBeaverWorkingOver(inst)
     if inst._beaverworkinglevel > 1 then
         inst._beaverworkinglevel = inst._beaverworkinglevel - 1
@@ -576,12 +649,13 @@ local function SetWereWorker(inst, mode)
         if inst.components.worker == nil then
             inst:AddComponent("worker")
             inst.components.worker:SetAction(ACTIONS.CHOP, 4)
-            inst.components.worker:SetAction(ACTIONS.MINE, .334)
-            inst.components.worker:SetAction(ACTIONS.DIG, .334)
+            inst.components.worker:SetAction(ACTIONS.MINE, .5)
+            inst.components.worker:SetAction(ACTIONS.DIG, .5)
             inst.components.worker:SetAction(ACTIONS.HAMMER, .25)
             inst:ListenForEvent("working", OnBeaverWorking)
             inst:ListenForEvent("onattackother", OnBeaverFighting)
             inst:ListenForEvent("onmissother", OnBeaverFighting)
+            OnBeaverWorking(inst)
         end
     else
         if inst.components.worker ~= nil then
@@ -615,14 +689,18 @@ local function OnMooseFightingOver(inst)
     inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.MOOSE, TheWorld.state.isfullmoon))
 end
 
+local function ResetMooseFightingLevel(inst)
+    if inst._moosefighting ~= nil then
+        inst._moosefighting:Cancel()
+    end
+    inst._moosefighting = inst:DoTaskInTime(TUNING.WEREMOOSE_FIGHTING_DRAIN_TIME_DURATION, OnMooseFightingOver)
+    inst._moosefightinglevel = 2
+    inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.MOOSE, TheWorld.state.isfullmoon))
+end
+
 local function OnMooseFighting(inst, data)
     if data ~= nil and (data.target ~= nil or data.attacker ~= nil) then
-        if inst._moosefighting ~= nil then
-            inst._moosefighting:Cancel()
-        end
-        inst._moosefighting = inst:DoTaskInTime(TUNING.WEREMOOSE_FIGHTING_DRAIN_TIME_DURATION, OnMooseFightingOver)
-        inst._moosefightinglevel = 2
-        inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.MOOSE, TheWorld.state.isfullmoon))
+        ResetMooseFightingLevel(inst)
     end
 end
 
@@ -636,6 +714,7 @@ local function SetWereFighter(inst, mode)
         inst:ListenForEvent("onmissother", OnMooseFighting)
         inst:ListenForEvent("attacked", OnMooseFighting)
         inst:ListenForEvent("blocked", OnMooseFighting)
+        ResetMooseFightingLevel(inst)
     elseif inst._moosefighting ~= nil then
         inst._moosefighting:Cancel()
         inst._moosefighting = nil
@@ -660,12 +739,28 @@ local GOOSE_HONK_STATES =
     ["run_stop"] = true,
 }
 
+local function DoRipple(inst)
+    if inst.components.drownable ~= nil and inst.components.drownable:IsOverWater() then
+        SpawnPrefab("weregoose_ripple"..tostring(math.random(2))).entity:SetParent(inst.entity)
+    end
+end
+
 local function OnNewGooseState(inst, data)
     if not GOOSE_FLAP_STATES[data.statename] or (inst.components.grogginess ~= nil and inst.components.grogginess.isgroggy) then
         inst.SoundEmitter:KillSound("flap")
-    elseif not inst.SoundEmitter:PlayingSound("flap") then
-        inst.SoundEmitter:PlaySound("dontstarve/characters/woodie/goose/flap", "flap")
+        if inst.gooserippletask == nil then
+            inst.gooserippletask = inst:DoPeriodicTask(.7, DoRipple)
+        end
+    else
+        if not inst.SoundEmitter:PlayingSound("flap") then
+            inst.SoundEmitter:PlaySound("dontstarve/characters/woodie/goose/flap", "flap")
+        end
+        if inst.gooserippletask ~= nil then
+            inst.gooserippletask:Cancel()
+            inst.gooserippletask = nil
+        end
     end
+
     if not GOOSE_HONK_STATES[data.statename] then
         inst.SoundEmitter:KillSound("honk")
     elseif not inst.SoundEmitter:PlayingSound("honk") then
@@ -835,6 +930,8 @@ local function onbecamehuman(inst)
         inst.components.playercontroller:SetCanUseMap(true)
     end]]
 
+    SetWereDrowning(inst, WEREMODES.NONE)
+    SetWereRunner(inst, WEREMODES.NONE)
     SetWereWorker(inst, WEREMODES.NONE)
     SetWereFighter(inst, WEREMODES.NONE)
     SetWereActions(inst, WEREMODES.NONE)
@@ -886,6 +983,8 @@ local function onbecamebeaver(inst)
         inst.components.playercontroller:SetCanUseMap(false)
     end]]
 
+    SetWereDrowning(inst, WEREMODES.BEAVER)
+    SetWereRunner(inst, WEREMODES.BEAVER)
     SetWereWorker(inst, WEREMODES.BEAVER)
     SetWereFighter(inst, WEREMODES.BEAVER)
     SetWereActions(inst, WEREMODES.BEAVER)
@@ -937,6 +1036,8 @@ local function onbecamemoose(inst)
         inst.components.playercontroller:SetCanUseMap(false)
     end]]
 
+    SetWereDrowning(inst, WEREMODES.MOOSE)
+    SetWereRunner(inst, WEREMODES.MOOSE)
     SetWereWorker(inst, WEREMODES.MOOSE)
     SetWereFighter(inst, WEREMODES.MOOSE)
     SetWereActions(inst, WEREMODES.MOOSE)
@@ -988,6 +1089,8 @@ local function onbecamegoose(inst)
         inst.components.playercontroller:SetCanUseMap(false)
     end]]
 
+    SetWereDrowning(inst, WEREMODES.GOOSE)
+    SetWereRunner(inst, WEREMODES.GOOSE)
     SetWereWorker(inst, WEREMODES.GOOSE)
     SetWereFighter(inst, WEREMODES.GOOSE)
     SetWereActions(inst, WEREMODES.GOOSE)
@@ -1078,6 +1181,8 @@ local function onbecameghost(inst, data)
         inst:StopWatchingWorldState("isfullmoon", OnIsFullmoon)
     end
 
+    SetWereDrowning(inst, WEREMODES.NONE)
+    SetWereRunner(inst, WEREMODES.NONE)
     SetWereWorker(inst, WEREMODES.NONE)
     SetWereFighter(inst, WEREMODES.NONE)
     SetWereActions(inst, WEREMODES.NONE)

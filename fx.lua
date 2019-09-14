@@ -536,18 +536,134 @@ local fx =
         bank = "weregoose_fx",
         build = "weregoose_fx",
         anim = "trail1",
+        fn = function(inst)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
     },
     {
         name = "weregoose_feathers2",
         bank = "weregoose_fx",
         build = "weregoose_fx",
         anim = "trail2",
+        fn = function(inst)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
     },
     {
         name = "weregoose_feathers3",
         bank = "weregoose_fx",
         build = "weregoose_fx",
         anim = "trail3",
+        fn = function(inst)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_splash",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "idle",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_splash_med1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_splash_med2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary2",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_splash_less1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary_small",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_splash_less2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary_small2",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_ripple1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "no_splash",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
+    },
+    {
+        name = "weregoose_ripple2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "no_splash2",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+            if inst.entity:GetParent() ~= nil then
+                inst.Transform:SetPosition(inst.Transform:GetWorldPosition())
+                inst.entity:SetParent(nil)
+            end
+        end,
     },
     {
         name = "groundpound_fx",

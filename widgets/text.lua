@@ -215,7 +215,8 @@ function Text:SetMultilineTruncatedString(str, maxlines, maxwidth, maxcharsperli
                     str = str:sub(#line + 1)
                     
                     if not found_white then
-                        print("Warning: ".. str .. " was split on non-whitespace.")
+                        --Testing for finding areas where we've had to split on
+                        --print("Warning: ".. line .. " was split on non-whitespace.")
                     end
                 else
                     str = str:sub(#line + 2)

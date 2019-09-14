@@ -70,7 +70,7 @@ function WereBadge:UpdateArrow()
         local rate = self.owner:GetWerenessDrainRate()
         if rate < -5 then
             anim = "arrow_loop_decrease_most"
-        elseif rate < -2 then
+        elseif rate < -.5 then
             anim = "arrow_loop_decrease_more"
         elseif rate < 0 then
             anim = "arrow_loop_decrease"

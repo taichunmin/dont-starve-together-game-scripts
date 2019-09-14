@@ -806,17 +806,20 @@ local function OnLoad(inst, data)
     end
 
     inst:DoTaskInTime(0, function()
-        local my_x, my_y, my_z = inst.Transform:GetWorldPosition()
+        --V2C: HACK! enabled false instead of nil means it was overriden by weregoose on load.
+        --     Please refactor drownable and this block to use POST LOAD timing instead.
+        if not (inst.components.drownable ~= nil and inst.components.drownable.enabled == false) then
+            local my_x, my_y, my_z = inst.Transform:GetWorldPosition()
 
-        if not TheWorld.Map:IsPassableAtPoint(my_x, my_y, my_z) then
-        for k,v in pairs(Ents) do            
-                if v:IsValid() and v:HasTag("multiplayer_portal") then
-                    inst.Transform:SetPosition(v.Transform:GetWorldPosition())
-                    inst:SnapCamera()
+            if not TheWorld.Map:IsPassableAtPoint(my_x, my_y, my_z) then
+            for k,v in pairs(Ents) do
+                    if v:IsValid() and v:HasTag("multiplayer_portal") then
+                        inst.Transform:SetPosition(v.Transform:GetWorldPosition())
+                        inst:SnapCamera()
+                    end
                 end
-            end            
+            end
         end
-
     end)
 end
 
