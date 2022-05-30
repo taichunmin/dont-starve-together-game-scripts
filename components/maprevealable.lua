@@ -103,9 +103,10 @@ function MapRevealable:StopRevealing()
     end
 end
 
+local MAPREVEALER_TAGS = {"maprevealer"}
 function MapRevealable:Refresh()
     if self.task ~= nil then
-        if GetClosestInstWithTag("maprevealer", self.inst, 30) ~= nil then
+        if GetClosestInstWithTag(MAPREVEALER_TAGS, self.inst, 30) ~= nil then
             self:AddRevealSource("maprevealer")
         else
             self:RemoveRevealSource("maprevealer")

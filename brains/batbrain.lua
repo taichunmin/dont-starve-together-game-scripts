@@ -25,13 +25,14 @@ local function GoHomeAction(inst)
         or nil
 end
 
+local BATDESTINATION_TAG = { "batdestination" }
 local function EscapeAction(inst)
     if TheWorld.state.iscaveday then
         return GoHomeAction(inst)
     end
     -- wander up through a sinkhole at night
     local x, y, z = inst.Transform:GetWorldPosition()
-    local exit = TheSim:FindEntities(x, 0, z, TUNING.BAT_ESCAPE_RADIUS, { "batdestination" })[1]
+    local exit = TheSim:FindEntities(x, 0, z, TUNING.BAT_ESCAPE_RADIUS, BATDESTINATION_TAG)[1]
     return exit ~= nil
         and (exit.components.childspawner ~= nil or
             exit.components.hideout ~= nil)

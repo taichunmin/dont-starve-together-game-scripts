@@ -54,6 +54,7 @@ local function fn()
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
+    inst.components.equippable.is_magic_dapperness = true
 
     inst:AddComponent("fueled")
     inst.components.fueled.fueltype = FUELTYPE.USAGE

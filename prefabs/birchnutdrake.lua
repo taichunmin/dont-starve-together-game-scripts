@@ -12,6 +12,8 @@ local prefabs =
 
 local brain = require("brains/birchnutdrakebrain")
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "wall", "birchnutdrake", "INLIMBO" }
 local function RetargetFn(inst)
     return not inst.sg:HasStateTag("hidden")
         and FindEntity(
@@ -20,8 +22,8 @@ local function RetargetFn(inst)
                 function(guy)
                     return inst.components.combat:CanTarget(guy)
                 end,
-                { "_combat" }, --See entityreplica.lua (re: "_combat" tag)
-                { "wall", "birchnutdrake", "INLIMBO" }
+                RETARGET_MUST_TAGS, --See entityreplica.lua (re: "_combat" tag)
+                RETARGET_CANT_TAGS
             )
         or nil
 end

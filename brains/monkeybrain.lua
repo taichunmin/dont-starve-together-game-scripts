@@ -24,9 +24,11 @@ local TIME_BETWEEN_EATING = 30
 local LEASH_RETURN_DIST = 15
 local LEASH_MAX_DIST = 20
 
-local NO_LOOTING_TAGS = { "INLIMBO", "catchable", "fire", "irreplaceable", "heavy", "outofreach" }
+local NO_LOOTING_TAGS = { "INLIMBO", "catchable", "fire", "irreplaceable", "heavy", "outofreach", "spider" }
 local NO_PICKUP_TAGS = deepcopy(NO_LOOTING_TAGS)
 table.insert(NO_PICKUP_TAGS, "_container")
+
+local PICKUP_ONEOF_TAGS = { "_inventoryitem", "pickable", "readyforharvest" }
 
 local MonkeyBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
@@ -61,10 +63,10 @@ local ValidFoodsToPick =
 {
     "berries",
     "cave_banana",
-    "carrot",   
+    "carrot",
     "red_cap",
     "blue_cap",
-    "green_cap", 
+    "green_cap",
 }
 
 local function ItemIsInList(item, list)
@@ -98,7 +100,7 @@ local function EatFoodAction(inst)
     local ents = TheSim:FindEntities(x, y, z, SEE_FOOD_DIST,
         nil,
         NO_PICKUP_TAGS,
-        { "_inventoryitem", "pickable", "readyforharvest" })
+        PICKUP_ONEOF_TAGS)
 
     --If you're not wearing a hat, look for a hat to wear!
     if inst.components.inventory ~= nil and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HEAD) == nil then
@@ -166,6 +168,8 @@ local function OnLootingCooldown(inst)
     inst.canlootchests = true
 end
 
+local ANNOY_ONEOF_TAGS = { "_inventoryitem", "_container" }
+local ANNOY_ALT_MUST_TAG = { "_inventoryitem" }
 local function AnnoyLeader(inst)
     if inst.sg:HasStateTag("busy") then
         return
@@ -175,8 +179,8 @@ local function AnnoyLeader(inst)
     local mx, my, mz = inst.Transform:GetWorldPosition()
     local ents =
         lootchests and
-        TheSim:FindEntities(mx, 0, mz, 30, nil, NO_LOOTING_TAGS, { "_inventoryitem", "_container" }) or
-        TheSim:FindEntities(mx, 0, mz, 30, { "_inventoryitem" }, NO_PICKUP_TAGS)
+        TheSim:FindEntities(mx, 0, mz, 30, nil, NO_LOOTING_TAGS, ANNOY_ONEOF_TAGS) or
+        TheSim:FindEntities(mx, 0, mz, 30, ANNOY_ALT_MUST_TAG, NO_PICKUP_TAGS)
 
     --Can we hassle the player by taking items from stuff he has killed or worked?
     for i, v in ipairs(ents) do
@@ -272,14 +276,14 @@ local function EquipWeapon(inst, weapon)
 end
 
 function MonkeyBrain:OnStart()
-    
+
     local root = PriorityNode(
     {
         WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
 
         --Monkeys go home when quakes start.
-        EventNode(self.inst, "gohome", 
+        EventNode(self.inst, "gohome",
             DoAction(self.inst, GoHome)),
 
         --In combat (with the player)... Should only ever use poop throwing.
@@ -290,7 +294,7 @@ function MonkeyBrain:OnStart()
                 ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST),
             })),
         --Pick up poop to throw
-        WhileNode(function() return self.inst.components.combat.target and self.inst.components.combat.target:HasTag("player") and not self.inst.HasAmmo(self.inst) end, "Pick Up Poop", 
+        WhileNode(function() return self.inst.components.combat.target and self.inst.components.combat.target:HasTag("player") and not self.inst.HasAmmo(self.inst) end, "Pick Up Poop",
             DoAction(self.inst, GetPoop)),
         --Eat/ pick/ harvest foods.
         WhileNode(function() return self.inst.components.combat.target and self.inst.components.combat.target:HasTag("player") or self.inst.components.combat.target == nil end, "Should Eat",
@@ -310,14 +314,14 @@ function MonkeyBrain:OnStart()
                 ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST),
             })),
 
-        
+
         --Following
-        WhileNode(function() return self.inst.harassplayer end, "Annoy Leader", 
+        WhileNode(function() return self.inst.harassplayer end, "Annoy Leader",
             DoAction(self.inst, AnnoyLeader)),
         Follow(self.inst, function() return self.inst.harassplayer end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
-        
+
         --Doing nothing
-        WhileNode(function() return self.inst.harassplayer  end, "Wander Around Leader", 
+        WhileNode(function() return self.inst.harassplayer  end, "Wander Around Leader",
             Wander(self.inst, function() if self.inst.harassplayer  then return self.inst.harassplayer:GetPosition() end end, MAX_FOLLOW_DIST)),
         WhileNode(function() return not self.inst.harassplayer and not self.inst.components.combat.target end,
         "Wander Around Home", Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, MAX_WANDER_DIST))

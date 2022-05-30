@@ -35,18 +35,30 @@ local MOON_PHASE_LENGTHS =
     [MOON_PHASES.threequarter] =    3,
     [MOON_PHASES.full] =            1,
 }
-local MOON_PHASE_CYCLE = {}
+local MOON_PHASE_CYCLES = {}
+-- Waxing (1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5)
 for i = 1, #MOON_PHASE_NAMES do
     for x = 1, MOON_PHASE_LENGTHS[i] do
-        table.insert(MOON_PHASE_CYCLE, i)
+        table.insert(MOON_PHASE_CYCLES, i)
     end
 end
+-- Waning (4, 4, 4, 3, 3, 3, 2, 2, 2)
 for i = #MOON_PHASE_NAMES - 1, 2, -1 do
     for x = 1, MOON_PHASE_LENGTHS[i] do
-        table.insert(MOON_PHASE_CYCLE, i)
+        table.insert(MOON_PHASE_CYCLES, i)
     end
 end
 MOON_PHASE_LENGTHS = nil
+
+-- if you add to this, you'll need to update uiclock._moon_builds for it to mean anything
+local MOON_PHASE_STYLE_NAMES =
+{
+	"default", --"moon_phases",
+	"alter_active", -- "moonalter_phases",
+	"glassed_default",
+	"glassed_alter_active",
+}
+local MOON_PHASE_STYLES = table.invert(MOON_PHASE_STYLE_NAMES)
 
 --------------------------------------------------------------------------
 --[[ Member variables ]]
@@ -59,10 +71,15 @@ self.inst = inst
 local _world = TheWorld
 local _ismastersim = _world.ismastersim
 local _ismastershard = _world.ismastershard
+local _mooomphasecycle = 1
+local _moonphaselocked = false -- Note: This does not save/load
+
+
 local _segsdirty = true
 local _cyclesdirty = true
 local _phasedirty = true
 local _moonphasedirty = true
+local _moonphasestyledirty = true
 
 --Network
 local _segs = {}
@@ -75,6 +92,7 @@ local _moonphase = net_tinybyte(inst.GUID, "clock._moonphase", "moonphasedirty")
 local _mooniswaxing = net_bool(inst.GUID, "clock._mooniswaxing", "moonphasedirty")
 local _totaltimeinphase = net_float(inst.GUID, "clock._totaltimeinphase")
 local _remainingtimeinphase = net_float(inst.GUID, "clock._remainingtimeinphase")
+local _moonphasestyle = net_tinybyte(inst.GUID, "clock._moonphasestyle", "moonphasestyledirty")
 
 --------------------------------------------------------------------------
 --[[ Public member functions ]]
@@ -90,17 +108,22 @@ function self:GetTimeUntilPhase(phase)
 	local cur_phase = _phase:value()
 	if target_phase ~= nil and target_phase ~= cur_phase then
 		local time = _remainingtimeinphase:value()
-		
+
 		cur_phase = (cur_phase % #PHASE_NAMES) + 1
 		while (cur_phase ~= target_phase) do
 			time = time + (_segs[cur_phase]:value() * TUNING.SEG_TIME)
 			cur_phase = (cur_phase % #PHASE_NAMES) + 1
 		end
-		
+
 		return time
 	end
 
 	return 0
+end
+
+function self:AddMoonPhaseStyle(style)
+	table.insert(MOON_PHASE_STYLE_NAMES, style)
+	MOON_PHASE_STYLES[style] = #MOON_PHASE_STYLE_NAMES
 end
 
 --------------------------------------------------------------------------
@@ -122,19 +145,18 @@ local function SetDefaultSegs()
     end
 end
 
-local function CalculateMoonPhase(cycles)
-    --V2C: After waxing/waning changes, moon phase is
-    --     now advanced at the beginning of each day.
-    --[[
-    -- don't advance the moon until nighttime
-    if _phase:value() ~= PHASES.night and cycles > 0 then
-        cycles = cycles - 1
-    end]]
-
-    local m = cycles % #MOON_PHASE_CYCLE
-    local waxing = 2 * m < #MOON_PHASE_CYCLE
-    return MOON_PHASE_CYCLE[m + 1], waxing
+local function GetMoonPhase()
+    local waxing = _mooomphasecycle < #MOON_PHASE_CYCLES / 2
+    return MOON_PHASE_CYCLES[_mooomphasecycle], waxing
 end
+
+local CalcTimeOfDay = _ismastersim and function()
+	local time_of_day = _totaltimeinphase:value() - _remainingtimeinphase:value()
+	for i = 1, _phase:value()-1 do
+		time_of_day = time_of_day + _segs[i]:value()*TUNING.SEG_TIME
+	end
+	return time_of_day
+end or nil
 
 local ForceResync = _ismastersim and function(netvar)
     netvar:set_local(netvar:value())
@@ -150,11 +172,14 @@ local function OnPlayerActivated()
     _cyclesdirty = true
     _phasedirty = true
     _moonphasedirty = true
+	_moonphasestyledirty = true
 end
 
 local OnSetClockSegs = _ismastersim and function(src, segs)
-    local normremaining = _totaltimeinphase:value() > 0 and (_remainingtimeinphase:value() / _totaltimeinphase:value()) or 1
+	-- cache the current time of day so we can restore it after the segs change
+	local time_of_day = CalcTimeOfDay()
 
+	-- change the segs to the new setup
     if segs then
         local totalsegs = 0
         for i, v in ipairs(_segs) do
@@ -166,8 +191,21 @@ local OnSetClockSegs = _ismastersim and function(src, segs)
         SetDefaultSegs()
     end
 
-    _totaltimeinphase:set(_segs[_phase:value()]:value() * TUNING.SEG_TIME)
-    _remainingtimeinphase:set(normremaining * _totaltimeinphase:value())
+	local new_phase, new_remainingtimeinphase
+	for i, seg in ipairs(_segs) do
+		local phase_time = seg:value()*TUNING.SEG_TIME
+		if time_of_day <= phase_time then
+			new_phase = i
+			new_remainingtimeinphase = phase_time - time_of_day
+			break
+		else
+			time_of_day = time_of_day - phase_time
+		end
+	end
+
+	_phase:set(new_phase)
+	_totaltimeinphase:set(_segs[_phase:value()]:value() * TUNING.SEG_TIME)
+    _remainingtimeinphase:set(new_remainingtimeinphase)
 end or nil
 
 local OnSetPhase = _ismastersim and function(src, phase)
@@ -189,6 +227,28 @@ local OnNextCycle = _ismastersim and function()
     _phase:set(#PHASE_NAMES)
     _remainingtimeinphase:set(0)
     self:LongUpdate(0)
+end or nil
+
+local OnSetMoonPhase = _ismastersim and function(world, data)
+	local phase_num = MOON_PHASES[data.moonphase]
+	for i = (data.iswaxing and 1 or #MOON_PHASE_CYCLES/2), #MOON_PHASE_CYCLES do
+		if MOON_PHASE_CYCLES[i] == phase_num then
+			_mooomphasecycle = i
+			break
+		end
+	end
+
+	local moonphase, waxing = GetMoonPhase()
+    _moonphase:set(moonphase)
+    _mooniswaxing:set(waxing)
+end or nil
+
+local OnLockMoonPhase = _ismastersim and function(world, data)
+	_moonphaselocked = data ~= nil and data.lock
+end or nil
+
+local OnSetMoonPhaseStyle = _ismastersim and function(world, data)
+	_moonphasestyle:set(((data ~= nil and data.style ~= nil) and MOON_PHASE_STYLES[data.style] or MOON_PHASE_STYLES.default) - 1)
 end or nil
 
 local OnSimUnpaused = _ismastersim and function()
@@ -217,9 +277,9 @@ end or nil
 SetDefaultSegs()
 _cycles:set(0)
 _phase:set(PHASES.day)
-local moonphase, waxing = CalculateMoonPhase(_cycles:value())
-_moonphase:set(moonphase)
-_mooniswaxing:set(waxing)
+_moonphase:set(1)
+_mooniswaxing:set(true)
+_moonphasestyle:set(0)
 _totaltimeinphase:set(_segs[_phase:value()]:value() * TUNING.SEG_TIME)
 _remainingtimeinphase:set(_totaltimeinphase:value())
 
@@ -228,6 +288,7 @@ inst:ListenForEvent("segsdirty", function() _segsdirty = true end)
 inst:ListenForEvent("cyclesdirty", function() _cyclesdirty = true end)
 inst:ListenForEvent("phasedirty", function() _phasedirty = true end)
 inst:ListenForEvent("moonphasedirty", function() _moonphasedirty = true end)
+inst:ListenForEvent("moonphasestyledirty", function() _moonphasestyledirty = true end)
 inst:ListenForEvent("playeractivated", OnPlayerActivated, _world)
 
 if _ismastersim then
@@ -236,15 +297,18 @@ if _ismastersim then
     inst:ListenForEvent("ms_setphase", OnSetPhase, _world)
     inst:ListenForEvent("ms_nextphase", OnNextPhase, _world)
     inst:ListenForEvent("ms_nextcycle", OnNextCycle, _world)
+    inst:ListenForEvent("ms_setmoonphase", OnSetMoonPhase, _world)
+    inst:ListenForEvent("ms_lockmoonphase", OnLockMoonPhase, _world)
+    inst:ListenForEvent("ms_setmoonphasestyle", OnSetMoonPhaseStyle, _world)
     inst:ListenForEvent("ms_simunpaused", OnSimUnpaused, _world)
 
     if not _ismastershard then
-        --Register slave shard events
-        inst:ListenForEvent("slave_clockupdate", OnClockUpdate, _world)
+        --Register secondary shard events
+        inst:ListenForEvent("secondary_clockupdate", OnClockUpdate, _world)
     end
 end
 
-inst:StartUpdatingComponent(self)
+inst:StartUpdatingComponent(self, not TheNet:IsDedicated())
 
 --------------------------------------------------------------------------
 --[[ Update ]]
@@ -288,15 +352,14 @@ function self:OnUpdate(dt)
                 --Advance to next cycle
                 _cycles:set(_cycles:value() + 1)
                 _world:PushEvent("ms_cyclecomplete", _cycles:value())
-            --V2C: After waxing/waning changes, moon phase is
-            --     now advanced at the beginning of each day.
-            --[[
-            end
+				-- Note: It is the seasons component that handles adjusting the number of day/dusk/night segments
 
-            if _phase:value() == PHASES.night then
-            ]]
-                --Advance to next moon phase
-                local moonphase, waxing = CalculateMoonPhase(_cycles:value())
+				if not _moonphaselocked then
+					_mooomphasecycle = (_mooomphasecycle % #MOON_PHASE_CYCLES) + 1
+				end
+
+                --Advance to next moon phase. After waxing/waning changes, moon phase is now advanced at the beginning of each day.
+                local moonphase, waxing = GetMoonPhase()
                 if moonphase ~= _moonphase:value() then
                     _moonphase:set(moonphase)
                 end
@@ -311,7 +374,7 @@ function self:OnUpdate(dt)
             return
         end
     else
-        --Clients and slaves must wait at end of phase for a server sync
+        --Clients and secondary shards must wait at end of phase for a server sync
         _remainingtimeinphase:set_local(math.min(.001, _remainingtimeinphase:value()))
     end
 
@@ -340,6 +403,11 @@ function self:OnUpdate(dt)
         _world:PushEvent("moonphasechanged2", { moonphase = MOON_PHASE_NAMES[_moonphase:value()], waxing = _mooniswaxing:value() })
         _moonphasedirty = false
     end
+
+	if _moonphasestyledirty then
+		_world:PushEvent("moonphasestylechanged", { style = MOON_PHASE_STYLE_NAMES[_moonphasestyle:value() + 1] })
+		_moonphasestyledirty = false
+	end
 
     local elapsedsegs = 0
     local normtimeinphase = 0
@@ -371,6 +439,7 @@ function self:OnUpdate(dt)
     end
 end
 
+self.OnStaticUpdate = self.OnUpdate
 self.LongUpdate = self.OnUpdate
 
 --------------------------------------------------------------------------
@@ -383,8 +452,7 @@ if _ismastersim then function self:OnSave()
         segs = {},
         cycles = _cycles:value(),
         phase = PHASE_NAMES[_phase:value()],
-        moonphase2 = MOON_PHASE_NAMES[_moonphase:value()],
-        moonwaxing = _mooniswaxing:value(),
+ 		mooomphasecycle = _mooomphasecycle,
         totaltimeinphase = _totaltimeinphase:value(),
         remainingtimeinphase = _remainingtimeinphase:value(),
     }
@@ -420,13 +488,17 @@ if _ismastersim then function self:OnLoad(data)
         end
     end
 
-    --moonphase deprecated, moonphase2 is paired with waxing
-    local moonphase, waxing = data.moonphase2 ~= nil and MOON_PHASES[data.moonphase2] or nil, data.moonwaxing == true
-    if moonphase == nil then
-        moonphase, waxing = CalculateMoonPhase(_cycles:value())
-    end
+	if data.mooomphasecycle ~= nil then
+		_mooomphasecycle = data.mooomphasecycle
+	else
+		--retorifitting old saves
+		_mooomphasecycle = (_cycles:value() % #MOON_PHASE_CYCLES) + 1
+	end
+
+	local moonphase, waxing = GetMoonPhase()
     _moonphase:set(moonphase)
     _mooniswaxing:set(waxing)
+
     _totaltimeinphase:set(data.totaltimeinphase or _segs[_phase:value()]:value() * TUNING.SEG_TIME)
     _remainingtimeinphase:set(math.min(data.remainingtimeinphase or _totaltimeinphase:value(), _totaltimeinphase:value()))
 end end
@@ -436,6 +508,8 @@ end end
 --------------------------------------------------------------------------
 
 function self:Dump()
+	   print("Time of Day:", CalcTimeOfDay())
+
        print("segs in day   ",  _segs[1]:value())
        print("segs in dusk  ",  _segs[2]:value())
        print("segs in night ",  _segs[3]:value())
@@ -444,7 +518,7 @@ function self:Dump()
        print("phase ",  PHASE_NAMES[_phase:value()])
        print("moonphase2 ",  MOON_PHASE_NAMES[_moonphase:value()])
        print("moonwaxing ",  _mooniswaxing:value())
-	   
+
        print("totaltimeinphase ",  _totaltimeinphase:value())
        print("remainingtimeinphase ",  _remainingtimeinphase:value())
        print("total segs phase ",  _totaltimeinphase:value()/TUNING.SEG_TIME)
@@ -455,7 +529,7 @@ function self:Dump()
 end
 
 function self:GetDebugString()
-    return string.format("%d %s: %2.2f : %2.2f ", _cycles:value() + 1, PHASE_NAMES[_phase:value()], _remainingtimeinphase:value(), _segs[_phase:value()]:value())
+    return string.format("%d %s: %2.2f : %2.2f (moon cycle: %d)", _cycles:value() + 1, PHASE_NAMES[_phase:value()], _remainingtimeinphase:value(), _segs[_phase:value()]:value(), _mooomphasecycle)
 end
 
 --------------------------------------------------------------------------

@@ -1,4 +1,4 @@
--- require "stats_schema"    -- for when we actually organize 
+-- require "stats_schema"    -- for when we actually organize
 
 STATS_ENABLE = METRICS_ENABLED
 -- NOTE: There is also a call to 'anon/start' in dontstarve/main.cpp which has to be un/commented
@@ -75,13 +75,15 @@ end
 local function PrefabListToMetrics(list)
     local metrics = {}
     for i,item in ipairs(list) do
-        if metrics[item.prefab] == nil then
-            metrics[item.prefab] = 0
-        end
-        if item.components.stackable ~= nil then
-            metrics[item.prefab] = metrics[item.prefab] + item.components.stackable:StackSize()
-        else
-            metrics[item.prefab] = metrics[item.prefab] + 1
+        if item.prefab then
+            if metrics[item.prefab] == nil then
+                metrics[item.prefab] = 0
+            end
+            if item.components.stackable ~= nil then
+                metrics[item.prefab] = metrics[item.prefab] + item.components.stackable:StackSize()
+            else
+                metrics[item.prefab] = metrics[item.prefab] + 1
+            end
         end
     end
     -- format for storage
@@ -132,7 +134,7 @@ local function BuildContextTable(player)
         end
     end
 
-	sendstats.special_event = TheNet:GetServerEvent() and TheNet:GetServerGameMode() or nil
+	--sendstats.special_event = TheNet:GetServerEvent() and TheNet:GetServerGameMode() or nil
 
     sendstats.user =
         (sendstats.user ~= nil and (sendstats.user.."@chester")) or
@@ -197,10 +199,10 @@ local function RecordSessionStartStats()
     sendstats.event = "sessionstart"
 	sendstats.Session = {
 		Loads = {
-			Mods = { 
+			Mods = {
 				mod = false,
 				list = {},
-				
+
 			},
 		}
 	}
@@ -210,7 +212,7 @@ local function RecordSessionStartStats()
 		table.insert(sendstats.Session.Loads.Mods.list, name)
 	end
 
-	
+
 	--print("_________________++++++ Sending sessions start stats...\n")
 	--dumptable(sendstats)
 	local jsonstats = json.encode_compliant( sendstats )
@@ -230,12 +232,12 @@ local function RecordGameStartStats()
 	local sendstats = BuildStartupContextTable()
     sendstats.event = "startup.gamestart"
     sendstats.startup = {}
-    
+
 	if PLATFORM == "WIN32_RAIL" then
 		sendstats.appdataWritable = TheSim:IsAppDataWritable()
 		sendstats.documentsWritable = TheSim:IsDocumentsWritable()
 	end
-	
+
 	--print("_________________++++++ Sending game start stats...\n")
 	--dumptable(sendstats)
 	local jsonstats = json.encode_compliant( sendstats )
@@ -278,7 +280,7 @@ local sessionStatsSent = false
 
 local function SuccesfulConnect(account_event, success, event_code, custom_message )
 	if event_code == 3 and success == true or
-           event_code == 6 and success == true and 
+           event_code == 6 and success == true and
            not sessionStatsSent then
                 sessionStatsSent = true
 		OnLaunchComplete()

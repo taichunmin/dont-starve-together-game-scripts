@@ -42,6 +42,7 @@ end
 
 function ControllerCrafting:Close(fn)
     ControllerCrafting._base.Close(self, fn)
+    self.recipe_held = false
     self:StopUpdating()
     --V2C: focus hacks because this is not a proper screen
     TheFrontEnd:LockFocus(false)
@@ -125,7 +126,7 @@ end
 function ControllerCrafting:OpenRecipeTab()
 	local tab = self:GetTabs():OpenTab(self.tabidx)
 	if tab ~= nil then
-		self:SetFilter( 
+		self:SetFilter(
 			function(recname)
 				local recipe = GetValidRecipe(recname)
 				return recipe ~= nil
@@ -142,27 +143,40 @@ function ControllerCrafting:OpenRecipeTab()
 end
 
 function ControllerCrafting:OnControl(control, down)
-    if down or not self.open then
+    if not self.open then return end
+
+    if down then
+        if control == CONTROL_ACCEPT or control == CONTROL_ACTION then
+            if self.last_recipe_click and (GetStaticTime() - self.last_recipe_click) < 1 then
+                self.recipe_held = true
+                self.last_recipe_click = nil
+            end
+        end
         return
     elseif control == CONTROL_ACCEPT or control == CONTROL_ACTION then
         if self.accept_down then
             self.accept_down = false --this was held down when we were opened, so we want to ignore it
         else
-			local recipepopup = self.craftslots.slots[self.selected_slot].recipepopup
-        	local skin = (recipepopup.skins_spinner and recipepopup.skins_spinner.GetItem()) or nil
+        	local skin = (self.recipepopup.skins_spinner and self.recipepopup.skins_spinner.GetItem()) or nil
             if skin ~= nil then
-				Profile:SetLastUsedSkinForItem(self.selected_recipe.name, skin)
-				Profile:SetRecipeTimestamp(self.selected_recipe.name, recipepopup.timestamp)
+				Profile:SetLastUsedSkinForItem(self.selected_recipe_by_tab_idx[self.tabidx].name, skin)
+				Profile:SetRecipeTimestamp(self.selected_recipe_by_tab_idx[self.tabidx].name, self.recipepopup.timestamp)
             end
-            if not DoRecipeClick(self.owner, self.selected_recipe, skin) then
-                self.owner.HUD:CloseControllerCrafting()
+            self.last_recipe_click = GetStaticTime()
+            if not self.recipe_held then
+                if not DoRecipeClick(self.owner, self.selected_recipe_by_tab_idx[self.tabidx], skin) then
+                    self.owner.HUD:CloseControllerCrafting()
+                end
+            else
+                self.control_held = TheInput:IsControlPressed(CONTROL_OPEN_CRAFTING)
             end
+            self.recipe_held = false
             if not self.control_held then
                 self.owner.HUD:CloseControllerCrafting()
             end
         end
         return true
-    elseif control == CONTROL_OPEN_CRAFTING and self.control_held and self.control_held_time > 1 then
+    elseif control == CONTROL_OPEN_CRAFTING and self.control_held and self.control_held_time > 1 and not self.recipe_held then
         self.owner.HUD:CloseControllerCrafting()
         return true
     end
@@ -171,6 +185,10 @@ end
 function ControllerCrafting:OnUpdate(dt)
     if not self.open or not self.owner.HUD.shown or TheFrontEnd:GetActiveScreen() ~= self.owner.HUD then
         return
+    end
+
+    if self.recipe_held then
+        DoRecipeClick(self.owner, self.selected_recipe_by_tab_idx[self.tabidx], self.recipepopup.skins_spinner and self.recipepopup.skins_spinner.GetItem() or nil)
     end
 
     if self.control_held then

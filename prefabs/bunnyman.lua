@@ -22,7 +22,6 @@ local prefabs =
 }
 
 local beardlordloot = { "beardhair", "beardhair", "monstermeat" }
-local regularloot = { "carrot", "carrot" }
 
 local brain = require("brains/bunnymanbrain")
 
@@ -141,9 +140,11 @@ local function OnNewTarget(inst, data)
 end
 
 local function is_meat(item)
-    return item.components.edible ~= nil  and item.components.edible.foodtype == FOODTYPE.MEAT
+    return item.components.edible ~= nil and item.components.edible.foodtype == FOODTYPE.MEAT and not item:HasTag("smallcreature")
 end
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_ONEOF_TAGS = { "monster", "player" }
 local function NormalRetargetFn(inst)
     return not inst:IsInLimbo()
         and FindEntity(
@@ -156,9 +157,9 @@ local function NormalRetargetFn(inst)
                                 guy:IsNear(inst, TUNING.BUNNYMAN_SEE_MEAT_DIST) and
                                 guy.components.inventory:FindItem(is_meat) ~= nil))
                 end,
-                { "_combat", "_health" }, -- see entityreplica.lua
+                RETARGET_MUST_TAGS, -- see entityreplica.lua
                 nil,
-                { "monster", "player" }
+                RETARGET_ONEOF_TAGS
             )
         or nil
 end
@@ -192,9 +193,9 @@ local function LootSetupFunction(lootdropper)
         lootdropper:SetLoot(beardlordloot)
     else
         -- regular loot
-        lootdropper:SetLoot(regularloot)
+        lootdropper:AddRandomLoot("carrot", 3)
         lootdropper:AddRandomLoot("meat", 3)
-        lootdropper:AddRandomLoot("manrabbit_tail", 1)
+        lootdropper:AddRandomLoot("manrabbit_tail", 2)
         lootdropper.numrandomloot = 1
     end
 end
@@ -206,7 +207,6 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
-    inst.entity:AddLightWatcher()
     inst.entity:AddNetwork()
 
     inst.AnimState:SetBuild("manrabbit_build")
@@ -259,6 +259,7 @@ local function fn()
     -- boat hopping setup
     inst.components.locomotor:SetAllowPlatformHopping(true)
     inst:AddComponent("embarker")
+    inst:AddComponent("drownable")
 
     inst:AddComponent("bloomer")
 
@@ -296,7 +297,6 @@ local function fn()
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLootSetupFn(LootSetupFunction)
-    LootSetupFunction(inst.components.lootdropper)
 
     ------------------------------------------
 
@@ -318,6 +318,7 @@ local function fn()
     ------------------------------------------
 
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
 
     ------------------------------------------
     MakeMediumFreezableCharacter(inst, "pig_torso")
@@ -328,7 +329,7 @@ local function fn()
     inst.components.inspectable.getstatus = GetStatus
     ------------------------------------------
 
-    inst:ListenForEvent("attacked", OnAttacked)    
+    inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("newcombattarget", OnNewTarget)
 
     inst.components.sleeper:SetResistance(2)
@@ -345,7 +346,7 @@ local function fn()
 
     inst.components.health:SetMaxHealth(TUNING.BUNNYMAN_HEALTH)
 
-    MakeHauntablePanic(inst, 5, nil, 5)
+    MakeHauntablePanic(inst)
 
     inst:SetBrain(brain)
     inst:SetStateGraph("SGbunnyman")

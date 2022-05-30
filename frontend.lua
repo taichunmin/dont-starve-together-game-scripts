@@ -1,10 +1,8 @@
-local DEBUG_MODE = BRANCH == "dev"
-local CAN_USE_DBUI = DEBUG_MODE and CONFIGURATION ~= "PRODUCTION" and PLATFORM == "WIN32_STEAM"
-
 local easing = require("easing")
 local Widget = require "widgets/widget"
-local WidgetDebug = CAN_USE_DBUI and require("dbui_no_package/widgetdebug") or nil
-local EntityDebug = CAN_USE_DBUI and require("dbui_no_package/entitydebug") or nil
+local DebugPanel2 = CAN_USE_DBUI and require("dbui_no_package/debug_panel2") or nil
+local DebugEntity = CAN_USE_DBUI and require("dbui_no_package/debug_entity") or nil
+local DebugNodes = CAN_USE_DBUI and require("dbui_no_package/debug_nodes") or nil
 local Text = require "widgets/text"
 local UIAnim = require "widgets/uianim"
 local Image = require "widgets/image"
@@ -12,6 +10,7 @@ local ConsoleScreen = require "screens/consolescreen"
 local DebugMenuScreen = require "screens/DebugMenuScreen"
 local PopupDialogScreen = require "screens/popupdialog"
 local TEMPLATES = require "widgets/templates"
+local ServerPauseWidget = require "widgets/redux/serverpausewidget"
 
 require "constants"
 
@@ -28,11 +27,13 @@ FrontEnd = Class(function(self, name)
 	self.screenstack = {}
 
 	self.screenroot = Widget("screenroot")
+    self.screenroot.global_widget = true
     self.screenroot.is_screen = true
 
 	self.overlayroot = Widget("overlayroot")
+    self.overlayroot.global_widget = true
 
-	------ CONSOLE -----------	
+	------ CONSOLE -----------
 	self.consoletext = Text(BODYTEXTFONT, 20, "CONSOLE TEXT")
 	self.consoletext:SetVAlign(ANCHOR_BOTTOM)
 	self.consoletext:SetHAlign(ANCHOR_LEFT)
@@ -43,6 +44,12 @@ FrontEnd = Class(function(self, name)
 	self.consoletext:SetRegionSize(900, 406)
 	self.consoletext:SetPosition(0,0,0)
 	self.consoletext:Hide()
+    -----------------
+
+	------ SERVERPAUSE -----------
+	self.serverpausewidget = ServerPauseWidget()
+	self.serverpausewidget:SetPosition(0,0,0)
+	self.serverpausewidget:Hide()
     -----------------
 
     self.blackoverlay = Image("images/global.xml", "square.tex")
@@ -64,7 +71,7 @@ FrontEnd = Class(function(self, name)
     self.topblackoverlay:SetTint(0,0,0,0)
 	self.topblackoverlay:SetClickable(false)
 	self.topblackoverlay:Hide()
-	
+
 	self.swipeoverlay = Image("images/global.xml", "noise.tex")
 	self.swipeoverlay:SetEffect( "shaders/swipe_fade.ksh" )
 	self.swipeoverlay:SetEffectParams(0.5,0,0,0)
@@ -76,7 +83,7 @@ FrontEnd = Class(function(self, name)
     self.swipeoverlay:SetTint(1,1,1,0)
 	self.swipeoverlay:SetClickable(false)
 	self.swipeoverlay:Hide()
-	
+
 	self.topswipeoverlay = Image("images/global.xml", "noise.tex")
 	self.topswipeoverlay:SetEffect( "shaders/swipe_fade.ksh" )
 	self.topswipeoverlay:SetEffectParams(0,0,0,0)
@@ -101,7 +108,7 @@ FrontEnd = Class(function(self, name)
 
 	self.vigoverlay = TEMPLATES.BackgroundVignette()
 	self.vigoverlay:SetClickable(false)
-	self.vigoverlay:Hide()	
+	self.vigoverlay:Hide()
 
     self.topwhiteoverlay = Image("images/global.xml", "square.tex")
     self.topwhiteoverlay:SetVRegPoint(ANCHOR_MIDDLE)
@@ -115,10 +122,10 @@ FrontEnd = Class(function(self, name)
 
 	self.topvigoverlay = TEMPLATES.BackgroundVignette()
 	self.topvigoverlay:SetClickable(false)
-	self.topvigoverlay:Hide()	
+	self.topvigoverlay:Hide()
 
 	self.helptext = self.overlayroot:AddChild(Widget("HelpText"))
-	self.helptext:SetScaleMode(SCALEMODE_FIXEDPROPORTIONAL)
+	self.helptext:SetScaleMode(SCALEMODE_PROPORTIONAL)
     self.helptext:SetHAnchor(ANCHOR_MIDDLE)
     self.helptext:SetVAnchor(ANCHOR_BOTTOM)
 
@@ -146,6 +153,8 @@ FrontEnd = Class(function(self, name)
 	self.screenroot:AddChild(self.whiteoverlay)
 	self.screenroot:AddChild(self.vigoverlay)
 	self.screenroot:AddChild(self.swipeoverlay)
+	self.screenroot:AddChild(self.consoletext)
+    self.screenroot:AddChild(self.serverpausewidget)
 
     self.alpha = 0
 
@@ -163,7 +172,7 @@ FrontEnd = Class(function(self, name)
     self.subtitle:SetHAnchor(ANCHOR_MIDDLE)
 	self.overlayroot:AddChild(self.subtitle)
 
-    if PLATFORM == "PS4" then
+    if IsConsole() then
         self.saving_indicator = UIAnim()
         self.saving_indicator:GetAnimState():SetBank("saving_indicator")
         self.saving_indicator:GetAnimState():SetBuild("saving_indicator")
@@ -181,14 +190,20 @@ FrontEnd = Class(function(self, name)
 	self.gameinterface = CreateEntity("GameInterface")
 	self.gameinterface.entity:AddSoundEmitter()
 	self.gameinterface.entity:AddGraphicsOptions()
-	self.gameinterface.entity:AddTwitchOptions()
+	if IsNotConsole() then
+		self.gameinterface.entity:AddTwitchOptions()
+	end
 	self.gameinterface.entity:AddAccountManager()
 
 	TheInput:AddKeyHandler(function(key, down) self:OnRawKey(key, down) end )
 	TheInput:AddTextInputHandler(function(text) self:OnTextInput(text) end )
 
 	self.tracking_mouse = true
+
+	self:UpdateRepeatDelays() -- crafting menu and inventory navigation
+
 	self.repeat_time = -1
+	self.repeat_reps = 0
     self.scroll_repeat_time = -1
     self.spinner_repeat_time = -1
 
@@ -202,10 +217,11 @@ FrontEnd = Class(function(self, name)
 	self.autosave_enabled = true
 
     if CAN_USE_DBUI then
-        self.widget_editor = WidgetDebug(self)
-        self.entity_editor = EntityDebug(self)
+        self.imgui = require("dbui_no_package/imgui")
+        self.debug_panels = {}
+        self.imgui_font_size = Profile:GetValue("imgui_font_size") or 1
     end
-    
+
     -- data from the current game that is to be passed back to the game when the server resets (used for showing results in events when back in the lobby)
     -- Never set this to nil or people will crash. If needed, test for empty list if needed to control flow.
     self.match_results = {}
@@ -314,7 +330,7 @@ function FrontEnd:GetHelpText()
 			-- Only use this widgets help text, clear all other help text
 			t = {}
 		end
-		
+
 		local str = widget:GetHelpText()
 		if str and str ~= "" then
 			table.insert(t, widget:GetHelpText())
@@ -361,7 +377,9 @@ function FrontEnd:OnControl(control, down)
         self:SetForceProcessTextInput(false, self.textProcessorWidget)
     end
 
+    self.isprimary = control == CONTROL_PRIMARY
     if self:IsControlsDisabled() then
+        self.isprimary = false
         return false
     --handle focus moves
 
@@ -370,18 +388,22 @@ function FrontEnd:OnControl(control, down)
     elseif #self.screenstack > 0
         and not (self.textProcessorWidget ~= nil and not self.textProcessorWidget.focus and self.textProcessorWidget:OnControl(control == CONTROL_PRIMARY and CONTROL_ACCEPT or control, down))
         and self.screenstack[#self.screenstack]:OnControl(control == CONTROL_PRIMARY and CONTROL_ACCEPT or control, down) then
+            self.isprimary = false
         return true
 
     elseif CONSOLE_ENABLED and not down and control == CONTROL_OPEN_DEBUG_CONSOLE then
+        self.isprimary = false
         self:PushScreen(ConsoleScreen())
         return true
 
     elseif DEBUG_MENU_ENABLED and not down and control == CONTROL_OPEN_DEBUG_MENU then
+        self.isprimary = false
         self:PushScreen(DebugMenuScreen())
         return true
 
     elseif SHOWLOG_ENABLED and not down and control == CONTROL_TOGGLE_LOG then
-        if self.consoletext.shown then 
+        self.isprimary = false
+        if self.consoletext.shown then
             self:HideConsoleLog()
         else
             self:ShowConsoleLog()
@@ -389,6 +411,7 @@ function FrontEnd:OnControl(control, down)
         return true
 
     elseif DEBUGRENDER_ENABLED and not down and control == CONTROL_TOGGLE_DEBUGRENDER then
+        self.isprimary = false
         --V2C: Special logic when text edit has focus, and assuming
         --     CONTROL_TOGGLE_DEBUGRENDER will always be BACKSPACE.
 
@@ -411,6 +434,7 @@ function FrontEnd:OnControl(control, down)
         return screen:OnCancel(down)
 --]]
     end
+    self.isprimary = false
 end
 
 function FrontEnd:ShowTitle(text,subtext)
@@ -491,6 +515,7 @@ end
 
 function FrontEnd:SetFadeLevel(alpha, time, time_total)
     self.alpha = alpha
+    DoAutopause()
     if alpha <= 0 then
         if self.blackoverlay ~= nil then
             self.blackoverlay:Hide()
@@ -544,7 +569,7 @@ function FrontEnd:SetFadeLevel(alpha, time, time_total)
             self.topswipeoverlay:Show()
         end
         self.topswipeoverlay:SetTint(1, 1, 1, alpha)
-        
+
         local progress = 0 --progress should be a float from 0 to 1 over the whole fade in and out
         local phase_1 = 0
         local fade_progress = time and (time/time_total) or 0
@@ -555,7 +580,7 @@ function FrontEnd:SetFadeLevel(alpha, time, time_total)
 			progress = fade_progress/2
 			phase_1 = 0
         end
-        
+
         self.swipeoverlay:SetEffectParams(progress, phase_1, 0, 0)
         self.topswipeoverlay:SetEffectParams(progress, phase_1, 0, 0)
     end
@@ -608,15 +633,31 @@ function FrontEnd:DoFadingUpdate(dt)
 end
 
 function FrontEnd:UpdateConsoleOutput()
-    local consolestr = table.concat(GetConsoleOutputList(), "\n") 
+    local consolestr = table.concat(GetConsoleOutputList(), "\n")
     consolestr = consolestr.."\n(Press CTRL+L to close this log)"
    	self.consoletext:SetString(consolestr)
 end
 
+function FrontEnd:_RefreshRepeatDelay(control)
+	if self.repeat_reps <= 1 then
+		self.repeat_time = self.crafting_repeat_base
+	elseif self.repeat_reps >= 3 and Input:GetAnalogControlValue(control) > 0.95 then
+		self.repeat_time = self.crafting_repeat_ninja
+	else
+		self.repeat_time = self.crafting_repeat_fast
+	end
+end
+
 function FrontEnd:Update(dt)
+    if DEBUGGER_ENABLED then
+        Debuggee.poll()
+    end
+
     if CHEATS_ENABLED then
         ProbeReload(TheInput:IsKeyDown(KEY_F6))
     end
+
+	local controller = TheInput:ControllerAttached()
 
 	if self.saving_indicator ~= nil and self.saving_indicator.shown then
 		if self.save_indicator_fade then
@@ -712,27 +753,106 @@ function FrontEnd:Update(dt)
         --skip while editing a text box
         if self.repeat_time > dt then
             self.repeat_time = self.repeat_time - dt
-        elseif not (self.textProcessorWidget ~= nil) then
-            self.repeat_time = REPEAT_TIME
-            if TheInput:IsControlPressed(CONTROL_MOVE_LEFT) or TheInput:IsControlPressed(CONTROL_FOCUS_LEFT) then
-                self:OnFocusMove(MOVE_LEFT, true)
-            elseif TheInput:IsControlPressed(CONTROL_MOVE_RIGHT) or TheInput:IsControlPressed(CONTROL_FOCUS_RIGHT) then
-                self:OnFocusMove(MOVE_RIGHT, true)
-            elseif TheInput:IsControlPressed(CONTROL_MOVE_UP) or TheInput:IsControlPressed(CONTROL_FOCUS_UP) then
-                self:OnFocusMove(MOVE_UP, true)
-            elseif TheInput:IsControlPressed(CONTROL_MOVE_DOWN) or TheInput:IsControlPressed(CONTROL_FOCUS_DOWN) then
-                self:OnFocusMove(MOVE_DOWN, true)
-            else
-                self.repeat_time = 0
-            end
+
+			if self.crafting_navigation_mode then
+				if not (   TheInput:IsControlPressed(CONTROL_INVENTORY_LEFT) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_LEFT))
+						or TheInput:IsControlPressed(CONTROL_INVENTORY_RIGHT) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_RIGHT))
+						or TheInput:IsControlPressed(CONTROL_INVENTORY_UP) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_UP))
+						or TheInput:IsControlPressed(CONTROL_INVENTORY_DOWN) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_DOWN)) ) then
+
+            		self.repeat_time = 0
+					self.repeat_reps = 0
+				end
+			else
+				if not (   TheInput:IsControlPressed(CONTROL_MOVE_LEFT) or TheInput:IsControlPressed(CONTROL_FOCUS_LEFT)
+            			or TheInput:IsControlPressed(CONTROL_MOVE_RIGHT) or TheInput:IsControlPressed(CONTROL_FOCUS_RIGHT)
+            			or TheInput:IsControlPressed(CONTROL_MOVE_UP) or TheInput:IsControlPressed(CONTROL_FOCUS_UP)
+            			or TheInput:IsControlPressed(CONTROL_MOVE_DOWN) or TheInput:IsControlPressed(CONTROL_FOCUS_DOWN) ) then
+
+            		self.repeat_time = 0
+					self.repeat_reps = 0
+				end
+			end
+		elseif not (self.textProcessorWidget ~= nil) then
+            self.repeat_reps = self.repeat_reps and (self.repeat_reps + 1) or 1
+
+			if self.crafting_navigation_mode then
+				if TheInput:IsControlPressed(CONTROL_INVENTORY_LEFT) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_LEFT)) then
+					self:_RefreshRepeatDelay(CONTROL_INVENTORY_LEFT)
+					self:OnFocusMove(MOVE_LEFT, true)
+				elseif TheInput:IsControlPressed(CONTROL_INVENTORY_RIGHT) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_RIGHT)) then
+					self:_RefreshRepeatDelay(CONTROL_INVENTORY_RIGHT)
+					self:OnFocusMove(MOVE_RIGHT, true)
+				elseif TheInput:IsControlPressed(CONTROL_INVENTORY_UP) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_UP)) then
+					self:_RefreshRepeatDelay(CONTROL_INVENTORY_UP)
+					self:OnFocusMove(MOVE_UP, true)
+				elseif TheInput:IsControlPressed(CONTROL_INVENTORY_DOWN) or (not controller and TheInput:IsControlPressed(CONTROL_FOCUS_DOWN)) then
+					self:_RefreshRepeatDelay(CONTROL_INVENTORY_DOWN)
+					self:OnFocusMove(MOVE_DOWN, true)
+				else
+					self.repeat_time = 0
+					self.repeat_reps = 0
+				end
+			else
+				self.repeat_time = REPEAT_TIME
+
+				if TheInput:IsControlPressed(CONTROL_MOVE_LEFT) or TheInput:IsControlPressed(CONTROL_FOCUS_LEFT) then
+					self:OnFocusMove(MOVE_LEFT, true)
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_RIGHT) or TheInput:IsControlPressed(CONTROL_FOCUS_RIGHT) then
+					self:OnFocusMove(MOVE_RIGHT, true)
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_UP) or TheInput:IsControlPressed(CONTROL_FOCUS_UP) then
+					self:OnFocusMove(MOVE_UP, true)
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_DOWN) or TheInput:IsControlPressed(CONTROL_FOCUS_DOWN) then
+					self:OnFocusMove(MOVE_DOWN, true)
+				else
+					self.repeat_time = 0
+					self.repeat_reps = 0
+				end
+			end
         end
 
         self:DoHoverFocusUpdate()
     end
 
     if CAN_USE_DBUI then
-        self.widget_editor:Update(dt)
-        self.entity_editor:Update(dt)
+    	if not self.imgui_is_running and self.imgui_enabled then
+
+			local i = 1
+
+			--jcheng: this is to stop imgui from re-running while inside imgui, for example if you do a sim step
+			self.imgui_is_running = true
+
+			while i <= #self.debug_panels do
+				local panel = self.debug_panels[i]
+
+				local ok, result = xpcall( function() return panel:RenderPanel(self.imgui) end, generic_error )
+				if ok and panel._wants_to_close then
+					result = false
+				end
+
+				if not ok or not result then
+					print("closing panel "..tostring(panel))
+					panel:OnClose()
+					table.remove( self.debug_panels, i )
+					if not ok then
+						print( tostring(result) )
+						break
+					end
+				else
+					i = i + 1
+				end
+			end
+
+			if #self.debug_panels == 0 then
+				self.imgui_enabled = false
+			end
+
+			self.imgui_is_running = false
+
+    	end
+    	
+        --self.widget_editor:Update(dt)
+        --self.entity_editor:Update(dt)
     end
 
 	TheSim:ProfilerPush("update widgets")
@@ -743,7 +863,7 @@ function FrontEnd:Update(dt)
 	for k,v in pairs(self.updating_widgets) do
 		self.updating_widgets_alt[k] = v
 	end
-	
+
 	for k,v in pairs(self.updating_widgets_alt) do
 		if k.enabled then
 			k:OnUpdate(dt)
@@ -752,9 +872,10 @@ function FrontEnd:Update(dt)
 	end
 
 	self.helptext:Hide()
-	if TheInput:ControllerAttached() and
-        self:GetFadeLevel() < 1 and
-        not (self.fadedir == FADE_OUT and self.fade_type ~= "black") then
+	if controller
+        and self:GetFadeLevel() < 1
+		and not self.crafting_navigation_mode
+        and not (self.fadedir == FADE_OUT and self.fade_type ~= "black") then
 		local str = self:GetHelpText()
 		if str ~= "" then
 			self.helptext:Show()
@@ -789,10 +910,22 @@ function FrontEnd:StopUpdatingWidget(w)
 	self.updating_widgets[w] = nil
 end
 
+function FrontEnd:InsertScreenAtIndex(screen, idx)
+    self.screenroot:AddChild(screen)
+    table.insert(self.screenstack, idx, screen)
+    for i = idx, #self.screenstack do
+        self.screenstack[i]:MoveToFront()
+    end
+    self.consoletext:MoveToFront()
+    self.serverpausewidget:MoveToFront()
+end
+
 function FrontEnd:InsertScreenUnderTop(screen)
     self.screenroot:AddChild(screen)
     table.insert(self.screenstack, #self.screenstack, screen)
     self.screenstack[#self.screenstack]:MoveToFront()
+    self.consoletext:MoveToFront()
+    self.serverpausewidget:MoveToFront()
 end
 
 function FrontEnd:PushScreen(screen)
@@ -802,7 +935,7 @@ function FrontEnd:PushScreen(screen)
 
 	--self.tracking_mouse = false
 	--jcheng: don't allow any other screens to push if we're displaying an error
-    if global_error_widget ~= nil then return end
+    --if global_error_widget ~= nil then return end -- Note: this just leaves screens outside the screen hierarchy which is worse than having them pushed
 
     Print(VERBOSITY.DEBUG, 'FrontEnd:PushScreen', screen.name)
     if #self.screenstack > 0 then
@@ -811,6 +944,13 @@ function FrontEnd:PushScreen(screen)
 
     self.screenroot:AddChild(screen)
     table.insert(self.screenstack, screen)
+    self.consoletext:MoveToFront()
+    self.serverpausewidget:MoveToFront()
+    self.serverpausewidget:SetOffset(0, 0)
+
+    if screen.OffsetServerPausedWidget then
+        screen:OffsetServerPausedWidget(self.serverpausewidget)
+    end
 
     -- screen:Show()
     if not self.tracking_mouse then
@@ -870,6 +1010,7 @@ function FrontEnd:Fade(in_or_out, time_to_take, cb, fade_delay_time, delayovercb
 			self.topswipeoverlay:SetEffectParams(0,0,0,0)
 		end
 		self:ShowTopFade()
+        DoAutopause()
 	end
 	self.fade_delay_time = fade_delay_time
 	self.delayovercb = delayovercb
@@ -880,7 +1021,7 @@ function FrontEnd:FadeToScreen( existing_screen, new_screen_fn, fade_complete_cp
 	if fade_type == "swipe" then
 		fade_time = SWIPE_FADE_TIME
 	end
-	
+
 	self:Fade(FADE_OUT, fade_time,
 		function()
 			local new_screen = new_screen_fn()
@@ -896,7 +1037,7 @@ function FrontEnd:FadeBack( fade_complete_cb, fade_type, fade_out_complete_cb )
 	if fade_type == "swipe" then
 		fade_time = SWIPE_FADE_TIME
 	end
-	
+
 	self:Fade(FADE_OUT, fade_time,
 		function()
 			if fade_out_complete_cb ~= nil then
@@ -939,12 +1080,19 @@ function FrontEnd:PopScreen(screen)
 			screen:OnDestroy()
 			self.screenroot:RemoveChild(screen)
 		end
-		
+
 	end
 
-	if #self.screenstack > 0 and old_head ~= self.screenstack[#self.screenstack] then
-		self.screenstack[#self.screenstack]:SetFocus()
-		self.screenstack[#self.screenstack]:OnBecomeActive()
+    local top_screen = self.screenstack[#self.screenstack]
+	if top_screen and old_head ~= top_screen then
+		top_screen:SetFocus()
+		top_screen:OnBecomeActive()
+
+        self.serverpausewidget:SetOffset(0, 0)
+
+        if top_screen.OffsetServerPausedWidget then
+            top_screen:OffsetServerPausedWidget(self.serverpausewidget)
+        end
 
         TheInput:UpdateEntitiesUnderMouse()
 		self:Update(0)
@@ -965,7 +1113,7 @@ function FrontEnd:GetActiveScreen()
 end
 
 function FrontEnd:GetOpenScreenOfType(screenname)
-	for _,v in pairs(self.screenstack) do
+	for _,v in ipairs_reverse(self.screenstack) do
 		if v.name == screenname then
 			return v
 		end
@@ -1047,6 +1195,40 @@ function FrontEnd:GetHUDScale()
     return easing.linear(size, min_scale, max_scale - min_scale, 10) * res_scale
 end
 
+function FrontEnd:GetCraftingMenuScale()
+    local size = Profile:GetCraftingMenuSize()
+    local min_scale = .6
+    local max_scale = 1.15
+	if IsSplitScreen() then
+		min_scale = 1.0
+		max_scale = 1.92
+	end
+
+    --testing high res displays
+    local w, h = TheSim:GetScreenSize()
+
+    local res_scale_x = math.max(1, w / 1920)
+    local res_scale_y = math.max(1, h / 1200)
+    local res_scale = math.min(res_scale_x, res_scale_y)
+
+    return easing.linear(size, min_scale, max_scale - min_scale, 10) * res_scale
+end
+
+function FrontEnd:UpdateRepeatDelays()
+	local craft_sensitivity = Profile:GetCraftingMenuSensitivity()
+	self.crafting_repeat_base = easing.linear(20-craft_sensitivity, .11, .4 - .11, 20)
+	self.crafting_repeat_fast = self.crafting_repeat_base * 0.4
+	self.crafting_repeat_ninja = self.crafting_repeat_base * 0.2
+
+	local inv_sensitivity = Profile:GetInventorySensitivity()
+	self.inventory_repeat_base = easing.linear(20-inv_sensitivity, .11, .4 - .11, 20)
+	self.inventory_repeat_fast = self.inventory_repeat_base * 0.4
+	self.inventory_repeat_ninja = self.inventory_repeat_base * 0.2
+
+	--print("UpdateRepeatDelays crafting  ", craft_sensitivity, self.crafting_repeat_base, self.crafting_repeat_fast, self.crafting_repeat_ninja)
+	--print("                   inventory ", inv_sensitivity, self.inventory_repeat_base, self.inventory_repeat_fast, self.inventory_repeat_ninja)
+end
+
 function FrontEnd:OnMouseButton(button, down, x, y)
     if self:IsControlsDisabled() then
         return false
@@ -1088,7 +1270,12 @@ function FrontEnd:OnSaveLoadError(operation, filename, status)
             local function OnProfileLoaded(success)
                 --print("OnProfileLoaded", success)
                 if success then
-                    SaveGameIndex:Load(OnSaveGameIndexLoaded)
+
+                    SaveGameIndex:Load(function()
+                        ShardSaveGameIndex:Load(function()
+                            ShardGameIndex:Load(OnSaveGameIndexLoaded)
+                        end)
+                    end)
                 end
             end
 
@@ -1125,7 +1312,7 @@ function FrontEnd:OnSaveLoadError(operation, filename, status)
         end
 
         local function cancel()
-            TheSystemService:EnableStorage(TheSystemService:IsAutosaveEnabled())            
+            TheSystemService:EnableStorage(TheSystemService:IsAutosaveEnabled())
             TheSystemService:ClearLastOperation()
             self:PopScreen() -- saveload error message box
         end
@@ -1215,28 +1402,47 @@ function FrontEnd:GetIsOfflineMode()
     return self.offline
 end
 
-function FrontEnd:EnableWidgetDebugging()
-    if CAN_USE_DBUI then
-        self.widget_editor:EnableWidgetDebugging()
+function FrontEnd:ToggleImgui(node)
+	if not CAN_USE_DBUI then
+		return
+	end
+
+    if TheRawImgui:IsImguiEnabled() then
+        if self.imgui_enabled then
+            self.imgui_enabled = false
+        else
+            self.imgui_enabled = true
+            self.imgui.ActivateImgui()
+
+            if #self.debug_panels == 0 and not node then
+                self:CreateDebugPanel( DebugEntity() )
+            end
+        end
+    else
+        print("IsImguiEnabled is disabled due to threaded renderer being enabled")
     end
 end
 
-function FrontEnd:EnableEntityDebugging()
-    if CAN_USE_DBUI then
-        self.entity_editor:EnableEntityDebugging()
-    end
+function FrontEnd:CreateDebugPanel( node )
+	if not CAN_USE_DBUI then
+		return
+	end
+
+	local node = DebugPanel2( node )
+	if not self.imgui_enabled then
+		self:ToggleImgui(node)
+	end
+
+	table.insert( self.debug_panels, node )
 end
 
--- Programmatically set the debug target.
---
--- Don't submit code calling this function! You can call it after constructing
--- your widget to skip the interactive selection, but we don't want this
--- sprinkled throughout the code (don't want imgui activating unless
--- user-triggered).
-function FrontEnd:SetWidgetDebuggingTarget(widget)
-    --~ print("TheFrontEnd:SetWidgetDebuggingTarget called. Be sure to remove before submit!", debugstack())
-    if CAN_USE_DBUI then
-        self.widget_editor:SetDebugTarget(widget)
-    end
+function FrontEnd:SetImguiFontSize( font_size )
+	self.imgui_font_size = font_size
+    Profile:SetValue("imgui_font_size", self.imgui_font_size)
+    Profile.dirty = true
+    Profile:Save()
 end
 
+function FrontEnd:SetServerPauseText(source)
+    self.serverpausewidget:UpdateText(source)
+end

@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
 	Asset("ANIM", "anim/batcave.zip"),
@@ -64,6 +66,9 @@ local function onisday(inst, isday)
     end
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.BATCAVE_SPAWN_PERIOD, TUNING.BATCAVE_REGEN_PERIOD)
+end
 
 local function fn()
 	local inst = CreateEntity()
@@ -90,6 +95,11 @@ local function fn()
 	inst.components.childspawner:SetRegenPeriod(TUNING.BATCAVE_REGEN_PERIOD)
 	inst.components.childspawner:SetSpawnPeriod(TUNING.BATCAVE_SPAWN_PERIOD)
 	inst.components.childspawner:SetMaxChildren(TUNING.BATCAVE_MAX_CHILDREN)
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.BATCAVE_SPAWN_PERIOD, TUNING.BATCAVE_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.BATCAVE_REGEN_PERIOD, TUNING.BATCAVE_ENABLED)
+    if not TUNING.BATCAVE_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
 	inst.components.childspawner.childname = "bat"
     inst.components.childspawner:StartSpawning()
     inst.components.childspawner:StartRegen()
@@ -106,6 +116,8 @@ local function fn()
 
     onisday(inst, TheWorld.state.iscaveday)
     inst:WatchWorldState("iscaveday", onisday)
+
+    inst.OnPreLoad = OnPreLoad
 
 	return inst
 end

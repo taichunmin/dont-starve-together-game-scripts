@@ -26,7 +26,7 @@ local function CreateSplash(variation, flip)
     inst.AnimState:SetBank("gooball_fx")
     inst.AnimState:SetBuild("gooball_fx")
     inst.AnimState:SetMultColour(.2, 1, 0, 1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     if flip then
         inst.AnimState:SetScale(-1, 1)
     end

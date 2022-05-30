@@ -29,7 +29,7 @@ local function makewarning(distance)
 
         inst:AddTag("FX")
 
-        inst:DoTaskInTime(0, function() 
+        inst:DoTaskInTime(0, function()
             PlayWarningSound(inst, distance)
         end)
 

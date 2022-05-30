@@ -22,7 +22,7 @@ end
 
 local MAPSCALE = .5
 
---base class for imagebuttons and animbuttons. 
+--base class for imagebuttons and animbuttons.
 local MapControls = Class(Widget, function(self)
     Widget._ctor(self, "Map Controls")
 
@@ -50,10 +50,10 @@ end)
 
 function MapControls:RefreshTooltips()
     local controller_id = TheInput:GetControllerID()
-    self.minimapBtn:SetTooltip((self.map_tooltip or STRINGS.UI.HUD.MAP).."("..TheInput:GetLocalizedControl(controller_id, CONTROL_MAP)..")")
-    self.pauseBtn:SetTooltip(STRINGS.UI.HUD.PAUSE.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL)..")")
-    self.rotleft:SetTooltip(STRINGS.UI.HUD.ROTLEFT.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_LEFT)..")")
-    self.rotright:SetTooltip(STRINGS.UI.HUD.ROTRIGHT.."("..TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_RIGHT)..")")
+    self.minimapBtn:SetTooltip((self.map_tooltip or STRINGS.UI.HUD.MAP).."("..tostring(TheInput:GetLocalizedControl(controller_id, CONTROL_MAP))..")")
+    self.pauseBtn:SetTooltip(STRINGS.UI.HUD.PAUSE.."("..tostring(TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL))..")")
+    self.rotleft:SetTooltip(STRINGS.UI.HUD.ROTLEFT.."("..tostring(TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_LEFT))..")")
+    self.rotright:SetTooltip(STRINGS.UI.HUD.ROTRIGHT.."("..tostring(TheInput:GetLocalizedControl(controller_id, CONTROL_ROTATE_RIGHT))..")")
 end
 
 function MapControls:Show()

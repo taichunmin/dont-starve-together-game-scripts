@@ -25,7 +25,7 @@ local _restarting = false
 --Master simulation
 local _enabled
 
---Slave simulation
+--Secondard simulation
 local _loading
 
 --Network
@@ -51,7 +51,7 @@ local DoRollback = _ismastersim and not _ismastershard and function(snapshot)
         TheNet:TruncateSnapshots(_world.meta.session_identifier, snapshot)
         StartNextInstance({
             reset_action = RESET_ACTION.LOAD_SLOT,
-            save_slot = SaveGameIndex:GetCurrentSaveSlot(),
+            save_slot = ShardGameIndex:GetSlot(),
         })
     end
 end or nil
@@ -71,7 +71,7 @@ local DoActualSave = _ismastersim and function(inst, taskid, snapshot)
         local current_snapshot = TheNet:GetCurrentSnapshot()
         if snapshot > current_snapshot then
             print("Synchronizing forward to master snapshot "..tostring(snapshot))
-            TheNet:SetCurrentSnapshot(snapshot) --Slave call only
+            TheNet:SetCurrentSnapshot(snapshot) --Seconday shard call only
         elseif snapshot == current_snapshot - 1 then
             --If we are one ahead of the master value, then we are in sync
             return
@@ -82,7 +82,7 @@ local DoActualSave = _ismastersim and function(inst, taskid, snapshot)
         end
     end
 
-    SaveGameIndex:SaveCurrent()
+    ShardGameIndex:SaveCurrent()
     _lastsavetime = GetTime()
 end or nil
 
@@ -156,7 +156,7 @@ end or nil
 
 local OnClearLoading = _ismastersim and not _ismastershard and function()
     _loading = nil
-    TheShard:SetSlaveLoading(false)
+    TheShard:SetSecondaryLoading(false)
 end or nil
 
 local OnAutoSaverUpdate = _ismastersim and not _ismastershard and function(src, data)
@@ -198,15 +198,15 @@ if _ismastershard then
 
     OnSetAutoSaveEnabled()
 elseif _ismastersim then
-    --Initialize slave simulation variables
+    --Initialize secondary simulation variables
     --We expect to get either one or 2 initial packets shortly after loading
     _loading = true
-    TheShard:SetSlaveLoading(true)
+    TheShard:SetSecondaryLoading(true)
     TheNet:SetIsWorldSaving(false) --Reset flag in case it's invalid
 
-    --Register slave shard events
+    --Register secondary shard events
     inst:ListenForEvent("ms_save", OnSaveRequest, _world)
-    inst:ListenForEvent("slave_autosaverupdate", OnAutoSaverUpdate, _world)
+    inst:ListenForEvent("secondary_autosaverupdate", OnAutoSaverUpdate, _world)
 end
 
 --------------------------------------------------------------------------

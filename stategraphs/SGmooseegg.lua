@@ -19,8 +19,6 @@ local function ReleaseMossling(inst)
 end
 
 local function Hatch(inst)
-	inst.EggHatched = true
-
 	local pt = inst:GetPosition()
 	local time = 0
 
@@ -165,7 +163,7 @@ local states =
 				inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/moose/egg_burst")
 				inst.components.named.possiblenames = {STRINGS.NAMES["MOOSENEST1"], STRINGS.NAMES["MOOSENEST2"]}
 			end),
-			TimeEvent(60*FRAMES, function(inst) Hatch(inst) end)
+			TimeEvent(60*FRAMES, function(inst) Hatch(inst) inst.sg:RemoveStateTag("egg") end)
 		},
 
 		events = {

@@ -26,7 +26,7 @@ local events =
     CommonHandlers.OnSleepEx(),
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnFreeze(),
-    EventHandler("locomote", function(inst) 
+    EventHandler("locomote", function(inst)
         if not (inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("attack")) and
             inst.sg:HasStateTag("moving") ~= inst.components.locomotor:WantsToMoveForward() then
             inst.sg:GoToState(inst.sg:HasStateTag("moving") and "idle" or "premoving")
@@ -305,7 +305,7 @@ local states =
     State{
         name = "hit",
         tags = { "busy" },
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound(inst.sounds.hit)
             inst.AnimState:PlayAnimation("hit")
@@ -352,7 +352,7 @@ CommonStates.AddSleepExStates(states,
     onexitwake = StartBuzz,
 })
 
-CommonStates.AddFrozenStates(states, 
+CommonStates.AddFrozenStates(states,
     function(inst)
         LandFlyingCreature(inst)
         StopBuzz(inst)

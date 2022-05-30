@@ -35,7 +35,7 @@ local function fn()
 
     inst:AddComponent("disappears")
     inst.components.disappears.sound = "dontstarve/common/dust_blowaway"
-    inst.components.disappears.anim = "disappear" 
+    inst.components.disappears.anim = "disappear"
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")

@@ -132,7 +132,7 @@ end
 
 function GiftItemToast:DoOpenGift()
     if not self.owner:HasTag("busy") then
-        local time = GetTime()
+        local time = GetStaticTime()
         if time - last_click_time > TIMEOUT then
             last_click_time = time
             if not TheWorld.ismastersim then

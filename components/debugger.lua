@@ -4,10 +4,10 @@ local Debugger = Class(function(self, inst)
 
     self.z = 0.5
 
-    self.debuggerdraws = 
+    self.debuggerdraws =
     {
-        -- key = 
-        -- {   
+        -- key =
+        -- {
         --     c = {r = 0, g = 1, b = 0, a = 1},
         --     p1 = {x = 0, y = 0},
         --     p2 = {x = 0, y = 0},
@@ -69,7 +69,7 @@ end
 function Debugger:OnUpdate()
 
     self.debugger:Flush()
-    for k,v in pairs(self.debuggerdraws) do    
+    for k,v in pairs(self.debuggerdraws) do
         local colour = v.c or {r = 0, g = 1, b = 0, a = 1}
         local p1 = v.p1 or {x = 0, y = 0}
         local p2 = v.p2 or {x = 100, y = 100}

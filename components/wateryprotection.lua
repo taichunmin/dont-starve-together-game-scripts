@@ -7,6 +7,7 @@ local WateryProtection = Class(function(self, inst)
     self.addwetness = 0
     self.extinguish = true
     self.extinguishheatpercent = 0
+	--self.protection_dist = nil
 
     self.ignoretags = { "FX", "DECOR", "INLIMBO", "burnt" }
 end)
@@ -18,17 +19,15 @@ function WateryProtection:AddIgnoreTag(tag)
 end
 
 function WateryProtection:SpreadProtectionAtPoint(x, y, z, dist, noextinguish)
-    local ents = TheSim:FindEntities(x, y, z, dist or 4, nil, self.ignoretags)
+    local ents = TheSim:FindEntities(x, y, z, dist or self.protection_dist or 4, nil, self.ignoretags)
     for i, v in ipairs(ents) do
         if v.components.burnable ~= nil then
             if self.witherprotectiontime > 0 and v.components.witherable ~= nil then
                 v.components.witherable:Protect(self.witherprotectiontime)
             end
             if not noextinguish and self.extinguish then
-                if v.components.burnable:IsBurning() then
+                if v.components.burnable:IsBurning() or v.components.burnable:IsSmoldering() then
                     v.components.burnable:Extinguish(true, self.extinguishheatpercent)
-                elseif v.components.burnable:IsSmoldering() then
-                    v.components.burnable:Extinguish(true)
                 end
             end
         end
@@ -43,6 +42,14 @@ function WateryProtection:SpreadProtectionAtPoint(x, y, z, dist, noextinguish)
             v.components.moisture:DoDelta(self.addwetness * (1 - waterproofness))
         end
     end
+
+	if self.addwetness and TheWorld.components.farming_manager ~= nil then
+		TheWorld.components.farming_manager:AddSoilMoistureAtPoint(x, y, z, self.addwetness)
+	end
+
+	if self.onspreadprotectionfn ~= nil then
+		self.onspreadprotectionfn(self.inst, x, y, z)
+	end
 end
 
 function WateryProtection:SpreadProtection(inst, dist, noextinguish)

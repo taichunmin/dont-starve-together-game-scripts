@@ -76,13 +76,16 @@ local function fn()
     inst.components.container:WidgetSetup("icebox")
     inst.components.container.onopenfn = onopen
     inst.components.container.onclosefn = onclose
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
+
 
     inst:AddComponent("lootdropper")
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(2)
     inst.components.workable:SetOnFinishCallback(onhammered)
-    inst.components.workable:SetOnWorkCallback(onhit) 
+    inst.components.workable:SetOnWorkCallback(onhit)
 
     inst:ListenForEvent("onbuilt", onbuilt)
     MakeSnowCovered(inst)

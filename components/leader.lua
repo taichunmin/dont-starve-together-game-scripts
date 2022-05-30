@@ -14,7 +14,9 @@ local Leader = Class(function(self, inst)
     self.inst = inst
     self.followers = {}
     self.numfollowers = 0
-    
+
+	--self.loyaltyeffectiveness = nil
+
     inst:ListenForEvent("newcombattarget", OnNewCombatTarget)
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("death", OnDeath)
@@ -56,6 +58,14 @@ function Leader:CountFollowers(tag)
 		end
 	end
 	return count
+end
+
+function Leader:IsTargetedByFollowers(target)
+    for follower, v in pairs(self.followers) do
+        if follower.combat ~= nil and follower.combat:TargetIs(target) then
+            return true
+        end
+    end
 end
 
 function Leader:OnNewTarget(target)
@@ -115,10 +125,10 @@ end
 function Leader:RemoveFollowersByTag(tag, validateremovefn)
     for k,v in pairs(self.followers) do
         if k:HasTag(tag) and (validateremovefn == nil or validateremovefn(k)) then
-                    self:RemoveFollower(k)
-                end
-            end
+            self:RemoveFollower(k)
         end
+    end
+end
 
 function Leader:RemoveAllFollowers()
     for k,v in pairs(self.followers) do
@@ -130,6 +140,14 @@ function Leader:RemoveAllFollowersOnDeath()
     for k, v in pairs(self.followers) do
         if not (k.components.follower ~= nil and k.components.follower.keepdeadleader) then
             self:RemoveFollower(k)
+        end
+    end
+end
+
+function Leader:HaveFollowersCachePlayerLeader()
+    for k,v in pairs(self.followers) do
+        if k.components.follower then
+            k.components.follower:CachePlayerLeader()
         end
     end
 end
@@ -152,7 +170,7 @@ function Leader:OnSave()
     for k, v in pairs(self.followers) do
         table.insert(followers, k.GUID)
     end
-    
+
     if #followers > 0 then
         return { followers = followers }, followers
     end

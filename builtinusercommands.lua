@@ -63,7 +63,7 @@ AddUserCommand("help", {
             end
         end
 
-        caller.HUD.controls.networkchatqueue:DisplaySystemMessage(s)
+        ChatHistory:SendCommandResponse(s)
     end,
 })
 
@@ -113,11 +113,14 @@ AddUserCommand("rescue", {
     permission = COMMAND_PERMISSION.USER,
     slash = true,
     usermenu = false,
-    servermenu = IsConsole(),
+    servermenu = true,
+	menusort = 1,
     params = {},
     vote = false,
     serverfn = function(params, caller)
-        caller:PutBackOnGround()
+		if caller.PutBackOnGround ~= nil then
+	        caller:PutBackOnGround()
+		end
     end,
 })
 
@@ -152,7 +155,7 @@ AddUserCommand("kick", {
     end,
 })
 
-local ban_info = 
+local ban_info =
 {
     prettyname = nil, --default to STRINGS.UI.BUILTINCOMMANDS.BAN.PRETTYNAME
     desc = nil, --default to STRINGS.UI.BUILTINCOMMANDS.BAN.DESC
@@ -207,6 +210,7 @@ AddUserCommand("roll", {
     slash = true,
     usermenu = false,
     servermenu = true,
+	menusort = 2,
     params = { "dice" },
     paramsoptional = { true },
     vote = false,

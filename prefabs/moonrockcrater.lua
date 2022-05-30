@@ -58,6 +58,7 @@ local function fn()
 
     --trader (from trader component) added to pristine state for optimization
     inst:AddTag("trader")
+	inst:AddTag("give_dolongaction")
 
     inst.entity:SetPristine()
 

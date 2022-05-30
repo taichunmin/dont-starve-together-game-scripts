@@ -77,14 +77,14 @@ function NumericToggle:Left(menu)
 	local val = self.getfn()
 	if val > self.min then
 		self.setfn(math.max(self.min, val - self.step))
-	end	
+	end
 end
 
 function NumericToggle:Right(menu)
 	local val = self.getfn()
 	if val < self.max then
 		self.setfn(math.min(self.max, val + self.step))
-	end	
+	end
 end
 
 -----------------------------
@@ -121,7 +121,7 @@ local TextMenu = Class(function(self, name)
 end)
 
 function TextMenu:Create()
-	
+
 end
 
 function TextMenu:__tostring()
@@ -130,10 +130,10 @@ function TextMenu:__tostring()
 	table.insert(t, self.title)
 	table.insert(t, " *****\n")
 
-	
+
 	if #self.optionsstack > 0 then
-		
-		
+
+
 		for k,v in pairs(self.optionsstack[#self.optionsstack]) do
 			local pre = "     "
 			if k == self.index then
@@ -150,7 +150,7 @@ end
 
 
 function TextMenu:PushOptions(options, name)
-	
+
 	table.insert(self.name_stack, self.name)
 	self.name = name or self.name
 
@@ -222,7 +222,7 @@ end
 function TextMenu:Pop()
 	if #self.optionsstack > 1 then
 		table.remove(self.optionsstack)
-		
+
 		if #self.cursor_index_stack > 0 then
 			self.index = table.remove(self.cursor_index_stack)
 		end

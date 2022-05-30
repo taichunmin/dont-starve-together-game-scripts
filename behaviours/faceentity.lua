@@ -1,4 +1,4 @@
-FaceEntity = Class(BehaviourNode, function(self, inst, getfn, keepfn, timeout)
+FaceEntity = Class(BehaviourNode, function(self, inst, getfn, keepfn, timeout, customalert)
     BehaviourNode._ctor(self, "FaceEntity")
     self.inst = inst
     self.getfn = getfn
@@ -6,6 +6,7 @@ FaceEntity = Class(BehaviourNode, function(self, inst, getfn, keepfn, timeout)
     self.timeout = timeout
     self.starttime = 0
     self.target = nil
+    self.customalert = customalert
 end)
 
 function FaceEntity:HasLocomotor()
@@ -31,8 +32,12 @@ function FaceEntity:Visit()
 
     if self.status == RUNNING then
         --uhhhh....
-        if self.inst.sg:HasStateTag("idle") and not self.inst.sg:HasStateTag("alert") and self.inst.sg.currentstate.name ~= "alert" and self.inst.sg.sg.states.alert then
-            self.inst.sg:GoToState("alert")
+        if self.inst.sg:HasStateTag("idle") and not self.inst.sg:HasStateTag("alert") and self.inst.sg.sg.states.alert then
+            if self.customalert and self.inst.sg.currentstate.name ~= self.customalert then
+                self.inst.sg:GoToState(self.customalert)
+            elseif self.inst.sg.currentstate.name ~= "alert" then
+                self.inst.sg:GoToState("alert")
+            end
         end
 
         if self.timeout ~= nil and GetTime() - self.starttime > self.timeout then

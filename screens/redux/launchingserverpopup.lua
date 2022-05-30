@@ -6,7 +6,7 @@ local LaunchingServerPopup = Class(GenericWaitingPopup, function(self, serverinf
     self.serverinfo = serverinfo
     self.successCallback = successCallback
     self.errorCallback = errorCallback
-    self.launchtime = GetTime()
+    self.launchtime = GetStaticTime()
 	self.errorStartingServers = false
 end)
 

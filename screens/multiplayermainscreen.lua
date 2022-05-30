@@ -67,10 +67,10 @@ end
 local function PickTwo(choices, no_dupe)
     local choice1 = math.random(1, #choices)
     local choice2 = math.random(2, #choices)
-	if choice2 == choice1 then 
+	if choice2 == choice1 then
 		choice2 = 1
 	end
-	
+
 	if no_dupe then
 		local choice2_start = choice2
 		while choices[choice1].name == choices[choice2].name do
@@ -81,11 +81,11 @@ local function PickTwo(choices, no_dupe)
 			end
 		end
 	end
-	
+
     return {choices[choice1], choices[choice2]}
 end
-    
-    
+
+
 local MultiplayerMainScreen = Class(Screen, function(self, prev_screen, profile, offline, session_data)
 	Screen._ctor(self, "MultiplayerMainScreen")
     self.profile = profile
@@ -136,27 +136,27 @@ function MultiplayerMainScreen:DoInit()
     self.motd.motdtext:SetPosition(0, -40, 0)
 	self.motd.motdtext:SetRegionSize(240, 260)
 	self.motd.motdtext:SetString(STRINGS.UI.MAINSCREEN.MOTD)
-	
+
 	self.motd.motdimage = self.motd:AddChild(ImageButton( "images/global.xml", "square.tex", "square.tex", "square.tex" ))
     self.motd.motdimage:SetPosition(-2, -15, 0)
     self.motd.motdimage:SetFocusScale(1, 1, 1)
-    self.motd.motdimage:Hide()    
+    self.motd.motdimage:Hide()
 	self.motd.motdimage:SetOnClick(
 		function()
 			self.motd.button.onclick()
 		end)
-		
+
     self.motd.button = self.motd:AddChild(ImageButton())
 	self.motd.button:SetPosition(0,-160)
     self.motd.button:SetScale(.8*.9)
     self.motd.button:SetText(STRINGS.UI.MAINSCREEN.MOTDBUTTON)
     self.motd.button:SetOnClick( function() VisitURL("http://store.kleientertainment.com/") end )
-	self.motd.motdtext:EnableWordWrap(true)  
-	
-	
+	self.motd.motdtext:EnableWordWrap(true)
+
+
 	local gainfocusfn_img = self.motd.motdimage.OnGainFocus
     local losefocusfn_img = self.motd.motdimage.OnLoseFocus
-    
+
     self.motd.motdimage.OnGainFocus =
 		function()
     		gainfocusfn_img(self.motd.motdimage)
@@ -182,10 +182,10 @@ function MultiplayerMainScreen:DoInit()
     			self.motd.button.image:SetTexture(self.motd.button.atlas, self.motd.button.image_normal)
     		end
 		end
-		
-	
+
+
 	self.fixed_root:AddChild(Widget("left"))
-    
+
 	self.countdown = self.fixed_root:AddChild(Countdown())
     self.countdown:SetScale(1)
     self.countdown:SetPosition(-575, -330, 0)
@@ -208,10 +208,10 @@ function MultiplayerMainScreen:DoInit()
     local shadowpos = {x=-6,y=-5}
     local shadowscale = .3
 
-    local characters = PickTwo(DST_CHARACTERLIST) 
-    
+    local characters = PickTwo(DST_CHARACTERLIST)
+
     self.puppets = {}
-    
+
     for i,data in ipairs(puppet_data) do
         self.puppets[i] = self.fg.character_root:AddChild(SkinsAndEquipmentPuppet(characters[i], FRONTEND_CHARACTER_FAR_COLOUR, {(data.flip and -1 or 1)*data.endscale,data.endscale, data.endscale}))
 
@@ -258,10 +258,10 @@ function MultiplayerMainScreen:DoInit()
 		suffix = " (preview v"..APP_VERSION..")"
     else
         suffix = " (v"..APP_VERSION..")"
-    end    
+    end
     self.updatename:SetString(STRINGS.UI.MAINSCREEN.DST_UPDATENAME .. suffix)
     self.updatenameshadow:SetString(STRINGS.UI.MAINSCREEN.DST_UPDATENAME .. suffix)
-    
+
     --hack to deal with updatename_root going outside the view box and is a less complex solution than trying to interleave the updatename between bg and fg while still being infront of the main menu gradient
     self.update_blackcover = self.fixed_root:AddChild(Image("images/global.xml", "square.tex"))
     self.update_blackcover:SetPosition( updatename_root_x-355, updatename_root_y )
@@ -280,7 +280,7 @@ function MultiplayerMainScreen:DoInit()
 	self.filter_settings = nil
 
 	--focus moving
-    if self.debug_menu then 
+    if self.debug_menu then
         self.motd.button:SetFocusChangeDir(MOVE_LEFT, self.menu, -1)
         self.motd.button:SetFocusChangeDir(MOVE_DOWN, self.submenu)
         self.menu:SetFocusChangeDir(MOVE_RIGHT, self.motd.button)
@@ -302,7 +302,7 @@ function MultiplayerMainScreen:DoInit()
 		self.beta_countdown = self.right_col:AddChild(CountdownBeta(self, ANR_BETA_COUNTDOWN_MODE, ANR_BETA_COUNTDOWN_IMAGE, ANR_BETA_COUNTDOWN_NAME, ANR_BETA_COUNTDOWN_DATE))
 		self.beta_countdown:SetScale(.8)
 		self.beta_countdown:SetPosition(0, -150, 0)
-		
+
 		self.motd:SetScale(.8)
 		self.motd:SetPosition(0, RESOLUTION_Y/2-180, 0)
 
@@ -336,15 +336,15 @@ end
 function MultiplayerMainScreen:UpdatePuppets()
     PlayerHistory:SortBackwards("sort_date")
     self.player_history = PlayerHistory:GetRows()
-    
-    local tools = PickTwo(MAINSCREEN_TOOL_LIST) 
-    local torsos = PickTwo(MAINSCREEN_TORSO_LIST) 
-    local hats = PickTwo(MAINSCREEN_HAT_LIST) 
-    
+
+    local tools = PickTwo(MAINSCREEN_TOOL_LIST)
+    local torsos = PickTwo(MAINSCREEN_TORSO_LIST)
+    local hats = PickTwo(MAINSCREEN_HAT_LIST)
+
 	local players = {}
     local total_characters = {}
-    if self.player_history and next(self.player_history) then 
-        for k,v in pairs(self.player_history) do 
+    if self.player_history and next(self.player_history) then
+        for k,v in pairs(self.player_history) do
             table.insert(total_characters, v)
         end
     end
@@ -353,7 +353,7 @@ function MultiplayerMainScreen:UpdatePuppets()
         table.insert(total_characters, player_characters[math.random(1, #player_characters)])
     end
 
-    if #total_characters >= 2 then 
+    if #total_characters >= 2 then
         players = PickTwo(total_characters, true)
     elseif #total_characters == 1 then
 		players[1] = total_characters[1]
@@ -361,8 +361,8 @@ function MultiplayerMainScreen:UpdatePuppets()
 
     for i,puppet in pairs(self.puppets) do
 		if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
-			local halloween_baseskins = {wilson="wilson_pigguard", willow="willow_dragonfly", wolfgang="wolfgang_walrus", wendy="wendy_lureplant", 
-										wx78="wx78_rhinorook", wickerbottom="wickerbottom_lightninggoat", woodie="woodie_treeguard", wes="wes_mandrake", 
+			local halloween_baseskins = {wilson="wilson_pigguard", willow="willow_dragonfly", wolfgang="wolfgang_walrus", wendy="wendy_lureplant",
+										wx78="wx78_rhinorook", wickerbottom="wickerbottom_lightninggoat", woodie="woodie_treeguard", wes="wes_mandrake",
 										waxwell="waxwell_krampus", wathgrithr="wathgrithr_deerclops", webber="webber_bat", winona="winona_grassgecko" }
 
 			local data = (players[i] and table.contains(DST_CHARACTERLIST, players[i].prefab)) and players[i] or { prefab=DST_CHARACTERLIST[math.random(#DST_CHARACTERLIST)], name="" }
@@ -514,7 +514,7 @@ function MultiplayerMainScreen:OnBrowseServersButton()
 		end
     else
         self.filter_settings = {}
-        table.insert(self.filter_settings, {name = "SHOWLAN", data=self.offline} )   
+        table.insert(self.filter_settings, {name = "SHOWLAN", data=self.offline} )
     end
 
     self.last_focus_widget = TheFrontEnd:GetFocusWidget()
@@ -539,7 +539,7 @@ function MultiplayerMainScreen:OnQuickJoinServersButton()
     self.menu:Disable()
     self.leaving = true
 
-    TheFrontEnd:PushScreen(QuickJoinScreen(self, self.offline, self.session_data, 
+    TheFrontEnd:PushScreen(QuickJoinScreen(self, self.offline, self.session_data,
 		"",
 		CalcQuickJoinServerScore,
 		function() self:OnCreateServerButton() end,
@@ -577,7 +577,7 @@ end
 function MultiplayerMainScreen:Forums()
 	VisitURL("http://forums.kleientertainment.com/forum/73-dont-starve-together-beta/")
 end
- 
+
 function MultiplayerMainScreen:Quit()
     self.last_focus_widget = TheFrontEnd:GetFocusWidget()
 	TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MAINSCREEN.ASKQUIT, STRINGS.UI.MAINSCREEN.ASKQUITDESC, {{text=STRINGS.UI.MAINSCREEN.YES, cb = function() RequestShutdown() end },{text=STRINGS.UI.MAINSCREEN.NO, cb = function() TheFrontEnd:PopScreen() end}  }))
@@ -677,7 +677,7 @@ function MultiplayerMainScreen:MakeMainMenu()
         btn.text_shadow:SetRegionSize(180,40)
         btn.text_shadow:SetHAlign(ANCHOR_LEFT)
         btn:SetTextSize(35)
-        
+
         btn.image = btn:AddChild(Image("images/frontscreen.xml", "highlight_hover.tex"))
         btn.image:MoveToBack()
         btn.image:SetScale(.6)
@@ -691,14 +691,14 @@ function MultiplayerMainScreen:MakeMainMenu()
 
         btn.OnGainFocus = function()
             if btn.text then btn.text:SetColour(btn.textfocuscolour[1],btn.textfocuscolour[2],btn.textfocuscolour[3],btn.textfocuscolour[4]) end
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
             btn.image:Show()
             self.tooltip:SetString(tooltip)
-            
+
             self.updatename_root:CancelMoveTo()
 			self.updatename_root:SetPosition( self.updatename_root_off )
         end
-        
+
         btn.OnLoseFocus = function()
             if btn:IsEnabled() and not btn.selected then
                 btn.text:SetColour(btn.textcolour)
@@ -719,7 +719,7 @@ function MultiplayerMainScreen:MakeMainMenu()
 
         return btn
     end
-	
+
     local quickjoin_button = MakeMainMenuButton(STRINGS.UI.MAINSCREEN.QUICKJOIN, function() self:OnQuickJoinServersButton() end, STRINGS.UI.MAINSCREEN.TOOLTIP_QUICKJOIN)
     local browse_button = MakeMainMenuButton(STRINGS.UI.MAINSCREEN.BROWSE, function() self:OnBrowseServersButton() end, STRINGS.UI.MAINSCREEN.TOOLTIP_BROWSE)
     local host_button = MakeMainMenuButton(STRINGS.UI.MAINSCREEN.CREATE, function() self:OnCreateServerButton() end, STRINGS.UI.MAINSCREEN.TOOLTIP_HOST)
@@ -736,8 +736,8 @@ function MultiplayerMainScreen:MakeMainMenu()
             {widget = mods_button},
             {widget = history_button},
             {widget = options_button},
-            --{widget = wizard_button},   
-            {widget = skins_button},        
+            --{widget = wizard_button},
+            {widget = skins_button},
             {widget = host_button},
             {widget = browse_button},
         }
@@ -832,7 +832,7 @@ function MultiplayerMainScreen:MakeSubMenu()
 
         if TheFrontEnd:GetAccountManager():HasSteamTicket() then
 
-            local manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() VisitURL(TheFrontEnd:GetAccountManager():GetAccountURL(), true ) end, {font=NEWFONT_OUTLINE, focus_colour={1,1,1,1}})
+            local manage_account_button = TEMPLATES.IconButton("images/button_icons.xml", "profile.tex", STRINGS.UI.SERVERCREATIONSCREEN.MANAGE_ACCOUNT, false, true, function() TheFrontEnd:GetAccountManager():VisitAccountPage() end, {font=NEWFONT_OUTLINE, focus_colour={1,1,1,1}})
 
 			local online = TheNet:IsOnlineMode() and not TheFrontEnd:GetIsOfflineMode()
 			if online then
@@ -884,7 +884,7 @@ function MultiplayerMainScreen:MakeSubMenu()
     if TheInput:ControllerAttached() then
         self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+80, 0)
     else
-        self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+77, 0)    
+        self.submenu:SetPosition( RESOLUTION_X*.5 - (#submenuitems*60), -(RESOLUTION_Y*.5)+77, 0)
     end
     self.submenu:SetScale(.8)
 end
@@ -916,7 +916,7 @@ function MultiplayerMainScreen:FinishedFadeIn()
 	for _,item in pairs(entitlement_items) do
 		table.insert(items, { item = item.item_type, item_id = item.item_id, gifttype = SkinGifts.types[item.item_type] or "DEFAULT" })
 	end
-	
+
     if #items > 0 then
         local thankyou_popup = ThankYouPopup(items)
         TheFrontEnd:PushScreen(thankyou_popup)
@@ -972,8 +972,8 @@ local anims =
 
 function MultiplayerMainScreen:OnUpdate(dt)
 	if self.bg.anim_root.portal:GetAnimState():AnimDone() and not self.leaving then
-    	if math.random() < .33 then 
-			self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle_eyescratch", false) 
+    	if math.random() < .33 then
+			self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle_eyescratch", false)
     	else
     		self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle", false)
     	end
@@ -984,7 +984,7 @@ function MultiplayerMainScreen:OnGetMOTDImageQueryComplete( is_successful )
 	if is_successful then
 		self.motd.motdimage:SetTextures( "images/motd.xml", "motd.tex", "motd.tex", "motd.tex", "motd.tex", "motd.tex" )
 		self.motd.motdimage:Show()
-	end	
+	end
 end
 
 local function push_motd_event( event, url, image_version )
@@ -1004,17 +1004,17 @@ function MultiplayerMainScreen:SetMOTD(str, cache)
 	    end
 
 		local platform_motd = motd.dststeam
-		
+
 		if platform_motd then
 			--make sure we have an actual valid URL
 			if not string.match( platform_motd.link_url, "http://" ) and not string.match( platform_motd.link_url, "https://" ) then
 				platform_motd.link_url = "http://" .. platform_motd.link_url
 			end
-			
+
 		    self.motd:Show()
 		    if platform_motd.motd_title and string.len(platform_motd.motd_title) > 0 and
 			    	platform_motd.motd_body and string.len(platform_motd.motd_body) > 0 then
-			    
+
 			    self.motdbg.fill:Show()
 			    self.motd.motdtitle:Show()
 				self.motd.motdtitle:SetString(platform_motd.motd_title)
@@ -1037,12 +1037,12 @@ function MultiplayerMainScreen:SetMOTD(str, cache)
 			    self.motdbg.fill:Hide()
 				self.motd.motdtitle:Hide()
 				self.motd.motdtext:Hide()
-				
+
 				local use_disk_file = not cache
 				if use_disk_file then
 					self.motd.motdimage:Hide()
 				end
-				
+
 				if platform_motd.link_title and string.len(platform_motd.link_title) > 0 and
 				    	platform_motd.link_url and string.len(platform_motd.link_url) > 0 then
 				    self.motd.button:SetText(platform_motd.link_title)
@@ -1053,13 +1053,13 @@ function MultiplayerMainScreen:SetMOTD(str, cache)
 				else
 					self.motd.button:Hide()
 				end
-				
+
 				TheSim:GetMOTDImage( platform_motd.image_url, use_disk_file, platform_motd.image_version or "", function(...) self:OnGetMOTDImageQueryComplete(...) end )
 		    else
 				self.motd:Hide()
 		    end
-		    
-		    
+
+
 			if cache then --the one we cache is the latest we downloaded
 				push_motd_event( "motd.seen", platform_motd.link_url, platform_motd.image_version or 0 )
 			end
@@ -1071,7 +1071,7 @@ end
 
 function MultiplayerMainScreen:OnMOTDQueryComplete( result, isSuccessful, resultCode )
 	--print( "MultiplayerMainScreen:OnMOTDQueryComplete", result, isSuccessful, resultCode )
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
+ 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then
  		self:SetMOTD(result, true)
 	end
 end
@@ -1123,12 +1123,12 @@ function MultiplayerMainScreen:SetCountdown(str, cache)
                 puppet:Hide()
             end
 		end
-	end	
+	end
 end
 
 function MultiplayerMainScreen:OnCountdownQueryComplete( result, isSuccessful, resultCode )
 	--print( "MultiplayerMainScreen:OnMOTDQueryComplete", result, isSuccessful, resultCode )
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
+ 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then
  		self:SetCountdown(result, true)
 	end
 end

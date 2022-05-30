@@ -73,7 +73,7 @@ end
 --V2C: Leave CheckForStart() as a public member function for backward mod compatibility
 function Grue:CheckForStart()
     return not (self.inst.components.health:IsInvincible() or
-                self.inst.LightWatcher:IsInLight() or
+                self.inst:IsInLight() or
                 self.inst.components.health:IsDead() or
                 CanEntitySeeInDark(self.inst))
 end
@@ -81,7 +81,7 @@ end
 function Grue:Start()
     if self.level == nil and self:CheckForStart() then
         self.level = 0
-        self.inst:StartUpdatingComponent(self) 
+        self.inst:StartUpdatingComponent(self)
         self.nextHitTime = 5 + math.random() * 5
         self.nextSoundTime = self.nextHitTime * (.4 + math.random() * .4)
     end

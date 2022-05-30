@@ -40,14 +40,17 @@ local function CalcSanityAura(inst)
     return inst.components.combat.target ~= nil and -TUNING.SANITYAURA_HUGE or -TUNING.SANITYAURA_LARGE
 end
 
+local STRUCTURE_TAGS = {"structure"}
 local function FindBaseToAttack(inst, target)
-    local structure = GetClosestInstWithTag("structure", target, 40)
+    local structure = GetClosestInstWithTag(STRUCTURE_TAGS, target, 40)
     if structure ~= nil then
         inst.components.knownlocations:RememberLocation("targetbase", structure:GetPosition())
         inst.AnimState:ClearOverrideSymbol("deerclops_head")
     end
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "prey", "smallcreature", "INLIMBO" }
 local function RetargetFn(inst)
     local range = inst:GetPhysicsRadius(0) + 8
     return FindEntity(
@@ -59,8 +62,8 @@ local function RetargetFn(inst)
                             guy:IsNear(inst, range)
                         )
             end,
-            { "_combat" },
-            { "prey", "smallcreature", "INLIMBO" }
+            RETARGET_MUST_TAGS,
+            RETARGET_CANT_TAGS
         )
 end
 
@@ -116,7 +119,7 @@ end
 
 local function OnAttacked(inst, data)
     inst.components.combat:SetTarget(data.attacker)
-    if data.attacker:HasTag("player") and inst.structuresDestroyed < STRUCTURES_PER_HARASS and inst.components.knownlocations:GetLocation("targetbase") == nil then
+    if data.attacker ~= nil and data.attacker:HasTag("player") and inst.structuresDestroyed < STRUCTURES_PER_HARASS and inst.components.knownlocations:GetLocation("targetbase") == nil then
         FindBaseToAttack(inst, data.attacker)
     end
 end
@@ -237,7 +240,7 @@ local function fn()
     ------------------------------------------
 
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
-    inst.components.locomotor.walkspeed = 3  
+    inst.components.locomotor.walkspeed = 3
 
     ------------------------------------------
     inst:SetStateGraph("SGdeerclops")
@@ -260,7 +263,6 @@ local function fn()
     inst.components.combat:SetDefaultDamage(TUNING.DEERCLOPS_DAMAGE)
     inst.components.combat.playerdamagepercent = TUNING.DEERCLOPS_DAMAGE_PLAYER_PERCENT
     inst.components.combat:SetRange(TUNING.DEERCLOPS_ATTACK_RANGE)
-    inst.components.combat:SetAreaDamage(TUNING.DEERCLOPS_AOE_RANGE, TUNING.DEERCLOPS_AOE_SCALE)
     inst.components.combat.hiteffectsymbol = "deerclops_body"
     inst.components.combat:SetAttackPeriod(TUNING.DEERCLOPS_ATTACK_PERIOD)
     inst.components.combat:SetRetargetFunction(1, RetargetFn)

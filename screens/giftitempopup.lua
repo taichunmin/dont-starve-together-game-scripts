@@ -79,9 +79,12 @@ local GiftItemPopUp = Class(Screen, function(self, owner, item_types, item_ids)
     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/Together_HUD/player_receives_gift_animation_spin")
 
     TheCamera:PushScreenHOffset(self, SCREEN_OFFSET)
+
+    SetAutopaused(true)
 end)
 
 function GiftItemPopUp:OnDestroy()
+    SetAutopaused(false)
     TheCamera:PopScreenHOffset(self)
     TheFrontEnd:GetSound():KillSound("gift_idle")
     self._base.OnDestroy(self)
@@ -93,11 +96,7 @@ function GiftItemPopUp:ApplySkin()
     self.owner.HUD:SetRecentGifts(self.item_types, self.item_ids)
 
     TheFrontEnd:PopScreen(self)
-    if not TheWorld.ismastersim then
-        SendRPCToServer(RPC.DoneOpenGift, true)
-    elseif self.owner.components.giftreceiver ~= nil then
-        self.owner.components.giftreceiver:OnStopOpenGift(true)
-    end
+    POPUPS.GIFTITEM:Close(self.owner, true)
 end
 
 function GiftItemPopUp:ShowMenu()
@@ -108,7 +107,7 @@ function GiftItemPopUp:ShowMenu()
         local button_w = 200
         local space_between = 40
         local spacing = button_w + space_between
-        local buttons = {{text = STRINGS.UI.ITEM_SCREEN.USE_LATER, cb = function() self:OnClose() end}, 
+        local buttons = {{text = STRINGS.UI.ITEM_SCREEN.USE_LATER, cb = function() self:OnClose() end},
                          {text = STRINGS.UI.ITEM_SCREEN.USE_NOW, cb = function() self:ApplySkin() end}
                         }
         self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
@@ -122,12 +121,6 @@ function GiftItemPopUp:ShowMenu()
         end
 
         self.default_focus = self.menu
-    end
-end
-
-function GiftItemPopUp:OnControl(control, down)
-    if GiftItemPopUp._base.OnControl(self,control, down) then
-        return true
     end
 end
 
@@ -155,11 +148,7 @@ function GiftItemPopUp:OnUpdate(dt)
         end
     elseif self.spawn_portal:GetAnimState():IsCurrentAnimation("skin_out") and self.spawn_portal:GetAnimState():AnimDone() then
         TheFrontEnd:PopScreen(self)
-        if not TheWorld.ismastersim then
-            SendRPCToServer(RPC.DoneOpenGift)
-        elseif self.owner.components.giftreceiver ~= nil then
-            self.owner.components.giftreceiver:OnStopOpenGift()
-        end
+        POPUPS.GIFTITEM:Close(self.owner)
     end
 end
 
@@ -213,11 +202,11 @@ end
 function GiftItemPopUp:OnControl(control, down)
     if GiftItemPopUp._base.OnControl(self, control, down) then return true end
 
-    if TheInput:ControllerAttached() and self.show_menu then 
+    if TheInput:ControllerAttached() and self.show_menu then
         if not down and control == CONTROL_CANCEL then
             self:OnClose()
             return true
-        elseif not down and not self.disable_use_now and control == CONTROL_PAUSE then 
+        elseif not down and not self.disable_use_now and control == CONTROL_PAUSE then
             self:ApplySkin()
             return true
         end

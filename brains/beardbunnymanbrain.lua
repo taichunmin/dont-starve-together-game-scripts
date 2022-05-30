@@ -22,8 +22,8 @@ end
 
 local function GoHomeAction(inst)
     if not inst.components.follower.leader and
-       inst.components.homeseeker and 
-       inst.components.homeseeker.home and 
+       inst.components.homeseeker and
+       inst.components.homeseeker.home and
        inst.components.homeseeker.home:IsValid() then
         return BufferedAction(inst, inst.components.homeseeker.home, ACTIONS.GOHOME)
     end

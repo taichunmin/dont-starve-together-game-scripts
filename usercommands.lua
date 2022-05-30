@@ -90,12 +90,6 @@ end
 -- PRIVATE FUNCTIONS
 -----------------------------------------------------------------------------------------------------------
 
-local function sendsystemmessage(msg)
-    if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
-        ThePlayer.HUD.controls.networkchatqueue:DisplaySystemMessage(msg)
-    end
-end
-
 local dealias = nil -- forward declare
 local function getcommandfromhash(hash)
     for mod,modcommands in pairs(modusercommands) do
@@ -133,7 +127,7 @@ local function parseinput(input)
                 break
             else
                 print("Didn't supply enough arguments to command!")
-                sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.MISSINGPARAMSFMT, command.name))
+                ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.MISSINGPARAMSFMT, command.name))
                 return
             end
         end
@@ -144,7 +138,7 @@ local function parseinput(input)
         local client = UserToClient(params.user)
         if client == nil then
             print("Unknown target user for command:",command.name, params.user)
-            sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.BADUSERFMT, params.user))
+            ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.BADUSERFMT, params.user))
             return
         end
     end
@@ -269,17 +263,17 @@ end
 local function runcommand(command, params, caller, onserver, confirm)
     local userid = UserToClientID(params.user)
     if userid == nil and params.user ~= nil then
-        sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.FAILEDFMT, prettyname(command)))
+        ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.FAILEDFMT, prettyname(command)))
         print(string.format("User %s failed to run command %s.", caller.name, command.name))
         return
     end
     local exec_type = getexectype(command, caller, userid) -- 'user' is the magical param name
     if exec_type == COMMAND_RESULT.DISABLED then
-        sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.DISABLEDFMT, prettyname(command)))
+        ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.DISABLEDFMT, prettyname(command)))
         print(string.format("User %s tried to run command %s, but it is disabled.", caller.name, command.name))
         return
     elseif exec_type == COMMAND_RESULT.DENY then
-        sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.SQUELCHEDFMT, prettyname(command)))
+        ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.SQUELCHEDFMT, prettyname(command)))
         print(string.format("User %s tried to run command %s, but is squelched.", caller.name, command.name))
         return
     elseif exec_type == COMMAND_RESULT.INVALID then
@@ -288,13 +282,13 @@ local function runcommand(command, params, caller, onserver, confirm)
         elseif params.user ~= nil then
             local username = UserToName(params.user)
             if username ~= nil then
-                sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.BADTARGETFMT, prettyname(command), username))
+                ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.BADTARGETFMT, prettyname(command), username))
             else
-                sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.FAILEDFMT, prettyname(command)))
+                ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.FAILEDFMT, prettyname(command)))
             end
             print(string.format("User %s tried to run command %s, but target was bad.", caller.name, command.name))
         else
-            sendsystemmessage(string.format(STRINGS.UI.USERCOMMANDS.NOTALLOWEDFMT, prettyname(command)))
+            ChatHistory:SendCommandResponse(string.format(STRINGS.UI.USERCOMMANDS.NOTALLOWEDFMT, prettyname(command)))
             print(string.format("User %s tried to run command %s, but was not allowed.", caller.name, command.name))
         end
         return
@@ -337,14 +331,14 @@ local function getsomecommands(user, targetid, predicate)
     for hash,command in pairs(usercommands) do
         if command.aliasfor == nil and predicate(command) then
             local exectype = user and getexectype(command, user, targetid) or COMMAND_RESULT.ALLOW
-            table.insert(ret, {commandname=command.name, prettyname=prettyname(command), exectype=exectype})
+            table.insert(ret, {commandname=command.name, prettyname=prettyname(command), desc=ResolveCommandStringProperty(command, "desc", ""), exectype=exectype, menusort=command.menusort or 100})
         end
     end
     for mod, modcommands in pairs(modusercommands) do
         for hash, command in pairs(modcommands) do
             if command.aliasfor == nil and predicate(command) then
                 local exectype = user and getexectype(command, user, targetid) or COMMAND_RESULT.ALLOW
-                table.insert(ret, {commandname=command.name, prettyname=prettyname(command), exectype=exectype, mod=mod})
+                table.insert(ret, {commandname=command.name, prettyname=prettyname(command), desc=ResolveCommandStringProperty(command, "desc", ""), exectype=exectype, menusort=command.menusort or 100, mod=mod})
             end
         end
     end
@@ -381,11 +375,10 @@ local function CanUserStartCommand(commandname, player, targetid)
 end
 
 local function CanUserStartVote(commandname, player, targetid)
-    local command = getcommand(commandname)
-    if command == nil then
+    local command = type(commandname) == "string" and getcommand(commandname) or getcommandfromhash(commandname)
+    if command == nil or not command.vote then
         return false, nil
     end
-    assert(command.vote)
     return validatevotestart(command, player, targetid)
 end
 
@@ -520,17 +513,17 @@ if PLATFORM == "WIN32_RAIL" then
 
 		usercommands[hash].displayname = displayname
 		usercommands[hash].displayparams = displayparams
-		
+
 		if usercommands[hash].aliases == nil then usercommands[hash].aliases = {} end
 		table.insert( usercommands[hash].aliases, displayname )
 		if extra_alias ~= nil then
-			table.insert( usercommands[hash].aliases, extra_alias )	
+			table.insert( usercommands[hash].aliases, extra_alias )
 		end
         local alias_hash = smallhash(displayname)
         usercommands[alias_hash] = {aliasfor=name}
 	end
-	
-	
+
+
 	function RailUserCommandRemove( name )
 		local hash = smallhash(name)
 		local data = usercommands[hash]
@@ -597,7 +590,7 @@ function UserToClient(input)
     -- String matching priority (highest to lowest):
     --  3: userid
     --  2: case-sensitive name
-    --  1: case-insensitive name 
+    --  1: case-insensitive name
     local clientmatch = nil
     local lowerinput = string.lower(input)
     local priority = 0
@@ -668,9 +661,9 @@ function GetEmotesWordPredictionDictionary()
 			end
         end
     end
-        
+
    	local data = {
-		words = emotes, 
+		words = emotes,
 		delim = "/",
 	}
 	data.GetDisplayString = function(word) return data.delim .. word end

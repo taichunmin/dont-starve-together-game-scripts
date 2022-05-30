@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/mole_build.zip"),
@@ -79,6 +81,10 @@ local function OnHaunt(inst)
         and inst.components.spawner:ReleaseChild()
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_Spawner_PreLoad(inst, data, TUNING.MOLE_RESPAWN_TIME)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -112,6 +118,7 @@ local function fn()
     inst:AddComponent("spawner")
     inst.components.spawner:SetOnOccupiedFn(onoccupied)
     inst.components.spawner:SetOnVacateFn(stopspawning)
+    WorldSettings_Spawner_SpawnDelay(inst, TUNING.MOLE_RESPAWN_TIME, TUNING.MOLE_ENABLED)
     inst.components.spawner:Configure("mole", TUNING.MOLE_RESPAWN_TIME)
 
     inst:DoTaskInTime(0, OnInit)
@@ -127,6 +134,8 @@ local function fn()
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_SMALL)
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

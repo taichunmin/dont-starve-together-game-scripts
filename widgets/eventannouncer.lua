@@ -14,25 +14,25 @@ local EventAnnouncer = Class(Widget, function(self, owner)
     self.regular_announcements = {}
     self.skin_announcements = {}
     self.active_announcements = {}
-    
+
     self.message_font = UIFONT
     self.message_size = 30
 
     for i = 1,ANNOUNCEMENT_QUEUE_SIZE do
         -- Normal announcements
         local message_widget = self:AddChild(AnnouncementWidget(self.message_font, self.message_size))
-        
+
         message_widget.text:SetVAlign(ANCHOR_MIDDLE)
         message_widget.text:SetHAlign(ANCHOR_MIDDLE)
         message_widget:SetPosition(0, -15 - (i * (self.message_size+2)))
-        
+
         message_widget:ClearText()
         message_widget:Hide()
         self.regular_announcements[i] = message_widget
-        
+
         -- Clickable skin announcements
         local skin_announcement = self:AddChild(SkinAnnouncement(self.message_font, self.message_size))
-        
+
         skin_announcement.skin_txt:SetVAlign(ANCHOR_MIDDLE)
         skin_announcement.skin_txt:SetHAlign(ANCHOR_MIDDLE)
         skin_announcement:SetPosition(0, -15 - (i * (self.message_size+2)))
@@ -40,13 +40,13 @@ local EventAnnouncer = Class(Widget, function(self, owner)
         skin_announcement:ClearText()
         skin_announcement:Hide()
         self.skin_announcements[i] = skin_announcement
-    end 
+    end
 end)
 
 -- Move things up here
 function EventAnnouncer:DoShuffleUp(i)
     if i > ANNOUNCEMENT_QUEUE_SIZE or not self.active_announcements[i] then
-        return 
+        return
     end
 
     if not self.active_announcements[i +1] then
@@ -110,7 +110,7 @@ function EventAnnouncer:ShowNewAnnouncement(announcement, colour, announce_type)
     end
 
     local index = GetIndex( self )
-    
+
     if not colour then
         colour = {1,1,1,1}
     end
@@ -126,7 +126,7 @@ function EventAnnouncer:ShowSkinAnnouncement(user_name, user_colour, skin_name)
     if user_name == nil or user_colour == nil or user_name == nil then
         return
     end
-    
+
     local index = GetIndex(self)
 
     self.skin_announcements[index]:SetSkinAnnouncementInfo(user_name, user_colour, skin_name, 1, ANNOUNCEMENT_LIFETIME, ANNOUNCEMENT_FADE_TIME)

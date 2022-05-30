@@ -162,7 +162,7 @@ function SentientAxe:ScheduleConversation(delay)
     if self.convo_task ~= nil then
         self.convo_task:Cancel()
     end
-    self.convo_task = self.inst:DoTaskInTime(delay or 10 + math.random() * 5, OnMakeConvo, self)
+    self.convo_task = self.inst:DoTaskInTime(delay or (10 + math.random() * 5), OnMakeConvo, self)
 end
 
 function SentientAxe:MakeConversation()

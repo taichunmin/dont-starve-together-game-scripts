@@ -182,7 +182,7 @@ local _wet = net_bool(inst.GUID, "weather._wet", "wetdirty")
 local function StartAmbientRainSound(intensity)
     if not _rainsound then
         _rainsound = true
-        _world.SoundEmitter:PlaySound("dontstarve/cave/cave_rainAMB", "rain")
+        _world.SoundEmitter:PlaySound("dontstarve/AMB/caves/rain", "rain")
     end
     _world.SoundEmitter:SetParameter("rain", "intensity", intensity)
 end
@@ -663,7 +663,7 @@ function self:GetDebugString()
         string.format("preciprate:(%2.2f of %2.2f)", preciprate, _peakprecipitationrate:value()),
         string.format("wetness:%2.2f(%s%2.2f)%s", _wetness:value(), wetrate > 0 and "+" or "", wetrate, _wet:value() and " WET" or ""),
     }
-    
+
     return table.concat(str, ", ")
 end
 

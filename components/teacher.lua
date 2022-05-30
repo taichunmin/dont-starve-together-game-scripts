@@ -1,4 +1,4 @@
-local Teacher = Class(function(self, inst) 
+local Teacher = Class(function(self, inst)
     self.inst = inst
     self.recipe = nil
 end)
@@ -19,7 +19,7 @@ function Teacher:Teach(target)
         return false, "CANTLEARN"
     else
         target.components.builder:UnlockRecipe(self.recipe)
-        if self.onteach then 
+        if self.onteach then
             self.onteach(self.inst, target)
         end
         self.inst:Remove()

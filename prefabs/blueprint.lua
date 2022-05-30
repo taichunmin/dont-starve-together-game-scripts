@@ -82,7 +82,7 @@ local function OnHaunt(inst, haunter)
                 old ~= v and
                 (old == nil or old.tab == v.tab) and
                 CanBlueprintRandomRecipe(v) and
-                not haunter.components.builder:KnowsRecipe(v.name) and
+                not haunter.components.builder:KnowsRecipe(v) and
                 haunter.components.builder:CanLearn(v.name) then
                 table.insert(recipes, v)
             end
@@ -174,7 +174,7 @@ local function MakeAnyBlueprint()
         if IsRecipeValid(v.name) and CanBlueprintRandomRecipe(v) then
             local known = false
             for i, player in ipairs(allplayers) do
-                if player.components.builder:KnowsRecipe(v.name) or
+                if player.components.builder:KnowsRecipe(v) or
                     not player.components.builder:CanLearn(v.name) then
                     known = true
                     break
@@ -224,52 +224,22 @@ local function MakeSpecificBlueprint(specific_item)
     end
 end
 
-local function MakeAnyBlueprintFromTab(recipetab)
-    return function()
-        local inst = fn()
-
-        if not TheWorld.ismastersim then
-            return inst
-        end
-
-        local unknownrecipes = {}
-        local knownrecipes = {}
-        local allplayers = AllPlayers
-        for k, v in pairs(AllRecipes) do
-            if IsRecipeValid(v.name) and v.tab == recipetab and CanBlueprintRandomRecipe(v) then
-                local known = false
-                for i, player in ipairs(allplayers) do
-                    if player.components.builder:KnowsRecipe(v.name) or
-                        not player.components.builder:CanLearn(v.name) then
-                        known = true
-                        break
-                    end
-                end
-                table.insert(known and knownrecipes or unknownrecipes, v)
-            end
-        end
-        inst.recipetouse =
-            (#unknownrecipes > 0 and unknownrecipes[math.random(#unknownrecipes)].name) or
-            (#knownrecipes > 0 and knownrecipes[math.random(#knownrecipes)].name) or
-            "unknown"
-        inst.components.teacher:SetRecipe(inst.recipetouse)
-        inst.components.named:SetName(STRINGS.NAMES[string.upper(inst.recipetouse)].." "..STRINGS.NAMES.BLUEPRINT)
-        return inst
-    end
-end
-
 local prefabs = {}
 
 table.insert(prefabs, Prefab("blueprint", MakeAnyBlueprint, assets))
-for k, v in pairs(RECIPETABS) do
-    if not v.crafting_station then
-        table.insert(prefabs, Prefab(string.lower(v.str or "NONAME").."_blueprint", MakeAnyBlueprintFromTab(v), assets))
-    end
-end
 for k, v in pairs(AllRecipes) do
     if CanBlueprintSpecificRecipe(v) then
         table.insert(prefabs, Prefab(string.lower(k or "NONAME").."_blueprint", MakeSpecificBlueprint(k), assets))
     end
 end
+
+-- tab based blueprints are deprecated and will now generate MakeAnyBlueprint
+for k, v in pairs(RECIPETABS) do
+    if not v.crafting_station then
+		-- Renamed WAR_blueprint because another prefab of the same name was added and this, for many reasons, was the easier one to fix.
+        table.insert(prefabs, Prefab(string.lower(v.str == "WAR" and "WARTAB" or v.str or "NONAME").."_blueprint", MakeAnyBlueprint, assets))
+    end
+end
+
 CanBlueprintSpecificRecipe = nil --don't need this anymore
 return unpack(prefabs)

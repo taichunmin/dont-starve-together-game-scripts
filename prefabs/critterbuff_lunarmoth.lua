@@ -65,7 +65,7 @@ local function EnableLight(inst, enable, instant)
 			fade_val = inst._fade:value() > FADE_FRAMES and inst._fade:value() or 2 * FADE_FRAMES + 1 - inst._fade:value()
 		end
         inst._fade:set(fade_val)
-            
+
         if inst._fadetask == nil then
             inst._fadetask = inst:DoPeriodicTask(FRAMES, OnUpdateFade)
         end

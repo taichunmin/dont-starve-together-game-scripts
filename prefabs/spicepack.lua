@@ -19,7 +19,7 @@ local function onequip(inst, owner)
     end
 end
 
-local function onunequip(inst, owner) 
+local function onunequip(inst, owner)
     owner.AnimState:ClearOverrideSymbol("swap_body")
     owner.AnimState:ClearOverrideSymbol("backpack")
     if inst.components.container ~= nil then
@@ -91,6 +91,9 @@ local function fn()
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("spicepack")
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
+
 
     MakeSmallBurnable(inst)
     MakeSmallPropagator(inst)

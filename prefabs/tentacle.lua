@@ -19,11 +19,13 @@ SetSharedLootTable( 'tentacle',
     {'tentaclespots', 0.2},
 })
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "prey" }
 local function retargetfn(inst)
     return FindEntity(
         inst,
         TUNING.TENTACLE_ATTACK_DIST,
-        function(guy) 
+        function(guy)
             return guy.prefab ~= inst.prefab
                 and guy.entity:IsVisible()
                 and not guy.components.health:IsDead()
@@ -32,8 +34,8 @@ local function retargetfn(inst)
                     guy:HasTag("monster") or
                     guy:HasTag("animal"))
         end,
-        { "_combat", "_health" },
-        { "prey" })
+        RETARGET_MUST_TAGS,
+        RETARGET_CANT_TAGS)
 end
 
 local function shouldKeepTarget(inst, target)
@@ -91,10 +93,11 @@ local function fn()
     inst.AnimState:SetBuild("tentacle")
     inst.AnimState:PlayAnimation("idle")
 
-    inst:AddTag("monster")    
+    inst:AddTag("monster")
     inst:AddTag("hostile")
     inst:AddTag("wet")
     inst:AddTag("WORM_DANGER")
+	inst:AddTag("tentacle")
 
     inst.entity:SetPristine()
 

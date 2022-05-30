@@ -24,9 +24,11 @@ local INSANITY_COLOURCUBES =
     full_moon = "images/colour_cubes/insane_night_cc.tex",
 }
 
-local LUNACY_COLOURCUBES = 
+local LUNACY_COLOURCUBES =
 {
 	regular = "images/colour_cubes/lunacy_regular_cc.tex",
+    full_moon = "images/colour_cubes/purple_moon_cc.tex",
+    moon_storm = "images/colour_cubes/moonstorm_cc.tex",
 }
 
 local SEASON_COLOURCUBES =
@@ -89,6 +91,8 @@ local _iscave = inst:HasTag("cave")
 local _phase = _iscave and "night" or "day"
 local _fullmoonphase = nil
 local _season = "autumn"
+local _alter_awake = false
+local _in_moonstorm = false
 local _ambientcctable = _iscave and CAVE_COLOURCUBES or SEASON_COLOURCUBES.autumn
 local _insanitycctable = INSANITY_COLOURCUBES
 local _lunacycctable = LUNACY_COLOURCUBES
@@ -102,6 +106,8 @@ local _remainingblendtime = 0
 local _totalblendtime = 0
 local _fxtime = 0
 local _fxspeed = 0
+local _lunacyintensity = 0
+local _lunacyspeed = 0
 local _activatedplayer = nil --cached for activation/deactivation only, NOT for logic use
 local _colourmodifier = nil
 
@@ -125,21 +131,24 @@ local function GetInsanityPhase()
 end
 
 local function GetLunacyPhase()
-    return "regular"
+	return _phase == "night" and _fullmoonphase
+			or _in_moonstorm and "moon_storm"
+			or "regular"
 end
 
 local function Blend(time)
     local ambientcctarget = _ambientcctable[GetCCPhase()] or IDENTITY_COLOURCUBE
     local insanitycctarget = _insanitycctable[GetInsanityPhase()] or IDENTITY_COLOURCUBE
     local lunacycctarget = _lunacycctable[GetLunacyPhase()] or IDENTITY_COLOURCUBE
-	
+
     if _overridecc ~= nil then
         _ambientcc[2] = ambientcctarget
         _insanitycc[2] = insanitycctarget
+        _lunacycc[2] = lunacycctarget
         return
     end
 
-    local newtarget = _ambientcc[2] ~= ambientcctarget or _insanitycc[2] ~= insanitycctarget
+    local newtarget = _ambientcc[2] ~= ambientcctarget or _insanitycc[2] ~= insanitycctarget or _lunacycc[2] ~= lunacycctarget
 
     if _remainingblendtime <= 0 then
         --No blends in progress, so we can start a new blend
@@ -148,6 +157,7 @@ local function Blend(time)
             _ambientcc[2] = ambientcctarget
             _insanitycc[1] = _insanitycc[2]
             _insanitycc[2] = insanitycctarget
+            _lunacycc[1] = _lunacycc[2]
             _lunacycc[2] = lunacycctarget
             _remainingblendtime = time
             _totalblendtime = time
@@ -198,35 +208,54 @@ local function OnOverridePhaseEvent(inst)
     UpdateAmbientCCTable(_overridephase and _overridephase.blendtime or DEFAULT_BLEND_TIME)
 end
 
+local sanity_cc_idx = 1
+local lunacy_cc_idx = 2
+
+local function SetLunacyIntensityParams(lunacy_distortion, sanity_distortion)
+    --when lunacy intensity is transitioning, do a merge of the 2 states, based on lunacy intensity.
+    local neg_lunacyintensity = 1 - _lunacyintensity
+    PostProcessor:SetColourCubeLerp(sanity_cc_idx, sanity_distortion * neg_lunacyintensity)
+    PostProcessor:SetColourCubeLerp(lunacy_cc_idx, lunacy_distortion * _lunacyintensity)
+    PostProcessor:SetDistortionFactor((1 * _lunacyintensity) + ((1 - sanity_distortion) * neg_lunacyintensity))
+    PostProcessor:SetOverlayBlend(lunacy_distortion * _lunacyintensity)
+    PostProcessor:SetLunacyEnabled(_lunacyintensity > 0)
+end
+
 local function OnSanityDelta(player, data)
-    local is_lunacy = ThePlayer.replica.sanity:IsLunacyMode()
-    local distortion_target = is_lunacy and (1 - ThePlayer.replica.sanity:GetPercentWithPenalty()) or data.newpercent
+    local is_lunacy = player.replica.sanity:IsLunacyMode()
+    local sanity_percent = player.replica.sanity:GetPercentWithPenalty()
+    local lunacy_percent = 1 - sanity_percent
 
-    PostProcessor:SetOverlayTex("images/overlays_lunacy.tex")    
-
-	local distortion = 1 - easing.outQuad(distortion_target, 0, 1, 1)
+	local lunacy_distortion = 1 - easing.outQuad(lunacy_percent, 0, 1, 1)
+	local sanity_distortion = 1 - easing.outQuad(sanity_percent, 0, 1, 1)
 	if player ~= nil and player:HasTag("dappereffects") then
-		distortion = distortion * distortion
+		lunacy_distortion = lunacy_distortion * lunacy_distortion
+		sanity_distortion = sanity_distortion * sanity_distortion
 	end
 
-	local sanity_cc_idx = 1
-	local lunacy_cc_idx = 2
+    if is_lunacy then
+        _lunacyspeed = easing.outQuad(1 - lunacy_percent, 0.4, 1.6, 1)
+    else
+        _lunacyspeed = easing.outQuad(1 - sanity_percent, -0.4, -1.6, 1)
+    end
 
-	if is_lunacy then
+    if _lunacyintensity > 0 and _lunacyintensity < 1 then
+        SetLunacyIntensityParams(lunacy_distortion, sanity_distortion)
+    elseif is_lunacy and _lunacyintensity == 1 then
 		PostProcessor:SetColourCubeLerp(sanity_cc_idx, 0)
-		PostProcessor:SetColourCubeLerp(lunacy_cc_idx, distortion)
+		PostProcessor:SetColourCubeLerp(lunacy_cc_idx, lunacy_distortion)
 		PostProcessor:SetDistortionFactor(1)
-        PostProcessor:SetOverlayBlend(distortion)
+        PostProcessor:SetOverlayBlend(lunacy_distortion)
         PostProcessor:SetLunacyEnabled(true)
-	else
-		PostProcessor:SetColourCubeLerp(sanity_cc_idx, distortion)
+    elseif not is_lunacy and _lunacyintensity == 0 then
+		PostProcessor:SetColourCubeLerp(sanity_cc_idx, sanity_distortion)
 		PostProcessor:SetColourCubeLerp(lunacy_cc_idx, 0)
-		PostProcessor:SetDistortionFactor(1 - distortion)
+		PostProcessor:SetDistortionFactor(1 - sanity_distortion)
         PostProcessor:SetOverlayBlend(0)
         PostProcessor:SetLunacyEnabled(false)
-	end
+    end
 
-	_fxspeed = easing.outQuad(1 - distortion_target, 0, .2, 1)
+	_fxspeed = easing.outQuad(1 - sanity_percent, 0, .2, 1)
 end
 
 local function OnOverrideCCTable(player, cctable)
@@ -258,6 +287,18 @@ local function OnOverrideCCPhaseFn(player, fn)
     UpdateAmbientCCTable(blendtime or DEFAULT_BLEND_TIME)
 end
 
+local function OnStormLevelChanged(inst, data)
+    local in_moonstorm = data.stormtype == STORM_TYPES.MOONSTORM
+	if _in_moonstorm ~= in_moonstorm then
+		_in_moonstorm = in_moonstorm
+
+		local blendtime = PHASE_BLEND_TIMES[GetCCPhase()]
+		if blendtime ~= nil then
+			Blend(blendtime)
+		end
+    end
+end
+
 local function OnPlayerActivated(inst, player)
     if _activatedplayer == player then
         return
@@ -265,11 +306,13 @@ local function OnPlayerActivated(inst, player)
         inst:RemoveEventCallback("sanitydelta", OnSanityDelta, _activatedplayer)
         inst:RemoveEventCallback("ccoverrides", OnOverrideCCTable, player)
         inst:RemoveEventCallback("ccphasefn", OnOverrideCCPhaseFn, player)
+		inst:RemoveEventCallback("stormlevel", OnStormLevelChanged, player)
     end
     _activatedplayer = player
     inst:ListenForEvent("sanitydelta", OnSanityDelta, player)
     inst:ListenForEvent("ccoverrides", OnOverrideCCTable, player)
     inst:ListenForEvent("ccphasefn", OnOverrideCCPhaseFn, player)
+	inst:ListenForEvent("stormlevel", OnStormLevelChanged, player)
     if player.replica.sanity ~= nil then
         OnSanityDelta(player, { newpercent = player.replica.sanity:GetPercent(), sanitymode = player.replica.sanity:GetSanityMode() })
     end
@@ -281,6 +324,7 @@ local function OnPlayerDeactivated(inst, player)
     inst:RemoveEventCallback("sanitydelta", OnSanityDelta, player)
     inst:RemoveEventCallback("ccoverrides", OnOverrideCCTable, player)
     inst:RemoveEventCallback("ccphasefn", OnOverrideCCPhaseFn, player)
+	inst:RemoveEventCallback("stormlevel", OnStormLevelChanged, player)
     OnSanityDelta(player, { newpercent = 1, sanitymode = SANITY_MODE_INSANITY })
     OnOverrideCCTable(player, nil)
     if player == _activatedplayer then
@@ -311,6 +355,20 @@ local function OnMoonPhaseChanged2(inst, data)
     end
 end
 
+local function OnMoonPhaseStyleChanged(inst, data)
+    local alter_awake = data.style == "alter_active"
+	if _alter_awake ~= alter_awake then
+		_alter_awake = alter_awake
+
+		if _fullmoonphase  then
+			local blendtime = PHASE_BLEND_TIMES[GetCCPhase()]
+			if blendtime ~= nil then
+				Blend(blendtime)
+			end
+		end
+    end
+end
+
 local OnSeasonTick = not _iscave and function(inst, data)
     _season = data.season
     UpdateAmbientCCTable(SEASON_BLEND_TIME)
@@ -328,6 +386,7 @@ local function OnOverrideColourCube(inst, cc)
         else
             PostProcessor:SetColourCubeData(0, _ambientcc[2], _ambientcc[2])
             PostProcessor:SetColourCubeData(1, _insanitycc[2], _insanitycc[2])
+            PostProcessor:SetColourCubeData(2, _lunacycc[2], _lunacycc[2])
         end
     end
 end
@@ -358,6 +417,8 @@ inst:ListenForEvent("playeractivated", OnPlayerActivated)
 inst:ListenForEvent("playerdeactivated", OnPlayerDeactivated)
 inst:ListenForEvent("phasechanged", OnPhaseChanged)
 inst:ListenForEvent("moonphasechanged2", OnMoonPhaseChanged2)
+inst:ListenForEvent("moonphasestylechanged", OnMoonPhaseStyleChanged)
+
 if not _iscave then
     inst:ListenForEvent("seasontick", OnSeasonTick)
 end
@@ -382,7 +443,23 @@ function self:OnUpdate(dt)
     end
 
     _fxtime = _fxtime + dt * _fxspeed
-    PostProcessor:SetEffectTime(_fxtime)
+    PostProcessor:SetDistortionEffectTime(_fxtime)
+
+    local new_lunacyintensity = math.clamp(_lunacyintensity + dt * _lunacyspeed, 0, 1)
+    if new_lunacyintensity ~= _lunacyintensity then
+        _lunacyintensity = new_lunacyintensity
+        local sanity_percent = ThePlayer and ThePlayer.replica.sanity:GetPercentWithPenalty() or 1
+        local lunacy_percent = 1 - sanity_percent
+
+        local lunacy_distortion = 1 - easing.outQuad(lunacy_percent, 0, 1, 1)
+        local sanity_distortion = 1 - easing.outQuad(sanity_percent, 0, 1, 1)
+        if ThePlayer and ThePlayer:HasTag("dappereffects") then
+            lunacy_distortion = lunacy_distortion * lunacy_distortion
+            sanity_distortion = sanity_distortion * sanity_distortion
+        end
+        SetLunacyIntensityParams(lunacy_distortion, sanity_distortion)
+        PostProcessor:SetLunacyIntensity(_lunacyintensity)
+    end
 end
 
 function self:LongUpdate(dt)
@@ -394,12 +471,13 @@ end
 --------------------------------------------------------------------------
 
 function self:GetDebugString()
-    return string.format("override: %s overridefn: %s blendtime: %.2f\n\tambient: %s -> %s\n\tsanity: %s -> %s",
+    return string.format("override: %s overridefn: %s blendtime: %.2f\n\tambient: %s -> %s\n\tsanity: %s -> %s\n\tlunacy: %s -> %s",
         _overridecc ~= nil and "true" or "false",
         _overridephase ~= nil and "true" or "false",
         _remainingblendtime,
         _ambientcc[1], _ambientcc[2],
-        _insanitycc[1], _insanitycc[2]
+        _insanitycc[1], _insanitycc[2],
+		_lunacycc[1], _lunacycc[2]
     )
 end
 

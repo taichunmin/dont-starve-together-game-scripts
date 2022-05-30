@@ -32,7 +32,7 @@ local function ShouldChase(self)
     return self._shouldchase
 end
 
-function Shadow_RookBrain:OnStart() 
+function Shadow_RookBrain:OnStart()
     local root = PriorityNode(
     {
         WhileNode(function() return ShouldChase(self) end, "Chase",
@@ -56,7 +56,7 @@ function Shadow_RookBrain:OnStart()
             Wander(self.inst),
         },
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

@@ -78,10 +78,10 @@ local ScrollableList = Class(Widget, function(self, items, listwidth, listheight
     self.up_button:SetScale(self.scrollbar_style.scale)
     local handle_scale = bar_width_scale_factor * self.scrollbar_style.scale
     self.up_button:SetPosition(self.width/2, self.height/2-10, 0)
-    self.up_button:SetWhileDown( function() 
-        if not self.last_up_button_time or GetTime() - self.last_up_button_time > button_repeat_time then
-            self.last_up_button_time = GetTime()
-            self:Scroll(-scroll_per_click, true) 
+    self.up_button:SetWhileDown( function()
+        if not self.last_up_button_time or GetStaticTime() - self.last_up_button_time > button_repeat_time then
+            self.last_up_button_time = GetStaticTime()
+            self:Scroll(-scroll_per_click, true)
         end
     end)
     self.up_button:SetOnClick( function()
@@ -89,14 +89,14 @@ local ScrollableList = Class(Widget, function(self, items, listwidth, listheight
     end)
     -- self.up_button:StartUpdating()
 
-    
+
     self.down_button = self.scroll_bar_container:AddChild(ImageButton(self.scrollbar_style.atlas, self.scrollbar_style.down))
     self.down_button:SetScale(self.scrollbar_style.scale)
     self.down_button:SetPosition(self.width/2, -self.height/2+10, 0)
-    self.down_button:SetWhileDown( function() 
-        if not self.last_down_button_time or GetTime() - self.last_down_button_time > button_repeat_time then
-            self.last_down_button_time = GetTime()
-            self:Scroll(scroll_per_click, true) 
+    self.down_button:SetWhileDown( function()
+        if not self.last_down_button_time or GetStaticTime() - self.last_down_button_time > button_repeat_time then
+            self.last_down_button_time = GetStaticTime()
+            self:Scroll(scroll_per_click, true)
         end
     end)
     self.down_button:SetOnClick( function()
@@ -114,10 +114,10 @@ local ScrollableList = Class(Widget, function(self, items, listwidth, listheight
     self.scroll_bar.scale_on_focus = false
     self.scroll_bar.move_on_click = false
     self.scroll_bar:SetPosition(self.width/2, 0)
-    self.scroll_bar:SetOnDown( function() 
+    self.scroll_bar:SetOnDown( function()
         self.page_jump = true
     end)
-    self.scroll_bar:SetOnClick( function() 
+    self.scroll_bar:SetOnClick( function()
         if self.position_marker and self.page_jump then
             local marker = self.position_marker:GetWorldPosition()
             if TheFrontEnd.lasty >= marker.y then
@@ -135,15 +135,15 @@ local ScrollableList = Class(Widget, function(self, items, listwidth, listheight
     self.position_marker:SetPosition(self.width/2, self.height/2 - arrow_button_size, 0)
     local handle_scale = bar_width_scale_factor * self.scrollbar_style.scale
     self.position_marker:SetScale(handle_scale, handle_scale, 1)
-    self.position_marker:SetOnDown( function() 
+    self.position_marker:SetOnDown( function()
         self.do_dragging = true
         self.y_adjustment = 0
     end)
-    self.position_marker:SetWhileDown( function() 
+    self.position_marker:SetWhileDown( function()
         if self.do_dragging then
             TheFrontEnd:LockFocus(true)
             self.dragging = true
-            self:DoDragScroll() 
+            self:DoDragScroll()
         end
     end)
     self.position_marker.OnLoseFocus = function()
@@ -151,14 +151,14 @@ local ScrollableList = Class(Widget, function(self, items, listwidth, listheight
         self.dragging = false
         self.do_dragging = false
         self.y_adjustment = 0
-        self:MoveMarkerToNearestStep() 
+        self:MoveMarkerToNearestStep()
     end
-    self.position_marker:SetOnClick( function() 
+    self.position_marker:SetOnClick( function()
         TheFrontEnd:LockFocus(false)
         self.dragging = false
         self.do_dragging = false
         self.y_adjustment = 0
-        self:MoveMarkerToNearestStep() 
+        self:MoveMarkerToNearestStep()
     end)
 
     --self.position_marker:MoveToBack()
@@ -235,12 +235,12 @@ function ScrollableList:OnControl(control, down, force)
     if down and ((self.focus and self.scroll_bar:IsVisible()) or force) then
         if control == CONTROL_SCROLLBACK then
             if self:Scroll(-scroll_per_click, true) then
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
             end
             return true
         elseif control == CONTROL_SCROLLFWD then
             if self:Scroll(scroll_per_click, true) then
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
             end
             return true
         end
@@ -287,9 +287,10 @@ function ScrollableList:RefreshView(movemarker)
 
     local numShown = 0
     for i,v in ipairs(self.items) do
-        if i < self.view_offset+1 then
+        local item_offset = (self.view_offset+1) - i
+        if item_offset > 0 then
             showing = false
-        elseif i == self.view_offset+1 then
+        elseif item_offset == 0 then
             showing = true
         end
 
@@ -298,15 +299,13 @@ function ScrollableList:RefreshView(movemarker)
                 if self.static_widgets[i - self.view_offset] then
                     -- if i - self.view_offset > #self.static_widgets then break end -- just in case we get into a bad spot
                     self.updatefn(self.static_widgets[i - self.view_offset], v, i)
-                    self.static_widgets[i - self.view_offset]:SetPosition(-self.width/2 + self.x_offset, nextYPos)
+                    self.static_widgets[i - self.view_offset]:SetPosition(-self.width/2 + self.x_offset, nextYPos + ((self.item_height + self.item_padding) * item_offset))
                 end
             else
-                v:SetPosition(-self.width/2 + self.x_offset, nextYPos)
+                v:SetPosition(-self.width/2 + self.x_offset, nextYPos + ((self.item_height + self.item_padding) * item_offset))
                 v:Show()
             end
             numShown = numShown + 1
-
-            nextYPos = nextYPos - self.item_height - self.item_padding
 
             -- Make sure we can actually fit another widget below us
             if numShown >= self.widgets_per_view then
@@ -329,6 +328,7 @@ function ScrollableList:RefreshView(movemarker)
                     self.focused_index = self.view_offset+self.widgets_per_view
                 end
             end
+            v:SetPosition(-self.width/2 + self.x_offset, nextYPos + ((self.item_height + self.item_padding) * item_offset))
             v:Hide()
         end
     end
@@ -402,9 +402,9 @@ function ScrollableList:LayOutStaticWidgets(yInitial, skipFixUp, focusChildren)
                     local controller_id = TheInput:GetControllerID()
                     local t = {}
                     if self.scroll_bar and self.scroll_bar:IsVisible() then
-                        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)   
+                        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)
                     end
-                    if helptextFn then 
+                    if helptextFn then
                         table.insert(t, helptextFn())
                     end
                     return table.concat(t, "  ")
@@ -450,7 +450,7 @@ function ScrollableList:DoDragScroll()
     local marker = self.position_marker:GetWorldPosition()
     if self.dragging and math.abs(TheFrontEnd.lastx - marker.x) <= DRAG_SCROLL_X_THRESHOLD then
         local pos = self:GetWorldPosition()
-	
+
 		local _,scaleY,_ = self:GetHierarchicalScale()
 
         local click_y = TheFrontEnd.lasty
@@ -478,7 +478,7 @@ function ScrollableList:DoDragScroll()
         if curr_step ~= prev_step then
             self:Scroll(prev_step - curr_step, false)
         end
-        self:MoveMarkerToNearestStep() 
+        self:MoveMarkerToNearestStep()
     end
 end
 
@@ -531,7 +531,6 @@ function ScrollableList:SetList(list, keepitems, scrollto, keeprelativefocusinde
     local rel_focus_index = self.focused_index - self.view_offset
     if not keepitems and self.updatefn == nil and self.static_widgets == nil then
         for i, v in ipairs(self.items) do
-            v:KillAllChildren()
             v:Kill()
         end
 
@@ -725,14 +724,14 @@ function ScrollableList:OnFocusMove(dir, down)
             if dir == MOVE_UP then
                 if self.focused_index <= self.view_offset + 1 then
                     self:Scroll(-1, true)
-                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
                     self.static_widgets[1]:SetFocus()
                     self.focused_index = self.focused_index - 1
                     return true
                 end
             elseif dir == MOVE_DOWN and self.focused_index >= self.view_offset + #self.static_widgets and self.view_offset + #self.static_widgets < #self.items then
                 self:Scroll(1, true)
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
                 self.static_widgets[#self.static_widgets]:SetFocus()
                 self.focused_index = self.focused_index + 1
                 return true
@@ -748,7 +747,7 @@ function ScrollableList:OnFocusMove(dir, down)
             if dir == MOVE_UP and self.focused_index > 1 then
                 if self.focused_index <= self.view_offset + 1 then
                     self:Scroll(-1, true)
-                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
                     self.items[self.view_offset + 1]:SetFocus()
                     self.focused_index = self.focused_index - 1
                 end
@@ -756,7 +755,7 @@ function ScrollableList:OnFocusMove(dir, down)
             elseif dir == MOVE_DOWN and self.focused_index < #self.items then
                 if self.focused_index >= self.view_offset + self.widgets_per_view then
                     self:Scroll(1, true)
-                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
                     self.items[self.view_offset + self.widgets_per_view]:SetFocus()
                     self.focused_index = self.focused_index + 1
                 end
@@ -774,6 +773,10 @@ function ScrollableList:GetHelpText()
         table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)
     end
     return table.concat(t, "  ")
+end
+
+function ScrollableList:IsAtEnd()
+    return self.view_offset == self.max_step
 end
 
 function ScrollableList:ScrollToEnd()

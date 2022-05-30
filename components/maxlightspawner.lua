@@ -54,15 +54,15 @@ end
 
 function MaxLightSpawner:SpawnAllLights()
 	if self.numlights < self.maxlights then
-		local pt = Vector3(self.inst.Transform:GetWorldPosition())	
-		local theta = self.angleoffset * (PI / 180)	
+		local pt = Vector3(self.inst.Transform:GetWorldPosition())
+		local theta = self.angleoffset * (PI / 180)
 		for i = 1, self.maxlights do
 			local offset = Vector3(self.radius * math.cos(theta), 0, -self.radius * math.sin(theta))
 			local placementpoint = pt + offset
 			self:SpawnLight(placementpoint)
 			theta = theta - (2 * PI / self.maxlights)
 		end
-	end	
+	end
 end
 
 return MaxLightSpawner

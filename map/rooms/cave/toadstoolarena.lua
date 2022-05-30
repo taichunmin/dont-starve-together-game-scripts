@@ -7,7 +7,7 @@ require "map/room_functions"
 AddRoom("ToadstoolArenaBGMud", {
     colour={r=0.3,g=0.2,b=0.1,a=0.3},
     value = GROUND.MUD,
-    tags = {},    
+    tags = {},
     contents =  {
         distributepercent = .12,
         distributeprefabs=
@@ -34,7 +34,7 @@ AddRoom("ToadstoolArenaBGMud", {
 AddRoom("ToadstoolArenaMud", {
     colour={r=1.0,g=0.0,b=0.0,a=0.9},
     value = GROUND.MUD,
-    tags = {},    
+    tags = {},
     contents = {
         countstaticlayouts = {
             ["ToadstoolArena"] = 1,
@@ -60,7 +60,7 @@ AddRoom("ToadstoolArenaMud", {
 AddRoom("ToadstoolArenaBGCave", {
     colour={r=0.3,g=0.2,b=0.1,a=0.3},
     value = GROUND.CAVE,
-    tags = {},    
+    tags = {},
     contents =  {
         distributepercent = .12,
         distributeprefabs=
@@ -82,7 +82,7 @@ AddRoom("ToadstoolArenaBGCave", {
 AddRoom("ToadstoolArenaCave", {
     colour={r=1.0,g=0.0,b=0.0,a=0.9},
     value = GROUND.CAVE,
-    tags = {},    
+    tags = {},
     contents = {
         countstaticlayouts = {
             ["ToadstoolArena"] = 1,

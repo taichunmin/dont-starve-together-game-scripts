@@ -2,6 +2,7 @@ local CharacterProgress = require "widgets/redux/characterprogress"
 local CharacterSelect = require "widgets/redux/characterselect"
 local EmojiExplorerPanel = require "widgets/redux/emojiexplorerpanel"
 local EmotesExplorerPanel = require "widgets/redux/emotesexplorerpanel"
+local BeardsExplorerPanel = require "widgets/redux/beardsexplorerpanel"
 local GameItemExplorerPanel = require "widgets/redux/gameitemexplorerpanel"
 local LoadersExplorerPanel = require "widgets/redux/loadersexplorerpanel"
 local ProfileFlairExplorerPanel = require "widgets/redux/profileflairexplorerpanel"
@@ -10,6 +11,8 @@ local PortraitBackgroundExplorerPanel = require "widgets/redux/portraitbackgroun
 local Screen = require "widgets/screen"
 local Subscreener = require "screens/redux/subscreener"
 local WardrobeScreen = require "screens/redux/wardrobescreen"
+
+local KitcoonPuppet = require "widgets/kitcoonpuppet"
 
 local TEMPLATES = require("widgets/redux/templates")
 
@@ -24,8 +27,16 @@ local CollectionScreen = Class(Screen, function(self, prev_screen, user_profile)
 end)
 
 function CollectionScreen:DoInit()
+    self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())	
+    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())
+
+    self.kit_puppet = self.root:AddChild(KitcoonPuppet( Profile, nil, {
+        { x = -380, y = 170, scale = 0.75 },
+        { x = -365, y = -310, scale = 0.75 },
+        { x = 480, y = -310, scale = 0.75 },
+    } ))
 
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.COLLECTIONSCREEN.TITLE, ""))
 
@@ -33,21 +44,28 @@ function CollectionScreen:DoInit()
 	self.doodad_count:SetPosition(-550, 215)
 	self.doodad_count:SetScale(0.4)
 
+    if IsSteam() or IsRail() then
+        self.points_count = self.root:AddChild(TEMPLATES.KleiPointsCounter(TheInventory:GetKleiPointsAmount()))
+        self.points_count:SetPosition(-480, 215)
+        self.points_count:SetScale(0.4)
+    end
+
     self.subscreener = Subscreener(self,
         self.MakeMenu,
         {
             -- Menu items
             skins               = self:_BuildCharacterSelect(),
             gameitem            = self.root:AddChild(GameItemExplorerPanel(self, self.user_profile)),
+            beards              = self.root:AddChild(BeardsExplorerPanel(self, self.user_profile)),
             emotes              = self.root:AddChild(EmotesExplorerPanel(self, self.user_profile)),
             emoji               = self.root:AddChild(EmojiExplorerPanel(self, self.user_profile)),
             portraitbackgrounds = self.root:AddChild(PortraitBackgroundExplorerPanel(self, self.user_profile)),
             profileflair        = self.root:AddChild(ProfileFlairExplorerPanel(self, self.user_profile)),
             loaders             = self.root:AddChild(LoadersExplorerPanel(self, self.user_profile)),
         })
-    
 
-    if not TheInput:ControllerAttached() then 
+
+    if not TheInput:ControllerAttached() then
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
                     self:_CloseScreen()
@@ -89,9 +107,10 @@ end
 
 function CollectionScreen:MakeMenu(subscreener)
     self.tooltip = self.root:AddChild(TEMPLATES.ScreenTooltip())
-	
+
     local button_skins   = subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.SKINS,   "skins",    STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_SKINS,   self.tooltip)
     local button_gameitem= subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.GAMEITEM,"gameitem", STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_GAMEITEM,   self.tooltip)
+    local button_beard   = subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.BEARD,   "beards",   STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_BEARD,   self.tooltip)
     local button_emote   = subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.EMOTE,   "emotes",   STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_EMOTE,   self.tooltip)
     local button_emoji   = subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.EMOJI,   "emoji",    STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_EMOJI,   self.tooltip)
     local button_profileflair        = subscreener:MenuButton(STRINGS.UI.COLLECTIONSCREEN.PROFILEFLAIR,        "profileflair",        STRINGS.UI.COLLECTIONSCREEN.TOOLTIP_PROFILEFLAIR,        self.tooltip)
@@ -104,6 +123,7 @@ function CollectionScreen:MakeMenu(subscreener)
         {widget = button_portraitbackgrounds},
         {widget = button_emoji  },
         {widget = button_emote  },
+        {widget = button_beard  },
         {widget = button_gameitem  },
         {widget = button_skins  },
     }
@@ -118,7 +138,7 @@ function CollectionScreen:_FadeToScreen(screen_type, data)
     self.last_focus_widget = TheFrontEnd:GetFocusWidget()
     self.subscreener.menu:Disable()
     self.leaving = true
-    
+
     TheFrontEnd:FadeToScreen( self, function() return screen_type(self.user_profile, unpack(data)) end, nil )
 end
 
@@ -127,7 +147,7 @@ function CollectionScreen:OnBecomeActive()
         local function ShowApology(message)
             local sorry_popup = PopupDialogScreen(
                 STRINGS.UI.SKINSSCREEN.SORRY,
-                message, 
+                message,
                 {
                     {
                         text=STRINGS.UI.POPUPDIALOG.OK,
@@ -136,7 +156,7 @@ function CollectionScreen:OnBecomeActive()
                             TheFrontEnd:FadeBack() -- collection screen
                         end
                     }
-                }) 
+                })
             TheFrontEnd:PushScreen(sorry_popup)
             return sorry_popup
         end
@@ -150,6 +170,10 @@ function CollectionScreen:OnBecomeActive()
     end
 
     CollectionScreen._base.OnBecomeActive(self)
+
+    if self.kit_puppet then
+        self.kit_puppet:Enable()
+    end
 
     if self.leaving then
         -- if we left, then inventory may have changed.
@@ -167,8 +191,19 @@ function CollectionScreen:OnBecomeActive()
     self.leaving = nil
 end
 
+function CollectionScreen:OnBecomeInactive()
+    CollectionScreen._base.OnBecomeInactive(self)
+
+    if self.kit_puppet then
+        self.kit_puppet:Disable()
+    end
+end
+
 function CollectionScreen:RefreshInventory(animateDoodads)
     self.doodad_count:SetCount(TheInventory:GetCurrencyAmount(), animateDoodads)
+    if IsSteam() or IsRail() then
+        self.points_count:SetCount(TheInventory:GetKleiPointsAmount())
+    end
     self.subscreener.sub_screens["skins"]:RefreshInventory()
 end
 

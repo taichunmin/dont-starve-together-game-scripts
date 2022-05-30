@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
     ActionHandler(ACTIONS.GOHOME, "flyaway"),
 }
@@ -29,8 +29,7 @@ end
 
 local states=
 {
-	State
-	{
+	State{
 		name = "idle",
 		tags = {"idle"},
 
@@ -43,7 +42,7 @@ local states=
 			end
 		end,
 
-		timeline = 
+		timeline =
 		{
 			TimeEvent(3*FRAMES, function(inst)
 				if math.random() > 0.75 then
@@ -52,20 +51,19 @@ local states=
 			end)
 		},
 
-		events = 
+		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
 				if math.random() < 0.05 then
 					inst.sg:GoToState("bored")
 				else
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
 	},
 
-	State
-	{
+	State{
 		name = "goo",
 		tags = {"busy"},
 
@@ -80,7 +78,7 @@ local states=
 			StartFlap(inst)
 		end,
 
-		timeline = 
+		timeline =
 		{
 			TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/vomit_voice") end),
 			TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/vomit_liquid") end),
@@ -91,14 +89,13 @@ local states=
 			end)
 		},
 
-		events = 
+		events =
 		{
 			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
 		},
 	},
 
-	State
-	{
+	State{
 		name = "bored",
 		tags = {"busy"},
 
@@ -108,7 +105,7 @@ local states=
 			StartFlap(inst)
 		end,
 
-		timeline = 
+		timeline =
 		{
 			TimeEvent(6*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/bounce_voice") end),
             TimeEvent(11*FRAMES, LandFlyingCreature),
@@ -124,7 +121,7 @@ local states=
             TimeEvent(60*FRAMES, RaiseFlyingCreature),
 		},
 
-		events = 
+		events =
 		{
 			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
 		},
@@ -135,7 +132,7 @@ local states=
 	State{
         name = "frozen",
         tags = {"busy", "frozen"},
-        
+
         onenter = function(inst)
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
@@ -146,23 +143,23 @@ local states=
             StopFlap(inst)
             LandFlyingCreature(inst)
         end,
-        
+
         onexit = function(inst)
             inst.AnimState:ClearOverrideSymbol("swap_frozen")
             RaiseFlyingCreature(inst)
         end,
-        
+
         events=
-        {   
-            EventHandler("onthaw", function(inst) inst.sg:GoToState("thaw") end ),        
+        {
+            EventHandler("onthaw", function(inst) inst.sg:GoToState("thaw") end ),
         },
     },
 
     State{
         name = "thaw",
         tags = {"busy", "thawing"},
-        
-        onenter = function(inst) 
+
+        onenter = function(inst)
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
             end
@@ -172,7 +169,7 @@ local states=
             StopFlap(inst)
             LandFlyingCreature(inst)
         end,
-        
+
         onexit = function(inst)
             inst.SoundEmitter:KillSound("thawing")
             inst.AnimState:ClearOverrideSymbol("swap_frozen")
@@ -180,7 +177,7 @@ local states=
         end,
 
         events =
-        {   
+        {
             EventHandler("unfreeze", function(inst)
                 if inst.sg.sg.states.hit then
                     inst.sg:GoToState("hit")
@@ -195,17 +192,17 @@ local states=
         name = "flyaway",
         tags = {"flight", "busy"},
         onenter = function(inst)
-            inst.Physics:Stop()   
-	        inst.DynamicShadow:Enable(false) 
+            inst.Physics:Stop()
+	        inst.DynamicShadow:Enable(false)
             inst.AnimState:PlayAnimation("walk_pre")
            	StartFlap(inst)
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(9*FRAMES, function(inst)
                 inst.AnimState:PushAnimation("walk_loop", true)
-                inst.Physics:SetMotorVel(-2 + math.random()*4, 5+math.random()*3,-2 + math.random()*4) 
+                inst.Physics:SetMotorVel(-2 + math.random()*4, 5+math.random()*3,-2 + math.random()*4)
             end),
             TimeEvent(5, function(inst) inst:Remove() end)
         }
@@ -215,12 +212,12 @@ local states=
 CommonStates.AddSimpleActionState(states, "action", "idle", FRAMES*5, {"busy"})
 CommonStates.AddCombatStates(states,
 {
-	hittimeline = 
+	hittimeline =
 	{
 		TimeEvent(0, function(inst) StartFlap(inst) end),
 		TimeEvent(0, function(inst)	inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/hurt_voice") end)
 	},
-	deathtimeline = 
+	deathtimeline =
 	{
 		TimeEvent(0, function(inst) StartFlap(inst) end),
 		TimeEvent(0, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/die_voice") end),
@@ -229,8 +226,8 @@ CommonStates.AddCombatStates(states,
 		TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/glommer/die_ground") end)
 	},
 })
-CommonStates.AddWalkStates(states, 
-{	
+CommonStates.AddWalkStates(states,
+{
 	starttimeline = {TimeEvent(0, function(inst) StartFlap(inst) end)},
 	walktimeline = {TimeEvent(0, function(inst) StartFlap(inst) end)},
 	endtimeline = {TimeEvent(0, function(inst) StartFlap(inst) end)},
@@ -238,7 +235,7 @@ CommonStates.AddWalkStates(states,
 CommonStates.AddSleepStates(states,
 {
 	starttimeline = {TimeEvent(0, function(inst) StartFlap(inst) end)},
-	sleeptimeline = 
+	sleeptimeline =
 		{
 			TimeEvent(0*FRAMES, function(inst) StopFlap(inst) end),
 			TimeEvent(35*FRAMES, function(inst) StartFlap(inst) end),
@@ -250,5 +247,5 @@ CommonStates.AddSleepStates(states,
     onsleep = LandFlyingCreature,
     onwake = RaiseFlyingCreature,
 })
-  
+
 return StateGraph("glommer", states, events, "idle", actionhandlers)

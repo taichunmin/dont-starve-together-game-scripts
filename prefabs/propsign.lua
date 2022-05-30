@@ -28,6 +28,14 @@ local function OnEquip(inst, owner)
 end
 
 local function OnSmashed(inst, pos)
+	local owner = inst.components.inventoryitem:GetGrandOwner()
+	if owner ~= nil and owner.components.minigame_participator ~= nil then
+		local minigame = owner.components.minigame_participator:GetMinigame()
+		if minigame ~= nil and minigame.components.minigame ~= nil then
+			minigame.components.minigame:RecordExcitement()
+		end
+	end
+
     local fx = SpawnPrefab("propsignshatterfx")
     fx.Transform:SetPosition(pos:Get())
     fx.SoundEmitter:PlaySound("dontstarve/common/destroy_wood")

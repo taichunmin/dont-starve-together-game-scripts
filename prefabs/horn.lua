@@ -36,6 +36,10 @@ local function HearHorn(inst, musician, instrument)
             end
         end
     end
+
+	if inst.components.farmplanttendable ~= nil then
+		inst.components.farmplanttendable:TendTo(musician)
+    end
 end
 
 local function fn()

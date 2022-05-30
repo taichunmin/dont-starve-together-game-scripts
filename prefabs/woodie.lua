@@ -80,13 +80,7 @@ local prefabs =
     "reticuleline2",
 }
 
-local start_inv =
-{
-    default =
-    {
-        "lucy",
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WOODIE
 end
@@ -204,13 +198,8 @@ local function BeaverLeftClickPicker(inst, target)
             end
         end
 
-        if target:HasTag("walkingplank") then
-            if inst:HasTag("on_walkable_plank") then
-                return inst.components.playeractionpicker:SortActionList({ACTIONS.ABANDON_SHIP}, target, nil)
-            elseif target:HasTag("interactable") then
-                local action_to_do = target:HasTag("plank_extended") and ACTIONS.MOUNT_PLANK or ACTIONS.EXTEND_PLANK
-                return inst.components.playeractionpicker:SortActionList({ action_to_do }, target, nil)
-            end
+        if target:HasTag("walkingplank") and target:HasTag("interactable") and target:HasTag("plank_extended") then
+            return inst.components.playeractionpicker:SortActionList({ ACTIONS.MOUNT_PLANK }, target, nil)
         end
     end
 end
@@ -218,7 +207,11 @@ end
 local function BeaverRightClickPicker(inst, target)
     return target ~= nil
         and target ~= inst
-        and (   (   target:HasTag("HAMMER_workable") and
+        and (   (   inst:HasTag("on_walkable_plank") and
+					target:HasTag("walkingplank") and
+                    inst.components.playeractionpicker:SortActionList({ ACTIONS.ABANDON_SHIP }, target, nil)
+                ) or
+				(   target:HasTag("HAMMER_workable") and
                     inst.components.playeractionpicker:SortActionList({ ACTIONS.HAMMER }, target, nil)
                 ) or
                 (   target:HasTag("DIG_workable") and
@@ -232,17 +225,33 @@ end
 local function MooseLeftClickPicker(inst, target)
     return target ~= nil
         and target ~= inst
-        and inst.replica.combat:CanTarget(target)
-        and (not target:HasTag("player") or inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_ATTACK))
-        and inst.components.playeractionpicker:SortActionList({ ACTIONS.ATTACK }, target, nil)
+        and (   (   inst.replica.combat:CanTarget(target) and
+					(not target:HasTag("player") or inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_ATTACK)) and
+                    inst.components.playeractionpicker:SortActionList({ ACTIONS.ATTACK }, target, nil)
+                )
+				or
+				(   target:HasTag("walkingplank") and
+					target:HasTag("interactable") and
+					target:HasTag("plank_extended") and
+                    inst.components.playeractionpicker:SortActionList({ ACTIONS.MOUNT_PLANK }, target, nil)
+                )
+            )
         or nil
 end
 
 local function MooseRightClickPicker(inst, target, pos)
-    return target ~= inst
-        and not inst.components.playercontroller.isclientcontrollerattached
-        and inst.components.playeractionpicker:SortActionList({ ACTIONS.TACKLE }, target or pos, nil)
-        or nil
+	return target ~= inst
+		and (	(	target ~= nil and
+					target:HasTag("walkingplank") and
+					inst:HasTag("on_walkable_plank") and
+					inst.components.playeractionpicker:SortActionList({ ACTIONS.ABANDON_SHIP }, target, nil)
+				)
+				or
+				(	not inst.components.playercontroller.isclientcontrollerattached and
+					inst.components.playeractionpicker:SortActionList({ ACTIONS.TACKLE }, target or pos, nil)
+				)
+			)
+		or nil
 end
 
 local function MoosePointSpecialActions(inst, pos, useitem, right)
@@ -552,14 +561,21 @@ end
 local function OnIsFullmoon(inst, isfullmoon)
     if not isfullmoon then
         inst.fullmoontriggered = nil
+        if inst.components.wereness:GetWereMode() == "fullmoon" then
+            inst.components.wereness:SetWereMode(nil)
+            if not IsWereMode(inst.weremode:value()) then
+                inst.components.wereness:SetPercent(0, true)
+            end
+        end
     elseif not inst.fullmoontriggered then
         inst.fullmoontriggered = true
         local pct = inst.components.wereness:GetPercent()
         if pct > 0 then
             inst.components.wereness:SetPercent(1)
         else
-            inst.components.wereness:SetWereMode(WEREMODE_NAMES[math.random(#WEREMODE_NAMES)])
+            inst.components.wereness:SetWereMode("fullmoon")
             inst.components.wereness:SetPercent(1, true)
+            inst.components.wereness:StartDraining()
         end
     end
     if IsWereMode(inst.weremode:value()) then
@@ -749,7 +765,7 @@ local function OnNewGooseState(inst, data)
     if not GOOSE_FLAP_STATES[data.statename] or (inst.components.grogginess ~= nil and inst.components.grogginess.isgroggy) then
         inst.SoundEmitter:KillSound("flap")
         if inst.gooserippletask == nil then
-            inst.gooserippletask = inst:DoPeriodicTask(.7, DoRipple)
+            inst.gooserippletask = inst:DoPeriodicTask(.7, DoRipple, FRAMES)
         end
     else
         if not inst.SoundEmitter:PlayingSound("flap") then
@@ -778,6 +794,10 @@ local function SetWereSounds(inst, mode)
     else
         inst.SoundEmitter:KillSound("flap")
         inst.SoundEmitter:KillSound("honk")
+        if inst.gooserippletask ~= nil then
+            inst.gooserippletask:Cancel()
+            inst.gooserippletask = nil
+        end
         inst.hurtsoundoverride =
             (mode == WEREMODES.BEAVER and "dontstarve/characters/woodie/hurt_beaver") or
             (mode == WEREMODES.MOOSE and "dontstarve/characters/woodie/moose/hurt") or
@@ -914,7 +934,8 @@ local function onbecamehuman(inst)
     inst.components.moisture:SetInherentWaterproofness(0)
     inst.components.talker:StopIgnoringAll("becamewere")
     inst.components.catcher:SetEnabled(true)
-    inst.components.stormwatcher:SetSandstormSpeedMultiplier(TUNING.SANDSTORM_SPEED_MOD)
+    inst.components.sandstormwatcher:SetSandstormSpeedMultiplier(TUNING.SANDSTORM_SPEED_MOD)
+    inst.components.moonstormwatcher:SetMoonstormSpeedMultiplier(TUNING.MOONSTORM_SPEED_MOD)
     inst.components.carefulwalker:SetCarefulWalkingSpeedMultiplier(TUNING.CAREFUL_SPEED_MOD)
     inst.components.wereeater:ResetFoodMemory()
     inst.components.wereness:StopDraining()
@@ -965,7 +986,8 @@ local function onbecamebeaver(inst)
     inst.components.moisture:SetInherentWaterproofness(TUNING.WATERPROOFNESS_LARGE)
     inst.components.talker:IgnoreAll("becamewere")
     inst.components.catcher:SetEnabled(false)
-    inst.components.stormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.sandstormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.moonstormwatcher:SetMoonstormSpeedMultiplier(1)
     inst.components.carefulwalker:SetCarefulWalkingSpeedMultiplier(1)
     inst.components.wereeater:ResetFoodMemory()
     inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.BEAVER, TheWorld.state.isfullmoon))
@@ -1018,7 +1040,8 @@ local function onbecamemoose(inst)
     inst.components.moisture:SetInherentWaterproofness(TUNING.WATERPROOFNESS_LARGE)
     inst.components.talker:IgnoreAll("becamewere")
     inst.components.catcher:SetEnabled(false)
-    inst.components.stormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.sandstormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.moonstormwatcher:SetMoonstormSpeedMultiplier(1)
     inst.components.carefulwalker:SetCarefulWalkingSpeedMultiplier(1)
     inst.components.wereeater:ResetFoodMemory()
     inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.MOOSE, TheWorld.state.isfullmoon))
@@ -1071,7 +1094,8 @@ local function onbecamegoose(inst)
     inst.components.moisture:SetInherentWaterproofness(TUNING.WATERPROOFNESS_LARGE)
     inst.components.talker:IgnoreAll("becamewere")
     inst.components.catcher:SetEnabled(false)
-    inst.components.stormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.sandstormwatcher:SetSandstormSpeedMultiplier(1)
+    inst.components.moonstormwatcher:SetMoonstormSpeedMultiplier(1)
     inst.components.carefulwalker:SetCarefulWalkingSpeedMultiplier(1)
     inst.components.wereeater:ResetFoodMemory()
     inst.components.wereness:SetDrainRate(CalculateWerenessDrainRate(inst, WEREMODES.GOOSE, TheWorld.state.isfullmoon))
@@ -1104,8 +1128,7 @@ local function onwerenesschange(inst)
     if inst.sg:HasStateTag("nomorph") or
         inst.sg:HasStateTag("silentmorph") or
         inst:HasTag("playerghost") or
-        inst.components.health:IsDead() or
-        not inst.entity:IsVisible() then
+        inst.components.health:IsDead() then
         return
     elseif IsWereMode(inst.weremode:value()) then
         if inst.components.wereness:GetPercent() <= 0 then
@@ -1113,15 +1136,27 @@ local function onwerenesschange(inst)
         end
     elseif inst.components.wereness:GetPercent() > 0 then
         local weremode = inst.components.wereness:GetWereMode()
-        weremode = weremode ~= nil and WEREMODES[string.upper(weremode)] or nil
-        if IsWereMode(weremode) then
-            inst:PushEvent("transform_wereplayer", {
-                mode = WEREMODE_NAMES[weremode],
-                cb = (weremode == WEREMODES.BEAVER and onbecamebeaver) or
-                    (weremode == WEREMODES.MOOSE and onbecamemoose) or
-                    (--[[weremode == WEREMODES.GOOSE and]] onbecamegoose) or
-                    nil
-            })
+        if weremode ~= nil then
+            if weremode ~= "fullmoon" then
+                weremode = WEREMODES[string.upper(weremode)]
+            elseif TheWorld.state.isfullmoon then
+                weremode = math.random(#WEREMODE_NAMES)
+            else
+                weremode = WEREMODES.NONE
+                inst.components.wereness:SetWereMode(nil)
+                if not IsWereMode(inst.weremode:value()) then
+                    inst.components.wereness:SetPercent(0, true)
+                end
+            end
+            if IsWereMode(weremode) then
+                inst:PushEvent("transform_wereplayer", {
+                    mode = WEREMODE_NAMES[weremode],
+                    cb = (weremode == WEREMODES.BEAVER and onbecamebeaver) or
+                        (weremode == WEREMODES.MOOSE and onbecamemoose) or
+                        (--[[weremode == WEREMODES.GOOSE and]] onbecamegoose) or
+                        nil
+                })
+            end
         end
     end
 end
@@ -1198,6 +1233,7 @@ local function OnForceTransform(inst, weremode)
 
     inst.components.wereness:SetWereMode(WEREMODE_NAMES[weremode])
     inst.components.wereness:SetPercent(1, true)
+    inst.components.wereness:StartDraining()
 end
 
 --------------------------------------------------------------------------
@@ -1273,6 +1309,11 @@ end
 local function onload(inst)
     if IsWereMode(inst.weremode:value()) and not inst:HasTag("playerghost") then
         inst.components.inventory:Close()
+        if inst.components.wereness:GetPercent() <= 0 then
+            --under these conditions, we won't get a "werenessdelta" event on load
+            --but we do want to trigger a transformation back to human right away.
+            onwerenesschange(inst)
+        end
     end
 end
 
@@ -1360,6 +1401,10 @@ local function master_postinit(inst)
     elseif TheNet:GetServerGameMode() == "quagmire" then
 		-- nothing to see here (dont go into the else case, or else!)
     else
+	    inst.components.health:SetMaxHealth(TUNING.WOODIE_HEALTH)
+		inst.components.hunger:SetMax(TUNING.WOODIE_HUNGER)
+		inst.components.sanity:SetMax(TUNING.WOODIE_SANITY)
+
         -- Give Woodie a beard so he gets some insulation from winter cold
         -- (Value is Wilson's level 2 beard.)
         inst:AddComponent("beard")
@@ -1368,6 +1413,8 @@ local function master_postinit(inst)
         inst.components.beard:EnableGrowth(false)
 
         OnResetBeard(inst)
+
+	    inst.components.foodaffinity:AddPrefabAffinity("honeynuggets", TUNING.AFFINITY_15_CALORIES_LARGE)
 
         inst:AddComponent("wereness")
 

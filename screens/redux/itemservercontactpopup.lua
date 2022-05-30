@@ -2,7 +2,7 @@ local GenericWaitingPopup = require "screens/redux/genericwaitingpopup"
 
 local ItemServerContactPopup = Class(GenericWaitingPopup, function(self)
     GenericWaitingPopup._ctor(self, "ItemServerContactPopup", STRINGS.UI.ITEM_SERVER.CONNECT, nil, true)
-	
+
     --text
     self.text = self.dialog.body
 end)

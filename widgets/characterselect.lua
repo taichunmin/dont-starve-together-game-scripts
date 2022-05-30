@@ -15,7 +15,7 @@ local CharacterSelect = Class(Widget, function(self, owner, character, cbPortrai
 	self.OnPortraitSelected = cbPortraitSelected
 
 	self.proot = self:AddChild(Widget("ROOT"))
-    
+
     self:BuildCharactersList(additionalCharacters or {})
     self:SetPortrait()
 
@@ -31,22 +31,22 @@ end
 
 function CharacterSelect:WrapIndex(index)
 	local new_index = index
-	if new_index < 1 then 
+	if new_index < 1 then
 		new_index = #self.characters + new_index
 	end
-	
-	if new_index > #self.characters then 
+
+	if new_index > #self.characters then
 		new_index = new_index - #self.characters
-	end	
+	end
 	return new_index
 end
 
 function CharacterSelect:BuildCharactersList(additionalCharacters)
-	
+
 	self.heroportrait = self.proot:AddChild(Image())
     self.heroportrait:SetScale(.85)
     self.heroportrait:SetPosition(15, 15)
-    
+
     self.leftsmallportrait = self.proot:AddChild(ImageButton( "bigportraits/wilson.xml", "wilson_none.tex" ))
     self.leftsmallportrait:SetScale(.3)
     self.leftsmallportrait:SetPosition(-545, 0)
@@ -66,7 +66,7 @@ function CharacterSelect:BuildCharactersList(additionalCharacters)
    										self.characterIdx = self:WrapIndex( self.characterIdx - 1 )
    										self:SetPortrait()
    									end)
-    
+
 	self.rightportrait = self.proot:AddChild(ImageButton( "bigportraits/wilson.xml", "wilson_none.tex" ))
     self.rightportrait:SetScale(.55)
     self.rightportrait:SetPosition(370, 0)
@@ -76,7 +76,7 @@ function CharacterSelect:BuildCharactersList(additionalCharacters)
    										self.characterIdx = self:WrapIndex( self.characterIdx + 1 )
    										self:SetPortrait()
    									end)
-    
+
     self.rightsmallportrait = self.proot:AddChild(ImageButton( "bigportraits/wilson.xml", "wilson_none.tex" ))
     self.rightsmallportrait:SetScale(.3)
     self.rightsmallportrait:SetPosition(570, 0)
@@ -93,10 +93,10 @@ function CharacterSelect:BuildCharactersList(additionalCharacters)
 
 
 	self.characters = ExceptionArrays(GetActiveCharacterList(), MODCHARACTEREXCEPTIONS_DST)
-	for i = 1, #additionalCharacters do 
+	for i = 1, #additionalCharacters do
 		table.insert(self.characters, additionalCharacters[i])
 	end
-	
+
 	self.characterIdx = 1
 
     self.left_arrow = self.proot:AddChild(ImageButton("images/lobbyscreen.xml", "DSTMenu_PlayerLobby_arrow_paper_L.tex", "DSTMenu_PlayerLobby_arrow_paperHL_L.tex", nil, nil, nil, {1,1}, {0,0}))
@@ -115,7 +115,7 @@ function CharacterSelect:BuildCharactersList(additionalCharacters)
    									self:SetPortrait()
    								end)
 
-   	if TheInput:ControllerAttached() then 
+   	if TheInput:ControllerAttached() then
    		self.left_arrow:SetClickable(false)
    		self.right_arrow:SetClickable(false)
    	end
@@ -130,37 +130,37 @@ function CharacterSelect:SetPortrait()
 	local rightsmallcharacter = self.characters[self:WrapIndex( self.characterIdx + 2 )]
 
 	if herocharacter ~= nil then
-		
+
 		local skin = "_none"
 
 		-- get correct skin here if bases are enabled
-		if not table.contains(DST_CHARACTERLIST, herocharacter) then 
+		if not table.contains(DST_CHARACTERLIST, herocharacter) then
 			self.heroportrait:SetTexture("bigportraits/" .. herocharacter..".xml", herocharacter .. ".tex")
 		else
 			self.heroportrait:SetTexture("bigportraits/" .. herocharacter..".xml", herocharacter .. skin .. ".tex", herocharacter .. ".tex")
 		end
 
-		-- Slightly hacky way of dealing with mod characters. This function doesn't take a default image and mod characters don't have the 
+		-- Slightly hacky way of dealing with mod characters. This function doesn't take a default image and mod characters don't have the
 		-- "_none" appended.
 
 		self.leftsmallportrait:SetTextures("bigportraits/" .. leftsmallcharacter..".xml", leftsmallcharacter .. ((PREFAB_SKINS[leftsmallcharacter] and skin) or "") .. ".tex")
 		self.leftportrait:SetTextures("bigportraits/" .. leftcharacter..".xml", leftcharacter .. ((PREFAB_SKINS[leftcharacter] and skin) or "") .. ".tex")
 		self.rightportrait:SetTextures("bigportraits/" .. rightcharacter..".xml", rightcharacter .. ((PREFAB_SKINS[rightcharacter] and skin) or "") .. ".tex")
 		self.rightsmallportrait:SetTextures("bigportraits/" .. rightsmallcharacter..".xml", rightsmallcharacter .. ((PREFAB_SKINS[rightsmallcharacter] and skin) or "") .. ".tex")
-		
+
 		self.herocharacter = herocharacter
 	end
 
-	if self.OnPortraitSelected then 
+	if self.OnPortraitSelected then
 		self.OnPortraitSelected()
 	end
 end
 
 function CharacterSelect:Scroll(dir)
-	if dir < 0 then 
+	if dir < 0 then
 		self.characterIdx = self:WrapIndex(self.characterIdx - 1)
 	    self:SetPortrait()
-	elseif dir > 0 then 
+	elseif dir > 0 then
 		self.characterIdx = self:WrapIndex(self.characterIdx + 1)
 	    self:SetPortrait()
 	else

@@ -81,19 +81,22 @@ local function SanityCheckWorldGenOverride(wgo)
     end
 
     local optionlookup = {}
-    local Customise = require("map/customise")
-    for i,option in ipairs(Customise.GetOptions(nil, true)) do
+    local Customize = require("map/customize")
+    for i,option in ipairs(Customize.GetOptions(nil, true)) do
         optionlookup[option.name] = {}
         for i,value in ipairs(option.options) do
             table.insert(optionlookup[option.name], value.data)
         end
     end
 
+    --depreciated values(don't warn in the log files)
+    optionlookup.disease_delay = true
+
     if wgo.overrides ~= nil then
         for k,v in pairs(wgo.overrides) do
             if optionlookup[k] == nil then
                 print(string.format("    WARNING! Found override '%s', but this doesn't match any known option. Did you make a typo?", k))
-            else
+            elseif optionlookup[k] ~= true then
                 if not table.contains(optionlookup[k], v) then
                     print(string.format("    WARNING! Found value '%s' for setting '%s', but this is not a valid value. Use one of {%s}.", v, k, table.concat(optionlookup[k], ", ")))
                 end
@@ -180,12 +183,16 @@ function SaveIndex:GetNumSlots()
 end
 
 function SaveIndex:GetSaveIndexName()
-    return "saveindex"..(BRANCH ~= "dev" and "" or ("_"..BRANCH))
+    return "saveindex"..(BRANCH == "dev" and ("_"..BRANCH) or "")
 end
 
 function SaveIndex:Save(callback)
-    local data = DataDumper(self.data, nil, false)
-    local insz, outsz = TheSim:SetPersistentString(self:GetSaveIndexName(), data, false, callback)
+    --09/09/2020 SaveIndex is depreciated, and will no longer save.
+    --local data = DataDumper(self.data, nil, false)
+    --local insz, outsz = TheSim:SetPersistentString(self:GetSaveIndexName(), data, false, callback)
+    if callback then
+        callback()
+    end
 end
 
 -- gjans: Added this upgrade path 28/03/2016
@@ -200,7 +207,7 @@ local function UpgradeSavedLevelData(worldoptions)
             ret[i] = savefileupgrades.utilities.UpgradeSavedLevelFromV1toV2(ret[i], i == 1)
 			upgraded = true
         end
-        
+
         if level.version == 2 then
             ret[i] = savefileupgrades.utilities.UpgradeSavedLevelFromV2toV3(ret[i], i == 1)
 			upgraded = true
@@ -210,7 +217,7 @@ local function UpgradeSavedLevelData(worldoptions)
             ret[i] = savefileupgrades.utilities.UpgradeSavedLevelFromV3toV4(ret[i], i == 1) -- RoT: Turn of Tids
 			upgraded = true
         end
-		
+
     end
     return ret, upgraded
 end
@@ -262,9 +269,9 @@ local function OnLoad(self, filename, callback, load_success, str)
 				self:Save()
 			end
         end
-
+        self.loaded_from_file = true --for use with saveindex to shardsaveindex migration.
     elseif filename ~= nil then
-        print("Could not load "..filename)
+        --print("Could not load "..filename)
     end
 
     if callback ~= nil then
@@ -441,7 +448,7 @@ function SaveIndex:StartSurvivalMode(saveslot, customoptions, serverdata, onsave
 
     local slot = self.data.slots[saveslot]
     slot.session_id = TheNet:GetSessionIdentifier()
-    
+
     slot.world.options = customoptions or GetDefaultWorldOptions(GetLevelType(serverdata.game_mode or DEFAULT_GAME_MODE))
     slot.server = {}
 
@@ -522,7 +529,7 @@ end
 
 function SaveIndex:BuildSlotDayAndSeasonText(slotnum)
 	local slot_day_and_season_str = ""
-	
+
     if SaveGameIndex:IsSlotEmpty(slotnum) then
         slot_day_and_season_str = STRINGS.UI.SERVERCREATIONSCREEN.SERVERDAY_NEW
     else
@@ -675,8 +682,8 @@ function SaveIndex:SetServerEnabledMods(slot)
         if config and type(config) == "table" then
             for i,v in pairs(config) do
                 if v.saved ~= nil then
-                    mod_data.configuration_options[v.name] = v.saved 
-                else 
+                    mod_data.configuration_options[v.name] = v.saved
+                else
                     mod_data.configuration_options[v.name] = v.default
                 end
             end

@@ -14,7 +14,7 @@ local internal_names_pages =
     {x=-220,y=30, bg=2, build="credits", bank="credits", anim="2", names=true},
     {x=-325,y=30, bg=3, build="credits", bank="credits", anim="3", names=true},
     {x=260, y=30, bg=1, build="credits", bank="credits", anim="4", names=true},
-    {x=-300,y=30, bg=2, build="credits", bank="credits", anim="5", names=true},    
+    {x=-300,y=30, bg=2, build="credits", bank="credits", anim="5", names=true},
     {x=300, y=30, bg=3, build="credits3", bank="credits3", anim="12", names=true},
     {x=-300,y=30, bg=1, build="credits4", bank="credits4", anim="13", names=true},
     {x=-300,y=30, bg=2, build="credits4", bank="credits4", anim="14", names=true},
@@ -30,7 +30,7 @@ local internal_names_pages =
 
 local pc_pages=
 {
-    {x=260,y=0, bg=3, tx=260,ty=200, title = STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="6", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS},    -- EXTRA THANKS 
+    {x=260,y=0, bg=3, tx=260,ty=200, title = STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="6", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS},    -- EXTRA THANKS
     {x=-320,y=0, bg=2, tx=-320,ty=200, title = STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="7", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS_2},    -- EXTRA THANKS - STEAM
     {x=0,y=0, bg=1, tx=0,ty=200, title = STRINGS.UI.CREDITS.ALTGAMES.TITLE, build="credits2", bank="credits2", anim="8", flavour = table.concat(STRINGS.UI.CREDITS.ALTGAMES.NAMES, "\n")},    -- ALTGAME
     {x=0,y=60, bg=3, flavour = STRINGS.UI.CREDITS.FMOD, build="credits2", bank="credits2", anim="9"},    -- FMOD
@@ -39,17 +39,17 @@ local pc_pages=
 
 local ps4_pages =
 {
-    {x=260,y=0, bg=1, tx=260,ty=200,  title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="6", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS},    -- GOOGLE 
+    {x=260,y=0, bg=1, tx=260,ty=200,  title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="6", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS},    -- GOOGLE
     {x=-320,y=0, bg=3, tx=-320,ty=200, title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="7", flavour = STRINGS.UI.CREDITS.EXTRA_THANKS_2},    -- STEAM
-    {x=220,y=0, bg=2, tx=220,ty=200,  title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="1", flavour = STRINGS.UI.CREDITS.SONY_THANKS},    -- SONY 
+    {x=220,y=0, bg=2, tx=220,ty=200,  title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="1", flavour = STRINGS.UI.CREDITS.SONY_THANKS},    -- SONY
     {x=-260,y=0, bg=1, tx=-260, ty=200, title =STRINGS.UI.CREDITS.THANKYOU, build="credits", bank="credits", anim="3", flavour = table.concat(STRINGS.UI.CREDITS.ALTGAMES.NAMES, "\n")},    -- ALTGAMES
-    {x=-220,y=0, bg=3, x2 = 260, y2 = 0, tx=20,ty=250, title = STRINGS.UI.CREDITS.BABEL.TITLE, build="credits2", bank="credits2", anim="8", flavour =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES1, "\n"), flavour2 =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES2, "\n")},    -- BABEL  
-    {x=-220,y=0, bg=3, x2 = 260, y2 = 0, tx=20,ty=250, title = STRINGS.UI.CREDITS.BABEL.TITLE, build="credits2", bank="credits2", anim="9", flavour =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES1, "\n"), flavour2 =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES2, "\n")},    -- BABEL  
-	{x=-100,y=60, bg=2, flavour = STRINGS.UI.CREDITS.FMOD, build="credits", bank="credits", anim="2"},    -- FMOD    
+    {x=-220,y=0, bg=3, x2 = 260, y2 = 0, tx=20,ty=250, title = STRINGS.UI.CREDITS.BABEL.TITLE, build="credits2", bank="credits2", anim="8", flavour =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES1, "\n"), flavour2 =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES2, "\n")},    -- BABEL
+    {x=-220,y=0, bg=3, x2 = 260, y2 = 0, tx=20,ty=250, title = STRINGS.UI.CREDITS.BABEL.TITLE, build="credits2", bank="credits2", anim="9", flavour =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES1, "\n"), flavour2 =table.concat(STRINGS.UI.CREDITS.BABEL.NAMES2, "\n")},    -- BABEL
+	{x=-100,y=60, bg=2, flavour = STRINGS.UI.CREDITS.FMOD, build="credits", bank="credits", anim="2"},    -- FMOD
 }
 
 
-    
+
 local klei_pages =
 {
     {x=0,y=180, bg=1, build="credits2", bank="credits2", anim="11"},
@@ -118,7 +118,7 @@ local CreditsScreen = Class(Screen, function(self)
         local right_pos_x = -150
         local left_pos_x = 150
 
-        self.OK_button = self.back_button_root:AddChild(TEMPLATES.BackButton(function() 
+        self.OK_button = self.back_button_root:AddChild(TEMPLATES.BackButton(function()
             self.OK_button:Disable()
             self:Disable()
 			TheFrontEnd:FadeBack()
@@ -148,7 +148,7 @@ local CreditsScreen = Class(Screen, function(self)
             self.THANKS_button:SetHAnchor(ANCHOR_RIGHT)
             self.THANKS_button:SetVAnchor(ANCHOR_BOTTOM)
             self.THANKS_button:SetPosition( right_pos_x, 55*3, 0)
-            
+
             --focus crap
             self.OK_button:SetFocusChangeDir(MOVE_RIGHT, self.TWIT_button)
             self.TWIT_button:SetFocusChangeDir(MOVE_LEFT, self.OK_button)
@@ -166,12 +166,12 @@ function CreditsScreen:SetupRandomPages()
     if PS4CREDITS then
         table.insert(self.credit_names, "Auday Hussein")
     end
-    
-    self.num_credit_pages = math.floor(#self.credit_names / (names_per_page-1))    
+
+    self.num_credit_pages = math.floor(#self.credit_names / (names_per_page-1))
     self.num_leftover_names = #self.credit_names - self.num_credit_pages * (names_per_page-1)
-    
+
     shuffleArray(self.credit_names)
-    
+
     self.pages = {}
 	local offset = math.floor(GetRandomMinMax(0,#internal_names_pages))
 	for k = 1, self.num_credit_pages do
@@ -186,7 +186,7 @@ end
 
 function CreditsScreen:OnBecomeActive()
     CreditsScreen._base.OnBecomeActive(self)
-    TheFrontEnd:GetSound():PlaySound("dontstarve/music/gramaphone_ragtime", "creditsscreenmusic")    
+    TheFrontEnd:GetSound():PlaySound("dontstarve/music/gramaphone_ragtime", "creditsscreenmusic")
 end
 
 function CreditsScreen:OnBecomeInactive()
@@ -211,7 +211,7 @@ function CreditsScreen:OnUpdate(dt)
 	if self.delay ~= nil then
 		self.delay = self.delay - dt
 		if self.delay < 0 then
-			self:ShowNextPage()			
+			self:ShowNextPage()
 		end
 	else
 		if self.worldanim:GetAnimState():AnimDone() then
@@ -223,7 +223,7 @@ end
 function CreditsScreen:ShowNextPage()
     local page = self.pages[self.page_order_idx]
 
-    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/creditpage_flip", "flippage")   
+    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/creditpage_flip", "flippage")
 
     self.worldanim:Show()
     self.worldanim:GetAnimState():SetBuild(page.build)
@@ -237,7 +237,7 @@ function CreditsScreen:ShowNextPage()
     else
         self.titletext:Hide()
     end
-    
+
     if page.klei then
         self.klei_img:Show()
     else
@@ -256,7 +256,7 @@ function CreditsScreen:ShowNextPage()
         self.flavourtext:SetPosition(page.x or 0, page.y or 0, 0)
         self.flavourtext:SetString(page.flavour)
 	end
-    
+
     if page.flavour2 then
         self.flavourtext2:Show()
         self.flavourtext2:SetPosition(page.x2 or 0, page.y2 or 0, 0)
@@ -264,7 +264,7 @@ function CreditsScreen:ShowNextPage()
 	else
 		self.flavourtext2:Hide()
 	end
-	
+
     if page.names then
         self.flavourtext:Show()
         self.flavourtext:SetPosition(page.x or 0, page.y or 0, 0)

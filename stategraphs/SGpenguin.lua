@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
     ActionHandler(ACTIONS.GOHOME, "migrate"),
     ActionHandler(ACTIONS.WALKTO, "migrate"),
@@ -46,7 +46,7 @@ local events=
 
                                 local should_move = inst.components.locomotor:WantsToMoveForward()
                                 local should_run = inst.components.locomotor:WantsToRun()
-                                
+
                                 if is_moving and not should_move then
                                     inst.SoundEmitter:KillSound("slide")
                                     if is_running then
@@ -60,12 +60,12 @@ local events=
                                     else
                                         inst.sg:GoToState("walk_start")
                                     end
-                                end 
+                                end
                             end),
-    EventHandler("flyaway", function(inst) 
-        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("flight") then 
-            inst.sg:GoToState("flyaway") 
-        end 
+    EventHandler("flyaway", function(inst)
+        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("flight") then
+            inst.sg:GoToState("flyaway")
+        end
     end),
 }
 
@@ -86,12 +86,12 @@ local states=
                     inst.AnimState:PlayAnimation("idle_loop", true)
                 end
             end,
-            
-            timeline = 
+
+            timeline =
             {
                 --TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/bishop/idle") end ),
             },
-            
+
             events=
             {
                 EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -100,7 +100,7 @@ local states=
 
     State{  name = "run_start",
             tags = {"moving", "running", "canrotate"},
-            
+
             onenter = function(inst)
                 inst.components.locomotor:RunForward()
                 inst.AnimState:SetTime(math.random()*2)
@@ -114,10 +114,10 @@ local states=
             end,
 
             events =
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("run") end ),        
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("run") end ),
             },
-            
+
             onexit = function(inst)
                 if TheWorld.state.iswinter then
                     inst.SoundEmitter:PlaySound(inst._soundpath.."slide","slide")
@@ -128,48 +128,48 @@ local states=
 
             timeline=
             {
-            },        
+            },
         },
 
     State{  name = "run",
             tags = {"moving", "running", "canrotate"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.components.locomotor:RunForward()
                 if not inst.AnimState:IsCurrentAnimation("slide_loop") then
                     inst.AnimState:PlayAnimation("slide_loop", true)
                 end
                 inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
             end,
-            
+
             timeline=
             {
             },
-            
+
             ontimeout = function(inst)
                 inst.sg:GoToState("run")
             end,
         },
-    
+
     State{  name = "run_stop",
             tags = {"canrotate", "idle"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.SoundEmitter:KillSound("slide")
                 inst.components.locomotor:Stop()
                 inst.AnimState:PlayAnimation("slide_post")
             end,
-            
-            events=
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("walk_start") end ),        
-            },
-        },    
 
-    
+            events=
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("walk_start") end ),
+            },
+        },
+
+
     State{  name = "walk_start",
             tags = {"moving", "canrotate"},
-            
+
             onenter = function(inst)
                 inst.SoundEmitter:KillSound("slide")
                 inst.components.locomotor:WalkForward()
@@ -178,24 +178,24 @@ local states=
             end,
 
             events=
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),        
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),
             },
-        },      
-    
+        },
+
     State{  name = "walk",
             tags = {"moving", "canrotate"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.components.locomotor:WalkForward()
                 inst.AnimState:PlayAnimation("walk", true)
                 inst.SoundEmitter:KillSound("slide")
                 inst.SoundEmitter:PlaySound(inst._soundpath.."idle")
             end,
-    
+
             events=
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),        
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),
             },
 
             timeline = {
@@ -218,19 +218,19 @@ local states=
 
     State{  name = "walk_stop",
             tags = {"canrotate", "idle"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.SoundEmitter:KillSound("slide")
                 inst.components.locomotor:Stop()
                 inst.AnimState:PlayAnimation("idle_loop", true)
             end,
 
             events=
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),        
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
             },
-        },   
-    
+        },
+
     State{  name = "eat_pre",
             tags = {"busy"},
             onenter = function(inst)
@@ -239,15 +239,15 @@ local states=
                 inst.SoundEmitter:KillSound("slide")
             end,
 
-            timeline = 
+            timeline =
             {
-                TimeEvent(4*FRAMES, function(inst) 
+                TimeEvent(4*FRAMES, function(inst)
                                         inst:PerformBufferedAction()
                                         --inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/bite")
                                      end ), --take food
-            },        
-            
-            events = 
+            },
+
+            events =
             {
                 EventHandler("animover", function(inst) inst.sg:GoToState("eat_loop") end)
             },
@@ -263,11 +263,11 @@ local states=
                 inst.sg:SetTimeout(0.8+math.random())
             end,
 
-            timeline = 
+            timeline =
             {
             },
 
-            events = 
+            events =
             {
                 EventHandler("attacked",
                              function(inst)
@@ -275,13 +275,13 @@ local states=
                                  inst.sg:GoToState("idle")
                              end) --drop food
             },
-            
+
             ontimeout= function(inst)
                             inst.lastmeal = GetTime()
                             inst:PerformBufferedAction()
                             inst.sg:GoToState("idle", "walk")
                         end,
-        }, 
+        },
 
     State{  name = "pickup",
             tags = {"busy"},
@@ -293,11 +293,11 @@ local states=
                 inst.sg:SetTimeout(0.2)
             end,
 
-            timeline = 
+            timeline =
             {
             },
 
-            events = 
+            events =
             {
                 EventHandler("attacked",
                              function(inst)
@@ -305,13 +305,13 @@ local states=
                                  inst.sg:GoToState("idle")
                              end) --drop food
             },
-            
+
             ontimeout= function(inst)
                             inst.lastmeal = GetTime()
                             inst:PerformBufferedAction()
                             inst.sg:GoToState("idle")
                         end,
-        }, 
+        },
 
     State{  name = "action",
             onenter = function(inst, playanim)
@@ -319,10 +319,10 @@ local states=
                 inst.AnimState:PlayAnimation("idle", true)
                 inst:PerformBufferedAction()
             end,
-            timeline = 
+            timeline =
             {
                 TimeEvent(GetRandomWithVariance(30,15)*FRAMES, function(inst)
-                                        inst.sg:GoToState("walk_start") 
+                                        inst.sg:GoToState("walk_start")
                                      end),
             },
             --[[
@@ -333,7 +333,7 @@ local states=
                 end),
             }
             --]]
-        },  
+        },
 
     State{  name = "migrate",
             onenter = function(inst, playanim)
@@ -353,29 +353,29 @@ local states=
                     inst.sg:GoToState("walk_start")
                 end),
             }
-        },  
+        },
 
 	State{  name = "death",
             tags = {"busy"},
-            
+
             onenter = function(inst)
                 inst.SoundEmitter:KillSound("slide")
                 inst.SoundEmitter:PlaySound(inst._soundpath.."death")
-                inst.Physics:Stop()	
+                inst.Physics:Stop()
                 inst.AnimState:PlayAnimation("death")
                 inst.components.locomotor:StopMoving()
-                inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+                inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
             end,
-            
+
         },
-    
-    
+
+
     State{  name = "appear",
             tags = {"busy"},
-            
+
             onenter = function(inst)
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/pengull/splash")
-                inst.Physics:Stop()	
+                inst.Physics:Stop()
                 inst.AnimState:PlayAnimation("slide_pre")
             end,
 
@@ -384,28 +384,28 @@ local states=
                 EventHandler("animqueueover", function(inst) inst.sg:GoToState("landing") end),
             },
         },
-        
+
     State{  name = "landing",
             tags = {"busy"},
-            
+
             onenter = function(inst)
                 inst.components.locomotor:RunForward()
                 inst.SoundEmitter:PlaySound(inst._soundpath.."jumpin")
                 inst.AnimState:PushAnimation("slide_loop", "loop")
             end,
-            
-            timeline = 
+
+            timeline =
             {
                 TimeEvent(GetRandomWithVariance(30,15)*FRAMES, function(inst)
-                                        inst.sg:GoToState("walk_start") 
+                                        inst.sg:GoToState("walk_start")
                                         --inst.SoundEmitter:PlaySound(inst._soundpath.."slide")
                                      end),
             },
         },
-        
+
    State{ name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
@@ -417,7 +417,7 @@ local states=
             TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst._soundpath.."taunt") end),
             TimeEvent(22*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst._soundpath.."taunt") end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -426,7 +426,7 @@ local states=
 
     State{  name = "attack",
             tags = {"attack"},
-            
+
             onenter = function(inst,target)
                 eprint(inst,"StateAttack onenter:",target,inst.sg.statemem.target)
                 if target then
@@ -439,7 +439,7 @@ local states=
                 inst.AnimState:PlayAnimation("atk_pre")
                 inst.AnimState:PushAnimation("atk", false)
             end,
-            
+
             timeline =
             {
                 TimeEvent(15*FRAMES, function(inst)
@@ -448,7 +448,7 @@ local states=
                                         -- inst.components.combat:DoAttack()
                                      end),
             },
-            
+
             events =
             {
                 EventHandler("animqueueover", function(inst) inst.sg:GoToState("walk_start") end),
@@ -465,10 +465,10 @@ local states=
             inst.sg.statemem.vert = math.random() > .1
 
             inst.Physics:SetMotorVelOverride(00,15,0)
-            
+
 	        inst.DynamicShadow:Enable(false)
             -- inst.SoundEmitter:PlaySound(inst.sounds.takeoff)
-            
+
             if inst.sg.statemem.vert then
                 --inst.AnimState:PlayAnimation("takeoff_vertical_pre")
                 inst.AnimState:PushAnimation("atk_pre", true)
@@ -477,7 +477,7 @@ local states=
                 inst.AnimState:PushAnimation("atk_pre", true)
             end
         end,
-        
+
         ontimeout= function(inst)
             if inst.sg.statemem.vert then
                 --inst.AnimState:PushAnimation("takeoff_vertical_loop", true)
@@ -497,18 +497,18 @@ local states=
         {
             EventHandler("animqueueover", function(inst) inst.sg:GoToState("flyaway") end),
         },
-        
-        timeline = 
+
+        timeline =
         {
             TimeEvent(2, function(inst) inst:Remove() end)
             --TimeEvent(8*FRAMES, function(inst) inst.Physics:SetMotorVelOverride(20,0,0) end),
         }
-        
+
     },
 
     State{  name = "runningattack",
             tags = {"runningattack"},
-            
+
             onenter = function(inst)
                 inst.SoundEmitter:KillSound("slide")
                 inst.SoundEmitter:PlaySound(inst._soundpath.."attack")
@@ -516,14 +516,14 @@ local states=
                 --inst.components.locomotor:StopMoving()
                 inst.AnimState:PlayAnimation("slide_bounce")
             end,
-            
+
             timeline =
             {
                 TimeEvent(1*FRAMES, function(inst)
                                         inst.components.combat:DoAttack()
                                      end),
             },
-            
+
             events =
             {
                 EventHandler("animqueueover", function(inst) inst.sg:GoToState("walk_start") end),
@@ -533,7 +533,7 @@ local states=
 
 CommonStates.AddSleepStates(states,
     {
-        starttimeline = 
+        starttimeline =
         {
             -- TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst._soundpath.."sleep") end ),
         },
@@ -544,6 +544,6 @@ CommonStates.AddSleepStates(states,
 
 
 CommonStates.AddSimpleState(states,"hit","hit", {"busy"})
-    
+
 return StateGraph("penguin", states, events, "idle", actionhandlers)
 

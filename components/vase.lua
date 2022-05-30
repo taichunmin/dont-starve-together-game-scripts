@@ -34,7 +34,7 @@ function Vase:Decorate(giver, item)
 	if item == nil or not self.enabled then
 		return false
 	end
-	
+
     if item.components.stackable ~= nil and item.components.stackable.stacksize > 0 then
         item = item.components.stackable:Get(1)
     else

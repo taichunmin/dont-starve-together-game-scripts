@@ -15,6 +15,7 @@ local events =
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnLocomote(false,true),
     CommonHandlers.OnHop(),
+	CommonHandlers.OnSink(),
 }
 
 local states =
@@ -41,12 +42,12 @@ local emotes =
 
 SGCritterStates.AddIdle(states, #emotes)
 SGCritterStates.AddRandomEmotes(states, emotes)
-SGCritterStates.AddEmote(states, "cute", 
+SGCritterStates.AddEmote(states, "cute",
 		{
 			TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/emote") end),
 			TimeEvent(26*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/emote") end),
 		})
-SGCritterStates.AddPetEmote(states, 
+SGCritterStates.AddPetEmote(states,
 	{
 		TimeEvent(9*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/emote_nuzzle") end),
 	})
@@ -71,7 +72,6 @@ SGCritterStates.AddPlayWithOtherCritter(states, events,
 	})
 SGCritterStates.AddEat(states,
         {
-            TimeEvent(5*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/eat_pre") end),
             TimeEvent(21*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/eat") end),
         })
 SGCritterStates.AddHungry(states,
@@ -87,16 +87,17 @@ SGCritterStates.AddNuzzle(states, actionhandlers,
 SGCritterStates.AddWalkStates(states, nil, true)
 CommonStates.AddSleepExStates(states,
 		{
-			starttimeline = 
+			starttimeline =
 			{
 				TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/yawn") end),
 			},
-			sleeptimeline = 
+			sleeptimeline =
 			{
 				TimeEvent(31*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/kittington/sleep") end),
 			},
 		})
 
 CommonStates.AddHopStates(states, true)
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("SGcritter_kitten", states, events, "idle", actionhandlers)

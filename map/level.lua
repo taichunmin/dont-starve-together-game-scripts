@@ -3,16 +3,16 @@ local tasksets = require("map/tasksets")
 
 Level = Class( function(self, data)
 	assert( data.id ~= nil, "level must specify an id." )
-	self.id = data.id
-	self.name = data.name or ""
-	self.desc = data.desc or ""
+	self:SetID(data.id)
+	self:SetBaseID(data.baseid)
+	self:SetNameAndDesc(data.name, data.desc)
 	self.override_level_string = data.override_level_string or false
     assert(data.location ~= nil, "Levels must specify a location, no more default.")
     self.location = data.location
     self.hideinfrontend = data.hideinfrontend
 	self.overrides = data.overrides or {}
 	self.substitutes = data.substitutes or {}
-	self.override_triggers = data.override_triggers
+	self.override_triggers = data.override_triggers --UNUSED
     assert(data.set_pieces == nil, "level 'set_pieces' should be specified as an override via 'task_set' now.")
 	self.set_pieces = nil
     assert(data.numoptionaltasks == nil, "level 'numoptionaltasks' should be specified as an override via 'task_set' now.")
@@ -22,8 +22,8 @@ Level = Class( function(self, data)
     assert(data.valid_start_tasks == nil, "level 'valid_start_tasks' should be specified as an override via 'task_set' now.")
     self.valid_start_tasks = nil
 	self.hideminimap = data.hideminimap or false
-	self.min_playlist_position = data.min_playlist_position or 0
-	self.max_playlist_position = data.max_playlist_position or 999
+	self.min_playlist_position = data.min_playlist_position or 0  --UNUSED
+	self.max_playlist_position = data.max_playlist_position or 999  --UNUSED
 	self.ordered_story_setpieces = data.ordered_story_setpieces -- Deprecated
 	self.required_prefabs = data.required_prefabs
 	self.background_node_range = data.background_node_range
@@ -53,7 +53,7 @@ end
 function Level:GetOverridesForTasks(tasklist)
 	-- Update the task with whatever overrrides are going
 	local resources = require("map/resource_substitution")
-	
+
 	-- WE MAKE ONE SELECTION FOR ALL TASKS or ONE PER TASK
 	for name, override in pairs(self.substitutes) do
 
@@ -63,7 +63,7 @@ function Level:GetOverridesForTasks(tasklist)
 			print("Substituting [".. substitute.."] for [".. name.."]")
 			for task_idx,val in ipairs(tasklist) do
 				local chance = 	math.random()
-				if chance < override.perstory then 
+				if chance < override.perstory then
 					if tasklist[task_idx].substitutes == nil then
 						tasklist[task_idx].substitutes = {}
 					end
@@ -100,13 +100,13 @@ function Level:ChooseTasks()
 		print("Applying mod to current task set")
 		modfn(task_set_data)
 	end
-	
+
     assert(task_set_data ~= nil, ("TaskSet '" .. tostring(task_set) .. "' has no data! If preset '".. tostring(self.id) .. "' was created with mods enabled, please enable the mods."))
 
 	for k, v in pairs(task_set_data) do
 		self[k] = v
 	end
-	
+
 	local modfns = ModManager:GetPostInitFns("LevelPreInit", self.id)
 	for i,modfn in ipairs(modfns) do
 		print("Applying mod to level '"..self.id.."'")
@@ -117,11 +117,11 @@ function Level:ChooseTasks()
 		print("Applying mod to current level")
 		modfn(self)
 	end
-	
+
 	for i=1,#self.tasks do
 		self:EnqueueATask(tasklist, self.tasks[i])
 	end
-	
+
 	self:ApplyModsToTasks(tasklist)
 
 	if self.numoptionaltasks and self.numoptionaltasks > 0 and self.optionaltasks then
@@ -222,4 +222,22 @@ function Level:EnqueueATask(tasklist, taskname)
 	else
 		assert(task, "Could not find a task called "..taskname)
 	end
+end
+
+function Level:SetID(id)
+	assert(id ~= nil, "level must specify an id." )
+	self.id = id
+	self.worldgen_id = id
+end
+
+function Level:SetBaseID(id)
+	self.baseid = id
+	self.worldgen_baseid = id
+end
+
+function Level:SetNameAndDesc(name, desc)
+	self.name = name or ""
+	self.desc = desc or ""
+	self.worldgen_name = self.name
+	self.worldgen_desc = self.desc
 end

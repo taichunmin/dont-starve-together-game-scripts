@@ -87,8 +87,9 @@ local function stophuntingfood(inst)
     end
 end
 
+local CANHAUNT_MUST_TAGS = { "buzzard" }
 local function CanBeHunted(food)
-    return food.buzzardHunted == nil and food:IsOnValidGround() and FindEntity(food, 3, nil, { "buzzard" }, NO_TAGS) == nil
+    return food.buzzardHunted == nil and food:IsOnValidGround() and FindEntity(food, 3, nil, CANHAUNT_MUST_TAGS, NO_TAGS) == nil
 end
 
 local function LookForFood(inst)
@@ -302,12 +303,12 @@ local function CircleOnInit(inst)
 end
 
 local function DoFlap(inst)
-    if math.random() > 0.66 then 
-        inst.AnimState:PlayAnimation("shadow_flap_loop") 
+    if math.random() > 0.66 then
+        inst.AnimState:PlayAnimation("shadow_flap_loop")
         for i = 2, math.random(3, 6) do
-            inst.AnimState:PushAnimation("shadow_flap_loop") 
+            inst.AnimState:PushAnimation("shadow_flap_loop")
         end
-        inst.AnimState:PushAnimation("shadow") 
+        inst.AnimState:PushAnimation("shadow")
     end
 end
 

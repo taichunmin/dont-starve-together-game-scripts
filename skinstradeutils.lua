@@ -18,9 +18,9 @@ function GetBasicRecipeMatch(selections)
 		rarity = GetRarityForItem(item.item)
 		break
 	end
-	
+
 	if rarity ~= nil then
-		for rule_name, rule_contents in pairs(TRADE_RECIPES) do 
+		for rule_name, rule_contents in pairs(TRADE_RECIPES) do
 			if rule_contents.inputs.rarity == rarity then
 				return rule_name
 			end
@@ -42,37 +42,37 @@ end
 
 function GetSpecialFilters(recipe_data, selected_items)
 	local filters = {}
-	
+
 	if recipe_data ~= nil then
 		local satisfied_restrictions = GetSatisfiedRestrictions(recipe_data, selected_items)
 
-		for k,restriction in pairs(recipe_data.Restrictions) do 
-			
-			if not satisfied_restrictions[k] then 
+		for k,restriction in pairs(recipe_data.Restrictions) do
+
+			if not satisfied_restrictions[k] then
 
 				local filters_list = {}
 
 				local type_tag = nil
-				for _, tag in pairs(restriction.Tags) do 
+				for _, tag in pairs(restriction.Tags) do
 					type_tag = GetTypeFromTag(tag)
-					if type_tag ~= nil then 
+					if type_tag ~= nil then
 						break
 					end
 				end
 
-				if restriction.ItemType 
-					and IsItemId(restriction.ItemType) 
+				if restriction.ItemType
+					and IsItemId(restriction.ItemType)
 					and not table.contains(filters, type_tag)
 				then -- ItemType is the item id
 					table.insert(filters_list, restriction.ItemType)
 				end
 
-				if type_tag ~= nil and not table.contains(filters, type_tag) then 
+				if type_tag ~= nil and not table.contains(filters, type_tag) then
 					table.insert(filters_list, type_tag)
 				end
 
 				-- TODO: add colour
-				if not table.contains(filters, restriction.Rarity) then 
+				if not table.contains(filters, restriction.Rarity) then
 					table.insert(filters_list, restriction.Rarity)
 				end
 
@@ -89,9 +89,9 @@ end
 	local used_items = {}
 	local satisfied_restrictions = {}
 	for res_id,restriction in pairs(recipe_data.Restrictions) do
-		if not satisfied_restrictions[res_id] then 
+		if not satisfied_restrictions[res_id] then
 			for index, data in pairs(selected_items) do
-				if not used_items[index] then 
+				if not used_items[index] then
 					local matches = does_item_match_restriction( restriction, data )
 					if matches then
 						used_items[index] = true

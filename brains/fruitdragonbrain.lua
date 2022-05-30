@@ -41,8 +41,8 @@ local wander_timing = {minwalktime = 4, randwalktime = 4, randwaittime = 1}
 
 function FruitDragonBrain:OnStart()
     local root = PriorityNode(
-    {		
-        WhileNode(function() return self.inst.components.timer:TimerExists("panicing") end, "LostChallenge", 
+    {
+        WhileNode(function() return self.inst.components.timer:TimerExists("panicing") end, "LostChallenge",
 			RunAway(self.inst, "fruitdragon", CHALLENGE_LOST_RUN_AWAY_DIST, CHALLENGE_LOST_STOP_RUN_AWAY_DIST)),
         ChaseAndAttack(self.inst, nil, MAX_CHASE_DIST),
 

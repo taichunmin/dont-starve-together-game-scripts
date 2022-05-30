@@ -3,14 +3,14 @@ local PotionCommon = require "prefabs/halloweenpotion_common"
 
 local potion_tunings =
 {
-	sparks = 
+	sparks =
 	{
 		BUILD = "halloween_embers",
 		ANIMS = {"sparks_sml", "sparks_med", "sparks_lrg"},
 		SOUND = "dontstarve/halloween_2018/madscience_machine/sparks",
 		SOUND_NAME = "sparks_fx_loop",
 	},
-	embers = 
+	embers =
 	{
 		BUILD = "halloween_embers",
 		ANIMS = {"bouncy_sml", "bouncy_med", "bouncy_lrg"},
@@ -25,10 +25,7 @@ local puff_fx_cold = {"halloween_firepuff_cold_1", "halloween_firepuff_cold_2", 
 
 local function potion_onputinfire(inst, target)
 	if target:HasTag("campfire") then
-		if target.components.debuffable == nil then
-			target:AddComponent("debuffable")
-		end
-        target.components.debuffable:AddDebuff(inst.buff_prefab, inst.buff_prefab)
+		target:AddDebuff(inst.buff_prefab, inst.buff_prefab)
 		PotionCommon.SpawnPuffFx(inst, target)
 	end
 end
@@ -65,7 +62,7 @@ local function potion_fn(anim, buff_prefab)
     MakeHauntableLaunch(inst)
 
     inst:AddComponent("fuel")
-    inst.components.fuel.fuelvalue = TUNING.MED_FUEL 
+    inst.components.fuel.fuelvalue = TUNING.MED_FUEL
 	inst.components.fuel.ontaken = potion_onputinfire
 
     return inst
@@ -143,8 +140,8 @@ local function buff_OnAttached(inst, target)
     inst:ListenForEvent("onextinguish", function()
         inst.components.debuff:Stop()
     end, target)
-	inst:ListenForEvent("onfueldsectionchanged", function(t, data) 
-		buff_OnLevelChanged(inst, target, data) 
+	inst:ListenForEvent("onfueldsectionchanged", function(t, data)
+		buff_OnLevelChanged(inst, target, data)
 	end, target)
 end
 
@@ -160,7 +157,7 @@ local function anim_buff_fn(potion_tunings)
     inst.AnimState:SetBuild(potion_tunings.BUILD)
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 	inst.AnimState:Hide("burst")
-	inst.AnimState:SetFinalOffset(-1)
+	inst.AnimState:SetFinalOffset(3)
 
     if not TheWorld.ismastersim then
         return inst
@@ -201,7 +198,7 @@ local function AddPotion(potions, name, art)
 
 	local function _buff_fn() return anim_buff_fn(potion_tunings[name]) end
 	local function _potion_fn() return potion_fn(name, buff_name) end
-		
+
 	table.insert(potions, Prefab(potion_name, _potion_fn, potion_assets, potion_prefabs))
 	table.insert(potions, Prefab(buff_name, _buff_fn, buff_assets))
 end

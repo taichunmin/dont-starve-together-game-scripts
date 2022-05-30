@@ -40,7 +40,7 @@ local function CreateDropShadow(parent)
     inst:AddTag("DECOR")
     inst:AddTag("NOCLICK")
 
-    inst.presists = false
+    inst.persists = false
     inst.entity:SetParent(parent.entity)
 
     return inst

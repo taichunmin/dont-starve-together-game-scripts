@@ -137,6 +137,7 @@ end
 local SandOver = Class(Widget, function(self, owner, dustlayer)
     self.owner = owner
     Widget._ctor(self, "SandOver")
+    self:UpdateWhilePaused(false)
 
     self:SetClickable(false)
 
@@ -151,6 +152,7 @@ local SandOver = Class(Widget, function(self, owner, dustlayer)
     self.bg:GetAnimState():SetBank("sand_over")
     self.bg:GetAnimState():SetBuild("sand_over")
     self.bg:GetAnimState():PlayAnimation("blind_loop", true)
+    self.bg:GetAnimState():AnimateWhilePaused(false)
 
     self.letterbox = self:AddChild(CreateLetterbox())
 
@@ -175,13 +177,19 @@ local SandOver = Class(Widget, function(self, owner, dustlayer)
 
     if owner ~= nil then
         self.inst:ListenForEvent("gogglevision", function(owner, data) self:BlindTo(data.enabled and 0 or 1, TheFrontEnd:GetFadeLevel() >= 1) end, owner)
-        self.inst:ListenForEvent("sandstormlevel", function(owner, data) self:FadeTo(data.level, TheFrontEnd:GetFadeLevel() >= 1) end, owner)
+        self.inst:ListenForEvent("stormlevel", function(owner, data)
+            if data.stormtype == STORM_TYPES.SANDSTORM then
+                self:FadeTo(data.level, TheFrontEnd:GetFadeLevel() >= 1)
+            else
+                self:FadeTo(0, TheFrontEnd:GetFadeLevel() >= 1)
+            end
+        end, owner)
         if owner.components.playervision ~= nil and
             owner.components.playervision:HasGoggleVision() then
             self:BlindTo(0, true)
         end
         if owner.GetSandstormLevel ~= nil then
-            self:FadeTo(owner:GetSandstormLevel(), true)
+            self:FadeTo(owner:GetStormLevel(), true)
         end
     end
 end)
@@ -203,6 +211,10 @@ function SandOver:BlindTo(blindto, instant)
 end
 
 function SandOver:FadeTo(fadeto, instant)
+    if self.owner and self.owner:GetStormLevel() == 0 then
+        fadeto = 0
+    end
+
     fadeto = math.clamp(fadeto, 0, 1)
     if self.fadeto ~= fadeto then
         if self.fadeto <= 0 then
@@ -249,6 +261,8 @@ function SandOver:ApplyLevels()
 end
 
 function SandOver:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     local dirty = false
 
     if self.blindto < self.blind then

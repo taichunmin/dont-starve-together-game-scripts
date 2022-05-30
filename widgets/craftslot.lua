@@ -44,29 +44,55 @@ end
 function CraftSlot:OnControl(control, down)
     if CraftSlot._base.OnControl(self, control, down) then return true end
 
-    if not down and control == CONTROL_ACCEPT then
-        if self.owner and self.recipe then
-            if self.recipepopup and not self.recipepopup.focus then 
-                TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+    if control == CONTROL_ACCEPT then
+        if down then
+            if not self.down then
+                self.down = true
 
-                local skin = (self.recipepopup.skins_spinner and self.recipepopup.skins_spinner.GetItem()) or nil
-            
-				if skin ~= nil then
-               		Profile:SetLastUsedSkinForItem(self.recipe.name, skin)
-					Profile:SetRecipeTimestamp(self.recipe.name, self.recipepopup.timestamp)
-               	end
-                if not DoRecipeClick(self.owner, self.recipe, skin ) then 
-                	self:Close() 
-               	end
+                if self.last_recipe_click and (GetStaticTime() - self.last_recipe_click) < 1 then
+                    self.recipe_held = true
+                    self.last_recipe_click = nil
+                    self:StartUpdating()
+                end
+            end
+        else
+            if self.down then
+				self.down = false
+                if self.owner and self.recipe and self.recipepopup and not self.recipepopup.focus then
+                    TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 
-                return true
+                    local skin = (self.recipepopup.skins_spinner and self.recipepopup.skins_spinner.GetItem()) or nil
+
+                    if skin ~= nil then
+                        Profile:SetLastUsedSkinForItem(self.recipe.name, skin)
+                        Profile:SetRecipeTimestamp(self.recipe.name, self.recipepopup.timestamp)
+                    end
+
+                    self:StartUpdating()
+                    self.last_recipe_click = GetStaticTime()
+                    self.recipe_held = false
+                    if not DoRecipeClick(self.owner, self.recipe, skin ) then
+                        self:Close()
+                    end
+
+                    return true
+                end
+                self:StopUpdating()
             end
         end
     end
 end
 
+function CraftSlot:OnUpdate(dt)
+    if self.down and self.recipe_held then
+        DoRecipeClick(self.owner, self.recipe, self.recipepopup.skins_spinner and self.recipepopup.skins_spinner.GetItem() or nil)
+    end
+end
+
 function CraftSlot:OnLoseFocus()
     CraftSlot._base.OnLoseFocus(self)
+    self.recipe_held = false
+    self:StopUpdating()
     self:Close()
 end
 
@@ -75,11 +101,11 @@ function CraftSlot:Clear()
     self.recipe = nil
     self.recipe_skins = {}
     self.canbuild = false
-    
+
     if self.tile then
         self.tile:Hide()
     end
-    
+
     self.fgimage:Hide()
     self.lightbulbimage:Hide()
     self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
@@ -97,7 +123,7 @@ function CraftSlot:Open()
     end
     self.open = true
     self:ShowRecipe()
-    TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_mouseover")
+    TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
 end
 
 function CraftSlot:Close()
@@ -121,18 +147,17 @@ end
 
 function CraftSlot:Refresh(recipename)
 	recipename = recipename or self.recipename
-    local recipe = AllRecipes[recipename]
+    local recipe = GetValidRecipe(recipename)
 
-    local canbuild = self.owner.replica.builder:CanBuild(recipename)
-    local knows = self.owner.replica.builder:KnowsRecipe(recipename)
-    local buffered = self.owner.replica.builder:IsBuildBuffered(recipename)
-    
-    local do_pulse = self.recipename == recipename and not self.canbuild and canbuild
     self.recipename = recipename
     self.recipe = recipe
     self.recipe_skins = {}
-    
+
     if self.recipe then
+		local canbuild = self.owner.replica.builder:HasIngredients(recipe)
+		local knows = self.owner.replica.builder:KnowsRecipe(recipe)
+		local buffered = self.owner.replica.builder:IsBuildBuffered(recipename)
+
 		self.recipe_skins = Profile:GetSkinsForPrefab(self.recipe.name)
 
         self.canbuild = canbuild
@@ -170,19 +195,19 @@ function CraftSlot:Refresh(recipename)
             else
                 --print("Right_Level for: ", recipename, " ", right_level)
                 local show_highlight = false
-                
+
                 show_highlight = canbuild and right_level
-                
+
                 local hud_atlas = resolvefilepath( "images/hud.xml" )
-                
+
                 if not right_level then
                     self.fgimage:SetTexture(hud_atlas, "craft_slot_locked_nextlevel.tex")
                     self.lightbulbimage:Hide()
                     self.fgimage:Show()
-                    if buffered then 
-                        self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex") 
+                    if buffered then
+                        self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex")
                     else
-                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex") 
+                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
                     end
                     self.fgimage:SetTint(.7,.7,.7,1)
                 elseif show_highlight then
@@ -194,10 +219,10 @@ function CraftSlot:Refresh(recipename)
                     self.fgimage:SetTexture(hud_atlas, "craft_slot_missing_mats.tex")
                     self.lightbulbimage:Hide()
                     self.fgimage:Show()
-                    if buffered then 
-                        self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex") 
+                    if buffered then
+                        self.bgimage:SetTexture(self.atlas, "craft_slot_place.tex")
                     else
-                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex") 
+                        self.bgimage:SetTexture(self.atlas, "craft_slot.tex")
                     end
                     self.fgimage:SetTint(1,1,1,1)
                 end
@@ -212,7 +237,7 @@ function CraftSlot:Refresh(recipename)
 				self:Open()
 			end
 		end
-        
+
         --self:HideRecipe()
     end
 end

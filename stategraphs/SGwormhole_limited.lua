@@ -34,13 +34,13 @@ local states=
 
 		onenter = function(inst)
 			inst.AnimState:PlayAnimation("cough")
-					
+
 		end,
 
 		timeline=
 		{
 			TimeEvent(6*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/common/teleportworm/sick_cough")	end),
-			TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/common/teleportworm/sick_cough") end),	
+			TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/common/teleportworm/sick_cough") end),
 		},
 
 		events=
@@ -79,7 +79,7 @@ local states=
 			end),
 		},
 	},
-		
+
 	State{
 		name = "closing",
 		tags = {"busy"},
@@ -110,7 +110,7 @@ local states=
 		timeline=
 		{
 			TimeEvent(39*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/common/teleportworm/sick_splat")	end),
-			
+
 		},
 
 		events =

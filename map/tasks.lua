@@ -74,7 +74,7 @@ end
 -- Load the data
 ------------------------------------------------------------------
 
--- A set of tasks to be performed 
+-- A set of tasks to be performed
 local everything_sample2 = {
 	Task("One of everything", {
 		locks=LOCKS.NONE,
@@ -83,23 +83,23 @@ local everything_sample2 = {
 			["DenseRocks"] = 1,
 			["DenseForest"] = 1,
 			["SpiderCon"] = 3,
-			["Forest"] = 1, 
-		 }, 
+			["Forest"] = 1,
+		 },
 		room_bg=GROUND.GRASS,
 		background_room="BGGrass",
 		colour={r=0,g=1,b=0,a=1}
-	}) 
+	})
 }
 local everything_sample = {
 	Task("One of everything", {
-		locks=LOCKS.NONE, 
-		keys_given=KEYS.PICKAXE, 
+		locks=LOCKS.NONE,
+		keys_given=KEYS.PICKAXE,
 		room_choices={
-			["Graveyard"] = 1, 
-			["BeefalowPlain"] = 1, 		
-			["SpiderVillage"] = 1, 
-			["PigKingdom"] = 1, 
-			["PigVillage"] = 1, 
+			["Graveyard"] = 1,
+			["BeefalowPlain"] = 1,
+			["SpiderVillage"] = 1,
+			["PigKingdom"] = 1,
+			["PigVillage"] = 1,
 			["MandrakeHome"] = 1,
 			["BeeClearing"] = 1,
 			["DenseRocks"] = 1,
@@ -109,19 +109,19 @@ local everything_sample = {
 			["Trapfield"] = 1,
 			["Minefield"] = 1,
 			["SpiderCon"] = 1,
-			["Forest"] = 1, 
-			["Rocky"] = 1, 
-			["BarePlain"] = 1, 
-			["Plain"] = 1, 
-			["Marsh"] = 1, 
-			["DeepForest"] = 1, 
+			["Forest"] = 1,
+			["Rocky"] = 1,
+			["BarePlain"] = 1,
+			["Plain"] = 1,
+			["Marsh"] = 1,
+			["DeepForest"] = 1,
 			["Clearing"] = 1,
 			["BurntForest"] = 1,
-		}, 
+		},
 		room_bg=GROUND.GRASS,
 		background_room="BGGrass",
 		colour={r=0,g=1,b=0,a=1}
-	}) 
+	})
 }
 
 require("map/tasks/maxwell")

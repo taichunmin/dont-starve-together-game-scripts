@@ -25,7 +25,7 @@ local MainScreen = Class(Screen, function(self, profile)
 	Screen._ctor(self, "MainScreen")
     self.profile = profile
 	self.log = true
-	self:DoInit() 
+	self:DoInit()
 	self.default_focus = self.menu
 	self.music_playing = false
 end)
@@ -34,7 +34,7 @@ end)
 function MainScreen:DoInit( )
 	TheFrontEnd:GetGraphicsOptions():DisableStencil()
 	TheFrontEnd:GetGraphicsOptions():DisableLightMapComponent()
-	
+
 	TheInputProxy:SetCursorVisible(true)
 
 	if IsDLCInstalled(REIGN_OF_GIANTS) then
@@ -50,8 +50,8 @@ function MainScreen:DoInit( )
     self.bg:SetVAnchor(ANCHOR_MIDDLE)
     self.bg:SetHAnchor(ANCHOR_MIDDLE)
     self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
-    
-    
+
+
     self.fixed_root = self:AddChild(Widget("root"))
     self.fixed_root:SetVAnchor(ANCHOR_MIDDLE)
     self.fixed_root:SetHAnchor(ANCHOR_MIDDLE)
@@ -67,7 +67,7 @@ function MainScreen:DoInit( )
     self.anim:SetHAnchor(ANCHOR_MIDDLE)
     self.anim:GetAnimState():OverrideSymbol("willow_title_fire", "title_fire", "willow_title_fire")
     self.anim:GetAnimState():OverrideSymbol("wilson_title_fire", "title_fire", "wilson_title_fire")
-	
+
 	--center stuff
 	if IsDLCInstalled(REIGN_OF_GIANTS) then
 		self.shield = self.fixed_root:AddChild(Image("images/ps4_dlc0001.xml", "ps4_mainmenu_title.tex"))
@@ -97,7 +97,7 @@ function MainScreen:DoInit( )
         self.banner:SetScale(0.7, 1)
     end
 
-    
+
     self.updatename = self.bannerroot:AddChild(Text(BUTTONFONT, 30*.8))
     if JapaneseOnPS4() then
         self.updatename:SetPosition(0,12,0)
@@ -133,9 +133,9 @@ end
 function MainScreen:OnControl(control, down)
     -- don't do anything until we have space to save
     if not TheSystemService:IsStorageAvailable() then return end
-    
+
 	if MainScreen._base.OnControl(self, control, down) then return true end
-	
+
 	if not down and control == CONTROL_CANCEL then
 		if not self.mainmenu then
 			self:MainMenu()
@@ -164,7 +164,7 @@ end
 function MainScreen:ShowMenu(menu_items)
 	self.mainmenu = false
 	self.menu:Clear()
-	
+
 	for k = #menu_items, 1, -1  do
 		local v = menu_items[k]
 		self.menu:AddItem(v.text, v.cb)
@@ -189,10 +189,10 @@ function MainScreen:OnCreditsButton()
     TheFrontEnd:GetSound():KillSound("FEPortalSFX")
 	TheFrontEnd:PushScreen( CreditsScreen() )
 end
-	
+
 
 function MainScreen:MainMenu()
-	
+
 	local menu_items = {}
 	table.insert(menu_items, {text=STRINGS.UI.MAINSCREEN.OPTIONS, cb= function() self:DoOptionsMenu() end})
 	--table.insert(menu_items, {text=STRINGS.UI.MAINSCREEN.PLAY, cb= function() TheFrontEnd:PushScreen(LoadGameScreen())end})
@@ -204,16 +204,16 @@ function MainScreen:OnBecomeActive()
     MainScreen._base.OnBecomeActive(self)
 end
 
-function MainScreen:CheckStorage()            
-    if TheSystemService:IsStorageAvailable() then    
+function MainScreen:CheckStorage()
+    if TheSystemService:IsStorageAvailable() then
         local operation, status = TheSystemService:GetLastOperation()
         --print("MainScreen:Saveload result", operation, status)
         if operation ~= SAVELOAD.OPERATION.NONE and status ~= SAVELOAD.STATUS.OK then
-            TheFrontEnd:OnSaveLoadError(operation, "", status)        
+            TheFrontEnd:OnSaveLoadError(operation, "", status)
             return
-        else        
+        else
             self:CheckDisplayArea()
-        end        
+        end
     else
         TheSystemService:PrepareStorage(function(success) self:CheckStorage() end)
     end
@@ -223,27 +223,27 @@ function MainScreen:CheckDisplayArea()
     local isAdjusted = TheSystemService:IsDisplaySafeAreaAdjusted()
     local sawAdjustmentPopup = Profile:SawDisplayAdjustmentPopup()
     if (not isAdjusted and not sawAdjustmentPopup) then
-    
-        local function adjust()  
+
+        local function adjust()
             TheSystemService:AdjustDisplaySafeArea()
             Profile:ShowedDisplayAdjustmentPopup()
             TheFrontEnd:PopScreen() -- pop after updating settings otherwise this dialog might show again!
             Profile:Save()
         end
-        
-        local function nothanks()   
+
+        local function nothanks()
             Profile:ShowedDisplayAdjustmentPopup()
             TheFrontEnd:PopScreen() -- pop after updating settings otherwise this dialog might show again!
             Profile:Save()
         end
-        
+
         local popup = BigPopupDialogScreen(STRINGS.UI.MAINSCREEN.ADJUST_DISPLAY_HEADER, STRINGS.UI.MAINSCREEN.ADJUST_DISPLAY_TEXT,
 		    {
 		        {text=STRINGS.UI.MAINSCREEN.YES, cb = adjust},
-		        {text=STRINGS.UI.MAINSCREEN.NO, cb = nothanks}  
+		        {text=STRINGS.UI.MAINSCREEN.NO, cb = nothanks}
 		    }
 		)
-        TheFrontEnd:PushScreen(popup)    
+        TheFrontEnd:PushScreen(popup)
     end
 end
 

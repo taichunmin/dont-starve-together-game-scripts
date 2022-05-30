@@ -1,6 +1,6 @@
 
 
-local function RunCA(id, entities, data)	
+local function RunCA(id, entities, data)
 	--print(id.." RunCa", data.iterations, data.seed_mode, data.num_random_points)
 	WorldSim:RunCA(id, data.iterations, data.seed_mode, data.num_random_points)
 
@@ -17,7 +17,7 @@ local function RunCA(id, entities, data)
 
 				local current_layer = data.translate[points_type[current_pos_idx]-1]
 				WorldSim:SetTile(points_x[current_pos_idx], points_y[current_pos_idx], current_layer.tile)
-				
+
 				if current_layer.item_count >0 then
 					--print("RunCA ", current_layer.items[1], data.width, data.height)
 					data.node:AddEntity(current_layer.items[1], points_x, points_y, current_pos_idx, entities, data.width, data.height, {}, {}, true)
@@ -58,7 +58,7 @@ local function MyTestTileSetFunction(id, entities, data)
 
 	-- place beams
 
-	-- get concentric circles around each of the beam locations from outside inwards 
+	-- get concentric circles around each of the beam locations from outside inwards
 	--		this way we can just overrite what came before
 
 	-- As we go, make sure that each point is within the area or the polygon
@@ -72,7 +72,7 @@ local function MyTestTileSetFunction(id, entities, data)
 	-- end
 end
 
-local MyTestTileSetFunction_data = 	{ 
+local MyTestTileSetFunction_data = 	{
 		{tile=GROUND.FOREST, items={"evergreen_tall"}, 		item_count=3},
 		{tile=GROUND.FOREST, items={"evergreen_normal"}, 	item_count=5},
 		{tile=GROUND.FOREST, items={"evergreen_short"}, 	item_count=7},
@@ -92,7 +92,7 @@ function MakeSetpieceBlockerRoom(blocker_name)
 				contents =  {
 								countstaticlayouts= {
 									[blocker_name]=1,
-								}, 
+								},
 							}
 			}
 end

@@ -30,7 +30,7 @@ GAME_MODES =
         ghost_enabled = false,
         portal_rez = false,
         reset_time = nil,
-        invalid_recipes = { "resurrectionstatue", "reviver" },
+        invalid_recipes = { "resurrectionstatue" },
     },
     endless =
     {
@@ -57,7 +57,7 @@ GAME_MODES =
         resource_renewal = false,
         ghost_sanity_drain = false,
         ghost_enabled = false,
-        revivable_corpse = true, 
+        revivable_corpse = true,
         spectator_corpse = true,
         portal_rez = false,
         reset_time = nil,
@@ -98,7 +98,7 @@ GAME_MODES =
         resource_renewal = false,
         ghost_sanity_drain = false,
         ghost_enabled = false,
-        revivable_corpse = true, 
+        revivable_corpse = true,
         portal_rez = true,
         reset_time = nil,
         invalid_recipes = nil,
@@ -126,6 +126,7 @@ GAME_MODES =
         icons_use_cc = true,
 		hud_atlas = "images/quagmire_hud.xml",
 		eventannouncer_offset = -40,
+		override_farm_till_spacing = 1,
     },
 }
 
@@ -301,6 +302,10 @@ end
 
 function GetMaxItemSlots(game_mode)
     return GetGameMode(game_mode).override_item_slots or MAXITEMSLOTS
+end
+
+function GetFarmTillSpacing(game_mode)
+    return GetGameMode(game_mode or TheNet:GetServerGameMode()).override_farm_till_spacing or TUNING.FARM_TILL_SPACING
 end
 
 function GetGameModeMaxPlayers(game_mode)

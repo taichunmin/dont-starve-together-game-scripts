@@ -42,7 +42,7 @@ end)
 local ServerLockedPanel = Class(Widget, function(self, owner)
     LobbyPanel._ctor(self, "ServerLockedPanel")
     self.title = ""
-    
+
     function self:OnGainFocus()
 		owner.active = false
 		owner:Disable()
@@ -66,7 +66,7 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 		self.mvp_widget:SetScale(.55)
 		self.mvp_widget:SetPosition(0, 75)
 	end
-	
+
 	self.wxp = self:AddChild(WxpLobbyPanel(owner.profile, function() owner.next_button:SetText(STRINGS.UI.WXPLOBBYPANEL.CONTINUE) end))
     self.wxp:SetPosition(0, show_mvp_cards and -145 or 70)
 
@@ -114,7 +114,7 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 		match_time:SetRegionSize(400, 20)
 		match_time:SetHAlign(ANCHOR_LEFT)
 		info_y = info_y - 20
-	end		
+	end
 	if outcome.total_deaths ~= nil then
 		local text = outcome.total_deaths == 0 and STRINGS.UI.WXPLOBBYPANEL.NO_DEATHS or subfmt(STRINGS.UI.WXPLOBBYPANEL.DEATHS, {deaths = outcome.total_deaths})
 		local deaths = self:AddChild(Text(CHATFONT, 18, text))
@@ -124,8 +124,8 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 		deaths:SetHAlign(ANCHOR_LEFT)
 		info_y = info_y - 20
 	end
-	
-	
+
+
 	if not TheNet:IsOnlineMode() then
 		self.wxp:Hide()
 		self.mvp_widget:SetPosition(0, 0)
@@ -154,7 +154,7 @@ local WxpPanel = Class(LobbyPanel, function(self, owner)
 			self.wxp:SkipAnimation()
 			return false
 		end
-		
+
 		return true
 	end
 
@@ -163,29 +163,122 @@ end)
 local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
     LobbyPanel._ctor(self, "CharacterSelectPanel")
 
+    self:SetPosition(0, 100)
+
 	self.title = STRINGS.UI.LOBBYSCREEN.SELECTION_TITLE
 
     local function OnCharacterClick(hero)
         owner.next_button:onclick()
     end
 
+	local CharacterButtonCtor = Class(CharacterButton, function(self, character, cbPortraitFocused, cbPortraitClicked)
+		CharacterButton._ctor(self, character, cbPortraitFocused, cbPortraitClicked)
+	end)
+
+	local function BuildCharacterDetailsWidget(char)
+		local root = Widget("char_root")
+		root:SetPosition(85, -100)
+
+		root.portrait = root:AddChild(Image())
+		root.portrait:SetPosition(-100, 80)
+		root.portrait:SetScale(.4)
+
+		root.charactername = root:AddChild(Image())
+		root.charactername:SetScale(.38)
+		root.charactername:SetPosition(0, 260)
+
+		local status_x = 100
+		local status_y = 110
+		root.health_status = root:AddChild(TEMPLATES.MakeUIStatusBadge("health"))
+		root.health_status:SetPosition(status_x - 70, status_y)
+		root.health_status:SetScale(0.9)
+		root.hunger_status = root:AddChild(TEMPLATES.MakeUIStatusBadge("hunger"))
+		root.hunger_status:SetPosition(status_x, status_y)
+		root.hunger_status:SetScale(0.9)
+		root.sanity_status = root:AddChild(TEMPLATES.MakeUIStatusBadge("sanity"))
+		root.sanity_status:SetPosition(status_x + 70, status_y)
+		root.sanity_status:SetScale(0.9)
+
+
+		root.survivability_title = root:AddChild(Text(HEADERFONT, 25, STRINGS.CHARACTER_DETAILS.SURVIVABILITY_TITLE, UICOLOURS.GOLD_UNIMPORTANT))
+		root.survivability_title:SetPosition(status_x, 25)
+		root.survivability = root.survivability_title:AddChild(Text(HEADERFONT, 20, STRINGS.CHARACTER_DETAILS.SURVIVABILITY_TITLE, UICOLOURS.GREY))
+		root.survivability:SetPosition(0, -22)
+
+		root._perks_top = -80
+		root._perks_left = -175
+
+		root.perks_title = root:AddChild(Text(HEADERFONT, 25, "", UICOLOURS.GOLD_UNIMPORTANT))
+		root.perks_title:SetHAlign(ANCHOR_LEFT)
+
+		root.perks = root:AddChild(Text(HEADERFONT, 20, "", UICOLOURS.GREY))
+		root.perks:SetHAlign(ANCHOR_LEFT)
+		root.perks:SetVAlign(ANCHOR_TOP)
+
+		root.inv = root:AddChild(TEMPLATES.MakeStartingInventoryWidget(nil, true))
+		root.inv:SetPosition(root._perks_left, -200)
+
+		root.SetPortrait = function(self, character)
+			self.currentcharacter = character -- required because this is how the lobbyscreen determines which character is selected
+
+			if character ~= nil then
+				local success = SetHeroNameTexture_Gold(self.charactername, character)
+				if not success then
+					self.charactername:Hide()
+				else
+					self.charactername:Show()
+				end
+				SetOvalPortraitTexture(self.portrait, character)
+				self.health_status:ChangeCharacter(character)
+				self.hunger_status:ChangeCharacter(character)
+				self.sanity_status:ChangeCharacter(character)
+				self.inv:ChangeCharacter(character)
+
+				self.survivability:SetString(tostring(STRINGS.CHARACTER_SURVIVABILITY[character] or STRINGS.CHARACTER_SURVIVABILITY.random))
+
+				self.perks_title:SetString(STRINGS.CHARACTER_TITLES[character] or "")
+				local w, h = root.perks_title:GetRegionSize()
+				root.perks_title:SetPosition(root._perks_left + 0.5 * w, root._perks_top)
+
+				local top = root._perks_top - 15
+
+				self.perks:SetMultilineTruncatedString(GetCharacterDescription(character), 20, 375)
+				w, h = self.perks:GetRegionSize()
+				self.perks:SetPosition(root._perks_left + 0.5 * w, top - 0.5 * h)
+
+				top = top - h - 20
+
+				self.inv:SetPosition(root._perks_left, top)
+			end
+		end
+
+		return root
+
+	end
+
     self.character_scroll_list = self:AddChild(CharacterSelect(self,
-            CharacterButton,
-            125,
+            CharacterButtonCtor,
+            108,
             nil, -- use default gameplay descriptions
             nil,
             nil,
             OnCharacterClick,
-            {"random"}
+            {"random"},
+			12,
+			BuildCharacterDetailsWidget
         ))
-    self:SetPosition(300, 100)
-    
+	self.character_scroll_list:SetPosition(170, 0)
+
     self.focus_forward = self.character_scroll_list
-    
+
     function self:OnGainFocus()
-		if owner.lobbycharacter ~= nil then
-			self.character_scroll_list:RefocusCharacter(owner.lobbycharacter)
-		end
+		self.character_scroll_list:RefocusCharacter(self.cached_currentcharacter or owner.lobbycharacter or self.character_scroll_list.selectedportrait.currentcharacter or "wilson")
+		owner.lobbycharacter = nil
+		self.cached_currentcharacter = nil
+    end
+
+    function self:OnLoseFocus()
+		self.cached_currentcharacter = self.character_scroll_list.selectedportrait.currentcharacter
     end
 
 	function self:OnControl(control, down)
@@ -212,10 +305,9 @@ local CharacterSelectPanel = Class(LobbyPanel, function(self, owner)
 	end]]
 end)
 
-
 local LoadoutPanel = Class(LobbyPanel, function(self, owner)
     LobbyPanel._ctor(self, "LoadoutPanel")
-    
+
     self:SetPosition(-160, 0)
 
 	self.title = STRINGS.UI.COLLECTIONSCREEN.SKINS
@@ -256,7 +348,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. "  " .. self.next_button_title)
 	    return table.concat(t, "  ")
 	end
-    
+
 	function self:OnBecomeActive()
         if self.loadout and self.loadout.subscreener then
             for key,sub_screen in pairs(self.loadout.subscreener.sub_screens) do
@@ -269,7 +361,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
         --self.loadout.dressup:OnClose()
 		owner.currentskins = self.loadout.selected_skins
 		owner.character_for_game = self.loadout.currentcharacter
-        
+
 	    owner.profile:SetCollectionTimestamp(GetInventoryTimestamp())
 
 		if not IsCharacterOwned( owner.character_for_game ) then
@@ -280,7 +372,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
         --We can't be random character at this point
 		if owner.character_for_game == "random" then
 			local char_list = GetActiveCharacterList()
-			
+
 			--remove unowned characters
 			for i = #char_list, 1, -1 do
 				if not IsCharacterOwned(char_list[i]) then
@@ -290,7 +382,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 
 		    local all_chars = ExceptionArrays(char_list, MODCHARACTEREXCEPTIONS_DST)
 		    owner.character_for_game = all_chars[math.random(#all_chars)]
-            
+
             local bases = owner.profile:GetSkinsForPrefab(owner.character_for_game)
             owner.currentskins.base = GetRandomItem(bases)
         else
@@ -309,7 +401,7 @@ local LoadoutPanel = Class(LobbyPanel, function(self, owner)
 			StartGame(owner)
 			return false
 		end
-	end	
+	end
 end)
 
 local WaitingPanel = Class(LobbyPanel, function(self, owner)
@@ -360,16 +452,8 @@ local LavaarenaFestivalBookPannel = Class(LobbyPanel, function(self, owner)
 
 	self.eventbook = self:AddChild(LavaarenaBookWidget(owner.chat_sidebar.chatbox, nil, GetFestivalEventSeasons(FESTIVAL_EVENTS.LAVAARENA)))
 	self.eventbook:SetPosition(0, 0)
-	
+
 	self.focus_forward = self.eventbook
-
-	function self:OnControl(control, down)
-		if self.eventbook:OnControlTabs(control, down) then
-			return true 
-		end
-
-		if Widget.OnControl(self, control, down) then return true end
-	end
 
 	function self:OnNextButton()
 		return true
@@ -380,6 +464,10 @@ local LavaarenaFestivalBookPannel = Class(LobbyPanel, function(self, owner)
 	end
 
 	function self:OnControl(control, down)
+		if self.eventbook:OnControlTabs(control, down) then
+			return true
+		end
+
 		if Widget.OnControl(self, control, down) then return true end
 
         if TheInput:ControllerAttached() and (not down) and (control == CONTROL_PAUSE or control == CONTROL_ACCEPT) and owner.next_button:IsEnabled() then
@@ -401,7 +489,7 @@ local LavaarenaFestivalBookPannel = Class(LobbyPanel, function(self, owner)
 	end
 
 	owner.next_button:Disable()
-	local function OnRecievedData() 
+	local function OnRecievedData()
 		owner.next_button:Enable()
 	end
 
@@ -452,7 +540,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot("lobbyscreen root"))
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
-    self.root:AddChild(TEMPLATES.LeftSideBarBackground())	
+    self.root:AddChild(TEMPLATES.LeftSideBarBackground())
 
     self.panel_root = self.root:AddChild(Widget("panel_root"))
 	self.panel_root:SetPosition(160, 0)
@@ -463,7 +551,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
     end
 
 	self.panels = {}
-	
+
 	if GetGameModeProperty("lobbywaitforallplayers") then
 		if (Settings.match_results.wxp_data ~= nil and Settings.match_results.wxp_data[TheNet:GetUserID()] ~= nil) or Settings.match_results.mvp_cards then
 			table.insert(self.panels, {panelfn = WxpPanel})
@@ -480,13 +568,13 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 			table.insert(self.panels, {panelfn = LoadoutPanel})
 			table.insert(self.panels, {panelfn = WaitingPanel})
 		end
-	else 
+	else
 		table.insert(self.panels, {panelfn = CharacterSelectPanel})
 		table.insert(self.panels, {panelfn = LoadoutPanel})
 	end
-	
+
     self.panel_title = self.root:AddChild(TEMPLATES.ScreenTitle_BesideLeftSideBar( "" ))
-	
+
 	self.back_button = self.root:AddChild(TEMPLATES.BackButton_BesideLeftSidebar(function() if self.panel.OnBackButton == nil or self.panel:OnBackButton() then self.back_button._onclick_goback() end end, "", nil))
 	self.next_button = self.root:AddChild(TEMPLATES.StandardButton(function() if self.panel.OnNextButton == nil or self.panel:OnNextButton() then self:ToNextPanel(1) end end, "", {200, 50}))
 	self.next_button:SetPosition(500, self.back_button:GetPosition().y - 5)
@@ -494,12 +582,12 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 		self.back_button:Hide()
 		self.next_button:Hide()
 	end
-	
+
     self.chat_sidebar = self.root:AddChild(ChatSidebar())
 
 	self:ToNextPanel(1)
-	
-	self.inst:ListenForEvent("lobbyplayerspawndelay", function(world, data) 
+
+	self.inst:ListenForEvent("lobbyplayerspawndelay", function(world, data)
 			if data and data.active then
 				self.back_button:Disable()
 				self.back_button:Hide()
@@ -508,8 +596,8 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 				end
 			end
 		end, TheWorld)
-		
-		
+
+
 	-- dump the player stats on all the clients
 	-- TODO: Move this somewhere better
 	if not TheNet:IsDedicated() then
@@ -518,26 +606,26 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 			local str = "\nstats_type,".. tostring(player_stats.gametype)
 			str = str .. "\nsession," .. tostring(player_stats.session)
 			str = str .. "\nclient_date," .. os.date("%c")
-			
+
 			local outcome = Settings.match_results.outcome or TheFrontEnd.match_results.outcome
 			if outcome ~= nil then
 				if TheNet:GetServerGameMode() == "quagmire" then
 					str = str .. "\nlb_submit," .. tostring(outcome.lb_submit) .. ", " .. tostring(outcome.lb_response)
-					str = str .. "\nwon," .. (outcome.won and "true" or "false") 
+					str = str .. "\nwon," .. (outcome.won and "true" or "false")
 					str = str .. "\nround," .. tostring(outcome.round)
 					str = str .. "\ntime," .. tostring(math.floor(outcome.time))
 					str = str .. "\nscore," .. tostring(outcome.score)
 					str = str .. "\ntributes_success," .. tostring(outcome.tributes_success)
 					str = str .. "\ntributes_failed," .. tostring(outcome.tributes_failed)
 				else
-					str = str .. "\nwon," .. (outcome.won and "true" or "false") 
+					str = str .. "\nwon," .. (outcome.won and "true" or "false")
 					str = str .. "\nround," .. tostring(outcome.round)
 					str = str .. "\ntime," .. tostring(math.floor(outcome.time))
 					str = str .. "\ntotal_deaths," .. tostring(outcome.total_deaths)
 					str = str .. "\nprogression," .. tostring(outcome.progression)
 				end
 			end
-			
+
 			local userid_index = 0
 			str = str .. "\nfields,is_you"
 			for i, v in ipairs(player_stats.fields) do
@@ -547,7 +635,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 					str = str .. "," .. v
 				end
 			end
-			
+
 			for j, player in ipairs(player_stats.data) do
 				str = str .. "\nplayer"..j
 				for i, v in ipairs(player) do
@@ -564,13 +652,13 @@ local LobbyScreen = Class(Screen, function(self, profile, cb)
 
 			print("Logging Match Statistics")
 			local stats_file = "event_match_stats/"..GetActiveFestivalEventStatsFilePrefix().."_" .. string.gsub(os.date("%x"), "/", "-") .. ".csv"
-			TheSim:GetPersistentString(stats_file, function(load_success, old_str) 
+			TheSim:GetPersistentString(stats_file, function(load_success, old_str)
 				if old_str ~= nil then
 					str = str .. "\n" .. old_str
 				end
 				TheSim:SetPersistentString(stats_file, str, false, function() print("Done Logging Match Statistics") end)
 			end)
-			
+
 		end
 	end
 end)
@@ -612,10 +700,6 @@ function LobbyScreen:StopLobbyMusic()
     end
 end
 
-function LobbyScreen:ReceiveChatMessage(...)
-    self.chat_sidebar:ReceiveChatMessage(...)
-end
-
 local function FindNextPanelIndex(panels, cur, dir)
 	cur = cur + dir
 	while (cur > 0 and cur <= #panels and panels[cur].enabledfn ~= nil and not panels[cur]:enabledfn()) do
@@ -631,27 +715,28 @@ function LobbyScreen:ToNextPanel(dir)
 	if prev_panel_index ~= self.current_panel_index then
 		self:Disable()
         local prev_penel = self.panel
-        self.inst:DoTaskInTime(0, function()
+        self.inst:DoTaskInTime(0, function() -- this delay is in here so the input handling can finish this frame before activating the new screen
 			if prev_penel ~= nil then
 				prev_penel:Kill()
 			end
-
 			self:Enable()
 			self.panel:Show()
-			self.panel:SetFocus()
+			self.panel_root:ClearFocus()
+			self.panel_root:SetFocus()
 		end)
-		
+
 		if self.panel ~= nil then
 			self.panel:Disable()
 			self.panel:Hide()
 		end
-		
+
 		self.panel_root:ClearFocus()
+
 		self.panel = self.panel_root:AddChild(self.panels[self.current_panel_index].panelfn(self))
 		self.panel:Hide()
 
 		self.panel_title:SetString(self.panel.title)
-	
+
 		if FindNextPanelIndex(self.panels, self.current_panel_index, -1) <= 0 then
 			self.back_button._onclick_goback = function() self:DoConfirmQuit() end
 			self.back_button:SetText(STRINGS.UI.LOBBYSCREEN.DISCONNECT, true)
@@ -669,8 +754,8 @@ function LobbyScreen:ToNextPanel(dir)
 			else
 				self.next_button:Show()
 			end
-		end		
-		
+		end
+
 		self.panel_root.focus_forward = self.panel
 		self:DoFocusHookups()
 	end
@@ -688,12 +773,12 @@ function LobbyScreen:OnControl(control, down)
 	if not self.enabled then
 		return false
 	end
-	
+
     if LobbyScreen._base.OnControl(self, control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
 		self.back_button.onclick()
-        return true 
+        return true
     end
 
     return false

@@ -11,6 +11,8 @@ local NUM_RECENT_ITEMS = 4
 local MainMenuStatsPanel = Class(Widget, function(self, config)
     Widget._ctor(self, "MainMenuStatsPanel")
 
+	self:SetPosition(50, 0)
+
 	self.config = config
 
 	local width = 300
@@ -22,49 +24,62 @@ local MainMenuStatsPanel = Class(Widget, function(self, config)
 	local motd_cell_size = {width = motd_w, height = motd_w/16*9}
 	local text_padding = 13
 
+    self.frame = self:AddChild(TEMPLATES.RectangleWindow(630, 320))
+	self.frame:SetBackgroundTint(0,0,0,0.85)
+	self.frame:SetPosition(115, -145)
+
 	local item_root = self:AddChild(Widget("store_root"))
     item_root:SetPosition(-50, -90)
 
-	
-	self.image = item_root:AddChild(ImageButton("images/stats_panel_motd.xml", "stats_panel_motd.tex"))
-	self.image:ForceImageSize(motd_cell_size.width, motd_cell_size.height)
-	self.image:SetNormalScale(0.4,0.4)
-	self.image:SetFocusScale(0.41,0.41)
-	self.image:SetOnClick( function() config.store_cb() end )
+	self.image_bg = item_root:AddChild(ImageButton("images/stats_panel_motd.xml", "stats_panel_motd.tex"))
+	self.image_bg:SetNormalScale(0.44,0.42)
+	self.image_bg:SetFocusScale(0.44,0.42)
+	self.image_bg:SetOnClick( function() config.store_cb() end )
+
+	local featured_iap = GetRandomItem(GetFeaturedPacks())
+	if featured_iap ~= nil then
+		local iap_image = GetPurchaseDisplayForItem(featured_iap)
+
+		self.image = item_root:AddChild(ImageButton(unpack(iap_image)))
+		self.image:SetNormalScale(0.29,0.29)
+		self.image:SetFocusScale(0.3,0.3)
+		self.image:SetOnClick( function() config.store_cb() end )
+		self.image:SetPosition(0, 5)
+	end
 
 	local max_w = motd_cell_size.width - text_padding * 2
-	local title = self.image.image:AddChild(Text(BODYTEXTFONT, 44, "", UICOLOURS.HIGHLIGHT_GOLD))
+	local title = item_root:AddChild(Text(BODYTEXTFONT, 22, "", UICOLOURS.HIGHLIGHT_GOLD))
 	title:SetAutoSizingString(STRINGS.UI.STATSPANEL.MOTD_TITLE, max_w)
 	title:SetHAlign(ANCHOR_LEFT)
-	title:SetPosition(-230,180)
+	title:SetPosition(-110, 74)
 
-	local body = self.image.image:AddChild(Text(BODYTEXTFONT, 48, "", UICOLOURS.GOLD_SELECTED))
-	body:SetMultilineTruncatedString(STRINGS.UI.STATSPANEL.MOTD_BODY, 3, 800, nil, true)
-	body:SetHAlign(ANCHOR_LEFT)
-	body:SetPosition(0,-160)
-		
+	local body = item_root:AddChild(Text(BODYTEXTFONT, 20, "", UICOLOURS.GOLD_SELECTED))
+	body:SetMultilineTruncatedString(STRINGS.UI.STATSPANEL.MOTD_BODY, 2, 355, nil, true)
+	body:SetHAlign(ANCHOR_MIDDLE)
+	body:SetVAlign(ANCHOR_MIDDLE)
+	body:SetPosition(1,-74)
 
 
     item_root = self:AddChild(Widget("friend_root"))
     item_root:SetPosition(-50, -220)
-    local death_label = item_root:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.MOST_COMMON_FRIENDS, UICOLOURS.GOLD_SELECTED))
-    death_label:SetPosition(0,15)
-    death_label:SetRegionSize(width,30)
+    local friends_label = item_root:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.MOST_COMMON_FRIENDS, UICOLOURS.GOLD_SELECTED))
+    friends_label:SetPosition(0,15)
+    friends_label:SetRegionSize(width,30)
     local divider = item_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
     divider:SetScale(0.5)
-    divider:SetPosition(0,0)
+    divider:SetPosition(0,5)
 
 
 	self.friend_widgets = {}
 	for i = 1, 3 do
-		local friend = item_root:AddChild(Text(UIFONT, 25, ""))
-		friend:SetPosition(0, -5 - i * 30)
+		local friend = item_root:AddChild(Text(UIFONT, 22, ""))
+		friend:SetPosition(0, 5 - i * 25)
 		table.insert(self.friend_widgets, friend)
 	end
 	self:RefreshFriends()
 
 	self.recent_items = self:AddChild(self:BuildItemsSummary(width))
-	self.recent_items:SetPosition(380, -30)
+	self.recent_items:SetPosition(300, -30)
 
 	self.focus_forward = self.image
 
@@ -117,13 +132,13 @@ end
 function MainMenuStatsPanel:BuildItemsSummary(width)
     local new_root = Widget("new items root")
     new_root.new_label = new_root:AddChild(Text(HEADERFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.NEW_STUFF, UICOLOURS.GOLD_SELECTED))
-    new_root.new_label:SetPosition(0, 15)
+    new_root.new_label:SetPosition(0, 10)
     new_root.new_label:SetRegionSize(width, 30)
 
 	local divider_top = new_root:AddChild( Image("images/frontend_redux.xml", "achievements_divider_top.tex") )
 	divider_top:SetScale(0.5)
     divider_top:SetPosition(0, 0)
-	
+
     local no_items = new_root:AddChild(Text(UIFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.NO_ITEMS))
     no_items:SetPosition(0, -35)
     no_items:SetRegionSize(width,30)

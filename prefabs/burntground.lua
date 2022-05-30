@@ -54,7 +54,7 @@ local function makeburntground(name, initial_fade)
         inst.AnimState:SetBank("burntground")
         inst.AnimState:PlayAnimation("idle")
         inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
-        inst.AnimState:SetLayer(LAYER_BACKGROUND)
+        inst.AnimState:SetLayer(LAYER_GROUND)
         inst.AnimState:SetSortOrder(3)
 
         inst:AddTag("NOCLICK")

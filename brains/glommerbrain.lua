@@ -9,7 +9,7 @@ local TARGET_FOLLOW_DIST = 4
 
 local MAX_WANDER_DIST = 10
 
-local function GetFaceTargetFn(inst)    
+local function GetFaceTargetFn(inst)
     return inst.components.follower.leader
 end
 
@@ -33,14 +33,14 @@ local GlommerBrain = Class(Brain, function(self, inst)
 end)
 
 function GlommerBrain:OnStart()
-    local root = 
+    local root =
     PriorityNode(
     {
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
         DoAction(self.inst, WanderOff),
         Follow(self.inst, function() return self.inst.components.follower.leader end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
         FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
-        Wander(self.inst, GetFollowPos, MAX_WANDER_DIST),   
+        Wander(self.inst, GetFollowPos, MAX_WANDER_DIST),
     }, .25)
     self.bt = BT(self.inst, root)
 end

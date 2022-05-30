@@ -162,7 +162,7 @@ local normal_anims = makeanims("normal")
 local monster_anims = makeanims("monster")
 
 local function GetBuild(inst)
-    return builds[inst.build] or build.normal
+    return builds[inst.build] or builds.normal
 end
 
 local function SpawnLeafFX(inst, waittime, chop)
@@ -226,6 +226,17 @@ local function Sway(inst, monster, monsterpost)
     end
 end
 
+local function UpdateIdleLeafFx(inst)
+	if inst.leaf_state == "colorful" and inst.entity:IsAwake() then
+		if inst.spawnleaffxtask == nil then
+			inst.spawnleaffxtask = inst:DoPeriodicTask(math.random(TUNING.MIN_SWAY_FX_FREQUENCY, TUNING.MAX_SWAY_FX_FREQUENCY), SpawnLeafFX)
+		end
+	elseif inst.spawnleaffxtask ~= nil then
+		inst.spawnleaffxtask:Cancel()
+		inst.spawnleaffxtask = nil
+	end
+end
+
 local function GrowLeavesFn(inst, monster, monsterout)
     if (inst.components.burnable ~= nil and inst.components.burnable:IsBurning()) or
         inst:HasTag("stump") or
@@ -234,7 +245,7 @@ local function GrowLeavesFn(inst, monster, monsterout)
         return
     end
 
-    if inst.leaf_state == "barren" or inst.target_leaf_state == "barren" then 
+    if inst.leaf_state == "barren" or inst.target_leaf_state == "barren" then
         inst:RemoveEventCallback("animover", GrowLeavesFn)
         if inst.target_leaf_state == "barren" then
             inst.build = "barren"
@@ -258,6 +269,7 @@ local function GrowLeavesFn(inst, monster, monsterout)
     end
 
     inst.leaf_state = inst.target_leaf_state
+	UpdateIdleLeafFx(inst)
     if inst.leaf_state == "barren" then
         inst.AnimState:ClearOverrideSymbol("mouseover")
     else
@@ -413,7 +425,7 @@ local function chop_tree(inst, chopper, chopsleft, numchops)
     SpawnLeafFX(inst, nil, true)
 
     -- Force update anims if monster
-    if inst.monster then 
+    if inst.monster then
         inst.anims = monster_anims
     end
     inst.AnimState:PlayAnimation(inst.anims.chop)
@@ -492,6 +504,8 @@ local function make_stump(inst)
     end
 end
 
+local FINDTREETOTRANSFORM_MUST_TAGS = { "birchnut" }
+local FINDTREETOTRANSFORM_CANT_TAGS = { "fire", "stump", "burnt", "monster", "FX", "NOCLICK", "DECOR", "INLIMBO" }
 local function chop_down_tree(inst, chopper)
     local days_survived = chopper.components.age ~= nil and chopper.components.age:GetAgeInDays() or TheWorld.state.cycles
     if not inst.monster and inst.leaf_state ~= "barren" and inst.components.growable ~= nil and inst.components.growable.stage == 3 and days_survived >= TUNING.DECID_MONSTER_MIN_DAY then
@@ -521,7 +535,7 @@ local function chop_down_tree(inst, chopper)
         if math.random() < chance * chance_mod then
             --print("Trying to spawn monster")
             local x, y, z = inst.Transform:GetWorldPosition()
-            local ents = TheSim:FindEntities(x, y, z, 30, { "birchnut" }, { "fire", "stump", "burnt", "monster", "FX", "NOCLICK", "DECOR", "INLIMBO" })
+            local ents = TheSim:FindEntities(x, y, z, 30, FINDTREETOTRANSFORM_MUST_TAGS, FINDTREETOTRANSFORM_CANT_TAGS)
             local max_monsters_to_spawn = math.random(3, 4)
             for i, v in ipairs(ents) do
                 if v.leaf_state ~= "barren" and
@@ -731,6 +745,7 @@ local function handler_growfromseed(inst)
     inst.SoundEmitter:PlaySound("dontstarve/forest/treeGrow")
     inst.anims = short_anims
 
+	UpdateIdleLeafFx(inst)
     PushSway(inst)
 end
 
@@ -869,6 +884,8 @@ local function OnEntitySleep(inst)
     inst:RemoveComponent("burnable")
     inst:RemoveComponent("propagator")
     inst:RemoveComponent("inspectable")
+
+	UpdateIdleLeafFx(inst)
 end
 
 local function OnEntityWake(inst)
@@ -917,9 +934,9 @@ local function OnEntityWake(inst)
         inst.sg:GoToState("empty")
         inst.AnimState:ClearOverrideSymbol("eye")
         inst.AnimState:ClearOverrideSymbol("mouth")
-        if not inst:HasTag("stump") then 
+        if not inst:HasTag("stump") then
             inst.AnimState:ClearOverrideSymbol("legs")
-            inst.AnimState:ClearOverrideSymbol("legs_mouseover") 
+            inst.AnimState:ClearOverrideSymbol("legs_mouseover")
         end
         inst.AnimState:SetBank("tree_leaf")
         OnBurnt(inst, true)
@@ -931,6 +948,8 @@ local function OnEntityWake(inst)
     end
 
     inst._wasonfire = nil
+
+	UpdateIdleLeafFx(inst)
 end
 
 local REMOVABLE =
@@ -940,6 +959,8 @@ local REMOVABLE =
     ["charcoal"] = true,
 }
 
+local DECAYREMOVE_MUST_TAGS = { "_inventoryitem" }
+local DECAYREMOVE_CANT_TAGS = { "INLIMBO", "fire" }
 local function OnTimerDone(inst, data)
     if data.name == "decay" then
         local x, y, z = inst.Transform:GetWorldPosition()
@@ -947,7 +968,7 @@ local function OnTimerDone(inst, data)
             -- before we disappear, clean up any crap left on the ground
             -- too many objects is as bad for server health as too few!
             local leftone = false
-            for i, v in ipairs(TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "INLIMBO", "fire" })) do
+            for i, v in ipairs(TheSim:FindEntities(x, y, z, 6, DECAYREMOVE_MUST_TAGS, DECAYREMOVE_CANT_TAGS)) do
                 if REMOVABLE[v.prefab] then
                     if leftone then
                         v:Remove()
@@ -961,6 +982,10 @@ local function OnTimerDone(inst, data)
         end
         inst:Remove()
     end
+end
+
+local function on_cattoyplay(inst, doer, is_airborne)
+    SpawnLeafFX(inst)
 end
 
 local function onsave(inst, data)
@@ -1111,36 +1136,37 @@ local function ChangeToSeason(inst, targetSeason)
         inst.leaveschangetask:Cancel()
     end
     if inst.target_leaf_state ~= inst.leaf_state then
-        local time = math.random(TUNING.MIN_LEAF_CHANGE_TIME, TUNING.MAX_LEAF_CHANGE_TIME)
-        inst.targetleaveschangetime = GetTime() + time
-        inst.leaveschangetask = inst:DoTaskInTime(time, OnChangeLeaves)
+		local time = math.random(TUNING.MIN_LEAF_CHANGE_TIME, TUNING.MAX_LEAF_CHANGE_TIME)
+		inst.targetleaveschangetime = GetTime() + time
+		inst.leaveschangetask = inst:DoTaskInTime(time, OnChangeLeaves)
     else
         inst.targetleaveschangetime = nil
         inst.leaveschangetask = nil
     end
 end
 
+local nextSeason =
+{
+    [SEASONS.AUTUMN] = SEASONS.WINTER,
+    [SEASONS.WINTER] = SEASONS.SPRING,
+    [SEASONS.SPRING] = SEASONS.SUMMER,
+    [SEASONS.SUMMER] = SEASONS.AUTUMN,
+}
+local seasonlengths =
+{
+    [SEASONS.AUTUMN] = "autumnlength",
+    [SEASONS.WINTER] = "winterlength",
+    [SEASONS.SPRING] = "springlength",
+    [SEASONS.SUMMER] = "summerlength"
+}
+
 local function OnCyclesChanged(inst, cycles)
     if inst.leaveschangetask ~= nil or TheWorld.state.remainingdaysinseason > 3 then
         return
     end
-    local nextSeason =
-    {
-        [SEASONS.AUTUMN] = SEASONS.WINTER,
-        [SEASONS.WINTER] = SEASONS.SPRING,
-        [SEASONS.SPRING] = SEASONS.SUMMER,
-        [SEASONS.SUMMER] = SEASONS.AUTUMN,
-    }
     local currentSeason = TheWorld.state.season
     local targetSeason = nextSeason[currentSeason]
     if targetSeason ~= nil then
-        local seasonlengths =
-        {
-            [SEASONS.AUTUMN] = "autumnlength",
-            [SEASONS.WINTER] = "winterlength",
-            [SEASONS.SPRING] = "springlength",
-            [SEASONS.SUMMER] = "summerlength"
-        }
         if TheWorld.state[seasonlengths[targetSeason]] > 0 then
             ChangeToSeason(inst, targetSeason)
         else
@@ -1284,18 +1310,7 @@ local function makefn(build, stage, data)
 
         inst:ListenForEvent("sway", onsway)
 
-        inst.lastleaffxtime = 0
-        inst.leaffxinterval = math.random(TUNING.MIN_SWAY_FX_FREQUENCY, TUNING.MAX_SWAY_FX_FREQUENCY)
         inst.SpawnLeafFX = SpawnLeafFX
-        inst:ListenForEvent("deciduousleaffx", function(world)
-            if inst.entity:IsAwake() then
-                if inst.leaf_state == "colorful" and GetTime() - inst.lastleaffxtime > inst.leaffxinterval then
-                    SpawnLeafFX(inst, math.random() * 2)
-                    inst.leaffxinterval = math.random(TUNING.MIN_SWAY_FX_FREQUENCY, TUNING.MAX_SWAY_FX_FREQUENCY)
-                    inst.lastleaffxtime = GetTime()
-                end
-            end
-        end, TheWorld)
 
         inst:AddComponent("growable")
         inst.components.growable.stages = growth_stages
@@ -1348,10 +1363,16 @@ local function makefn(build, stage, data)
             inst.AnimState:SetTime(math.random() * 2)
             if data == "burnt" then
                 OnBurnt(inst, true)
-            elseif POPULATING then
-                --Redo this after season is valid
-                inst:DoTaskInTime(0, OnInitSeason)
+            else
+				inst:AddComponent("cattoy")
+				inst.components.cattoy:SetOnPlay(on_cattoyplay)
+				if POPULATING then
+					--Redo this after season is valid
+					inst:DoTaskInTime(0, OnInitSeason)
+				end
             end
+
+
         end
 
         inst.OnEntitySleep = OnEntitySleep

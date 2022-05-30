@@ -38,6 +38,7 @@ local QuagmireRecipeBook = Class(Widget, function(self, parent_screen, season)
 end)
 
 function QuagmireRecipeBook:_DoFocusHookups()
+	if not self.spinners then return end
 	for i, v in ipairs(self.spinners) do
 		v:ClearFocusDirs()
 
@@ -48,13 +49,13 @@ function QuagmireRecipeBook:_DoFocusHookups()
 			v:SetFocusChangeDir(MOVE_DOWN, self.spinners[i+1])
 		end
 	end
-	
+
     local reset_default_focus = self.parent_default_focus ~= nil and self.parent_screen ~= nil and self.parent_screen.default_focus == self.parent_default_focus
 
 	if self.recipe_grid.items ~= nil and #self.recipe_grid.items > 0 then
 		self.spinners[#self.spinners]:SetFocusChangeDir(MOVE_DOWN, self.recipe_grid)
 		self.recipe_grid:SetFocusChangeDir(MOVE_UP, self.spinners[#self.spinners])
-	
+
 		self.parent_default_focus = self.recipe_grid
 	else
 		self.parent_default_focus = self.spinners[1]
@@ -83,7 +84,7 @@ function QuagmireRecipeBook:CreateRecipeBook()
 	grid_boarder = self.gridroot:AddChild(Image("images/quagmire_recipebook.xml", "quagmire_recipe_line.tex"))
 	grid_boarder:SetScale(boarder_scale, -boarder_scale)
     grid_boarder:SetPosition(-3, -grid_h/2)
-    
+
 	-----------
 	local details_decor_root = panel_root:AddChild(Widget("details_root"))
 	details_decor_root:SetPosition(grid_w/2 + 30, 0)
@@ -111,18 +112,18 @@ function QuagmireRecipeBook:CreateRecipeBook()
 	local dis_x = -310
 	local dis_y = 238
 	local unlocked, total = self.num_recipes_discovered, 68
-	dis_y = dis_y - 18/2 
+	dis_y = dis_y - 18/2
     local completed = panel_root:AddChild(Text(HEADERFONT, 18, STRINGS.UI.RECIPE_BOOK.DISCOVERED_RECIPES, UICOLOURS.BROWN_DARK))
 	completed:SetHAlign(ANCHOR_RIGHT)
 	completed:SetPosition(dis_x, dis_y)
-	dis_y = dis_y - 18/2 
+	dis_y = dis_y - 18/2
 	MakeDetailsLine(panel_root, dis_x, dis_y-4, .3)
 	dis_y = dis_y - 10
-	dis_y = dis_y - 18/2 
+	dis_y = dis_y - 18/2
     completed = panel_root:AddChild(Text(HEADERFONT, 18, subfmt(STRINGS.UI.XPUTILS.XPPROGRESS, {num=unlocked, max=QUAGMIRE_NUM_FOOD_RECIPES}), UICOLOURS.BROWN_DARK))
 	completed:SetHAlign(ANCHOR_RIGHT)
 	completed:SetPosition(dis_x, dis_y)
-	dis_y = dis_y - 18/2 
+	dis_y = dis_y - 18/2
 
 
 	if TheRecipeBook.selected ~= nil then
@@ -131,7 +132,7 @@ function QuagmireRecipeBook:CreateRecipeBook()
 end
 
 
-local station_icons = 
+local station_icons =
 {
 	pot = {small = "pot_small.tex", large = "pot.tex", syrup = "pot_syrup.tex"},
 	oven = {small = "casseroledish_small.tex", large = "casseroledish.tex"},
@@ -139,7 +140,7 @@ local station_icons =
 }
 
 local function SetupValueDetails(dish, coins, parent, center, y, size)
-	y = y - size/2 
+	y = y - size/2
 	local text_w = 30
 	local total_coin_size = size + text_w
 
@@ -204,7 +205,7 @@ local function SetupRecipeIngredientDetails(recipe, parent, y)
 
 	for b = 1, #recipes do
 		local items = recipes[index]
-		local x = -((#items + 1)*ingredient_size + (#items-1)*x_spacing) / 2 
+		local x = -((#items + 1)*ingredient_size + (#items-1)*x_spacing) / 2
 		for i = 1, #items do
 			local backing = inv_backing_root:AddChild(Image("images/quagmire_recipebook.xml", "ingredient_slot.tex"))
 			backing:ScaleToSize(ingredient_size, ingredient_size)
@@ -250,7 +251,7 @@ function QuagmireRecipeBook:CreateRecipeDetailPanel(data)
 
 	local value_y = y - 10
 
-	local icon_sizes = 
+	local icon_sizes =
 	{
 		plate = image_size - 30,
 		bowl = image_size - 22,
@@ -306,7 +307,7 @@ function QuagmireRecipeBook:CreateRecipeDetailPanel(data)
 		sub_icon:ScaleToSize(sub_icon_size, sub_icon_size)
 		sub_icon:SetPosition(image_size/2 - 21, -image_size/2 + 23)
 	end
-				
+
 	if data.coin ~= nil or data.silver ~= nil then
 		local sub_icon = portrait_root:AddChild(Image("images/quagmire_recipebook.xml", "coin"..(data.coin or "_unknown")..".tex"))
 		sub_icon:ScaleToSize(sub_icon_size, sub_icon_size)
@@ -455,9 +456,9 @@ function QuagmireRecipeBook:BuildRecipeBook()
     local row_h = cell_size;
     local reward_width = 80
     local row_spacing = 5
-    
+
 	local food_size = cell_size + 20
-	local icon_size = 
+	local icon_size =
 	{
 		plate = food_size,
 		bowl = food_size + 4,
@@ -467,7 +468,7 @@ function QuagmireRecipeBook:BuildRecipeBook()
 
     local function ScrollWidgetsCtor(context, index)
         local w = Widget("recipe-cell-".. index)
-                
+
 		----------------
 		w.cell_root = w:AddChild(ImageButton("images/quagmire_recipebook.xml", "recipe_known.tex", "recipe_known_selected.tex"))
 		w.cell_root:SetFocusScale(cell_size/base_size + .05, cell_size/base_size + .05)
@@ -481,7 +482,7 @@ function QuagmireRecipeBook:BuildRecipeBook()
         w.recipie_unknown = w.cell_root.image:AddChild(Image("images/quagmire_recipebook.xml", "recipe_unknown.tex"))
 		w.recipie_unknown:ScaleToSize(base_size, base_size)
 
-        w.id = w.cell_root.image:AddChild(Text(NUMBERFONT, 30, "")) 
+        w.id = w.cell_root.image:AddChild(Text(NUMBERFONT, 30, ""))
         w.id:SetPosition(-base_size/2 + 24, base_size/2 - 24)
 
 		----------------
@@ -549,14 +550,14 @@ function QuagmireRecipeBook:BuildRecipeBook()
 					widget.stations[1]:Hide()
 					widget.stations[2]:Hide()
 				end
-				
+
 				local scale_size = icon_size[data.recipe.dish or "none"]
 				widget.dish:ScaleToSize(scale_size, scale_size)
 				widget.icon:ScaleToSize(scale_size, scale_size)
 
 				if data.recipe.dish then
 					local silver_dish = (data.silver ~= nil and TheRecipeBook.filters["value"] == FILTER_ANY) or (data.silver == TheRecipeBook.filters["value"])
-					
+
 					widget.dish:SetTexture(DISH_ATLAS, data.recipe.dish .. (silver_dish and "_silver" or "") .. ".tex")
 					widget.dish:Show()
 
@@ -592,8 +593,8 @@ function QuagmireRecipeBook:BuildRecipeBook()
     self.all_recipes = {}
 
 	for i = 1, QUAGMIRE_NUM_FOOD_RECIPES do
-        table.insert(self.all_recipes, { 
-            name="", 
+        table.insert(self.all_recipes, {
+            name="",
 			id = i,
 			id_str = string.format("%02i", i),
         })
@@ -626,7 +627,7 @@ function QuagmireRecipeBook:BuildRecipeBook()
 		else
 			self.all_recipes[id].atlas = "images/quagmire_food_inv_images_hires_"..client_name..".xml"
 		end
-		
+
 		self.all_recipes[id].coin = recipe.base_value ~= nil and (recipe.base_value.coin4 ~= nil and 4 or recipe.base_value.coin3 ~= nil and 3 or recipe.base_value.coin2 ~= nil and 2 or 1) or nil
 		self.all_recipes[id].silver = recipe.silver_value ~= nil and (recipe.silver_value.coin4 ~= nil and 4 or recipe.silver_value.coin3 ~= nil and 3 or recipe.silver_value.coin2 ~= nil and 2 or 1) or nil
 	end
@@ -642,7 +643,7 @@ function QuagmireRecipeBook:BuildRecipeBook()
             item_ctor_fn = ScrollWidgetsCtor,
             apply_fn     = ScrollWidgetApply,
             scrollbar_offset = 20,
-            scrollbar_height_offset = -60,
+            scrollbar_height_offset = -60
         })
 
 	grid.up_button:SetTextures("images/quagmire_recipebook.xml", "quagmire_recipe_scroll_arrow_hover.tex")
@@ -669,9 +670,9 @@ function QuagmireRecipeBook:OnRecipeBookUpdated()
 	end
     self.recipe_grid = self.gridroot:AddChild( self:BuildRecipeBook() )
     self.recipe_grid:SetPosition(-15, 0)
-    
+
 	if scroll_pos ~= nil then
-		self.recipe_grid:ScrollToDataIndex(scroll_pos)
+		self.recipe_grid:ScrollToScrollPos(scroll_pos)
 	end
 
 	self:ApplyFilters()
@@ -691,7 +692,7 @@ function QuagmireRecipeBook:ApplyFilters()
 		if (TheRecipeBook.filters["value"] == FILTER_ANY or item.coin == TheRecipeBook.filters["value"] or item.silver == TheRecipeBook.filters["value"]) and
 			(TheRecipeBook.filters["station"] == FILTER_ANY or (recipe.station ~= nil and table.contains(recipe.station, TheRecipeBook.filters["station"]))) and
 			(TheRecipeBook.filters["craving"] == FILTER_ANY or (recipe.tags ~= nil and table.contains(recipe.tags, TheRecipeBook.filters["craving"]))) then
-			
+
 			table.insert(visible_items, item)
 		end
 	end
@@ -717,7 +718,7 @@ local CRAVINGS =
 
 function QuagmireRecipeBook:BuildFilterPanel()
 	local root = Widget("filter_root")
-	
+
 	local top = 50
 	local left = 0 -- -width/2 + 5
 
@@ -791,7 +792,7 @@ function QuagmireRecipeBook:BuildFilterPanel()
 	table.insert(items, MakeSpinner(STRINGS.UI.RECIPE_BOOK.DETAILS_SPINNER_STATION, station_options, on_station_filter, TheRecipeBook.filters["station"]))
 	table.insert(items, MakeSpinner(STRINGS.UI.RECIPE_BOOK.DETAILS_SPINNER_CRAVING, craving_options, on_craving_filter, TheRecipeBook.filters["craving"]))
 	--table.insert(items, MakeSpinner(STRINGS.UI.RECIPE_BOOK.DETAILS_SPINNER_TRIBUTE, value_options, on_value_filter, TheRecipeBook.filters["value"]))
-    
+
 	self.spinners = {}
 	for i, v in ipairs(items) do
 		local w = root:AddChild(v)

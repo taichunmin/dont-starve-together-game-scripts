@@ -5,7 +5,7 @@ local AreaUnlock = Class(function(self, inst)
 end)
 
 
-function AreaUnlock:CheckUnlock(area)    
+function AreaUnlock:CheckUnlock(area)
 	if self.stories[area.story] ~= nil and self.stories[area.story] == false then
 		--print("Unlocking", area.story)
 		self.stories[area.story] = true

@@ -1,7 +1,7 @@
 package.path = "DLC0002\\scripts\\?.lua;DLC0002\\scripts\\prefabs\\?.lua;scripts\\?.lua;scripts\\prefabs\\?.lua;"..package.path
 
 
-local IGNORED_KEYWORDS = 
+local IGNORED_KEYWORDS =
 {
 	"BLUEPRINTS",
     "_BLUEPRINT",
@@ -337,7 +337,7 @@ local function LookForIgnoredKeywords(str)
 		if match then
 			return true
 		end
-	end	
+	end
 end
 
 local function MakePrefabsTable()

@@ -132,7 +132,7 @@ end
 
 function FishingRod:StopFishing()
     if self.target and self.fisherman then
-        self.inst:PushEvent("fishingcancel")
+        --self.inst:PushEvent("fishingcancel")
         self.fisherman:PushEvent("fishingcancel")
         self.target = nil
         self.fisherman = nil
@@ -145,7 +145,7 @@ end
 
 function FishingRod:Hook()
     if self.target and self.target.components.fishable then
-        self.hookedfish = self.target.components.fishable:HookFish()
+        self.hookedfish = self.target.components.fishable:HookFish(self.fisherman)
         if self.inst.components.finiteuses then
             local roddurability = self.inst.components.finiteuses:GetPercent()
             local loserodtime = self.minstraintime + roddurability*(self.maxstraintime - self.minstraintime)

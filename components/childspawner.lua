@@ -38,12 +38,14 @@ end
 local function AddChildListeners(self, child)
     self.inst:ListenForEvent("ontrapped", self._onchildkilled, child)
     self.inst:ListenForEvent("death", self._onchildkilled, child)
+    self.inst:ListenForEvent("onremove", self._onchildkilled, child)
     self.inst:ListenForEvent("detachchild", self._onchildkilled, child)
 end
 
 local function RemoveChildListeners(self, child)
     self.inst:RemoveEventCallback("ontrapped", self._onchildkilled, child)
     self.inst:RemoveEventCallback("death", self._onchildkilled, child)
+    self.inst:RemoveEventCallback("onremove", self._onchildkilled, child)
     self.inst:RemoveEventCallback("detachchild", self._onchildkilled, child)
 end
 
@@ -61,9 +63,11 @@ local ChildSpawner = Class(function(self, inst)
     self.onvacate = nil
     self.onoccupied = nil
     self.onspawned = nil
+	self.ontakeownership = nil
     self.ongohome = nil
 
     self.spawning = false
+    self.queued_spawn = false
     self.timetonextspawn = 0
     self.spawnperiod = 20
     self.spawnvariance = 2
@@ -89,8 +93,24 @@ local ChildSpawner = Class(function(self, inst)
     self.emergencychildrenoutside = {}
     self.numemergencychildrenoutside = 0
 
+    self._doqueuedspawn = function() self:DoQueuedSpawn() end
     self._onchildkilled = function(child) self:OnChildKilled(child) end
+
+    self.useexternaltimer = false
+    --self.regentimerstart = nil
+    --self.regentimerstop = nil
+    --self.spawntimerstart = nil
+    --self.spawntimerstop = nil
+    --self.spawntimerset = nil
 end)
+
+function ChildSpawner:GetTimeToNextSpawn()
+    return self.spawnperiod + (math.random()*2-1)*self.spawnvariance
+end
+
+function ChildSpawner:GetTimeToNextRegen()
+    return self.regenperiod + (math.random()*2-1)*self.regenvariance
+end
 
 function ChildSpawner:OnRemoveFromEntity()
     for k, v in pairs(self.childrenoutside) do
@@ -108,11 +128,9 @@ end
 function ChildSpawner:StartRegen()
     self.regening = true
 
-    if self.numchildrenoutside + self.childreninside < self.maxchildren or
-        self.numemergencychildrenoutside + self.emergencychildreninside < self.maxemergencychildren then
-
-        self.timetonextregen = self.regenperiod + (math.random()*2-1)*self.regenvariance
-        self:StartUpdate(6)
+    if not (self:IsFull() and self:IsEmergencyFull()) then
+        self.timetonextregen = self:GetTimeToNextRegen()
+        self:StartUpdate()
     end
 end
 
@@ -123,84 +141,115 @@ end
 
 function ChildSpawner:StopRegen()
     self.regening = false
+    self:TryStopUpdate()
 end
 
 function ChildSpawner:SetSpawnPeriod(period, variance)
     self.spawnperiod = period
     self.spawnvariance = variance or period * 0.1
+    self.timetonextspawn = self:GetTimeToNextSpawn()
 end
 
 function ChildSpawner:SetRegenPeriod(period, variance)
     self.regenperiod = period
     self.regenvariance = variance or period * 0.1
+    self.timetonextregen = self:GetTimeToNextRegen()
 end
 
 function ChildSpawner:SetEmergencyRadius(rad)
     self.emergencydetectionradius = rad
 end
 
-function ChildSpawner:IsFull() 
-	return (self.numchildrenoutside + self.childreninside) >= self.maxchildren
+function ChildSpawner:IsFull()
+	return self:NumChildren() >= self.maxchildren
 end
 
-function ChildSpawner:NumChildren() 
+function ChildSpawner:NumChildren()
 	return self.numchildrenoutside + self.childreninside
 end
 
-function ChildSpawner:OnUpdate(dt)
+function ChildSpawner:IsEmergencyFull()
+	return self:NumEmergencyChildren() >= self.maxemergencychildren
+end
+
+function ChildSpawner:NumEmergencyChildren()
+	return self.numemergencychildrenoutside + self.emergencychildreninside
+end
+
+function ChildSpawner:DoRegen()
     if self.regening then
-        local missingchildren = self.numchildrenoutside + self.childreninside < self.maxchildren
-        local missingemergencychildren = self.numemergencychildrenoutside + self.emergencychildreninside < self.maxemergencychildren
-        if missingchildren or missingemergencychildren then
+        if not self:IsFull() then
+            self:AddChildrenInside(1)
+        end
+        if not self:IsEmergencyFull() then
+            self:AddEmergencyChildrenInside(1)
+        end
+    end
+end
+
+function ChildSpawner:OnUpdate(dt)
+    if not self.useexternaltimer and self.regening then
+        if not (self:IsFull() and self:IsEmergencyFull()) then
             self.timetonextregen = self.timetonextregen - dt
             if self.timetonextregen < 0 then
-                self.timetonextregen = self.regenperiod + (math.random()*2-1)*self.regenvariance
-                if missingchildren then
-                    self:AddChildrenInside(1)
-                end
-                if missingemergencychildren then
-                    self:AddEmergencyChildrenInside(1)
-                end
+                self.timetonextregen = self:GetTimeToNextRegen()
+                self:DoRegen()
             end
-        else
-            self.timetonextregen = self.regenperiod + (math.random()*2-1)*self.regenvariance
         end
     end
 
-    if self.spawning then
+    if not self.useexternaltimer and self.spawning and not self.queued_spawn then
         if self.childreninside > 0 then
             self.timetonextspawn = self.timetonextspawn - dt
             if self.timetonextspawn < 0 then
-                self.timetonextspawn = self.spawnperiod + (math.random()*2-1)*self.spawnvariance
-                self:SpawnChild()
+                self.timetonextspawn = self:GetTimeToNextSpawn()
+                if self:CanSpawnOffscreenOrAwake() then
+                    self:SpawnChild()
+                else
+                    self:QueueSpawnChild()
+                end
             end
         else
             self.timetonextspawn = 0
         end
     end
 
-    if self.task ~= nil and
-        --check need to continue spawning
-        not (self.spawning and self.childreninside > 0) and
-        --check need to continue regening
-        not (self.regening
-            and (self.numchildrenoutside + self.childreninside < self.maxchildren or
-                self.numemergencychildrenoutside + self.emergencychildreninside < self.maxemergencychildren))
-        then
-
-        self.task:Cancel()
-        self.task = nil
-    end
+    self:TryStopUpdate()
 end
 
 local function _OnUpdate(inst, self, dt)
     self:OnUpdate(dt)
 end
 
-function ChildSpawner:StartUpdate(dt)
-    if self.task == nil then
+function ChildSpawner:ShouldUpdate()
+    return (self.spawning and not self.queued_spawn and self.childreninside > 0) or (self.regening and not (self:IsFull() and self:IsEmergencyFull()))
+end
+
+function ChildSpawner:StartUpdate()
+    if self.useexternaltimer then
+        if self.spawning and not self.queued_spawn and self.childreninside > 0 then
+            self.spawntimerstart(self.inst)
+        end
+        if self.regening and not (self:IsFull() and self:IsEmergencyFull()) then
+            self.regentimerstart(self.inst)
+        end
+    elseif self.task == nil and self:ShouldUpdate() then
         local dt = 5 + math.random() * 5
         self.task = self.inst:DoPeriodicTask(dt, _OnUpdate, nil, self, dt)
+    end
+end
+
+function ChildSpawner:TryStopUpdate()
+    if self.useexternaltimer then
+        if not (self.spawning and self.childreninside > 0) then
+            self.spawntimerstop(self.inst)
+        end
+        if not (self.regening and not (self:IsFull() and self:IsEmergencyFull())) then
+            self.regentimerstop(self.inst)
+        end
+    elseif self.task and not self:ShouldUpdate() then
+        self.task:Cancel()
+        self.task = nil
     end
 end
 
@@ -208,11 +257,15 @@ function ChildSpawner:StartSpawning()
     --print(self.inst, "ChildSpawner:StartSpawning()")
     self.spawning = true
     self.timetonextspawn = 0
-    self:StartUpdate(6)
+    self:StartUpdate()
+    if self.useexternaltimer then
+        self.spawntimerset(self.inst, 0)
+    end
 end
 
 function ChildSpawner:StopSpawning()
     self.spawning = false
+    self:TryStopUpdate()
 end
 
 function ChildSpawner:SetOccupiedFn(fn)
@@ -221,6 +274,10 @@ end
 
 function ChildSpawner:SetSpawnedFn(fn)
     self.onspawned = fn
+end
+
+function ChildSpawner:SetOnTakeOwnershipFn(fn)
+    self.ontakeownership = fn
 end
 
 function ChildSpawner:SetGoHomeFn(fn)
@@ -253,6 +310,8 @@ function ChildSpawner:SetMaxChildren(max)
     self.childreninside = max - self:CountChildrenOutside()
     self.maxchildren = max
     if self.childreninside < 0 then self.childreninside = 0 end
+    self:TryStopUpdate() --try to stop updating incase maxchildren decreased and now regening has finished.
+    self:StartUpdate() --try to start updating incase maxchildren increased and now regening should start. also childreniniside can now be > 0 and therefore spawning could start.
 end
 
 function ChildSpawner:SetMaxEmergencyChildren(max)
@@ -260,6 +319,8 @@ function ChildSpawner:SetMaxEmergencyChildren(max)
     self.emergencychildreninside = math.max(0, self.emergencychildreninside)
     self.maxemergencychildren = max
     if self.emergencychildreninside < 0 then self.emergencychildreninside = 0 end
+    self:TryStopUpdate() --try to stop updating incase maxchildren decreased and now regening has finished.
+    self:StartUpdate() --try to start updating incase maxchildren increased and now regening should start.
 end
 
 function ChildSpawner:OnSave()
@@ -290,6 +351,7 @@ function ChildSpawner:OnSave()
 
     data.spawning = self.spawning
     data.regening = self.regening
+    data.queued_spawn = self.queued_spawn
     data.timetonextregen = math.floor(self.timetonextregen)
     data.timetonextspawn = math.floor(self.timetonextspawn)
 
@@ -346,6 +408,7 @@ function ChildSpawner:OnLoad(data)
 
     self.spawning = data.spawning or self.spawning
     self.regening = data.regening or self.regening
+    self.queued_spawn = data.queued_spawn or self.queued_spawn
     self.timetonextregen = data.timetonextregen or self.timetonextregen
     self.timetonextspawn = data.timetonextspawn or self.timetonextspawn
 
@@ -354,10 +417,6 @@ function ChildSpawner:OnLoad(data)
         self:AddEmergencyChildrenInside(data.emergencychildreninside)
     end
     self.maxemergencycommit = data.maxemergencycommit or 0
-
-    if self.spawning or self.regening then
-        self:StartUpdate(6)
-    end
 end
 
 function ChildSpawner:DoTakeOwnership(child)
@@ -369,16 +428,21 @@ function ChildSpawner:DoTakeOwnership(child)
 	end
     child.components.homeseeker:SetHome(self.inst)
     AddChildListeners(self, child)
+	if self.ontakeownership ~= nil then
+		self.ontakeownership(self.inst, child)
+	end
 end
 
 function ChildSpawner:TakeOwnership(child)
     self:DoTakeOwnership(child)
     AddChildOutside(self, child)
+    self:TryStopUpdate()
 end
 
 function ChildSpawner:TakeEmergencyOwnership(child)
     self:DoTakeOwnership(child)
     AddEmergencyChildOutside(self, child)
+    self:TryStopUpdate()
 end
 
 function ChildSpawner:LoadPostPass(newents, savedata)
@@ -399,16 +463,37 @@ function ChildSpawner:LoadPostPass(newents, savedata)
             end
         end
     end
+    self:StartUpdate()
+    self:TryStopUpdate()
 end
 
 local function NoHoles(pt)
     return not TheWorld.Map:IsPointNearHole(pt)
 end
 
--- This should only be called interally
+-- This should only be called internally
 function ChildSpawner:DoSpawnChild(target, prefab, radius)
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, (radius or self.spawnradius or .5) + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles, self.allowwater, self.allowboats)
+	local offset
+	local spawn_radius = radius
+	if spawn_radius == nil then
+		if self.spawnradius ~= nil then
+			if type(self.spawnradius) == "table" then
+				spawn_radius = Lerp(self.spawnradius.min, self.spawnradius.max, math.sqrt(math.random()))
+			else
+				spawn_radius = self.spawnradius
+			end
+		else
+			spawn_radius = 0.5
+		end
+	end
+	if self.overridespawnlocation then
+      offset = self.overridespawnlocation(self.inst)
+    elseif self.wateronly then
+		offset = FindSwimmableOffset(Vector3(x, 0, z), math.random() * PI * 2, spawn_radius + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles)
+	else
+		offset = FindWalkableOffset(Vector3(x, 0, z), math.random() * PI * 2, spawn_radius + self.inst:GetPhysicsRadius(0), 8, false, true, NoHoles, self.allowwater, self.allowboats)
+	end
     if offset == nil then
         return
     end
@@ -422,7 +507,12 @@ function ChildSpawner:DoSpawnChild(target, prefab, radius)
             self.childname
         )
     if child ~= nil then
-        child.Transform:SetPosition(x + offset.x, 0, z + offset.z)
+        child.Transform:SetPosition(x + offset.x, self.spawn_height or 0, z + offset.z)
+		
+		if child.components.inventoryitem ~= nil then
+			child.components.inventoryitem:InheritMoisture(TheWorld.state.wetness, TheWorld.state.iswet)
+		end
+
         if target ~= nil and child.components.combat ~= nil then
             child.components.combat:SetTarget(target)
         end
@@ -434,20 +524,37 @@ function ChildSpawner:DoSpawnChild(target, prefab, radius)
     return child
 end
 
+function ChildSpawner:QueueSpawnChild()
+    self.queued_spawn = true
+    self:TryStopUpdate()
+end
+
+function ChildSpawner:OnEntityWake()
+    if self.queued_spawn then
+        self.inst:DoTaskInTime(0, self._doqueuedspawn)
+    end
+end
+
+function ChildSpawner:DoQueuedSpawn()
+    self.queued_spawn = false
+    if self.spawning then
+        self:SpawnChild()
+    end
+    self:StartUpdate()
+end
+
 function ChildSpawner:SpawnChild(target, prefab, radius)
     if not self:CanSpawn() then
         return
     end
 
-    --print(self.inst, "ChildSpawner:SpawnChild")
-
     local child = self:DoSpawnChild(target, prefab or self.childname, radius)
     if child ~= nil then
+        self.childreninside = self.childreninside - 1
         self:TakeOwnership(child)
-        if self.childreninside == 1 and self.onvacate ~= nil then
+        if self.childreninside == 0 and self.onvacate ~= nil then
             self.onvacate(self.inst)
         end
-        self.childreninside = self.childreninside - 1
     end
     return child
 end
@@ -457,19 +564,24 @@ function ChildSpawner:SpawnEmergencyChild(target, prefab, radius)
         return
     end
 
-    --print(self.inst, "ChildSpawner:SpawnEmergencyChild")
-
     local child = self:DoSpawnChild(target, prefab or self.emergencychildname, radius)
     if child ~= nil then
-        self:TakeEmergencyOwnership(child)
         self.emergencychildreninside = self.emergencychildreninside - 1
+        self:TakeEmergencyOwnership(child)
     end
     return child
 end
 
+local EMERGENCYCOMMIT_MUST_TAGS = { "player" }
+local EMERGENCYCOMMIT_CANT_TAGS = { "playerghost" }
+
 function ChildSpawner:UpdateMaxEmergencyCommit()
+    if self.emergencydetectionradius == 0 then
+        self.maxemergencycommit = 0
+        return
+    end
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.emergencydetectionradius, { "player" }, { "playerghost" })
+    local ents = TheSim:FindEntities(x, y, z, self.emergencydetectionradius, EMERGENCYCOMMIT_MUST_TAGS, EMERGENCYCOMMIT_CANT_TAGS)
     self.maxemergencycommit = RoundBiasedDown(#ents * self.emergencychildrenperplayer)
 end
 
@@ -503,20 +615,25 @@ function ChildSpawner:GoHome( child )
     end
 end
 
+function ChildSpawner:CanSpawnOffscreenOrAwake()
+    return self.spawnoffscreen or not self.inst:IsAsleep()
+end
+
 function ChildSpawner:CanSpawn()
     return self.inst:IsValid() --V2C: This valid check probably hid a lot of bugs that we could've caught and fixed =(
         and self.childreninside > 0
-        and (self.spawnoffscreen or not self.inst:IsAsleep())
+        and (self:CanSpawnOffscreenOrAwake())
         and (self.inst.components.health == nil or not self.inst.components.health:IsDead())
         and (self.canspawnfn == nil or self.canspawnfn(self.inst))
 end
 
 function ChildSpawner:CanEmergencySpawn()
     return self.inst:IsValid() --V2C: This valid check probably hid a lot of bugs that we could've caught and fixed =(
+        and self.canemergencyspawn
         and self.emergencychildreninside > 0
         -- the num inside means 'comitted' is both outside and dead
         and self.maxemergencychildren - self.emergencychildreninside < self.maxemergencycommit
-        and (self.spawnoffscreen or not self.inst:IsAsleep())
+        and (self:CanSpawnOffscreenOrAwake())
         and (self.inst.components.health == nil or not self.inst.components.health:IsDead())
 end
 
@@ -530,27 +647,43 @@ function ChildSpawner:OnChildKilled(child)
             self.onchildkilledfn(self.inst, child)
         end
 
-        if self.regening then
-            self:StartUpdate(6)
-        end
+        self:StartUpdate()
     end
     if self.emergencychildrenoutside[child] then
         RemoveEmergencyChildOutside(self, child)
 
-        if self.regening then
-            self:StartUpdate(6)
-        end
+        self:StartUpdate()
     end
 end
 
 function ChildSpawner:ReleaseAllChildren(target, prefab)
-    while self:CanSpawn() do
-        self:SpawnChild(target, prefab)
-    end
-    self:UpdateMaxEmergencyCommit()
-    while self:CanEmergencySpawn() do
-        self:SpawnEmergencyChild(target, prefab)
-    end
+	local failures = 0 -- prevent infinate loops when SpawnChild fails to spawn its child
+    local children_released = {}
+
+	while self:CanSpawn() and failures < 3 do
+        local new_child = self:SpawnChild(target, prefab)
+
+        if new_child == nil then
+            failures = failures + 1
+        else
+            failures = 0
+            table.insert(children_released, new_child)
+        end
+	end
+
+	failures = 0
+	self:UpdateMaxEmergencyCommit()
+	while self:CanEmergencySpawn() and failures < 3 do
+        local new_child = self:SpawnEmergencyChild(target, prefab)
+        if new_child == nil then
+            failures = failures + 1
+        else
+            table.insert(children_released, new_child)
+            failures = 0
+        end
+	end
+
+    return children_released
 end
 
 function ChildSpawner:AddChildrenInside(count)
@@ -565,9 +698,8 @@ function ChildSpawner:AddChildrenInside(count)
         self.onaddchild(self.inst, count)
     end
 
-    if self.spawning or self.regening then
-        self:StartUpdate(6)
-    end
+    self:TryStopUpdate() --try to stop the update because regening conditions might be invalid now.
+    self:StartUpdate() --try to start the update because spawning conditions might be valid now.
 end
 
 function ChildSpawner:AddEmergencyChildrenInside(count)
@@ -575,12 +707,11 @@ function ChildSpawner:AddEmergencyChildrenInside(count)
     if self.maxemergencychildren then
         self.emergencychildreninside = math.min(self.maxemergencychildren, self.emergencychildreninside)
     end
+    self:TryStopUpdate()
 end
 
 function ChildSpawner:LongUpdate(dt)
-    if self.spawning then
-        self:OnUpdate(dt)
-    end
+    self:OnUpdate(dt)
 end
 
 return ChildSpawner

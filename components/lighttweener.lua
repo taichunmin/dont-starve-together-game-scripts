@@ -7,13 +7,13 @@ local LightTweener = Class(function(self, inst)
 	self.i_falloff = nil
 	self.i_intensity = nil
 	self.i_radius = nil
-	self.I_colour_r, self.i_colour_g, self.i_colour_b = nil
+	self.I_colour_r, self.i_colour_g, self.i_colour_b = nil, nil, nil
 
 	--target values
 	self.t_falloff = nil
 	self.t_intensity = nil
 	self.t_radius = nil
-	self.t_colour_r, self.t_colour_g, self.t_colour_b = nil
+	self.t_colour_r, self.t_colour_g, self.t_colour_b = nil, nil, nil
 
 	--function
 	self.callback = nil --call @ end of tween
@@ -50,7 +50,7 @@ function LightTweener:EndTween()
 
 	self.inst:StopUpdatingComponent(self)
 	self.tweening = false
-	
+
 	if self.callback then
 		self.callback(self.inst, self.light)
 	end
@@ -126,8 +126,8 @@ function LightTweener:OnUpdate(dt)
 
 	if self.i_colour_r and self.t_colour_r and self.i_colour_g and self.t_colour_g and self.i_colour_b and self.t_colour_b then
 		self.light:SetColour(
-			Lerp(self.i_colour_r, self.t_colour_r, t), 
-			Lerp(self.i_colour_g, self.t_colour_g, t), 
+			Lerp(self.i_colour_r, self.t_colour_r, t),
+			Lerp(self.i_colour_g, self.t_colour_g, t),
 			Lerp(self.i_colour_b, self.t_colour_b, t))
 	end
 

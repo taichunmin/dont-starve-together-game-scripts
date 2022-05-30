@@ -70,7 +70,7 @@ nolineprint = function(...)
     for i,v in ipairs(print_loggers) do
         v(...)
     end
-    
+
 end
 
 
@@ -79,7 +79,7 @@ local debugstr = {}
 local MAX_CONSOLE_LINES = 20
 
 local consolelog = function(...)
-    
+
     local str = packstring(...)
     str = string.gsub(str, dir, "")
 

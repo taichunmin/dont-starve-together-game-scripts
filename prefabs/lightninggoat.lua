@@ -28,10 +28,14 @@ SetSharedLootTable( 'chargedlightninggoat',
 {
     {'meat',              1.00},
     {'meat',              1.00},
-    {'goatmilk',          1.00},  
+    {'goatmilk',          1.00},
     {'lightninggoathorn', 0.25},
 })
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "lightninggoat", "wall" }
+local RETARGET_WALL_MUST_TAGS = { "_combat", "wall" }
+local RETARGET_WALL_CANT_TAGS = { "lightninggoat" }
 local function RetargetFn(inst)
     if inst.charged then
         local function CheckTarget(guy)
@@ -43,16 +47,16 @@ local function RetargetFn(inst)
                 inst,
                 TUNING.LIGHTNING_GOAT_TARGET_DIST,
                 CheckTarget,
-                { "_combat" },
-                { "lightninggoat", "wall" })
+                RETARGET_MUST_TAGS,
+                RETARGET_CANT_TAGS)
             or
             -- If none, look for walls
             FindEntity(
                 inst,
                 TUNING.LIGHTNING_GOAT_TARGET_DIST,
                 CheckTarget,
-                { "_combat", "wall" },
-                { "lightninggoat" })
+                RETARGET_WALL_MUST_TAGS,
+                RETARGET_WALL_CANT_TAGS)
             or
             nil
     end
@@ -68,8 +72,8 @@ local function KeepTargetFn(inst, target)
                 function(guy)
                     return inst.components.combat:CanTarget(guy)
                 end,
-                { "_combat" },
-                { "lightninggoat", "wall" }) == nil
+                RETARGET_MUST_TAGS,
+                RETARGET_CANT_TAGS) == nil
     end
     --Don't keep target if we chased too far from our herd
     local herd = inst.components.herdmember ~= nil and inst.components.herdmember:GetHerd() or nil
@@ -78,7 +82,7 @@ end
 
 local function discharge(inst)
     inst:RemoveTag("charged")
-    inst.components.lootdropper:SetChanceLootTable('lightninggoat') 
+    inst.components.lootdropper:SetChanceLootTable('lightninggoat')
     inst.sg:GoToState("discharge")
     inst.AnimState:ClearBloomEffectHandle()
     inst.charged = false
@@ -99,7 +103,7 @@ local function setcharged(inst, instant)
     inst:AddTag("charged")
     inst.components.lootdropper:SetChanceLootTable('chargedlightninggoat')
     inst.AnimState:SetBuild("lightning_goat_shocked_build")
-    inst.AnimState:Show("fx") 
+    inst.AnimState:Show("fx")
     if not instant then
         inst.sg:GoToState("shocked")
     end
@@ -122,7 +126,7 @@ local function OnAttacked(inst, data)
                 not (data.attacker.components.inventory ~= nil and data.attacker.components.inventory:IsInsulated()) then
 
                 data.attacker.components.health:DoDelta(-TUNING.LIGHTNING_GOAT_DAMAGE, nil, inst.prefab, nil, inst)
-                if data.attacker:HasTag("player") then
+                if data.attacker:HasTag("player") and not data.attacker.sg:HasStateTag("dead") then
                     data.attacker.sg:GoToState("electrocute")
                 end
             end
@@ -133,6 +137,10 @@ local function OnAttacked(inst, data)
         inst.components.combat:SetTarget(data.attacker)
         inst.components.combat:ShareTarget(data.attacker, 20, IsChargedGoat, 3)
     end
+end
+
+local function onspawnedforhunt(inst)
+	TheWorld:PushEvent("ms_sendlightningstrike", inst:GetPosition())
 end
 
 local function OnSave(inst, data)
@@ -221,7 +229,7 @@ local function fn()
     ------------------------------------------
 
     inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetChanceLootTable('lightninggoat') 
+    inst.components.lootdropper:SetChanceLootTable('lightninggoat')
 
     ------------------------------------------
 
@@ -248,6 +256,8 @@ local function fn()
 
     MakeMediumBurnableCharacter(inst, "lightning_goat_body")
     MakeMediumFreezableCharacter(inst, "lightning_goat_body")
+
+	inst:ListenForEvent("spawnedforhunt", onspawnedforhunt)
 
     inst:ListenForEvent("lightningstrike", setcharged)
     inst.setcharged = setcharged

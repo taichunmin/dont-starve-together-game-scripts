@@ -92,6 +92,21 @@ end
 
 --------------------------------------------------------------------------
 
+local BATTERY_COST = TUNING.WINONA_BATTERY_LOW_MAX_FUEL_TIME * 0.9
+local function CanBeUsedAsBattery(inst, user)
+    if inst.components.fueled ~= nil and inst.components.fueled.currentfuel >= BATTERY_COST then
+        return true
+    else
+        return false, "NOT_ENOUGH_CHARGE"
+    end
+end
+
+local function UseAsBattery(inst, user)
+    inst.components.fueled:DoDelta(-BATTERY_COST, user)
+end
+
+--------------------------------------------------------------------------
+
 local NUM_LEVELS = 6
 
 local function UpdateSoundLoop(inst, level)
@@ -455,6 +470,10 @@ local function fn()
     inst.components.circuitnode:SetOnConnectFn(OnConnectCircuit)
     inst.components.circuitnode:SetOnDisconnectFn(OnDisconnectCircuit)
     inst.components.circuitnode.connectsacrossplatforms = false
+
+    inst:AddComponent("battery")
+    inst.components.battery.canbeused = CanBeUsedAsBattery
+    inst.components.battery.onused = UseAsBattery
 
     inst:ListenForEvent("onbuilt", OnBuilt)
     inst:ListenForEvent("engineeringcircuitchanged", OnCircuitChanged)

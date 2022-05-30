@@ -8,11 +8,12 @@ local prefabs =
     "explode_firecrackers",
 }
 
+local STARTLE_TAGS = { "canbestartled" }
 local function DoPop(inst, remaining, total, level, hissvol)
     local x, y, z = inst.Transform:GetWorldPosition()
     SpawnPrefab("explode_firecrackers").Transform:SetPosition(x, y, z)
 
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.FIRECRACKERS_STARTLE_RANGE, { "canbestartled" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.FIRECRACKERS_STARTLE_RANGE, STARTLE_TAGS)) do
         v:PushEvent("startle", { source = inst })
     end
 

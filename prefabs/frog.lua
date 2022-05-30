@@ -12,14 +12,17 @@ local prefabs =
 
 local brain = require "brains/frogbrain"
 
+local RESTARGET_MUST_TAGS = {"_combat","_health"}
+local RETARGET_CANT_TAGS = {"merm"}
 local function retargetfn(inst)
     if not inst.components.health:IsDead() and not inst.components.sleeper:IsAsleep() then
-        return FindEntity(inst, TUNING.FROG_TARGET_DIST, function(guy) 
+        return FindEntity(inst, TUNING.FROG_TARGET_DIST, function(guy)
             if not guy.components.health:IsDead() then
                 return guy.components.inventory ~= nil
             end
         end,
-        {"_combat","_health"} -- see entityreplica.lua
+        RESTARGET_MUST_TAGS, -- see entityreplica.lua
+        RETARGET_CANT_TAGS
         )
     end
 end
@@ -79,6 +82,7 @@ local function fn()
     -- boat hopping enable.
     inst.components.locomotor:SetAllowPlatformHopping(true)
     inst:AddComponent("embarker")
+    inst:AddComponent("drownable")
 
     inst:SetStateGraph("SGfrog")
 

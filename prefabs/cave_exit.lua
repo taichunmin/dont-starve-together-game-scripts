@@ -34,7 +34,7 @@ local function fn()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter() 
+    inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
@@ -52,7 +52,7 @@ local function fn()
         return inst
     end
 
-    if TheNet:GetServerIsClientHosted() and not (TheShard:IsMaster() or TheShard:IsSlave()) then
+    if TheNet:GetServerIsClientHosted() and not (TheShard:IsMaster() or TheShard:IsSecondary()) then
         --On non-sharded servers we'll make these vanish for now, but still generate them
         --into the world so that they can magically appear in existing saves when sharded
         RemovePhysicsColliders(inst)

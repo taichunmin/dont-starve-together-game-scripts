@@ -30,13 +30,13 @@ local function Update(inst)
 			TheCamera:SetDistance(camDist)
 			TheCamera:SetHeadingTarget(camAngle)
 			TheCamera:Apply()
-		elseif percentFromPlayer < 0 then			
+		elseif percentFromPlayer < 0 then
 			if TheCamera:GetHeadingTarget() ~= roundToNearest(inst.prevCamAngle, 360) then
 				TheCamera:SetOffset(Vector3(0,FINAL_CAMERA_OFFSET,0))
 				TheCamera:SetDistance(20)
 				TheCamera:SetHeadingTarget(roundToNearest(inst.prevCamAngle, 360))
 				TheCamera:Apply()
-			end						
+			end
 		end
 	else
 		if not TheCamera:IsControllable() then
@@ -57,7 +57,7 @@ local function OnLoad(inst, scenariorunner)
 	inst.prevCamAngle = 45
 end
 
-return 
+return
 {
 	OnLoad = OnLoad,
 }

@@ -1,6 +1,6 @@
 --Returns a sine wave based on game time. Mod will modify the period of the wave and abs is wether or not you want
 -- the abs value of the wave
-function GetSineVal(mod, abs, inst)	
+function GetSineVal(mod, abs, inst)
     local time = (inst and inst:GetTimeAlive() or GetTime()) * (mod or 1)
     local val = math.sin(PI * time)
     if abs then
@@ -43,6 +43,10 @@ function math.clamp(num, min, max)
     return num <= min and min or (num >= max and max or num)
 end
 
+function Clamp(num, min, max)
+    return num <= min and min or (num >= max and max or num)
+end
+
 function IsNumberEven(num)
     return (num % 2) == 0
 end
@@ -53,4 +57,18 @@ end
 
 function DistXZSq(p1, p2)
 	return (p1.x-p2.x)*(p1.x-p2.x) + (p1.z-p2.z)*(p1.z-p2.z)
+end
+
+function math.range(start, stop, step)
+    step = step or 1
+
+    local out = {}
+    for i = start, stop, step do
+        table.insert(out, i)
+    end
+    return out
+end
+
+function math.diff(a, b)
+    return math.abs(a - b)
 end

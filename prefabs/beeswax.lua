@@ -23,7 +23,7 @@ local function _OnFireMelt(inst, StartFireMelt, StopFireMelt)
 end
 
 local function StopFireMelt(inst)
-    if inst.firemelttask ~= nil then 
+    if inst.firemelttask ~= nil then
         inst.firemelttask:Cancel()
         inst.firemelttask = nil
     end
@@ -57,6 +57,8 @@ local function fn()
     end
 
     inst:AddComponent("inspectable")
+
+    inst:AddComponent("wax")
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem:SetSinks(true)

@@ -5,7 +5,7 @@ local prefabs =
 
 local function CanSpawn(inst)
     -- Note that there are other conditions inside periodic spawner governing this as well.
-    
+
     if inst.components.herd == nil or inst.components.herd:IsFull() then
         return false
     end
@@ -52,7 +52,7 @@ local function fn()
     inst.components.periodicspawner:SetPrefab("rocky")
     inst.components.periodicspawner:SetOnSpawnFn(OnSpawned)
     inst.components.periodicspawner:SetSpawnTestFn(CanSpawn)
-    inst.components.periodicspawner:SetDensityInRange(20, 6)
+    inst.components.periodicspawner:SetDensityInRange(TUNING.ROCKYHERD_SPAWNER_RANGE, TUNING.ROCKYHERD_SPAWNER_DENSITY)
     inst.components.periodicspawner:Start()
     inst.components.periodicspawner:SetOnlySpawnOffscreen(true)
     SeasonalSpawningChanges(inst, TheWorld.state.season)

@@ -32,6 +32,14 @@ local function StopRiddenTick(self)
     end
 end
 
+local function OnSaddleDiscard(inst)
+	if inst.components.saddler.discardedcb ~= nil then
+		inst.components.saddler.discardedcb(inst)
+	end
+
+	inst:RemoveEventCallback("on_landed", OnSaddleDiscard)
+end
+
 local Rideable = Class(function(self, inst)
     self.inst = inst
     self.saddleable = false
@@ -42,6 +50,12 @@ local Rideable = Class(function(self, inst)
     self.lastridetime = -1000
 
     self.riddentask = nil
+
+    self.shouldsave = true
+
+    self.allowed_riders = {}
+
+    --self.custom_rider_test = nil
 
     --V2C: Recommended to explicitly add tag to prefab pristine state
     inst:AddTag("saddleable")
@@ -72,10 +86,19 @@ function Rideable:SetRequiredObedience(required)
     self.requiredobedience = required
 end
 
+function Rideable:SetCustomRiderTest(fn)
+    self.custom_rider_test = fn
+end
+
 function Rideable:TestObedience()
     return self.requiredobedience == nil
         or self.inst.components.domesticatable == nil
         or self.inst.components.domesticatable:GetObedience() >= self.requiredobedience
+end
+
+function Rideable:TestRider(potential_rider)
+    return (self.custom_rider_test == nil and true)
+            or self.custom_rider_test(self.inst, potential_rider)
 end
 
 function Rideable:SetSaddle(doer, newsaddle)
@@ -89,7 +112,11 @@ function Rideable:SetSaddle(doer, newsaddle)
         local pt = self.inst:GetPosition()
         pt.y = 3
 
-        self.inst.components.lootdropper:FlingItem(self.saddle, pt, doer == nil and self.saddle.components.saddler.discardedcb or nil)
+		if doer == nil then
+			self.saddle:ListenForEvent("on_landed", OnSaddleDiscard)
+		end
+		self.inst.components.lootdropper:FlingItem(self.saddle, pt)
+
         self.canride = false
         self.saddle = nil
         self.inst:PushEvent("saddlechanged", { saddle = nil })
@@ -103,7 +130,13 @@ function Rideable:SetSaddle(doer, newsaddle)
             self.saddle = newsaddle
             self.inst:PushEvent("saddlechanged", { saddle = newsaddle })
 
-            self.inst.AnimState:OverrideSymbol("swap_saddle", self.saddle.components.saddler.swapbuild, self.saddle.components.saddler.swapsymbol)
+            local skin_build = self.saddle:GetSkinBuild()
+            if skin_build ~= nil then
+                self.inst.AnimState:OverrideItemSkinSymbol("swap_saddle", skin_build, "swap_saddle", self.saddle.GUID, "saddle_basic" )
+            else
+                self.inst.AnimState:OverrideSymbol("swap_saddle", self.saddle.components.saddler.swapbuild, self.saddle.components.saddler.swapsymbol)
+            end
+
             self.canride = true
             if doer ~= nil then
                 self.inst.SoundEmitter:PlaySound("dontstarve/beefalo/saddle/dismount")
@@ -158,6 +191,14 @@ function Rideable:Buck(gentle)
     end
 end
 
+function Rideable:SetShouldSave(shouldsave)
+    self.shouldsave = shouldsave
+end
+
+function Rideable:ShouldSave()
+    return self.shouldsave
+end
+
 --V2C: domesticatable MUST load b4 rideable, see domesticatable.lua
 --     (we aren't using the usual OnLoadPostPass method)
 function Rideable:OnSaveDomesticatable()
@@ -169,10 +210,10 @@ function Rideable:OnSaveDomesticatable()
     return next(data) ~= nil and data or nil
 end
 
-function Rideable:OnLoadDomesticatable(data)
+function Rideable:OnLoadDomesticatable(data, newents)
     if data ~= nil then
         if data.saddle ~= nil then
-            self:SetSaddle(nil, SpawnSaveRecord(data.saddle))
+            self:SetSaddle(nil, SpawnSaveRecord(data.saddle, newents))
         end
         self.lastridetime = data.lastridedelta ~= nil and GetTime() - data.lastridedelta or 0
     end

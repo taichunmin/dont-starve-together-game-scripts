@@ -42,8 +42,8 @@ local _scheduledtrailtasks = {}
 local _worldstate = TheWorld.state
 local _map = TheWorld.Map
 local _updating = false
-local _spawninterval = TUNING.TOTAL_DAY_TIME * 4
-local _spawnintervalvariance = TUNING.TOTAL_DAY_TIME * 1
+local _spawninterval = TUNING.LUREPLANT_SPAWNINTERVAL
+local _spawnintervalvariance = TUNING.LUREPLANT_SPAWNINTERVALVARIANCE
 
 --------------------------------------------------------------------------
 --[[ Private member functions ]]
@@ -85,7 +85,7 @@ local function FindSpawnLocationInTrail(trail)
     for i, v in ipairs(trail) do
         weight = weight + v[2]
     end
-    
+
     local rnd = math.random() * weight
     for i, v in ipairs(trail) do
         rnd = rnd - v[2]
@@ -248,48 +248,23 @@ StartUpdating(true)
 --------------------------------------------------------------------------
 
 function self:SpawnModeNever()
-    _spawninterval = 0
-    _spawnintervalvariance = 0
-    StartUpdating(true)
+    --depreciated
 end
 
 function self:SpawnModeHeavy()
-    _spawninterval = TUNING.TOTAL_DAY_TIME * 2
-    _spawnintervalvariance = TUNING.TOTAL_DAY_TIME * 1
-    StartUpdating(true)
+    --depreciated
+end
+
+function self:SpawnModeNormal()
+    --depreciated
 end
 
 function self:SpawnModeMed()
-    _spawninterval = TUNING.TOTAL_DAY_TIME * 4
-    _spawnintervalvariance = TUNING.TOTAL_DAY_TIME * 1
-    StartUpdating(true)
+    --depreciated
 end
 
 function self:SpawnModeLight()
-    _spawninterval = TUNING.TOTAL_DAY_TIME * 10
-    _spawnintervalvariance = TUNING.TOTAL_DAY_TIME * 2
-    StartUpdating(true)
-end
-
---------------------------------------------------------------------------
---[[ Save/Load ]]
---------------------------------------------------------------------------
-
-function self:OnSave()
-    local data =
-    {
-        spawninterval = _spawninterval,
-        spawnintervalvariance = _spawnintervalvariance,
-    }
-
-    return data
-end
-
-function self:OnLoad(data)
-    _spawninterval = data.spawninterval or TUNING.TOTAL_DAY_TIME * 12
-    _spawnintervalvariance = data.spawnintervalvariance or TUNING.TOTAL_DAY_TIME * 3
-
-    StartUpdating(true)
+    --depreciated
 end
 
 --------------------------------------------------------------------------

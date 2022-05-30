@@ -13,7 +13,11 @@ local MIN_HEIGHT = 20
 local TITLE_HEIGHT = 46
 local SUBTITLE_HEIGHT = 22
 local BUTTON_HEIGHT = 36
-local CANCEL_OFFSET = 0
+local CANCEL_OFFSET = 20
+
+local DESC_FONT_SIZE = 22
+local DESC_MAX_LINES = 3
+local DESC_MAX_HEIGHT = DESC_FONT_SIZE * (DESC_MAX_LINES +  1)
 
 local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid, onclosefn)
     Screen._ctor(self, "UserCommandPickerScreen")
@@ -42,11 +46,13 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
 
     local bg_root = self.proot:AddChild(Widget("bg_root"))
     bg_root:SetScale(.8, .8)
-    
+
+	local command_desc_text = self.proot:AddChild(Text(CHATFONT, DESC_FONT_SIZE, "", UICOLOURS.WHITE))
+
     self:UpdateActions()
 
     local height = MIN_HEIGHT + SUBTITLE_HEIGHT + TITLE_HEIGHT
-    local max_height = MIN_HEIGHT + SUBTITLE_HEIGHT + TITLE_HEIGHT
+    local max_height = MIN_HEIGHT + SUBTITLE_HEIGHT + TITLE_HEIGHT + BUTTON_HEIGHT + CANCEL_OFFSET + DESC_MAX_HEIGHT
     local list_height = 0
 	local spacing = 5
 
@@ -71,6 +77,16 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
         button.text:SetRegionSize(370, 48)
 
         button:SetOnClick(function() TheFrontEnd:PopScreen() self:RunAction(action.commandname) end)
+		button.ongainfocus = function(is_enabled)
+			command_desc_text._command = action.commandname
+			command_desc_text:SetMultilineTruncatedString(action.desc or "", DESC_MAX_LINES, 250)
+		end
+		button.onlosefocus = function(is_enabled)
+			if command_desc_text._command == action.commandname then
+				command_desc_text:SetString("")
+				command_desc_text._command = nil
+			end
+		end
 
         button.commandname = action.commandname
 
@@ -79,8 +95,8 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
         list_height = list_height + BUTTON_HEIGHT + spacing
     end
 
-    local shown_buttons = 6
-    local max_list_height = (BUTTON_HEIGHT + spacing) * shown_buttons
+    local shown_buttons = 5
+    local max_list_height = (BUTTON_HEIGHT + spacing) * math.min(shown_buttons, #self.buttons)
     list_height = math.min(list_height, max_list_height)
 
     height = height + list_height
@@ -92,7 +108,7 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
     self.default_focus = self.scroll_list
 
 	local subtitle = self.targetuserid ~= nil and STRINGS.UI.COMMANDSSCREEN.USERSUBTITLE or STRINGS.UI.COMMANDSSCREEN.SERVERSUBTITLE
-    self.bg = bg_root:AddChild(TEMPLATES.CurlyWindow( #self.buttons > shown_buttons and 275 or 225, 380, subtitle, nil, nil, STRINGS.UI.COMMANDSSCREEN.SERVERTITLE))
+    self.bg = bg_root:AddChild(TEMPLATES.CurlyWindow(275, max_height, subtitle, nil, nil, STRINGS.UI.COMMANDSSCREEN.SERVERTITLE))
     self.bg:SetPosition(0, -10)
     self.bg.body:SetVAlign(ANCHOR_TOP)
     self.bg.body:SetSize(30)
@@ -117,7 +133,7 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
         self.cancelbutton:SetScale(0.5)
         self.cancelbutton:SetOnClick(function() TheFrontEnd:PopScreen() end)
         height = height + BUTTON_HEIGHT + CANCEL_OFFSET
-        max_height = max_height + BUTTON_HEIGHT + CANCEL_OFFSET
+        max_height = max_height
     end
 
     local top = (height/2 + max_height/2)/2
@@ -128,9 +144,12 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
 
     self.scroll_list:SetPosition(x_offset, top - (list_height/2))
     top = top - list_height
+
+	command_desc_text:SetPosition(0, top - DESC_MAX_HEIGHT/2)
+
     if self.cancelbutton then
         local bottom = (-max_height/2)+BUTTON_HEIGHT
-        self.cancelbutton:SetPosition(0, bottom, 0) -- note: max_height, not max_top, to push it downwards
+        self.cancelbutton:SetPosition(0, bottom) -- note: max_height, not max_top, to push it downwards
         top = top - CANCEL_OFFSET - BUTTON_HEIGHT
     end
 
@@ -157,17 +176,14 @@ function UserCommandPickerScreen:UpdateActions()
             table.remove(self.actions, i)
         end
     end
-
-    table.sort(self.actions, function(a,b) return a.prettyname < b.prettyname end)
-
-	table.insert(self.actions, {commandname = "toggle_servername", prettyname = STRINGS.UI.COMMANDSSCREEN[ServerPreferences:IsNameAndDescriptionHidden() and "SHOW_SERVERNAME" or "HIDE_SERVERNAME"]})
+    table.sort(self.actions, function(a,b) return (a.menusort or 100) < (b.menusort or 100) or (a.menusort == b.menusort and a.prettyname < b.prettyname) end)
 end
 
 function UserCommandPickerScreen:OnControl(control, down)
     if UserCommandPickerScreen._base.OnControl(self,control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
-        TheFrontEnd:PopScreen() 
+        TheFrontEnd:PopScreen()
         return true
     end
 end
@@ -192,11 +208,7 @@ function UserCommandPickerScreen:RefreshButtons()
                 --we know canstart is false, but we want the reason
                 local canstart, reason = UserCommands.CanUserStartCommand(action.commandname, self.owner, self.targetuserid)
                 button:SetHoverText(reason ~= nil and STRINGS.UI.PLAYERSTATUSSCREEN.COMMANDCANNOTSTART[reason] or "")
-                if TheInput:ControllerAttached() then
-                    button:Disable()
-                else
-                    button:Select()
-                end
+                button:Select()
             elseif action.exectype == COMMAND_RESULT.DENY then
                 if worldvoter == nil or playervoter == nil or not worldvoter:IsEnabled() then
                     --technically we should never get here (expected COMMAND_RESULT.INVALID)
@@ -209,22 +221,17 @@ function UserCommandPickerScreen:RefreshButtons()
                     local canstart, reason = UserCommands.CanUserStartVote(action.commandname, self.owner, self.targetuserid)
                     button:SetHoverText(reason ~= nil and STRINGS.UI.PLAYERSTATUSSCREEN.VOTECANNOTSTART[reason] or "")
                 end
-                if TheInput:ControllerAttached() then
-                    button:Disable()
-                else
-                    button:Select()
-                end
+                button:Select()
             else
                 button:ClearHoverText()
-                if TheInput:ControllerAttached() then                    
-                    button:Enable()
+                if TheInput:ControllerAttached() then
 					-- this is the first active widget we've come across so set it as focus
                     if nil == self.force_focus_button then
                         self.force_focus_button = button
                         force_focus = true
                     end
                 else
-                    button:Unselect()
+                    --button:Unselect()
                 end
             end
         end

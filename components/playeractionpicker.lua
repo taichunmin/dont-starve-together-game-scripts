@@ -134,11 +134,6 @@ end
 
 function PlayerActionPicker:GetSteeringActions(inst, pos, right)
     if not self.inst:HasTag("steeringboat") then return nil end
-    
-    local map = TheWorld.Map
-    local player_pos = Vector3(inst.Transform:GetWorldPosition())    
-    local player_platform = map:GetPlatformAtPoint(player_pos.x, player_pos.z)
-    local target_platform = map:GetPlatformAtPoint(pos.x, pos.z)
 
     if right then
         return self:SortActionList({ ACTIONS.STOP_STEERING_BOAT }, pos)
@@ -147,7 +142,7 @@ function PlayerActionPicker:GetSteeringActions(inst, pos, right)
             return self:SortActionList({ ACTIONS.SET_HEADING }, pos)
         end
     end
-    
+
     return nil
 end
 
@@ -185,7 +180,11 @@ end
 function PlayerActionPicker:GetInventoryActions(useitem, right)
     local actions = {}
 
-    useitem:CollectActions("INVENTORY", self.inst, actions, right)
+	if not self.inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_TRADE) then
+		useitem:CollectActions("INVENTORY", self.inst, actions, right)
+	else
+		actions = {ACTIONS.DROP}
+	end
 
     local sorted_acts = self:SortActionList(actions, nil, useitem)
 
@@ -197,8 +196,16 @@ function PlayerActionPicker:GetInventoryActions(useitem, right)
             end
         end
     end
-    
+
     return sorted_acts
+end
+
+local function TargetIsHostile(inst, target)
+    if inst.HostileTest ~= nil then
+        return inst:HostileTest(target)
+    else
+        return target:HasTag("hostile")
+    end
 end
 
 function PlayerActionPicker:GetLeftClickActions(position, target)
@@ -236,12 +243,14 @@ function PlayerActionPicker:GetLeftClickActions(position, target)
     elseif target ~= nil and target ~= self.inst then
         --if we're clicking on a scene entity, see if we can use our equipped object on it, or just use it
         if self.inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_INSPECT) and
-            target:HasTag("inspectable") and
-            (self.inst.CanExamine == nil or self.inst:CanExamine()) and
-            (self.inst.sg == nil or self.inst.sg:HasStateTag("moving") or self.inst.sg:HasStateTag("idle") or self.inst.sg:HasStateTag("channeling")) and
-            (self.inst:HasTag("moving") or self.inst:HasTag("idle") or self.inst:HasTag("channeling")) then
+                target:HasTag("inspectable") and
+                (self.inst.CanExamine == nil or self.inst:CanExamine()) and
+                (self.inst.sg == nil or self.inst.sg:HasStateTag("moving") or self.inst.sg:HasStateTag("idle") or self.inst.sg:HasStateTag("channeling")) and
+                (self.inst:HasTag("moving") or self.inst:HasTag("idle") or self.inst:HasTag("channeling")) then
             actions = self:SortActionList({ ACTIONS.LOOKAT }, target, nil)
-        elseif self.inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_ATTACK) and target.replica.combat ~= nil and self.inst.replica.combat:CanTarget(target) then
+        elseif (    self.inst.components.playercontroller:IsControlPressed(CONTROL_FORCE_ATTACK)
+                    or TargetIsHostile(self.inst, target)
+                ) and target.replica.combat ~= nil and self.inst.replica.combat:CanTarget(target) then
             actions = self:SortActionList({ ACTIONS.ATTACK }, target, nil)
         elseif equipitem ~= nil and equipitem:IsValid() then
             actions = self:GetEquippedItemActions(target, equipitem)
@@ -291,7 +300,7 @@ function PlayerActionPicker:GetRightClickActions(position, target)
     if steering_actions ~= nil then
         --self.disable_right_click = true
         return steering_actions
-    end    
+    end
 
     local actions = nil
     local useitem = self.inst.replica.inventory:GetActiveItem()
@@ -363,13 +372,13 @@ function PlayerActionPicker:DoGetMouseActions(position, target)
         end
 
         --Check for actions in the dark
-        if not cansee then  
+        if not cansee then
             local lmb = nil
-            local rmb = nil          
+            local rmb = nil
             if not isaoetargeting then
                 local lmbs = self:GetLeftClickActions(position)
                 for i, v in ipairs(lmbs) do
-                    if (v.action == ACTIONS.DROP and self.inst:GetDistanceSqToPoint(position:Get()) < 16) or 
+                    if (v.action == ACTIONS.DROP and self.inst:GetDistanceSqToPoint(position:Get()) < 16) or
                         v.action == ACTIONS.SET_HEADING then
                         lmb = v
                     end
@@ -380,7 +389,7 @@ function PlayerActionPicker:DoGetMouseActions(position, target)
                     if (v.action == ACTIONS.STOP_STEERING_BOAT) then
                         rmb = v
                     end
-                end                
+                end
             end
 
             return lmb, rmb

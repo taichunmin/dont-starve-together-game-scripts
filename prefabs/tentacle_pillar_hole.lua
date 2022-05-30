@@ -5,7 +5,7 @@ local assets =
     Asset("MINIMAP_IMAGE", "tentacle_pillar"),
 }
 
-local prefabs = 
+local prefabs =
 {
     "tentacle_pillar",
 }

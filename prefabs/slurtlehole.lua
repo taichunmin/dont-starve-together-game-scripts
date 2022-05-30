@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/slurtle_mound.zip"),
@@ -38,7 +40,7 @@ local function ReturnChildren(inst)
     end
 end
 
-local function OnHit(inst, attacker, damage) 
+local function OnHit(inst, attacker, damage)
     if inst.components.childspawner ~= nil then
         inst.components.childspawner:SpawnChild(attacker)
     end
@@ -86,6 +88,10 @@ local function OnExplodeFn(inst)
     SpawnPrefab("explode_small_slurtlehole").Transform:SetPosition(inst.Transform:GetWorldPosition())
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.SLURTLEHOLE_SPAWN_PERIOD, TUNING.SLURTLEHOLE_REGEN_PERIOD)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -114,12 +120,21 @@ local function fn()
     end
 
     inst:AddComponent("childspawner")
-    inst.components.childspawner:SetRegenPeriod(120)
-    inst.components.childspawner:SetSpawnPeriod(3)
-    inst.components.childspawner:SetMaxChildren(math.random(1, 2))
+    inst.components.childspawner:SetRegenPeriod(TUNING.SLURTLEHOLE_REGEN_PERIOD)
+    inst.components.childspawner:SetSpawnPeriod(TUNING.SLURTLEHOLE_SPAWN_PERIOD)
+    if TUNING.SLURTLEHOLE_CHILDREN.max == 0 then
+        inst.components.childspawner:SetMaxChildren(0)
+    else
+        inst.components.childspawner:SetMaxChildren(math.random(TUNING.SLURTLEHOLE_CHILDREN.min, TUNING.SLURTLEHOLE_CHILDREN.max))
+    end
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.SLURTLEHOLE_SPAWN_PERIOD, TUNING.SLURTLEHOLE_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.SLURTLEHOLE_REGEN_PERIOD, TUNING.SLURTLEHOLE_ENABLED)
+    if not TUNING.SLURTLEHOLE_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
     inst.components.childspawner:StartRegen()
     inst.components.childspawner.childname = "slurtle"
-    inst.components.childspawner:SetRareChild("snurtle", 0.1)
+    inst.components.childspawner:SetRareChild("snurtle", TUNING.SLURTLEHOLE_RARECHILD_CHANCE)
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetChanceLootTable("slurtlehole")
@@ -158,6 +173,8 @@ local function fn()
 
     inst.OnEntitySleep = OnEntitySleep
     inst.OnEntityWake = OnEntityWake
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

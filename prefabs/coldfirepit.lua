@@ -96,14 +96,10 @@ local function OnHaunt(inst, haunter)
     return false
 end
 
-local function OnSave(inst, data)
-	data._has_debuffable = inst.components.debuffable ~= nil 
-end
-
-local function OnPreLoad(inst, data)
-	if data ~= nil and data._has_debuffable then
-		inst:AddComponent("debuffable")
-	end
+local function OnInit(inst)
+    if inst.components.burnable ~= nil then
+        inst.components.burnable:FixFX()
+    end
 end
 
 local function fn()
@@ -127,6 +123,9 @@ local function fn()
     inst:AddTag("wildfireprotected")
     inst:AddTag("blueflame")
 
+	-- for storytellingprop component
+	inst:AddTag("storytellingprop")
+
     MakeObstaclePhysics(inst, .3)
 
     inst.entity:SetPristine()
@@ -138,7 +137,7 @@ local function fn()
     -----------------------
     inst:AddComponent("burnable")
     --inst.components.burnable:SetFXLevel(2)
-    inst.components.burnable:AddBurnFX("coldfirefire", Vector3(0, 0, 0))
+    inst.components.burnable:AddBurnFX("coldfirefire", Vector3(0, 45, 0), "firefx", true)
     inst:ListenForEvent("onextinguish", onextinguish)
 
     -------------------------
@@ -162,6 +161,9 @@ local function fn()
     inst.components.fueled:InitializeFuelLevel(TUNING.COLDFIREPIT_FUEL_START)
 
     -----------------------------
+    inst:AddComponent("storytellingprop")
+
+    -----------------------------
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
@@ -172,8 +174,13 @@ local function fn()
 
     inst:ListenForEvent("onbuilt", onbuilt)
 
-	inst.OnSave = OnSave
-	inst.OnPreLoad = OnPreLoad
+    inst:DoTaskInTime(0, OnInit)
+
+    inst.restart_firepit = function( inst )
+        local fuel_percent = inst.components.fueled:GetPercent()
+        inst.components.fueled:MakeEmpty()
+        inst.components.fueled:SetPercent( fuel_percent )
+    end
 
     return inst
 end

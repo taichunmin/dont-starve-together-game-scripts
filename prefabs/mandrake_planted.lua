@@ -30,8 +30,6 @@ local function onpicked(inst, picker)
 	local active = SpawnPrefab("mandrake_active")
 	active.Transform:SetPosition(pos:Get())
 	active:onpicked(picker)
-
-	inst:Remove()
 end
 
 local function fn()
@@ -57,6 +55,7 @@ local function fn()
 	inst:AddComponent("inspectable")
 	inst:AddComponent("pickable")
 	inst.components.pickable.onpickedfn = onpicked
+	inst.components.pickable.remove_when_picked = true
 	inst.components.pickable:Regen()
 
 	inst.replant = replant

@@ -15,6 +15,9 @@ AddTaskSet("cave_default", {
         "BlueForest",
         "SpillagmiteCaverns",
 
+        "MoonCaveForest",
+        "ArchiveMaze",
+
         "CaveExitTask1",
         "CaveExitTask2",
         "CaveExitTask3",

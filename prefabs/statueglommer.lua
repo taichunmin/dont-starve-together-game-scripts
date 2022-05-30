@@ -108,7 +108,11 @@ local function SpawnGland(inst)
         OnLightDirty(inst)
     end
 
-    local glommer = TheSim:FindFirstEntityWithTag("glommer") or SpawnGlommer(inst)
+    local glommer = TheSim:FindFirstEntityWithTag("glommer")
+    if not glommer or IsEntityDead(glommer) then
+        glommer = SpawnGlommer(inst)
+    end
+
     if glommer ~= nil then
         glommer.ShouldLeaveWorld = false
     end

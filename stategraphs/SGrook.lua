@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
 }
 
@@ -37,7 +37,7 @@ local events=
 
                                 local should_move = inst.components.locomotor:WantsToMoveForward()
                                 local should_run = inst.components.locomotor:WantsToRun()
-                                
+
                                 if is_moving and not should_move then
                                     inst.SoundEmitter:KillSound("charge")
                                     if is_running then
@@ -51,14 +51,14 @@ local events=
                                     else
                                         inst.sg:GoToState("walk_start")
                                     end
-                                end 
+                                end
                             end),
 }
 
 local states=
 {
      State{
-        
+
         name = "idle",
         tags = {"idle", "canrotate"},
         onenter = function(inst, playanim)
@@ -71,12 +71,12 @@ local states=
                 inst.AnimState:PlayAnimation("idle", true)
             end
         end,
-        
-        timeline = 
+
+        timeline =
         {
 		    TimeEvent(21*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "idle") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -86,7 +86,7 @@ local states=
 
     State{  name = "run_start",
             tags = {"moving", "running", "busy", "atk_pre", "canrotate"},
-            
+
             onenter = function(inst)
                 -- inst.components.locomotor:RunForward()
                 inst.Physics:Stop()
@@ -95,12 +95,12 @@ local states=
                 inst.AnimState:PlayAnimation("paw_loop", true)
                 inst.sg:SetTimeout(1)
             end,
-            
+
             ontimeout= function(inst)
                 inst.sg:GoToState("run")
                 inst:PushEvent("attackstart" )
             end,
-            
+
             timeline=
             {
 		    TimeEvent(1*FRAMES,  function(inst) inst.SoundEmitter:PlaySound(inst.effortsound) end ),
@@ -115,7 +115,7 @@ local states=
                                     --SpawnPrefab("ground_chunks_breaking").Transform:SetPosition(inst.Transform:GetWorldPosition())
                                 end ),
 		    TimeEvent(35*FRAMES,  function(inst) inst.SoundEmitter:PlaySound(inst.effortsound) end ),
-            },        
+            },
 
             onexit = function(inst)
                 inst.SoundEmitter:PlaySound(inst.soundpath .. "charge_LP","charge")
@@ -124,16 +124,16 @@ local states=
 
     State{  name = "run",
             tags = {"moving", "running"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.components.locomotor:RunForward()
-                
+
                 if not inst.AnimState:IsCurrentAnimation("atk") then
                     inst.AnimState:PlayAnimation("atk", true)
                 end
                 inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
             end,
-            
+
             timeline=
             {
 		        TimeEvent(5*FRAMES,  function(inst) inst.SoundEmitter:PlaySound(inst.effortsound) end ),
@@ -141,45 +141,45 @@ local states=
                                         SpawnPrefab("ground_chunks_breaking").Transform:SetPosition(inst.Transform:GetWorldPosition())
                                     end ),
             },
-            
+
             ontimeout = function(inst)
                 inst.sg:GoToState("run")
             end,
         },
-    
+
     State{  name = "run_stop",
             tags = {"canrotate", "idle"},
-            
-            onenter = function(inst) 
+
+            onenter = function(inst)
                 inst.SoundEmitter:KillSound("charge")
                 inst.components.locomotor:Stop()
                 inst.AnimState:PlayAnimation("atk_pst")
 		        inst.SoundEmitter:PlaySound(inst.effortsound)
             end,
-            
+
             events=
-            {   
-                EventHandler("animover", function(inst) inst.sg:GoToState("walk_start") end ),        
+            {
+                EventHandler("animover", function(inst) inst.sg:GoToState("walk_start") end ),
             },
-        },    
+        },
 
    State{
         name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
             inst.SoundEmitter:PlaySound(inst.soundpath .. "voice")
         end,
-        
-        timeline = 
+
+        timeline =
         {
 		    TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "voice") end ),
 		    TimeEvent(15*FRAMES,  function(inst) inst.SoundEmitter:PlaySound(inst.effortsound) end ),
 		    TimeEvent(27*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "voice") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -188,7 +188,7 @@ local states=
 
     State{  name = "runningattack",
             tags = {"runningattack"},
-            
+
             onenter = function(inst)
                 inst.SoundEmitter:KillSound("charge")
                 inst.components.combat:StartAttack()
@@ -196,14 +196,14 @@ local states=
 		        inst.SoundEmitter:PlaySound(inst.effortsound)
                 inst.AnimState:PlayAnimation("atk_pst")
             end,
-            
+
             timeline =
             {
                 TimeEvent(1*FRAMES, function(inst)
                                         inst.components.combat:DoAttack()
                                      end),
             },
-            
+
             events =
             {
                 EventHandler("animqueueover", function(inst) inst.sg:GoToState("idle") end),
@@ -212,19 +212,19 @@ local states=
 
     State{  name = "ruinsrespawn",
             tags = {"busy"},
-            
+
             onenter = function(inst)
                 inst.AnimState:PlayAnimation("spawn")
 	            inst.components.sleeper.isasleep = true
 	            inst.components.sleeper:GoToSleep(.1)
             end,
-            
+
             timeline =
             {
         		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "bounce") end ),
         		TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "land") end ),
             },
-            
+
             events =
             {
                 EventHandler("animover", function(inst) inst.sg:GoToState("sleeping") end),
@@ -235,13 +235,13 @@ local states=
 
 CommonStates.AddWalkStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 	    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
     },
 	walktimeline = {
 		    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
-            TimeEvent(7*FRAMES, function(inst) 
+            TimeEvent(7*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound(inst.soundpath .. "bounce")
                 inst.components.locomotor:WalkForward()
             end ),
@@ -256,11 +256,11 @@ CommonStates.AddWalkStates(states,
 
 CommonStates.AddSleepStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 		TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "liedown") end ),
     },
-    
+
 	sleeptimeline = {
         TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "sleep") end),
 	},
@@ -268,18 +268,18 @@ CommonStates.AddSleepStates(states,
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
+    attacktimeline =
     {
         TimeEvent(15*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "explo") end),
         TimeEvent(17*FRAMES, function(inst)
                                 inst.components.combat:DoAttack()
                              end),
     },
-    hittimeline = 
+    hittimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "hurt") end),
     },
-    deathtimeline = 
+    deathtimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "explo") end),
     },
@@ -287,5 +287,5 @@ CommonStates.AddCombatStates(states,
 
 CommonStates.AddFrozenStates(states)
 
-    
+
 return StateGraph("rook", states, events, "idle", actionhandlers)

@@ -6,7 +6,7 @@ end)
 function Sewing:DoSewing(target, doer)
 
     if target:HasTag("needssewing") then
-		
+
 		target.components.fueled:DoDelta(self.repair_value)
 
 		if self.inst.components.finiteuses then

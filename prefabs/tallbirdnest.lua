@@ -116,7 +116,7 @@ local function SpawnSmallBird(inst)
     end
     --print("spawning smallbird for tallbird", tallbird)
     if tallbird and tallbird:IsValid() then
-        --inst.canspawnsmallbird = false  
+        --inst.canspawnsmallbird = false
         inst.spawnedsmallbirdthisseason = true
         if tallbird.entitysleeping then
             local smallbird = SpawnPrefab("smallbird")

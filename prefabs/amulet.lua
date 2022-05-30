@@ -9,7 +9,7 @@ add and remove event listeners, or start/stop update functions here. ]]
 
 ---RED
 local function healowner(inst, owner)
-    if (owner.components.health and owner.components.health:IsHurt())
+    if (owner.components.health and owner.components.health:IsHurt() and not owner.components.oldager)
     and (owner.components.hunger and owner.components.hunger.current > 5 )then
         owner.components.health:DoDelta(TUNING.REDAMULET_CONVERSION,false,"redamulet")
         owner.components.hunger:DoDelta(-TUNING.REDAMULET_CONVERSION)
@@ -25,7 +25,7 @@ local function onequip_red(inst, owner)
     else
         owner.AnimState:OverrideSymbol("swap_body", "torso_amulets", "redamulet")
     end
-    
+
     inst.task = inst:DoPeriodicTask(30, healowner, nil, owner)
 end
 
@@ -33,12 +33,12 @@ local function onunequip_red(inst, owner)
     if owner.sg == nil or owner.sg.currentstate.name ~= "amulet_rebirth" then
         owner.AnimState:ClearOverrideSymbol("swap_body")
     end
-    
+
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
         owner:PushEvent("unequipskinneditem", inst:GetSkinName())
     end
-    
+
     if inst.task ~= nil then
         inst.task:Cancel()
         inst.task = nil
@@ -54,7 +54,7 @@ local function onequip_blue(inst, owner)
             data.attacker.components.freezable:AddColdness(0.67)
             data.attacker.components.freezable:SpawnShatterFX()
             inst.components.fueled:DoDelta(-0.03 * inst.components.fueled.maxfuel)
-        end 
+        end
     end
 
     inst:ListenForEvent("attacked", inst.freezefn, owner)
@@ -115,18 +115,22 @@ local function onunequip_green(inst, owner)
 end
 
 ---ORANGE
+local ORANGE_PICKUP_MUST_TAGS = { "_inventoryitem" }
+local ORANGE_PICKUP_CANT_TAGS = { "INLIMBO", "NOCLICK", "knockbackdelayinteraction", "catchable", "fire", "minesprung", "mineactive", "spider" }
 local function pickup(inst, owner)
     if owner == nil or owner.components.inventory == nil then
         return
     end
     local x, y, z = owner.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.ORANGEAMULET_RANGE, { "_inventoryitem" }, { "INLIMBO", "NOCLICK", "knockbackdelayinteraction", "catchable", "fire", "minesprung", "mineactive" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.ORANGEAMULET_RANGE, ORANGE_PICKUP_MUST_TAGS, ORANGE_PICKUP_CANT_TAGS)
+    local ba = owner:GetBufferedAction()
     for i, v in ipairs(ents) do
         if v.components.inventoryitem ~= nil and
             v.components.inventoryitem.canbepickedup and
             v.components.inventoryitem.cangoincontainer and
             not v.components.inventoryitem:IsHeld() and
-            owner.components.inventory:CanAcceptCount(v, 1) > 0 then
+            owner.components.inventory:CanAcceptCount(v, 1) > 0 and
+            (ba == nil or ba.action ~= ACTIONS.PICKUP or ba.target ~= v) then
 
             if owner.components.minigame_participator ~= nil then
                 local minigame = owner.components.minigame_participator:GetMinigame()
@@ -213,6 +217,12 @@ local function onunequip_yellow(inst, owner)
     turnoff_yellow(inst)
 end
 
+local function onfuelchanged_yellow(inst, data)
+    if data and data.percent and data.oldpercent and data.percent > data.oldpercent then
+        inst.SoundEmitter:PlaySound("dontstarve/common/nightmareAddFuel")
+    end
+end
+
 ---COMMON FUNCTIONS
 --[[
 local function unimplementeditem(inst)
@@ -234,6 +244,7 @@ local function commonfn(anim, tag, should_sink)
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
+    inst.entity:AddSoundEmitter()
 
     MakeInventoryPhysics(inst)
 
@@ -262,6 +273,7 @@ local function commonfn(anim, tag, should_sink)
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_SMALL
+    inst.components.equippable.is_magic_dapperness = true
 
     inst:AddComponent("inventoryitem")
     if should_sink then
@@ -296,10 +308,12 @@ local function red()
     return inst
 end
 
+local BLUE_HAUNT_MUST_TAGS = { "freezable" }
+local BLUE_HAUNT_CANT_TAGS = { "FX", "NOCLICK", "DECOR","INLIMBO" }
 local function OnHauntBlue(inst)
     if math.random() <= TUNING.HAUNT_CHANCE_OCCASIONAL then
         local x, y, z = inst.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x, y, z, 10, { "freezable" }, { "FX", "NOCLICK", "DECOR","INLIMBO" }) 
+        local ents = TheSim:FindEntities(x, y, z, 10, BLUE_HAUNT_MUST_TAGS, BLUE_HAUNT_CANT_TAGS)
         for i, v in ipairs(ents) do
             if v.components.freezable ~= nil then
                 v.components.freezable:AddColdness(.67)
@@ -420,6 +434,7 @@ local function yellow()
     inst.components.fueled:SetDepletedFn(inst.Remove)
     inst.components.fueled:SetFirstPeriod(TUNING.TURNON_FUELED_CONSUMPTION, TUNING.TURNON_FULL_FUELED_CONSUMPTION)
     inst.components.fueled.accepting = true
+    inst:ListenForEvent("percentusedchange", onfuelchanged_yellow)
 
     MakeHauntableLaunch(inst)
 

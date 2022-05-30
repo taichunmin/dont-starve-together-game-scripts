@@ -1,5 +1,6 @@
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
+local UIAnim = require "widgets/uianim"
 
 require("characterutil")
 
@@ -27,9 +28,8 @@ local CharacterButton = Class(ImageButton, function(self, character, cbPortraitF
 
     self:ForceImageSize(110,110)
 
-    -- Put the face in front of the button.
-    self.face = self:AddChild(Image())
-    
+    self:_SetupHead()
+
     self.lock_img = self:AddChild(Image("images/frontend_redux.xml", "accountitem_frame_lock.tex"))
     self.lock_img:SetScale(.15,.15)
     self.lock_img:SetPosition(-20,-20)
@@ -37,18 +37,42 @@ local CharacterButton = Class(ImageButton, function(self, character, cbPortraitF
     self:SetCharacter(self.herocharacter)
 end)
 
+function CharacterButton:_SetupHead()
+    self.head_anim = self:AddChild(UIAnim())
+    self.head_animstate = self.head_anim:GetAnimState()
+
+    self.head_animstate:SetBank("wilson")
+    self.head_animstate:PlayAnimation("idle_loop_ui", true)
+end
+
 function CharacterButton:SetCharacter(hero)
     self.herocharacter = hero
-    local atlas, texture = GetCharacterAvatarTextureLocation(hero)
-    self.face:SetTexture(atlas, texture, DEFAULT_AVATAR)
+
+    if self.herocharacter == "random" or not Profile:GetAnimatedHeadsEnabled()  then
+        self.head_animstate:SetTime(0)
+        self.head_animstate:Pause()
+    else
+        self.head_animstate:SetTime(math.random()*1.5)
+    end
+
+    self.head_anim:SetScale(CHARACTER_BUTTON_SCALE[self.herocharacter] or CHARACTER_BUTTON_SCALE.default)
+    self.head_anim:SetPosition(0, CHARACTER_BUTTON_OFFSET[self.herocharacter] or CHARACTER_BUTTON_OFFSET.default, 0)
+
+    local skindata = GetSkinData(self.herocharacter.."_none")
+    local base_build = self.herocharacter
+    local skin_mode = "normal_skin"
+    if skindata.skins ~= nil then
+        base_build = skindata.skins[skin_mode]
+    end
+    SetSkinsOnAnim( self.head_animstate, self.herocharacter, base_build, {}, skin_mode)
 
     if IsCharacterOwned(hero) then
         self.image:SetTint(unpack(WHITE))
-        self.face:SetTint(unpack(WHITE))
+        self.head_animstate:SetMultColour(unpack(WHITE))
         self.lock_img:Hide()
     else
         self.image:SetTint(unpack(LOCKED_GREY))
-        self.face:SetTint(unpack(LOCKED_GREY))
+        self.head_animstate:SetMultColour(unpack(LOCKED_GREY))
         self.lock_img:Show()
     end
 end

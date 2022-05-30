@@ -15,14 +15,17 @@ local PopupDialogScreen = require "screens/redux/popupdialog"
 
 local TEMPLATES = require "widgets/redux/templates"
 
-require("skinsutils")
+local BEEFALO_COSTUMES = require("yotb_costumes")
 
+require("skinsutils")
 
 local COMMERCE_WIDTH = 130
 local COMMERCE_HEIGHT = 45
 
-local ItemExplorer = Class(Widget, function(self, title_text, primary_item_type, item_table_getter, list_options)
+local ItemExplorer = Class(Widget, function(self, title_text, primary_item_type, item_table_getter, list_options, yotb_filter)
     Widget._ctor(self, "ItemExplorer")
+
+    self.yotb_filter = yotb_filter
 
     assert(primary_item_type and primary_item_type ~= "")
     self.primary_item_type = primary_item_type
@@ -46,7 +49,7 @@ local ItemExplorer = Class(Widget, function(self, title_text, primary_item_type,
             CacheCurrentVanityItems(list_options.scroll_context.user_profile)
         end
     end
-    
+
     local contained_items = self:_CreateWidgetDataListForItems(self.item_table, self.primary_item_type, self.activity_checker_fn)
 
     -- Validate the first item and assume others have same setup.
@@ -184,7 +187,7 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
     self.collection_title:SetPosition(0,-68)
     self.collection_title:SetColour(UICOLOURS.HIGHLIGHT_GOLD)
     self.collection_title:SetHAlign(ANCHOR_LEFT)
-    
+
     self.store_btn = self.footer:AddChild(ImageButton("images/frontend_redux.xml", "button_shop_vshort_normal.tex", "button_shop_vshort_hover.tex", "button_shop_vshort_disabled.tex", "button_shop_vshort_down.tex"))
     self.store_btn:SetOnClick( function() TheFrontEnd:FadeToScreen( TheFrontEnd:GetActiveScreen(), function()
 		local scr = PurchasePackScreen( nil, nil, { initial_item_key = self.last_interaction_target.item_key } )
@@ -194,7 +197,7 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
     self.store_btn:SetScale(0.5)
     self.store_btn:SetPosition(205,-23)
     self.store_btn:Hide()
-    
+
     self.divider_top = self.footer:AddChild(Image("images/global_redux.xml", "item_divider.tex"))
     self.divider_top:SetPosition(0,-50)
     self.divider_top:Hide()
@@ -205,18 +208,18 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
     self.description:SetHAlign(ANCHOR_LEFT)
     self.description:SetVAlign(ANCHOR_TOP)
     self.description:EnableWordWrap(true)
-    
+
     self.action_info = self.footer:AddChild(Text(CHATFONT, 16))
     self.action_info:SetPosition(0,-190)
     self.action_info:SetColour(UICOLOURS.HIGHLIGHT_GOLD)
     self.action_info:SetHAlign(ANCHOR_LEFT)
     self.action_info:SetVAlign(ANCHOR_BOTTOM)
     self.action_info:EnableWordWrap(true)
-    
+
     self.divider_bottom = self.footer:AddChild(Image("images/global_redux.xml", "item_divider.tex"))
     self.divider_bottom:SetPosition(0,-230)
     self.divider_bottom:Hide()
-    
+
     if TheInput:ControllerAttached() then
         self.should_show_set_info = false
         self.can_show_steam = false
@@ -257,7 +260,7 @@ function ItemExplorer:_DoInit(title_text, contained_items, list_options)
         self.interact_root:Hide()
     end
 
-    
+
     self:RepositionFooter(self, -height/2 - 30, width)
 end
 
@@ -288,7 +291,7 @@ function ItemExplorer:RepositionFooter(new_parent, y, footer_width)
 				self.market_button:ForceImageSize(COMMERCE_WIDTH, COMMERCE_HEIGHT)
 			end
             self.set_info_btn:ForceImageSize(COMMERCE_WIDTH, COMMERCE_HEIGHT)
-            
+
             self.commerce:SetPosition(-footer_width/2+COMMERCE_WIDTH/2,0)
             if self.market_button then
 	            self.market_button:SetPosition(footer_width/2-COMMERCE_WIDTH/2,0)
@@ -310,7 +313,7 @@ function ItemExplorer:_ApplyDataToDescription(item_data)
         self.focus_label:SetString(GetSkinName(item_key))
         self.focus_rarity:SetString(GetModifiedRarityStringForItem(item_key))
         self.focus_rarity:SetColour(GetColorForItem(item_key))
-        
+
         local sd = GetSkinDescription(item_key)
         self.description:SetString(sd)
         local _, line_count = sd:gsub('\n', '\n')
@@ -365,7 +368,7 @@ function ItemExplorer:_GetActionInfoText(item_data)
         else
             text = STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_NOGRIND
         end
-    else 
+    else
         if IsUserCommerceAllowedOnItemType(item_data.item_key) then
             local doodad_value = TheItems:GetBarterBuyPrice(item_data.item_key)
             text = subfmt(STRINGS.UI.BARTERSCREEN.COMMERCE_INFO_BUY, {doodad_value=doodad_value})
@@ -381,8 +384,8 @@ function ItemExplorer:_GetActionInfoText(item_data)
             end
         end
     end
-    
-    if PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM" then
+
+    if IsSteam() then
 		if not IsItemMarketable(item_data.item_key) then
 			text = text.."\n"..STRINGS.UI.BARTERSCREEN.NO_MARKET
 		end
@@ -424,7 +427,7 @@ end
 
 function ItemExplorer:DoCommerceForDefaultItem(default_item_key)
     --This relies on the first item in this list matching the expected item key. If we can't find it, maybe we can search to find the selected item.
-    local w = self.scroll_list:GetListWidgets()[1]    
+    local w = self.scroll_list:GetListWidgets()[1]
     if w.data.item_key == default_item_key then
         w:onclick()
         self:_LaunchCommerce()
@@ -435,7 +438,7 @@ end
 
 function ItemExplorer:DoShopForDefaultItem(default_item_key)
     --This relies on the first item in this list matching the expected item key. If we can't find it, maybe we can search to find the selected item.
-    local w = self.scroll_list:GetListWidgets()[1]    
+    local w = self.scroll_list:GetListWidgets()[1]
     if w.data.item_key == default_item_key then
         w:onclick()
         self.store_btn:onclick()
@@ -443,7 +446,7 @@ function ItemExplorer:DoShopForDefaultItem(default_item_key)
         print("Failed to launch shop due to mismatched item key.")
     end
 end
-                
+
 function ItemExplorer:_LaunchCommerce()
     local item_key = self.last_interaction_target.item_key
     if WillUnravelBreakRestrictedCharacter( item_key ) then
@@ -462,7 +465,7 @@ function ItemExplorer:_LaunchCommerce()
     elseif WillUnravelBreakEnsemble( item_key ) then
         local _, reward_item = IsItemInCollection(item_key)
         local body = subfmt(STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_BODY, {ensemble_name=STRINGS.SET_NAMES[reward_item], reward_name=GetSkinName(reward_item)})
-        
+
 		local scr = PopupDialogScreen(
 			STRINGS.UI.BARTERSCREEN.UNRAVEL_WARNING_TITLE,
 			body,
@@ -480,7 +483,7 @@ function ItemExplorer:_DoCommerce(item_key)
 	local is_buying = not self.last_interaction_target.is_owned
     local cached_data = self.last_interaction_target --we need to cache the last_interaction_target as it may have been nil'd on the refresh when the screen becomes active again
 
-    local barter_screen = BarterScreen(self.scroll_list.context.user_profile, self, item_key, is_buying, function()
+    local barter_screen = BarterScreen(self.scroll_list.context.user_profile, self, item_key, is_buying, cached_data.owned_count, function()
         -- We completed a barter and now our screens contain old inventory data.
         if not is_buying and cached_data.owned_count <= 1 then
             -- Selling our last one. Fake a click to turn it off. We can't click the widget because the interaction target may not be on screen (and thus not in a widget).
@@ -530,6 +533,9 @@ function ItemExplorer:ClearSelection()
     self:_ApplyDataToDescription()
     if self.interact_root then
         self.interact_root:Hide()
+    end
+    if self.clearSelectionCB ~= nil then
+        self.clearSelectionCB()
     end
 end
 
@@ -597,7 +603,7 @@ end
 
 function ItemExplorer:_OnClickWidget(item_widget)
     local item_data = item_widget.data
-	
+
     -- if no selection type, then ignore is_active.
     if self.scroll_list.context.selection_type and item_data.is_owned and (self.scroll_list.context.selection_type ~= "single" or not item_data.is_active) then
         self:_SetItemActiveFlag(item_data, not item_data.is_active)
@@ -618,7 +624,7 @@ function ItemExplorer:_OnClickWidget(item_widget)
 
     self:_UpdateClickedWidget(item_widget)
 end
-    
+
 function ItemExplorer:_UpdateClickedWidget(item_widget)
 	--print("ItemExplorer:_UpdateClickedWidget(item_widget)", item_widget.data.item_key)
     if item_widget.data.item_key == nil then
@@ -682,7 +688,7 @@ function ItemExplorer:_UpdateItemSelectedInfo(item_key)
         self.store_btn:Hide()
     end
 
-    
+
     local ensemble_string = nil
     local in_ensemble = false
     local set_reward_type = ""
@@ -691,7 +697,7 @@ function ItemExplorer:_UpdateItemSelectedInfo(item_key)
         self.should_show_set_info = true
         if IsItemIsReward(item_key) then
             ensemble_string = STRINGS.SET_NAMES[item_key] .. " " .. STRINGS.UI.SKINSSCREEN.BONUS
-            
+
             self.set_item_type = item_key --save it for the click press
         else
             ensemble_string = STRINGS.SET_NAMES[set_reward_type] .. " " .. STRINGS.UI.SKINSSCREEN.SET_PROGRESS
@@ -718,7 +724,7 @@ function ItemExplorer:_UpdateItemSelectedInfo(item_key)
         self.collection_title:Hide()
         self.description:SetPosition(0,-125)
     end
-    
+
     if self.interact_root then
         if self.should_show_set_info then
             self.set_info_btn:Show()
@@ -829,9 +835,8 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
         if item_latest[key] == nil or item_latest[key] < inv_item.modified_time then
             item_latest[key] = inv_item.modified_time
         end
-        
-        if inv_item.item_id == TEMP_ITEM_ID and GetRarityForItem(key) ~= "Event" and GetRarityForItem(key) ~= "Reward" then
-            item_dlc_owned[key] = true
+
+        if inv_item.item_id == TEMP_ITEM_ID and GetRarityForItem(key) ~= "Event" and GetRarityForItem(key) ~= "Reward" and GetRarityForItem(key) ~= "ProofOfPurchase" and GetRarityForItem(key) ~= "Complimentary"  then            item_dlc_owned[key] = true
         end
 	end
 
@@ -845,6 +850,23 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
                 is_owned = true
                 timestamp = 0
             end
+
+            if self.yotb_filter and self.yotb_filter.yotb_skins_sets then
+
+                local category = nil
+                for i,set in pairs(BEEFALO_COSTUMES.costumes)do
+                    for t,part in ipairs(set.skins)do
+                        if item_key == part then
+                            category = i
+                        end
+                    end
+                end
+
+                if category and not checkbit(self.yotb_filter.yotb_skins_sets:value(), YOTB_COSTUMES[category]) then
+                    is_owned = false
+                end
+            end
+
             local data = {
                 item_key = item_key,
                 is_active = is_owned and activity_checker_fn(item_key) or false,
@@ -857,10 +879,10 @@ function ItemExplorer:_CreateWidgetDataListForItems(item_table, item_type, activ
         end
     end
 
-    
+
 
     --Sort the data that is going into the list
-    local sort_type = Profile:GetItemSortMode()    
+    local sort_type = Profile:GetItemSortMode()
     local sort_fn = nil
     if sort_type == "SORT_NAME" then
         sort_fn = function(item_key_a, item_key_b)
@@ -892,7 +914,7 @@ function ItemExplorer:OnControl(control, down)
 	if ItemExplorer._base.OnControl(self, control, down) then return true end
 
     if self.last_interaction_target then
-        if not down and control == CONTROL_INSPECT then 
+        if not down and control == CONTROL_INSPECT then
             -- A bit confusing because interaction target doesn't move with focus! Could click focused widget automatically, but that's inconsistent with mouse controls.
             if self.can_do_commerce then
                 self:_LaunchCommerce()

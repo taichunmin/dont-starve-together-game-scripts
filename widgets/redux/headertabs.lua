@@ -28,6 +28,11 @@ end
 local HeaderTabs = Class(Widget, function(self, menuitems, wrap_focus)
     Widget._ctor(self, "HeaderTabs")
 
+    if IsConsole() then
+        button_spacing = 180
+        text_size = 20
+    end
+
     self.menu = self:AddChild(Menu(WrapCallbacks(self, menuitems), button_spacing, true, menu_style, wrap_focus, text_size))
     self.menu:SetPosition(-(button_spacing*(#menuitems-1))/2, 0)
     self:SelectButton(1)

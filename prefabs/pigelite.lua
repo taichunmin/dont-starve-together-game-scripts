@@ -61,7 +61,7 @@ local function RetargetFn(inst)
     local rangesq = TARGET_DIST_SQ
     local closestPlayer = nil
     for i, v in ipairs(AllPlayers) do
-        if v ~= target and not (v.replica.health:IsDead() or v:HasTag("playerghost")) and v.entity:IsVisible() then
+        if v ~= target and not IsEntityDeadOrGhost(v) and v.entity:IsVisible() then
             local distsq = v:GetDistanceSqToPoint(x, y, z)
             if distsq < rangesq and
                 (king == nil or v:IsNear(king, KING_TARGET_DIST)) and

@@ -72,8 +72,7 @@ local events =
 
 local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle", "canrotate" },
         onenter = function(inst)
@@ -86,8 +85,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "run",
         tags = { "moving", "running", "canrotate", "autopredict" },
 
@@ -103,8 +101,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "appear",
         tags = { "nopredict" },
 
@@ -134,8 +131,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "remoteresurrect",
         tags = { "doing", "busy" },
 
@@ -183,8 +179,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "haunt_pre",
         tags = { "doing", "busy" },
 
@@ -211,8 +206,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "haunt",
         tags = { "doing", "busy", "nopredict" },
 
@@ -231,8 +225,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "hit",
         tags = { "busy", "pausepredict" },
 
@@ -276,8 +269,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "dissipate",
         tags = { "busy", "pausepredict" },
 
@@ -285,7 +277,7 @@ local states =
             inst.components.locomotor:Stop()
             inst.components.locomotor:Clear()
             inst:ClearBufferedAction()
-            
+
             inst.Light:Enable(false)
             inst.AnimState:PlayAnimation("dissipate")
             if not inst:HasTag("mime") then
@@ -311,8 +303,41 @@ local states =
         },
     },
 
-    State
-    {
+    State{
+        name = "start_rewindtime_revive",
+        tags = { "busy", "pausepredict" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.components.locomotor:Clear()
+            inst:ClearBufferedAction()
+
+            inst.Light:Enable(false)
+            inst.AnimState:PlayAnimation("dissipate")
+            if not inst:HasTag("mime") then
+                inst.SoundEmitter:PlaySound(
+                    inst:HasTag("girl") and
+                    "dontstarve/ghost/ghost_girl_howl" or
+                    "dontstarve/ghost/ghost_howl"
+                )
+            end
+
+            if inst.components.playercontroller ~= nil then
+                inst.components.playercontroller:RemotePausePrediction()
+            end
+
+            inst:ScreenFade(false, 2)
+            inst.sg.statemem.faded = true
+        end,
+
+		onexit = function(inst)
+            if inst.sg.statemem.faded then -- this is cleared in DoMoveToRezPosition
+				inst:ScreenFade(true, .5)
+			end
+		end,
+    },
+
+    State{
         name = "talk",
         tags = { "idle", "talking" },
 
@@ -338,8 +363,7 @@ local states =
         onexit = StopTalkSound,
     },
 
-    State
-    {
+    State{
         name = "mime",
         tags = { "idle", "talking" },
 
@@ -389,8 +413,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "jumpin",
         tags = { "doing", "busy", "canrotate" },
 
@@ -424,8 +447,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "jumpout",
         tags = { "doing", "busy", "canrotate", "nopredict" },
 
@@ -444,8 +466,30 @@ local states =
         },
     },
 
-    State
-    {
+    State{
+        name = "pocketwatch_portal_land",
+        tags = { "doing", "busy", "canrotate", "nopredict" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst.AnimState:PlayAnimation("appear")
+
+			local x, y, z = inst.Transform:GetWorldPosition()
+			local fx = SpawnPrefab("pocketwatch_portal_exit_fx")
+			fx.Transform:SetPosition(x, 4, z)
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+    },
+
+    State{
         name = "forcetele",
         tags = { "busy", "nopredict" },
 
@@ -478,8 +522,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "migrate",
         tags = { "doing", "busy", "canrotate" },
 

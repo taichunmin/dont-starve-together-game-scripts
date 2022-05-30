@@ -32,8 +32,8 @@ local function ShouldWakeUp(inst)
 end
 
 local function ShouldSleep(inst)
-    return DefaultSleepTest(inst) 
-        and inst.components.follower:IsNearLeader(SLEEP_NEAR_LEADER_DISTANCE) 
+    return DefaultSleepTest(inst)
+        and inst.components.follower:IsNearLeader(SLEEP_NEAR_LEADER_DISTANCE)
         and not TheWorld.state.isfullmoon
 end
 
@@ -62,7 +62,7 @@ local function OnStopFollowing(inst)
 end
 
 local function OnStartFollowing(inst)
-    if inst.components.follower.leader:HasTag("glommerflower") then 
+    if inst.components.follower.leader:HasTag("glommerflower") then
         inst:AddTag("companion")
     end
 end
@@ -76,7 +76,6 @@ local function fn()
     inst.entity:AddDynamicShadow()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
-    inst.entity:AddLightWatcher()
 
     inst.DynamicShadow:SetSize(2, .75)
     inst.Transform:SetFourFaced()
@@ -116,6 +115,7 @@ local function fn()
     inst.components.lootdropper:SetChanceLootTable('glommer')
 
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst.components.sleeper:SetResistance(3)
     inst.components.sleeper.testperiod = GetRandomWithVariance(6, 2)
     inst.components.sleeper:SetSleepTest(ShouldSleep)

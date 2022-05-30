@@ -6,8 +6,9 @@ local atlas_info_filename = "minimap/minimap_data.xml"
 local MINIMAP_GROUND_PROPERTIES =
 {
     { GROUND.PEBBLEBEACH,{ name = "map_edge",      noise_texture = "levels/textures/mini_pebblebeach.tex" } },
+    { GROUND.SHELLBEACH, { name = "map_edge",      noise_texture = "levels/textures/mini_pebblebeach.tex" } },
     { GROUND.OCEAN_COASTAL_SHORE,      { name = "map_edge",      noise_texture = "levels/textures/mini_water_shallow.tex" } },
-    { GROUND.OCEAN_REEF_SHORE,      { name = "map_edge",      noise_texture = "levels/textures/mini_water_coral.tex" } },
+    { GROUND.OCEAN_BRINEPOOL_SHORE,      { name = "map_edge",      noise_texture = "levels/textures/mini_water_coral.tex" } },
 
     { GROUND.METEOR,	 { name = "map_edge",      noise_texture = "levels/textures/mini_meteor.tex" } },
 
@@ -36,6 +37,10 @@ local MINIMAP_GROUND_PROPERTIES =
     { GROUND.TILES,      { name = "map_edge",      noise_texture = "levels/textures/mini_ruinstile_noise.tex" } },
     { GROUND.TRIM,       { name = "map_edge",      noise_texture = "levels/textures/mini_ruinstrim_noise.tex" } },
 
+    { GROUND.ARCHIVE,    { name = "map_edge",      noise_texture = "levels/textures/Ground_noise_archive_mini.tex" } },
+    { GROUND.FUNGUSMOON, { name = "map_edge",      noise_texture = "levels/textures/Ground_noise_moon_fungus_mini.tex" } },
+
+
     { GROUND.LAVAARENA_TRIM, { name = "lavaarena_floor_ms",      noise_texture = "levels/textures/lavaarena_trim_mini.tex" } },
     { GROUND.LAVAARENA_FLOOR,{ name = "lavaarena_floor_ms",      noise_texture = "levels/textures/lavaarena_floor_mini.tex" } },
 
@@ -45,12 +50,14 @@ local MINIMAP_GROUND_PROPERTIES =
     { GROUND.QUAGMIRE_CITYSTONE,   { name = "map_edge",      noise_texture = "levels/textures/quagmire_citystone_mini.tex" } },
     { GROUND.QUAGMIRE_GATEWAY,     { name = "map_edge",      noise_texture = "levels/textures/quagmire_gateway_mini.tex" } },
     { GROUND.QUAGMIRE_SOIL,        { name = "map_edge",      noise_texture = "levels/textures/quagmire_soil_mini.tex" } },
+    { GROUND.FARMING_SOIL,         { name = "map_edge",      noise_texture = "levels/textures/quagmire_soil_mini.tex" } },
 
     { GROUND.OCEAN_COASTAL,    { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
-    { GROUND.OCEAN_REEF,       { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_BRINEPOOL,  { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
     { GROUND.OCEAN_SWELL,      { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
     { GROUND.OCEAN_ROUGH,      { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
     { GROUND.OCEAN_HAZARDOUS,  { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
+    { GROUND.OCEAN_WATERLOG,   { name = "map_edge",      noise_texture = "levels/textures/ocean_noise.tex" } },
 }
 
 local assets =
@@ -60,6 +67,9 @@ local assets =
 
     Asset( "ATLAS", "images/hud.xml" ),
     Asset( "IMAGE", "images/hud.tex" ),
+
+    Asset(  "ATLAS", "images/hud2.xml" ),
+    Asset(  "IMAGE", "images/hud2.tex" ),
 
     Asset( "SHADER", shader_filename ),
     Asset( "SHADER", fs_shader ),

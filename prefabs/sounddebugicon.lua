@@ -16,7 +16,7 @@ local function fn()
     inst.Label:SetUIOffset(0, 0, 0)
     inst.Label:SetColour(.73, .05, .02)
     inst.Label:Enable(true)
-	
+
     inst.AnimState:SetBank("sound")
     inst.AnimState:SetBuild("sounddebug")
     inst.AnimState:PlayAnimation("idle")
@@ -25,7 +25,7 @@ local function fn()
     inst:AddTag("FX")
     --[[Non-networked entity]]
     inst.persists = false
-    
+
     inst.autokilltask = inst:DoTaskInTime(0.5, inst.Remove)
     return inst
 end

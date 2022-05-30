@@ -22,7 +22,7 @@ local statedata =
     },
     { -- tall
         anim_postfix = "old",
-        growanim    = "grow_young_to_old", 
+        growanim    = "grow_young_to_old",
         workleft    = TUNING.LIVINGTREE_WORK,
         loot        = {"livinglog", "livinglog"},
     },
@@ -38,7 +38,7 @@ local function SetGrowth(inst)
     local new_size = inst.components.growable.stage
     inst.statedata = statedata[new_size]
     inst.AnimState:PlayAnimation("idle_"..inst.statedata.anim_postfix, true)
-    
+
     inst.components.workable:SetWorkLeft(inst.statedata.workleft)
 
     if new_size >= #statedata then
@@ -324,7 +324,7 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
-    
+
     inst.statedata = statedata[#statedata]
 
     inst:AddComponent("inspectable")

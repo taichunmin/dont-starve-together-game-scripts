@@ -1,5 +1,7 @@
 local easing = require("easing")
 
+local SOURCE_MODIFIER_LIST_KEY = "groggyresistance"
+
 local Grogginess = Class(function(self, inst)
     self.inst = inst
 
@@ -13,6 +15,12 @@ local Grogginess = Class(function(self, inst)
     self.speedmod = nil
     self.enablespeedmod = true
     self.isgroggy = false
+    self.knockedout = false
+
+    self._resistance_sources = SourceModifierList(inst, 0, SourceModifierList.additive)
+
+    --self._disable_task = nil
+    --self._disable_finish = nil
 
     self:SetDefaultTests()
 end)
@@ -29,20 +37,20 @@ end
 
 function DefaultKnockoutTest(inst)
     local self = inst.components.grogginess
-    return self.grog_amount >= self.resistance
+    return self.grog_amount >= self:GetResistance()
         and not (inst.components.health ~= nil and inst.components.health.takingfiredamage)
         and not (inst.components.burnable ~= nil and inst.components.burnable:IsBurning())
 end
 
 function DefaultComeToTest(inst)
     local self = inst.components.grogginess
-    return self.knockouttime > self.knockoutduration and self.grog_amount < self.resistance
+    return self.knockouttime > self.knockoutduration and self.grog_amount < self:GetResistance()
 end
 
 function DefaultWhileGroggy(inst)
     --assume grog_amount > 0
     local self = inst.components.grogginess
-    local pct = self.grog_amount < self.resistance and self.grog_amount / self.resistance or 1
+    local pct = self.grog_amount < self:GetResistance() and self.grog_amount / self:GetResistance() or 1
     self.speedmod = Remap(pct, 1, 0, TUNING.MIN_GROGGY_SPEED_MOD, TUNING.MAX_GROGGY_SPEED_MOD)
     if self.enablespeedmod then
         inst.components.locomotor:SetExternalSpeedMultiplier(inst, "grogginess", self.speedmod)
@@ -89,6 +97,10 @@ function Grogginess:SetResistance(resist)
     self.resistance = resist
 end
 
+function Grogginess:GetResistance()
+    return self.resistance + self._resistance_sources:CalculateModifierFromKey(SOURCE_MODIFIER_LIST_KEY)
+end
+
 function Grogginess:SetDecayRate(rate)
     self.decayrate = rate
 end
@@ -128,12 +140,13 @@ function Grogginess:HasGrogginess()
 end
 
 function Grogginess:GetDebugString()
-    return string.format("%s, KO time=%2.2f Groggy: %d/%d%s",
+    return string.format("%s, KO time=%2.2f Groggy: %d/%d%s (%.2f)",
             self:IsKnockedOut() and "KNOCKED OUT" or "AWAKE",
             self.knockouttime,
             self.grog_amount,
-            self.resistance,
-            self.enablespeedmod and "" or " (disable speed mod)")
+            self:GetResistance(),
+            self.enablespeedmod and "" or " (disable speed mod)",
+			self.grog_amount)
 end
 
 function Grogginess:AddGrogginess(grogginess, knockoutduration)
@@ -163,9 +176,28 @@ function Grogginess:AddGrogginess(grogginess, knockoutduration)
 end
 
 function Grogginess:MaximizeGrogginess()
-    local delta = self.resistance - self.grog_amount
+    local delta = self:GetResistance() - self.grog_amount
     if delta > .1 then
         self:AddGrogginess(delta - .1)
+    end
+end
+
+function Grogginess:SubtractGrogginess(grogginess)
+    if grogginess <= 0 then
+        return
+    end
+
+    self.grog_amount = math.max(0, self.grog_amount - grogginess)
+
+    if self.isgroggy then
+        -- Make sure we're updating so we hit the end-of-grogginess behaviour.
+        self.inst:StartUpdatingComponent(self)
+    end
+end
+
+function Grogginess:ResetGrogginess()
+    if self.grog_amount > 0 then
+        self:SubtractGrogginess(self.grog_amount)
     end
 end
 
@@ -173,21 +205,31 @@ function Grogginess:ExtendKnockout(knockoutduration)
     if self:IsKnockedOut() then
         self.knockoutduration = knockoutduration
         self.knockouttime = 0
-        self.grog_amount = math.max(self.grog_amount, self.resistance)
+        self.grog_amount = math.max(self.grog_amount, self:GetResistance())
     end
 end
 
 function Grogginess:KnockOut()
     if self.inst.entity:IsVisible() and not (self.inst.components.health ~= nil and self.inst.components.health:IsDead()) then
         self.inst:PushEvent("knockedout")
+        self.knockedout = true
     end
 end
 
 function Grogginess:ComeTo()
+    self.knockedout = false
     if self:IsKnockedOut() and not (self.inst.components.health ~= nil and self.inst.components.health:IsDead()) then
         self.grog_amount = self.resistance
         self.inst:PushEvent("cometo")
     end
+end
+
+function Grogginess:AddResistanceSource(source, resistance)
+    self._resistance_sources:SetModifier(source, resistance, SOURCE_MODIFIER_LIST_KEY)
+end
+
+function Grogginess:RemoveResistanceSource(source)
+    self._resistance_sources:RemoveModifier(source, SOURCE_MODIFIER_LIST_KEY)
 end
 
 function Grogginess:OnUpdate(dt)
@@ -209,7 +251,7 @@ function Grogginess:OnUpdate(dt)
             self.wearofftime = 0
             if self.onwearofffn ~= nil then
                 self.onwearofffn(self.inst)
-            end            
+            end
         elseif self.whilewearingofffn ~= nil then
             self.whilewearingofffn(self.inst)
         end

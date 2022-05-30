@@ -23,7 +23,7 @@ local function StartRevertWorld(self, value)
 end
 
 local Transformer = Class(function(self, inst)
-	
+
 	self.inst = inst
 
 	self.transformPrefab = "rabbit"
@@ -148,7 +148,7 @@ function Transformer:SetOnLoadCheck(check)
 end
 
 function Transformer:Transform()
-	self.inst:DoTaskInTime(math.random(), function() 
+	self.inst:DoTaskInTime(math.random(), function()
 		local transformedPrefab = SpawnPrefab(self.transformPrefab)
 		transformedPrefab.Transform:SetPosition(self.inst:GetPosition():Get())
 
@@ -193,7 +193,7 @@ function Transformer:StartTransform()
 end
 
 function Transformer:Revert()
-	self.inst:DoTaskInTime(math.random(), function() 
+	self.inst:DoTaskInTime(math.random(), function()
 		local obj = SpawnPrefab(self.objectData.prefab)
 		if obj then
 			obj.Transform:SetPosition(self.inst:GetPosition():Get())
@@ -215,7 +215,7 @@ end
 
 function Transformer:RevertOnSleep()
 	self.queuedRevert = true
-	self.sleepRevertEvent = self.inst:ListenForEvent("entitysleep", StartRevert)	
+	self.sleepRevertEvent = self.inst:ListenForEvent("entitysleep", StartRevert)
 end
 
 function Transformer:StartRevert()
@@ -249,7 +249,7 @@ function Transformer:OnSave()
 	data.revertWorldEventValue = self.revertWorldEventValue
 
 	data.onLoadCheck = self.onLoadCheck
-	
+
 	if self.transformEventTarget then
 		data.transformEventTarget = self.transformEventTarget.GUID
 		table.insert(refs, self.transformEventTarget.GUID)

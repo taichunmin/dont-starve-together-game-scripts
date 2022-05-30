@@ -14,13 +14,13 @@ local PADDING = 10
 
 local WordPredictionWidget = Class(Widget, function(self, text_edit, max_width, mode)
     Widget._ctor(self, "WordPredictionWidget")
-    
+
     self.word_predictor = WordPredictor()
 	self.text_edit = text_edit
 
 	self.enter_complete = string.match(mode, "enter", 1, true) ~= nil
 	self.tab_complete = string.match(mode, "tab", 1, true) ~= nil
-	
+
 	self.sizey = FONT_SIZE + 4
 	self.max_width = max_width or 300
 
@@ -78,7 +78,7 @@ function WordPredictionWidget:OnRawKey(key, down)
 			return true
 		end
 	end
-		
+
 	return false
 end
 
@@ -100,7 +100,7 @@ function WordPredictionWidget:OnControl(control, down)
 			end
 		end
 	end
-		
+
 	return false
 end
 
@@ -145,7 +145,7 @@ function WordPredictionWidget:RefreshPredictions()
 
 		for i, v in ipairs(prediction.matches) do
 			local str = self.word_predictor:GetDisplayInfo(i)
-			
+
 			local btn = self.prediction_root:AddChild(Button())
 			btn:SetFont(CHATFONT)
 			btn:SetDisabledFont(CHATFONT)
@@ -167,7 +167,7 @@ function WordPredictionWidget:RefreshPredictions()
 			btn:SetOnSelect(function() if self.active_prediction_btn ~= nil and self.active_prediction_btn ~= i then self.prediction_btns[self.active_prediction_btn]:Unselect() end self.active_prediction_btn = i end)
 			btn.ongainfocus = function() btn:Select() end
 			btn.AllowOnControlWhenSelected = true
-			
+
 			if self:IsMouseOnly() then
 				btn.onlosefocus = function() if btn.selected then btn:Unselect() self.active_prediction_btn = nil end end
 			end
@@ -190,7 +190,7 @@ function WordPredictionWidget:RefreshPredictions()
 				end
 			end
 		end
-		
+
 		if self:IsMouseOnly() then
 			self.active_prediction_btn = nil
 		else

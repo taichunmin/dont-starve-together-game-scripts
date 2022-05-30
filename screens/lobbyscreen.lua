@@ -226,20 +226,20 @@ local LobbyScreen = Class(Screen, function(self, profile, cb, no_backbutton, def
         self.randomskinsbutton:SetScale(.6, .6, .6)
 
         if not no_backbutton then
-            -- Note: putting these buttons in the characterselect_root or loadout_root results in the buttons behind the 
+            -- Note: putting these buttons in the characterselect_root or loadout_root results in the buttons behind the
             -- sidebar bg, even if MoveToFront is called. So they're in the sidebar_root instead.
-            self.disconnectbutton = self.sidebar_root:AddChild(TEMPLATES.BackButton(function() self:DoConfirmQuit() end, 
+            self.disconnectbutton = self.sidebar_root:AddChild(TEMPLATES.BackButton(function() self:DoConfirmQuit() end,
                                                                         STRINGS.UI.LOBBYSCREEN.DISCONNECT,
                                                                         {x=38, y=0}, --text offset
                                                                         {x=1, y=-1}, --drop shadow offset from text
                                                                         1)) -- scale
             self.disconnectbutton:SetPosition(100, BACK_BUTTON_Y)
 
-            self.backbutton = self.sidebar_root:AddChild(TEMPLATES.BackButton(function() self:StartSelection() end, 
+            self.backbutton = self.sidebar_root:AddChild(TEMPLATES.BackButton(function() self:StartSelection() end,
                                                                         STRINGS.UI.LOBBYSCREEN.BACK,
                                                                         {x=38, y=0}, --text offset
                                                                         {x=1, y=-1}, --drop shadow offset from text
-                                                                        1)) -- scale 
+                                                                        1)) -- scale
             self.backbutton:SetPosition(100, BACK_BUTTON_Y)
         end
     end
@@ -252,8 +252,8 @@ local LobbyScreen = Class(Screen, function(self, profile, cb, no_backbutton, def
     self.characterselect_root:SetPosition(120, 0, 0)
     self.loadout_root:Hide()
     self.in_loadout = false
-    
-    
+
+
     self.waiting_for_players_root:SetPosition(0, 0, 0)
     self.waiting_for_players = self.waiting_for_players_root:AddChild(WaitingForPlayersWidget(self, 6))
 
@@ -265,7 +265,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb, no_backbutton, def
     waiting_for_players_title:EnableWordWrap( false )
     waiting_for_players_title:SetString( STRINGS.UI.LOBBYSCREEN.waiting_for_players_TITLE )
     waiting_for_players_title:SetColour(BLACK)
-    
+
     self.spawndelaytext = self.waiting_for_players_root:AddChild(Text(BUTTONFONT, 35))
     self.spawndelaytext:SetHAlign(ANCHOR_MIDDLE)
     self.spawndelaytext:SetVAlign(ANCHOR_TOP)
@@ -286,7 +286,7 @@ local LobbyScreen = Class(Screen, function(self, profile, cb, no_backbutton, def
 
 	self:StartSelection()
 
-	self.inst:ListenForEvent("lobbyplayerspawndelay", function(world, data) 
+	self.inst:ListenForEvent("lobbyplayerspawndelay", function(world, data)
 			if data and data.active then
                 --subtract one so we hang on 0 for a second
                 local str = subfmt(STRINGS.UI.LOBBYSCREEN.SPAWN_DELAY, { time = math.max(0, data.time - 1) })
@@ -349,16 +349,16 @@ function LobbyScreen:BuildSidebar()
     self.playerList = self.sidebar_root:AddChild(PlayerList(self, {right = self.character_scroll_list, down = self.chatbox}))
     self:BuildChatWindow()
 
-    -- Don't use OnControl because we still need the standard Widget version of the function to 
+    -- Don't use OnControl because we still need the standard Widget version of the function to
     -- call OnControl on the children.
     self.sidebar_root.BlockScroll = function(widget, control, down)
         local mouseX = TheInput:GetScreenPosition().x
         local w,h = TheSim:GetScreenSize()
 
-        if mouseX and mouseX < (w*.2) then 
+        if mouseX and mouseX < (w*.2) then
             if down then
-                -- Eat scroll commands so the character list doesn't scroll when the mouse is over the sidebar 
-                if control == CONTROL_SCROLLBACK or control == CONTROL_SCROLLFWD then 
+                -- Eat scroll commands so the character list doesn't scroll when the mouse is over the sidebar
+                if control == CONTROL_SCROLLBACK or control == CONTROL_SCROLLFWD then
                     return true
                 end
             end
@@ -476,7 +476,7 @@ function LobbyScreen:BuildChatWindow()
     self:MakeTextEntryBox(self.chat_pane)
 
     self.chatqueue = self.chat_pane:AddChild(LobbyChatQueue(TheNet:GetUserID(), self.chatbox.textbox, function() --[[TODO: put sounds back in!]] end))
-    self.chatqueue:SetPosition(42,-20) 
+    self.chatqueue:SetPosition(42,-20)
 
     self.chat_pane:SetPosition(75,RESOLUTION_Y-410,0)
 end
@@ -488,7 +488,7 @@ function LobbyScreen:BuildCharacterDetailsBox()
 
     self.charactername = self.character_details:AddChild(Text(TALKINGFONT, 28))
     self.charactername:SetHAlign(ANCHOR_MIDDLE)
-    self.charactername:SetPosition(7, 35) 
+    self.charactername:SetPosition(7, 35)
     self.charactername:SetRegionSize( 500, 70 )
     self.charactername:SetColour(GOLD)
 
@@ -536,7 +536,7 @@ function LobbyScreen:OnControl(control, down)
             self:DoConfirmQuit()
         end
 
-        return true 
+        return true
     end
 
     if TheInput:ControllerAttached() and
@@ -578,7 +578,7 @@ function LobbyScreen:OnControl(control, down)
         elseif self.in_loadout then
  			if control == CONTROL_PREVVALUE then  -- r-stick left
     			self.dressup:ScrollBack(control)
-				return true 
+				return true
 			elseif control == CONTROL_NEXTVALUE then -- r-stick right
 				self.dressup:ScrollFwd(control)
 				return true
@@ -655,7 +655,7 @@ function LobbyScreen:RequestResetLobbyCharacter()
 			self:StartSelection()
 		end
 	end
-		
+
 	return false
 end
 
@@ -669,7 +669,7 @@ function LobbyScreen:StartSelection()
 
     self.in_loadout = false
 
-    if self.disconnectbutton then 
+    if self.disconnectbutton then
         self.disconnectbutton:Show()
     end
 
@@ -677,13 +677,13 @@ function LobbyScreen:StartSelection()
     self.characterselect_root:MoveToFront()
     self.loadout_root:Hide()
 
-    if self.backbutton ~= nil then 
+    if self.backbutton ~= nil then
         self.backbutton:Hide()
     end
 
     self:DoFocusHookups()
 
-    local right_widget = self.character_scroll_list 
+    local right_widget = self.character_scroll_list
     local players = self.playerList:GetPlayerTable()
     self.playerList:BuildPlayerList(players, { right = right_widget, down = self.chatbox })
 
@@ -703,7 +703,7 @@ function LobbyScreen:StartLoadout()
     self.loadout_root:MoveToFront()
     self.loadout_root:Show()
 
-    if self.backbutton ~= nil then 
+    if self.backbutton ~= nil then
         self.backbutton:Show()
     end
 
@@ -763,7 +763,7 @@ end
                 self:SelectPortrait()
             return true
         elseif dir == MOVE_RIGHT then
-                self:Scroll(1)  
+                self:Scroll(1)
                 self:SelectPortrait()
             return true
         end
@@ -774,7 +774,7 @@ function LobbyScreen:SetPortraitImage()
 	if self.in_loadout then
 		local name = self.dressup:GetBaseSkin()
 
-		if softresolvefilepath("images/names_"..self.currentcharacter..".xml") then 
+		if softresolvefilepath("images/names_"..self.currentcharacter..".xml") then
 			self.heroname:Show()
 			self.heroname:SetTexture("images/names_"..self.currentcharacter..".xml", self.currentcharacter..".tex")
 		else
@@ -787,7 +787,7 @@ function LobbyScreen:SetPortraitImage()
 		if name and name ~= "" and self.currentcharacter ~= "random" then
 			self.heroportrait:SetTexture("bigportraits/"..name..".xml", name.."_oval.tex", self.currentcharacter.."_none.tex")
 
-			if self.currentcharacter ~= "wes"  then 
+			if self.currentcharacter ~= "wes"  then
 				self.basequote:Show()
 				self.basequote:SetString("\""..(STRINGS.SKIN_QUOTES[name] or "").."\"")
 			else
@@ -795,7 +795,7 @@ function LobbyScreen:SetPortraitImage()
 			end
 
 			self.basetitle:Show()
-			self.basetitle:SetString(GetSkinName(name)) 
+			self.basetitle:SetString(GetSkinName(name))
 		else
 			if self.currentcharacter ~= "wes" and self.currentcharacter ~= "random" then
 				self.basequote:Show()
@@ -812,7 +812,7 @@ function LobbyScreen:SetPortraitImage()
 			--self.basequote:SetString(STRINGS.CHARACTER_QUOTES[self.currentcharacter] or "")
 			--print("Loading image", "bigportraits/"..self.currentcharacter.."_none.xml", self.currentcharacter.."_none_oval.tex")
 
-			if softresolvefilepath("bigportraits/"..self.currentcharacter.."_none.xml") then 
+			if softresolvefilepath("bigportraits/"..self.currentcharacter.."_none.xml") then
 				self.heroportrait:SetTexture("bigportraits/"..self.currentcharacter.."_none.xml", self.currentcharacter.."_none_oval.tex")
 				self.heroportrait:SetPosition(RESOLUTION_X/2-200, RESOLUTION_Y-345)
 			else
@@ -907,7 +907,7 @@ function LobbyScreen:OnUpdate(dt)
     if self.dressup and self.dressup.puppet then
         self.dressup.puppet:EmoteUpdate(dt)
     end
-    
+
     if self.pending_reset_character_request then
 		self:RequestResetLobbyCharacter()
 	end

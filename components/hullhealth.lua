@@ -10,6 +10,7 @@ local HullHealth = Class(function(self, inst)
 
 	self.leak_damage = {}
 	self.leak_indicators = {}
+	self.leak_indicators_dynamic = {}
 	self.small_leak_dmg = 0.1
 	self.med_leak_dmg = 0.75
 	self.hull_dmg = 0
@@ -31,6 +32,16 @@ function HullHealth:UpdateHealth()
 
 	local hull_damage = 0
 	for k,v in pairs(self.leak_indicators) do
+		if v ~= nil and v:IsValid() then
+			local state = v.components.boatleak.current_state
+			if state == "small_leak" then
+				hull_damage = hull_damage + 0.5
+			elseif state == "med_leak" then
+				hull_damage = hull_damage + 1
+			end
+		end
+	end
+	for _,v in pairs(self.leak_indicators_dynamic) do
 		if v ~= nil and v:IsValid() then
 			local state = v.components.boatleak.current_state
 			if state == "small_leak" then
@@ -68,9 +79,9 @@ function HullHealth:RefreshLeakIndicator(leak_idx)
 		if leak_indicator == nil then
 			leak_indicator = SpawnPrefab("boat_leak")
 			local leak_x, leak_z = self:GetLeakPosition(leak_idx)
-			leak_indicator.Transform:SetPosition(leak_x, 0, leak_z)		
+			leak_indicator.Transform:SetPosition(leak_x, 0, leak_z)
 			self.leak_indicators[leak_idx] = leak_indicator
-			leak_indicator.components.boatleak:SetBoat(self.inst)			
+			leak_indicator.components.boatleak:SetBoat(self.inst)
 		end
 
 		if leak_damage >= self.med_leak_dmg then
@@ -83,14 +94,12 @@ function HullHealth:RefreshLeakIndicator(leak_idx)
 	return false
 end
 
+local THROAWAY_ALIGNMENT_VALUE = 0.258 -- math.cos(75 degrees)
 function HullHealth:OnCollide(data)
 	local boat_x, boat_y, boat_z = self.inst.Transform:GetWorldPosition()
 	local hit_pos_x, hit_pos_z = data.world_position_on_a_x, data.world_position_on_a_z
 	local boat_to_hit_x, boat_to_hit_z = VecUtil_Normalize(hit_pos_x - boat_x, hit_pos_z - boat_z)
 	local hit_angle = VecUtil_GetAngleInRads(boat_to_hit_x, boat_to_hit_z)
-	local speed_damage_factor = data.speed_damage_factor or 1.5
-	local damage_bias = 0.55
-	local damage = math.abs(data.hit_dot_velocity) / speed_damage_factor - damage_bias
 
 	local delta_angle = math.pi * 2
 	local leak_idx = 1
@@ -106,33 +115,38 @@ function HullHealth:OnCollide(data)
 			delta_angle = leak_delta_angle
 		end
 	end
-	
-	if damage > 0.01 then
+
+    local absolute_hit_normal_overlap_percentage = math.abs(data.hit_dot_velocity)
+
+	local damage_alignment = absolute_hit_normal_overlap_percentage/(data.speed_damage_factor or 1)
+
+    -- This functionally throws away every collision where the hit normal is about 60 degrees away from our velocity normal.
+    -- Helps give the 'grazing' effect.
+	if damage_alignment > THROAWAY_ALIGNMENT_VALUE then
 		local boat_physics = self.inst.components.boatphysics
-		local leakdamagetest = boat_physics:GetVelocity() * math.abs(data.hit_dot_velocity) - 1.1 --0.9
-		if leakdamagetest > 0 then
-			local leak_dmg = self.leak_damage[leak_idx]	
+
+        local hit_adjacent_speed = boat_physics:GetVelocity() * absolute_hit_normal_overlap_percentage
+
+		if hit_adjacent_speed > 2 then
+			local leak_dmg = self.leak_damage[leak_idx]
 
 			if leak_dmg < 1 then
-				local damage_applied = math.min(leakdamagetest, 1 - leak_dmg)
-			--	damage = damage - leak_dmg
+				local damage_applied = math.min(hit_adjacent_speed - 2, 1 - leak_dmg)
 				leak_dmg = leak_dmg + damage_applied
-			--  print("LEAK DAMAGE",leak_dmg)
 				self.leak_damage[leak_idx] = leak_dmg
 			end
 
 			if self:RefreshLeakIndicator(leak_idx) and self.inst.components.walkableplatform ~= nil then
-	            for k,v in pairs(self.inst.components.walkableplatform:GetEntitiesOnPlatform()) do
-	            	if v:IsValid() then
-	                	v:PushEvent("on_standing_on_new_leak")
-	                end
-	            end			
+	            for k in pairs(self.inst.components.walkableplatform:GetPlayersOnPlatform()) do
+	                k:PushEvent("on_standing_on_new_leak")
+	            end
 			end
 		end
 
-		local max_health_damage = 20
-		local health_damage = max_health_damage * math.abs(data.hit_dot_velocity)
-		self.inst.components.health:DoDelta(-health_damage)		
+        if hit_adjacent_speed > TUNING.BOAT.OARS.MALBATROSS.FORCE then
+            local velocity_damage_percent = math.min(hit_adjacent_speed / TUNING.BOAT.MAX_ALLOWED_VELOCITY, 1)
+		    self.inst.components.health:DoDelta(-1 * math.floor(TUNING.BOAT.MAX_HULL_HEALTH_DAMAGE * velocity_damage_percent))
+        end
 	end
 end
 
@@ -151,7 +165,7 @@ function HullHealth:OnSave()
     return (#leaks > 0 and { boat_leaks = leaks }) or nil
 end
 
-function HullHealth:OnLoad(data)
+function HullHealth:LoadPostPass(newents, data)
     if data ~= nil and data.boat_leaks ~= nil then
         for i, leak_data in ipairs(data.boat_leaks) do
             self.leak_damage[leak_data.leak_point] = leak_data.leak_damage

@@ -10,7 +10,7 @@ Prefab = Class( function(self, name, fn, assets, deps, force_path_search)
     self.assets = assets or {}
     self.deps = deps or {}
     self.force_path_search = force_path_search or false
-    
+
     if PREFAB_SKINS[self.name] ~= nil then
 		for _,prefab_skin in pairs(PREFAB_SKINS[self.name]) do
 			table.insert( self.deps, prefab_skin )

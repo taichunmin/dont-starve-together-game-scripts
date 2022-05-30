@@ -96,7 +96,7 @@ local function FindExistingHerd()
     if existingherd then
         spawnpt = TheWorld.components.deerherding.herdlocation
 
-        local notnearplayers = function(pt) 
+        local notnearplayers = function(pt)
             local x, y, z = pt:Get()
             return not IsAnyPlayerInRange(x, y, z, 35)
         end

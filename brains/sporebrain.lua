@@ -11,10 +11,11 @@ local SporeBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
 end)
 
+local TOFOLLOW_ONEOF_TAGS = {"player", "character", "monster"}
 local function FindObjectToFollow(inst)
 	--(inst, radius, fn, musttags, canttags, mustoneoftags)
 	if not inst.followobj or not inst.followobj:IsValid() or inst.followobj:GetPosition():Dist(inst:GetPosition()) > MAX_FOLLOW_DIST + 10 then
-        inst.followobj = FindEntity(inst, MAX_FOLLOW_DIST, nil, nil, nil, {"player", "character", "monster"})
+        inst.followobj = FindEntity(inst, MAX_FOLLOW_DIST, nil, nil, nil, TOFOLLOW_ONEOF_TAGS)
 	end
 
 	return inst.followobj

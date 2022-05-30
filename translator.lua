@@ -11,7 +11,7 @@
 require "class"
 require "util"
 
-Translator = Class(function(self) 
+Translator = Class(function(self)
 	self.languages = {}
 	self.defaultlang = nil
 
@@ -41,7 +41,7 @@ local function JoinPOFileMultilineStrings(fname)
 			-- otherwise, flush it
 			lines[#lines+1] = workline
 			workline = i
-		end	
+		end
 	end
 	-- flush what we had left
 	lines[#lines+1] = workline
@@ -146,7 +146,7 @@ function Translator:ConvertEscapeCharactersToString(str)
 	newstr = string.gsub(newstr, "\r", "\\r")
 	newstr = string.gsub(newstr, "\"", "\\\"")
 	newstr = string.gsub(newstr, "\\", "\\\\")
-	
+
 	return newstr
 end
 
@@ -155,7 +155,7 @@ function Translator:ConvertEscapeCharactersToRaw(str)
 	newstr = string.gsub(newstr, "\\r", "\r")
 	newstr = string.gsub(newstr, "\\\"", "\"")
 	newstr = string.gsub(newstr, "\\\\", "\\")
-	
+
 	return newstr
 end
 
@@ -192,13 +192,13 @@ function Translator:GetLongestTranslatedString(strid)
             end
         end
     end
-    
+
     return str
 end
 
 --Recursive function to process table structure
 local function DoTranslateStringTable( base, tbl )
-	
+
 	for k,v in pairs(tbl) do
 		local path = base.."."..k
 		if type(v) == "table" then
@@ -210,7 +210,7 @@ local function DoTranslateStringTable( base, tbl )
 			else
 			    str = LanguageTranslator:GetTranslatedString(path)
 			end
-			
+
 			if str and str ~= "" then
 				tbl[k] = str
 			end

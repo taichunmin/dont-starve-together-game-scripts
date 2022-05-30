@@ -8,7 +8,7 @@ local OnlineStatus = Class(Widget, function(self, show_borrowed_info )
     Widget._ctor(self, "OnlineStatus")
 
 	self.show_borrowed_info = show_borrowed_info
-	
+
     self.fixed_root = self:AddChild(Widget("root"))
     self.fixed_root:SetVAnchor(ANCHOR_MIDDLE)
     self.fixed_root:SetHAnchor(ANCHOR_MIDDLE)
@@ -31,7 +31,7 @@ function OnlineStatus:OnUpdate()
         self.text:SetColour(80/255, 143/255, 244/255, 255/255)
         self.text:Show()
     end
-    
+
     -- If you're offline I guess it doesn't matter that you're borrowed?
     if TheFrontEnd:GetIsOfflineMode() or not TheSim:IsLoggedOn() then
         self.text:SetString(STRINGS.UI.MAINSCREEN.OFFLINE)

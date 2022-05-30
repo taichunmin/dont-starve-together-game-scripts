@@ -11,12 +11,13 @@ function Explosive:SetOnExplodeFn(fn)
     self.onexplodefn = fn
 end
 
+local BURNT_CANT_TAGS = { "INLIMBO" }
 function Explosive:OnBurnt()
 	if not self.skip_camera_flash then
 		for i, v in ipairs(AllPlayers) do
 			local distSq = v:GetDistanceSqToInst(self.inst)
-			local k = math.max(0, math.min(1, distSq / 1600))
-			local intensity = k * (k - 2) + 1 --easing.outQuad(k, 1, -1, 1)
+			local k = math.max(0, math.min(1, distSq / 400))
+			local intensity = k * 0.75 * (k - 2) + 0.75 --easing.outQuad(k, 1, -1, 1)
 			if intensity > 0 then
 				v:ScreenFlash(intensity)
 				v:ShakeCamera(CAMERASHAKE.FULL, .7, .02, intensity / 2)
@@ -32,12 +33,12 @@ function Explosive:OnBurnt()
     local totaldamage = self.explosivedamage * stacksize
 
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.explosiverange, nil, { "INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, self.explosiverange, nil, BURNT_CANT_TAGS)
 
     for i, v in ipairs(ents) do
         if v ~= self.inst and v:IsValid() and not v:IsInLimbo() then
             if v.components.workable ~= nil and v.components.workable:CanBeWorked() then
-                v.components.workable:WorkedBy(self.inst, self.buildingdamage)
+                v.components.workable:WorkedBy(self.inst, self.buildingdamage * stacksize)
             end
 
             --Recheck valid after work

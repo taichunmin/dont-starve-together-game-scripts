@@ -6,10 +6,10 @@ local function OnEnemyKilled(inst, enemy, scenariorunner)
         enemy.scene_deathfn = nil
     end
 	inst.wave[enemy] = nil
-	if not next(inst.wave) then		
+	if not next(inst.wave) then
 		GetPlayer().components.sanity:SetPercent(1)
 		scenariorunner:ClearScenario()
-	end	
+	end
 end
 
 local function ListenForDeath(inst, scenariorunner)
@@ -42,7 +42,7 @@ local function StartWave(inst)
     for i = 1, steps do
         local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
         local wander_point = pt + offset
-       
+
         if ground.Map and ground.Map:GetTileAtPoint(wander_point.x, wander_point.y, wander_point.z) ~= GROUND.IMPASSABLE then
 			local particle = SpawnPrefab("poopcloud")
             particle.Transform:SetPosition( wander_point.x, wander_point.y, wander_point.z )
@@ -69,7 +69,7 @@ local function PlayerFar(inst)
 end
 
 local function OnLoad(inst, scenariorunner)
-	inst:ListenForEvent("onremove", function() 
+	inst:ListenForEvent("onremove", function()
 	inst.wave = StartWave(inst)
 	ListenForDeath(inst, scenariorunner)
 	TrapInRocks(inst)

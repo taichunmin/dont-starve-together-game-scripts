@@ -54,7 +54,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
     self.slotdata = slotdata or {}
 
     self.servercreationscreen = servercreationscreen
-  
+
     self.server_settings_page = self:AddChild(Widget("server_settings_page"))
 
     self.left_line = self.server_settings_page:AddChild(Image("images/ui.xml", "line_vertical_5.tex"))
@@ -100,7 +100,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
             return self.server_pw.textbox
         else
             return nil
-        end        
+        end
     end)
     self.server_desc.textbox:SetOnTabGoToTextEditWidget(function()
         if self.server_pw.textbox:IsVisible() then
@@ -109,7 +109,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
             return self.server_name.textbox
         else
             return nil
-        end  
+        end
     end)
     self.server_pw.textbox:SetOnTabGoToTextEditWidget(function()
         if self.server_name.textbox:IsVisible() then
@@ -118,7 +118,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
             return self.server_desc.textbox
         else
             return nil
-        end  
+        end
     end)
 
     self.privacy_type = Widget("Privacy Group")
@@ -149,12 +149,12 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
     self.clan_admins.spinner:SetOnChangedFn(function() self.servercreationscreen:MakeDirty() end)
 
     self.game_mode = TEMPLATES.LabelSpinner(STRINGS.UI.SERVERCREATIONSCREEN.GAMEMODE, GetGameModesSpinnerData(ModManager:GetEnabledServerModNames()), narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
-    self.game_mode.spinner:SetOnChangedFn(function(selected, old) 
+    self.game_mode.spinner:SetOnChangedFn(function(selected, old)
 		self.servercreationscreen.world_tab:OnChangeGameMode(selected)
 		self.servercreationscreen:MakeDirty()
 		end)
 
-    self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "info.tex", "", false, false, function() 
+    self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "info.tex", "", false, false, function()
             local mode_title = GetGameModeString( self.game_mode.spinner:GetSelectedData() )
             if mode_title == "" then
                 mode_title = STRINGS.UI.GAMEMODES.UNKNOWN
@@ -164,8 +164,8 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
                 mode_body = STRINGS.UI.GAMEMODES.UNKNOWN_DESCRIPTION
             end
             TheFrontEnd:PushScreen(PopupDialogScreen(
-                    mode_title, 
-                    mode_body, 
+                    mode_title,
+                    mode_body,
                     {{ text = STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end }}))
         end))
     self.game_mode.info_button:SetPosition(160, -2)
@@ -205,7 +205,7 @@ local ServerSettingsTab = Class(Widget, function(self, slotdata, servercreations
     end)
     self.online_mode.spinner:Disable() -- This is not user configurable
 
-    self.page_widgets = 
+    self.page_widgets =
     {
         self.server_intention,
         self.server_name,

@@ -70,7 +70,7 @@ local VoteDialog = Class(Widget, function(self, owner)
     self.buttons = {}
     self.labels_desc = {}
     for i = 1, MAX_VOTE_OPTIONS do
-        local desc = self.options_root:AddChild(Text(BUTTONFONT, 35)) 
+        local desc = self.options_root:AddChild(Text(BUTTONFONT, 35))
         desc:SetColour(0, 0, 0, 1)
         desc:SetScale(LABEL_SCALE)
         desc:Hide()

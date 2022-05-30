@@ -4,8 +4,9 @@ require "map/graphnode"
 require "map/extents"
 require "map/terrain"
 local Rooms = require "map/rooms"
+local PrefabSwaps = require("prefabswaps")
 
-Graph = Class(function(self, id, args)   
+Graph = Class(function(self, id, args)
 	self.id = id
 	--print("Graph",id, args.parent,  args.data,  args.nodes,  args.edges,  args.exit_nodes,  args.exit_edges,  args.default_bg)
     -- Is this graph inside another graph
@@ -13,28 +14,28 @@ Graph = Class(function(self, id, args)
     if self.parent then
     	self.parent:AddChild(self)
     end
-    
+
     -- Do we have any child graphs
     self.children =  args.children or {}
-    
+
     -- Nodes within a graph may have cross linking
     self.nodes =  args.nodes or {}
     -- keep a track on the internal edges
     self.edges =  args.edges or {}
-    
+
     -- These nodes connect this subgraph to other graphs by Edges
     self.exit_nodes =  args.exit_nodes or {}
     self.exit_edges =  args.exit_edges or {}
-    
+
     -- Data
     --self.data = data
 
 	-- Used as a logical representation of progression
 	self.story_depth = args.story_depth or -1
-    
+
     -- Search
     self.visited = false
-    
+
     self.data = {position={x=0,y=0},old_pos={x=0,y=0}, width=0, height=0, size=0, value= args.default_bg, background=args.background}
 
     self.room_tags = args.room_tags
@@ -67,11 +68,11 @@ function Graph:Dump(depth)
 	if depth == nil then
 		depth = ""
 	end
-	
+
 	if self.parent then
 		print(depth..self.id.." Parent: "..self.parent.id)
 	end
-	
+
 	print(depth..self.id.." Nodes: "..GetTableSize(self.nodes))
 	for k,v in pairs(self.nodes) do
 	    print(depth.."     Node: ",k, "Data:", v.data)
@@ -80,12 +81,12 @@ function Graph:Dump(depth)
 	for k,v in pairs(self.edges) do
 	    print(depth.."     Edge: ",k, v.node1.id,"-->",v.node2.id)
 	end
-	
+
 	print(depth..self.id.." Exits: "..GetTableSize(self.exit_edges))
 	for k,v in pairs(self.exit_edges) do
 	    print(depth.."     Exit: ",k,v.node1.id.."("..v.node1.graph.id..")","-->",v.node2.id.."("..v.node2.graph.id..")")
 	end
-	
+
 	print(depth..self.id.." Children: "..GetTableSize(self.children))
 	for k,v in pairs(self.children) do
 	    print(depth.."     Child: ",k)
@@ -98,18 +99,18 @@ end
 ------------------------------------------------------------------------------------------
 
 function EncodeColour(item, encoded)
-	local found = false 
-	if #encoded.colours > 0 then			
+	local found = false
+	if #encoded.colours > 0 then
 		for k,colour in ipairs(encoded.colours) do
-			if colour~= nil and colour.a == item.c.a and colour.r == item.c.r and 
+			if colour~= nil and colour.a == item.c.a and colour.r == item.c.r and
 									colour.g == item.c.g and colour.b == item.c.b then
 				found = true
 				item.c = k
 				break
-			end 
+			end
 		end
 	end
-		
+
 	if found == false then
 		table.insert(encoded.colours, item.c)
 		item.c = #encoded.colours
@@ -119,7 +120,7 @@ end
 function Graph:SaveEncode(map, encoded)
 
 	--print ("Encoding: ".. self.id)
-	
+
 	if encoded.nodes == nil then
 		encoded.nodes = {}
 		encoded.edges = {}
@@ -127,34 +128,34 @@ function Graph:SaveEncode(map, encoded)
 		encoded.story_depths = {}
 		encoded.colours = {}
 	end
-	
-	
+
+
 	local edge_ids = {}
 	--print("\tExits: "..GetTableSize(self.exit_edges))
 	for id,edge in pairs(self.exit_edges) do
-		local encoded_edge = edge:SaveEncode(map)		
-		EncodeColour(encoded_edge, encoded)		
+		local encoded_edge = edge:SaveEncode(map)
+		EncodeColour(encoded_edge, encoded)
 		table.insert(encoded.edges, encoded_edge)
 		table.insert(edge_ids, #encoded.edges)
 	end
 
-	
+
 	--print("\tGot "..GetTableSize(self.edges) .." edges")
 	for id,edge in pairs(self.edges) do
-		local encoded_edge = edge:SaveEncode(map)		
-		EncodeColour(encoded_edge, encoded)		
+		local encoded_edge = edge:SaveEncode(map)
+		EncodeColour(encoded_edge, encoded)
 		table.insert(encoded.edges, encoded_edge)
 		table.insert(edge_ids, #encoded.edges)
 	end
-	
+
 	for id,node in pairs(self.exit_nodes) do --self.nodes) do
-		local encoded_node =  node:SaveEncode(map)		
-		EncodeColour(encoded_node, encoded)		
+		local encoded_node =  node:SaveEncode(map)
+		EncodeColour(encoded_node, encoded)
 
 		table.insert(encoded.ids, id)
 		table.insert(encoded.story_depths, self.story_depth)
 		table.insert(encoded.nodes, encoded_node)
-		
+
 		for edge_id,edge in ipairs(encoded.edges) do
 			local edge = encoded.edges[edge_id]
 			if edge.n1 == id then
@@ -163,19 +164,19 @@ function Graph:SaveEncode(map, encoded)
 			if edge.n2 == id then
 				edge.n2 = #encoded.nodes
 			end
-			
+
 		end
 	end
 
 	--print("\tGot "..GetTableSize(self.nodes) .." nodes")
 	for id,node in pairs(self.nodes) do --self.nodes) do
-		local encoded_node =  node:SaveEncode(map)		
-		EncodeColour(encoded_node, encoded)		
+		local encoded_node =  node:SaveEncode(map)
+		EncodeColour(encoded_node, encoded)
 
 		table.insert(encoded.ids, id)
 		table.insert(encoded.story_depths, self.story_depth)
 		table.insert(encoded.nodes, encoded_node)
-		
+
 		for edge_id,edge in ipairs(encoded.edges) do
 			local edge = encoded.edges[edge_id]
 			if edge.n1 == id then
@@ -184,7 +185,7 @@ function Graph:SaveEncode(map, encoded)
 			if edge.n2 == id then
 				edge.n2 = #encoded.nodes
 			end
-			
+
 		end
 	end
 	--print("\tGot children "..GetTableSize(self.children) .." nodes")
@@ -207,15 +208,15 @@ function Graph:SaveEncode(map, encoded)
 --					poly = poly_def,
 --					c = self.colour,
 --					}
---	end	
+--	end
 --
 --	for id,node in pairs(self.nodes) do --self.nodes) do
---		local encoded_node = GetEncodedBackgroundNone(map, id)		
---		EncodeColour(encoded_node, encoded)		
+--		local encoded_node = GetEncodedBackgroundNone(map, id)
+--		EncodeColour(encoded_node, encoded)
 --
 --		table.insert(encoded.ids, id)
 --		table.insert(encoded.nodes, encoded_node)
---		
+--
 --		for edge_id,edge in ipairs(encoded.edges) do
 --			local edge = encoded.edges[edge_id]
 --			if edge.n1 == id then
@@ -224,10 +225,10 @@ function Graph:SaveEncode(map, encoded)
 --			if edge.n2 == id then
 --				edge.n2 = #encoded.nodes
 --			end
---			
+--
 --		end
 --	end
-	
+
 	--print ("\tEncoding complete: ".. self.id, #encoded.ids, #encoded.colours, #encoded.nodes, #encoded.edges)
 end
 
@@ -239,14 +240,14 @@ end
 function Graph:AddChild(child)
 	assert(child)
 	assert(not self.children[child.id])
-	
+
 	self.children[child.id] = child
 end
 
 function Graph:RemoveChild(child)
 	assert(child)
 	assert(self.children[child.id])
-	
+
 	return table.remove(self.children, child.id)
 end
 function Graph:GetChildren()
@@ -256,9 +257,9 @@ end
 function Graph:LockGraph(id, left_exit_node, right_exit_node, lock)
 	-- Lock a graph by adding an exit edge across both nodes
 	--print(self.id..":LockGraph: Edge id:".. id, "Left Node:"..left_exit_node.id.."("..left_exit_node.graph.id..")", "Right Node:"..right_exit_node.id.."("..right_exit_node.graph.id..")", "Lock:"..lock.type)
-	
+
 	--print(lock, lock.type, lock.key)
-	
+
 	assert(lock)
 	--assert(lock.type)
 	--assert(lock.key)
@@ -267,9 +268,9 @@ function Graph:LockGraph(id, left_exit_node, right_exit_node, lock)
 		id = "Exit"..GetTableSize(self.exit_edges)
 	end
 	assert(not self.exit_edges[id])
-	
+
 	self.exit_edges[id] = Edge(id, left_exit_node, right_exit_node, lock)
-	
+
 	WorldSim:AddExternalLink(left_exit_node.id, right_exit_node.id)
 
 	return self.exit_edges[id]
@@ -279,7 +280,7 @@ function Graph:GetExitEdges()
 	local edges = {}
  	for k,v in pairs(self.exit_edges) do
  		edges[k] = v
-	end	
+	end
 	return edges
 end
 
@@ -291,13 +292,13 @@ end
 
 function Graph:IsConnectedTo(graph)
 	assert(graph)
-	
+
 	for k,edge in pairs(self.edges) do
 		if edge.node1.graph == graph or edge.node2.graph == graph then
 			return true
 		end
 	end
-		
+
 	return false
 end
 
@@ -310,75 +311,75 @@ function Graph:AddEdgeByNode(id, node1, node2, lock)
 	--print(self.id..":AddEdgeByNode: ",id, node1, node2, lock)
 	assert(node1)
 	assert(node2)
-	
+
 	if id  ==  nil then
 		id = "edge"..GetTableSize(self.edges)
 	end
 	assert(not self.edges[id])
-		
-	
+
+
 	if self.nodes[node1.id] == nil then
 		--print(self.id.."::AddEdgeByNode: Node1 ",node1.id,"added")
 		self:AddNodeByNode(node1)
 	end
-	
+
 	if self.nodes[node2.id] == nil then
 		--print(self.id.."::AddEdgeByNode: Node2 ",node2.id,"added")
 		self:AddNodeByNode(node2)
 	end
-	
+
 	local edge =  Edge(id, node1, node2, lock, {colour = self.colour})
 	self.edges[id] = edge
-	
+
 	--print(self.id.."::AddEdgeByNode: Edge ",id,"added")
-	
+
 	-- The Edge constructor adds itself to its nodes, this isn't necessary (I hope)
 	--table.insert(self.nodes[node1.id].edges, edge)
 	--table.insert(self.nodes[node2.id].edges, edge)
 	--self.nodes[node2.id].edges[id] = self.edges[id]
-	
+
 	assert(self.nodes[node1.id])
 	assert(self.nodes[node2.id])
-	
+
 	WorldSim:AddLink(node1.id, node2.id)
-		
+
 	return self.edges[id]
 end
 
 function Graph:AddEdge(args)
 	--print(self.id..":AddEdge:", args.id, args.node1id, args.node2id, args.lock)
-	
+
 	assert(args.node1id)
 	assert(args.node2id)
 	assert(self.nodes[args.node1id])
 	assert(self.nodes[args.node2id])
-	
+
 	if args.id  ==  nil then
 		args.id = "edge"..GetTableSize(self.edges)
 	end
 	assert(not self.edges[args.id])
-	
-	
+
+
 	local node1 = self.nodes[args.node1id]
 	local node2 = self.nodes[args.node2id]
-		
+
 	return self:AddEdgeByNode(args.id, node1, node2, args.lock)
 end
 
 function Graph:GetEdge(id)
 	assert(id)
-	
+
 	--print(self.id..":GetEdge ["..id.."]")
-	if self.edges[id] then	
+	if self.edges[id] then
 		--print(self.id..":GetEdge found edge ["..id.."]")
 		return self.edges[id]
 	end
-	
-	if self.exit_edges[id] then	
+
+	if self.exit_edges[id] then
 		--print(self.id..":GetEdge found exit edge ["..id.."]")
 		return self.exit_edges[id]
 	end
-	
+
 	for k,child in pairs(self.children) do
 		--print(self.id..":GetEdge looking in child", id, child.id)
 		edge = child:GetEdge(id)
@@ -387,7 +388,7 @@ function Graph:GetEdge(id)
 			return edge
 		end
 	end
-	
+
 	--print(self.id..":GetEdge could not find ["..id.."]")
 	--dumptable(self.edges)
 	return nil
@@ -403,17 +404,17 @@ function Graph:GetEdges(incChildren)
 	local edges = {}
  	for k,v in pairs(self.edges) do
  		edges[k] = v
-	end	
-	
+	end
+
 	if incChildren ~= nil and incChildren == true then
 		for id,child in pairs(self.children) do
 			local childEdges = child:GetEdges(incChildren)
 		 	for k,v in pairs(childEdges) do
 		 		edges[k] = v
-			end	
+			end
 		end
 	end
-	
+
 	return edges
 end
 
@@ -425,7 +426,7 @@ function Graph:AddNodeByNode(node)
 	assert(node)
 	assert(node.id)
 	assert(not self.nodes[node.id])
-	
+
 	node.graph = self
 	self.nodes[node.id] = node
 
@@ -436,12 +437,12 @@ function Graph:AddNodeByNode(node)
 	--dumptable(self.nodes[node.id])
 	--print(self.id..":Graph:AddNodeByNode ", node.id, GetTableSize(self.nodes), "Parent:"..self.nodes[node.id].graph.id)
 	--dumptable(self.nodes)
-	
+
 	assert(self.nodes[node.id])
 	--print(self.id..":Graph:AddNodeByNode ", self.id, node.id, node.data.value, node.colour.r, node.colour.g, node.colour.b, node.colour.a)
 
-	WorldSim:AddChild(self.id, node.id, node.data.value, 
-						node.colour.r, node.colour.g, node.colour.b, node.colour.a, 
+	WorldSim:AddChild(self.id, node.id, node.data.value,
+						node.colour.r, node.colour.g, node.colour.b, node.colour.a,
 						node.data.type, node.data.internal_type or NODE_INTERNAL_CONNECTION_TYPE.EdgeSite)
 
 	if node.data.tags ~= nil and #node.data.tags >0 then
@@ -458,16 +459,16 @@ function Graph:AddNodeByNode(node)
 end
 
 function Graph:AddNode(args)
-	
+
 	if args.id  ==  nil then
 		args.id = "node"..GetTableSize(self.nodes)
 	end
 	assert(args.id)
-	
+
 	--print(self.id..":Graph:AddNode ", args.id, args.data)
 	--dumptable(self.nodes)
 	assert(not self.nodes[args.id])
-	
+
 	--print("AddNode:", args.id, args.data)
 	--dumptable(args.data)
 	local node = Node(args.id, args.data)
@@ -488,7 +489,7 @@ function Graph:GetNodeById(id)
 	if self.id == id then
 		return self
 	end
-	
+
 	if self.nodes[id] ~= nil then
 		--print("Found",id)
 		return self.nodes[id]
@@ -499,7 +500,7 @@ function Graph:GetNodeById(id)
 			--print("Child Found",id)
 			return childNode
 		end
-	end	
+	end
 
 	return nil
 end
@@ -515,17 +516,17 @@ function Graph:GetNodes(incChildren)
 	local nodes = {}
  	for k,v in pairs(self.nodes) do
  		nodes[k] = v
-	end	
-	
+	end
+
 	if incChildren ~= nil and incChildren == true then
 		for id,child in pairs(self.children) do
 			local childNodes = child:GetNodes(incChildren)
 		 	for k,v in pairs(childNodes) do
 		 		nodes[k] = v
-			end	
+			end
 		end
 	end
-	
+
 	--print(self.id.." Graph:GetNodes"..GetTableSize(self.nodes).."-->"..GetTableSize(nodes))
 	return nodes
 end
@@ -536,7 +537,7 @@ function Graph:GetRandomNode()
 	while not picked or picked.data.entrance == true do
 		local choice = math.random(GetTableSize(self.nodes)) -1
 		--print("Graph:GetRandomNode", choice)
- 	
+
 		for k,v in pairs(self.nodes) do
 			--print("Graph:GetRandomNode", choice,  k,v)
 			picked = v
@@ -546,7 +547,7 @@ function Graph:GetRandomNode()
 			choice = choice -1
 		end
  	end
-	
+
  	assert(picked)
 	return picked
 end
@@ -555,24 +556,24 @@ function Graph:GetRandomNodeForExit()
 	local picks = {}
 	for k, v in pairs(self.nodes) do
 		if v.data.entrance ~= true and (v.data.random_node_exit_weight == nil or v.data.random_node_exit_weight > 0) then
-			picks[v] = v.data.random_node_exit_weight or 1
+			picks[k] = v.data.random_node_exit_weight or 1
 		end
 	end
-	
+
  	assert(next(picks) ~= nil)
-	return weighted_random_choice(picks)
+	return self.nodes[weighted_random_choice(picks)]
 end
 
 function Graph:GetRandomNodeForEntrance()
 	local picks = {}
 	for k, v in pairs(self.nodes) do
 		if v.data.entrance ~= true and (v.data.random_node_entrance_weight == nil or v.data.random_node_entrance_weight > 0) then
-			picks[v] = v.data.random_node_entrance_weight or 1
+			picks[k] = v.data.random_node_entrance_weight or 1
 		end
 	end
-	
+
  	assert(next(picks) ~= nil)
-	return weighted_random_choice(picks)
+	return self.nodes[weighted_random_choice(picks)]
 end
 
 -- Each increment is one more link ie: a triangle would be factor 1, a line factor 0, a tree factor 0, a square -> 1
@@ -580,9 +581,9 @@ function Graph:CrosslinkRandom(crossLinkFactor)
 	if GetTableSize(self.nodes)<=2 then
 		return
 	end
-	
+
 	local iterations = 0
-	while crossLinkFactor > 0 and iterations < 20 do	
+	while crossLinkFactor > 0 and iterations < 20 do
 		local n1 = self:GetRandomNode()
 		local n2 = self:GetRandomNode()
 		if n1 ~= n2 and n1:IsConnectedTo(n2)~= true and not n1.data.entrance and not n2.data.entrance then
@@ -645,14 +646,14 @@ end
 function Graph:RemoveNode(id)
 	assert(id)
 	assert(self.nodes[id])
-	
+
 	self.nodes[id].graph = nil
-	
+
 	return table.remove(self.nodes, id)
 end
 
 function Graph:UpdateMinimumRadius()
-	
+
 	local x,y,r =  GetMinimumRadiusForNodes(self.nodes)
 
 	self.data.size = math.ceil(r)
@@ -669,42 +670,42 @@ function Graph:ConvertGround(map, spawnFN, entities, check_col)
 	local nodes = self:GetNodes(true)
 	for k,node in pairs(nodes) do
 		node:ConvertGround(map, spawnFN, entities, check_col)
-	end 
+	end
 end
 
 function Graph:Populate(map, spawnFN, entities, check_col)
 	local nodes = self:GetNodes(true)
-	--print(self.id.." Populating "..GetTableSize(nodes).." nodes...")	
+	--print(self.id.." Populating "..GetTableSize(nodes).." nodes...")
 	for k,node in pairs(nodes) do
 		node:Populate(map, spawnFN, entities, check_col)
-	end 
-	--[[  
+	end
+	--[[
 	local edges = self:GetEdges(true)
-	--print("Populating "..GetTableSize(nodes)+GetTableSize(self.exit_edges).." edges...")	
+	--print("Populating "..GetTableSize(nodes)+GetTableSize(self.exit_edges).." edges...")
 	for k,edge in pairs(edges) do
 		edge:Populate(map, spawnFN, entities, check_col)
 	end
-	
+
 	for k,edge in pairs(self.exit_edges) do
 		edge:Populate(map, spawnFN, entities, check_col)
 	end
 	--]]
-	
+
     -- Spawn the default items
 	local children = self:GetChildren()
-	
+
 	local graph_minus = {}
 	local graph_points = {}
-	
+
 	for k,child in pairs(children) do
-		-- Generate a list of points that are inside 
+		-- Generate a list of points that are inside
 		-- minus the areas that their subchildren take up
 		-- This list is all the area that is not covered by nodes
 		child:GetArea(map, graph_points, graph_minus)
 		--print(self.id..":"..child.id.." graph_points now ".. GetTableSize(graph_points))
 		--print(self.id..":"..child.id.." graph_minus now ".. GetTableSize(graph_minus))
 	end
-	
+
 	for key,point in pairs(graph_points) do
 	 	--print(key,graph_minus[key])
 	 	if graph_minus[key] == nil then
@@ -715,7 +716,7 @@ end
 
 function Graph:PopulateVoronoi(spawnFN, entities, width, height, world_gen_choices, prefabDensities)
 	local nodes = self:GetNodes(false)
-	--print(self.id.." Populating "..GetTableSize(nodes).." nodes...")	
+	--print(self.id.." Populating "..GetTableSize(nodes).." nodes...")
 	for k,node in pairs(nodes) do
 		node:PopulateVoronoi(spawnFN, entities, width, height, world_gen_choices, prefabDensities)
 		local perTerrain = false
@@ -724,14 +725,14 @@ function Graph:PopulateVoronoi(spawnFN, entities, width, height, world_gen_choic
 		end
 		local backgroundRoom = self:GetBackgroundRoom(self.data.background)
 		node:PopulateChildren(spawnFN, entities, width, height, backgroundRoom, perTerrain, world_gen_choices)
-	end 
+	end
 	for k,child in pairs(self:GetChildren()) do
 		child:PopulateVoronoi(spawnFN, entities, width, height, world_gen_choices, prefabDensities)
 	end
 end
 
 function Graph:GetBackgroundRoom(roomName)
-	if type(roomName) == type("") then 
+	if type(roomName) == type("") then
 		return self:GetRoomForName(roomName)
 	elseif type(roomName) == type({}) then
 		local rooms = {}
@@ -740,7 +741,7 @@ function Graph:GetBackgroundRoom(roomName)
 		end
 		return rooms
 	end
-	return nil	
+	return nil
 end
 
 function Graph:GetRoomForName(roomName)
@@ -758,6 +759,9 @@ function Graph:GlobalPostPopulate(entities, width, height)
 	-- Spawn wormhole pairs (randomly, for now)
 	self:SwapOutWormholeMarkers(entities, width, height)
 
+	self:ResolveCustomizationPrefabs(entities, width, height)
+
+	self:ResolveRandomizationPrefabs(entities, width, height)
 end
 
 function Graph:AddRequiredPrefab(prefab)
@@ -834,12 +838,12 @@ function Graph:ProcessInsanityWormholes(entities, width, height)
 	local DoWormholeLayout = function(node, data)
 		local obj_layout = require("map/object_layout")
 		local prefab_list = {}
-		
+
 		-- Get the list of special items for this node
 
 		local add_fn = {fn=function(...) node:AddEntity(...) end,args={entitiesOut=entities, width=width, height=height, rand_offset = false, debug_prefab_list=prefab_list}}
-		
-		local layout = obj_layout.LayoutForDefinition("WormholeOneShot") 
+
+		local layout = obj_layout.LayoutForDefinition("WormholeOneShot")
 		local prefabs = obj_layout.ConvertLayoutToEntitylist(layout)
 
 		for i,p in ipairs(prefabs) do
@@ -848,7 +852,7 @@ function Graph:ProcessInsanityWormholes(entities, width, height)
 				break
 			end
 		end
-		
+
 		obj_layout.ReserveAndPlaceLayout(node.id, layout, prefabs, add_fn)
 
 	end
@@ -917,6 +921,41 @@ function Graph:SwapOutWormholeMarkers(entities, width, height)
 	entities["wormhole_MARKER"] = nil
 end
 
+function Graph:ResolveCustomizationPrefabs(entities, width, height)
+	local customization_swaps = {}
+	for prefab in pairs(entities) do
+		local real_prefab = PrefabSwaps.ResolveCustomizationPrefab(prefab)
+		if real_prefab then
+			customization_swaps[real_prefab] = customization_swaps[real_prefab] or {}
+			table.insert(customization_swaps[real_prefab], prefab)
+		end
+	end
+	for real_prefab, proxies in pairs(customization_swaps) do
+		entities[real_prefab] = entities[real_prefab] or {}
+		for _, proxy_prefab in ipairs(proxies) do
+			for _, entity in ipairs(entities[proxy_prefab]) do
+				table.insert(entities[real_prefab], entity)
+			end
+			entities[proxy_prefab] = nil
+		end
+	end
+end
+
+function Graph:ResolveRandomizationPrefabs(entities, width, height)
+	for prefab in pairs(entities) do
+		if PrefabSwaps.IsRandomizationPrefab(prefab) then
+			for i, data in ipairs(entities[prefab]) do
+				local real_prefab = PrefabSwaps.ResolveRandomizationPrefab(prefab)
+				if entities[real_prefab] == nil then
+					entities[real_prefab] = {}
+				end
+				table.insert(entities[real_prefab], data)
+			end
+			entities[prefab] = nil
+		end
+	end
+end
+
 
 function Graph:ApplyWormhole(entities, width, height, x1, y1, x2, y2)
     assert(self.wormholeprefab ~= nil, "Level must specify a wormhole prefab.")
@@ -927,19 +966,19 @@ function Graph:ApplyWormhole(entities, width, height, x1, y1, x2, y2)
 		local xx1 = math.floor((x1 - width/2)*TILE_SCALE*10)/10
 		local yy1 = math.floor((y1 - height/2)*TILE_SCALE*10)/10
 		local firstMarkerData = {data={teleporter={target=self.MIN_WORMHOLE_ID+1}}, id = self.MIN_WORMHOLE_ID, x=xx1,z=yy1}
-			
+
 		local xx2 = math.floor((x2 - width/2)*TILE_SCALE*10)/10
 		local yy2 = math.floor((y2 - height/2)*TILE_SCALE*10)/10
 		local secondMarkerData = {data={teleporter={target=self.MIN_WORMHOLE_ID}}, id = self.MIN_WORMHOLE_ID+1, x=xx2,z=yy2}
-			
+
 		self.MIN_WORMHOLE_ID = self.MIN_WORMHOLE_ID + 2
-	
+
 		table.insert(entities[self.wormholeprefab], firstMarkerData)
 		table.insert(entities[self.wormholeprefab], secondMarkerData)
 	else
 		self.error = true
 		self.error_string = "ApplyWormhole nil wormhole"
-	end 
+	end
 end
 
 function Graph:SwapWormholesAndRoadsExtra(entities, width, height)
@@ -952,11 +991,11 @@ function Graph:SwapWormholesAndRoadsExtra(entities, width, height)
 		entities[self.wormholeprefab] = {}
 	end
 	--self:SwapWormholesAndRoads(entities, width, height)
-	
+
     local wx1,wy1,wx2,wy2 = WorldSim:GetWormholesExtra()
-    if wx1 ~= nil and wy1 ~= nil and wx2 ~= nil and wy2 ~= nil and 
+    if wx1 ~= nil and wy1 ~= nil and wx2 ~= nil and wy2 ~= nil and
     	#wx1 ~= 0 and #wx1 == #wy1 and #wx1 == #wx2 and #wx1 == #wy2  then
-    	
+
     	for i=1,#wx1 do
     		self:ApplyWormhole(entities, width, height, wx1[i], wy1[i], wx2[i], wy2[i])
     		if self.error == true then
@@ -964,7 +1003,7 @@ function Graph:SwapWormholesAndRoadsExtra(entities, width, height)
     		end
     	end
  	else
-		if wx1 ~= nil and #wx1 ~= 0 then 
+		if wx1 ~= nil and #wx1 ~= 0 then
 			self.error = true
 			self.error_string = "GetWormholesExtra failed"
 		end
@@ -978,15 +1017,15 @@ function Graph:ApplyPoisonTag()
 		-- TODO: Need to handle BG nodes
 		if IsNodeTagged(node, "ForceDisconnected") then --or string.find(node.id, "LOOP_BLANK_SUB")~=nil then
 			WorldSim:ClearNodeLinks(node.id)
-			
+
 			-- TODO: Move this to a more generic location
 			--WorldSim:SetNodeType(node.id, 1) -- BLANK
 		end
 		local flags = 0
-		if IsNodeTagged(node, "ForceConnected") then 
+		if IsNodeTagged(node, "ForceConnected") then
 			flags = flags + 0x000002
 		end
-		if IsNodeTagged(node, "RoadPoison") then 
+		if IsNodeTagged(node, "RoadPoison") then
 			flags = flags + 0x000004
 		end
 		WorldSim:SetSiteFlags(node.id, flags)
@@ -995,7 +1034,7 @@ function Graph:ApplyPoisonTag()
 	local children = self:GetChildren()
 	for k,child in pairs(children) do
 		child:ApplyPoisonTag()
-	end	
+	end
 end
 
 function Graph:SwapWormholesAndRoads(entities, width, height)
@@ -1004,22 +1043,22 @@ function Graph:SwapWormholesAndRoads(entities, width, height)
 	if entities[self.wormholeprefab] == nil then
 		entities[self.wormholeprefab] = {}
 	end
-	
+
 	--print(self.id.."\tSwapWormholesAndRoads", #entities[self.wormholeprefab], self.MIN_WORMHOLE_ID)
 
 	for k,edge in pairs(self.exit_edges) do
-		if edge.node1.id ~= "LOOP_BLANK_SUB" and edge.node2.id ~= "LOOP_BLANK_SUB" 
+		if edge.node1.id ~= "LOOP_BLANK_SUB" and edge.node2.id ~= "LOOP_BLANK_SUB"
 			and edge.node1.id ~= "START" and edge.node2.id ~= "START" then
-			
-			--print(self.id.."\t\t", edge.id, edge.node1.id, edge.node2.id) 
+
+			--print(self.id.."\t\t", edge.id, edge.node1.id, edge.node2.id)
 			-- Get x1,y1,x2,y2 for this edge
 			local x1,y1,x2,y2 = WorldSim:GetWormholes(edge.node1.id, edge.node2.id)
 	    	self:ApplyWormhole(entities, width, height, x1,y1,x2,y2)
 	    end
 	end
-	
+
 	--print(self.id.."\tSwapWormholesAndRoads complete", #entities[self.wormholeprefab])
-	
+
 	local children = self:GetChildren()
 	for k,child in pairs(children) do
 		child:SwapWormholesAndRoads(entities, width, height)

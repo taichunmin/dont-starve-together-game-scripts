@@ -35,10 +35,10 @@ local PenguinBrain = Class(Brain, function(self, inst)
 end)
 
 local function AtRookery(inst)
-    if not inst then 
+    if not inst then
         return false
     end
-    
+
     local homePos = inst.components.knownlocations.GetLocation and inst.components.knownlocations:GetLocation("rookery")
 
     if homePos and inst:GetDistanceSqToPoint(homePos) > 100 then
@@ -84,14 +84,14 @@ local function CheckMyEgg(inst)
 end
 
 local function PrepareForNight(inst)
-    return TheWorld.state.isnight or (TheWorld.state.isdusk and TheWorld.state.timeinphase > .8) or inst.components.sleeper:IsAsleep() 
+    return TheWorld.state.isnight or (TheWorld.state.isdusk and TheWorld.state.timeinphase > .8) or inst.components.sleeper:IsAsleep()
 end
 
 -- Return array of items within the given radius that satisfies the check function
 local function FindItems(inst, radius, fn, tags)
     if inst and inst:IsValid() then
 		local x,y,z = inst.Transform:GetWorldPosition()
-		local ents = TheSim:FindEntities(x,y,z, radius, tags) 
+		local ents = TheSim:FindEntities(x,y,z, radius, tags)
         local lst = {}
 		for k, v in ipairs(ents) do
 			if v ~= inst and v.entity:IsValid() and v.entity:IsVisible() and (not fn or fn(v)) then
@@ -103,23 +103,24 @@ local function FindItems(inst, radius, fn, tags)
 end
 
 -- Go grab an egg if player gets too close to it
+local SCARY_TAGS = { "scarytoprey" }
 local function StealAction(inst)
     if not inst.components.inventory:IsFull() then
         -- Check that my egg exists and is not being held by someone else
         local target = CheckMyEgg(inst)
         local lst
-        local char = GetClosestInstWithTag("scarytoprey", inst, TOOCLOSE)
+        local char = GetClosestInstWithTag(SCARY_TAGS, inst, TOOCLOSE)
         if not target then
-		    lst = FindItems(inst, SEE_DIST/2, function(item) 
-                                                    if  item.components.inventoryitem and 
-                                                        item.components.inventoryitem.canbepickedup and 
+		    lst = FindItems(inst, SEE_DIST/2, function(item)
+                                                    if  item.components.inventoryitem and
+                                                        item.components.inventoryitem.canbepickedup and
                                                         not item.components.inventoryitem:IsHeld() and
-                                                        item:IsOnValidGround() and 
+                                                        item:IsOnValidGround() and
                                                         (item:HasTag("penguin_egg") or item.prefab == inst.eggprefab) then
                                                             return char and char:IsNear(item, TOOCLOSE)
                                                         end
                                                     end)
-	    
+
             if #lst >= 1 then
                 target = lst[math.random(1,#lst)]
             end
@@ -141,7 +142,7 @@ local function GetMigrateLeashPos(inst)
         return nil
     end
     local homePos = inst.components.knownlocations and
-        (inst.components.knownlocations:GetLocation("rookery") or 
+        (inst.components.knownlocations:GetLocation("rookery") or
         inst.components.knownlocations:GetLocation("home"))
     return homePos
 end
@@ -188,7 +189,7 @@ local function LayEggAction(inst)
 
     local delay
     local egg = CheckMyEgg(inst)
-    local nearest = GetClosestInstWithTag("scarytoprey", inst, TOOCLOSE) 
+    local nearest = GetClosestInstWithTag(SCARY_TAGS, inst, TOOCLOSE)
     if nearest and nearest:IsNear(inst, TOOCLOSE) then
         --print("\rTOO CLOSE")
         return
@@ -209,7 +210,7 @@ local function LayEggAction(inst)
                             function()
                                 if not inst:IsValid() then return end
                                 inst.layingEgg = false
-                                nearest = GetClosestInstWithTag("scarytoprey", inst, TOOCLOSE)
+                                nearest = GetClosestInstWithTag(SCARY_TAGS, inst, TOOCLOSE)
 
                                 if PrepareForNight(inst) or not AtRookery(inst) or
                                 (nearest and nearest:IsNear(inst, TOOCLOSE)) then
@@ -232,7 +233,7 @@ local function LayEggAction(inst)
                             function()
                                 if not inst:IsValid() then return end
                                 inst.layingEgg = false
-                                nearest = GetClosestInstWithTag("scarytoprey", inst, TOOCLOSE) 
+                                nearest = GetClosestInstWithTag(SCARY_TAGS, inst, TOOCLOSE)
 
                                 if PrepareForNight(inst) or not AtRookery(inst) or
                                    (TheWorld.state.iswinter and TheWorld.state.temperature <= -15) and
@@ -248,7 +249,7 @@ local function LayEggAction(inst)
                                     inst.eggsLayed = (inst.eggsLayed and inst.eggsLayed + 1) or 1
                                     egg:AddTag("penguin_egg")
                                     egg.components.inventoryitem.nobounce = true
-		                            egg.Transform:SetPosition(inst.Transform:GetWorldPosition())		
+		                            egg.Transform:SetPosition(inst.Transform:GetWorldPosition())
                                     inst.components.knownlocations:RememberLocation("myegg", Vector3(inst.Transform:GetWorldPosition()) )
 
                                     inst.nextPickupTime = GetTime() + GetRandomWithVariance(MIN_TIME_TILL_NEXT_DROP,10)
@@ -266,16 +267,16 @@ local function PickUpEggAction(inst)
         local lst
         local target = CheckMyEgg(inst)
         if not target then
-            lst = FindItems(inst, SEE_DIST, function(item) 
-                                                    if  item.components.inventoryitem and 
-                                                        item.components.inventoryitem.canbepickedup and 
+            lst = FindItems(inst, SEE_DIST, function(item)
+                                                    if  item.components.inventoryitem and
+                                                        item.components.inventoryitem.canbepickedup and
                                                         not item.components.inventoryitem:IsHeld() and
-                                                        item:IsOnValidGround() and 
+                                                        item:IsOnValidGround() and
                                                         (item:HasTag("penguin_egg") or item.prefab == inst.eggprefab) then
                                                             return inst:IsNear(item, 2)
                                                         end
                                                     end)
-	    
+
             if #lst > 1 then
                 target = lst[math.random(1,#lst)]
             end
@@ -341,19 +342,19 @@ function PenguinBrain:OnStart()
     --[[
     local stealnode = PriorityNode(
 	{
-		DoAction(self.inst, function() return StealAction(self.inst) end, "steal", true ),        
+		DoAction(self.inst, function() return StealAction(self.inst) end, "steal", true ),
 	}, 2)
-    --]] 
+    --]]
     local root = PriorityNode(
     {
         IfNode(function() return  self.inst.sg:HasStateTag("flight") end, "Flying",
             ActionNode(function() return FlyAway(self.inst) end)),
-        
+
         WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
 
         -- Penguins will panic and pick up eggs if player comes too close
-		DoAction(self.inst, function() return StealAction(self.inst) end, "PickUp Egg Action", true ),        
+		DoAction(self.inst, function() return StealAction(self.inst) end, "PickUp Egg Action", true ),
 
         -- Scatter for a short distance if player gets too close
      -- RunAway(hunterparams, see_dist, safe_dist, shouldRunFn, runhome)
@@ -365,7 +366,7 @@ function PenguinBrain:OnStart()
         IfNode(function() return ShouldAttack(self.inst) end, "ShouldAttack",
 			ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST, 15)),
 
-        EventNode(self.inst, "gohome", 
+        EventNode(self.inst, "gohome",
             ActionNode(function() return FlyAway(self.inst) end)),
 
         -- Hungry, hungry penguins
@@ -376,7 +377,7 @@ function PenguinBrain:OnStart()
 
         -- If not fighting or eating or protecting eggs, migrate to the rookery
         Leash(self.inst, GetMigrateLeashPos, LEASH_MAX_DIST, LEASH_RETURN_DIST),
-        
+
         -- When at the rookery, lay egg - but not if it's too cold!
         WhileNode(function()
                         return  AtRookery(self.inst) and
@@ -384,7 +385,7 @@ function PenguinBrain:OnStart()
                                 not TheWorld.state.isnight and
                                 self.inst.components.teamattacker.teamleader == nil
                         end,
-                    "Laying Egg ", 
+                    "Laying Egg ",
                     DoAction(self.inst, LayEggAction, "Laying Egg Action", false )),
 
 
@@ -396,14 +397,14 @@ function PenguinBrain:OnStart()
                                (((TheWorld.state.iswinter and TheWorld.state.temperature <= -10))  or
                                 PrepareForNight(self.inst))
                         end,
-                    "PickUp Egg", 
+                    "PickUp Egg",
                     DoAction(self.inst, PickUpEggAction, "Pickup Egg", false )),
 
         -- When at the rookery with nothing else to do, wander around - but don't wander too far from your egg!
         WhileNode(  function()
                             return HerdAtRookery(self.inst) and self.inst.components.teamattacker.teamleader == nil
                         end,
-                    "No Leader Wander Action", 
+                    "No Leader Wander Action",
                     Wander(self.inst,
                             function()
                                 return  self.inst.components.knownlocations:GetLocation("myegg") or
@@ -420,12 +421,12 @@ function PenguinBrain:OnStart()
                 self.inst.components.knownlocations:GetLocation("myegg") or
                 self.inst.components.knownlocations:GetLocation("rookery") or
                 self.inst.components.knownlocations:GetLocation("herd") or
-		        self.inst.Transform:GetWorldPosition(),		
+		        self.inst.Transform:GetWorldPosition(),
                 MAX_WANDER_DIST),
 
         StandStill(self.inst),
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

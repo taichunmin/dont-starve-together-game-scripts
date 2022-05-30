@@ -86,6 +86,14 @@ function Drownable:WashAshore()
     self.inst:DoTaskInTime(4, _onarrive)
 end
 
+function Drownable:ShouldDropItems()
+	if self.inst:HasTag("stronggrip") then
+		return false
+	end
+
+	return self.shoulddropitemsfn == nil and true or self.shoulddropitemsfn(self.inst)
+end
+
 function Drownable:OnFallInOcean(shore_x, shore_y, shore_z)
 	self.src_x, self.src_y, self.src_z = self.inst.Transform:GetWorldPosition()
 
@@ -95,12 +103,22 @@ function Drownable:OnFallInOcean(shore_x, shore_y, shore_z)
 
 	self.dest_x, self.dest_y, self.dest_z = shore_x, shore_y, shore_z
 
+	if self.inst.components.sleeper ~= nil then
+		self.inst.components.sleeper:WakeUp()
+	end
+
 	local inv = self.inst.components.inventory
 	if inv ~= nil then
-		Launch(inv:DropActiveItem(), self.inst, 3)
-		local handitem = inv:GetEquippedItem(EQUIPSLOTS.HANDS)
-        if handitem ~= nil then
-			Launch(inv:DropItem(handitem), self.inst, 3)
+		local active_item = inv:GetActiveItem()
+		if active_item ~= nil and not active_item:HasTag("irreplaceable") and not active_item.components.inventoryitem.keepondrown then
+			Launch(inv:DropActiveItem(), self.inst, 3)
+		end
+
+		if self:ShouldDropItems() then
+			local handitem = inv:GetEquippedItem(EQUIPSLOTS.HANDS)
+			if handitem ~= nil and not handitem:HasTag("irreplaceable") and not handitem.components.inventoryitem.keepondrown then
+				Launch(inv:DropItem(handitem), self.inst, 3)
+			end
 		end
 	end
 end
@@ -108,14 +126,26 @@ end
 function Drownable:TakeDrowningDamage()
 	local tunings = self.customtuningsfn ~= nil and self.customtuningsfn(self.inst)
 					or TUNING.DROWNING_DAMAGE[string.upper(self.inst.prefab)]
-					or TUNING.DROWNING_DAMAGE.DEFAULT
+					or TUNING.DROWNING_DAMAGE[self.inst:HasTag("player") and "DEFAULT" or "CREATURE"]
+
+	if self.inst.components.moisture ~= nil and tunings.WETNESS ~= nil then
+		self.inst.components.moisture:DoDelta(tunings.WETNESS, true)
+	end
+
+	if self.inst.components.inventory ~= nil then
+		local body_item = self.inst.components.inventory:GetEquippedItem(EQUIPSLOTS.BODY)
+		if body_item ~= nil and body_item.components.flotationdevice ~= nil and body_item.components.flotationdevice:IsEnabled() then
+			body_item.components.flotationdevice:OnPreventDrowningDamage()
+			return
+		end
+	end
 
 	if self.inst.components.hunger ~= nil and tunings.HUNGER ~= nil then
 		local delta = -math.min(tunings.HUNGER, self.inst.components.hunger.current - 30)
 		if delta < 0 then
 			self.inst.components.hunger:DoDelta(delta)
 		end
-	end    
+	end
 
 	if self.inst.components.health ~= nil then
 		if tunings.HEALTH_PENALTY ~= nil then
@@ -128,7 +158,7 @@ function Drownable:TakeDrowningDamage()
 				self.inst.components.health:DoDelta(delta, false, "drowning", true, nil, true)
 			end
 		end
-	end    
+	end
 
 	if self.inst.components.sanity ~= nil and tunings.SANITY ~= nil then
 		local delta = -math.min(tunings.SANITY, self.inst.components.sanity.current - 30)
@@ -137,25 +167,26 @@ function Drownable:TakeDrowningDamage()
 		end
 	end
 
-	if self.inst.components.moisture ~= nil and tunings.WETNESS ~= nil then
-		self.inst.components.moisture:DoDelta(tunings.WETNESS, true)
-	end
-
 	if self.ontakedrowningdamage ~= nil then
 		self.ontakedrowningdamage(self.inst, tunings)
 	end
 end
 
-function Drownable:GiveupAndDrown()
-	self.inst.components.health:SetPercent(0, 0, "drowning")
-	self.inst:PushEvent(inst.ghostenabled and "makeplayerghost" or "playerdied", { skeleton = false })
-	self.inst.components.inventory:DropEverything(true)
-end
-
 function Drownable:DropInventory()
+	if not self:ShouldDropItems() then
+		return
+	end
+
 	local inv = self.inst.components.inventory
 	if inv ~= nil then
-		local to_drop = shuffledKeys(inv.itemslots)
+		local to_drop = {}
+		for k, v in pairs(inv.itemslots) do
+			if not v:HasTag("irreplaceable") and not v.components.inventoryitem.keepondrown then
+				table.insert(to_drop, k)
+			end
+		end
+		shuffleArray(to_drop)
+
 		for i = 1, math.ceil(#to_drop / 2) do
 			Launch(inv:DropItem(inv.itemslots[ to_drop[i] ], true), self.inst, 2)
 		end

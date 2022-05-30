@@ -90,29 +90,8 @@ local function onignite(inst)
     inst.components.sleepingbag:DoWakeUp()
 end
 
---We don't watch "stop'phase'" because that
---would not work in a clock without 'phase'
-local function wakeuptest(inst, phase)
-    if phase ~= inst.sleep_phase then
-        inst.components.sleepingbag:DoWakeUp()
-    end
-end
-
 local function onwake(inst, sleeper, nostatechange)
-    if inst.sleeptask ~= nil then
-        inst.sleeptask:Cancel()
-        inst.sleeptask = nil
-    end
-
-    inst:StopWatchingWorldState("phase", wakeuptest)
     sleeper:RemoveEventCallback("onignite", onignite, inst)
-
-    if not nostatechange then
-        if sleeper.sg:HasStateTag("tent") then
-            sleeper.sg.statemem.iswaking = true
-        end
-        sleeper.sg:GoToState("wakeup")
-    end
 
     if inst.sleep_anim ~= nil then
         inst.AnimState:PushAnimation("idle", true)
@@ -122,50 +101,13 @@ local function onwake(inst, sleeper, nostatechange)
     inst.components.finiteuses:Use()
 end
 
-local function onsleeptick(inst, sleeper)
-    local isstarving = false
-
-    if sleeper.components.hunger ~= nil then
-        sleeper.components.hunger:DoDelta(inst.hunger_tick, true, true)
-        isstarving = sleeper.components.hunger:IsStarving()
-    end
-
-    if sleeper.components.sanity ~= nil and sleeper.components.sanity:GetPercentWithPenalty() < 1 then
-        sleeper.components.sanity:DoDelta(TUNING.SLEEP_SANITY_PER_TICK, true)
-    end
-
-    if not isstarving and sleeper.components.health ~= nil then
-        sleeper.components.health:DoDelta(TUNING.SLEEP_HEALTH_PER_TICK * 2, true, inst.prefab, true)
-    end
-
-    if sleeper.components.temperature ~= nil then
-        if inst.is_cooling then
-            if sleeper.components.temperature:GetCurrent() > TUNING.SLEEP_TARGET_TEMP_TENT then
-                sleeper.components.temperature:SetTemperature(sleeper.components.temperature:GetCurrent() - TUNING.SLEEP_TEMP_PER_TICK)
-            end
-        elseif sleeper.components.temperature:GetCurrent() < TUNING.SLEEP_TARGET_TEMP_TENT then
-            sleeper.components.temperature:SetTemperature(sleeper.components.temperature:GetCurrent() + TUNING.SLEEP_TEMP_PER_TICK)
-        end
-    end
-
-    if isstarving then
-        inst.components.sleepingbag:DoWakeUp()
-    end
-end
-
 local function onsleep(inst, sleeper)
-    inst:WatchWorldState("phase", wakeuptest)
     sleeper:ListenForEvent("onignite", onignite, inst)
 
     if inst.sleep_anim ~= nil then
         inst.AnimState:PlayAnimation(inst.sleep_anim, true)
         startsleepsound(inst, inst.AnimState:GetCurrentAnimationLength())
     end
-
-    if inst.sleeptask ~= nil then
-        inst.sleeptask:Cancel()
-    end
-    inst.sleeptask = inst:DoPeriodicTask(TUNING.SLEEP_TICK_PERIOD, onsleeptick, nil, sleeper)
 end
 
 local function onsave(inst, data)
@@ -177,6 +119,18 @@ end
 local function onload(inst, data)
     if data ~= nil and data.burnt then
         inst.components.burnable.onburnt(inst)
+    end
+end
+
+local function temperaturetick(inst, sleeper)
+    if sleeper.components.temperature ~= nil then
+        if inst.is_cooling then
+            if sleeper.components.temperature:GetCurrent() > TUNING.SLEEP_TARGET_TEMP_TENT then
+                sleeper.components.temperature:SetTemperature(sleeper.components.temperature:GetCurrent() - TUNING.SLEEP_TEMP_PER_TICK)
+            end
+        elseif sleeper.components.temperature:GetCurrent() < TUNING.SLEEP_TARGET_TEMP_TENT then
+            sleeper.components.temperature:SetTemperature(sleeper.components.temperature:GetCurrent() + TUNING.SLEEP_TEMP_PER_TICK)
+        end
     end
 end
 
@@ -226,8 +180,10 @@ local function common_fn(bank, build, icon, tag, onbuiltfn)
     inst:AddComponent("sleepingbag")
     inst.components.sleepingbag.onsleep = onsleep
     inst.components.sleepingbag.onwake = onwake
+    inst.components.sleepingbag.health_tick = TUNING.SLEEP_HEALTH_PER_TICK * 2
     --convert wetness delta to drying rate
     inst.components.sleepingbag.dryingrate = math.max(0, -TUNING.SLEEP_WETNESS_PER_TICK / TUNING.SLEEP_TICK_PERIOD)
+    inst.components.sleepingbag:SetTemperatureTickFn(temperaturetick)
 
     MakeSnowCovered(inst)
     inst:ListenForEvent("onbuilt", onbuiltfn)
@@ -235,7 +191,7 @@ local function common_fn(bank, build, icon, tag, onbuiltfn)
     MakeLargeBurnable(inst, nil, nil, true)
     MakeMediumPropagator(inst)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     MakeHauntableWork(inst)
@@ -250,9 +206,8 @@ local function tent()
         return inst
     end
 
-    inst.sleep_phase = "night"
     inst.sleep_anim = "sleep_loop"
-    inst.hunger_tick = TUNING.SLEEP_HUNGER_PER_TICK
+    inst.components.sleepingbag.hunger_tick = TUNING.SLEEP_HUNGER_PER_TICK
     --inst.is_cooling = false
 
     inst.components.finiteuses:SetMaxUses(TUNING.TENT_USES)
@@ -268,9 +223,9 @@ local function siestahut()
         return inst
     end
 
-    inst.sleep_phase = "day"
+    inst.components.sleepingbag:SetSleepPhase("day")
     --inst.sleep_anim = nil
-    inst.hunger_tick = TUNING.SLEEP_HUNGER_PER_TICK / 3
+    inst.components.sleepingbag.hunger_tick = TUNING.SLEEP_HUNGER_PER_TICK / 3
     inst.is_cooling = true
 
     inst.components.finiteuses:SetMaxUses(TUNING.SIESTA_CANOPY_USES)

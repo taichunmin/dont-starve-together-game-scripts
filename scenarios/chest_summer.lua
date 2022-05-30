@@ -49,7 +49,7 @@ local function OnCreate(inst, scenariorunner)
 end
 
 
-local function OnLoad(inst, scenariorunner) 
+local function OnLoad(inst, scenariorunner)
     chestfunctions.InitializeChestTrap(inst, scenariorunner, triggertrap)
 end
 

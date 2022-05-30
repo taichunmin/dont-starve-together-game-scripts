@@ -11,12 +11,7 @@ local prefabs =
     "beardhair",
 }
 
-local start_inv =
-{
-    default =
-    {
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
 	start_inv[string.lower(k)] = v.WILSON
 end
@@ -42,27 +37,42 @@ end
 local BEARD_DAYS = { 4, 8, 16 }
 local BEARD_BITS = { 1, 3,  9 }
 
-local function OnGrowShortBeard(inst)
-    inst.AnimState:OverrideSymbol("beard", "beard", "beard_short")
+local function OnGrowShortBeard(inst, skinname)
+    if skinname == nil then
+        inst.AnimState:OverrideSymbol("beard", "beard", "beard_short")
+    else
+        inst.AnimState:OverrideSkinSymbol("beard", skinname, "beard_short" )
+    end
     inst.components.beard.bits = BEARD_BITS[1]
 end
 
-local function OnGrowMediumBeard(inst)
-    inst.AnimState:OverrideSymbol("beard", "beard", "beard_medium")
+local function OnGrowMediumBeard(inst, skinname)
+    if skinname == nil then
+        inst.AnimState:OverrideSymbol("beard", "beard", "beard_medium")
+    else
+        inst.AnimState:OverrideSkinSymbol("beard", skinname, "beard_medium" )
+    end
     inst.components.beard.bits = BEARD_BITS[2]
 end
 
-local function OnGrowLongBeard(inst)
-    inst.AnimState:OverrideSymbol("beard", "beard", "beard_long")
+local function OnGrowLongBeard(inst, skinname)
+    if skinname == nil then
+        inst.AnimState:OverrideSymbol("beard", "beard", "beard_long")
+    else
+        inst.AnimState:OverrideSkinSymbol("beard", skinname, "beard_long" )
+    end
     inst.components.beard.bits = BEARD_BITS[3]
 end
 
 local function master_postinit(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
 
+    inst.components.foodaffinity:AddPrefabAffinity("baconeggs", TUNING.AFFINITY_15_CALORIES_HUGE)
+
     inst:AddComponent("beard")
     inst.components.beard.onreset = OnResetBeard
     inst.components.beard.prize = "beardhair"
+    inst.components.beard.is_skinnable = true
     inst.components.beard:AddCallback(BEARD_DAYS[1], OnGrowShortBeard)
     inst.components.beard:AddCallback(BEARD_DAYS[2], OnGrowMediumBeard)
     inst.components.beard:AddCallback(BEARD_DAYS[3], OnGrowLongBeard)

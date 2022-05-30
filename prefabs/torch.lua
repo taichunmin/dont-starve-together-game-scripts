@@ -32,7 +32,7 @@ local function onequip(inst, owner)
             local fx = SpawnPrefab(fx_prefab)
             fx.entity:SetParent(owner.entity)
             fx.entity:AddFollower()
-            fx.Follower:FollowSymbol(owner.GUID, "swap_object", 0, fx.fx_offset, 0)
+            fx.Follower:FollowSymbol(owner.GUID, "swap_object", fx.fx_offset_x or 0, fx.fx_offset, 0)
             fx:AttachLightTo(owner)
 
             table.insert(inst.fires, fx)
@@ -150,6 +150,8 @@ local function fn()
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
 
+	MakeInventoryFloatable(inst, "med", nil, 0.68)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -165,7 +167,6 @@ local function fn()
     -----------------------------------
 
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
     -----------------------------------
 
     inst:AddComponent("equippable")

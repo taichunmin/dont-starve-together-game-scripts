@@ -1,10 +1,21 @@
 local writeables = require"writeables"
 
 local function gettext(inst, viewer)
-    local text = inst.components.writeable:GetText()
-    return inst:HasTag("burnt") and GetDescription(viewer, inst, "BURNT") or
-            text and string.format('"%s"', text)
-            or GetDescription(viewer, inst, "UNWRITTEN")
+	if inst:HasTag("burnt") then
+		return GetDescription(viewer, inst, "BURNT")
+	end
+
+	local writeable = inst.components.writeable
+    local text = writeable:GetText()
+	if text ~= nil then
+		if IsXB1() then
+			return string.format('"%s"', text)
+		else
+			return text, writeable.text_filter_context or TEXT_FILTER_CTX_CHAT, writeable.writer_netid
+		end
+	end
+
+    return GetDescription(viewer, inst, "UNWRITTEN")
 end
 
 local function onbuilt(inst, data)
@@ -14,12 +25,14 @@ end
 --V2C: NOTE: do not add "writeable" tag to pristine state because it is more
 --           likely for players to encounter signs that are already written.
 local function ontextchange(self, text)
-    if text ~= nil then
-        self.inst:RemoveTag("writeable")
-        self.inst.AnimState:Show("WRITING")
-    else
-        self.inst:AddTag("writeable")
-        self.inst.AnimState:Hide("WRITING")
+    if self.writeable_by_default then
+        if text ~= nil then
+            self.inst:RemoveTag("writeable")
+            self.inst.AnimState:Show("WRITING")
+        else
+            self.inst:AddTag("writeable")
+            self.inst.AnimState:Hide("WRITING")
+        end
     end
 end
 
@@ -27,8 +40,18 @@ local function onwriter(self, writer)
     self.inst.replica.writeable:SetWriter(writer)
 end
 
+local function onautodescribechanged(self, new_ad, old_ad)
+    if new_ad then
+        self.inst.components.inspectable.getspecialdescription = gettext
+    else
+        self.inst.components.inspectable.getspecialdescription = nil
+    end
+end
+
 local Writeable = Class(function(self, inst)
     self.inst = inst
+
+    self.writeable_by_default = true
     self.text = nil
 
     self.writer = nil
@@ -42,14 +65,20 @@ local Writeable = Class(function(self, inst)
 
     self.generatorfn = nil
 
-    inst.components.inspectable.getspecialdescription = gettext
+    self.automatic_description = true
+
+    self.writeable_distance = 3
 
     self.inst:ListenForEvent("onbuilt", onbuilt)
+
+    --self.onwritten = nil
+    --self.onwritingended = nil
 end,
 nil,
 {
     text = ontextchange,
     writer = onwriter,
+    automatic_description = onautodescribechanged,
 })
 
 
@@ -57,12 +86,10 @@ function Writeable:OnSave()
     local data = {}
 
     data.text = self.text
-	if IsXB1() then
-		data.netid = self.netid
-	end
+	data.netid = self.writer_netid
+	data.userid = self.writer_userid
 
     return data
-
 end
 
 function Writeable:OnLoad(data)
@@ -71,15 +98,22 @@ function Writeable:OnLoad(data)
 	else
     	self.text = data.text
 	end
-	if IsXB1() then
-		self.netid = data.netid
-	end
+	self.writer_netid = data.netid
+	self.writer_userid = data.userid
 end
 
-function Writeable:GetText(viewer)
+function Writeable:SetOnWrittenFn(fn)
+    self.onwritten = fn
+end
+
+function Writeable:SetOnWritingEndedFn(fn)
+    self.onwritingended = fn
+end
+
+function Writeable:GetText()
 	if IsXB1() then
-		if self.text and self.netid then
-			return "\1"..self.text.."\1"..self.netid
+		if self.text and self.writer_netid then
+			return "\1"..self.text.."\1"..self.writer_netid
 		end
 	end
     return self.text
@@ -87,6 +121,30 @@ end
 
 function Writeable:SetText(text)
     self.text = text
+end
+
+function Writeable:SetAutomaticDescriptionEnabled(ad_enabled)
+    self.automatic_description = ad_enabled
+end
+
+function Writeable:SetDefaultWriteable(writeable_by_default)
+    if writeable_by_default and not self.writeable_by_default then
+        if self.text ~= nil then
+            self.inst:RemoveTag("writeable")
+            self.inst.AnimState:Show("WRITING")
+        else
+            self.inst:AddTag("writeable")
+            self.inst.AnimState:Hide("WRITING")
+        end
+    elseif not writeable_by_default and self.writeable_by_default then
+        self.inst:RemoveTag("writeable")
+        self.inst.AnimState:Hide("WRITING")
+    end
+    self.writeable_by_default = writeable_by_default
+end
+
+function Writeable:SetWriteableDistance(dist)
+    self.writeable_distance = dist
 end
 
 function Writeable:BeginWriting(doer)
@@ -115,12 +173,22 @@ function Writeable:Write(doer, text)
     --NOTE: text may be network data, so enforcing length is
     --      NOT redundant in order for rendering to be safe.
     if self.writer == doer and doer ~= nil and
-        (text == nil or text:utf8len() <= MAX_WRITEABLE_LENGTH) then
+        (text == nil or text:utf8len() <= (writeables.GetLayout(self.inst.prefab).maxcharacters or MAX_WRITEABLE_LENGTH)) then
+
         if IsRail() then
 			text = TheSim:ApplyWordFilter(text)
 		end
         self:SetText(text)
+
+        if self.onwritten ~= nil then
+            self.onwritten(self.inst, text, doer)
+        end
+
         self:EndWriting()
+
+		if text ~= nil and self.remove_after_write then
+			self.inst:Remove()
+		end
     end
 end
 
@@ -136,19 +204,14 @@ function Writeable:EndWriting()
         self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
         self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
 
-		if IsXB1() then
-			if self.writer:HasTag("player") and self.writer:GetDisplayName() then
-				local ClientObjs = TheNet:GetClientTable()
-				if ClientObjs ~= nil and #ClientObjs > 0 then
-					for i, v in ipairs(ClientObjs) do
-						if self.writer:GetDisplayName() == v.name then
-							self.netid = v.netid
-							break
-						end
-					end
-				end
-			end
+		if self.writer:HasTag("player") then
+			self.writer_userid = self.writer.userid
+			self.writer_netid = TheNet:GetNetIdForUser(self.writer.userid)
 		end
+
+        if self.onwritingended ~= nil then
+            self.onwritingended(self.inst)
+        end
 
         self.writer = nil
     elseif self.screen ~= nil then
@@ -157,6 +220,10 @@ function Writeable:EndWriting()
             self.screen:Kill()
         end
         self.screen = nil
+
+        if self.onwritingended ~= nil then
+            self.onwritingended(self.inst)
+        end
     end
 end
 
@@ -169,7 +236,7 @@ function Writeable:OnUpdate(dt)
         self.inst:StopUpdatingComponent(self)
     elseif (self.writer.components.rider ~= nil and
             self.writer.components.rider:IsRiding())
-        or not (self.writer:IsNear(self.inst, 3) and
+        or not (self.writer:IsNear(self.inst, self.writeable_distance) and
                 CanEntitySeeTarget(self.writer, self.inst)) then
         self:EndWriting()
     end

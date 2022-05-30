@@ -44,7 +44,7 @@ local function AddTextToDialog(w, sizeX, sizeY, title_text, bottom_buttons, butt
 
         -- Does text need to be smaller than 30 for JapaneseOnPS4()?
         w.actions = w.bottom:AddChild(Menu(bottom_buttons, button_spacing, true, style, nil, 30))
-        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height) 
+        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height)
 
         --~ w.focus_forward = w.actions
     end
@@ -89,8 +89,8 @@ end)
 
 function WoodenSignPopup:OnControl(control, down)
     if WoodenSignPopup._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
+
+    if control == CONTROL_CANCEL and not down then
         if #self.buttons > 1 and self.buttons[#self.buttons] then
             self.buttons[#self.buttons].cb()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -104,7 +104,7 @@ function WoodenSignPopup:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
 	if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
 	return table.concat(t, "  ")
 end

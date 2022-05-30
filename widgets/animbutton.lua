@@ -5,11 +5,11 @@ local UIAnim = require "widgets/uianim"
 local AnimButton = Class(Button, function(self, animname, states)
     Button._ctor(self, "AnimButton")
     self.anim = self:AddChild(UIAnim())
-    self.anim:MoveToBack() 
+    self.anim:MoveToBack()
     self.anim:GetAnimState():SetBuild(animname)
     self.anim:GetAnimState():SetBank(animname)
 
-    if states then 
+    if states then
     	self.animstates = states
     end
 

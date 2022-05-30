@@ -13,7 +13,7 @@ end
 local PlayerTargetIndicator = Class(function(self, inst)
     self.inst = inst
 
-    self.max_range = TUNING.MAX_INDICATOR_RANGE * 1.5
+--    self.max_range = TUNING.MAX_INDICATOR_RANGE * 1.5
     self.offScreenPlayers = {}
     self.onScreenPlayersLastTick = {}
     -- self.recentTargetRemoved = {}
@@ -21,13 +21,16 @@ local PlayerTargetIndicator = Class(function(self, inst)
         OnPlayerExited(self, player)
     end
 
-    inst:ListenForEvent("playerexited", self.onplayerexited, TheWorld)
+    --inst:ListenForEvent("playerexited", self.onplayerexited, TheWorld)
+    inst:ListenForEvent("unregister_hudindicatable", self.onplayerexited, TheWorld)
+
     inst:StartUpdatingComponent(self)
 end)
 
 function PlayerTargetIndicator:OnRemoveFromEntity()
     if self.offScreenPlayers ~= nil then
-        self.inst:RemoveEventCallback("playerexited", self.onplayerexited, TheWorld)
+        --self.inst:RemoveEventCallback("playerexited", self.onplayerexited, TheWorld)
+        self.inst:RemoveEventCallback("unregister_hudindicatable", self.onplayerexited, TheWorld)
         for i, v in ipairs(self.offScreenPlayers) do
             self.inst.HUD:RemoveTargetIndicator(v)
         end
@@ -38,30 +41,14 @@ end
 PlayerTargetIndicator.OnRemoveEntity = PlayerTargetIndicator.OnRemoveFromEntity
 
 function PlayerTargetIndicator:ShouldShowIndicator(target)
-    -- local recentlyRemoved = false
-    -- for i, v in ipairs(self.recentTargetRemoved) do
-    --     if v and v.target and v.target == target and v.time < GetTime() then
-    --         recentlyRemoved = true
-    --         table.remove(self.recentTargetRemoved, i)
-    --         break
-    --     end
-    -- end
 
-    return not self:ShouldRemoveIndicator(target)
-        and (--[[recentlyRemoved or]] table.contains(self.onScreenPlayersLastTick, target))
+    return target.components.hudindicatable:ShouldTrack(self.inst)
+        and table.contains(self.onScreenPlayersLastTick, target)
 end
 
 function PlayerTargetIndicator:ShouldRemoveIndicator(target)
-    return target:HasTag("noplayerindicator") or
-            target:HasTag("hiding") or
-            not target:IsNear(self.inst, self.max_range) or
-            target.entity:FrustumCheck() or
-            not CanEntitySeeTarget(self.inst, target)
+    return not target.components.hudindicatable:ShouldTrack(self.inst)
 end
-
--- local function TimeoutHasExpired(time)
---     return ((GetTime() - time) > TIMEOUT)
--- end
 
 function PlayerTargetIndicator:OnUpdate()
     local checked = {}
@@ -82,31 +69,21 @@ function PlayerTargetIndicator:OnUpdate()
     end
 
     --Check which players have moved outside of view
-    for i, v in ipairs(AllPlayers) do
-        if not (checked[v] or v == self.inst) and self:ShouldShowIndicator(v) then
-            self.inst.HUD:AddTargetIndicator(v)
-            table.insert(self.offScreenPlayers, v)
+    if TheWorld.components.hudindicatablemanager then
+        for i, v in pairs(TheWorld.components.hudindicatablemanager.items) do
+            if not (checked[v] or v == self.inst) and self:ShouldShowIndicator(v) then
+                self.inst.HUD:AddTargetIndicator(v)
+                table.insert(self.offScreenPlayers, v)
+            end
+        end
+        self.onScreenPlayersLastTick = {}
+         for i, v in pairs(TheWorld.components.hudindicatablemanager.items) do
+            if v ~= self.inst and v.entity:FrustumCheck() then
+                table.insert(self.onScreenPlayersLastTick, v)
+            end
         end
     end
 
-    --Check if targets that have been removed have been gone for a while (i.e. grace period is expired) -- Not working currently (might not be worth it...)
-    -- for i, v in ipairs(self.recentTargetRemoved) do
-    --     while TimeoutHasExpired(v.time) do
-    --         table.remove(self.recentTargetRemoved, i)
-    --         v = self.recentTargetRemoved[i]
-    --         if v == nil then
-    --             break
-    --         end
-    --     end
-    -- end
-
-    --Make a list of the players who are on screen so we can know who left the screen next update
-    self.onScreenPlayersLastTick = {}
-    for i, v in ipairs(AllPlayers) do
-        if v ~= self.inst and v.entity:FrustumCheck() then
-            table.insert(self.onScreenPlayersLastTick, v)
-        end
-    end
 end
 
 return PlayerTargetIndicator

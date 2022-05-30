@@ -29,7 +29,7 @@ local LavaarenaQuestHistoryPanel = Class(Widget, function(self, festival_key, se
 	line_break:SetPosition(10, 160)
 	line_break:SetScale(1.22, 0.8)
 	line_break:SetTint(107/255, 84/255, 58/255, 0.5)
-	
+
 	line_break = self.grid:AddChild(Image("images/ui.xml", "line_horizontal_4.tex"))
 	line_break:SetPosition(10, -159)
 	line_break:SetScale(1.22, 0.8)
@@ -92,13 +92,13 @@ function LavaarenaQuestHistoryPanel:_BuildStatsPanel(quest_details)
 end
 
 function LavaarenaQuestHistoryPanel:_BuildAchievementsExplorer(festival_key, season, completed_quests)
-    
+
 	local row_w = 425
 
     local row_h = 70;
     local row_spacing = 5;
 	local num_quests = GetTableSize(completed_quests)
-    
+
 	local function ScrollWidgetsCtor(context, index)
 		local w = Widget("quest-cell")
 		w:SetScale(0.64)
@@ -158,7 +158,7 @@ function LavaarenaQuestHistoryPanel:_BuildAchievementsExplorer(festival_key, sea
 
 			w.quest_icon:SetTexture("images/lavaarena_quests.xml", quest_info.quest_id .. ".tex")
 			--w.quest_icon:SetScale(.8)
-			
+
 			w.title:SetString(STRINGS.UI.ACHIEVEMENTS[string.upper(festival_key)].ACHIEVEMENT[quest_info.quest_id].TITLE)
 
 			local achievement_data = EventAchievements:FindAchievementData(festival_key, season, quest_info.quest_id)
@@ -197,7 +197,7 @@ function LavaarenaQuestHistoryPanel:_BuildAchievementsExplorer(festival_key, sea
             apply_fn     = ScrollWidgetApply,
             scrollbar_offset = 0,
             scrollbar_height_offset = -60,
-			scroll_per_click = .5,
+			scroll_per_click = 0.5,
         })
 
     return grid

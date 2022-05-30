@@ -6,13 +6,23 @@ local assets =
 }
 
 local function onequip(inst, owner)
-    --owner.AnimState:OverrideSymbol("swap_body", "swap_backpack", "backpack")
-    owner.AnimState:OverrideSymbol("swap_body", "swap_piggyback", "swap_body")
+
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "swap_piggyback" )
+    else
+        owner.AnimState:OverrideSymbol("swap_body", "swap_piggyback", "swap_body")
+    end
+
     inst.components.container:Open(owner)
 end
 
 local function onunequip(inst, owner)
-    --owner.AnimState:ClearOverrideSymbol("backpack")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
     owner.AnimState:ClearOverrideSymbol("swap_body")
     inst.components.container:Close(owner)
 end
@@ -29,7 +39,7 @@ local function fn()
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank("piggyback")
-    inst.AnimState:SetBuild("piggyback")
+    inst.AnimState:SetBuild("swap_piggyback")
     inst.AnimState:PlayAnimation("anim")
 
     inst.MiniMapEntity:SetIcon("piggyback.png")
@@ -66,6 +76,8 @@ local function fn()
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("piggyback")
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     MakeHauntableLaunchAndDropFirstItem(inst)
 

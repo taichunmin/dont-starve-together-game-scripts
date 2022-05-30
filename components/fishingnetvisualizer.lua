@@ -1,5 +1,5 @@
 local FishingNetVisualizer = Class(function(self, inst)
-    self.inst = inst    
+    self.inst = inst
     self.velocity = 10
     self.retrieve_velocity = 12
     self.collect_radius = 2
@@ -21,7 +21,7 @@ function FishingNetVisualizer:BeginCast(thrower, target_x, target_z)
 	local travel_vec_x, travel_vec_z = VecUtil_Sub(target_x, target_z, thrower_x, thrower_z)
     local spawn_distance = 0.5
 	self.distance_remaining = math.max(VecUtil_Length(travel_vec_x, travel_vec_z) - spawn_distance, 0)
-    
+
 	self.total_distance = self.distance_remaining + spawn_distance
 
 	self.dir_x, self.dir_z = VecUtil_Normalize(VecUtil_Sub(target_x, target_z, thrower_x, thrower_z))
@@ -37,21 +37,26 @@ end
 function FishingNetVisualizer:UpdateWhenMovingToTarget(dt)
 	local my_x, my_y, my_z = self.inst.Transform:GetWorldPosition()
 	local distance_traveled = dt * self.velocity
+	self.distance_remaining = self.distance_remaining or 0 -- just add this to stop a crash that modds were causing
 	if distance_traveled >= self.distance_remaining then
 		distance_traveled = self.distance_remaining
-		
+
 		self.distance_remaining = 0
 
 		self.inst:PushEvent("begin_opening")
 	else
 		self.distance_remaining = self.distance_remaining - distance_traveled
-	end	
+	end
 
     if not self.has_played_throw_pst and self.distance_remaining <= self.distance_to_play_open_anim then
         self.inst:PushEvent("play_throw_pst")
         self.has_played_throw_pst = true
     end
 
+	if self.total_distance == nil then
+		-- adding this here to stop mods from crashing, no idea if this is rigth or not, but we arent using this thing anyway...
+		self.total_distance = self.distance_remaining
+	end
 	local y = self:CalculateY(self.total_distance - self.distance_remaining - self.total_distance * 0.5, self.total_distance, 0.2)
 
 	my_x, my_z = VecUtil_Add(my_x, my_z, VecUtil_Scale(self.dir_x, self.dir_z, distance_traveled))
@@ -72,23 +77,22 @@ function FishingNetVisualizer:UpdateWhenOpening(dt)
     		if accumulated_collect_distance < self.max_captured_entity_collect_distance then
 
 				local entity_position_x, entity_position_y, entity_position_z = v.Transform:GetWorldPosition()
-				local delta_x, delta_z = VecUtil_Normalize(my_x - entity_position_x, my_z - entity_position_z)			
+				local delta_x, delta_z = VecUtil_Normalize(my_x - entity_position_x, my_z - entity_position_z)
 				local collect_distance = self.collect_velocity * dt
 
 				delta_x, delta_z = delta_x * collect_distance, delta_z * collect_distance
-		        local new_entity_position_x, new_entity_position_z = entity_position_x + delta_x, entity_position_z + delta_z
 
 		        local physics = v.Physics
 		        if physics ~= nil then
-		            physics:TeleportRespectingInterpolation(new_entity_position_x, entity_position_y, new_entity_position_z)
+		            physics:TeleportOffset(delta_x, 0, delta_z)
 		        else
-				  v.Transform:SetPosition(new_entity_position_x, entity_position_y, new_entity_position_z)
+				    v.Transform:OffsetPosition(delta_x, 0, delta_z)
 		        end
 
 		        self.captured_entities_collect_distance[v] = accumulated_collect_distance + collect_distance
 	    	end
     	end
-    end		
+    end
 end
 
 function FishingNetVisualizer:BeginOpening()
@@ -96,26 +100,26 @@ function FishingNetVisualizer:BeginOpening()
     local entities = TheSim:FindEntities(my_x,my_y,my_z, self.collect_radius + TUNING.MAX_FISH_SCHOOL_SIZE)
     for k,v in pairs(entities) do
     	v:PushEvent("on_pre_net", self.inst)
-    end		
+    end
 
     entities = TheSim:FindEntities(my_x,my_y,my_z, self.collect_radius)
     for k,v in pairs(entities) do
     	if v ~= self.inst and v.components.inventoryitem ~= nil then
-    		table.insert(self.captured_entities, v)    
-            self.captured_entities_collect_distance[v] = 0        
+    		table.insert(self.captured_entities, v)
+            self.captured_entities_collect_distance[v] = 0
         end
     end
 end
 
 function FishingNetVisualizer:DropItem(item, last_dir_x, last_dir_z, idx)
 
-    local thrower_x, thrower_y, thrower_z = self.thrower.Transform:GetWorldPosition()    
+    local thrower_x, thrower_y, thrower_z = self.thrower.Transform:GetWorldPosition()
 
     local time_between_drops = 0.25
     local initial_delay = 0.15
     item:DoTaskInTime(idx * time_between_drops + initial_delay, function(inst)
 
-        item:ReturnToScene()        
+        item:ReturnToScene()
         item:PushEvent("on_release_from_net")
 
         local drop_vec_x = TheCamera:GetRightVec().x
@@ -135,7 +139,7 @@ function FishingNetVisualizer:DropItem(item, last_dir_x, last_dir_z, idx)
         local pt_z = drop_vec_z * drop_offset + thrower_z + camera_up_vec_z * up_offset_dist
 
         local physics = item.Physics
-        if physics ~= nil then        
+        if physics ~= nil then
             local drop_height = GetRandomWithVariance(0.65, 0.2)
             local pt_y = drop_height + thrower_y
             item.Transform:SetPosition(pt_x, pt_y, pt_z)
@@ -153,7 +157,7 @@ function FishingNetVisualizer:BeginRetrieving()
     for k,v in pairs(self.captured_entities) do
 
         if v:IsValid() then
-            v:RemoveFromScene() 
+            v:RemoveFromScene()
         end
     end
 end
@@ -168,13 +172,13 @@ function FishingNetVisualizer:BeginFinalPickup()
 
         self:DropItem(v, self.last_dir_x, self.last_dir_z, idx)
         idx = idx + 1
-    end		
+    end
 
     --TODO(YOG): Fix me
     self.thrower.AnimState:Show("ARM_carry")
     self.thrower.AnimState:Hide("ARM_normal")
 
-    self.inst:Remove()	
+    self.inst:Remove()
 end
 
 function FishingNetVisualizer:UpdateWhenRetrieving(dt)
@@ -182,15 +186,15 @@ function FishingNetVisualizer:UpdateWhenRetrieving(dt)
 	local thrower_x, thrower_y, thrower_z = self.thrower.Transform:GetWorldPosition()
 	local distance_traveled = dt * self.retrieve_velocity
 
-    self.retrieve_distance_traveled = self.retrieve_distance_traveled + distance_traveled 
+    self.retrieve_distance_traveled = self.retrieve_distance_traveled + distance_traveled
 
 	local dir_x, dir_z = thrower_x - my_x, thrower_z - my_z
 	local dir_length = VecUtil_Length(dir_x, dir_z)
 	local dir_x_normalized, dir_z_normalized = VecUtil_Scale(dir_x, dir_z, 1 / dir_length)
 	local delta_x, delta_z = dir_x_normalized * distance_traveled, dir_z_normalized * distance_traveled
-    
+
     local y = self:CalculateY(self.retrieve_distance_traveled- self.total_distance * 0.5, self.total_distance, 0.15)
-    
+
 	if distance_traveled >= dir_length or dir_length <= self.retrieve_distance then
 		self.inst:PushEvent("begin_final_pickup")
 
@@ -198,7 +202,7 @@ function FishingNetVisualizer:UpdateWhenRetrieving(dt)
         self.last_dir_x, self.last_dir_z = -dir_x_normalized, -dir_z_normalized
 	else
 		my_x, my_z = my_x + delta_x, my_z + delta_z
-		self.inst.Transform:SetPosition(my_x, y, my_z)	
+		self.inst.Transform:SetPosition(my_x, y, my_z)
 	end
 end
 

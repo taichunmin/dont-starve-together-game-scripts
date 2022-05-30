@@ -12,7 +12,7 @@ local function fn()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
-    
+
     inst.AnimState:SetBank("shroom_skin")
     inst.AnimState:SetBuild("shroom_skin")
     inst.AnimState:PlayAnimation("idle")

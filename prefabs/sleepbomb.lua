@@ -42,7 +42,7 @@ local function onthrown(inst)
     inst.Physics:SetDamping(0)
     inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
     inst.Physics:ClearCollisionMask()
-    inst.Physics:CollidesWith(COLLISION.WORLD)
+    inst.Physics:CollidesWith(COLLISION.GROUND)
     inst.Physics:CollidesWith(COLLISION.OBSTACLES)
     inst.Physics:CollidesWith(COLLISION.ITEMS)
     inst.Physics:SetCapsule(.2, .2)
@@ -70,6 +70,8 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
+
+	inst.Transform:SetTwoFaced()
 
     MakeInventoryPhysics(inst)
 

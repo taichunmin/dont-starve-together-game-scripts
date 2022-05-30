@@ -18,7 +18,7 @@ local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCal
     self.serverinfo = serverinfo
     self.successCallback = successCallback
     self.errorCallback = errorCallback
-    self.launchtime = GetTime()
+    self.launchtime = GetStaticTime()
 	self.errorStartingServers = false
 
     --darken everything behind the dialog
@@ -63,7 +63,7 @@ local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCal
 		local spacing = 165
 		local buttons =
 		{
-			{text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function()
+			{text=STRINGS.UI.LOBBYSCREEN.CANCEL, cb = function()
 				self:OnCancel()
 			end},
 		}
@@ -76,7 +76,7 @@ local LaunchingServerPopup = Class(Screen, function(self, serverinfo, successCal
 		self.buttons = buttons
 		self.default_focus = self.menu
 	end
-	
+
     self.time = 0
     self.progress = 0
 end)

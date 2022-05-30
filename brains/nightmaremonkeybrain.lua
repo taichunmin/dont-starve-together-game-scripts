@@ -19,7 +19,7 @@ local function EquipWeapon(inst, weapon)
 end
 
 function NightmareMonkeyBrain:OnStart()
-    
+
     local root = PriorityNode(
     {
     	WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),

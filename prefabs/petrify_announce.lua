@@ -25,7 +25,7 @@ local function PlayPetrifySound(proxy)
     end
 
     inst.SoundEmitter:PlaySound("dontstarve/common/together/petrified/post_distant")
-    inst:Remove() 
+    inst:Remove()
 end
 
 local function fn()

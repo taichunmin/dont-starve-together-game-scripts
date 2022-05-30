@@ -1,6 +1,6 @@
 MinPeriod = Class(BehaviourNode, function(self, inst, minperiod, immediate, child)
     BehaviourNode._ctor(self, "MinPeriod", {child})
-    
+
     self.inst = inst
     self.minperiod = minperiod
     if not immediate then
@@ -18,21 +18,21 @@ function MinPeriod:Visit()
 			return
 		end
 	end
-	    
+
     child:Visit()
     if child.status == SUCCESS then
 		self.lastsuccesstime = GetTime()
     end
-    
+
 	self.status = child.status
-	
+
 end
 
 function MinPeriod:DBString()
     if self.minperiod then
 		local time = GetTime()
-		
-		
+
+
 		local time_since_success = time - (self.lastsuccesstime or 0)
 		if not self.lastsuccesstime or time_since_success > self.minperiod then
 			return string.format("OK (min period is %2.2f)", self.minperiod)

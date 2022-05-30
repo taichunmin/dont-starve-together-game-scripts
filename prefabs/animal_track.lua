@@ -33,7 +33,7 @@ local function fn()
     MakeInventoryPhysics(inst)
 
     inst:AddTag("track")
-    
+
     inst.AnimState:SetBank("track")
     inst.AnimState:SetBuild("koalefant_tracks")
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)

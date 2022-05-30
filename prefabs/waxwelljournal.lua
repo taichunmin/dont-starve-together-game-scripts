@@ -190,6 +190,7 @@ local function fn()
     inst:AddComponent("inventoryitem")
 
     inst:AddComponent("prototyper")
+    inst.components.prototyper.restrictedtag = "shadowmagic"
     inst.components.prototyper.onturnon = onturnon
     inst.components.prototyper.onturnoff = onturnoff
     inst.components.prototyper.onactivate = onactivate

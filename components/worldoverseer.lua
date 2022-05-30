@@ -28,7 +28,7 @@ local WorldOverseer = Class(function(self, inst)
 	for i, v in ipairs(AllPlayers) do
 		self:OnPlayerJoined(self.inst, v)
     end
-    
+
     self._v2_seenplayers = {}
     self.last_heartbeat_poll_time = os.time()
     self.heartbeat_poll_counter = 0
@@ -186,7 +186,7 @@ function WorldOverseer:DumpIndividualPlayerStats(stat, event)
 end
 
 function WorldOverseer:DumpPlayerStats()
-    local playerstats = self:CalcPlayerStats() 
+    local playerstats = self:CalcPlayerStats()
     for i,stat in ipairs(playerstats) do
         self:DumpIndividualPlayerStats(stat, "heartbeat.player")
     end
@@ -366,12 +366,12 @@ function WorldOverseer:HeartbeatPoll()
 
     local time_now = os.time()
 
-    local client_table = TheNet:GetClientTable()
+    local client_table = TheNet:GetClientTable() or {}
     local current_players = {}
     for _,v in ipairs(client_table) do
         current_players[v.userid] = { prefab = v.prefab }
     end
-    
+
     local resumed_from_suspend = (time_now - self.last_heartbeat_poll_time) > 15 * 60
     self.last_heartbeat_poll_time = time_now
 
@@ -406,7 +406,7 @@ function WorldOverseer:HeartbeatPoll()
         end
     end
 
-    --Send heartbeat after some time. We want this to come after the rest of this update, so that coming back from a resume will 
+    --Send heartbeat after some time. We want this to come after the rest of this update, so that coming back from a resume will
     self.heartbeat_poll_counter = self.heartbeat_poll_counter + WORLDOVERSEER_HEARTBEAT_POLL
     if self.heartbeat_poll_counter > WORLDOVERSEER_HEARTBEAT then
         self.heartbeat_poll_counter = 0

@@ -3,7 +3,7 @@ chest_openfunctions = require("scenarios/chest_openfunctions")
 
 local function OnCreate(inst, scenariorunner)
 
-	local items = 
+	local items =
 	{
 		{
 			--Body Items
@@ -59,7 +59,7 @@ local function OnCreate(inst, scenariorunner)
 	chestfunctions.AddChestItems(inst, items)
 end
 
-local function OnLoad(inst, scenariorunner) 
+local function OnLoad(inst, scenariorunner)
    	chestfunctions.InitializeChestTrap(inst, scenariorunner, GetRandomItem(chest_openfunctions))
 end
 

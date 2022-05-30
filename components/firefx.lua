@@ -20,7 +20,7 @@ local FireFX = Class(function(self, inst)
         self.light.entity:SetParent(inst.entity)
     end
 
-    inst:StartUpdatingComponent(self) 
+    inst:StartUpdatingComponent(self)
 end)
 
 function FireFX:OnRemoveEntity()

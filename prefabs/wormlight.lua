@@ -65,8 +65,8 @@ local function item_commonfn(bank, build, masterfn)
     inst.entity:AddLight()
     inst.entity:AddNetwork()
 
-    inst.AnimState:SetBank("worm_light")
-    inst.AnimState:SetBuild("worm_light")
+    inst.AnimState:SetBank(bank)
+    inst.AnimState:SetBuild(build)
     inst.AnimState:PlayAnimation("idle")
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 
@@ -186,6 +186,62 @@ local function popbloom(inst, target)
     end
 end
 
+
+local function OnOwnerChange(inst)
+    local newowners = {}
+    local owner = inst._target
+    local isrider = false
+    while true do
+        newowners[owner] = true
+
+        local rider = owner.components.rideable and owner.components.rideable:GetRider()
+        local invowner = owner.components.inventoryitem and owner.components.inventoryitem.owner
+
+        if inst._owners[owner] then
+            inst._owners[owner] = nil
+        else
+            if owner.components.rideable then
+                inst:ListenForEvent("riderchanged", inst._onownerchange, owner)
+            end
+            if not rider and owner.components.inventoryitem then
+                inst:ListenForEvent("onputininventory", inst._onownerchange, owner)
+                inst:ListenForEvent("ondropped", inst._onownerchange, owner)
+            end
+        end
+
+        local nextowner = rider or invowner
+        if not nextowner then break end
+        isrider = rider ~= nil
+        owner = nextowner
+    end
+
+    inst.fx.entity:SetParent(owner.entity)
+
+    if inst._popbloom ~= nil and inst._popbloom ~= owner then
+        popbloom(inst, inst._popbloom)
+        if isrider then
+            pushbloom(inst, owner)
+            inst._popbloom = owner
+        else
+            inst._popbloom = nil
+        end
+    end
+
+    for k, v in pairs(inst._owners) do
+        if k:IsValid() then
+            if k.components.inventoryitem then
+                inst:RemoveEventCallback("onputininventory", inst._onownerchange, k)
+                inst:RemoveEventCallback("ondropped", inst._onownerchange, k)
+            end
+            if k.components.rideable then
+                inst:RemoveEventCallback("riderchanged", inst._riderchanged, k)
+            end
+        end
+    end
+
+    inst._owners = newowners
+end
+
 local function light_ontarget(inst, target)
     if target == nil or target:HasTag("playerghost") or target:HasTag("overcharge") then
         inst:Remove()
@@ -196,6 +252,7 @@ local function light_ontarget(inst, target)
         inst.components.spell:OnFinish()
     end
 
+    inst._target = target
     target.wormlight = inst
     --FollowSymbol position still works on blank symbol, just
     --won't be visible, but we are an invisible proxy anyway.
@@ -214,29 +271,7 @@ local function light_ontarget(inst, target)
     end
 
     pushbloom(inst, target)
-
-    if target.components.rideable ~= nil then
-        local rider = target.components.rideable:GetRider()
-        if rider ~= nil then
-            pushbloom(inst, rider)
-            inst.fx.entity:SetParent(rider.entity)
-        else
-            inst.fx.entity:SetParent(target.entity)
-        end
-
-        inst:ListenForEvent("riderchanged", function(target, data)
-            if data.oldrider ~= nil then
-                popbloom(inst, data.oldrider)
-                inst.fx.entity:SetParent(target.entity)
-            end
-            if data.newrider ~= nil then
-                pushbloom(inst, data.newrider)
-                inst.fx.entity:SetParent(data.newrider.entity)
-            end
-        end, target)
-    else
-        inst.fx.entity:SetParent(target.entity)
-    end
+    OnOwnerChange(inst)
 end
 
 local function light_onfinish(inst)
@@ -282,6 +317,9 @@ local function light_commonfn(duration, fxprefab)
     inst.persists = false --until we get a target
     inst.fx = SpawnPrefab(fxprefab)
     inst.OnRemoveEntity = light_onremove
+
+    inst._owners = {}
+    inst._onownerchange = function() OnOwnerChange(inst) end
 
     return inst
 end

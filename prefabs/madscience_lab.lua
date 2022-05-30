@@ -20,9 +20,9 @@ local SCIENCE_STAGES =
     { time = 2, anim = "cooking_loop3", pre_anim = "cooking_loop3_pre", fire_pre_anim = "fire3_pre", fire_anim = "fire3"},
 }
 
-local EXPERIMENT_RESULTS = 
+local EXPERIMENT_RESULTS =
 {
-    halloween_experiment_bravery = 
+    halloween_experiment_bravery =
     {
         halloweenpotion_bravery_small = 2,
         halloweenpotion_bravery_large = 1,
@@ -42,15 +42,24 @@ local EXPERIMENT_RESULTS =
         halloweenpotion_embers = 1,
         halloweenpotion_sparks = 1,
     },
+    halloween_experiment_moon =
+    {
+        halloweenpotion_moon = 1,
+    },
     halloween_experiment_root =
     {
         livingtree_root = 1,
     },
 }
 
+local NUM_TO_SPAWN =
+{
+	halloweenpotion_moon = { [1] = 0.5, [2] = 0.3, [3] = 0.2 },
+}
+
 for _, v in pairs(EXPERIMENT_RESULTS) do
     for k, _ in pairs(v) do
-        table.insert(prefabs, k)
+		table.insert(prefabs, k)
     end
 end
 
@@ -74,7 +83,7 @@ end
 
 local function onturnon(inst)
     if inst.components.madsciencelab ~= nil and not inst:HasTag("burnt") and not inst.components.madsciencelab:IsMakingScience() then
-        if not (inst.AnimState:IsCurrentAnimation("hit") or inst.AnimState:IsCurrentAnimation("hit") or inst.AnimState:IsCurrentAnimation("place")) then
+        if not (inst.AnimState:IsCurrentAnimation("hit") or inst.AnimState:IsCurrentAnimation("place")) then
             PlayAnimation(inst, "proximity_loop", true)
         else
             PushAnimation(inst, "proximity_loop", true)
@@ -127,7 +136,7 @@ local function OnInactive(inst)
         PlayAnimation(inst, "idle", true)
         MakePrototyper(inst)
         RemoveFireFx(inst)
-    end 
+    end
 end
 
 local function OnFireFXOver(firefx)
@@ -141,7 +150,7 @@ end
 local function OnStageStarted(inst, stage)
     inst:RemoveComponent("prototyper")
 
-    if SCIENCE_STAGES[stage].pre_anim then 
+    if SCIENCE_STAGES[stage].pre_anim then
         PlayAnimation(inst, SCIENCE_STAGES[stage].pre_anim)
     end
     PushAnimation(inst, SCIENCE_STAGES[stage].anim, true)
@@ -151,18 +160,23 @@ local function OnStageStarted(inst, stage)
 
     RemoveFireFx(inst)
     MakeFireFx(inst)
-    if SCIENCE_STAGES[stage].fire_pre_anim then 
+    if SCIENCE_STAGES[stage].fire_pre_anim then
         inst._firefx.AnimState:PlayAnimation(SCIENCE_STAGES[stage].fire_pre_anim)
     end
     inst._firefx.AnimState:PushAnimation(SCIENCE_STAGES[stage].fire_anim, true)
 end
 
 local function OnScienceWasMade(inst, experiement_id)
-    local result = EXPERIMENT_RESULTS[experiement_id] ~= nil and weighted_random_choice(EXPERIMENT_RESULTS[experiement_id]) or nil
-    if result ~= nil then
-        local x, y, z = inst.Transform:GetWorldPosition()
-        LaunchAt(SpawnPrefab(result), inst, FindClosestPlayer(x, y, z, true), 1, 2.5, 1)
-    end
+	local result = EXPERIMENT_RESULTS[experiement_id] ~= nil and weighted_random_choice(EXPERIMENT_RESULTS[experiement_id]) or nil
+	if result ~= nil then
+		local weights = NUM_TO_SPAWN[result]
+		local num_to_spawn = weights ~= nil and weighted_random_choice(weights) or 1
+
+		local x, y, z = inst.Transform:GetWorldPosition()
+		for i=1,num_to_spawn do
+			LaunchAt(SpawnPrefab(result), inst, FindClosestPlayer(x, y, z, true), 1, 2.5, 1)
+		end
+	end
 
     PlayAnimation(inst, "cooking_finish")
     inst.SoundEmitter:KillSound("loop")
@@ -233,6 +247,7 @@ local function fn()
    -- inst.Light:EnableClientModulation(true)
 
     inst:AddTag("structure")
+	inst:AddTag("madsciencelab")
 
     inst.AnimState:SetBank("madscience_lab")
     inst.AnimState:SetBuild("madscience_lab")

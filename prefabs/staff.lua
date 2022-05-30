@@ -2,7 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/staffs.zip"),
     Asset("ANIM", "anim/swap_staffs.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =
@@ -49,11 +48,15 @@ local prefabs =
 ---------RED STAFF---------
 
 local function onattack_red(inst, attacker, target, skipsanity)
-    if not skipsanity and attacker ~= nil and attacker.components.sanity ~= nil then
-        attacker.components.sanity:DoDelta(-TUNING.SANITY_SUPERTINY)
+    if not skipsanity and attacker ~= nil then
+        if attacker.components.staffsanity then
+            attacker.components.staffsanity:DoCastingDelta(-TUNING.SANITY_SUPERTINY)
+        elseif attacker.components.sanity ~= nil then
+            attacker.components.sanity:DoDelta(-TUNING.SANITY_SUPERTINY)
+        end
     end
 
-    attacker.SoundEmitter:PlaySound("dontstarve/wilson/fireball_explo")
+    attacker.SoundEmitter:PlaySound(inst.skin_sound or "dontstarve/wilson/fireball_explo")
 
     if not target:IsValid() then
         --target killed or removed in combat damage phase
@@ -106,14 +109,16 @@ local function onlight(inst, target)
     end
 end
 
+local REDHAUNTTARGET_MUST_TAGS = { "canlight" }
+local REDHAUNTTARGET_CANT_TAGS = { "fire", "burnt", "INLIMBO" }
 local function onhauntred(inst, haunter)
     if math.random() <= TUNING.HAUNT_CHANCE_RARE then
-        local x, y, z = inst.Transform:GetWorldPosition() 
-        local ents = TheSim:FindEntities(x, y, z, 6, { "canlight" }, { "fire", "burnt", "INLIMBO" })
+        local x, y, z = inst.Transform:GetWorldPosition()
+        local ents = TheSim:FindEntities(x, y, z, 6, REDHAUNTTARGET_MUST_TAGS, REDHAUNTTARGET_CANT_TAGS)
         if #ents > 0 then
             for i, v in ipairs(ents) do
                 if v:IsValid() and not v:IsInLimbo() then
-                    onattack_red(inst, haunter, v, true) 
+                    onattack_red(inst, haunter, v, true)
                 end
             end
             inst.components.hauntable.hauntvalue = TUNING.HAUNT_LARGE
@@ -126,8 +131,16 @@ end
 ---------BLUE STAFF---------
 
 local function onattack_blue(inst, attacker, target, skipsanity)
-    if not skipsanity and attacker ~= nil and attacker.components.sanity ~= nil then
-        attacker.components.sanity:DoDelta(-TUNING.SANITY_SUPERTINY)
+    if not skipsanity and attacker ~= nil then
+        if attacker.components.staffsanity then
+            attacker.components.staffsanity:DoCastingDelta(-TUNING.SANITY_SUPERTINY)
+        elseif attacker.components.sanity ~= nil then
+            attacker.components.sanity:DoDelta(-TUNING.SANITY_SUPERTINY)
+        end
+    end
+
+    if inst.skin_sound then
+        attacker.SoundEmitter:PlaySound(inst.skin_sound)
     end
 
     if not target:IsValid() then
@@ -161,14 +174,16 @@ local function onattack_blue(inst, attacker, target, skipsanity)
     end
 end
 
+local BLUEHAUNTTARGET_MUST_TAGS = { "freezable" }
+local BLUEHAUNTTARGET_CANT_TAGS = { "INLIMBO" }
 local function onhauntblue(inst, haunter)
     if math.random() <= TUNING.HAUNT_CHANCE_RARE then
-        local x, y, z = inst.Transform:GetWorldPosition() 
-        local ents = TheSim:FindEntities(x, y, z, 6, { "freezable" }, { "INLIMBO" })
+        local x, y, z = inst.Transform:GetWorldPosition()
+        local ents = TheSim:FindEntities(x, y, z, 6, BLUEHAUNTTARGET_MUST_TAGS, BLUEHAUNTTARGET_CANT_TAGS)
         if #ents > 0 then
             for i, v in ipairs(ents) do
                 if v:IsValid() and not v:IsInLimbo() then
-                    onattack_blue(inst, haunter, v, true) 
+                    onattack_blue(inst, haunter, v, true)
                 end
             end
             inst.components.hauntable.hauntvalue = TUNING.HAUNT_LARGE
@@ -180,25 +195,43 @@ end
 
 ---------PURPLE STAFF---------
 
+-- AddTag("nomagic") can be used to stop something being teleported
+-- the component teleportedoverride can be used to control the location of a teleported item
+
 require "prefabs/telebase"
 
-local function getrandomposition(caster)
-    local ground = TheWorld
-    local centers = {}
-    for i, node in ipairs(ground.topology.nodes) do
-        if ground.Map:IsPassableAtPoint(node.x, 0, node.y) and node.type ~= NODE_TYPE.SeparatedRoom then
-            table.insert(centers, {x = node.x, z = node.y})
-        end
-    end
-    if #centers > 0 then
-        local pos = centers[math.random(#centers)]
-        return Point(pos.x, 0, pos.z)
-    else
-        return caster:GetPosition()
-    end
+local function getrandomposition(caster, teleportee, target_in_ocean)
+	if target_in_ocean then
+		local pt = TheWorld.Map:FindRandomPointInOcean(20)
+		if pt ~= nil then
+			return pt
+		end
+		local from_pt = teleportee:GetPosition()
+		local offset = FindSwimmableOffset(from_pt, math.random() * 2 * PI, 90, 16)
+						or FindSwimmableOffset(from_pt, math.random() * 2 * PI, 60, 16)
+						or FindSwimmableOffset(from_pt, math.random() * 2 * PI, 30, 16)
+						or FindSwimmableOffset(from_pt, math.random() * 2 * PI, 15, 16)
+		if offset ~= nil then
+			return from_pt + offset
+		end
+		return teleportee:GetPosition()
+	else
+		local centers = {}
+		for i, node in ipairs(TheWorld.topology.nodes) do
+			if TheWorld.Map:IsPassableAtPoint(node.x, 0, node.y) and node.type ~= NODE_TYPE.SeparatedRoom then
+				table.insert(centers, {x = node.x, z = node.y})
+			end
+		end
+		if #centers > 0 then
+			local pos = centers[math.random(#centers)]
+			return Point(pos.x, 0, pos.z)
+		else
+			return caster:GetPosition()
+		end
+	end
 end
 
-local function teleport_end(teleportee, locpos, loctarget)
+local function teleport_end(teleportee, locpos, loctarget, staff)
     if loctarget ~= nil and loctarget:IsValid() and loctarget.onteleto ~= nil then
         loctarget:onteleto()
     end
@@ -224,7 +257,7 @@ local function teleport_end(teleportee, locpos, loctarget)
     if teleportee:HasTag("player") then
         teleportee.sg.statemem.teleport_task = nil
         teleportee.sg:GoToState(teleportee:HasTag("playerghost") and "appear" or "wakeup")
-        teleportee.SoundEmitter:PlaySound("dontstarve/common/staffteleport")
+        teleportee.SoundEmitter:PlaySound(staff.skin_castsound or "dontstarve/common/staffteleport")
     else
         teleportee:Show()
         if teleportee.DynamicShadow ~= nil then
@@ -237,7 +270,7 @@ local function teleport_end(teleportee, locpos, loctarget)
     end
 end
 
-local function teleport_continue(teleportee, locpos, loctarget)
+local function teleport_continue(teleportee, locpos, loctarget, staff)
     if teleportee.Physics ~= nil then
         teleportee.Physics:Teleport(locpos.x, 0, locpos.z)
     else
@@ -247,19 +280,20 @@ local function teleport_continue(teleportee, locpos, loctarget)
     if teleportee:HasTag("player") then
         teleportee:SnapCamera()
         teleportee:ScreenFade(true, 1)
-        teleportee.sg.statemem.teleport_task = teleportee:DoTaskInTime(1, teleport_end, locpos, loctarget)
+        teleportee.sg.statemem.teleport_task = teleportee:DoTaskInTime(1, teleport_end, locpos, loctarget, staff)
     else
-        teleport_end(teleportee, locpos, loctarget)
+        teleport_end(teleportee, locpos, loctarget, staff)
     end
 end
 
-local function teleport_start(teleportee, staff, caster, loctarget)
+local function teleport_start(teleportee, staff, caster, loctarget, target_in_ocean)
     local ground = TheWorld
 
     --V2C: Gotta do this RIGHT AWAY in case anything happens to loctarget or caster
-    local locpos = loctarget == nil and getrandomposition(caster)
+    local locpos = teleportee.components.teleportedoverride ~= nil and teleportee.components.teleportedoverride:GetDestPosition()
+				or loctarget == nil and getrandomposition(caster, teleportee, target_in_ocean)
 				or loctarget.teletopos ~= nil and loctarget:teletopos()
-				or loctarget:GetPosition() 
+				or loctarget:GetPosition()
 
     if teleportee.components.locomotor ~= nil then
         teleportee.components.locomotor:StopMoving()
@@ -296,16 +330,20 @@ local function teleport_start(teleportee, staff, caster, loctarget)
         teleportee.components.burnable.burning = false
     end
 
-    if caster ~= nil and caster.components.sanity ~= nil then
-        caster.components.sanity:DoDelta(-TUNING.SANITY_HUGE)
+    if caster ~= nil then
+        if caster.components.staffsanity then
+            caster.components.staffsanity:DoCastingDelta(-TUNING.SANITY_HUGE)
+        elseif caster.components.sanity ~= nil then
+            caster.components.sanity:DoDelta(-TUNING.SANITY_HUGE)
+        end
     end
 
     ground:PushEvent("ms_deltamoisture", TUNING.TELESTAFF_MOISTURE)
 
     if isplayer then
-        teleportee.sg.statemem.teleport_task = teleportee:DoTaskInTime(3, teleport_continue, locpos, loctarget)
+        teleportee.sg.statemem.teleport_task = teleportee:DoTaskInTime(3, teleport_continue, locpos, loctarget, staff)
     else
-        teleport_continue(teleportee, locpos, loctarget)
+        teleport_continue(teleportee, locpos, loctarget, staff)
     end
 end
 
@@ -313,21 +351,33 @@ local function teleport_targets_sort_fn(a, b)
     return a.distance < b.distance
 end
 
+local TELEPORT_MUST_TAGS = { "locomotor" }
+local TELEPORT_CANT_TAGS = { "playerghost", "INLIMBO" }
 local function teleport_func(inst, target)
     local caster = inst.components.inventoryitem.owner or target
     if target == nil then
         target = caster
     end
+
     local x, y, z = target.Transform:GetWorldPosition()
-    local loctarget = target.components.minigame_participator ~= nil and target.components.minigame_participator:GetMinigame() or FindNearestActiveTelebase(x, y, z, nil, 1)
-    teleport_start(target, inst, caster, loctarget)
+	local target_in_ocean = target.components.locomotor ~= nil and target.components.locomotor:IsAquatic()
+
+	local loctarget = target.components.minigame_participator ~= nil and target.components.minigame_participator:GetMinigame()
+						or target.components.teleportedoverride ~= nil and target.components.teleportedoverride:GetDestTarget()
+                        or target.components.hitchable ~= nil and target:HasTag("hitched") and target.components.hitchable.hitched
+						or nil
+
+	if loctarget == nil and not target_in_ocean then
+		loctarget = FindNearestActiveTelebase(x, y, z, nil, 1)
+	end
+    teleport_start(target, inst, caster, loctarget, target_in_ocean)
 end
 
 local function onhauntpurple(inst)
     if math.random() <= TUNING.HAUNT_CHANCE_RARE then
-        local target = FindEntity(inst, 20, nil, { "locomotor" }, { "playerghost", "INLIMBO" })
+        local target = FindEntity(inst, 20, nil, TELEPORT_MUST_TAGS, TELEPORT_CANT_TAGS)
         if target ~= nil then
-            teleport_func(inst, target) 
+            teleport_func(inst, target)
             inst.components.hauntable.hauntvalue = TUNING.HAUNT_LARGE
             return true
         end
@@ -338,10 +388,15 @@ end
 ---------ORANGE STAFF-----------
 
 local function onblink(staff, pos, caster)
-    if caster.components.sanity ~= nil then
-        caster.components.sanity:DoDelta(-TUNING.SANITY_MED)
+    if caster then
+        if caster.components.staffsanity then
+            caster.components.staffsanity:DoCastingDelta(-TUNING.SANITY_MED)
+        elseif caster.components.sanity ~= nil then
+            caster.components.sanity:DoDelta(-TUNING.SANITY_MED)
+        end
     end
-    staff.components.finiteuses:Use(1) 
+
+    staff.components.finiteuses:Use(1)
 end
 
 local function NoHoles(pt)
@@ -364,9 +419,12 @@ local function blinkstaff_reticuletargetfn()
     end
 end
 
+local ORANGEHAUNT_MUST_TAGS = { "locomotor" }
+local ORANGEHAUNT_CANT_TAGS = { "playerghost", "INLIMBO" }
+
 local function onhauntorange(inst)
     if math.random() <= TUNING.HAUNT_CHANCE_OCCASIONAL then
-        local target = FindEntity(inst, 20, nil, { "locomotor" }, { "playerghost", "INLIMBO" })
+        local target = FindEntity(inst, 20, nil, ORANGEHAUNT_MUST_TAGS, ORANGEHAUNT_CANT_TAGS)
         if target ~= nil then
             local pos = target:GetPosition()
             local start_angle = math.random() * 2 * PI
@@ -463,12 +521,14 @@ local function SpawnLootPrefab(inst, lootprefab)
 
     loot.Transform:SetPosition(x, y, z)
 
+	loot:PushEvent("on_loot_dropped", {dropper = inst})
+
     return loot
 end
 
 local function destroystructure(staff, target)
     local recipe = AllRecipes[target.prefab]
-    if recipe == nil then
+    if recipe == nil or FunctionOrValue(recipe.no_deconstruction, target) then
         --Action filters should prevent us from reaching here normally
         return
     end
@@ -490,7 +550,7 @@ local function destroystructure(staff, target)
         end
         if string.sub(v.type, -3) ~= "gem" or string.sub(v.type, -11, -4) == "precious" then
             --V2C: always at least one in case ingredient_percent is 0%
-            local amt = math.max(1, math.ceil(v.amount * ingredient_percent))
+            local amt = v.amount == 0 and 0 or math.max(1, math.ceil(v.amount * ingredient_percent))
             for n = 1, amt do
                 SpawnLootPrefab(target, v.type)
             end
@@ -500,7 +560,9 @@ local function destroystructure(staff, target)
     if caster ~= nil then
         caster.SoundEmitter:PlaySound("dontstarve/common/staff_dissassemble")
 
-        if caster.components.sanity ~= nil then
+        if caster.components.staffsanity then
+            caster.components.staffsanity:DoCastingDelta(-TUNING.SANITY_MEDLARGE)
+        elseif caster.components.sanity ~= nil then
             caster.components.sanity:DoDelta(-TUNING.SANITY_MEDLARGE)
         end
     end
@@ -557,11 +619,12 @@ local function HasRecipe(guy)
     return guy.prefab ~= nil and AllRecipes[guy.prefab] ~= nil
 end
 
+local GREENHAUNT_CANT_TAGS = { "INLIMBO" }
 local function onhauntgreen(inst)
     if math.random() <= TUNING.HAUNT_CHANCE_RARE then
-        local target = FindEntity(inst, 20, HasRecipe, nil, { "INLIMBO" })
+        local target = FindEntity(inst, 20, HasRecipe, nil, GREENHAUNT_CANT_TAGS)
         if target ~= nil then
-            destroystructure(inst, target) 
+            destroystructure(inst, target)
             SpawnPrefab("collapse_small").Transform:SetPosition(target.Transform:GetWorldPosition())
             inst.components.hauntable.hauntvalue = TUNING.HAUNT_LARGE
             return true
@@ -578,8 +641,12 @@ local function createlight(staff, target, pos)
     staff.components.finiteuses:Use(1)
 
     local caster = staff.components.inventoryitem.owner
-    if caster ~= nil and caster.components.sanity ~= nil then
-        caster.components.sanity:DoDelta(-TUNING.SANITY_MEDLARGE)
+    if caster ~= nil then
+        if caster.components.staffsanity then
+            caster.components.staffsanity:DoCastingDelta(-TUNING.SANITY_MEDLARGE)
+        elseif caster.components.sanity ~= nil then
+            caster.components.sanity:DoDelta(-TUNING.SANITY_MEDLARGE)
+        end
     end
 end
 
@@ -758,7 +825,7 @@ local function blue()
 end
 
 local function purple()
-    local inst = commonfn("purple", { "nopunch" })
+    local inst = commonfn("purple", { "nopunch" }, true)
 
     if not TheWorld.ismastersim then
         return inst
@@ -787,6 +854,7 @@ local function yellow()
     inst:AddComponent("reticule")
     inst.components.reticule.targetfn = light_reticuletargetfn
     inst.components.reticule.ease = true
+    inst.components.reticule.ispassableatallpoints = true
 
     if not TheWorld.ismastersim then
         return inst
@@ -819,7 +887,7 @@ local function yellow()
 end
 
 local function green()
-    local inst = commonfn("green", { "nopunch" })
+    local inst = commonfn("green", { "nopunch" }, true)
 
     if not TheWorld.ismastersim then
         return inst
@@ -875,6 +943,7 @@ local function opal()
     inst:AddComponent("reticule")
     inst.components.reticule.targetfn = light_reticuletargetfn
     inst.components.reticule.ease = true
+    inst.components.reticule.ispassableatallpoints = true
 
     if not TheWorld.ismastersim then
         return inst

@@ -29,16 +29,16 @@ function SteeringWheel:StartSteering(sailor)
 	end
 end
 
-function SteeringWheel:StopSteering(sailor)
+function SteeringWheel:StopSteering()
 	if self.sailor ~= nil then
 		self.inst:ListenForEvent("onremove", self.onsailorremoved, self.sailor)
 	end
-	self.sailor = nil
 	self.inst:RemoveTag("occupied")
 
 	if self.onstopfn ~= nil then
-		self.onstopfn(self.inst)
+		self.onstopfn(self.inst, self.sailor)
 	end
+	self.sailor = nil
 end
 
 function SteeringWheel:OnRemoveFromEntity()

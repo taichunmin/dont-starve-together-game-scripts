@@ -24,7 +24,7 @@ local states =
             inst.AnimState:PlayAnimation("idle_loop")
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(3*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/mandrake/walk") end),
             TimeEvent(16*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/mandrake/walk") end),

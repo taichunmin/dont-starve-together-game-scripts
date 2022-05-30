@@ -81,6 +81,7 @@ local function StartCooldown(days)
     end
 end
 
+local PETRIFIABLE_TAGS = { "petrifiable" }
 local function CheckSector(row, col)
     --return value of work done, used to limit our update cost
 
@@ -92,7 +93,7 @@ local function CheckSector(row, col)
         _visited[row][col] = true
     end
 
-    local ents = TheSim:FindEntities(_x0 + row * SECTOR_DIST, 0, _z0 + col * SECTOR_DIST, SECTOR_RADIUS, { "petrifiable" })
+    local ents = TheSim:FindEntities(_x0 + row * SECTOR_DIST, 0, _z0 + col * SECTOR_DIST, SECTOR_RADIUS, PETRIFIABLE_TAGS)
     if #ents <= 0 then
         return 1
     end

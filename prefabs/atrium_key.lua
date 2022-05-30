@@ -79,6 +79,8 @@ local function fn()
     inst:AddTag("irreplaceable")
     inst:AddTag("nonpotatable")
 
+	MakeInventoryFloatable(inst, "med", .15, 0.7)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -86,7 +88,6 @@ local function fn()
     end
 
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("inspectable")
 

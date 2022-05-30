@@ -28,10 +28,10 @@ end)
 function OceanColor:Initialize(has_ocean)
     if has_ocean then
         self.inst:StartWallUpdatingComponent(self)
-        TheWorld.Map:SetClearColor(COLORS.default.color[1], COLORS.default.color[2], COLORS.default.color[3], COLORS.default.color[4])        
+        TheWorld.Map:SetClearColor(COLORS.default.color[1], COLORS.default.color[2], COLORS.default.color[3], COLORS.default.color[4])
     else
         TheWorld.Map:SetClearColor(COLORS.no_ocean.color[1], COLORS.no_ocean.color[2], COLORS.no_ocean.color[3], COLORS.no_ocean.color[4])
-    end    
+    end
 end
 
 function OceanColor:OnWallUpdate(dt)
@@ -46,7 +46,7 @@ function OceanColor:OnWallUpdate(dt)
 
     self.lerp = math.min(self.lerp + dt * self.blend_speed, 1)
 
-    
+
     for i = 1,4 do
         self.current_color[i] = Lerp(self.start_color[i], self.end_color[i], self.lerp)
     end
@@ -74,7 +74,7 @@ function OceanColor:OnPhaseChanged(src, phase)
     self.lerp_delay = 0
 
     self.blend_delay = target_color.blend_delay
-    self.blend_speed = target_color.blend_speed    
+    self.blend_speed = target_color.blend_speed
 end
 
 return OceanColor

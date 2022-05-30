@@ -9,8 +9,9 @@ function FindFlower:DBString()
     return string.format("Go to flower %s", tostring(self.inst.components.pollinator.target))
 end
 
+local FINDFLOWER_MUST_TAGS = {"pollinator"}
+
 function FindFlower:Visit()
-    
     if self.status == READY then
         self:PickTarget()
         if self.inst.components.pollinator and self.inst.components.pollinator.target then
@@ -21,22 +22,23 @@ function FindFlower:Visit()
 			self.status = FAILED
         end
     end
-    
+
     if self.status == RUNNING then
         if not self.inst.components.pollinator.target
            or not self.inst.components.pollinator:CanPollinate(self.inst.components.pollinator.target)
-           or FindEntity(self.inst.components.pollinator.target, 2, function(guy) return guy ~= self.inst and guy.components.pollinator and guy.components.pollinator.target == self.inst.components.pollinator.target end, {"pollinator"}) then
+           or FindEntity(self.inst.components.pollinator.target, 2, function(guy) return guy ~= self.inst and guy.components.pollinator and guy.components.pollinator.target == self.inst.components.pollinator.target end, FINDFLOWER_MUST_TAGS) then
             self.status = FAILED
         end
     end
 end
 
+local FLOWER_TAGS = {"flower"}
 function FindFlower:PickTarget()
-    local closestFlower = GetClosestInstWithTag("flower", self.inst, SEE_DIST)
+    local closestFlower = GetClosestInstWithTag(FLOWER_TAGS, self.inst, SEE_DIST)
     if closestFlower
 	   and self.inst.components.pollinator
-	   and self.inst.components.pollinator:CanPollinate(closestFlower) 
-	   and not FindEntity(closestFlower, 2, function(guy) return guy.components.pollinator and guy.components.pollinator.target == closestFlower end, {"pollinator"}) then
+	   and self.inst.components.pollinator:CanPollinate(closestFlower)
+	   and not FindEntity(closestFlower, 2, function(guy) return guy.components.pollinator and guy.components.pollinator.target == closestFlower end, FINDFLOWER_MUST_TAGS) then
 		self.inst.components.pollinator.target = closestFlower
 	else
 		self.inst.components.pollinator.target = nil

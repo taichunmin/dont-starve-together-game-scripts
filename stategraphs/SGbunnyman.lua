@@ -16,9 +16,10 @@ local events =
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
     CommonHandlers.OnAttack(),
-    CommonHandlers.OnAttacked(true),
+    CommonHandlers.OnAttacked(nil, TUNING.BUNNYMAN_MAX_STUN_LOCKS),
     CommonHandlers.OnDeath(),
     CommonHandlers.OnHop(),
+	CommonHandlers.OnSink(),
 }
 
 local states =
@@ -96,7 +97,7 @@ local states =
         tags = { "attack", "busy" },
 
         onenter = function(inst)
-            inst.SoundEmitter:PlaySound("dontstarve/creatures/bunnyman/attack")       
+            inst.SoundEmitter:PlaySound("dontstarve/creatures/bunnyman/attack")
             inst.components.combat:StartAttack()
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("atk")
@@ -153,6 +154,7 @@ local states =
             inst.SoundEmitter:PlaySound("dontstarve/creatures/bunnyman/hurt")
             inst.AnimState:PlayAnimation("hit")
             inst.Physics:Stop()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         events =
@@ -206,5 +208,6 @@ CommonStates.AddFrozenStates(states)
 CommonStates.AddSimpleActionState(states, "pickup", "pig_pickup", 10 * FRAMES, { "busy" })
 CommonStates.AddSimpleActionState(states, "gohome", "pig_pickup", 4 * FRAMES, { "busy" })
 CommonStates.AddHopStates(states, true, { pre = "boat_jump_pre", loop = "boat_jump_loop", pst = "boat_jump_pst"})
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("pig", states, events, "idle", actionhandlers)

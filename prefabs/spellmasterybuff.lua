@@ -68,7 +68,7 @@ local function orbfn()
     end
 
     inst.AnimState:PushAnimation("idle")
-    
+
     inst.persists = false
 
     return inst

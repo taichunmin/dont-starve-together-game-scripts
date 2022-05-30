@@ -183,6 +183,9 @@ local function fn()
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLoot({"livinglog", "livinglog"})
+    if TheNet:IsOnlineMode() then
+        inst.components.lootdropper:AddChanceLoot("reskin_tool", 0.25)
+    end
 
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.CHOP)

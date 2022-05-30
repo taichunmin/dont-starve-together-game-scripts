@@ -15,6 +15,7 @@ local events =
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnLocomote(false, true),
     CommonHandlers.OnHop(),
+	CommonHandlers.OnSink(),
 }
 
 local states =
@@ -47,7 +48,7 @@ local emotes =
 
 SGCritterStates.AddIdle(states, #emotes)
 SGCritterStates.AddRandomEmotes(states, emotes)
-SGCritterStates.AddEmote(states, "cute", 
+SGCritterStates.AddEmote(states, "cute",
     {
         TimeEvent(4*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/wingflap") end),
         TimeEvent(21*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/wingflap") end),
@@ -55,7 +56,7 @@ SGCritterStates.AddEmote(states, "cute",
         TimeEvent(22*FRAMES, PlayFootstep),
         TimeEvent(40*FRAMES, PlayFootstep),
     })
-SGCritterStates.AddPetEmote(states, 
+SGCritterStates.AddPetEmote(states,
     {
         TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/wingflap") end),
         TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/wingflap") end),
@@ -80,7 +81,7 @@ SGCritterStates.AddNuzzle(states, actionhandlers,
     {
         TimeEvent(8*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/perdling/nuzzle") end),
     })
-        
+
 SGCritterStates.AddWalkStates(states,
     {
         walktimeline =
@@ -104,5 +105,6 @@ CommonStates.AddSleepExStates(states,
     })
 
 CommonStates.AddHopStates(states, true)
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("SGcritter_perdling", states, events, "idle", actionhandlers)

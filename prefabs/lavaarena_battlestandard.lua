@@ -22,7 +22,7 @@ local function CreatePulse(target)
 end
 
 local function ApplyPulse(ent, params)
-    if ent:HasTag("debuffable") and not (ent.replica.health ~= nil and ent.replica.health:IsDead()) then
+    if ent:HasTag("debuffable") and not IsEntityDead(ent) then
         local fx = CreatePulse(ent)
         fx:ListenForEvent("animover", fx.Remove)
         fx.AnimState:PlayAnimation(params.fxanim)

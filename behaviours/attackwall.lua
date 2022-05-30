@@ -7,6 +7,8 @@ function AttackWall:__tostring()
     return string.format("target %s", tostring(self.target))
 end
 
+local ATTACKWALL_MUST_TAGS = { "wall" }
+
 function AttackWall:Visit()
     if self.status == READY then
         local rot = self.inst.Transform:GetRotation()
@@ -15,7 +17,7 @@ function AttackWall:Visit()
                 return math.abs(anglediff(rot, self.inst:GetAngleToPoint(guy.Transform:GetWorldPosition()))) < 30
                     and self.inst.components.combat:CanTarget(guy)
             end,
-            { "wall" }
+            ATTACKWALL_MUST_TAGS
         )
 
         if self.target ~= nil then

@@ -20,8 +20,13 @@ local prefabs =
     "ash",
     "portablecookpot_item",
 }
-for k, v in pairs(cooking.recipes.cookpot) do
+
+for k, v in pairs(cooking.recipes.portablecookpot) do
     table.insert(prefabs, v.name)
+
+	if v.overridebuild then
+        table.insert(assets, Asset("ANIM", "anim/"..v.overridebuild..".zip"))
+	end
 end
 
 local prefabs_item =
@@ -36,7 +41,8 @@ local function ChangeToItem(inst)
     if inst.components.container ~= nil then
         inst.components.container:DropEverything()
     end
-    local item = SpawnPrefab("portablecookpot_item")
+
+    local item = SpawnPrefab("portablecookpot_item", inst.linked_skinname, inst.skin_id)
     item.Transform:SetPosition(inst.Transform:GetWorldPosition())
     item.AnimState:PlayAnimation("collapse")
     item.SoundEmitter:PlaySound("dontstarve/common/together/portable/cookpot/collapse")
@@ -102,7 +108,7 @@ local function onopen(inst)
 end
 
 local function onclose(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         if not inst.components.stewer:IsCooking() then
             inst.AnimState:PlayAnimation("idle_empty")
             inst.SoundEmitter:KillSound("snd")
@@ -114,6 +120,9 @@ end
 local function SetProductSymbol(inst, product, overridebuild)
     local recipe = cooking.GetRecipe(inst.prefab, product)
     local potlevel = recipe ~= nil and recipe.potlevel or nil
+    local build = (recipe ~= nil and recipe.overridebuild) or overridebuild or "cook_pot_food"
+    local overridesymbol = (recipe ~= nil and recipe.overridesymbolname) or product
+
     if potlevel == "high" then
         inst.AnimState:Show("swap_high")
         inst.AnimState:Hide("swap_mid")
@@ -127,7 +136,8 @@ local function SetProductSymbol(inst, product, overridebuild)
         inst.AnimState:Show("swap_mid")
         inst.AnimState:Hide("swap_low")
     end
-    inst.AnimState:OverrideSymbol("swap_cooked", overridebuild or "cook_pot_food", product)
+
+    inst.AnimState:OverrideSymbol("swap_cooked", build, overridesymbol)
 end
 
 local function spoilfn(inst)
@@ -156,14 +166,14 @@ local function donecookfn(inst)
 end
 
 local function continuedonefn(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("idle_full")
         ShowProduct(inst)
     end
 end
 
 local function continuecookfn(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("cooking_loop", true)
         inst.Light:Enable(true)
         inst.SoundEmitter:KillSound("snd")
@@ -210,8 +220,8 @@ local function OnBurnt(inst)
     if inst.components.workable ~= nil then
         inst:RemoveComponent("workable")
     end
-    if inst.components.portablecookware ~= nil then
-        inst:RemoveComponent("portablecookware")
+    if inst.components.portablestructure ~= nil then
+        inst:RemoveComponent("portablestructure")
     end
     inst.persists = false
     inst:AddTag("FX")
@@ -262,8 +272,8 @@ local function fn()
         return inst
     end
 
-    inst:AddComponent("portablecookware")
-    inst.components.portablecookware:SetOnDismantleFn(OnDismantle)
+    inst:AddComponent("portablestructure")
+    inst.components.portablestructure:SetOnDismantleFn(OnDismantle)
 
     inst:AddComponent("stewer")
     inst.components.stewer.cooktimemult = TUNING.PORTABLE_COOK_POT_TIME_MULTIPLIER
@@ -278,6 +288,8 @@ local function fn()
     inst.components.container:WidgetSetup("portablecookpot")
     inst.components.container.onopenfn = onopen
     inst.components.container.onclosefn = onclose
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
@@ -297,7 +309,7 @@ local function fn()
     inst.components.burnable:SetFXLevel(2)
     inst.components.burnable:SetOnBurntFn(OnBurnt)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     return inst
@@ -308,7 +320,7 @@ end
 ---------------------------------------------------------------
 
 local function ondeploy(inst, pt, deployer)
-    local pot = SpawnPrefab("portablecookpot")
+    local pot = SpawnPrefab("portablecookpot", inst.linked_skinname, inst.skin_id )
     if pot ~= nil then
         pot.Physics:SetCollides(false)
         pot.Physics:Teleport(pt.x, 0, pt.z)

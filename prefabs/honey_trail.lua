@@ -3,8 +3,11 @@ local assets =
     Asset("ANIM", "anim/honey_trail.zip"),
 }
 
+local HONEYTRAILSLOWDOWN_MUST_TAGS = { "locomotor" }
+local HONEYTRAILSLOWDOWN_CANT_TAGS = { "flying", "playerghost", "INLIMBO" }
+
 local function OnUpdate(inst, x, y, z, rad)
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, rad, { "locomotor" }, { "flying", "playerghost", "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, rad, HONEYTRAILSLOWDOWN_MUST_TAGS, HONEYTRAILSLOWDOWN_CANT_TAGS)) do
         if v.components.locomotor ~= nil then
             v.components.locomotor:PushTempGroundSpeedMultiplier(TUNING.BEEQUEEN_HONEYTRAIL_SPEED_PENALTY, GROUND.MUD)
         end

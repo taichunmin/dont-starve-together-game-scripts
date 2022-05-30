@@ -2,7 +2,7 @@ Task = Class(function(self, id, data)
 	-- print("Task ",id)
 	-- dumptable(data,1)
 	self.id = id
-	
+
 	-- what locks this task
 	self.locks = data.locks
 	if type(self.locks) ~= "table" then
@@ -14,7 +14,7 @@ Task = Class(function(self, id, data)
 		self.keys_given = { self.keys_given }
 	end
 	self.region_id = data.region_id
-		
+
 	self.entrance_room = data.entrance_room
 	self.entrance_room_chance = data.entrance_room_chance
 	self.room_choices = data.room_choices

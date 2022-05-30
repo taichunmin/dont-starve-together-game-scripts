@@ -8,7 +8,7 @@ local function OnEffigyDeactivated(inst)
 end
 
 local HealthBadge = Class(Badge, function(self, owner, art)
-    Badge._ctor(self, art, owner, { 174 / 255, 21 / 255, 21 / 255, 1 }, "status_health")
+    Badge._ctor(self, art, owner, { 174 / 255, 21 / 255, 21 / 255, 1 }, "status_health", nil, nil, true)
 
     self.topperanim = self.underNumber:AddChild(UIAnim())
     self.topperanim:GetAnimState():SetBank("status_meter")
@@ -17,6 +17,8 @@ local HealthBadge = Class(Badge, function(self, owner, art)
     self.topperanim:GetAnimState():SetMultColour(0, 0, 0, 1)
     self.topperanim:SetScale(1, -1, 1)
     self.topperanim:SetClickable(false)
+    self.topperanim:GetAnimState():AnimateWhilePaused(false)
+    self.topperanim:GetAnimState():SetPercent("anim", 1)
 
     if self.circleframe ~= nil then
         self.circleframe:GetAnimState():Hide("frame")
@@ -28,12 +30,14 @@ local HealthBadge = Class(Badge, function(self, owner, art)
     self.circleframe2:GetAnimState():SetBank("status_meter")
     self.circleframe2:GetAnimState():SetBuild("status_meter")
     self.circleframe2:GetAnimState():PlayAnimation("frame")
+    self.circleframe2:GetAnimState():AnimateWhilePaused(false)
 
     self.sanityarrow = self.underNumber:AddChild(UIAnim())
     self.sanityarrow:GetAnimState():SetBank("sanity_arrow")
     self.sanityarrow:GetAnimState():SetBuild("sanity_arrow")
     self.sanityarrow:GetAnimState():PlayAnimation("neutral")
     self.sanityarrow:SetClickable(false)
+    self.sanityarrow:GetAnimState():AnimateWhilePaused(false)
 
     self.effigyanim = self.underNumber:AddChild(UIAnim())
     self.effigyanim:GetAnimState():SetBank("status_health")
@@ -41,6 +45,7 @@ local HealthBadge = Class(Badge, function(self, owner, art)
     self.effigyanim:GetAnimState():PlayAnimation("effigy_deactivate")
     self.effigyanim:Hide()
     self.effigyanim:SetClickable(false)
+    self.effigyanim:GetAnimState():AnimateWhilePaused(false)
     self.effigyanim.inst:ListenForEvent("animover", OnEffigyDeactivated)
     self.effigy = false
     self.effigybreaksound = nil
@@ -64,6 +69,23 @@ local HealthBadge = Class(Badge, function(self, owner, art)
         if self.hots[debuff] == nil then
             self.hots[debuff] = true
             self.inst:ListenForEvent("onremove", self._onremovehots, debuff)
+        end
+    end, owner)
+
+    self.small_hots = {}
+    self._onremovesmallhots = function(debuff)
+        self.small_hots[debuff] = nil
+    end
+    self.inst:ListenForEvent("startsmallhealthregen", function(owner, debuff)
+        if self.small_hots[debuff] == nil then
+            self.small_hots[debuff] = true
+            self.inst:ListenForEvent("onremove", self._onremovesmallhots, debuff)
+        end
+    end, owner)
+    self.inst:ListenForEvent("stopsmallhealthregen", function(owner, debuff)
+        if self.small_hots[debuff] ~= nil then
+            self._onremovesmallhots(debuff)
+            self.inst:RemoveEventCallback("onremove", self._onremovesmallhots, debuff)
         end
     end, owner)
 
@@ -106,6 +128,8 @@ function HealthBadge:SetPercent(val, max, penaltypercent)
 end
 
 function HealthBadge:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     local down
     if (self.owner.IsFreezing ~= nil and self.owner:IsFreezing()) or
         (self.owner.replica.health ~= nil and self.owner.replica.health:IsTakingFireDamageFull()) or
@@ -118,9 +142,12 @@ function HealthBadge:OnUpdate(dt)
 
     -- Show the up-arrow when we're sleeping (but not in a straw roll: that doesn't heal us)
     local up = down == nil and
-        (   (self.owner.player_classified ~= nil and self.owner.player_classified.issleephealing:value()) or
-            next(self.hots) ~= nil or
-            (self.owner.replica.inventory ~= nil and self.owner.replica.inventory:EquipHasTag("regen"))
+        (
+            (   (self.owner.player_classified ~= nil and self.owner.player_classified.issleephealing:value()) or
+                next(self.hots) ~= nil or next(self.small_hots) ~= nil or
+                (self.owner.replica.inventory ~= nil and self.owner.replica.inventory:EquipHasTag("regen"))
+            ) or
+            (self.owner:HasDebuff("wintersfeastbuff"))
         ) and
         self.owner.replica.health ~= nil and self.owner.replica.health:IsHurt()
 

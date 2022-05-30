@@ -46,6 +46,7 @@ for i, v in ipairs({
     "green_mushroomhat_blueprint",
     "blue_mushroomhat_blueprint",
     "mushroom_light2_blueprint",
+    "chesspiece_toadstool_sketch",
     MUSHTREE_SPORE_RED,
     MUSHTREE_SPORE_GREEN,
     MUSHTREE_SPORE_BLUE,
@@ -92,6 +93,7 @@ SetSharedLootTable('toadstool',
     {"meat",          0.25},
 
     {"shroom_skin",   1.00},
+    {"chesspiece_toadstool_sketch", 1.00},
 
     {"red_cap",       1.00},
     {"red_cap",       0.33},
@@ -117,6 +119,7 @@ SetSharedLootTable('toadstool_dark',
 
     {"shroom_skin",   1.00},
     {"shroom_skin",   1.00},
+    {"chesspiece_toadstool_sketch", 1.00},
 
     {"red_cap",       1.00},
     {"red_cap",       0.33},
@@ -189,6 +192,8 @@ local function CancelFade(inst)
 end
 
 --------------------------------------------------------------------------
+local SPOREBOMBTARGET_MUST_TAGS = { "player" }
+local SPOREBOMBTARGET_CANT_TAGS = { "ghost", "playerghost", "shadow", "shadowminion", "noauradamage", "INLIMBO" }
 
 local function FindSporeBombTargets(inst, preferredtargets)
     local targets = {}
@@ -196,11 +201,8 @@ local function FindSporeBombTargets(inst, preferredtargets)
     if preferredtargets ~= nil then
         for i, v in ipairs(preferredtargets) do
             if v:IsValid() and v.entity:IsVisible() and
-                v.components.debuffable ~= nil and
-                v.components.debuffable:IsEnabled() and
-                not v.components.debuffable:HasDebuff("sporebomb") and
-                not (v.components.health ~= nil and
-                    v.components.health:IsDead()) and
+                v:DebuffsEnabled() and not v:HasDebuff("sporebomb") and
+                not (v.components.health ~= nil and v.components.health:IsDead()) and
                 not v:HasTag("playerghost") and
                 v:IsNear(inst, TUNING.TOADSTOOL_SPOREBOMB_HIT_RANGE) then
                 table.insert(targets, v)
@@ -213,13 +215,11 @@ local function FindSporeBombTargets(inst, preferredtargets)
 
     local newtargets = {}
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.TOADSTOOL_SPOREBOMB_ATTACK_RANGE, { "debuffable" }, { "ghost", "playerghost", "shadow", "shadowminion", "noauradamage", "INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.TOADSTOOL_SPOREBOMB_ATTACK_RANGE, SPOREBOMBTARGET_MUST_TAGS, SPOREBOMBTARGET_CANT_TAGS)
     for i, v in ipairs(ents) do
         if v.entity:IsVisible() and
-            v.components.debuffable ~= nil and
-            not v.components.debuffable:HasDebuff("sporebomb") and
-            not (v.components.health ~= nil and
-                v.components.health:IsDead()) then
+        v:DebuffsEnabled() and not v:HasDebuff("sporebomb") and
+        not (v.components.health ~= nil and v.components.health:IsDead()) then
             table.insert(newtargets, v)
         end
     end
@@ -236,7 +236,7 @@ end
 
 local function DoSporeBomb(inst, targets)
     for i, v in ipairs(FindSporeBombTargets(inst, targets)) do
-        v.components.debuffable:AddDebuff("sporebomb", "sporebomb")
+        v:AddDebuff("sporebomb", "sporebomb")
     end
 end
 
@@ -246,6 +246,8 @@ local function NoHoles(pt)
     return not TheWorld.Map:IsPointNearHole(pt)
 end
 
+local BOMBTARGET_MUST_TAGS = { "_combat", "_health" }
+local BOMBTARGET_CANT_TAGS = { "player", "INLIMBO" }
 local function FindMushroomBombTargets(inst)
     --ring with a random gap
     local maxbombs = inst.mushroombomb_variance > 0 and inst.mushroombomb_count + math.random(inst.mushroombomb_variance) or inst.mushroombomb_count
@@ -261,7 +263,7 @@ local function FindMushroomBombTargets(inst)
     local maxrange = TUNING.TOADSTOOL_MUSHROOMBOMB_MAX_RANGE
     for i = 1, 2 do
         local closerange = (TUNING.TOADSTOOL_MUSHROOMBOMB_MIN_RANGE + maxrange) * .5
-        local targets = TheSim:FindEntities(pt.x, 0, pt.z, closerange, { "_combat", "_health" }, { "player", "INLIMBO" })
+        local targets = TheSim:FindEntities(pt.x, 0, pt.z, closerange, BOMBTARGET_MUST_TAGS, BOMBTARGET_CANT_TAGS)
         if #targets < inst.components.grouptargeter.num_targets then
             break
         end
@@ -345,6 +347,13 @@ local function SproutLaunch(inst, launcher, basespeed)
     inst.Physics:SetVel(math.cos(angle) * speed, speed * 4 + math.random() * 2, math.sin(angle) * speed)
 end
 
+local MUSHROOMSPROUT_BLOCKER_TAGS = { "_inventoryitem", "playerskeleton", "quickpick", "DIG_workable", "NOBLOCK", "FX", "INLIMBO", "DECOR" }
+local MUSHROOMSPROUT_BREAK_ONEOF_TAGS = { "playerskeleton", "DIG_workable", "soil" }
+local MUSHROOMSPROUT_TOSS_MUST_TAGS = { "_inventoryitem" }
+local MUSHROOMSPROUT_TOSS_CANT_TAGS = { "locomotor", "INLIMBO" }
+local MUSHROOMSPROUT_TOSSFLOWERS_MUST_TAGS = { "quickpick", "pickable" }
+local MUSHROOMSPROUT_TOSSFLOWERS_CANT_TAGS = { "intense" }
+
 local function DoMushroomSprout(inst, angles)
     if angles == nil or #angles <= 0 then
         return
@@ -367,16 +376,20 @@ local function DoMushroomSprout(inst, angles)
         if offset ~= nil then
             pt.x = pt.x + offset.x
             pt.z = pt.z + offset.z
-            if #TheSim:FindEntities(pt.x, 0, pt.z, min_spacing, nil, { "_inventoryitem", "playerskeleton", "quickpick", "DIG_workable", "NOBLOCK", "FX", "INLIMBO", "DECOR" }) <= 0 then
+            if TheSim:CountEntities(pt.x, 0, pt.z, min_spacing, nil, MUSHROOMSPROUT_BLOCKER_TAGS) <= 0 then
                 --destroy skeletons and diggables
-                for i, v in ipairs(TheSim:FindEntities(pt.x, 0, pt.z, 1.2, nil, nil, { "playerskeleton", "DIG_workable" })) do
-                    v.components.workable:Destroy(inst)
+                for i, v in ipairs(TheSim:FindEntities(pt.x, 0, pt.z, 1.2, nil, nil, MUSHROOMSPROUT_BREAK_ONEOF_TAGS)) do
+                    if v.components.workable then
+                        v.components.workable:Destroy(inst)
+                    else
+                        v:PushEvent("collapsesoil")
+                    end
                 end
 
-                local totoss = TheSim:FindEntities(pt.x, 0, pt.z, 1, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+                local totoss = TheSim:FindEntities(pt.x, 0, pt.z, 1, MUSHROOMSPROUT_TOSS_MUST_TAGS, MUSHROOMSPROUT_TOSS_CANT_TAGS)
 
                 --toss flowers out of the way
-                for i, v in ipairs(TheSim:FindEntities(pt.x, 0, pt.z, 1, { "quickpick", "pickable" }, { "intense" })) do
+                for i, v in ipairs(TheSim:FindEntities(pt.x, 0, pt.z, 1, MUSHROOMSPROUT_TOSSFLOWERS_MUST_TAGS, MUSHROOMSPROUT_TOSSFLOWERS_CANT_TAGS)) do
                     local num = v.components.pickable.numtoharvest or 1
                     local product = v.components.pickable.product
                     local x1, y1, z1 = v.Transform:GetWorldPosition()
@@ -493,6 +506,8 @@ local function UpdatePlayerTargets(inst)
     end
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "INLIMBO", "prey", "companion"--[[, "smallcreature" <- the beeees... - _-" ]] }
 local function RetargetFn(inst)
     UpdatePlayerTargets(inst)
 
@@ -526,8 +541,8 @@ local function RetargetFn(inst)
             return inst.components.combat:CanTarget(guy)
                 and guy:GetDistanceSqToPoint(spawnpoint) < deaggro_dist_sq
         end,
-        { "_combat" }, --see entityreplica.lua
-        { "INLIMBO", "prey", "companion"--[[, "smallcreature" <- the beeees... - _-" ]] }
+        RETARGET_MUST_TAGS, --see entityreplica.lua
+        RETARGET_CANT_TAGS
     )
 
     if player ~= nil and
@@ -552,7 +567,7 @@ local function OnNewTarget(inst, data)
         inst:RemoveEventCallback("newcombattarget", OnNewTarget)
         inst.engaged = true
 
-        --Ability first use timers 
+        --Ability first use timers
         inst.components.timer:StartTimer("sporebomb_cd", TUNING.TOADSTOOL_ABILITY_INTRO_CD)
         --inst.components.timer:StartTimer("mushroombomb_cd", inst.mushroombomb_cd)
         inst.components.timer:StartTimer("mushroomsprout_cd", inst.mushroomsprout_cd)

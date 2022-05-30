@@ -4,7 +4,7 @@ local Circler = Class(function(self, inst)
     self.inst = inst
 
     self.scale = 1
-    self.speed = math.random(3)  
+    self.speed = math.random(3)
     self.circleTarget = nil
 
     self.minSpeed = 5
@@ -88,7 +88,7 @@ function Circler:OnUpdate(dt)
 
     --self.speed = easing.inExpo(self.sine, self:GetMinSpeed(), self:GetMaxSpeed() - self:GetMinSpeed() , 1)
     self.speed = Lerp(self:GetMinSpeed() - .003, self:GetMaxSpeed() + .003, self.sine)
-    self.speed = math.clamp(self.speed, self:GetMinSpeed(), self:GetMaxSpeed()) 
+    self.speed = math.clamp(self.speed, self:GetMinSpeed(), self:GetMaxSpeed())
 
     self.scale = Lerp(self:GetMaxScale(), self:GetMinScale(), (self.speed - self:GetMinSpeed())/(self:GetMaxSpeed() - self:GetMinSpeed()))
     self.inst.Transform:SetScale(self.scale, self.scale, self.scale)

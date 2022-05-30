@@ -33,10 +33,10 @@ function getdebuglocals (res, level)
     local index = 1
     while true do
         local name, value = debug.getlocal(level + 1, index)
-        if not name then 
-			break 
+        if not name then
+			break
 		end
-		-- skip compiler generated variables 
+		-- skip compiler generated variables
 	    if name:sub(1, 1) ~= "(" then
 			if name == "self" and type(value)=="table" then
 				if value.IsValid and type(value.IsValid) == "function" then

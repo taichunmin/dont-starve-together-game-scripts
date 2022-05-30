@@ -68,7 +68,7 @@ local function fn()
 
     MakeHauntableLaunchAndSmash(inst)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     return inst

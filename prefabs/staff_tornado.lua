@@ -3,7 +3,6 @@ local assets =
     Asset("ANIM", "anim/tornado.zip"),
     Asset("ANIM", "anim/tornado_stick.zip"),
     Asset("ANIM", "anim/swap_tornado_stick.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =

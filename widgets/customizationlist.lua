@@ -103,23 +103,23 @@ local OPTIONS_REMAP =
 	spring	= {img = "blank_season_yellow.tex" },
 	summer	= {img = "blank_season_yellow.tex" },
 	winter	= {img = "blank_season_yellow.tex" },
-	
+
 	prefabswaps_start = {img = "blank_grassy.tex" },
-	
+
 	branching		= {img = "blank_world.tex" },
 	loop			= {img = "blank_world.tex" },
 	task_set		= {img = "blank_world.tex" },
 	world_size		= {img = "blank_world.tex" },
 	start_location	= {img = "blank_world.tex" },
-	
+
 	day				= {img = "blank_season_red.tex" },
 	season_start	= {img = "blank_season_red.tex" },
-	
+
 	--Unused options icons
 	--["season.tex"]		= {img = "blank_season_yellow.tex" },
 	--["changing_resources.tex"]	= {img = "blank_grassy.tex" },
 	--["periodic_resource.tex"]	= {img = "blank_world.tex" },
-	--["start_resource.tex"]		= {img = "blank_world.tex" },	
+	--["start_resource.tex"]		= {img = "blank_world.tex" },
 	--["season_length.tex"]		= {img = "blank_season_red.tex" },
 }
 

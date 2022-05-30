@@ -59,9 +59,10 @@ local function SpawnFrog(spawn_point)
     return frog
 end
 
+local FROGS_MUST_TAGS = { "frog" }
 local function SpawnFrogForPlayer(player, reschedule)
     local pt = player:GetPosition()
-	local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.FROG_RAIN_MAX_RADIUS, { "frog" })
+	local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.FROG_RAIN_MAX_RADIUS, FROGS_MUST_TAGS)
 	if GetTableSize(_frogs) < TUNING.FROG_RAIN_MAX and #ents < _frogcap then
 		local spawn_point = GetSpawnPoint(pt)
 		if spawn_point ~= nil then
@@ -154,14 +155,6 @@ local function OnPlayerLeft(src, player)
     end
 end
 
-local function OnSetChance(src, chance)
-    _chance = chance
-end
-
-local function OnSetLocalMax(src, maxtable)
-    _localfrogs = maxtable
-end
-
 local function OnTargetSleep(target)
     inst:DoTaskInTime(0, AutoRemoveTarget, target)
 end
@@ -181,9 +174,6 @@ inst:WatchWorldState("precipitationrate", ToggleUpdate)
 
 inst:ListenForEvent("ms_playerjoined", OnPlayerJoined, TheWorld)
 inst:ListenForEvent("ms_playerleft", OnPlayerLeft, TheWorld)
-
-inst:ListenForEvent("ms_setfrograinchance", OnSetChance, TheWorld)
-inst:ListenForEvent("ms_setfrograinlocalfrogs", OnSetLocalMax, TheWorld)
 
 
 ToggleUpdate(true)
@@ -236,17 +226,11 @@ function self:OnSave()
     return
     {
         frogcap = _frogcap,
-        spawntime = _spawntime,
-        chance = _chance,
-        localfrogs = _localfrogs,
     }
 end
 
 function self:OnLoad(data)
     _frogcap = data.frogcap or 0
-    _spawntime = data.spawntime or TUNING.FROG_RAIN_DELAY
-    _chance = data.chance or TUNING.FROG_RAIN_CHANCE
-    _localfrogs = data.localfrogs or {min=TUNING.FROG_RAIN_LOCAL_MIN, max=TUNING.FROG_RAIN_LOCAL_MAX}
 
     ToggleUpdate(true)
 end

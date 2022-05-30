@@ -1,4 +1,4 @@
-	
+
 AddRoom("BGCrappyForest", {
 					colour={r=.1,g=.8,b=.1,a=.50},
 					value = GROUND.FOREST,
@@ -27,7 +27,7 @@ AddRoom("BGCrappyForest", {
 AddRoom("BGForest", {
 					colour={r=.1,g=.8,b=.1,a=.50},
 					value = GROUND.FOREST,
-					tags = {"ExitPiece", "Chester_Eyebone", "StagehandGarden"},
+					tags = {"ExitPiece", "Chester_Eyebone", "StagehandGarden", "Terrarium_Spawner"},
 					contents =  {
 					                distributepercent = .6,
 					                distributeprefabs=
@@ -38,7 +38,7 @@ AddRoom("BGForest", {
 										grass=0.0025,
 										sapling=0.15,
 										twiggytree = 0.15,
-										ground_twigs = 0.06,										
+										ground_twigs = 0.06,
 										berrybush=0.005,
 										berrybush_juicy = 0.0025,
 										rock1=0.004,
@@ -56,11 +56,11 @@ AddRoom("BGDeepForest", {
 					value = GROUND.FOREST,
 					tags = {"ExitPiece", "Chester_Eyebone"},
 					contents =  {
-									countstaticlayouts={["MushroomRingSmall"]=function() 
-																				if math.random(0,1000) > 985 then 
-																					return 1 
+									countstaticlayouts={["MushroomRingSmall"]=function()
+																				if math.random(0,1000) > 985 then
+																					return 1
 																				end
-																				return 0 
+																				return 0
 																			   end},
 					                distributepercent = .8,
 					                distributeprefabs=
@@ -112,13 +112,13 @@ AddRoom("CrappyDeepForest", {
 					                    grass = .05,
 					                    sapling=.5,
 										twiggytree = 0.16,
-										ground_twigs = 0.06,					                    
+										ground_twigs = 0.06,
 					                    berrybush=.02,
 					                    berrybush_juicy = 0.01,
 					                    blue_mushroom = 0.02,
 					                },
 					            }
-					
+
 					})
 AddRoom("DeepForest", {
 					colour={r=0,g=.9,b=0,a=.50},
@@ -127,12 +127,12 @@ AddRoom("DeepForest", {
 					contents =  {
 									countstaticlayouts=
 									{
-										["LivingTree"]= function() return (math.random() > TUNING.LIVINGTREE_CHANCE and 1) or 0 end	
+										["LivingTree"]= function() return (math.random() > TUNING.LIVINGTREE_CHANCE and 1) or 0 end
 									},
 
 									-- countprefabs =
 									-- {
-									-- 	livingtree = function() return (math.random() > TUNING.LIVINGTREE_CHANCE and 1) or 0 end									
+									-- 	livingtree = function() return (math.random() > TUNING.LIVINGTREE_CHANCE and 1) or 0 end
 									-- },
 					                distributepercent = .8,
 					                distributeprefabs=
@@ -142,14 +142,14 @@ AddRoom("DeepForest", {
 					                    grass = .05,
 					                    sapling=.5,
 										twiggytree = 0.5,
-										ground_twigs = 0.3,					                    
+										ground_twigs = 0.3,
 					                    berrybush=.02,
 					                    berrybush_juicy = 0.01,
 					                    blue_mushroom = 0.02,
 										trees = {weight = 6, prefabs = {"evergreen", "evergreen_sparse"}}
 					                },
 					            }
-					
+
 					})
 	-- Trees, very few rocks, very few rabbit holes
 AddRoom("Forest", {
@@ -169,7 +169,7 @@ AddRoom("Forest", {
 					                    grass = .05,
 					                    sapling=.8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,					                    
+										ground_twigs = 0.06,
 										--rabbithole=.05,
 					                    berrybush=.03,
 					                    berrybush_juicy = 0.015,
@@ -192,13 +192,13 @@ AddRoom("CritterDen", {
 					                distributeprefabs =
 					                {
 										rock1 = .8,
-										rock2 = .1,										
+										rock2 = .1,
 										flint = .1,
                                         fireflies = 0.2,
 					                    grass = .05,
 					                    sapling = .8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,					                    
+										ground_twigs = 0.06,
 					                    berrybush = .03,
 					                    berrybush_juicy = 0.015,
 					                    red_mushroom = .03,
@@ -224,7 +224,7 @@ AddRoom("ForestMole", {
 					                    grass = .05,
 					                    sapling=.8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,						                    
+										ground_twigs = 0.06,
 					                    molehill=.3,
 					                    berrybush=.03,
 					                    berrybush_juicy = 0.015,
@@ -251,7 +251,7 @@ AddRoom("CrappyForest", {
 					                    grass = .05,
 					                    sapling=.8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,						                    
+										ground_twigs = 0.06,
 					                    molehill=.05,
 					                    berrybush=.03,
 					                    berrybush_juicy = 0.015,
@@ -273,7 +273,7 @@ AddRoom("SpiderForest", {
 					                    rock1 = 0.05,
 					                    sapling = .05,
 										twiggytree = 0.05,
-										ground_twigs = 0.03,						                    
+										ground_twigs = 0.03,
 										spiderden = 1,
 					                },
 									prefabdata = {
@@ -298,7 +298,7 @@ AddRoom("BurntClearing", {
 					                    grass = .1,
 					                    sapling=.2,
 										twiggytree = 0.2,
-										ground_twigs = 0.06,						                    
+										ground_twigs = 0.06,
 					                },
 									prefabdata={
 										evergreen = {burnt=true},
@@ -314,11 +314,11 @@ AddRoom("Clearing", {
 									countprefabs = {
     										spawnpoint_multiplayer = 1,
     									},
-									countstaticlayouts={["MushroomRingLarge"]=function()  
-																				if math.random(0,1000) > 985 then 
-																					return 1 
+									countstaticlayouts={["MushroomRingLarge"]=function()
+																				if math.random(0,1000) > 985 then
+																					return 1
 																				end
-																				return 0 
+																				return 0
 																			   end},
 					                distributepercent = .1,
 					                distributeprefabs=
@@ -329,7 +329,7 @@ AddRoom("Clearing", {
 					                    grass = .1,
 					                    sapling=.8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,						                    
+										ground_twigs = 0.06,
 					                    berrybush=.1,
 					                    berrybush_juicy = 0.05,
 					                    beehive=.05,
@@ -345,10 +345,10 @@ AddRoom("MoonbaseOne", {
 					tags = { "RoadPoison" },
 					contents =  {
 									countprefabs = {
-    										
+
     									},
 									countstaticlayouts={["MoonbaseOne"]=1},
-									
+
 					                distributepercent = .8,
 					                distributeprefabs=
 					                {
@@ -359,7 +359,7 @@ AddRoom("MoonbaseOne", {
 					                    grass = .1,
 					                    sapling=.8,
 										twiggytree = 0.8,
-										ground_twigs = 0.06,						                    
+										ground_twigs = 0.06,
 					                    berrybush_juicy = 0.05,
 					                },
 					            }

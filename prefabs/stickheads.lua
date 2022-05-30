@@ -38,8 +38,8 @@ local function OnFinish(inst)
     inst:Remove()
 end
 
-local function OnWorked(inst) 
-    if not inst:HasTag("burnt") then 
+local function OnWorked(inst)
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("hit")
         inst.AnimState:PushAnimation(inst.awake and "idle_awake" or "idle_asleep")
     end
@@ -110,7 +110,7 @@ local function create_common(bankandbuild)
     inst.entity:AddNetwork()
 
     inst:AddTag("structure")
-    inst:AddTag("chewable")  -- for werebeaver
+    inst:AddTag("beaverchewable")  -- for werebeaver
 
     inst.AnimState:SetBank(bankandbuild)
     inst.AnimState:SetBuild(bankandbuild)

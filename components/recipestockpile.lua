@@ -126,7 +126,7 @@ end
 function RecipeStockpile:OnSave()
 	local data = {}
 	for k, v in pairs(self.stock) do
-		data[v.recipe] = { 
+		data[v.recipe] = {
 			num = v.num,
 			timer = v.timer ~= nil and GetTaskRemaining(v.timer) or nil,
 		}

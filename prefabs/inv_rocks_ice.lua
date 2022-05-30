@@ -27,6 +27,11 @@ local function onperish(inst)
         end
         inst:Remove()
     else
+        local stacksize = inst.components.stackable:StackSize()
+		local x, y, z = inst.Transform:GetWorldPosition()
+        TheWorld.components.farming_manager:AddSoilMoistureAtPoint(x, y, z, stacksize * TUNING.ICE_MELT_GROUND_MOISTURE_AMOUNT)
+
+		inst.persists = false
         inst.components.inventoryitem.canbepickedup = false
         inst.AnimState:PlayAnimation("melt")
         inst:ListenForEvent("animover", inst.Remove)
@@ -39,6 +44,14 @@ end
 
 local function onstopfiremelt(inst)
     inst.components.perishable.frozenfiremult = false
+end
+
+local function onuseaswatersource(inst)
+    if inst.components.stackable:IsStack() then
+        inst.components.stackable:Get():Remove()
+    else
+        inst:Remove()
+    end
 end
 
 local function fn()
@@ -55,6 +68,10 @@ local function fn()
     inst.AnimState:SetBuild("ice")
 
     inst:AddTag("frozen")
+    -- From watersource component
+    inst:AddTag("watersource")
+
+    MakeInventoryFloatable(inst, "med", 0.05, {0.65, 0.5, 0.65})
 
     inst.entity:SetPristine()
 
@@ -93,17 +110,20 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem.imagename = "ice"
     inst.components.inventoryitem:SetOnPickupFn(onstopfiremelt)
-    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("repairer")
     inst.components.repairer.repairmaterial = MATERIALS.ICE
     inst.components.repairer.perishrepairpercent = .05
 
+    inst:AddComponent("watersource")
+    inst.components.watersource.onusefn = onuseaswatersource
+    inst.components.watersource.override_fill_uses = 1
+
     inst:AddComponent("bait")
     inst:AddTag("molebait")
 
-    inst.OnSave = onsave 
-    inst.OnLoad = onload 
+    inst.OnSave = onsave
+    inst.OnLoad = onload
 
     MakeHauntableLaunchAndSmash(inst)
 

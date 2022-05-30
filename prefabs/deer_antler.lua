@@ -36,7 +36,7 @@ local function MakeAntler(antlertype, trueklaussackkey)
             inst:SetPrefabNameOverride("deer_antler")
         end
 
-        MakeInventoryFloatable(inst, "large", nil, 0.65)
+        MakeInventoryFloatable(inst, "med", nil, 0.88)
 
         inst.entity:SetPristine()
 
@@ -46,7 +46,6 @@ local function MakeAntler(antlertype, trueklaussackkey)
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
-        inst.components.inventoryitem:SetSinks(true)
 
         inst:AddComponent("klaussackkey")
         inst.components.klaussackkey:SetTrueKey(trueklaussackkey)

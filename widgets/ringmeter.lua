@@ -11,6 +11,7 @@ local RingMeter = Class(Widget, function(self, owner)
     self.meter:GetAnimState():SetBuild("ringmeter")
     self.meter:GetAnimState():SetBank("ringmeter")
     self.meter:GetAnimState():SetMultColour(unpack(COLOUR))
+    self.meter:GetAnimState():AnimateWhilePaused(false)
     self:SetClickable(false)
     self:SetScaleMode(SCALEMODE_PROPORTIONAL)
 end)
@@ -49,6 +50,8 @@ function RingMeter:FlashOut(duration)
 end
 
 function RingMeter:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     self:SetPosition(TheSim:GetScreenPos(self.pos:Get()))
 
     if self.fade ~= nil then

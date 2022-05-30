@@ -27,6 +27,8 @@ local Projectile = Class(function(self, inst)
 
     self.stimuli = nil
 
+	--self.has_damage_set = nil -- set to true if the projectile has its own damage set, instead of needed to get it from the launching weapon
+
     --self.delaytask = nil
     --self.delayowner = nil
     --self.delaypos = nil
@@ -104,6 +106,10 @@ function Projectile:SetOnHitFn(fn)
     self.onhit = fn
 end
 
+function Projectile:SetOnPreHitFn(fn)
+    self.onprehit = fn
+end
+
 function Projectile:SetOnCaughtFn(fn)
     self.oncaught = fn
 end
@@ -144,6 +150,7 @@ function Projectile:Throw(owner, target, attacker)
     self:RotateToTarget(self.dest)
     self.inst.Physics:SetMotorVel(self.speed, 0, 0)
     self.inst:StartUpdatingComponent(self)
+    self.inst:AddTag("activeprojectile")
     self.inst:PushEvent("onthrown", { thrower = owner, target = target })
     target:PushEvent("hostileprojectile", { thrower = owner, attacker = attacker, target = target })
     if self.onthrown ~= nil then
@@ -179,7 +186,8 @@ end
 
 function Projectile:Stop()
     self.inst.Physics:CollidesWith(COLLISION.LIMITS)
-    
+
+    self.inst:RemoveTag("activeprojectile")
     self.inst:StopUpdatingComponent(self)
     self.target = nil
     self.owner = nil
@@ -192,12 +200,23 @@ function Projectile:Hit(target)
     StopTrackingDelayOwner(self)
     self:Stop()
     self.inst.Physics:Stop()
+
     if attacker.components.combat == nil and attacker.components.weapon ~= nil and attacker.components.inventoryitem ~= nil then
-        weapon = attacker
-        attacker = weapon.components.inventoryitem.owner
+        weapon = (self.has_damage_set and weapon.components.weapon ~= nil) and weapon or attacker
+        attacker = attacker.components.inventoryitem.owner
+    end
+
+    if self.onprehit ~= nil then
+        self.onprehit(self.inst, attacker, target)
     end
     if attacker ~= nil and attacker.components.combat ~= nil then
-        attacker.components.combat:DoAttack(target, weapon, self.inst, self.stimuli)
+		if attacker.components.combat.ignorehitrange then
+	        attacker.components.combat:DoAttack(target, weapon, self.inst, self.stimuli)
+		else
+			attacker.components.combat.ignorehitrange = true
+			attacker.components.combat:DoAttack(target, weapon, self.inst, self.stimuli)
+			attacker.components.combat.ignorehitrange = false
+		end
     end
     if self.onhit ~= nil then
         self.onhit(self.inst, attacker, target)
@@ -339,31 +358,11 @@ function Projectile:OnUpdate(dt)
     DoUpdate(self, target, pos)
 end
 
-function Projectile:OnSave()
-    if self:IsThrown() and
-        self.owner ~= nil and self.target ~= nil and
-        self.owner:IsValid() and self.target:IsValid() and
-        self.owner.persists and self.target.persist and --Pets and such don't save normally, so references would not work on them
-        not (self.owner:HasTag("player") or self.target:HasTag("player")) then
-        return { target = self.target.GUID, owner = self.owner.GUID }, { self.target.GUID, self.owner.GUID }
-    end
-end
-
 function Projectile:RotateToTarget(dest)
     local direction = (dest - self.inst:GetPosition()):GetNormalized()
     local angle = math.acos(direction:Dot(Vector3(1, 0, 0))) / DEGREES
     self.inst.Transform:SetRotation(angle)
     self.inst:FacePoint(dest)
-end
-
-function Projectile:LoadPostPass(newents, savedata)
-    if savedata.target ~= nil and savedata.owner ~= nil then
-        local target = newents[savedata.target]
-        local owner = newents[savedata.owner]
-        if target ~= nil and owner ~= nil then
-            self:Throw(owner.entity, target.entity)
-        end
-    end
 end
 
 local function OnShow(inst, self)

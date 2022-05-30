@@ -59,11 +59,16 @@ end
 function KnownLocations:RememberLocation(name, pos, dont_overwrite)
     if not self.locations[name] or not dont_overwrite then
         self.locations[name] = pos
+		if pos ~= nil and (pos.x ~= pos.x or pos.y ~= pos.y or pos.z ~= pos.z) then
+			print("KnownLocations:RememberLocation position error: ", self.inst.prefab, self.inst:IsValid(), pos.x, pos.y, pos.z)
+			error("Error: KnownLocations:RememberLocation() recieved a bad pos value.")
+		end
+
     end
 end
 
 function KnownLocations:GetLocation(name)
-    return self.locations[name] 
+    return self.locations[name]
 end
 
 function KnownLocations:ForgetLocation(name)

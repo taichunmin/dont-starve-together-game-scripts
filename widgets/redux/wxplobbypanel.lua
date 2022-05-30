@@ -15,7 +15,7 @@ local achievement_start = -256-18
 
 local function TextTintToHelper(self, r, g, b, a)
 	self:SetColour(self.colour[1], self.colour[2], self.colour[3], a)
-end 
+end
 
 local function IsAFoodDiscovery(name)
 	local prefix = "food_"
@@ -26,7 +26,7 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
     Widget._ctor(self, "WxpLobbyPanel")
     self.profile = profile
     self.on_anim_done_fn = on_anim_done_fn
-    
+
     self.current_eventid = TheNet:GetServerGameMode()
     self.levelup = false
 
@@ -74,7 +74,7 @@ local WxpLobbyPanel = Class(Widget, function(self, profile, on_anim_done_fn)
 
 			table.sort(self.wxp.details, function(a, b) return (a.val+(a._sort_value or 0)) < (b.val+(b._sort_value or 0)) end)
 			table.sort(self.wxp.achievements, function(a, b) return (a.val+(a._sort_value or 0)) < (b.val+(b._sort_value or 0)) end)
-			
+
 			self.wxp.old_xp = math.max(0, self.wxp.new_xp - self.wxp.match_xp)
 			self.wxp.old_level = wxputils.GetLevelForWXP(self.wxp.old_xp)
 
@@ -157,7 +157,7 @@ function WxpLobbyPanel:ShowAchievement(achievement, animate)
 	local num_shown = #self.displayachievements
 	local img_width = achievement_image_size
 	local max_num_wide = achievement_max_per_row
-	
+
 	local img = nil
 
 	--print("SDFSDF", achievement.desc, IsAFoodDiscovery(achievement.desc))
@@ -214,18 +214,18 @@ function WxpLobbyPanel:ShowAchievement(achievement, animate)
 	img:SetPosition(achievement_start + (achievement_spacing)*(num_shown%max_num_wide), (achievement_spacing*math.floor(1 + num_shown/max_num_wide)) + 3)
 	img:SetSize(img_width, img_width)
 	img:MoveToBack()
-	
+
 	if animate then
 		img:SetTint(1,1,1,0)
 		img:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, LEVELUP_TIME)
 	end
-	
+
 	table.insert(self.displayachievements, img)
 end
 
 function WxpLobbyPanel:SetRank(rank, levelup, next_level_xp)
 	self.wxpbar:SetRank(rank, next_level_xp, GetMostRecentlySelectedItem(Profile, "profileflair"))
-	
+
 	if levelup then
 		if self.leveluptext == nil then
 			self.leveluptext = self.wxpbar:AddChild(Text(HEADERFONT, 50, STRINGS.UI.WXPLOBBYPANEL.LEVEL_UP, UICOLOURS.HIGHLIGHT_GOLD))
@@ -234,7 +234,7 @@ function WxpLobbyPanel:SetRank(rank, levelup, next_level_xp)
 			if (achievement_start + #self.wxp.achievements*achievement_spacing) >= (-width/2) then
 				x = 300 - (width*0.5)
 			end
-			
+
 			self.leveluptext:SetPosition(x, 38)
 
 			local glow = self.wxpbar:AddChild(Image("images/global_redux.xml", "progressbar_wxplarge_glow.tex"))
@@ -247,21 +247,21 @@ function WxpLobbyPanel:SetRank(rank, levelup, next_level_xp)
 
 			self.leveluptext:SetScale(0.8)
 			self.leveluptext:ScaleTo(.8, 1, LEVELUP_TIME)
-			
+
 			local next_rank_pulse = self.nextrank.num:AddChild(Text(self.nextrank.num.font, self.nextrank.num.size, self.nextrank.num:GetString(), UICOLOURS.WHITE))
 			next_rank_pulse:SetScale(1)
 			next_rank_pulse:ScaleTo(1, 2, LEVELUP_TIME)
 			next_rank_pulse.SetTint = TextTintToHelper
 			next_rank_pulse:SetTint(1,1,1,1)
 			next_rank_pulse:TintTo({r=1,g=1,b=1,a=1}, {r=1,g=1,b=1,a=0}, LEVELUP_TIME, function() next_rank_pulse:Kill() end)
-			
+
 			local cur_rank_pulse = self.rank.num:AddChild(Text(self.rank.num.font, self.rank.num.size, self.rank.num:GetString(), UICOLOURS.WHITE))
 			cur_rank_pulse:SetScale(1)
 			cur_rank_pulse:ScaleTo(1, 2, LEVELUP_TIME)
 			cur_rank_pulse.SetTint = TextTintToHelper
 			cur_rank_pulse:SetTint(1,1,1,1)
 			cur_rank_pulse:TintTo({r=1,g=1,b=1,a=1}, {r=1,g=1,b=1,a=0}, LEVELUP_TIME, function() cur_rank_pulse:Kill() end)
-		end		
+		end
 	end
 
 end
@@ -308,7 +308,7 @@ function WxpLobbyPanel:OnCompleteAnimation()
 		newbox_body:EnableWordWrap(true)
 		newbox_body:SetVAlign(ANCHOR_TOP)
 		newbox_body:SetRegionSize(350, 200)
-		
+
 		if self.wxp.earned_boxes == 1 then
 			newbox_title:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOX_TITLE[WORLD_FESTIVAL_EVENT])
 			newbox_body:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOX_BODY)
@@ -317,7 +317,7 @@ function WxpLobbyPanel:OnCompleteAnimation()
 			newbox_body:SetString(STRINGS.UI.WXPLOBBYPANEL.NEWBOXES_BODY)
 		end
 	end
-	
+
 	if #self.wxp.achievements > 0 then
 		if #self.displayachievements == 0 then
 			for k, v in ipairs(self.wxp.achievements) do
@@ -331,12 +331,12 @@ function WxpLobbyPanel:OnCompleteAnimation()
 			end
 		end
 	end
-	
+
 	local level = wxputils.GetLevelForWXP(self.wxp.new_xp)
 	local level_start_xp, next_level_xp = wxputils.GetWXPForLevel(level)
 	self:SetRank(level, self.levelup, next_level_xp - level_start_xp)
 	self.wxpbar:UpdateExperience(self.wxp.new_xp - level_start_xp, next_level_xp - level_start_xp)
-	
+
 	self.is_animation_done = true
 	if self.on_anim_done_fn ~= nil then
 		self.on_anim_done_fn()
@@ -360,7 +360,7 @@ function WxpLobbyPanel:RefreshWxpDetailWidgets()
 			end
 			self:ShowAchievement(self.wxp.details[self.detail_index], true)
 		end
-		
+
 		self.detail_name_textbox:SetString(name or "")
 		if self.wxp.details[self.detail_index].val > 0 then
 			self.detail_wxp_textbox:SetString(subfmt(STRINGS.UI.WXPLOBBYPANEL.DETAILS_XP, {num = self.wxp.details[self.detail_index].val}))
@@ -370,7 +370,7 @@ function WxpLobbyPanel:RefreshWxpDetailWidgets()
 			self.detail_wxp_textbox:Hide()
 			self.detail_wxplabel_textbox:Hide()
 		end
-		
+
 		self.details_widget:SetScale(.8)
 		self.details_widget:ScaleTo(.8, 1, TIME_PER_DETAIL)
 		self.details_widget:Hide()
@@ -428,8 +428,8 @@ function WxpLobbyPanel:OnUpdate(dt)
 		if self.detail_index <= #self.wxp.details then
 			self:RefreshWxpDetailWidgets()
 		end
-	end	
-	
+	end
+
 
 end
 

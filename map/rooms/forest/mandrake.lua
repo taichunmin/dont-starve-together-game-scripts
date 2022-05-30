@@ -5,11 +5,11 @@ AddRoom("MandrakeHome", {
 					contents =  {
 									countstaticlayouts=
 									{
-										["InsanePighouse"]=function() if math.random(1000)> 995 then 
-																		return 1 
-																	  else 
-																	  	return 0 
-																	  end 
+										["InsanePighouse"]=function() if math.random(1000)> 995 then
+																		return 1
+																	  else
+																	  	return 0
+																	  end
 															end,
 									},
 					                countprefabs= {

@@ -34,6 +34,8 @@ local Equippable = Class(function(self, inst)
     self.insulated = false
     self.equippedmoisture = 0
     self.maxequippedmoisture = 0
+
+	-- self.is_magic_dapperness -- some survivors are only affected by magic sources
 end,
 nil,
 {
@@ -70,7 +72,7 @@ function Equippable:IsEquipped()
     return self.isequipped
 end
 
-function Equippable:Equip(owner)
+function Equippable:Equip(owner, from_ground)
     self.isequipped = true
 
     if self.inst.components.burnable ~= nil then
@@ -78,7 +80,7 @@ function Equippable:Equip(owner)
     end
 
     if self.onequipfn ~= nil then
-        self.onequipfn(self.inst, owner)
+        self.onequipfn(self.inst, owner, from_ground)
     end
     self.inst:PushEvent("equipped", { owner = owner })
 end
@@ -107,14 +109,18 @@ function Equippable:IsRestricted(target)
     return self.restrictedtag ~= nil and self.restrictedtag:len() > 0 and not target:HasTag(self.restrictedtag)
 end
 
-function Equippable:GetDapperness(owner)
+function Equippable:GetDapperness(owner, ignore_wetness)
     local dapperness = self.dapperness
+
+    if self.flipdapperonmerms and owner and owner:HasTag("merm") then
+        dapperness = -dapperness
+    end
 
     if self.dapperfn ~= nil then
         dapperness = self.dapperfn(self.inst, owner)
     end
 
-    if self.inst:GetIsWet() then
+    if not ignore_wetness and self.inst:GetIsWet() then
         dapperness = dapperness + TUNING.WET_ITEM_DAPPERNESS
     end
 

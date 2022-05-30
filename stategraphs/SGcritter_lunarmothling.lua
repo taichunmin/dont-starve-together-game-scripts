@@ -51,7 +51,7 @@ local function idle_anim_fn(inst)
 	return num == 1 and "idle_loop" or ("idle_loop"..num)
 end
 
-SGCritterStates.AddIdle(states, #emotes, 
+SGCritterStates.AddIdle(states, #emotes,
 	{
 		TimeEvent(5*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/idle") end),
 		TimeEvent(2*FRAMES, function(inst) if inst.sg.statemem.anim_num == 3 then inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/flap_fast") end end),
@@ -59,7 +59,7 @@ SGCritterStates.AddIdle(states, #emotes,
 	idle_anim_fn)
 
 SGCritterStates.AddRandomEmotes(states, emotes)
-SGCritterStates.AddEmote(states, "cute", 
+SGCritterStates.AddEmote(states, "cute",
 	{
 		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/emote_cute") end),
 		TimeEvent(6*FRAMES, LandFlyingCreature),
@@ -88,7 +88,7 @@ SGCritterStates.AddPlayWithOtherCritter(states, events,
 		{
 			TimeEvent(5*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/interact_active") end),
 		},
-		passive = 
+		passive =
 		{
             TimeEvent(8*FRAMES, LandFlyingCreature),
 			TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/interact_passive") end),
@@ -104,15 +104,15 @@ SGCritterStates.AddEat(states,
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/eat_pre") end),
         TimeEvent(8*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/vo_cute") end),
-        
+
         TimeEvent(26*FRAMES, LandFlyingCreature),
 
         TimeEvent((28+0)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/eat_LP") end),
-        
+
         TimeEvent((28+10)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/eat_LP") end),
 
         TimeEvent((28+24+0)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/eat_LP") end),
-        
+
         TimeEvent((28+24+10)*FRAMES, RaiseFlyingCreature),
     })
 SGCritterStates.AddHungry(states,
@@ -162,7 +162,7 @@ local function CleanupIfSleepInterrupted(inst)
     RaiseFlyingCreature(inst)
 end
 
-SGCritterStates.AddPetEmote(states, 
+SGCritterStates.AddPetEmote(states,
 	{
 		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/emote_pet") end),
 		TimeEvent(6*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/vo_cute") end),
@@ -171,7 +171,7 @@ SGCritterStates.AddPetEmote(states,
         -- TimeEvent(4*FRAMES, function(inst) end),
             -- StopFlapping(inst)
             -- LandFlyingCreature(inst)
-        
+
 		-- TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/emote") end),
         -- TimeEvent(27*FRAMES, StartFlapping),
         -- TimeEvent(50*FRAMES, RaiseFlyingCreature),
@@ -190,12 +190,12 @@ CommonStates.AddSleepExStates(states,
             TimeEvent(31*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/sleep_in") end),
             TimeEvent(44*FRAMES, StopFlapping),
 		},
-		sleeptimeline = 
+		sleeptimeline =
 		{
 			TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/sleep_out") end),
 			TimeEvent(32*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/sleep_in") end),
 		},
-		waketimeline = 
+		waketimeline =
 		{
 			TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("turnoftides/creatures/together/lunarmothling/sleep_pst") end),
             TimeEvent(12*FRAMES, StartFlapping),

@@ -5,8 +5,7 @@ local events =
 
 local states =
 {
-    State
-    {
+    State{
         name = "retracted",
 
         onenter = function(inst)
@@ -18,14 +17,13 @@ local states =
         events =
         {
             EventHandler("start_extending", function(inst) inst.sg:GoToState("extending") end),
-        },        
+        },
     },
 
 
-    State
-    {
+    State{
         name = "retracting",
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("plank_deactivate")
             inst:RemoveTag("interactable")
@@ -41,13 +39,12 @@ local states =
         events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("retracted") end),
-        },          
-    },   
+        },
+    },
 
-    State
-    {
+    State{
         name = "extended",
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("plank_activated_idle")
             inst:AddTag("plank_extended")
@@ -56,16 +53,15 @@ local states =
 
         events =
         {
-            EventHandler("start_retracting", function(inst) inst.sg:GoToState("retracting") end),            
+            EventHandler("start_retracting", function(inst) inst.sg:GoToState("retracting") end),
             EventHandler("start_mounting", function(inst) inst.sg:GoToState("mounted") end),
             EventHandler("start_abandoning", function(inst) inst.sg:GoToState("abandon_ship") end),
-        },         
-    },   
+        },
+    },
 
-    State
-    {
+    State{
         name = "mounted",
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("plank_activated_idle")
             inst:RemoveTag("interactable")
@@ -73,12 +69,11 @@ local states =
 
         events =
         {
-            EventHandler("stop_mounting", function(inst) inst.sg:GoToState("extended") end),            
-        },         
-    },      
+            EventHandler("stop_mounting", function(inst) inst.sg:GoToState("extended") end),
+        },
+    },
 
-    State
-    {
+    State{
         name = "extending",
         onenter = function(inst)
             inst.AnimState:PlayAnimation("plank_activate")
@@ -95,11 +90,10 @@ local states =
         events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("extended") end),
-        },        
-    },  
+        },
+    },
 
-    State
-    {
+    State{
         name = "abandon_ship",
 
         onenter = function(inst)

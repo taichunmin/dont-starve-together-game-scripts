@@ -26,6 +26,7 @@ local Herd = Class(function(self, inst)
     self.onempty = nil
     self.onfull = nil
     self.addmember = nil
+    self.removemember = nil
 
     self.updatepos = true
     self.updateposincombat = false
@@ -42,15 +43,26 @@ function Herd:OnRemoveFromEntity()
     end
 end
 
+function Herd:OnRemoveEntity()
+    for k, v in pairs(self.members) do
+        self:RemoveMember(k)
+    end
+end
+
 function Herd:GetDebugString()
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, { "herdmember", self.membertag })
+    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, self.membersearchtags)
     local str = string.format("members:%d membercount:%d max:%d membertag:%s gatherrange:%.2f nearby_tagged:%d", GetTableSize(self.members), self.membercount, self.maxsize, self.membertag, self.gatherrange, ents and #ents or 0)
     return str
 end
 
 function Herd:SetMemberTag(tag)
     self.membertag = tag
+	if tag == nil then
+		self.membersearchtags = nil
+	else
+		self.membersearchtags = { "herdmember", tag }
+	end
 end
 
 function Herd:SetGatherRange(range)
@@ -76,6 +88,11 @@ end
 function Herd:SetAddMemberFn(fn)
     self.addmember = fn
 end
+
+function Herd:SetRemoveMemberFn(fn)
+    self.removemember = fn
+end
+
 
 function Herd:IsFull()
     return self.membercount >= self.maxsize
@@ -109,6 +126,11 @@ end
 
 function Herd:RemoveMember(inst)
     if self.members[inst] then
+
+        if self.removemember ~= nil then
+            self.removemember(self.inst, inst)
+        end
+
         RemoveMemberListeners(self, inst)
 
         if inst.components.knownlocations ~= nil then
@@ -132,9 +154,9 @@ function Herd:GatherNearbyMembers()
     end
 
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, { "herdmember", self.membertag })
+    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, self.membersearchtags)
 
-    for i, v in ipairs(ents) do 
+    for i, v in ipairs(ents) do
         if self.members[v] == nil and
             v.components.herdmember ~= nil and
             (v.components.knownlocations == nil or not v.components.knownlocations:GetLocation("herd")) and
@@ -147,13 +169,14 @@ function Herd:GatherNearbyMembers()
     end
 end
 
+local HERD_TAGS = { "herd" }
 function Herd:MergeNearbyHerds()
     if self.nomerging or self.gatherrange == nil or self:IsFull() then
         return
     end
 
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, { "herd" })
+    local ents = TheSim:FindEntities(x, y, z, self.gatherrange, HERD_TAGS)
 
     for i, v in ipairs(ents) do
         if v ~= self.inst and
@@ -191,9 +214,20 @@ function Herd:OnUpdate()
             for i, v in ipairs(toremove) do
                 self:RemoveMember(v)
             end
-            if updatedPos ~= nil then
-                self.inst.Transform:SetPosition(updatedPos.x / validMembers, 0, updatedPos.z / validMembers)
+
+            local pos = Vector3(self.inst.Transform:GetWorldPosition())
+            if self.updateposfn then
+                if updatedPos then
+                    updatedPos = Vector3(updatedPos.x / validMembers, 0, updatedPos.z / validMembers)
+                end
+                pos = self.updateposfn(self.inst, updatedPos)
+            else
+                if updatedPos ~= nil then
+                    pos = Vector3(updatedPos.x / validMembers, 0, updatedPos.z / validMembers)
+
+                end
             end
+            self.inst.Transform:SetPosition(pos.x,pos.y,pos.z)
         end
         if self.membercount > 0 then
             local herdPos = self.inst:GetPosition()

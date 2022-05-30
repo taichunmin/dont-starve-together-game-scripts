@@ -27,6 +27,16 @@ local function GoHomeAction(inst)
     end
 end
 
+local EAT_CANT_TAGS = { "outofreach" }
+local EAT_ONEOF_TAGS = {
+            "edible_GENERIC",
+            "edible_VEGGIE",
+            "edible_INSECT",
+            "edible_SEEDS",
+            "edible_MEAT",
+            "pickable",
+            "harvestable",
+        }
 local function EatFoodAction(inst)
     if inst.sg:HasStateTag("busy") or
         (inst.components.eater:TimeSinceLastEating() ~= nil and inst.components.eater:TimeSinceLastEating() < TUNING.WORM_EATING_COOLDOWN) then
@@ -47,16 +57,8 @@ local function EatFoodAction(inst)
     local ents = TheSim:FindEntities(x, y, z,
         TUNING.WORM_FOOD_DIST,
         nil,
-        { "outofreach" },
-        {
-            "edible_GENERIC",
-            "edible_VEGGIE",
-            "edible_INSECT",
-            "edible_SEEDS",
-            "edible_MEAT",
-            "pickable",
-            "harvestable",
-        })
+        EAT_CANT_TAGS,
+        EAT_ONEOF_TAGS)
 
     --Look for food on the ground, pick it up
     for i, item in ipairs(ents) do

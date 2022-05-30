@@ -3,7 +3,6 @@ local assets =
     Asset("ANIM", "anim/blow_dart.zip"),
     Asset("ANIM", "anim/swap_blowdart.zip"),
     Asset("ANIM", "anim/swap_blowdart_pipe.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =
@@ -31,10 +30,10 @@ end
 
 local function onhit(inst, attacker, target)
     local impactfx = SpawnPrefab("impact")
-    if impactfx ~= nil then
+    if impactfx ~= nil and target.components.combat then
         local follower = impactfx.entity:AddFollower()
         follower:FollowSymbol(target.GUID, target.components.combat.hiteffectsymbol, 0, 0, 0)
-        if attacker ~= nil then
+        if attacker ~= nil and attacker:IsValid() then
             impactfx:FacePoint(attacker.Transform:GetWorldPosition())
         end
     end

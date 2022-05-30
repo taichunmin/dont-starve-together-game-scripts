@@ -55,7 +55,7 @@ local function fn()
     inst.components.fuel.fueltype = FUELTYPE.CAVE
 
     MakeSmallBurnable(inst, TUNING.TINY_BURNTIME)
-    MakeSmallPropagator(inst)    
+    MakeSmallPropagator(inst)
     MakeHauntableLaunchAndIgnite(inst)
 
     inst:AddComponent("inventoryitem")
@@ -72,6 +72,9 @@ local function fn()
 
     inst.components.inventoryitem:SetOnDroppedFn(OnDropped)
     inst.components.inventoryitem:SetOnPickupFn(OnPickup)
+
+	inst:AddComponent("halloweenmoonmutable")
+	inst.components.halloweenmoonmutable:SetPrefabMutated("lightflier")
 
     return inst
 end

@@ -15,6 +15,9 @@ local assets =
     Asset("ANIM", "anim/plant_meat.zip"),
     Asset("ANIM", "anim/eel.zip"),
     Asset("ANIM", "anim/kelp.zip"),
+
+    Asset("ANIM", "anim/meatrack_hermit.zip"),
+    Asset("MINIMAP_IMAGE", "meatrack_hermit"),
 }
 
 local prefabs =
@@ -32,6 +35,8 @@ local prefabs =
     "batwing", --uses smallmeat_dried
     "fish", -- uses smallmeat_dried
     "froglegs", -- uses smallmeat_dried
+    "fishmeat", -- uses smallmeat_dried
+    "fishmeat_small", -- uses meat_dried
     "eel",
     "collapse_small",
     "kelp",
@@ -87,6 +92,7 @@ local function onstartdrying(inst, ingredient, buildfile)
         inst.AnimState:PlayAnimation("drying_pre")
         inst.AnimState:PushAnimation("drying_loop", true)
     end
+    inst.SoundEmitter:PlaySound("dontstarve/common/together/put_meat_rack")
     inst.AnimState:OverrideSymbol("swap_dried", buildfile or "meat_rack_food", ingredient)
 end
 
@@ -122,31 +128,76 @@ local function onload(inst, data)
     end
 end
 
-local function fn()
-    local inst = CreateEntity()
+local function MakeMeatrack(name, common_postinit, master_postinit)
+    local function fn()
+        local inst = CreateEntity()
 
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddMiniMapEntity()
-    inst.entity:AddSoundEmitter()
-    inst.entity:AddNetwork()
+        inst.entity:AddTransform()
+        inst.entity:AddAnimState()
+        inst.entity:AddMiniMapEntity()
+        inst.entity:AddSoundEmitter()
+        inst.entity:AddNetwork()
 
-    inst.MiniMapEntity:SetIcon("meatrack.png")
+        inst.MiniMapEntity:SetIcon("meatrack.png")
 
-    inst:AddTag("structure")
+        inst:AddTag("structure")
 
+        MakeSnowCoveredPristine(inst)
+
+        if common_postinit ~= nil then
+            common_postinit(inst)
+        end
+
+        inst.entity:SetPristine()
+
+        if not TheWorld.ismastersim then
+            return inst
+        end
+
+        MakeHauntableWork(inst)
+
+        inst:AddComponent("dryer")
+        inst.components.dryer:SetStartDryingFn(onstartdrying)
+        inst.components.dryer:SetDoneDryingFn(ondonedrying)
+        inst.components.dryer:SetOnHarvestFn(onharvested)
+
+        inst:AddComponent("inspectable")
+
+        inst.components.inspectable.getstatus = getstatus
+        MakeSnowCovered(inst)
+        inst:ListenForEvent("onbuilt", onbuilt)
+
+        inst.OnSave = onsave
+        inst.OnLoad = onload
+
+        if master_postinit then
+            master_postinit(inst)
+        end
+
+        return inst
+    end
+    return Prefab(name, fn, assets, prefabs)
+end
+
+
+local function meatrack_common(inst)
     inst.AnimState:SetBank("meat_rack")
     inst.AnimState:SetBuild("meat_rack")
     inst.AnimState:PlayAnimation("idle_empty")
-    inst.AnimState:Hide("mouseover")
+end
 
-    MakeSnowCoveredPristine(inst)
+local function meatrack_hermit(inst)
+    inst.MiniMapEntity:SetIcon("meatrack_hermit.png")
 
-    inst.entity:SetPristine()
+    inst.AnimState:SetBank("meatrack_hermit")
+    inst.AnimState:SetBuild("meatrack_hermit")
+    inst.AnimState:PlayAnimation("idle_empty")
 
-    if not TheWorld.ismastersim then
-        return inst
-    end
+	inst:AddTag("antlion_sinkhole_blocker")
+
+end
+
+local function meatrack_master(inst)
 
     inst:AddComponent("lootdropper")
     inst:AddComponent("workable")
@@ -155,31 +206,19 @@ local function fn()
     inst.components.workable:SetOnFinishCallback(onhammered)
     inst.components.workable:SetOnWorkCallback(onhit)
 
-    MakeHauntableWork(inst)
-
-    inst:AddComponent("dryer")
-    inst.components.dryer:SetStartDryingFn(onstartdrying)
-    inst.components.dryer:SetDoneDryingFn(ondonedrying)
-    inst.components.dryer:SetOnHarvestFn(onharvested)
-
-    inst:AddComponent("inspectable")
-
-    inst.components.inspectable.getstatus = getstatus
-    MakeSnowCovered(inst)
-    inst:ListenForEvent("onbuilt", onbuilt)
-
     MakeMediumBurnable(inst, nil, nil, true)
     MakeSmallPropagator(inst)
-
-    inst.OnSave = onsave 
-    inst.OnLoad = onload
-
-    return inst
 end
 
-return Prefab("meatrack", fn, assets, prefabs ),
-    MakePlacer("meatrack_placer", "meat_rack", "meat_rack", "idle_empty",
+local function meatrack_hermit_master(inst)
+
+end
+
+
+return MakeMeatrack("meatrack", meatrack_common, meatrack_master),
+        MakePlacer("meatrack_placer", "meat_rack", "meat_rack", "idle_empty",
         nil, nil, nil, nil, nil, nil,
         function(inst)
             inst.AnimState:Hide("mouseover")
-        end)
+        end),
+        MakeMeatrack("meatrack_hermit", meatrack_hermit, meatrack_hermit_master)

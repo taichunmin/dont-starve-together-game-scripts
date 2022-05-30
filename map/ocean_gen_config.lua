@@ -9,8 +9,10 @@ local watergen =
 	fillOffset = 8,
 
 	--square fill
-	shallowRadius = 5,
+	shallowRadius = 4,
 	mediumRadius = 0,
+
+	ocean_prefill_setpieces_min_land_dist = 5, -- min distance between land and this set piece, should be no less than shallowRadius or the squarefill will stomp the set piece
 
 	--noise Google 'Perlin noise' to see what is making, they are like cloud textures
 	--one noise map is made for coral and another for all other water
@@ -26,7 +28,7 @@ local watergen =
 	noise_scale_grave = 18,
 	--noise maps will make values 0.0-1.0
 	init_level_coral = 0.65, --greater then this = coral - increase to lower coral
-	init_level_medium = 0.55, --greater than this = medium, increase for less medium 
+	init_level_medium = 0.55, --greater than this = medium, increase for less medium
 	init_level_grave = 0.65, --greater then this = shipgraves - increase to lower shipgraves
 
 	--after everything above is done it will take that and blend it
@@ -40,7 +42,7 @@ local watergen =
 	ellevels =
 	{
 		--'elevation' levels
-		{GROUND.OCEAN_REEF, 1.0},
+		{GROUND.OCEAN_BRINEPOOL, 1.0},
 --		{GROUND.PEBBLEBEACH, 1.0},
 --		{GROUND.METEOR, 1.0},
 --		{GROUND.MANGROVE, 1.0},

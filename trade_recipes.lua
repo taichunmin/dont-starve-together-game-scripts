@@ -1,6 +1,6 @@
 TRADE_RECIPES =
 {
-	classy_upgrade = 
+	classy_upgrade =
 	{
 		name = "9_CLASSY_UPGRADE",
 		inputs =
@@ -9,7 +9,7 @@ TRADE_RECIPES =
 			rarity = "Classy",
 		},
 	},
-	common_upgrade = 
+	common_upgrade =
 	{
 		name = "9_COMMON_UPGRADE",
 		inputs =
@@ -18,7 +18,7 @@ TRADE_RECIPES =
 			rarity = "Common",
 		},
 	},
-	spiffy_upgrade = 
+	spiffy_upgrade =
 	{
 		name = "9_SPIFFY_UPGRADE",
 		inputs =

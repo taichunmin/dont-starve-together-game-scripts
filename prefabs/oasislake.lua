@@ -7,11 +7,12 @@ local assets =
 
 local prefabs =
 {
-    "fish",
+    "pondfish",
     "wetpouch",
 }
 
 local WATER_RADIUS = 3.8
+local NO_DEPLOY_RADIUS = WATER_RADIUS + 0.1
 
 local NUM_BUGS = 3
 local BUG_OFFSET = 1.4
@@ -49,21 +50,23 @@ local function SpawnOasisBugs(inst)
         local bug = SpawnPrefab("fireflies")
         bug.Transform:SetPosition((pos + offset + Vector3(math.random()*BUG_RANDOM_RANGE, 0, math.random()*BUG_RANDOM_RANGE)):Get())
         table.insert(bug_pts, bug:GetPosition())
-    end 
+    end
 end
 
 local MAX_SUCCULENTS = 18
 local SUCCULENT_RANGE = 15
 local SUCCULENT_RANGE_MIN = WATER_RADIUS + 0.5
+local NOTENTCHECK_CANT_TAGS = { "FX", "INLIMBO" }
+local SUCCULENT_TAGS = { "succulent" }
 
 local function SpawnSucculents(inst)
     local pt = inst:GetPosition()
 
     local function noentcheckfn(offset)
-        return #TheSim:FindEntities(pt.x + offset.x, pt.y + offset.y, pt.z + offset.z, 2, nil, { "FX", "INLIMBO" }) == 0
+        return #TheSim:FindEntities(offset.x, offset.y, offset.z, 2, nil, NOTENTCHECK_CANT_TAGS) == 0
     end
 
-    local succulents_to_spawn = MAX_SUCCULENTS - #TheSim:FindEntities(pt.x, pt.y, pt.z, SUCCULENT_RANGE, { "succulent" })
+    local succulents_to_spawn = MAX_SUCCULENTS - #TheSim:FindEntities(pt.x, pt.y, pt.z, SUCCULENT_RANGE, SUCCULENT_TAGS)
     for i = 1, succulents_to_spawn do
         local offset = FindWalkableOffset(pt, math.random() * 2 * PI, GetRandomMinMax(SUCCULENT_RANGE_MIN, SUCCULENT_RANGE), 10, false, true, noentcheckfn)
         if offset ~= nil then
@@ -107,8 +110,9 @@ local function HasPhysics(obj)
     return obj.Physics ~= nil
 end
 
+local BLOCKERS_TAGS = { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost", "ghost", "flying", "structure" }
 local function TryFillLake(inst, skipanim, OnSandstormChanged)
-    if FindEntity(inst, WATER_RADIUS, HasPhysics, nil, { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost", "ghost", "flying", "structure" }) ~= nil then
+    if FindEntity(inst, WATER_RADIUS, HasPhysics, nil, BLOCKERS_TAGS) ~= nil then
         --Something is on top of us, reschedule filling up...
         inst.filltask = inst:DoTaskInTime(5, TryFillLake, skipanim, OnSandstormChanged)
         return
@@ -132,7 +136,7 @@ local function TryFillLake(inst, skipanim, OnSandstormChanged)
     inst.Physics:CollidesWith(COLLISION.CHARACTERS)
     inst.Physics:CollidesWith(COLLISION.GIANTS)
 
-    inst:AddTag("watersource")
+    inst.components.watersource.available = true
     inst:RemoveTag("NOCLICK")
 end
 
@@ -162,14 +166,18 @@ local function OnSandstormChanged(inst, active, skipanim)
         inst.Physics:ClearCollisionMask()
         inst.Physics:CollidesWith(COLLISION.ITEMS)
 
-        inst:RemoveTag("watersource")
+        inst.components.watersource.available = false
         inst:AddTag("NOCLICK")
     end
 end
 
 local function OnInit(inst)
     inst.task = nil
-    inst:ListenForEvent("ms_sandstormchanged", function(src, data) OnSandstormChanged(inst, data) end, TheWorld)
+    inst:ListenForEvent("ms_stormchanged", function(src, data)
+            if data.stormtype == STORM_TYPES.SANDSTORM then
+                OnSandstormChanged(inst, data.setting)
+            end
+        end, TheWorld)
     OnSandstormChanged(inst, TheWorld.components.sandstorms ~= nil and TheWorld.components.sandstorms:IsSandstormActive(), true)
 end
 
@@ -184,7 +192,7 @@ local function OnLoad(inst, data)
 end
 
 local function GetFish(inst)
-    return math.random() < 0.6 and "wetpouch" or "fish"
+    return math.random() < 0.6 and "wetpouch" or "pondfish"
 end
 
 local function fn()
@@ -199,22 +207,24 @@ local function fn()
     inst.Transform:SetRotation(45)
 
     MakeObstaclePhysics(inst, 6)
+	--inst:SetPhysicsRadiusOverride(3)
 
     inst.AnimState:SetBuild("oasis_tile")
     inst.AnimState:SetBank("oasis_tile")
     inst.AnimState:PlayAnimation("idle", true)
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
-    inst.AnimState:SetSortOrder(2)
+    inst.AnimState:SetSortOrder(-3)
 
     inst.MiniMapEntity:SetIcon("oasis.png")
 
+    -- From watersource component
     inst:AddTag("watersource")
     inst:AddTag("birdblocker")
     inst:AddTag("antlion_sinkhole_blocker")
 
     inst.no_wet_prefix = true
-    inst:SetDeployExtraSpacing(6)
+    inst:SetDeployExtraSpacing(NO_DEPLOY_RADIUS)
 
     inst.entity:SetPristine()
 
@@ -234,6 +244,8 @@ local function fn()
 
     inst:AddComponent("oasis")
     inst.components.oasis.radius = TUNING.SANDSTORM_OASIS_RADIUS
+
+    inst:AddComponent("watersource")
 
     inst.isdamp = false
     inst.driedup = false

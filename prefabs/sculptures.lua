@@ -113,11 +113,12 @@ local function onworkfinished(inst, worker)
 
     MakeBroken(inst)
 
-    if inst.components.lootdropper.chanceloottable ~= nil and
-        worker ~= nil and worker.components.talker ~= nil then
+    if inst.components.lootdropper.chanceloottable ~= nil then
 	    inst.components.lootdropper:DropLoot(inst:GetPosition())
         -- say the uncovered state description string
-        worker.components.talker:Say(inst.components.inspectable:GetDescription(worker, inst, "UNCOVERED"))
+        if worker ~= nil and worker.components.talker ~= nil then
+            worker.components.talker:Say(inst.components.inspectable:GetDescription(worker, inst, "UNCOVERED"))
+        end
 	else
 		local pos = inst:GetPosition()
         local offset = FindWalkableOffset(pos, math.random() * 2 * PI, inst:GetPhysicsRadius(1) + 0.1, 60, false, false, NoHoles) or Vector3(2, 0, 0)
@@ -274,7 +275,7 @@ local function makesculpture(name, physics_radius, scale, second_piece_name)
 
         inst:WatchWorldState("isfullmoon", CheckMorph)
         inst:WatchWorldState("isnewmoon", CheckMorph)
-        
+
         inst:ListenForEvent("shadowchessroar", onshadowchessroar)
 
         inst.Reanimate = Reanimate

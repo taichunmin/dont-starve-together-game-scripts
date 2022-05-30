@@ -42,7 +42,7 @@ function BatSpawner:GetSpawnPoint(pt)
     local radius = 6+math.random()*6
 
     local ground = TheWorld
-    
+
 	-- we have to special case this one because birds can't land on creep
 	local result_offset = FindValidPositionByFan(theta, radius, 12, function(offset)
         local spawn_point = pt + offset

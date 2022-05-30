@@ -40,7 +40,7 @@ local function ChangeToObstacle(inst)
     inst:RemoveEventCallback("animover", ChangeToObstacle)
     local x, y, z = inst.Transform:GetWorldPosition()
     inst.Physics:Stop()
-    inst.Physics:SetMass(0) 
+    inst.Physics:SetMass(0)
     inst.Physics:ClearCollisionMask()
     inst.Physics:CollidesWith(COLLISION.ITEMS)
     inst.Physics:CollidesWith(COLLISION.CHARACTERS)
@@ -78,6 +78,8 @@ for k, v in pairs(COLLAPSIBLE_WORK_ACTIONS) do
     table.insert(COLLAPSIBLE_TAGS, k.."_workable")
 end
 local NON_COLLAPSIBLE_TAGS = { "antlion", "groundspike", "flying", "shadow", "ghost", "playerghost", "FX", "NOCLICK", "DECOR", "INLIMBO" }
+local TOSSITEM_MUST_TAGS = { "_inventoryitem" }
+local TOSSITEM_CANT_TAGS = { "locomotor", "INLIMBO" }
 
 local function DoBreak(inst)
     inst.task = nil
@@ -146,7 +148,7 @@ local function DoDamage(inst, OnIgnite)
         end
     end
 
-    local totoss = TheSim:FindEntities(x, 0, z, inst.spikeradius + DAMAGE_RADIUS_PADDING, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+    local totoss = TheSim:FindEntities(x, 0, z, inst.spikeradius + DAMAGE_RADIUS_PADDING, TOSSITEM_MUST_TAGS, TOSSITEM_CANT_TAGS)
     for i, v in ipairs(totoss) do
         if v.components.mine ~= nil then
             v.components.mine:Deactivate()

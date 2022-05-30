@@ -7,6 +7,8 @@ local prefabs_basic =
     "houndstooth",
 }
 
+local prefabs_wave = prefabs_basic
+
 local prefabs_clay =
 {
     "redpouch",
@@ -14,9 +16,27 @@ local prefabs_clay =
     "clayhound",
 }
 
+local prefabs_gingerbread =
+{
+	"warg_gooicing",
+	"wintersfeastfuel",
+    "houndstooth",
+	"crumbs",
+}
+
 local brain = require("brains/wargbrain")
 
 local sounds =
+{
+    idle = "dontstarve_DLC001/creatures/vargr/idle",
+    howl = "dontstarve_DLC001/creatures/vargr/howl",
+    hit = "dontstarve_DLC001/creatures/vargr/hit",
+    attack = "dontstarve_DLC001/creatures/vargr/attack",
+    death = "dontstarve_DLC001/creatures/vargr/death",
+    sleep = "dontstarve_DLC001/creatures/vargr/sleep",
+}
+
+local sounds_gingerbread =
 {
     idle = "dontstarve_DLC001/creatures/vargr/idle",
     howl = "dontstarve_DLC001/creatures/vargr/howl",
@@ -65,6 +85,27 @@ SetSharedLootTable('claywarg',
     {'houndstooth',             0.33},
 })
 
+SetSharedLootTable('gingerbreadwarg',
+{
+    {'wintersfeastfuel',		1.00},
+    {'wintersfeastfuel',		1.00},
+    {'wintersfeastfuel',		1.00},
+    {'wintersfeastfuel',		1.00},
+    {'wintersfeastfuel',		1.00},
+    {'wintersfeastfuel',        0.66},
+    {'wintersfeastfuel',        0.33},
+    {'crumbs',					1.00},
+    {'crumbs',					1.00},
+    {'crumbs',					0.50},
+    {'crumbs',					0.50},
+
+    {'houndstooth',             1.00},
+    {'houndstooth',             0.66},
+    {'houndstooth',             0.33},
+})
+
+local RETARGET_MUST_TAGS = { "character" }
+local RETARGET_CANT_TAGS = { "wall", "warg", "hound" }
 local function RetargetFn(inst)
     return not (inst.sg:HasStateTag("hidden") or inst.sg:HasStateTag("statue"))
         and FindEntity(
@@ -73,8 +114,8 @@ local function RetargetFn(inst)
                 function(guy)
                     return inst.components.combat:CanTarget(guy)
                 end,
-                nil,
-                { "wall", "warg", "hound" }
+                inst.sg:HasStateTag("intro_state") and RETARGET_MUST_TAGS or nil,
+                RETARGET_CANT_TAGS
             )
         or nil
 end
@@ -83,8 +124,8 @@ local function KeepTargetFn(inst, target)
     return target ~= nil
         and not (inst.sg:HasStateTag("hidden") or inst.sg:HasStateTag("statue"))
         and inst:IsNear(target, 40)
-        and not target.components.health:IsDead()
         and inst.components.combat:CanTarget(target)
+        and not target.components.health:IsDead()
 end
 
 local function OnAttacked(inst, data)
@@ -97,14 +138,19 @@ local function OnAttacked(inst, data)
         end, TUNING.WARG_TARGETRANGE)
 end
 
+local TARGETS_MUST_TAGS = {"player"}
+local TARGETS_CANT_TAGS = {"playerghost"}
 local function NumHoundsToSpawn(inst)
-    local numHounds = TUNING.WARG_BASE_HOUND_AMOUNT
+    local numHounds = inst.base_hound_num 
 
     local pt = Vector3(inst.Transform:GetWorldPosition())
-    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.WARG_NEARBY_PLAYERS_DIST, {"player"}, {"playerghost"})
+    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.WARG_NEARBY_PLAYERS_DIST, TARGETS_MUST_TAGS, TARGETS_CANT_TAGS)
     for i,player in ipairs(ents) do
         local playerAge = player.components.age:GetAgeInDays()
         local addHounds = math.clamp(Lerp(1, 4, playerAge/100), 1, 4)
+        if inst.spawn_fewer_hounds then
+            addHounds = math.ceil(addHounds/2)
+        end
         numHounds = numHounds + addHounds
     end
     local numFollowers = inst.components.leader:CountFollowers()
@@ -113,6 +159,10 @@ local function NumHoundsToSpawn(inst)
 
     num = RoundToNearest(num, 1)
 
+    if inst.max_hound_spawns then
+        num = math.min(num,inst.max_hound_spawns)
+    end
+
     return num - numFollowers
 end
 
@@ -120,8 +170,10 @@ local function NoHoundsToSpawn(inst)
     return 0
 end
 
+local TOSSITEMS_MUST_TAGS = {"_inventoryitem"}
+local TOSSITEMS_CANT_TAGS ={ "locomotor", "INLIMBO" }
 local function TossItems(inst, x, z, minradius, maxradius)
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, maxradius + 3, { "_inventoryitem" }, { "locomotor", "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, maxradius + 3, TOSSITEMS_MUST_TAGS, TOSSITEMS_CANT_TAGS)) do
         local x1, y1, z1 = v.Transform:GetWorldPosition()
         local dx, dz = x1 - x, z1 - z
         local dsq = dx * dx + dz * dz
@@ -148,9 +200,10 @@ local function TossItems(inst, x, z, minradius, maxradius)
     end
 end
 
+local SPAWNCLAYHOUND_CANT_TAGS = { "_inventoryitem", "NOBLOCK", "FX", "INLIMBO", "DECOR" }
 local function DoSpawnClayHound(inst, x, z, rot)
     if TheWorld.Map:IsPassableAtPoint(x, 0, z) then
-        for i, v in ipairs(TheSim:FindEntities(x, 0, z, 4, nil, { "_inventoryitem", "NOBLOCK", "FX", "INLIMBO", "DECOR" })) do
+        for i, v in ipairs(TheSim:FindEntities(x, 0, z, 4, nil, SPAWNCLAYHOUND_CANT_TAGS)) do
             if v.components.locomotor == nil or (v.sg ~= nil and v.sg:HasStateTag("statue")) then
                 local range = .5 + v:GetPhysicsRadius(.5)
                 if v:GetDistanceSqToPoint(x, 0, z) < range * range then
@@ -325,6 +378,25 @@ local function GetStatus(inst)
         or nil
 end
 
+local function LaunchGooIcing(inst)
+	local theta = math.random() * 2 * PI
+	local r = inst:GetPhysicsRadius(0) + 0.25 + math.sqrt(math.random()) * TUNING.WARG_GINGERBREAD_GOO_DIST_VAR
+	local x, y, z = inst.Transform:GetWorldPosition()
+	local dest_x, dest_z = math.cos(theta) * r + x, math.sin(theta) * r + z
+
+	local goo = SpawnPrefab("warg_gooicing")
+    goo.Transform:SetPosition(x, y, z)
+	goo.Transform:SetRotation(theta / DEGREES)
+	goo._caster = inst
+
+	Launch2(goo, inst, 1.5, 1, 3, .75)
+
+	inst._next_goo_time = GetTime() + TUNING.WARG_GINGERBREAD_GOO_COOLDOWN
+end
+
+local function NoGooIcing()
+end
+
 local function MakeWarg(name, bank, build, prefabs, tag)
     local assets =
     {
@@ -335,6 +407,9 @@ local function MakeWarg(name, bank, build, prefabs, tag)
     elseif bank ~= build then
         table.insert(assets, Asset("ANIM", "anim/"..bank..".zip"))
     end
+	if tag == "gingerbread" then
+        table.insert(assets, Asset("ANIM", "anim/warg_gingerbread.zip"))
+	end
     table.insert(assets, Asset("ANIM", "anim/"..build..".zip"))
 
     local function fn()
@@ -400,8 +475,11 @@ local function MakeWarg(name, bank, build, prefabs, tag)
         inst:AddComponent("lootdropper")
         inst.components.lootdropper:SetChanceLootTable(name)
 
+        inst.base_hound_num = TUNING.WARG_BASE_HOUND_AMOUNT
+
         if tag == "clay" then
             inst.NumHoundsToSpawn = NoHoundsToSpawn
+			inst.LaunchGooIcing = NoGooIcing
             inst.OnSave = OnClaySave
             inst.OnPreLoad = OnClayPreLoad
             inst.OnReanimated = OnClayReanimated
@@ -414,12 +492,21 @@ local function MakeWarg(name, bank, build, prefabs, tag)
 
             inst:ListenForEvent("spawnedforhunt", OnSpawnedForHunt)
             inst:ListenForEvent("restoredfollower", OnRestoredFollower)
+		elseif tag == "gingerbread" then
+            inst.NumHoundsToSpawn = NoHoundsToSpawn
+			inst.LaunchGooIcing = LaunchGooIcing
+            inst.components.combat:SetHurtSound("dontstarve_DLC001/creatures/vargr/hit")
+            inst:AddComponent("sleeper")
+            inst.sounds = sounds_gingerbread
+            inst.AnimState:AddOverrideBuild("gingerbread_pigman")
+            MakeLargeBurnableCharacter(inst, "swap_fire")
         else
             inst.components.combat:SetHurtSound("dontstarve_DLC001/creatures/vargr/hit")
 
             inst:AddComponent("sleeper")
 
             inst.NumHoundsToSpawn = NumHoundsToSpawn
+			inst.LaunchGooIcing = NoGooIcing
 
             inst.sounds = sounds
 
@@ -430,16 +517,20 @@ local function MakeWarg(name, bank, build, prefabs, tag)
 
         inst:SetStateGraph("SGwarg")
 
-        if tag == "clay" then
+        if tag == "clay" or tag == "gingerbread" then
             inst:AddComponent("hauntable")
             inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
         else
             MakeHauntableGoToState(inst, "howl", TUNING.HAUNT_CHANCE_OCCASIONAL, TUNING.HAUNT_COOLDOWN_MEDIUM, TUNING.HAUNT_CHANCE_LARGE)
         end
 
+		if tag == "gingerbread" then
+            inst.sg:GoToState("gingerbread_intro")
+		end
+
         inst:SetBrain(brain)
 
-        if inst:HasTag("clay") then
+        if tag == "clay" then
             inst.noidlesound = false
             inst.sg:GoToState("statue")
         end
@@ -451,4 +542,5 @@ local function MakeWarg(name, bank, build, prefabs, tag)
 end
 
 return MakeWarg("warg", "warg", "warg_build", prefabs_basic, nil),
-    MakeWarg("claywarg", "claywarg", "claywarg", prefabs_clay, "clay")
+    MakeWarg("claywarg", "claywarg", "claywarg", prefabs_clay, "clay"),
+    MakeWarg("gingerbreadwarg", "warg", "warg_gingerbread_build", prefabs_gingerbread, "gingerbread")

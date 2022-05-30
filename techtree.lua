@@ -6,7 +6,7 @@ local AVAILABLE_TECH =
     "MAGIC",
     "ANCIENT",
     "CELESTIAL",
-	"MOON_ALTAR",
+	"MOON_ALTAR", -- deprecated, all recipes have been moved into CELESTIAL
     "SHADOW",
     "CARTOGRAPHY",
 	"SEAFARING",
@@ -15,8 +15,30 @@ local AVAILABLE_TECH =
     "PERDOFFERING",
     "WARGOFFERING",
     "PIGOFFERING",
+    "CARRATOFFERING",
+    "BEEFOFFERING",
+	"CATCOONOFFERING",
 	"MADSCIENCE",
+	"CARNIVAL_PRIZESHOP",
+	"CARNIVAL_HOSTSHOP",
     "FOODPROCESSING",
+	"FISHING",
+	"WINTERSFEASTCOOKING",
+    "HERMITCRABSHOP",
+    "TURFCRAFTING",
+	"MASHTURFCRAFTING",
+    "SPIDERCRAFT",
+    "ROBOTMODULECRAFT",
+}
+
+-- only these tech trees can have tech bonuses added to them
+local BONUS_TECH =
+{
+    "SCIENCE",
+    "MAGIC",
+	"SEAFARING",
+    "ANCIENT",
+	"MASHTURFCRAFTING",
 }
 
 local function Create(t)
@@ -30,5 +52,6 @@ end
 return
 {
     AVAILABLE_TECH = AVAILABLE_TECH,
+	BONUS_TECH = BONUS_TECH,
     Create = Create,
 }

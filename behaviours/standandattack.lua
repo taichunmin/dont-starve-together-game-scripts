@@ -7,7 +7,7 @@ StandAndAttack = Class(BehaviourNode, function(self, inst, findnewtargetfn, time
 
     -- we need to store this function as a key to use to remove itself later
     self.onattackfn = function(inst, data)
-        self:OnAttackOther(data.target) 
+        self:OnAttackOther(data.target)
     end
 
     self.inst:ListenForEvent("onattackother", self.onattackfn)
@@ -64,14 +64,8 @@ function StandAndAttack:Visit()
             self.status = SUCCESS
             combat:SetTarget(nil)
         else
-            local hp = Point(combat.target.Transform:GetWorldPosition())
-            local pt = Point(self.inst.Transform:GetWorldPosition())
-            local dsq = distsq(hp, pt)
-            local angle = self.inst:GetAngleToPoint(hp)
-            local r = self.inst:GetPhysicsRadius(0) + combat.target:GetPhysicsRadius(-.1) + .1
-
             if self.inst.sg:HasStateTag("canrotate") then
-                self.inst:FacePoint(hp)
+                self.inst:FacePoint(combat.target:GetPosition())
             end
 
             combat:TryAttack()

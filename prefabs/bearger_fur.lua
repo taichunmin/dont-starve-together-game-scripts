@@ -12,7 +12,7 @@ local function fn()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
-    
+
     inst.AnimState:SetBank("bearger_fur")
     inst.AnimState:SetBuild("bearger_fur")
     inst.AnimState:PlayAnimation("idle")

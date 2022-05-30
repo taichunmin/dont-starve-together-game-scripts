@@ -117,11 +117,11 @@ local function obit_widget_constructor(data, parent, obit_button)
 
     group.DECEASED.portraitbg = group.DECEASED:AddChild(Image("images/saveslot_portraits.xml", "background.tex"))
     group.DECEASED.portraitbg:SetScale(portrait_scale, portrait_scale, 1)
-    group.DECEASED.portraitbg:SetClickable(false)   
+    group.DECEASED.portraitbg:SetClickable(false)
     group.DECEASED.base = group.DECEASED:AddChild(Widget("base"))
 
     group.DECEASED.portrait = group.DECEASED.base:AddChild(Image())
-    group.DECEASED.portrait:SetClickable(false) 
+    group.DECEASED.portrait:SetClickable(false)
     group.DECEASED.portrait:SetScale(portrait_scale, portrait_scale, 1)
     if data.character ~= nil then
         group.DECEASED.portrait:SetTexture(get_character_icon(data.character))
@@ -174,7 +174,7 @@ local function obit_widget_update(widget, data, index)
     widget.MODE:SetTruncatedString(data.server or "", widget.MODE._align.maxwidth, widget.MODE._align.maxchars, true)
 end
 
-local function encounter_widget_update(widget, data, index)   
+local function encounter_widget_update(widget, data, index)
     if not widget then return end
 
     widget.PLAYER_NAME:SetTruncatedString(data.name or "", widget.PLAYER_NAME._align.maxwidth, widget.PLAYER_NAME._align.maxchars, true)
@@ -240,7 +240,7 @@ local MorgueScreen = Class(Screen, function(self, prev_screen)
     self.default_focus = self.obituary_button
 end)
 
-function MorgueScreen:EncounterWidgetConstructor(data, parent, obit_button)  
+function MorgueScreen:EncounterWidgetConstructor(data, parent, obit_button)
     local font_size = JapaneseOnPS4() and 28 * .75 or 28
 
     local slide_factor = 200
@@ -354,13 +354,13 @@ function MorgueScreen:EncounterWidgetConstructor(data, parent, obit_button)
 		old_netid_focus(self)
 		screen.column_focus = 1
 	end
-	
+
 	local old_clear_focus = group.CLEAR.OnGainFocus
 	group.CLEAR.OnGainFocus = function(self)
 		old_clear_focus(self)
 		screen.column_focus = 2
 	end
-	
+
 	local old_set_focus = group.SetFocus
 	group.SetFocus = function(self)
 		old_set_focus(self)
@@ -373,7 +373,7 @@ function MorgueScreen:EncounterWidgetConstructor(data, parent, obit_button)
 
     group.NET_ID:SetFocusChangeDir(MOVE_LEFT, obit_button)
     group.NET_ID:SetFocusChangeDir(MOVE_RIGHT, group.CLEAR)
-    
+
     group.CLEAR:SetFocusChangeDir(MOVE_LEFT, group.NET_ID)
 
     return group
@@ -607,7 +607,7 @@ function MorgueScreen:BuildEncountersTab()
     for i = 1, num_rows do
         table.insert(self.encounter_widgets, self:EncounterWidgetConstructor(self.player_history[i] or {}, self.encountersrowsroot, self.obituary_button))
     end
-    
+
     self.encounters_scroll_list = self.encounterslistroot:AddChild(ScrollableList(self.player_history, 900, row_height * num_rows, row_height - 1, 1, encounter_widget_update, self.encounter_widgets, nil, nil, nil, 30))
     self.encounters_scroll_list:LayOutStaticWidgets(-25)
     self.encounters_scroll_list:SetPosition(-95, -35)
@@ -659,7 +659,7 @@ function MorgueScreen:RefreshControls()
 end
 
 function MorgueScreen:RefreshNav()
-    
+
     local function torightcol()
         if self.selected_tab == "obituary" then
             return self.obits_scroll_list

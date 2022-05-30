@@ -11,9 +11,9 @@ local CritterTraits = Class(function(self, inst)
 	self.traitscore = {}
 	self.dominanttrait = nil
 	self.dominanttraitlocked = nil
-	
+
 	for k,v in pairs(TUNING.CRITTER_TRAITS) do
-		self.traitscore[k] = 0 
+		self.traitscore[k] = 0
 	end
 
     inst:DoTaskInTime(0, function() self:StartTracking() end)
@@ -25,7 +25,7 @@ end
 
 local function oneat(inst, data)
 	local self = inst.components.crittertraits
-	
+
     if self.dominanttrait ~= nil and data ~= nil and data.food ~= nil then
         if data.food.components.edible.foodtype == FOODTYPE.GOODIES then
 			self.dominanttraitlocked = true
@@ -36,7 +36,7 @@ local function oneat(inst, data)
         end
     end
 
-	
+
 	local mult = inst:HasTag("stale") and 1.5 or 1 -- critter's "stale" state is the optimal time to feed
 
 	if data ~= nil and data.food ~= nil then
@@ -47,10 +47,10 @@ local function oneat(inst, data)
 		local food_freshness = data.food:HasTag("fresh") and 1
 								or data.food:HasTag("stale") and 0.5
 								or 0.1
-		
+
 		mult = mult * food_quality_mult * food_freshness
 	end
-	
+
 	self:IncTracker("wellfed", mult)
 end
 
@@ -77,7 +77,7 @@ local function wantstobepet(inst)
 	if self.pettask ~= nil then
 		self.pettask:Cancel()
 	end
-	
+
 	self.pettask = inst:DoTaskInTime(TUNING.CRITTER_WANTS_TO_BE_PET_TIME,
 		function()
 			self.pettask = nil
@@ -107,7 +107,7 @@ end
 
 function CritterTraits:StartTracking()
 	local owner = self.inst.components.follower.leader
-	
+
 	-- Events on critter
     self.inst:ListenForEvent("oneat", oneat)
     self.inst:ListenForEvent("perished", function(inst) self:IncTracker("wellfed", -1) end)
@@ -115,19 +115,19 @@ function CritterTraits:StartTracking()
     self.inst:ListenForEvent("critter_onnuzzle", wantstobepet)
     self.inst:ListenForEvent("oncritterplaying", function(inst) self:IncTracker("playful") end)
 	self.inst:ListenForEvent("timerdone", function(inst, data) OnTimerDone(self, data and data.name or nil) end)
-	
+
 	if not self.inst.components.timer:TimerExists("decay") then
 		self.inst.components.timer:StartTimer("decay", TUNING.CRITTER_TRAIT_DECAY_DELAY)
 	end
 	if not self.inst.components.timer:TimerExists("dominant") then
 		self.inst.components.timer:StartTimer("dominant", TUNING.CRITTER_TRAIT_INITIAL_DOMINANT_DELAY)
 	end
-	
+
 	-- Events on owner - combat
     self.inst:ListenForEvent("killed", function(player, data) oncombat(self, data) end, owner)
     self.inst:ListenForEvent("onhitother", function(player, data) oncombat(self, data) end, owner)
     self.inst:ListenForEvent("death", function() self:IncTracker("combat", -5/TUNING.CRITTER_TRAITS.COMBAT.inc) end, owner)
-    
+
 	-- Events on owner - crafty
     self.inst:ListenForEvent("finishedwork",	function(player, data) if not data.target:HasTag("wall") then self:IncTracker("crafty", 0.2) OnCrafty(self, 0.5) end end, owner)
     self.inst:ListenForEvent("unlockrecipe",	function() self:IncTracker("crafty", 2) end, owner)
@@ -156,12 +156,12 @@ end
 
 function CritterTraits:SetDominantTrait(trait)
 	trait = trait ~= nil and string.upper(trait) or nil
-	
+
 	if self.dominanttrait ~= nil then
 		self.inst:RemoveTag("trait_" .. self.dominanttrait)
 	end
-	
-	self.dominanttrait = trait 
+
+	self.dominanttrait = trait
 	if trait then
 		self.inst:AddTag("trait_" .. trait)
 	end
@@ -185,7 +185,7 @@ function CritterTraits:RefreshDominantTrait()
 		end
 	end
 
-	if best_trait.score > 0 then 
+	if best_trait.score > 0 then
 		if self.dominanttrait ~= best_trait.name then
 			self:SetDominantTrait(best_trait.name)
 			self.inst:PushEvent("crittertraitchanged", {trait=best_trait.name})
@@ -200,7 +200,7 @@ function CritterTraits:RefreshDominantTrait()
 	end
 	metricsdata.DOMINANT = tostring(self.dominanttrait)
     Stats.PushMetricsEvent("crittertrait.dominant", self.inst.components.follower.leader, metricsdata)
-	
+
 end
 
 function CritterTraits:OnSave()

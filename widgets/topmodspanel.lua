@@ -9,7 +9,7 @@ local TEMPLATES = require "widgets/templates"
 
 local TopModsPanel = Class(Widget, function(self, servercreationscreen)
     Widget._ctor(self, "ModsTab")
-  
+
     self.servercreationscreen = servercreationscreen
 
     self.topmods_panel = self:AddChild(Widget("topmods"))
@@ -27,7 +27,7 @@ local TopModsPanel = Class(Widget, function(self, servercreationscreen)
     self.morebutton = self.topmods_panel:AddChild(TEMPLATES.Button(STRINGS.UI.MODSSCREEN.MOREMODS, function() self:MoreWorkshopMods() end))
     self.morebutton:SetPosition(Vector3(45,-230,0))
     self.morebutton:SetScale(.56)
-  
+
     local region_size = 160
 
     self.title = self.topmods_panel:AddChild(Text(TITLEFONT, 36))
@@ -36,7 +36,7 @@ local TopModsPanel = Class(Widget, function(self, servercreationscreen)
     self.title:SetString(STRINGS.UI.MODSSCREEN.TOPMODS)
 
     self.modlinks = {}
-    
+
     local yoffset = 120
     for i = 1, 5 do
         local modlink = self.topmods_panel:AddChild(TextButton("images/ui.xml", "blank.tex","blank.tex","blank.tex","blank.tex"))
@@ -49,8 +49,8 @@ local TopModsPanel = Class(Widget, function(self, servercreationscreen)
         modlink:SetTextFocusColour(1,1,1,1)
         table.insert(self.modlinks, modlink)
         yoffset = yoffset - 45
-    end 
-    
+    end
+
     self.featuredtitle = self.topmods_panel:AddChild(Text(TITLEFONT, 36))
     self.featuredtitle:SetPosition(Vector3(45,-120,0))
     self.featuredtitle:SetString(STRINGS.UI.MODSSCREEN.FEATUREDMOD)
@@ -59,7 +59,7 @@ local TopModsPanel = Class(Widget, function(self, servercreationscreen)
     self.featuredtitleunderline = self.topmods_panel:AddChild( Image( "images/ui.xml", "line_horizontal_white.tex") )
     self.featuredtitleunderline:SetScale(.8, 1, 1)
     self.featuredtitleunderline:SetPosition(40, 150)
-    
+
     self.featuredbutton = self.topmods_panel:AddChild(TextButton("images/ui.xml", "blank.tex","blank.tex","blank.tex","blank.tex"))
     self.featuredbutton:SetPosition(Vector3(40,-170,0))
     self.featuredbutton:SetText(STRINGS.UI.MODSSCREEN.LOADING.."...")
@@ -74,7 +74,7 @@ local TopModsPanel = Class(Widget, function(self, servercreationscreen)
     self.featuredbuttonunderline:SetPosition(40, -140)
 
     local linkpref = (PLATFORM == "WIN32_STEAM" and "external") or "klei"
-    TheSim:QueryStats( '{ "req":"modrank", "field":"Session.Loads.Mods.list", "fieldop":"unwind", "linkpref":"'..linkpref..'", "limit": 20}', 
+    TheSim:QueryStats( '{ "req":"modrank", "field":"Session.Loads.Mods.list", "fieldop":"unwind", "linkpref":"'..linkpref..'", "limit": 20}',
         function(result, isSuccessful, resultCode) self:OnStatsQueried(result, isSuccessful, resultCode) end)
 
     self:DoFocusHookups()
@@ -158,7 +158,7 @@ function TopModsPanel:OnStatsQueried( result, isSuccessful, resultCode )
 
     for i = 1, #self.modlinks do
         local title = jsonresult["modnames"][randomPicks[i]]
-        if title then 
+        if title then
             local url = jsonresult["modlinks"][title]
             title = string.gsub(title, "(ws%-)", "")
             if string.len(title) > 25 then
@@ -181,7 +181,7 @@ end
 
 function TopModsPanel:DoFocusHookups()
     self.featuredbutton:SetFocusChangeDir(MOVE_UP, self.modlinks[5])
-    self.featuredbutton:SetFocusChangeDir(MOVE_LEFT, self.modlinkbutton) 
+    self.featuredbutton:SetFocusChangeDir(MOVE_LEFT, self.modlinkbutton)
     self.featuredbutton:SetFocusChangeDir(MOVE_DOWN, self.morebutton)
 
     self.morebutton:SetFocusChangeDir(MOVE_UP, self.featuredbutton)

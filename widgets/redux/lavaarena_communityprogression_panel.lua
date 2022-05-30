@@ -73,7 +73,7 @@ function CommunityProgress:OnRecievedData()
 end
 
 local function Reveal_ItemWidget(w, item, is_new)
-	if w.lockicon ~= nil then 
+	if w.lockicon ~= nil then
 		w.lockicon:Kill()
 	end
 
@@ -89,7 +89,7 @@ end
 
 local function AddItemWidget(self, root, item, offset)
 	local x = (-self.fill_width/2) + (self.fill_width * offset)
-		
+
 	local w = root:AddChild(Widget("ceature_widget"))
 	w:SetPosition(x, 72 + ((item ~= nil and item.style) == "boss" and 6 or 0))
 
@@ -103,7 +103,7 @@ local function AddItemWidget(self, root, item, offset)
 
 	w._offset = offset
 
-	if item.id == nil or Lavaarena_CommunityProgression:IsLocked(item.id) or Lavaarena_CommunityProgression:IsNewUnlock(item.id) then	
+	if item.id == nil or Lavaarena_CommunityProgression:IsLocked(item.id) or Lavaarena_CommunityProgression:IsNewUnlock(item.id) then
 		w.lockicon = w:AddChild(Image("images/lavaarena_unlocks.xml", "locked_"..item.style..".tex"))
 		w.lockicon:SetScale(1)
 	else
@@ -132,7 +132,7 @@ function CommunityProgress:BuildProgressionPanel(bar_width, bar_height)
 
     local frame = status_root.bar:AddChild(Image("images/lavaarena_unlocks.xml", "progressbar_frame.tex"))
     frame:SetPosition(0, 0)
-   
+
     status_root.bar.fill = status_root.bar:AddChild(Image("images/global_redux.xml", "progressbar_wxplarge_fill.tex"))
 	status_root.bar.fill:SetSize(self.fill_width, bar_height)
 
@@ -166,7 +166,7 @@ function CommunityProgress:BuildProgressionPanel(bar_width, bar_height)
 		self.progressbar:SetBarFill(cur_progress.percent)
 	end
 
-	return status_root	
+	return status_root
 end
 
 function CommunityProgress:AnimateBarFill(from, to)
@@ -233,7 +233,7 @@ local function MakeDailyEntry(quest_info, festival_key, season)
 
 	local title = w:AddChild(Text(HEADERFONT, 28, STRINGS.UI.LAVAARENA_SUMMARY_PANEL[string.upper(quest_info.quest)], UICOLOURS.BROWN_DARK))
 	title:SetPosition(-35, -12)
-	
+
 	local quest_xp = EventAchievements:GetActiveAchievementsIdList()[quest_info.quest].wxp
 
 	local xp_region_w = 100
@@ -313,7 +313,7 @@ function CommunityProgress:BuildQuestPanel(active_quests)
 	local exp_date = os.difftime(active_quests.daily_expiry, cur_time)
 	local hours = math.floor(exp_date / (60*60))
 	local minutes = math.min(math.ceil((exp_date % (60*60)) / 60), 59)
-	local time_str = (exp_date > 0 and (hours > 0 or minutes > 3)) and subfmt(STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.DAILY_RESET, {hours = hours, minutes = minutes}) 
+	local time_str = (exp_date > 0 and (hours > 0 or minutes > 3)) and subfmt(STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.DAILY_RESET, {hours = hours, minutes = minutes})
 					or (TheWorld ~= nil and STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.DAILY_RESET_SOON_INGAME)
 					or STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.DAILY_RESET_SOON
 	local time = w:AddChild(Text(CHATFONT, 22, time_str, UICOLOURS.BROWN_DARK))
@@ -322,7 +322,7 @@ function CommunityProgress:BuildQuestPanel(active_quests)
 	exp_date = os.difftime(active_quests.quest_expiry, cur_time)
 	hours = math.floor(exp_date / (60*60))
 	minutes = math.min(math.ceil((exp_date % (60*60)) / 60), 59)
-	time_str = (exp_date > 0 and (hours > 0 or minutes > 3)) and subfmt(STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.QUEST_RESET, {hours = hours, minutes = minutes}) 
+	time_str = (exp_date > 0 and (hours > 0 or minutes > 3)) and subfmt(STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.QUEST_RESET, {hours = hours, minutes = minutes})
 				or (TheWorld ~= nil and STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.QUEST_RESET_SOON_INGAME)
 				or STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.QUEST_RESET_SOON
 	time = w:AddChild(Text(CHATFONT, 22, time_str, UICOLOURS.BROWN_DARK))

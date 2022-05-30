@@ -8,7 +8,7 @@ local function GetIconX(w)
     return w ~= nil and -.5 * w - 25 or -25
 end
 
---base class for imagebuttons and animbuttons. 
+--base class for imagebuttons and animbuttons.
 local SkinAnnouncement = Class(Widget, function(self, font, size)
     Widget._ctor(self, "SkinAnnouncement")
 

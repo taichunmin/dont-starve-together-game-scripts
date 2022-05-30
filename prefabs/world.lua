@@ -32,13 +32,20 @@ local assets =
     Asset("ANIM", "anim/frames_comp.zip"),
 
     Asset("ANIM", "anim/frozen.zip"),
+    Asset("ANIM", "anim/floating_items.zip"),
 
     Asset("DYNAMIC_ATLAS", "images/bg_spiral_anim.xml"),
     Asset("PKGREF", "images/bg_spiral_anim.tex"),
     Asset("DYNAMIC_ATLAS", "images/bg_spiral_anim_overlay.xml"),
     Asset("PKGREF", "images/bg_spiral_anim_overlay.tex"),
 
-    
+	Asset("INV_IMAGE", "equip_slot_body_hud"),
+	Asset("INV_IMAGE", "equip_slot_head_hud"),
+	Asset("INV_IMAGE", "equip_slot_hud"),
+
+	Asset("IMAGE", "images/waterfall_mask.tex"),
+
+	Asset("IMAGE", "images/waterfall_mask.tex"),
 	Asset("IMAGE", "levels/textures/waterfall_noise1.tex"),
 	Asset("IMAGE", "levels/textures/waterfall_noise2.tex"),
 }
@@ -120,10 +127,13 @@ local prefabs =
     "turf_savanna",
     "turf_meteor",
     "turf_pebblebeach",
+    "turf_shellbeach",
     "turf_cave",
     "turf_fungus",
     "turf_fungus_red",
     "turf_fungus_green",
+    "turf_fungus_moon",
+    "turf_archive",
     "turf_sinkhole",
     "turf_underrock",
     "turf_mud",
@@ -197,15 +207,50 @@ local prefabs =
     "inventoryitem_classified",
     "writeable_classified",
     "container_classified",
+    "container_opener",
     "constructionsite_classified",
 
     "dummytarget",
     "float_fx_front",
     "float_fx_back",
-    "groundshadow",
 
-    "puffin"
+    "puffin",
+
+	-- summer carnival
+	"carnival_host",
+
+	-- deprecated bird tacklesketch
+	"oceanfishingbobber_malbatross_tacklesketch",
+	"oceanfishingbobber_goose_tacklesketch",
+	"oceanfishingbobber_crow_tacklesketch",
+	"oceanfishingbobber_robin_tacklesketch",
+	"oceanfishingbobber_robin_winter_tacklesketch",
+	"oceanfishingbobber_canary_tacklesketch",
+
+	-- Farming
+	"slow_farmplot", -- deprecated but still used in old worlds and mods
+    "fast_farmplot", -- deprecated but still used in old worlds and mods
+    "nutrients_overlay",
+    "lordfruitfly",
+
+	-- YOT Catcoon
+	"kitcoon_forest",
+	"kitcoon_savanna",
+	"kitcoon_marsh",
+	"kitcoon_deciduous",
+	"kitcoon_grass",
+	"kitcoon_rocky",
+	"kitcoon_desert",
+	"kitcoon_moon",
+	"kitcoon_yot",
 }
+
+for k, v in pairs(require("prefabs/farm_plant_defs").PLANT_DEFS) do
+	table.insert(prefabs, v.prefab)
+end
+for k, v in pairs(require("prefabs/weed_defs").WEED_DEFS) do
+	table.insert(prefabs, v.prefab)
+end
 
 --------------------------------------------------------------------------
 
@@ -213,15 +258,15 @@ local function OnPlayerSpawn(world, inst)
     inst:DoTaskInTime(0, function()
         if TheWorld.auto_teleport_players then
             local teleported = false
-            
-            for k,v in pairs(Ents) do                            
-                if v:IsValid() and v:HasTag("player") and v ~= inst and not teleported then                    
+
+            for k,v in pairs(Ents) do
+                if v:IsValid() and v:HasTag("player") and v ~= inst and not teleported then
                     inst.Transform:SetPosition(v.Transform:GetWorldPosition())
                     inst:SnapCamera()
                     teleported = true
-                end         
+                end
             end
-        end    
+        end
     end)
 end
 
@@ -295,13 +340,17 @@ function MakeWorld(name, customprefabs, customassets, common_postinit, master_po
     local function fn()
         local inst = CreateEntity()
 
-        assert(TheWorld == nil)
+		if TheWorld ~= nil then
+			print("You cannot spawn multiple worlds!")
+			return nil
+		end
+
         TheWorld = inst
         inst.net = nil
         inst.shard = nil
 
         inst.ismastersim = TheNet:GetIsMasterSimulation()
-        inst.ismastershard = inst.ismastersim and not TheShard:IsSlave()
+        inst.ismastershard = inst.ismastersim and not TheShard:IsSecondary()
         --V2C: Masters is hard
 
         inst:AddTag("NOCLICK")
@@ -330,6 +379,8 @@ function MakeWorld(name, customprefabs, customassets, common_postinit, master_po
 
         --Initialize map
         for i, data in ipairs(GroundTiles.ground) do
+			data[2]._render_layer = i
+
             local tile_type, props = unpack(data)
             local layer_name = props.name
             local handle = MapLayerManager:CreateRenderLayer(
@@ -385,7 +436,7 @@ function MakeWorld(name, customprefabs, customassets, common_postinit, master_po
 
         --Initialize lua components
         inst:AddComponent("groundcreep")
-        
+
         --Public member functions
         inst.PostInit = PostInit
         inst.OnRemoveEntity = OnRemoveEntity
@@ -405,20 +456,26 @@ function MakeWorld(name, customprefabs, customassets, common_postinit, master_po
         inst:SetPrefabName("world") -- the actual prefab to load comes from gamelogic.lua, this is for postinitfns.
 
         if not TheNet:IsDedicated() then
-            inst:AddComponent("ocean")
-	        inst:AddComponent("oceancolor")
+            inst:AddComponent("oceancolor")
+            inst:AddComponent("nutrients_visual_manager")
+            inst:AddComponent("hudindicatablemanager")
         end
-
         --
         inst:AddComponent("walkableplatformmanager")
 
         inst:AddComponent("waterphysics")
-        inst.components.waterphysics.restitution = 1.75
+        inst.components.waterphysics.restitution = 0.75
 
         if not inst.ismastersim then
             return inst
         end
 
+        inst:AddComponent("klaussackloot")
+
+        inst:AddComponent("worldsettingstimer")
+        inst:AddComponent("timer")
+
+        inst:AddComponent("farming_manager")
 
         inst:AddComponent("playerspawner")
 

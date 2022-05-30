@@ -8,10 +8,17 @@ local function getmodifiedstring(topic_tab, modifier)
 			ret = ret[v]
 		end
 		return ret
-	else
-		return (modifier ~= nil and topic_tab[modifier])
-			or topic_tab.GENERIC
-			or (#topic_tab > 0 and topic_tab[math.random(#topic_tab)] or nil)
+	elseif modifier ~= nil then
+        local ret = topic_tab[modifier]
+        return (type(ret) == "table" and #ret > 0 and ret[math.random(#ret)])
+                or ret
+                or topic_tab.GENERIC
+                or (#topic_tab > 0 and topic_tab[math.random(#topic_tab)])
+                or nil
+    else
+		return topic_tab.GENERIC
+                or (#topic_tab > 0 and topic_tab[math.random(#topic_tab)])
+                or nil
 	end
 end
 
@@ -108,7 +115,7 @@ function Umlautify(string)
     for i = 1, #string do
         local c = string:sub(i,i)
         if not last and (c == "o" or c == "O") then
-            ret = ret .. ((c == "o" and "ö") or (c == "O" and "Ö") or c)
+            ret = ret .. ((c == "o" and "Ã¶") or (c == "O" and "Ã–") or c)
             last = true
         else
             ret = ret .. c
@@ -153,7 +160,7 @@ end
 
 -- When calling GetString, must pass actual instance of entity if it might be used when ghost
 -- Otherwise, handing inst.prefab directly to the function call is okay
-function GetString(inst, stringtype, modifier)
+function GetString(inst, stringtype, modifier, nil_missing)
     local character =
         type(inst) == "string"
         and inst
@@ -175,10 +182,11 @@ function GetString(inst, stringtype, modifier)
         (inst:HasTag("playerghost") and "ghost"))
         or character
 
-    return GetSpecialCharacterString(specialcharacter)
+	return GetSpecialCharacterString(specialcharacter)
         or getcharacterstring(STRINGS.CHARACTERS[character], stringtype, modifier)
         or getcharacterstring(STRINGS.CHARACTERS.GENERIC, stringtype, modifier)
-        or ("UNKNOWN STRING: "..(character or "").." "..(stringtype or "").." "..(modifier or ""))
+		or (not nil_missing and ("UNKNOWN STRING: "..(character or "").." "..(stringtype or "").." "..(modifier or "")))
+		or nil
 end
 
 function GetActionString(action, modifier)
@@ -322,12 +330,12 @@ function str_seconds(time)
 	else
 		return subfmt(STRINGS.UI.TIME_FORMAT.MMSS, {minutes=minutes_str or 0, seconds=seconds_str})
 	end
-	
+
 end
 
 function str_date(os_time)
 	local os_date = os.date("*t", os_time)
-	
+
 	return subfmt(STRINGS.UI.DATE_FORMAT.MDY, {month = STRINGS.UI.DATE.MONTH_ABBR[os_date.month], day = tostring(os_date.day), year = tostring(os_date.year)})
 end
 
@@ -335,7 +343,7 @@ function str_play_time(time)
 	local minutes = 0
 	local hours = 0
 	local days = 0
-	
+
 	time = math.floor(time / 60) -- drop the seconds, we dont want to display them
 	if time > 0  then
 		minutes = time % 60
@@ -356,4 +364,89 @@ function str_play_time(time)
 	else
 		return subfmt(STRINGS.UI.DAYS_FORMAT.M, {minutes=minutes or 1})
 	end
+end
+
+--Damerauâ€“Levenshtein distance with limit
+function DamLevDist( a, b, limit )
+    local a_len = a:len()
+    local b_len = b:len()
+
+    --early out optimization, if the lengths are more than "limit" difference then we can return
+    if math.abs( a_len - b_len ) > limit then
+        return math.abs( a_len - b_len )
+    end
+
+    --Note(Peter): does this work with unicode?
+    a = { string.byte( a, 1, a_len ) }
+    b = { string.byte( b, 1, b_len ) }
+
+    local d = {} --2d array, 0-based, indexed as [i * num_columns + j]
+    local num_columns = b_len + 1
+
+    local id = function( i, j )
+        return i * num_columns + j
+    end
+
+    --Initialize insertion and deletion costs
+    for i = 0, a_len do
+        d[ id(i,0) ] = i
+    end
+    for j = 0, b_len do
+        d[ id(0,j) ] = j
+    end
+
+
+    for i = 1, a_len do
+        local low = limit --Used to early out when we get to the limit
+
+        for j = 1, b_len do
+            local cost = a[i] ~= b[j] and 1 or 0
+
+            local current = math.min(
+                d[ id(i-1, j  ) ] + 1,    --Deletion
+                d[ id(i,   j-1) ] + 1,    --Insertion
+                d[ id(i-1, j-1) ] + cost  --Cost of substitution, could be 0 if they are the same
+            )
+            d[ id(i,j) ] = current
+
+            --Check if we can transpose
+            if i > 1 and j > 1 and a[ i ] == b[ j-1 ] and a[ i-1 ] == b[ j ] then
+                d[ id(i,j) ] = math.min( current, d[ id(i-2, j-2) ] + cost ) -- Cost of transposition
+            end
+
+            if current < low then
+                low = current
+            end
+        end
+
+        if low > limit then
+            return low
+        end
+    end
+
+    return d[ id(a_len,b_len) ]
+end
+
+local search_subwords = function( search, str, sub_len, limit )
+    local str_len = string.len(str)
+
+    for i=1,str_len - sub_len + 1 do
+        local sub = str:sub( i, i + sub_len - 1 )
+
+        local dist = DamLevDist( search, sub, limit )
+        if dist <= limit then
+            return true
+        end
+    end
+
+    return false
+end
+
+function do_search_subwords(...)
+    --BAH it crashes on OSX :(
+    if PLATFORM == "OSX_STEAM" then
+        return search_subwords(...)
+    else
+        return string_search_subwords(...)
+    end
 end

@@ -113,7 +113,7 @@ AddRoom("ChessForest", {
 AddRoom("ChessBarrens", {
 					colour={r=.66,g=.66,b=.66,a=.50},
 					value = GROUND.ROCKY,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_1"},
 					contents =  {
 									countstaticlayouts = {
 										["Maxwell1"] = function() return math.random(0,3) < 1 and 1 or 0 end,

@@ -14,19 +14,19 @@ local prefabs =
 }
 
 local function TransitionToNextLevel(inst, wilson)
-    
+
 --[[    wilson.sg:GoToState("teleportato_teleport")
     local days_survived, start_xp, reward_xp, new_xp, capped = CalculatePlayerRewards(wilson)
-    
+
     local function onsave()
-        scheduler:ExecuteInTime(110*FRAMES, function() 
+        scheduler:ExecuteInTime(110*FRAMES, function()
             inst.AnimState:PlayAnimation("laugh", false)
             inst.AnimState:PushAnimation("active_idle", true)
             inst.SoundEmitter:PlaySound("dontstarve/common/teleportato/teleportato_maxwelllaugh", "teleportato_laugh")
-            
+
         end)
-        
-        scheduler:ExecuteInTime(110*FRAMES+3, function() 
+
+        scheduler:ExecuteInTime(110*FRAMES+3, function()
             if inst.action == "restart" then
                 local function onsaved()
                     StartNextInstance({reset_action=RESET_ACTION.LOAD_SLOT, save_slot = SaveGameIndex:GetCurrentSaveSlot(), maxwell=inst.maxwell}, true)
@@ -40,7 +40,7 @@ local function TransitionToNextLevel(inst, wilson)
             end
         end)
     end
-    
+
     wilson.profile:Save(onsave) ]]
 end
 
@@ -52,10 +52,10 @@ local function CheckNextLevelSure(inst, doer)
     SetPause(true, "portal")
 
     TheFrontEnd:PushScreen(
-        PopupDialogScreen(STRINGS.UI.TELEPORTTITLE, GetBodyText(), 
+        PopupDialogScreen(STRINGS.UI.TELEPORTTITLE, GetBodyText(),
             {
-                {text=STRINGS.UI.TELEPORTYES, cb =  function() 
-                
+                {text=STRINGS.UI.TELEPORTYES, cb =  function()
+
                                             print("Lets Go!")
                                             TheFrontEnd:PopScreen()
                                             SetPause(false)
@@ -66,12 +66,12 @@ local function CheckNextLevelSure(inst, doer)
                                                 TransitionToNextLevel(inst, doer)
                                             end)
                                         end},
-                {text=STRINGS.UI.TELEPORTNO, cb = function() 
+                {text=STRINGS.UI.TELEPORTNO, cb = function()
                                                         print("Think I'll stay here")
                                                         TheFrontEnd:PopScreen()
                                                         SetPause(false)
                                                         inst.components.activatable.inactive = true
-                                                      end}  
+                                                      end}
             }))
 end
 
@@ -145,7 +145,7 @@ local function PowerUp(inst)
 
     inst.SoundEmitter:PlaySound("dontstarve/common/teleportato/teleportato_powerup", "teleportato_on")
     inst.SoundEmitter:PlaySound("dontstarve/common/teleportato/teleportato_idle_LP", "teleportato_idle")
-    
+
 end
 
 local partSymbols = { teleportato_ring = "RING", teleportato_crank = "CRANK", teleportato_box = "BOX", teleportato_potato = "POTATO" }
@@ -252,11 +252,11 @@ local function fn()
         return inst
     end
 
-    inst:AddComponent("inspectable")    
+    inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus
     inst.components.inspectable:RecordViews()
 
-    inst:AddComponent("activatable")    
+    inst:AddComponent("activatable")
     inst.components.activatable.OnActivate = OnActivate
     inst.components.activatable.inactive = false
     inst.components.activatable.quickaction = true
@@ -264,6 +264,9 @@ local function fn()
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("teleportato_base")
     inst.components.container.canbeopened = false
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
+
 
     inst:AddComponent("playerprox")
     inst.components.playerprox:SetDist(3,5)

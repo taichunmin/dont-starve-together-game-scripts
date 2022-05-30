@@ -1,4 +1,4 @@
-UseShield = Class(BehaviourNode, function(self, inst, damageforshield, shieldtime, hidefromprojectiles, hidewhenscared)
+UseShield = Class(BehaviourNode, function(self, inst, damageforshield, shieldtime, hidefromprojectiles, hidewhenscared, data)
     BehaviourNode._ctor(self, "UseShield")
     self.inst = inst
     self.damageforshield = damageforshield or 100
@@ -8,6 +8,12 @@ UseShield = Class(BehaviourNode, function(self, inst, damageforshield, shieldtim
     self.timelastattacked = 1
     self.shieldtime = shieldtime or 2
     self.projectileincoming = false
+
+    if data then
+        self.dontupdatetimeonattack = data.dontupdatetimeonattack
+        self.dontusecustomanims = not data.usecustomanims
+        self.dontshieldforfire = data.dontshieldforfire
+    end
 
     if hidewhenscared then
         self.onepicscarefn = function(inst, data) self.scareendtime = math.max(self.scareendtime, data.duration + GetTime() + math.random()) end
@@ -43,16 +49,19 @@ end
 function UseShield:ShouldShield()
     return not self.inst.components.health:IsDead()
         and (self.damagetaken > self.damageforshield or
-            self.inst.components.health.takingfiredamage or
+            (not self.dontshieldforfire and self.inst.components.health.takingfiredamage) or
             self.projectileincoming or
             GetTime() < self.scareendtime)
 end
 
 function UseShield:OnAttacked(attacker, damage, projectile)
     if not self.inst.sg:HasStateTag("frozen") then
-        self.timelastattacked = GetTime()
+        if not self.dontupdatetimeonattack then
+            self.timelastattacked = GetTime()
+        end
 
-        if self.inst.sg.currentstate.name == "shield" and not projectile then
+        if not self.dontusecustomanims and
+                self.inst.sg.currentstate.name == "shield" and not projectile then
             self.inst.AnimState:PlayAnimation("hit_shield")
             self.inst.AnimState:PushAnimation("hide_loop")
             return
@@ -77,8 +86,18 @@ function UseShield:Visit()
         if self:ShouldShield() or self.inst.sg:HasStateTag("shield") then
             self.damagetaken = 0
             self.projectileincoming = false
-            self.inst:PushEvent("entershield")
-            --self.inst.sg:GoToState("shield")
+
+            if self.dontupdatetimeonattack then
+                -- If we're not updating on attack, we have to update when we
+                -- start running the node instead.
+                self.timelastattacked = GetTime()
+                if not self.inst.sg:HasStateTag("shield") then
+                    self.inst:PushEvent("entershield")
+                end
+            else
+                self.inst:PushEvent("entershield")
+            end
+
             self.status = RUNNING
         else
             self.status = FAILED
@@ -86,11 +105,11 @@ function UseShield:Visit()
     end
 
     if self.status == RUNNING then
-        if not self:TimeToEmerge() or self.inst.components.health.takingfiredamage then 
+        if not self:TimeToEmerge() or
+                (not self.dontshieldforfire and self.inst.components.health.takingfiredamage) then
             self.status = RUNNING
         else
             self.inst:PushEvent("exitshield")
-            --self.inst.sg:GoToState("shield_end")
             self.status = SUCCESS
         end
     end

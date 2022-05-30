@@ -125,9 +125,10 @@ local function onqueuegrowantler(inst)
 end
 
 -------------------------------------------------------------------
+local WALLS_ONEOF_TAGS = { "wall", "structure" }
 local function OnMigrate(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local buildings = TheSim:FindEntities(x, y, z, 30, nil, nil, { "wall", "structure" })
+    local buildings = TheSim:FindEntities(x, y, z, 30, nil, nil, WALLS_ONEOF_TAGS)
     if #buildings < 10 then
         inst:Remove()
     end
@@ -181,12 +182,15 @@ end
 
 local SPELL_OVERLAP_MIN = 3
 local SPELL_OVERLAP_MAX = 6
+local NOSPELLOVERLAP_ONEOF_TAGS = { "deer_ice_circle", "deer_fire_circle" }
 local function NoSpellOverlap(x, y, z, r)
-    return #TheSim:FindEntities(x, 0, z, r or SPELL_OVERLAP_MIN, nil, nil, { "deer_ice_circle", "deer_fire_circle" }) <= 0
+    return #TheSim:FindEntities(x, 0, z, r or SPELL_OVERLAP_MIN, nil, nil, NOSPELLOVERLAP_ONEOF_TAGS) <= 0
 end
 
 --Hard limit target list size since casting does multiple passes it
 local SPELL_MAX_TARGETS = 20
+local SPELLTARGET_MUST_TAGS = { "_combat", "_health" }
+local SPELLTARGET_CANT_TAGS = { "INLIMBO", "playerghost", "deergemresistance" }
 local function FindCastTargets(inst, target)
     if target ~= nil then
         --Single target for deer without keeper
@@ -203,7 +207,7 @@ local function FindCastTargets(inst, target)
     local x, y, z = inst.Transform:GetWorldPosition()
     local targets = {}
     local priorityindex = 1
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.DEER_GEMMED_CAST_RANGE, { "_combat", "_health" }, { "INLIMBO", "playerghost", "deergemresistance" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.DEER_GEMMED_CAST_RANGE, SPELLTARGET_MUST_TAGS, SPELLTARGET_CANT_TAGS)) do
         if not v.components.health:IsDead() then
             if v:HasTag("player") then
                 table.insert(targets, priorityindex, v)
@@ -618,7 +622,7 @@ local function unshackle_fn()
         return inst
     end
 
-    inst.persist = false
+    inst.persists = false
 
     inst:DoTaskInTime(15 * FRAMES, DoChainSound)
 
@@ -655,7 +659,7 @@ local function growantler_fn()
         return inst
     end
 
-    inst.persist = false
+    inst.persists = false
 
     inst:DoTaskInTime(2, ErodeAway)
 

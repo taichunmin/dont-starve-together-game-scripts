@@ -25,8 +25,7 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "idle",
         tags = { "idle", "canrotate" },
 
@@ -34,7 +33,7 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
 			if inst.components.locomotor ~= nil then
 				inst.components.locomotor:StopMoving()
 			end
-			
+
 			local curtime = GetTime()
 
 			if inst.sg.mem.queuenewdominanttraitemote then
@@ -66,7 +65,7 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
 				local r = math.random()
 				if r <= inst:GetPeepChance() then
 					inst.sg:GoToState("hungry")
-				elseif r <= (inst.components.crittertraits:IsDominantTrait("playful") and 0.2 or 0.1) and 
+				elseif r <= (inst.components.crittertraits:IsDominantTrait("playful") and 0.2 or 0.1) and
 					(curtime - (inst.sg.mem.prevemotetime or 0) > (inst.components.crittertraits:IsDominantTrait("playful") and TUNING.CRITTER_DOMINANTTRAIT_PLAYFUL_EMOTE_DELAY or TUNING.CRITTER_EMOTE_DELAY)) then
 					inst.sg.mem.prevemotetime = curtime
 					if inst.sg.mem.avoidingcombat then
@@ -85,7 +84,7 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
 				end
 			end
         end,
-        
+
         timeline = timeline,
 
         events =
@@ -101,8 +100,7 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddEat = function(states, timeline, fns)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "eat",
         tags = { "busy" },
 
@@ -139,15 +137,14 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddHungry = function(states, timeline)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "hungry",
         tags = {"idle"},
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("distress")
         end,
-       
+
         timeline = timeline,
 
         events=
@@ -165,8 +162,7 @@ end
 SGCritterStates.AddNuzzle = function(states, actionhandlers, timeline, fns)
     table.insert(actionhandlers, ActionHandler(ACTIONS.NUZZLE, "nuzzle"))
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "nuzzle",
 		tags = {"busy"},
 
@@ -175,7 +171,7 @@ SGCritterStates.AddNuzzle = function(states, actionhandlers, timeline, fns)
                 inst.components.locomotor:StopMoving()
             end
             inst.AnimState:PlayAnimation("emote_nuzzle")
-            
+
             inst.sg.mem.prevnuzzletime = GetTime()
 
             if fns ~= nil and fns.onenter ~= nil then
@@ -186,29 +182,29 @@ SGCritterStates.AddNuzzle = function(states, actionhandlers, timeline, fns)
 		onexit = function(inst)
 			inst:PerformBufferedAction()
 			inst:ClearBufferedAction()
+			if fns ~= nil and fns.onexit ~= nil then
+				fns.onexit(inst)
+			end
 		end,
 
 		timeline = timeline,
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
 					inst:PushEvent("critter_onnuzzle")
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
-
-        onexit = fns ~= nil and fns.onexit or nil,
     })
 end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddRandomEmotes = function(states, emotes)
 	for i,v in ipairs(emotes) do
-		table.insert(states, State
-		{
+		table.insert(states, State{
 			name = "emote_"..i,
 			tags = { "busy", "canrotate" },
 
@@ -242,8 +238,7 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddEmote = function(states, name, timeline)
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "emote_"..name,
 		tags = {"busy"},
 
@@ -255,9 +250,9 @@ SGCritterStates.AddEmote = function(states, name, timeline)
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
@@ -266,8 +261,7 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddPetEmote = function(states, timeline, onexit)
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "emote_pet",
 		tags = {"busy"},
 
@@ -279,22 +273,21 @@ SGCritterStates.AddPetEmote = function(states, timeline, onexit)
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
 					inst:PushEvent("critter_onpet")
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
-		
+
 		onexit = onexit,
     })
 end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddCombatEmote = function(states, timelines)
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "combat_pre",
 		tags = {"busy"},
 
@@ -309,17 +302,16 @@ SGCritterStates.AddCombatEmote = function(states, timelines)
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
 					local loop = (inst.components.locomotor ~= nil and not inst.components.locomotor:WantsToMoveForward()) and inst.sg.mem.avoidingcombat
-					inst.sg:GoToState(loop and "combat_loop" or "combat_pst") 
+					inst.sg:GoToState(loop and "combat_loop" or "combat_pst")
 				end
 			end)
 		},
     })
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "combat_loop",
 		tags = {"busy"},
 
@@ -331,18 +323,17 @@ SGCritterStates.AddCombatEmote = function(states, timelines)
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
 					local loop_change = inst.components.crittertraits:IsDominantTrait("combat") and TUNING.CRITTER_DOMINANTTRAIT_COMBAT_LOOP_CHANCE or TUNING.CRITTER_COMBAT_LOOP_CHANCE
 					local loop = (inst.components.locomotor ~= nil and not inst.components.locomotor:WantsToMoveForward()) and inst.sg.mem.avoidingcombat and math.random() < loop_change
-					inst.sg:GoToState( loop and "combat_loop" or "combat_pst") 
+					inst.sg:GoToState( loop and "combat_loop" or "combat_pst")
 				end
 			end)
 		},
     })
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
 		name = "combat_pst",
 		tags = {"busy"},
 
@@ -354,9 +345,9 @@ SGCritterStates.AddCombatEmote = function(states, timelines)
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
@@ -365,16 +356,16 @@ end
 
 --------------------------------------------------------------------------
 SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, onexit)
-	table.insert(events, EventHandler("critterplayful", function(inst, data)
+	table.insert(events, EventHandler("start_playwithplaymate", function(inst, data)
 		local playful_delay = inst.components.crittertraits:IsDominantTrait("playful") and TUNING.CRITTER_DOMINANTTRAIT_PLAYFUL_WITHOTHER_DELAY or TUNING.CRITTER_PLAYFUL_DELAY
-		
-		if inst:IsPlayful() and data.target ~= nil and data.target:IsValid() 
+
+		if inst:IsPlayful() and data.target ~= nil and data.target:IsValid()
 	        and (GetTime() - (inst.sg.mem.prevplayfultime or 0) > playful_delay)
 	        and not inst.sg:HasStateTag("playful") then
-		
+
 			inst.sg.mem.queuedplayfultarget = data.target
             inst.sg.mem.queueplayfulanim = inst.sg.mem.playfulanim ~= 1 and 1 or 2
-            
+
 		    data.target:PushEvent("critterplaywithme", {target=inst, anim=(inst.sg.mem.queueplayfulanim == 1 and 2 or 1)})
 		end
 	end))
@@ -387,10 +378,9 @@ SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, one
 			end
 		end
 	end))
-	
 
-    table.insert(states, State
-    {
+
+    table.insert(states, State{
 		name = "playful",
 		tags = {"busy", "canrotate", "playful"},
 
@@ -398,12 +388,12 @@ SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, one
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
             end
-            
+
             inst.sg.mem.playfulanim = inst.sg.mem.queueplayfulanim
             inst.sg.mem.queueplayfulanim = nil
-            
+
 			inst:PushEvent("oncritterplaying")
-            
+
             if target ~= nil and target:IsValid() then
 				inst:ForceFacePoint(target:GetPosition())
 			end
@@ -411,7 +401,7 @@ SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, one
             if inst.sg.mem.playfulanim == nil or inst.sg.mem.playfulanim == 1 then
 				inst.AnimState:PlayAnimation("interact_active")
 			else
-				inst.sg:GoToState("playful2") 
+				inst.sg:GoToState("playful2")
 			end
 
 		end,
@@ -422,20 +412,19 @@ SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, one
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
     })
-    
-    table.insert(states, State
-    {
+
+    table.insert(states, State{
 		name = "playful2",
 		tags = {"busy", "canrotate", "playful"},
 
-		onenter = function(inst, target)          
+		onenter = function(inst, target)
 			inst.AnimState:PlayAnimation("interact_passive")
 		end,
 
@@ -445,9 +434,9 @@ SGCritterStates.AddPlayWithOtherCritter = function(states, events, timeline, one
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle") 
+					inst.sg:GoToState("idle")
 				end
 			end)
 		},
@@ -461,8 +450,7 @@ local function walkontimeout(inst)
 end
 
 SGCritterStates.AddWalkStates = function(states, timelines, softstop)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "walk_start",
         tags = { "moving", "canrotate", "softstop" },
 
@@ -483,8 +471,7 @@ SGCritterStates.AddWalkStates = function(states, timelines, softstop)
         },
     })
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "walk",
         tags = { "moving", "canrotate", "softstop" },
 
@@ -499,8 +486,7 @@ SGCritterStates.AddWalkStates = function(states, timelines, softstop)
         ontimeout = walkontimeout,
     })
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "walk_stop",
         tags = { "canrotate", "softstop" },
 

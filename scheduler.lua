@@ -3,6 +3,14 @@ require("class")
 HIBERNATE = "hibernate"
 SLEEP = "sleep"
 
+local function GetSchedulerTick(isstatic)
+    return isstatic and GetStaticTick() or GetTick()
+end
+
+local function GetSchedulerTime(isstatic)
+    return isstatic and GetStaticTime() or GetTime()
+end
+
 ----------------------------------------------------------------------------------
 local coroutine = coroutine
 local debug = debug
@@ -11,7 +19,7 @@ local debug = debug
 local taskguid = 0
 local Task = Class( function(self, fn, id, param)
     self.guid = taskguid
-    taskguid = taskguid + 1    
+    taskguid = taskguid + 1
     self.param = param
     self.id = id
     self.fn = fn
@@ -105,13 +113,14 @@ local function GetNewList()
 end
 -------------------------------
 
-local Scheduler = Class( function(self)
+local Scheduler = Class( function(self, isstatic)
     self.tasks = {}
     self.running = {}
     self.waitingfortick = {}
     self.waking = {}
     self.hibernating = {}
     self.attime = {}
+    self.isstatic = isstatic or nil
 end)
 
 function Scheduler:__tostring()
@@ -171,7 +180,7 @@ function Scheduler:OnTick(tick)
         for k,v in pairs(self.attime[tick]) do
             if v then
                 local already_dead = k.limit and k.limit == 0
-                    
+
                 if not already_dead and k.fn then
                     if k.arg then
                         k.fn(unpack(k.arg))
@@ -253,12 +262,12 @@ function Scheduler:KillAll()
     self.waitingfortick = {}
     self.waking = {}
     self.attime = {}
-    
+
 end
 
 local function removeif(tab, fn)
     for k, v in pairs(tab) do
-        if fn(v) then 
+        if fn(v) then
             tab[k] = nil
         end
     end
@@ -269,16 +278,16 @@ function Scheduler:ExecuteInTime(timefromnow, fn, id, ...)
 end
 
 function Scheduler:GetListForTimeFromNow(dt)
-    local nowtick = GetTick()
-    local wakeuptick = math.floor( (GetTime()+dt)/GetTickTime() )
+    local nowtick = GetSchedulerTick(self.isstatic)
+    local wakeuptick = math.floor( (GetSchedulerTime(self.isstatic)+dt)/GetTickTime() )
     if wakeuptick <= nowtick then
         wakeuptick = nowtick+1
     end
 
-    local list = scheduler.attime[wakeuptick]
+    local list = self.attime[wakeuptick]
     if not list then
         list = {}
-        scheduler.attime[wakeuptick] = list
+        self.attime[wakeuptick] = list
     end
     return list, wakeuptick
 end
@@ -313,15 +322,26 @@ end
 ------------------------------------------------------------------------------------
 
 scheduler = Scheduler()
+staticScheduler = Scheduler(true)
 
 ------------------------------------------------------------------------------------
 
 --These are to be called from within a thread
 
+local function GetCurrentScheduler()
+    local co = coroutine.running()
+    if scheduler.tasks[co] then
+        return scheduler
+    elseif staticScheduler.tasks[co] then
+        return staticScheduler
+    end
+end
+
 function Wake()
-    local task = scheduler:GetCurrentTask()
+    local schedule = GetCurrentScheduler()
+    local task = schedule.tasks[coroutine.running()]
     if task then
-        task:SetList(scheduler.running)
+        task:SetList(schedule.running)
     end
 end
 
@@ -334,8 +354,9 @@ function Yield()
 end
 
 function Sleep(time)
-    local desttick = math.ceil((GetTime() + time)/GetTickTime())
-    if GetTick() < desttick then
+    local schedule = GetCurrentScheduler()
+    local desttick = math.ceil((GetSchedulerTime(schedule.isstatic) + time)/GetTickTime())
+    if GetSchedulerTick(schedule.isstatic) < desttick then
         coroutine.yield(SLEEP, desttick)
     else
         coroutine.yield()
@@ -343,20 +364,27 @@ function Sleep(time)
 end
 
 function KillThread(task)
-    scheduler:KillTask(task)
+    if scheduler.tasks[task.co] then
+        scheduler:KillTask(task)
+    elseif staticScheduler.tasks[task.co] then
+        staticScheduler:KillTask(task)
+    end
 end
 
 ------
 
 function WakeTask(task)
     if task then
-        task:SetList(scheduler.running)
+        if scheduler.tasks[task.co] then
+            task:SetList(scheduler.running)
+        elseif staticScheduler.tasks[task.co] then
+            task:SetList(staticScheduler.running)
+        end
     end
 end
 
 --This is to start a thread
 function StartThread(fn, id, param)
-
     if id == nil then
         local task = scheduler:GetCurrentTask()
         if task ~= nil then
@@ -364,6 +392,16 @@ function StartThread(fn, id, param)
         end
     end
     return scheduler:AddTask(fn, id, param)
+end
+
+function StartStaticThread(fn, id, param)
+    if id == nil then
+        local task = staticScheduler:GetCurrentTask()
+        if task ~= nil then
+            id = task.id
+        end
+    end
+    return staticScheduler:AddTask(fn, id, param)
 end
 
 function RunScheduler(tick)
@@ -376,10 +414,22 @@ function RunScheduler(tick)
     TheSim:ProfilerPop()
 end
 
+function RunStaticScheduler(tick)
+    TheSim:ProfilerPush("staticScheduler:OnTick")
+    staticScheduler:OnTick(tick)
+    TheSim:ProfilerPop()
+
+    TheSim:ProfilerPush("staticScheduler:Run")
+    staticScheduler:Run()
+    TheSim:ProfilerPop()
+end
+
 function KillThreadsWithID(id)
     scheduler:KillTasksWithID(id)
+    staticScheduler:KillTasksWithID(id)
 end
 
 function StopAllThreads()
     scheduler:KillAll()
+    staticScheduler:KillAll()
 end

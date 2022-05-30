@@ -78,7 +78,7 @@ local function CreateBase(isnew)
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
     inst.AnimState:SetSortOrder(3)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     inst.AnimState:SetMultColour(.5, .45, .45, .6)
 
     if isnew then
@@ -224,14 +224,18 @@ local function InitFX(inst)
     end
 end
 
+local TARGET_PVP_ONEOF_TAGS = { "sleeper", "player" }
+local TARGET_PVP_CANT_TAGS = { "playerghost", "FX", "DECOR", "INLIMBO" }
+local TARGET_MUST_TAGS = { "sleeper" }
+local TARGET_CANT_TAGS = { "player", "FX", "DECOR", "INLIMBO" }
 local function DoAreaDrowsy(inst, sleeptimecache, sleepdelaycache)
     local x, y, z = inst.Transform:GetWorldPosition()
     local range = 3.5
     local t = GetTime()
     local ents =
         TheNet:GetPVPEnabled() and
-        TheSim:FindEntities(x, y, z, range, nil, { "playerghost", "FX", "DECOR", "INLIMBO" }, { "sleeper", "player" }) or
-        TheSim:FindEntities(x, y, z, range, { "sleeper" }, { "player", "FX", "DECOR", "INLIMBO" })
+        TheSim:FindEntities(x, y, z, range, nil, TARGET_PVP_CANT_TAGS, TARGET_PVP_ONEOF_TAGS) or
+        TheSim:FindEntities(x, y, z, range, TARGET_MUST_TAGS, TARGET_CANT_TAGS)
     for i, v in ipairs(ents) do
         local delayed = false
         if (sleepdelaycache[v] or 0) > TICK_PERIOD then

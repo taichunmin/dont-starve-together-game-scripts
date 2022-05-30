@@ -12,7 +12,7 @@ ParseNestedKey = function(obj, key, value)
 		if key_head == nil then
 			return
 		end
-		
+
 		local key_tail = {}
 		for i,k in ipairs(key) do
 			if i > 1 then table.insert(key_tail, k) end
@@ -24,30 +24,29 @@ ParseNestedKey = function(obj, key, value)
 	end
 end
 
-
-
 local function ConvertStaticLayoutToLayout(layoutsrc, additionalProps)
 	local staticlayout = require(layoutsrc)
-	
+
 	local layout = additionalProps or {}
-		
+
 	-- add stuff
-	layout.type = LAYOUT.STATIC	
-	layout.scale = 1	
+	layout.type = LAYOUT.STATIC
+	layout.scale = 1
 	layout.layout_file = layoutsrc
-	
+
 	-- See \tools\tiled\dont_starve\tiles.png for tiles
 	layout.ground_types = {
-							--Translates tile type index from constants.lua into tiled tileset. 
+							--Translates tile type index from constants.lua into tiled tileset.
 							--Order they appear here is the order they will be used in tiled.
-							GROUND.IMPASSABLE,			GROUND.ROAD,				GROUND.ROCKY,		GROUND.DIRT,			GROUND.SAVANNA,		GROUND.GRASS,				GROUND.FOREST,			        GROUND.MARSH, 
-							GROUND.WOODFLOOR,			GROUND.CARPET,				GROUND.CHECKER,		GROUND.CAVE,			GROUND.FUNGUS,		GROUND.SINKHOLE,			GROUND.QUAGMIRE_GATEWAY,		GROUND.QUAGMIRE_SOIL, 
-							GROUND.OCEAN_COASTAL_SHORE,	GROUND.OCEAN_COASTAL,		GROUND.IMPASSABLE,  GROUND.IMPASSABLE, 	    GROUND.UNDERROCK,	GROUND.MUD,					GROUND.QUAGMIRE_PEATFOREST,		GROUND.IMPASSABLE,
-							GROUND.BRICK,				GROUND.BRICK_GLOW,			GROUND.TILES,		GROUND.TILES_GLOW, 		GROUND.TRIM,		GROUND.TRIM_GLOW,			GROUND.QUAGMIRE_PARKSTONE,	    GROUND.QUAGMIRE_PARKFIELD,
-							GROUND.PEBBLEBEACH,			GROUND.METEOR,				GROUND.FUNGUSRED,	GROUND.FUNGUSGREEN,		GROUND.FAKE_GROUND,	GROUND.LAVAARENA_FLOOR,		GROUND.LAVAARENA_TRIM,          GROUND.QUAGMIRE_CITYSTONE,
+							GROUND.IMPASSABLE,			GROUND.ROAD,				GROUND.ROCKY,			GROUND.DIRT,			GROUND.SAVANNA,		GROUND.GRASS,				GROUND.FOREST,			        GROUND.MARSH,
+							GROUND.WOODFLOOR,			GROUND.CARPET,				GROUND.CHECKER,			GROUND.CAVE,			GROUND.FUNGUS,		GROUND.SINKHOLE,			GROUND.QUAGMIRE_GATEWAY,		GROUND.QUAGMIRE_SOIL,
+							GROUND.OCEAN_COASTAL_SHORE,	GROUND.OCEAN_COASTAL,		GROUND.OCEAN_ROUGH,		GROUND.OCEAN_BRINEPOOL, GROUND.UNDERROCK,	GROUND.MUD,					GROUND.QUAGMIRE_PEATFOREST,		GROUND.IMPASSABLE,
+							GROUND.BRICK,				GROUND.OCEAN_SWELL,			GROUND.TILES,			GROUND.OCEAN_HAZARDOUS,	GROUND.TRIM,		GROUND.IMPASSABLE,			GROUND.QUAGMIRE_PARKSTONE,	    GROUND.QUAGMIRE_PARKFIELD,
+							GROUND.PEBBLEBEACH,			GROUND.METEOR,				GROUND.FUNGUSRED,		GROUND.FUNGUSGREEN,		GROUND.FAKE_GROUND,	GROUND.LAVAARENA_FLOOR,		GROUND.LAVAARENA_TRIM,          GROUND.QUAGMIRE_CITYSTONE,
+							GROUND.SHELLBEACH,          GROUND.ARCHIVE,             GROUND.FUNGUSMOON,      GROUND.OCEAN_WATERLOG,
 						}
 	layout.ground = {}
-	
+
 	-- so we can support both 16 wide grids and 64 wide grids from tiled
 	local tilefactor = math.ceil(64/staticlayout.tilewidth)
 
@@ -104,7 +103,7 @@ local function ConvertStaticLayoutToLayout(layoutsrc, additionalProps)
 
     				end
 
-    				table.insert(layout.layout[prefab], {x=x, y=y, properties=properties, width=width, height=height})				
+    				table.insert(layout.layout[prefab], {x=x, y=y, properties=properties, width=width, height=height})
                 end
 			end
 
@@ -113,7 +112,7 @@ local function ConvertStaticLayoutToLayout(layoutsrc, additionalProps)
 			end
 		end
 	end
-	
+
 	return layout
 end
 

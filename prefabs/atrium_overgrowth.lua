@@ -3,19 +3,12 @@ local assets =
     Asset("ANIM", "anim/atrium_overgrowth.zip"),
 }
 
---[[
-local function OnEntitySleep(inst)
-    inst.SoundEmitter:KillSound("loop")
-end
+local nightmare_assets =
+{
+    Asset("ANIM", "anim/atrium_overgrowth.zip"),
+}
 
-local function OnEntityWake(inst)
-    if not inst.SoundEmitter:PlayingSound("loop") then
-        inst.SoundEmitter:PlaySound("dontstarve/cave/nightmare_spawner_open_LP", "loop")
-    end
-end
-]]
-
-local function fn()
+local function fn(bank)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -24,11 +17,11 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
-    inst.AnimState:SetBuild("atrium_overgrowth")
-    inst.AnimState:SetBank("atrium_overgrowth")
+    inst.AnimState:SetBuild(bank)
+    inst.AnimState:SetBank(bank)
     inst.AnimState:PlayAnimation("idle")
 
-    inst.MiniMapEntity:SetIcon("atrium_overgrowth.png")
+    inst.MiniMapEntity:SetIcon(bank..".png")
 
     MakeObstaclePhysics(inst, 1.5)
 
@@ -43,14 +36,11 @@ local function fn()
 
     inst:AddComponent("inspectable")
 
-    --inst.OnEntityWake = OnEntityWake
-    --inst.OnEntitySleep = OnEntitySleep
-
     return inst
 end
 
 local function idolfn()
-    local inst = fn()
+    local inst = fn("atrium_overgrowth")
 
     inst:SetPrefabName("atrium_overgrowth")
 
@@ -61,5 +51,5 @@ local function idolfn()
     return inst
 end
 
-return Prefab("atrium_overgrowth", fn, assets, prefabs),
+return Prefab("atrium_overgrowth", function() return fn("atrium_overgrowth") end, assets, prefabs),
     Prefab("atrium_idol", idolfn, assets, prefabs) -- deprecated

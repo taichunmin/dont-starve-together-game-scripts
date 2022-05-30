@@ -17,13 +17,13 @@ local function DoCheckTemp(inst)
 end
 
 local function StartCheckTemp(inst)
-    if inst.task == nil and not inst:HasTag("burnt") then 
+    if inst.task == nil and not inst:HasTag("burnt") then
         inst.task = inst:DoPeriodicTask(1, DoCheckTemp, 0)
     end
 end
 
 local function onhammered(inst, worker)
-    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then 
+    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
         inst.components.burnable:Extinguish()
     end
     inst.components.lootdropper:DropLoot()
@@ -34,7 +34,7 @@ local function onhammered(inst, worker)
 end
 
 local function onhit(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         if inst.task ~= nil then
             inst.task:Cancel()
             inst.task = nil
@@ -107,7 +107,7 @@ local function fn()
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(4)
     inst.components.workable:SetOnFinishCallback(onhammered)
-    inst.components.workable:SetOnWorkCallback(onhit)       
+    inst.components.workable:SetOnWorkCallback(onhit)
     MakeSnowCovered(inst)
 
     inst:ListenForEvent("onbuilt", onbuilt)

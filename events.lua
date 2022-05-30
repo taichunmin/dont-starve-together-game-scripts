@@ -16,13 +16,13 @@ end)
 
 function EventProcessor:AddEventHandler(event, fn)
     local handler = EventHandler(event, fn, self)
-    
+
     if self.events[event] == nil then
         self.events[event] = {}
     end
-    
+
     self.events[event][handler] = true
-    
+
     return handler
 end
 

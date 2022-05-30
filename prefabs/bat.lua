@@ -15,7 +15,7 @@ local brain = require "brains/batbrain"
 
 SetSharedLootTable( 'bat',
 {
-    {'batwing',    0.15},
+    {'batwing',    0.25},
     {'guano',      0.15},
     {'monstermeat',0.10},
 })
@@ -32,6 +32,8 @@ local function MakeTeam(inst, attacker)
     leader.components.teamleader:BroadcastDistress(inst)
 end
 
+local RETARGET_CANT_TAGS = {"bat"}
+local RETARGET_ONEOF_TAGS = {"character", "monster"}
 local function Retarget(inst)
     local ta = inst.components.teamattacker
 
@@ -39,8 +41,8 @@ local function Retarget(inst)
             return inst.components.combat:CanTarget(guy)
         end,
         nil,
-        {"bat"},
-        {"character", "monster"}
+        RETARGET_CANT_TAGS,
+        RETARGET_ONEOF_TAGS
     )
 
     if newtarget and not ta.inteam and not ta:SearchForTeam() then
@@ -172,7 +174,7 @@ local function fn()
 
     inst:AddComponent("eater")
     inst.components.eater:SetDiet({ FOODTYPE.MEAT }, { FOODTYPE.MEAT })
-    inst.components.eater.strongstomach = true
+    inst.components.eater:SetStrongStomach(true)
 
     inst:AddComponent("sleeper")
     inst.components.sleeper:SetResistance(3)

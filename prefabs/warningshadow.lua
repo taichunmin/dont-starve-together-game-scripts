@@ -13,7 +13,7 @@ local function fn()
     inst.AnimState:SetBank("warning_shadow")
     inst.AnimState:SetBuild("warning_shadow")
     inst.AnimState:PlayAnimation("idle", true)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
 

@@ -5,14 +5,23 @@ local assets =
     Asset("ANIM", "anim/meat_small.zip"),
     Asset("ANIM", "anim/meat_human.zip"),
     Asset("ANIM", "anim/drumstick.zip"),
+    Asset("ANIM", "anim/fishmeat.zip"),
+    Asset("ANIM", "anim/fishmeat_small.zip"),
     Asset("ANIM", "anim/meat_rack_food.zip"),
+    Asset("ANIM", "anim/meat_rack_food_tot.zip"),
     Asset("ANIM", "anim/batwing.zip"),
     Asset("ANIM", "anim/plant_meat.zip"),
+    Asset("ANIM", "anim/barnacle.zip"),
 }
 
 local quagmire_assets =
 {
     Asset("ANIM", "anim/quagmire_meat_small.zip"),
+}
+
+local batnose_assets =
+{
+    Asset("ANIM", "anim/batnose.zip"),
 }
 
 local prefabs =
@@ -47,6 +56,20 @@ local drumstickprefabs =
 {
     "drumstick_cooked",
     "spoiled_food",
+}
+
+local fishmeat_smallprefabs =
+{
+    "fishmeat_small_cooked",
+    "meat_dried",
+    "spoiled_fish_small",
+}
+
+local fishmeat_prefabs =
+{
+    "fishmeat_cooked",
+    "meat_dried",
+    "spoiled_fish",
 }
 
 local batwingprefabs =
@@ -107,7 +130,7 @@ local function common(bank, build, anim, tags, dryable, cookable)
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
-    
+
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank(bank)
@@ -163,6 +186,8 @@ local function common(bank, build, anim, tags, dryable, cookable)
         inst:AddComponent("dryable")
         inst.components.dryable:SetProduct(dryable.product)
         inst.components.dryable:SetDryTime(dryable.time)
+		inst.components.dryable:SetBuildFile(dryable.build)
+        inst.components.dryable:SetDriedBuildFile(dryable.dried_build)
     end
 
     if cookable ~= nil then
@@ -187,8 +212,6 @@ local function humanmeat()
         return inst
     end
 
-    inst.components.edible.ismeat = true    
-    inst.components.edible.foodtype = FOODTYPE.MEAT
     inst.components.edible.healthvalue = -TUNING.HEALING_MED
     inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_LARGE
@@ -238,7 +261,7 @@ local function humanmeat_dried()
 
     return inst
 end
-    
+
 local function monster()
     local inst = common("monstermeat", "meat_monster", "idle", { "monstermeat" }, { product = "monstermeat_dried", time = TUNING.DRY_FAST }, { product = "cookedmonstermeat" })
 
@@ -246,8 +269,7 @@ local function monster()
         return inst
     end
 
-    inst.components.edible.ismeat = true    
-    inst.components.edible.foodtype = FOODTYPE.MEAT
+    inst.components.edible.secondaryfoodtype = FOODTYPE.MONSTER
     inst.components.edible.healthvalue = -TUNING.HEALING_MED
     inst.components.edible.hungervalue = TUNING.CALORIES_MEDSMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_MED
@@ -272,6 +294,7 @@ local function cookedmonster()
 
     inst.components.tradable.goldvalue = 0
 
+    inst.components.edible.secondaryfoodtype = FOODTYPE.MONSTER
     inst.components.edible.healthvalue = -TUNING.HEALING_SMALL
     inst.components.edible.hungervalue = TUNING.CALORIES_MEDSMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_SMALL
@@ -289,6 +312,7 @@ local function driedmonster()
         return inst
     end
 
+    inst.components.edible.secondaryfoodtype = FOODTYPE.MONSTER
     inst.components.edible.healthvalue = -TUNING.HEALING_SMALL
     inst.components.edible.hungervalue = TUNING.CALORIES_MEDSMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_TINY
@@ -339,8 +363,8 @@ local function driedmeat()
 end
 
 local function raw()
-    local inst = common("meat", "meat", "raw", { "catfood" }, { product = "meat_dried", time = TUNING.DRY_MED }, { product = "cookedmeat" })
-    
+    local inst = common("meat", "meat", "raw", { "catfood", "rawmeat" }, { product = "meat_dried", time = TUNING.DRY_MED }, { product = "cookedmeat" })
+
     if not TheWorld.ismastersim then
         return inst
     end
@@ -363,7 +387,7 @@ local function raw()
 end
 
 local function smallmeat()
-    local inst = common("meat_small", "meat_small", "raw", { "catfood" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "cookedsmallmeat" })
+    local inst = common("meat_small", "meat_small", "raw", { "catfood", "rawmeat" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "cookedsmallmeat" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -421,7 +445,7 @@ local function driedsmallmeat()
 end
 
 local function drumstick()
-	local inst = common("drumstick", "drumstick", "raw", { "drumstick", "catfood" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "drumstick_cooked" })
+	local inst = common("drumstick", "drumstick", "raw", { "drumstick", "catfood", "rawmeat" }, { product = "smallmeat_dried", time = TUNING.DRY_FAST }, { product = "drumstick_cooked" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -455,8 +479,75 @@ local function drumstick_cooked()
     return inst
 end
 
+local function fishmeat_small()
+	local inst = common("fishmeat_small", "fishmeat_small", "raw", { "fishmeat", "catfood" }, { product = "smallmeat_dried", build = "meat_rack_food_tot", dried_build = "meat_rack_food", time = TUNING.DRY_FAST }, { product = "fishmeat_small_cooked" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_TINY
+    inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
+
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_SUPERFAST)
+    inst.components.perishable.onperishreplacement = "spoiled_fish_small"
+
+    return inst
+end
+
+local function fishmeat_small_cooked()
+	local inst = common("fishmeat_small", "fishmeat_small", "cooked", { "fishmeat" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_TINY
+    inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
+
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
+    inst.components.perishable.onperishreplacement = "spoiled_fish_small"
+
+    inst.components.floater:SetVerticalOffset(0.2)
+    inst.components.floater:SetScale(0.75)
+
+    return inst
+end
+
+local function fishmeat()
+	local inst = common("fishmeat", "fishmeat", "raw", { "fishmeat", "catfood", "rawmeat" }, { product = "meat_dried", build = "meat_rack_food_tot", dried_build = "meat_rack_food", time = TUNING.DRY_FAST }, { product = "fishmeat_cooked" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_MEDSMALL
+    inst.components.edible.hungervalue = TUNING.CALORIES_MED
+
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_SUPERFAST)
+    inst.components.perishable.onperishreplacement = "spoiled_fish"
+
+    return inst
+end
+
+local function fishmeat_cooked()
+	local inst = common("fishmeat", "fishmeat", "cooked", { "fishmeat" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_MEDSMALL
+    inst.components.edible.hungervalue = TUNING.CALORIES_MED
+
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
+    inst.components.perishable.onperishreplacement = "spoiled_fish"
+
+    return inst
+end
+
 local function batwing()
-    local inst = common("batwing", "batwing", "raw", { "batwing", "catfood" }, { product = "smallmeat_dried", time = TUNING.DRY_MED }, { product = "batwing_cooked" })
+    local inst = common("batwing", "batwing", "raw", { "batwing", "catfood", "rawmeat" }, { product = "smallmeat_dried", time = TUNING.DRY_MED }, { product = "batwing_cooked" })
 
     inst.components.floater:SetSize("med")
     inst.components.floater:SetVerticalOffset(0.02)
@@ -469,7 +560,7 @@ local function batwing()
     inst.components.edible.healthvalue = TUNING.HEALING_SMALL
     inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
     inst.components.edible.sanityvalue = -TUNING.SANITY_SMALL
-    
+
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
 
     return inst
@@ -490,7 +581,7 @@ local function batwing_cooked()
 end
 
 local function plantmeat()
-    local inst = common("plant_meat", "plant_meat", "raw", {"lureplant_bait"}, nil, { product = "plantmeat_cooked" })
+    local inst = common("plant_meat", "plant_meat", "raw", {"lureplant_bait", "rawmeat"}, nil, { product = "plantmeat_cooked" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -520,7 +611,7 @@ local function plantmeat_cooked()
 end
 
 local function quagmire_smallmeat()
-    local inst = common("quagmire_meat_small", "quagmire_meat_small", "raw", { "catfood" }, nil, { product = "quagmire_cookedsmallmeat" })
+    local inst = common("quagmire_meat_small", "quagmire_meat_small", "raw", { "catfood", "rawmeat" }, nil, { product = "quagmire_cookedsmallmeat" })
 
     if not TheWorld.ismastersim then
         return inst
@@ -543,6 +634,93 @@ local function quagmire_cookedsmallmeat()
     return inst
 end
 
+local function barnacle()
+    local inst = common("barnacle", "barnacle", "raw", {"barnacle", "rawmeat"}, nil, { product = "barnacle_cooked" })
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.ismeat = true
+    inst.components.edible.foodtype = FOODTYPE.MEAT
+    inst.components.edible.healthvalue = 0
+    inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
+    inst.components.edible.sanityvalue = -TUNING.SANITY_TINY
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
+
+    inst.components.tradable.goldvalue = 0
+
+    inst.components.floater:SetVerticalOffset(0.05)
+
+    inst:AddComponent("selfstacker")
+
+    return inst
+end
+
+
+local function barnacle_cooked()
+    local inst = common("barnacle", "barnacle", "cooked", {"barnacle"})
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.tradable.goldvalue = 0
+    inst.components.edible.healthvalue = TUNING.HEALING_TINY
+    inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
+    inst.components.edible.sanityvalue = 0
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_SLOW)
+
+    inst.components.floater:SetVerticalOffset(0.05)
+
+    return inst
+end
+
+local BATNOSE_TAGS = { "catfood", "rawmeat" }
+local BATNOSE_DRYABLE_DATA =
+{
+    product = "smallmeat_dried",
+    time = TUNING.DRY_MED,
+    build = "meat_rack_food_tot",
+    dried_build = "meat_rack_food",
+}
+local BATNOSE_COOKABLE_DATA = { product = "batnose_cooked" }
+local function batnose()
+    local inst = common("batnose", "batnose", "raw", BATNOSE_TAGS, BATNOSE_DRYABLE_DATA, BATNOSE_COOKABLE_DATA)
+
+    inst.components.floater:SetSize("med")
+    inst.components.floater:SetScale(0.7)
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_SMALL
+    inst.components.edible.hungervalue = TUNING.CALORIES_SMALL
+    inst.components.edible.sanityvalue = -TUNING.SANITY_SMALL
+
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
+
+    return inst
+end
+
+local function batnose_cooked()
+    local inst = common("batnose", "batnose", "cooked")
+
+    inst.components.floater:SetSize("med")
+    inst.components.floater:SetScale(0.7)
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.components.edible.healthvalue = TUNING.HEALING_MEDSMALL
+    inst.components.edible.hungervalue = TUNING.CALORIES_MEDSMALL
+    inst.components.perishable:SetPerishTime(TUNING.PERISH_MED)
+
+    return inst
+end
+
 return Prefab("meat", raw, assets, prefabs),
         Prefab("cookedmeat", cooked, assets),
         Prefab("meat_dried", driedmeat, assets),
@@ -558,8 +736,16 @@ return Prefab("meat", raw, assets, prefabs),
         Prefab("batwing_cooked", batwing_cooked, assets),
         Prefab("plantmeat", plantmeat, assets, plantmeatprefabs),
         Prefab("plantmeat_cooked", plantmeat_cooked, assets),
+        Prefab("fishmeat_small", fishmeat_small, assets, fishmeat_smallprefabs),
+        Prefab("fishmeat_small_cooked", fishmeat_small_cooked, assets),
+        Prefab("fishmeat", fishmeat, assets, fishmeat_prefabs),
+        Prefab("fishmeat_cooked", fishmeat_cooked, assets),
         Prefab("humanmeat", humanmeat, assets, humanprefabs),
         Prefab("humanmeat_cooked", humanmeat_cooked, assets),
         Prefab("humanmeat_dried", humanmeat_dried, assets),
         Prefab("quagmire_smallmeat", quagmire_smallmeat, quagmire_assets, quagmire_prefabs),
-        Prefab("quagmire_cookedsmallmeat", quagmire_cookedsmallmeat, quagmire_assets)
+        Prefab("quagmire_cookedsmallmeat", quagmire_cookedsmallmeat, quagmire_assets),
+        Prefab("barnacle", barnacle, assets),
+        Prefab("barnacle_cooked", barnacle_cooked, assets),
+        Prefab("batnose", batnose, batnose_assets, batwingprefabs),
+        Prefab("batnose_cooked", batnose_cooked, batnose_assets)

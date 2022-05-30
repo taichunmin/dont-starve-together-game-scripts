@@ -101,11 +101,13 @@ function Hauntable:DoHaunt(doer)
                 self.inst:StartUpdatingComponent(self)
             end
         else
-            self.haunted = true
-            self.cooldowntimer = self.cooldown or TUNING.HAUNT_COOLDOWN_SMALL
-            self:StartFX(true)
-            self:StartShaderFx()
-            self.inst:StartUpdatingComponent(self)
+			if self.inst:IsValid() then
+				self.haunted = true
+				self.cooldowntimer = self.cooldown or TUNING.HAUNT_COOLDOWN_SMALL
+				self:StartFX(true)
+				self:StartShaderFx()
+				self.inst:StartUpdatingComponent(self)
+			end
         end
     end
 end

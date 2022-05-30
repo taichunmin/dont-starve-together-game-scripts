@@ -1,5 +1,7 @@
 require("stategraphs/commonstates")
 
+local EXPLODE_MUST_TAGS = { "absorbpoison" }
+
 local function PlayFlapSound(inst)
     inst.SoundEmitter:PlaySound("dontstarve/birds/wingflap_cage")
 end
@@ -258,7 +260,7 @@ local states =
                     inst.components.lootdropper:SpawnLootPrefab("feather_canary", pos)
                 end
 
-                for i, v in ipairs(TheSim:FindEntities(pos.x, 0, pos.z, 3, { "absorbpoison" })) do
+                for i, v in ipairs(TheSim:FindEntities(pos.x, 0, pos.z, 3, EXPLODE_MUST_TAGS)) do
                     v:PushEvent("poisonburst", { source = inst })
                 end
             end),

@@ -24,67 +24,29 @@ local prefabs =
     "winter_food2", --sugar cookies
 }
 
-local giant_loot1 =
-{
-    "deerclops_eyeball",
-    "dragon_scales",
-    "hivehat",
-    "shroom_skin",
-    "mandrake",
-}
-
-local giant_loot2 =
-{
-    "dragonflyfurnace_blueprint",
-    "red_mushroomhat_blueprint",
-    "green_mushroomhat_blueprint",
-    "blue_mushroomhat_blueprint",
-    "mushroom_light2_blueprint",
-    "mushroom_light_blueprint",
-    "townportal_blueprint",
-    "bundlewrap_blueprint",
-}
-
-local giant_loot3 =
-{
-    "bearger_fur",
-    "royal_jelly",
-    "goose_feather",
-    "lavae_egg",
-    "spiderhat",
-    "steelwool",
-    "townportaltalisman",
-}
-
-for i, v in ipairs(giant_loot1) do
-    table.insert(prefabs, v)
-end
-
-for i, v in ipairs(giant_loot2) do
-    table.insert(prefabs, v)
-end
-
-for i, v in ipairs(giant_loot3) do
-    table.insert(prefabs, v)
-end
+require("components/klaussackloot") --contains GLOBAL function AddGiantLootPrefabs
+AddGiantLootPrefabs(prefabs)
 
 for i, v in ipairs(GetAllWinterOrnamentPrefabs()) do
     table.insert(prefabs, v)
 end
 
 local function DropBundle(inst, items)
+    for i, v in ipairs(items) do
+        if type(v) == "string" then
+            items[i] = SpawnPrefab(v)
+        else
+            items[i] = SpawnPrefab(v[1])
+            items[i].components.stackable.stacksize = v[2]
+        end
+    end
+
     local bundle = SpawnPrefab(IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) and "gift" or "bundle")
     bundle.components.unwrappable:WrapItems(items)
     for i, v in ipairs(items) do
         v:Remove()
     end
     inst.components.lootdropper:FlingItem(bundle)
-end
-
-local function FillItems(items, prefab)
-    for i = 1 + #items, math.random(3, 4) do
-        table.insert(items, SpawnPrefab(prefab))
-    end
 end
 
 local function onuseklauskey(inst, key, doer)
@@ -101,70 +63,9 @@ local function onuseklauskey(inst, key, doer)
         inst.SoundEmitter:PlaySound("dontstarve/creatures/together/klaus/chain_foley")
         inst.SoundEmitter:PlaySound("dontstarve/creatures/together/klaus/lock_break")
 
-        if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
-            local rnd = math.random(3)
-            local boss_ornaments =
-            {
-                "winter_ornament_boss_klaus",
-                "winter_ornament_boss_noeyeblue",
-                "winter_ornament_boss_noeyered",
-                "winter_ornament_boss_krampus",
-            }
-            local items =
-            {
-                SpawnPrefab(boss_ornaments[math.random(#boss_ornaments)]),
-                SpawnPrefab(GetRandomFancyWinterOrnament()),
-                SpawnPrefab(GetRandomLightWinterOrnament()),
-                SpawnPrefab(
-                    (rnd == 1 and GetRandomLightWinterOrnament()) or
-                    (rnd == 2 and GetRandomFancyWinterOrnament()) or
-                    GetRandomBasicWinterOrnament()
-                ),
-            }
-            DropBundle(inst, items)
-
-            items =
-            {
-                SpawnPrefab("goatmilk"),
-                SpawnPrefab("goatmilk"),
-                SpawnPrefab("winter_food"..tostring(math.random(2))),
-            }
-            items[3].components.stackable.stacksize = 4
+        for i, items in ipairs(TheWorld.components.klaussackloot:GetLoot()) do
             DropBundle(inst, items)
         end
-
-        local items = {}
-        table.insert(items, SpawnPrefab("amulet"))
-        table.insert(items, SpawnPrefab("goldnugget"))
-        FillItems(items, "charcoal")
-        DropBundle(inst, items)
-
-        items = {}
-        if math.random() < .5 then
-            table.insert(items, SpawnPrefab("amulet"))
-        end
-        table.insert(items, SpawnPrefab("goldnugget"))
-        FillItems(items, "charcoal")
-        DropBundle(inst, items)
-
-        items = {}
-        if math.random() < .1 then
-            table.insert(items, SpawnPrefab("krampus_sack"))
-        end
-        table.insert(items, SpawnPrefab("goldnugget"))
-        FillItems(items, "charcoal")
-        DropBundle(inst, items)
-
-        items = {}
-        local i1 = math.random(#giant_loot3)
-        local i2 = math.random(#giant_loot3 - 1)
-        table.insert(items, SpawnPrefab(giant_loot1[math.random(#giant_loot1)]))
-        if math.random() < .5 then
-            table.insert(items, SpawnPrefab(giant_loot2[math.random(#giant_loot2)]))
-        end
-        table.insert(items, SpawnPrefab(giant_loot3[i1]))
-        table.insert(items, SpawnPrefab(giant_loot3[i2 == i1 and i2 + 1 or i2]))
-        DropBundle(inst, items)
 
         inst.persists = false
         inst:AddTag("NOCLICK")

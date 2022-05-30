@@ -1,20 +1,20 @@
 require "constants"
 
-local localizations = 
+local localizations =
 {
     {id = LANGUAGE.FRENCH,          alt_id = nil,                   strings = "french.po",         code = "fr",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
     {id = LANGUAGE.SPANISH,         alt_id = LANGUAGE.SPANISH_LA,   strings = "spanish.po",        code = "es",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
   --{id = LANGUAGE.SPANISH_LA,      alt_id = nil,                   strings = "spanish_mex.po",    code = "mex",   scale = 1.0,  in_steam_menu = false, in_console_menu = false, shrink_to_fit_word = true },
     {id = LANGUAGE.GERMAN,          alt_id = nil,                   strings = "german.po",         code = "de",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
-    {id = LANGUAGE.ITALIAN,         alt_id = nil,                   strings = "italian.po",        code = "it",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },  
+    {id = LANGUAGE.ITALIAN,         alt_id = nil,                   strings = "italian.po",        code = "it",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
     {id = LANGUAGE.PORTUGUESE_BR,   alt_id = LANGUAGE.PORTUGUESE,   strings = "portuguese_br.po",  code = "pt",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
     {id = LANGUAGE.POLISH,          alt_id = nil,                   strings = "polish.po",         code = "pl",    scale = 1.0,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true },
     {id = LANGUAGE.RUSSIAN,         alt_id = nil,                   strings = "russian.po",        code = "ru",    scale = 0.8,  in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = true }, -- Russian strings are very long (often the longest), and the characters in the font are big. Bad combination.
     {id = LANGUAGE.KOREAN,          alt_id = nil,                   strings = "korean.po",         code = "ko",    scale = 0.85, in_steam_menu = false, in_console_menu = true,  shrink_to_fit_word = false },
-    {id = LANGUAGE.CHINESE_S,       alt_id = LANGUAGE.CHINESE_T,    strings = "chinese_s.po",      code = "zh",    scale = 0.85, in_steam_menu = true,  in_console_menu = true,  shrink_to_fit_word = false },
-    {id = LANGUAGE.CHINESE_S_RAIL,  alt_id = nil,                   strings = "chinese_r.po",      code = "zhr",   scale = 0.85, in_steam_menu = false, in_console_menu = false, shrink_to_fit_word = false },
+    {id = LANGUAGE.CHINESE_S,       alt_id = nil,                   strings = "chinese_s.po",      code = "zh",    scale = 0.85, in_steam_menu = true,  in_console_menu = true,  shrink_to_fit_word = false },
+    {id = LANGUAGE.CHINESE_T,       alt_id = nil,                   strings = "chinese_t.po",      code = "zht",   scale = 0.85, in_steam_menu = true,  in_console_menu = true,  shrink_to_fit_word = false },
+    {id = LANGUAGE.CHINESE_S_RAIL,  alt_id = nil,                   strings = "chinese_s.po",      code = "zhr",   scale = 0.85, in_steam_menu = false, in_console_menu = false, shrink_to_fit_word = false },
     --{id = LANGUAGE.JAPANESE,      alt_id = nil,                   strings = "japanese.po",     code = "ja",    scale = 0.85, in_console_menu = true},
-    --{id = LANGUAGE.CHINESE_T,     alt_id = nil,                   strings = "chinese_t.po",    code = "zh",    scale = 0.85, in_console_menu = true},  
 }
 
 local LOC_ROOT_DIR = ""
@@ -105,7 +105,7 @@ function LOCALE.GetStringFile(lang_id)
 	if nil ~= locale then
 		file = LOC_ROOT_DIR .. locale.strings
 	end
-	
+
 	return file
 end
 
@@ -117,7 +117,7 @@ end
 function LOCALE.SwapLanguage(lang_id)
     local locale =  LOCALE.GetLocale(lang_id)
     if nil ~= locale then
-        LanguageTranslator:LoadPOFile(LOC_ROOT_DIR .. locale.strings, locale.code)    
+        LanguageTranslator:LoadPOFile(LOC_ROOT_DIR .. locale.strings, locale.code)
     end
     TranslateStringTable( STRINGS )
 end
@@ -153,7 +153,7 @@ end
 
 function LOCALE.GetNamesImageSuffix()
     if LOCALE.CurrentLocale then
-        if LOCALE.CurrentLocale.id == LANGUAGE.CHINESE_S or LOCALE.CurrentLocale.id == LANGUAGE.CHINESE_S_RAIL then
+        if LOCALE.CurrentLocale.id == LANGUAGE.CHINESE_S or LOCALE.CurrentLocale.id == LANGUAGE.CHINESE_T or LOCALE.CurrentLocale.id == LANGUAGE.CHINESE_S_RAIL then
             return "_cn"
         end
 	end

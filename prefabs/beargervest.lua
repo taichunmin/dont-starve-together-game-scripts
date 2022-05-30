@@ -6,7 +6,7 @@ local assets =
 local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_body", "torso_bearger", "swap_body")
     if owner.components.hunger ~= nil then
-        owner.components.hunger.burnratemodifiers:SetModifier(TUNING.ARMORBEARGER_SLOW_HUNGER)
+        owner.components.hunger.burnratemodifiers:SetModifier(inst, TUNING.ARMORBEARGER_SLOW_HUNGER)
     end
     inst.components.fueled:StartConsuming()
 end
@@ -47,6 +47,7 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
+    inst:AddComponent("tradable")
 
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY

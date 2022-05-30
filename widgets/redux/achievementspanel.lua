@@ -17,7 +17,7 @@ local AchievementsPanel = Class(Widget, function(self, festival_key, season, ove
 
     self.achievements_root = self:AddChild(Widget("achievements_root"))
 	self.achievements_root:SetPosition(self.overrides.offset_x or 0, self.overrides.offset_y or 0)
-	
+
 	local grid = nil
 	if self.overrides.quagmire_gridframe then
 		grid = self.achievements_root:AddChild( self:_BuildAchievementsExplorer(festival_key, season) )
@@ -52,7 +52,7 @@ local AchievementsPanel = Class(Widget, function(self, festival_key, season, ove
 		self.dialog = self.achievements_root:AddChild(TEMPLATES.RectangleWindow(700, 403))
 		self.dialog:HideBackground()
 		self.dialog.top:Hide() -- top crown would be behind our title.
-    
+
 		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key, season) )
 		grid:SetPosition(-10,0)
 	else
@@ -61,7 +61,7 @@ local AchievementsPanel = Class(Widget, function(self, festival_key, season, ove
 		self.dialog:SetBackgroundTint(r,g,b,0.8) -- need high opacity because of text behind
 		self.dialog:SetPosition(0, -5)
 		self.dialog.top:Hide() -- top crown would be behind our title.
-    
+
 		grid = self.dialog:InsertWidget( self:_BuildAchievementsExplorer(festival_key, season) )
 		grid:SetPosition(-10,0)
 	end
@@ -87,14 +87,14 @@ local AchievementsPanel = Class(Widget, function(self, festival_key, season, ove
 end)
 
 function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
-    
+
     local row_w = 720;
     local row_h = 60;
     local icon_size = 50;
     local reward_width = 80;
     local icon_spacing = 5;
     local row_spacing = 5;
-    
+
     local function ScrollWidgetsCtor(context, index)
         local w = Widget("achievement-cell-".. index)
         w.ongainfocusfn = function() self.grid:OnWidgetFocus(w) end
@@ -105,11 +105,11 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
         end
 
         -- Using a valid character to silence load errors.
-        
+
         w.frame = w:AddChild(Image("images/frontend_redux.xml", "achievement_backing.tex"))
         w.frame:ScaleToSize(row_w,row_h)
         w.frame:SetPosition(0,0)
-        
+
         w.title = w:AddChild(Text(HEADERFONT, 22, ""))
         w.title:SetColour(self.overrides.primary_font_colour or UICOLOURS.HIGHLIGHT_GOLD)
         w.title:SetRegionSize(row_w, 24)
@@ -123,34 +123,34 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
         w.divider = w:AddChild(Image(self.overrides.divider_atlas or "images/global_redux.xml", self.overrides.divider_tex or "item_divider.tex"))
         w.divider:ScaleToSize(row_w,self.overrides.divider_h or 5)
         w.divider:SetPosition(0,-row_h/2+5)
-        
-        w.reward_num = w:AddChild(Text(HEADERFONT, 25, "")) 
+
+        w.reward_num = w:AddChild(Text(HEADERFONT, 25, ""))
         w.reward_num:SetColour(UICOLOURS.GOLD_SELECTED)
         w.reward_num:SetRegionSize(reward_width, 25)
         w.reward_num:SetPosition(row_w/2-reward_width/2-5,8)
-        w.reward_label = w:AddChild(Text(HEADERFONT, 16, "")) 
+        w.reward_label = w:AddChild(Text(HEADERFONT, 16, ""))
         w.reward_label:SetColour(UICOLOURS.HIGHLIGHT_GOLD)
         w.reward_label:SetRegionSize(reward_width, 16)
         w.reward_label:SetPosition(row_w/2-reward_width/2-5,-10)
         w.reward_label:SetString(STRINGS.UI.WXPLOBBYPANEL.WXP)
-        
-        w.name = w:AddChild(Text(HEADERFONT, 18, "")) 
+
+        w.name = w:AddChild(Text(HEADERFONT, 18, ""))
         w.name:SetColour(UICOLOURS.GOLD_SELECTED)
         w.name:SetRegionSize(row_w - reward_width -icon_spacing - icon_size - icon_spacing - 10, 18)
         w.name:SetHAlign(ANCHOR_LEFT)
         w.name:SetPosition(-10,14)
-        
+
         w.desc = w:AddChild(Text(CHATFONT, 18, ""))
         w.desc:SetColour(UICOLOURS.GREY)
         w.desc:SetRegionSize(row_w - reward_width -icon_spacing - icon_size - icon_spacing - 10, 40)
         w.desc:SetHAlign(ANCHOR_LEFT)
         w.desc:EnableWordWrap(true)
         w.desc:SetPosition(-10,-9)
-        
+
         w.icon = w:AddChild(Image("images/"..current_eventid.."_achievements.xml", "achievement_locked.tex"))
         w.icon:ScaleToSize(icon_size,icon_size)
         w.icon:SetPosition(-325,0)
-        
+
         w.ic_completed = w:AddChild(Image("images/frontend_redux.xml", "accountitem_frame_arrow.tex"))
         w.ic_completed:ScaleToSize(icon_size/2.2,icon_size/2.2)
         w.ic_completed:SetPosition(-306,-17)
@@ -203,6 +203,7 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
                     widget.icon:SetTexture("images/"..current_eventid.."_achievements.xml", "achievement_locked.tex")
                 end
             end
+			widget:Show()
         else
             widget:Hide()
         end
@@ -219,12 +220,12 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
         local count_str = subfmt(STRINGS.UI.XPUTILS.XPPROGRESS, {num=num_completed, max=#categories.data})
         table.insert(scrollitems, {category=true, title=STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].CATEGORIES[categories.category], count=count_str})
         for _,achievement in ipairs(categories.data) do
-            table.insert(scrollitems, { 
-                category=false, 
-                category_goal=achievement.category_goal, 
-                achievement_title = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].TITLE, 
-                achievement_desc = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].DESC, 
-                wxp = achievement.wxp, 
+            table.insert(scrollitems, {
+                category=false,
+                category_goal=achievement.category_goal,
+                achievement_title = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].TITLE,
+                achievement_desc = STRINGS.UI.ACHIEVEMENTS[string.upper(current_eventid)].ACHIEVEMENT[achievement.achievementid].DESC,
+                wxp = achievement.wxp,
                 completed = EventAchievements:IsAchievementUnlocked(current_eventid, season, achievement.achievementid),
                 icon = achievement.achievementid,
             })
@@ -243,9 +244,9 @@ function AchievementsPanel:_BuildAchievementsExplorer(current_eventid, season)
             apply_fn     = ScrollWidgetApply,
             scrollbar_offset = self.overrides.scrollbar_offset or 0,
             scrollbar_height_offset = -60,
-			scroll_per_click = .5,
+			scroll_per_click = 0.5,
         })
-    
+
     return grid
 
 end

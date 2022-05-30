@@ -96,22 +96,22 @@ local function MakePortal(name, bank, build, assets, prefabs, common_postinit, m
             inst:AddTag("resurrector")
         end
 
-        inst:ListenForEvent("ms_newplayercharacterspawned", function(world, data) 
+        inst:ListenForEvent("ms_newplayercharacterspawned", function(world, data)
             if data and data.player then
                 data.player.AnimState:SetMultColour(0, 0, 0, 1)
                 data.player:Hide()
                 data.player.components.playercontroller:Enable(false)
-                data.player:DoTaskInTime(12 * FRAMES, function(inst) 
+                data.player:DoStaticTaskInTime(12 * FRAMES, function(inst)
                     data.player:Show()
-                    data.player:DoTaskInTime(60 * FRAMES, function(inst)
+                    data.player:DoStaticTaskInTime(60 * FRAMES, function(inst)
                         inst.components.colourtweener:StartTween({ 1, 1, 1, 1 }, 14 * FRAMES, function(inst)
                             data.player.components.playercontroller:Enable(true)
-                        end)
+                        end, true)
                     end)
                 end)
             end
             if not inst.sg:HasStateTag("construction") then
-                inst.sg:GoToState("spawn_pre")
+                inst.sg:GoToState("spawn_pre", true)
             end
         end, TheWorld)
 
@@ -314,9 +314,10 @@ local function moonrock_onsleep(inst)
     end
 end
 
+local MOONPORTALKEY_TAGS = { "moonportalkey" }
 local function moonrock_onupdate(inst, instant)
     local x, y, z = inst.Transform:GetWorldPosition()
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 8, { "moonportalkey" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 8, MOONPORTALKEY_TAGS)) do
         v:PushEvent("ms_moonportalproximity", { instant = instant })
     end
 end
@@ -342,6 +343,18 @@ local function moonrock_onaccept(inst, giver)--, item)
     if giver.components.inventory ~= nil then
         giver.components.inventory:DropEverything()
     end
+
+	if giver.components.leader ~= nil then
+		local followers = giver.components.leader.followers
+		for k, v in pairs(followers) do
+			if k.components.inventory ~= nil then
+				k.components.inventory:DropEverything()
+			elseif k.components.container ~= nil then
+				k.components.container:DropEverything()
+			end
+		end
+	end
+
     inst._savedata[giver.userid] = giver.SaveForReroll ~= nil and giver:SaveForReroll() or nil
     TheWorld:PushEvent("ms_playerdespawnanddelete", giver)
 end

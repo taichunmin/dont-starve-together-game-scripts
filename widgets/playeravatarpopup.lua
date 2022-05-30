@@ -193,6 +193,9 @@ function PlayerAvatarPopup:Layout(data, show_net_profile)
     if not TheInput:ControllerAttached() then
         self.close_button = self.proot:AddChild(TEMPLATES.SmallButton(STRINGS.UI.PLAYER_AVATAR.CLOSE, 26, .5, function() self:Close() end))
         self.close_button:SetPosition(0, -269)
+	else
+		self.close_text = self.proot:AddChild(Text(UIFONT, 25, TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_USE_ITEM_ON_ITEM) .. "  " .. STRINGS.UI.PLAYER_AVATAR.CLOSE))
+        self.close_text:SetPosition(0, -275)
     end
 end
 
@@ -338,7 +341,7 @@ function PlayerAvatarPopup:GetHelpText()
     --[[local controller_id = TheInput:GetControllerID()
     local t = {}
     if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK) 
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
     return table.concat(t, "  ")
     ]]
@@ -354,10 +357,10 @@ function PlayerAvatarPopup:CreateSkinWidgetForSlot()
 
     image_group._image = image_group:AddChild(UIAnim())
     image_group._image:GetAnimState():SetBuild("frames_comp")
-    image_group._image:GetAnimState():SetBank("fr")
+    image_group._image:GetAnimState():SetBank("frames_comp")
     image_group._image:GetAnimState():Hide("frame")
     image_group._image:GetAnimState():Hide("NEW")
-    image_group._image:GetAnimState():PlayAnimation("icon", true)
+    image_group._image:GetAnimState():PlayAnimation("idle_on", true)
     image_group._image:SetScale(.7)
     image_group._image:SetPosition(-50, 0)
 
@@ -366,11 +369,11 @@ end
 
 function PlayerAvatarPopup:UpdateSkinWidgetForSlot(image_group, slot, skin_name)
     image_group._text:SetColour(unpack(GetColorForItem(skin_name)))
-       
+
     local namestr = STRINGS.NAMES[string.upper(skin_name)] or GetSkinName(skin_name)
 
     image_group._text:SetMultilineTruncatedString(namestr, 2, TEXT_WIDTH, 25, true, true)
-    
+
     local skin_build = GetBuildForItem(skin_name)
     if skin_build == nil or skin_build == "none" then
         skin_build =
@@ -380,7 +383,7 @@ function PlayerAvatarPopup:UpdateSkinWidgetForSlot(image_group, slot, skin_name)
             (slot == "feet" and "feet_default1") or
             self.currentcharacter
     end
-    
+
     image_group._image:GetAnimState():OverrideSkinSymbol("SWAP_ICON", skin_build, "SWAP_ICON")
 end
 
@@ -418,22 +421,25 @@ function PlayerAvatarPopup:UpdateEquipWidgetForSlot(image_group, slot, equipdata
     local default = DEFAULT_IMAGES[slot] or "trinket_5.tex"
     if name == "none" then
         if slot == EQUIPSLOTS.BODY then
-            atlas = "images/hud.xml"
+            --atlas = "images/hud2.xml"
             name = "equip_slot_body_hud"
         elseif slot == EQUIPSLOTS.HANDS then
-            atlas = "images/hud.xml"
+            --atlas = "images/hud2.xml"
             name = "equip_slot_hud"
         elseif slot == EQUIPSLOTS.HEAD then
-            atlas = "images/hud.xml"
+            --atlas = "images/hud2.xml"
             name = "equip_slot_head_hud"
         else
             name = "default"
         end
-    elseif softresolvefilepath("images/inventoryimages/"..name..".xml") ~= nil then
+    end
+
+	if softresolvefilepath("images/inventoryimages/"..name..".xml") ~= nil then
         atlas = "images/inventoryimages/"..name..".xml"
     else
         atlas = GetInventoryItemAtlas(name..".tex")
     end
+
     image_group._image:SetTexture(atlas, name..".tex", default)
 end
 

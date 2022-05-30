@@ -1,4 +1,4 @@
-local prefabs = 
+local prefabs =
 {
     "lightninggoat",
 }
@@ -26,6 +26,7 @@ local function fn()
 
     inst:AddComponent("herd")
     inst.components.herd:SetMemberTag("lightninggoat")
+	inst.components.herd:SetMaxSize(TUNING.LIGHTNINGGOATHERD_MAX_SIZE)
     inst.components.herd:SetGatherRange(40)
     inst.components.herd:SetUpdateRange(20)
     inst.components.herd:SetOnEmptyFn(inst.Remove)
@@ -36,7 +37,6 @@ local function fn()
     inst.components.periodicspawner:SetPrefab("lightninggoat")
     inst.components.periodicspawner:SetOnSpawnFn(OnSpawned)
     inst.components.periodicspawner:SetSpawnTestFn(CanSpawn)
-    inst.components.periodicspawner:SetDensityInRange(20, 6)
     inst.components.periodicspawner:SetOnlySpawnOffscreen(true)
     inst.components.periodicspawner:Start()
 

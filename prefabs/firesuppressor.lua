@@ -86,7 +86,7 @@ local function TurnOff(inst, instant)
     inst.on = false
     inst.components.firedetector:Deactivate()
 
-    if not inst:HasTag("fueldepleted") then 
+    if not inst:HasTag("fueldepleted") then
         local randomizedStartTime = POPULATING
         inst:DoTaskInTime(0, inst.components.firedetector:ActivateEmergencyMode(randomizedStartTime)) -- this can be called from onload, so make sure everything is set up first
     end
@@ -366,7 +366,7 @@ local function fn()
     inst.LaunchProjectile = LaunchProjectile
     inst:SetStateGraph("SGfiresuppressor")
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
     --inst.OnLoadPostPass = OnLoadPostPass
     inst.OnEntitySleep = OnEntitySleep
@@ -430,7 +430,7 @@ local function glow_fn()
     inst.AnimState:SetBuild("firefighter_glow")
     inst.AnimState:PlayAnimation("green", true)
     inst.AnimState:SetLightOverride(1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     inst.AnimState:OverrideMultColour(0, 0, 0, 0)
 
     inst._ison = net_bool(inst.GUID, "firesuppressor_glow._ison", "onisondirty")

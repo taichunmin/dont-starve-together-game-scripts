@@ -78,7 +78,7 @@ function Class(base, _ctor, props)
         base = nil
     elseif type(base) == 'table' then
         -- our new class is a shallow copy of the base class!
-		-- while at it also store our inherited members so we can get rid of them 
+		-- while at it also store our inherited members so we can get rid of them
 		-- while monkey patching for the hot reload
 		-- if our class redefined a function peronally the function pointed to by our member is not the in in our inherited
 		-- table
@@ -88,7 +88,7 @@ function Class(base, _ctor, props)
         end
         c._base = base
     end
-    
+
     -- the class will be the metatable for all its objects,
     -- and they will look up their methods in it.
     if props ~= nil then
@@ -100,7 +100,7 @@ function Class(base, _ctor, props)
 
     -- expose a constructor which can be called by <classname>(<args>)
     local mt = {}
-    
+
     if TrackClassInstances == true and CWD~=nil then
         if ClassTrackingTable == nil then
             ClassTrackingTable = {}
@@ -110,7 +110,7 @@ function Class(base, _ctor, props)
         local tablemt = {}
         setmetatable(ClassTrackingTable[mt], tablemt)
         tablemt.__mode = "k"         -- now the instancetracker has weak keys
-    
+
         local source = "**unknown**"
         if _ctor then
   			-- what is the file this ctor was created in?
@@ -135,7 +135,7 @@ function Class(base, _ctor, props)
 						local equalsPos = string.find(source,"=")
 						if equalsPos then
 							source = string.sub(source,1,equalsPos-1)
-						end	
+						end
 						-- remove trailing and leading whitespace
 						source = source:gsub("^%s*(.-)%s*$", "%1")
 						-- do we start with local? if so, strip it
@@ -166,7 +166,7 @@ function Class(base, _ctor, props)
 				c._ctor(obj, ...)
 			end
 			return obj
-		end    
+		end
 	else
 		mt.__call = function(class_tbl, ...)
 			local obj = {}
@@ -181,13 +181,13 @@ function Class(base, _ctor, props)
 			   c._ctor(obj, ...)
 			end
 			return obj
-		end    
+		end
 	end
-	
+
     c._ctor = _ctor
     c.is_a = function(self, klass)
         local m = getmetatable(self)
-        while m do 
+        while m do
             if m == klass then return true end
             m = m._base
         end
@@ -199,7 +199,7 @@ function Class(base, _ctor, props)
 --    for i,v in pairs(ClassRegistry) do
 --        count = count + 1
 --    end
---    if string.split then	
+--    if string.split then
 --        print("ClassRegistry size : "..tostring(count))
 --    end
     return c
@@ -242,7 +242,7 @@ function HandleClassInstanceTracking()
                     local entry = sorted[i]
                     if entry then
                         print(tostring(i).." : "..tostring(sorted[i][1]).." - "..tostring(sorted[i][2]))
-                    end 
+                    end
                 end
                 print("------------------------------------------------------------------------------------------------------------")
             end

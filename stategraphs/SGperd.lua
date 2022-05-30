@@ -54,7 +54,7 @@ local states =
             inst.AnimState:PlayAnimation("death")
             inst.components.locomotor:StopMoving()
             inst.components.lootdropper:DropLoot(inst:GetPosition())
-            RemovePhysicsColliders(inst)            
+            RemovePhysicsColliders(inst)
         end,
     },
 
@@ -64,7 +64,7 @@ local states =
 
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/perd/scream")
-            inst.Physics:Stop()	
+            inst.Physics:Stop()
             inst.AnimState:PlayAnimation("appear")
         end,
 
@@ -79,7 +79,7 @@ local states =
     State{
         name = "attack",
         tags = { "attack" },
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/perd/attack")
             inst.SoundEmitter:PlaySound("dontstarve/wilson/attack_whoosh")

@@ -21,6 +21,8 @@ local function ActiveStargate(gate)
     return gate:IsWaitingForStalker()
 end
 
+local STARGET_TAGS = { "stargate" }
+local STALKER_TAGS = { "stalker" }
 local function ItemTradeTest(inst, item, giver)
     if item == nil or item.prefab ~= "shadowheart" or
         giver == nil or giver.components.areaaware == nil then
@@ -30,8 +32,8 @@ local function ItemTradeTest(inst, item, giver)
     elseif not TheWorld.state.isnight then
         return false, "CANTSHADOWREVIVE"
     elseif giver.components.areaaware:CurrentlyInTag("Atrium")
-        and (   FindEntity(inst, ATRIUM_RANGE, ActiveStargate, { "stargate" }) == nil or
-                GetClosestInstWithTag("stalker", inst, 40) ~= nil   ) then
+        and (   FindEntity(inst, ATRIUM_RANGE, ActiveStargate, STARGET_TAGS) == nil or
+                GetClosestInstWithTag(STALKER_TAGS, inst, 40) ~= nil   ) then
         return false, "CANTSHADOWREVIVE"
     end
 
@@ -46,7 +48,7 @@ local function OnAccept(inst, giver, item)
         elseif not giver.components.areaaware:CurrentlyInTag("Atrium") then
             stalker = SpawnPrefab("stalker")
         else
-            local stargate = FindEntity(inst, ATRIUM_RANGE, ActiveStargate, { "stargate" })
+            local stargate = FindEntity(inst, ATRIUM_RANGE, ActiveStargate, STARGET_TAGS)
             if stargate ~= nil then
                 stalker = SpawnPrefab("stalker_atrium")
                 -- override the spawn point so stalker stays around the gate

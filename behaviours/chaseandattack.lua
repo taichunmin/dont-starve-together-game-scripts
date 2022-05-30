@@ -10,8 +10,8 @@ ChaseAndAttack = Class(BehaviourNode, function(self, inst, max_chase_time, give_
     self.distance_from_ocean_target = distance_from_ocean_target
 
     -- we need to store this function as a key to use to remove itself later
-    self.onattackfn = function(inst, data)
-        self:OnAttackOther(data.target) 
+    self.onattackfn = function(inst)
+        self:OnAttackOther()
     end
 
     self.inst:ListenForEvent("onattackother", self.onattackfn)
@@ -27,7 +27,7 @@ function ChaseAndAttack:OnStop()
     self.inst:RemoveEventCallback("onmissother", self.onattackfn)
 end
 
-function ChaseAndAttack:OnAttackOther(target)
+function ChaseAndAttack:OnAttackOther()
     --print ("on attack other", target)
     self.numattacks = self.numattacks + 1
     self.startruntime = nil -- reset max chase time timer
@@ -77,28 +77,30 @@ function ChaseAndAttack:Visit()
                 local reverse_direction = me - target_position
                 local rd_normal_x, rd_normal_z = VecUtil_Normalize(reverse_direction.x, reverse_direction.z)
 
-                local ocean_distance = (type(self.distance_from_ocean_target) == "function" and self.distance_from_ocean_target(self.inst, combat.target)) or self.distance_from_ocean_target
+                local ocean_distance = FunctionOrValue(self.distance_from_ocean_target, self.inst, combat.target)
                 target_position = Point((rd_normal_x * ocean_distance) + target_position.x, target_position.y, (rd_normal_z * ocean_distance) + target_position.z)
                 dsq = distsq(target_position, me)
                 --angle = self.inst:GetAngleToPoint(target_position)
             end
 
-            local r = self.inst:GetPhysicsRadius(0) + combat.target:GetPhysicsRadius(-.1) + .1
-            if (running and dsq > r * r) or (not running and dsq > combat:CalcAttackRangeSq()) then
-                --self.inst.components.locomotor:RunInDirection(angle)
-                self.inst.components.locomotor:GoToPoint(target_position, nil, not self.walk)
-            elseif not (self.inst.sg ~= nil and self.inst.sg:HasStateTag("jumping")) then
-                self.inst.components.locomotor:Stop()
-                if self.inst.sg:HasStateTag("canrotate") then
-                    self.inst:FacePoint(facing_point)
+            if not self.inst.sg:HasStateTag("longattack") then
+                local r = self.inst:GetPhysicsRadius(0) + combat.target:GetPhysicsRadius(-.1) + .1
+                if (running and dsq > r * r) or (not running and dsq > combat:CalcAttackRangeSq()) then
+                    --self.inst.components.locomotor:RunInDirection(angle)
+                    self.inst.components.locomotor:GoToPoint(target_position, nil, not self.walk)
+                elseif not (self.inst.sg ~= nil and self.inst.sg:HasStateTag("jumping")) then
+                    self.inst.components.locomotor:Stop()
+                    if self.inst.sg:HasStateTag("canrotate") then
+                        self.inst:FacePoint(facing_point)
+                    end
                 end
-            end
 
-            if combat:TryAttack() then
-                -- reset chase timer when attack hits, not on attempts
-            elseif self.startruntime == nil then
-                self.startruntime = GetTime()
-                self.inst.components.combat:BattleCry()
+                if combat:TryAttack() then
+                    -- reset chase timer when attack hits, not on attempts
+                elseif self.startruntime == nil then
+                    self.startruntime = GetTime()
+                    self.inst.components.combat:BattleCry()
+                end
             end
 
             if self.max_attacks ~= nil and self.numattacks >= self.max_attacks then

@@ -7,15 +7,15 @@ local Spinner = require "widgets/spinner"
 -- AnimSpinner is based on Spinner.
 -----------------
 -- To use AnimSpinner, call the constructor just as you would for Spinner.
--- Then call SetAnim with a build filel, anim bank name, animation name, and symbol to be overridden. 
+-- Then call SetAnim with a build filel, anim bank name, animation name, and symbol to be overridden.
 -- If it is a skin, then you must pass a final parameter with the value true.
--- eg, spinner_group.spinner:SetAnim("frames_comp", "fr", "icon", "SWAP_ICON", true)
--- 
+-- eg, spinner_group.spinner:SetAnim("frames_comp", "frames_comp", "idle_on", "SWAP_ICON", true)
+--
 -- Each item in the options list must have a build name and a symbol name instead of the image value used previously.
 -- eg
--- table.insert(skin_options,  
+-- table.insert(skin_options,
 --			{
---				text = text_name, 
+--				text = text_name,
 --				data = nil,
 --				build = build_name,
 --				item = item_type,
@@ -28,23 +28,23 @@ local AnimSpinner = Class(Spinner, function( self, options, width, height, texti
 
     self.fganim = self:AddChild( UIAnim() )
 
-	self.leftimage:SetOnClick(function() 
+	self.leftimage:SetOnClick(function()
 								if TheInput:IsKeyDown(KEY_SHIFT) then
-									for i=1,4 do 
+									for i=1,4 do
 										self:Prev(true)
 									end
 								end
 
-								self:Prev(true) 
+								self:Prev(true)
 							end)
-	self.rightimage:SetOnClick(function() 
+	self.rightimage:SetOnClick(function()
 								if TheInput:IsKeyDown(KEY_SHIFT) then
-									for i=1,4 do 
+									for i=1,4 do
 										self:Next(true)
 									end
 								end
 
-								self:Next(true) 
+								self:Next(true)
 							end)
 end)
 
@@ -55,7 +55,7 @@ function AnimSpinner:SetArrowScale(scale)
 end
 
 
--- To use an anim spinner, call SetAnim with the bank, animation name, 
+-- To use an anim spinner, call SetAnim with the bank, animation name,
 -- and the symbol name that will be overridden.
 --
 -- new_anim is the animation state that includes the new indicator, but is optional.
@@ -67,7 +67,7 @@ function AnimSpinner:SetAnim(build, bank, anim, old_symbol, skin, new_anim)
 	self.old_symbol = old_symbol
 	self.bank = bank
 	self.anim = anim
-	self.skin = skin 
+	self.skin = skin
 	self.new_anim = new_anim
 end
 
@@ -133,36 +133,36 @@ end
 function AnimSpinner:SetSelectedIndex( idx )
 	self.updating = true
 	self.selectedIndex = math.max(self:MinIndex(), math.min(self:MaxIndex(), idx))
-	
-	local selected_text, selected_colour = self:GetSelectedText()	
+
+	local selected_text, selected_colour = self:GetSelectedText()
 	self:UpdateText( selected_text )
-	if selected_colour then 
+	if selected_colour then
 		self:SetTextColour( unpack(selected_colour) )
 	else
 		self:SetTextColour(0, 0, 0, 1)
 	end
-	
-	if self.old_symbol ~= nil and self.options[ self.selectedIndex ] ~= nil then 
+
+	if self.old_symbol ~= nil and self.options[ self.selectedIndex ] ~= nil then
 		local build, symbol, new_indicator = self:GetSelectedSymbol()
 		if build ~= nil and symbol ~= nil then
 			--print("Overriding symbol on ", self.fganim, self.fganim:GetAnimState() or nil, self.old_symbol, build, symbol)
-			if self.skin then 
+			if self.skin then
 				self.fganim:GetAnimState():OverrideSkinSymbol(self.old_symbol, build, symbol)
 
-				if new_indicator and self.new_anim then 
+				if new_indicator and self.new_anim then
 					self.fganim:GetAnimState():PlayAnimation(self.new_anim)
 				end
 
 			else
 				self.fganim:GetAnimState():OverrideSymbol(self.old_symbol, build, symbol)
 
-				if new_indicator and self.new_anim then 
+				if new_indicator and self.new_anim then
 					self.fganim:GetAnimState():PlayAnimation(self.new_anim)
 				end
 			end
 		end
 	end
-	
+
 	self:UpdateState()
 	self.updating = false
 	self:Changed(self:GetSelectedData()) -- must be done after setting self.updating to false

@@ -12,21 +12,30 @@ local item_assets =
 local prefabs =
 {
     "collapse_small",
+	"steeringwheel_item", -- deprecated but kept for existing worlds and mods
 }
 
-local item_prefabs =
-{
-    "steeringwheel",
-}
-
-local function on_start_steering(inst)
+local function on_start_steering(inst, sailor)
 	inst.AnimState:HideSymbol("boat_wheel_round")
-	inst.AnimState:HideSymbol("boat_wheel_stick")	
+	inst.AnimState:HideSymbol("boat_wheel_stick")
+
+    if inst.skinname ~= nil then
+        local skin_build = GetBuildForItem(inst.skinname)
+        sailor.AnimState:OverrideItemSkinSymbol( "boat_wheel_round", skin_build, "boat_wheel_round", inst.GUID, "player_boat")
+        sailor.AnimState:OverrideItemSkinSymbol( "boat_wheel_stick", skin_build, "boat_wheel_stick", inst.GUID, "player_boat")
+    else
+        sailor.AnimState:AddOverrideBuild("player_boat")
+    end
 end
 
-local function on_stop_steering(inst)
+local function on_stop_steering(inst, sailor)
 	inst.AnimState:ShowSymbol("boat_wheel_round")
 	inst.AnimState:ShowSymbol("boat_wheel_stick")
+
+    if sailor ~= nil then
+        sailor.AnimState:ClearOverrideSymbol("boat_wheel_round")
+        sailor.AnimState:ClearOverrideSymbol("boat_wheel_stick")
+    end
 end
 
 local function on_hammered(inst, hammerer)
@@ -37,7 +46,7 @@ local function on_hammered(inst, hammerer)
     collapse_fx:SetMaterial("wood")
 
     if inst.components.steeringwheel ~= nil and inst.components.steeringwheel.sailor ~= nil then
-        inst.components.steeringwheel:StopSteering(inst.components.steeringwheel.sailor)
+        inst.components.steeringwheel:StopSteering()
     end
 
     inst:Remove()
@@ -48,7 +57,7 @@ local function onignite(inst)
 
 	if inst.components.steeringwheel.sailor ~= nil then
 		local sailor = inst.components.steeringwheel.sailor
-		inst.components.steeringwheel:StopSteering(inst.components.steeringwheel.sailor)
+		inst.components.steeringwheel:StopSteering()
 
 		sailor.components.steeringwheeluser:SetSteeringWheel(nil)
 		sailor:PushEvent("stop_steering_boat")
@@ -59,6 +68,12 @@ local function onburnt(inst)
 	DefaultBurntStructureFn(inst)
 
 	inst:RemoveComponent("steeringwheel")
+end
+
+local function onbuilt(inst)
+    inst.SoundEmitter:PlaySound("turnoftides/common/together/boat/steering_wheel/place")
+    inst.AnimState:PlayAnimation("place")
+    inst.AnimState:PushAnimation("idle")
 end
 
 local function onsave(inst, data)
@@ -83,7 +98,7 @@ local function fn()
 
     inst.AnimState:SetBank("boat_wheel")
     inst.AnimState:SetBuild("boat_wheel")
-    inst.AnimState:PlayAnimation("idle")    
+    inst.AnimState:PlayAnimation("idle")
 	inst.AnimState:SetFinalOffset(1)
 
     inst:AddTag("structure")
@@ -118,6 +133,8 @@ local function fn()
 
     MakeHauntableWork(inst)
 
+    inst:ListenForEvent("onbuilt", onbuilt)
+
 	inst.OnSave = onsave
     inst.OnLoad = onload
 
@@ -136,47 +153,6 @@ local function ondeploy(inst, pt, deployer)
     end
 end
 
-local function item_fn()
-    local inst = CreateEntity()
-
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddNetwork()
-
-    inst:AddTag("boat_accessory")
-
-    MakeInventoryPhysics(inst)
-
-    inst.AnimState:SetBank("seafarer_wheel")
-    inst.AnimState:SetBuild("seafarer_wheel")
-    inst.AnimState:PlayAnimation("idle")
-
-    MakeInventoryFloatable(inst, "med", nil, 0.77)
-
-    inst.entity:SetPristine()
-    if not TheWorld.ismastersim then
-        return inst
-    end
-
-    MakeSmallBurnable(inst)
-    MakeSmallPropagator(inst)
-
-    inst:AddComponent("inspectable")
-    inst.components.inspectable.nameoverride = "steeringwheel"
-
-    inst:AddComponent("inventoryitem")
-
-    inst:AddComponent("deployable")
-    inst.components.deployable.ondeploy = ondeploy
-
-    inst:AddComponent("fuel")
-    inst.components.fuel.fuelvalue = TUNING.LARGE_FUEL
-
-    MakeHauntableLaunch(inst)
-
-    return inst
-end
-
 return Prefab("steeringwheel", fn, assets, prefabs),
-       Prefab("steeringwheel_item", item_fn, item_assets, item_prefabs),
+       MakeDeployableKitItem("steeringwheel_item", "steeringwheel", "seafarer_wheel", "seafarer_wheel", "idle", item_assets, {size = "med", scale = 0.77}, {"boat_accessory"}, {fuelvalue = TUNING.LARGE_FUEL}),
        MakePlacer("steeringwheel_item_placer", "boat_wheel", "boat_wheel", "idle")

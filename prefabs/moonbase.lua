@@ -426,7 +426,7 @@ local function OnTimerDone(inst, data)
             inst:AddChild(new_staff)
             new_staff.Transform:SetPosition(0, 0, 0)
             new_staff:RemoveFromScene()
-        
+
             inst.AnimState:OverrideItemSkinSymbol("swap_staffs", inst._staffinst:GetSkinBuild(), GetStaffSymbol(MORPHED_STAFF), inst._staffinst.GUID, "staffs")
         else
             inst.AnimState:OverrideSymbol("swap_staffs", "staffs", GetStaffSymbol(MORPHED_STAFF))

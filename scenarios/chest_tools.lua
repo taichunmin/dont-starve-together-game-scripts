@@ -3,7 +3,7 @@ chestfunctions = require("scenarios/chestfunctions")
 
 local function OnCreate(inst, scenariorunner)
 
-	local items = 
+	local items =
 	{
 		{
 			item = "axe",
@@ -32,11 +32,11 @@ local function OnCreate(inst, scenariorunner)
 		{
 			item = "gunpowder_blueprint",
 		},
-	}	
+	}
 	chestfunctions.AddChestItems(inst, items)
 end
 
-return 
+return
 {
 	OnCreate = OnCreate
 }

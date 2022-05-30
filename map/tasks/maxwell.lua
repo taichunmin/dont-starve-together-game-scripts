@@ -3,35 +3,35 @@ AddTask("MaxPuzzle1", {
 		keys_given=KEYS.WOOD,
 		room_choices={
 			["MaxPuzzle1"] = 1,
-			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end, 
+			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end,
 		},
 		room_bg=GROUND.MARSH,
 		background_room="BGMarsh",
 		colour={r=.05,g=.05,b=.05,a=1}
-	}) 
+	})
 AddTask("MaxPuzzle2", {
 		locks=LOCKS.PIGKING,
 		keys_given=KEYS.WOOD,
 		room_choices={
 			["MaxPuzzle2"] = 1,
-			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end, 
+			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end,
 		},
 		room_bg=GROUND.MARSH,
 		background_room="BGMarsh",
 		colour={r=.05,g=.05,b=.05,a=1}
-	}) 
+	})
 AddTask("MaxPuzzle3", {
 		locks=LOCKS.PIGKING,
 		keys_given=KEYS.WOOD,
 		room_choices={
 			["MaxPuzzle3"] = 1,
-			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end, 
+			["SpiderMarsh"] = function() return 2+math.random(SIZE_VARIATION) end,
 		},
 		room_bg=GROUND.MARSH,
 		background_room="BGMarsh",
 		colour={r=.05,g=.05,b=.05,a=1}
-	}) 
-	
+	})
+
 AddTask("MaxHome", {
 		lock=LOCKS.NONE,
 		key_given=KEYS.NONE,
@@ -41,5 +41,5 @@ AddTask("MaxHome", {
 		room_bg=GROUND.IMPASSABLE,
 		background_room="BGImpassable",
 		colour={r=.05,g=.05,b=.05,a=1}
-	}) 
+	})
 

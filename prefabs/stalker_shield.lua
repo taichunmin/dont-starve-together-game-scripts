@@ -51,10 +51,13 @@ local function TimeoutRepel(inst, creatures, task)
     end
 end
 
+local SLEEPREPEL_MUST_TAGS = { "locomotor" }
+local SLEEPREPEL_CANT_TAGS = { "fossil", "shadow", "playerghost", "INLIMBO" }
+
 local function StartRepel(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local creatures = {}
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, REPEL_RADIUS, { "locomotor" }, { "fossil", "shadow", "playerghost", "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, REPEL_RADIUS, SLEEPREPEL_MUST_TAGS, SLEEPREPEL_CANT_TAGS)) do
         if v:IsValid() and v.entity:IsVisible() and not (v.components.health ~= nil and v.components.health:IsDead()) then
             if v:HasTag("player") then
                 v:PushEvent("repelled", { repeller = inst, radius = REPEL_RADIUS })

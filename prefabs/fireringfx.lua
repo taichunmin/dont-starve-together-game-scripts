@@ -19,7 +19,7 @@ local function PlayRingAnim(proxy)
     inst.AnimState:SetBank("dragonfly_ring_fx")
     inst.AnimState:SetBuild("dragonfly_ring_fx")
     inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)

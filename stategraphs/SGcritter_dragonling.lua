@@ -50,7 +50,7 @@ local emotes =
 
 SGCritterStates.AddIdle(states, #emotes)
 SGCritterStates.AddRandomEmotes(states, emotes)
-SGCritterStates.AddEmote(states, "cute", 
+SGCritterStates.AddEmote(states, "cute",
 		{
 			TimeEvent(4*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
 			TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
@@ -80,7 +80,7 @@ SGCritterStates.AddPlayWithOtherCritter(states, events,
 			TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/emote") end),
 			TimeEvent(33*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/emote") end),
 		},
-		passive = 
+		passive =
 		{
 			TimeEvent(57*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
 		},
@@ -92,7 +92,7 @@ SGCritterStates.AddEat(states,
 
             TimeEvent((28+0)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/eat") end),
             TimeEvent((28+10)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/eat") end),
-            
+
             TimeEvent((28+24+0)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/eat") end),
             TimeEvent((28+24+6)*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
         })
@@ -131,7 +131,7 @@ local function CleanupIfSleepInterrupted(inst)
     RaiseFlyingCreature(inst)
 end
 
-SGCritterStates.AddPetEmote(states, 
+SGCritterStates.AddPetEmote(states,
 		{
 			TimeEvent(3*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
             TimeEvent(4*FRAMES, function(inst)
@@ -160,12 +160,12 @@ CommonStates.AddSleepExStates(states,
                 end),
 				TimeEvent(48*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 			},
-			sleeptimeline = 
+			sleeptimeline =
 			{
 				TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 				TimeEvent(52*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/sleep") end),
 			},
-			waketimeline = 
+			waketimeline =
 			{
 				TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/together/dragonling/blink") end),
                 TimeEvent(12*FRAMES, function(inst)

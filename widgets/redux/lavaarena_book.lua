@@ -39,7 +39,7 @@ function LavaarenaBook:GetTabButtonData()
 			{x = 150, text = STRINGS.UI.LAVAARENA_QUESTS_HISTORY_PANEL.TAB_TITLE, build_panel_fn = function() return QuestHistoryPanel(FESTIVAL_EVENTS.LAVAARENA, self.season) end},
 		}
 	end
-	return tabs	
+	return tabs
 end
 
 function LavaarenaBook:_MakeTab(data, index)
@@ -62,7 +62,7 @@ function LavaarenaBook:_MakeTab(data, index)
 	    self.last_selected = tab
 		tab:Select()
 		tab:MoveToFront()
-		if self.panel ~= nil then 
+		if self.panel ~= nil then
 			self.panel:Kill()
 		end
 		self.panel = self.root:AddChild(tab.build_panel_fn())
@@ -96,12 +96,12 @@ function LavaarenaBook:DoInit()
 	self.backdrop = self.root:AddChild(Image("images/lavaarena_unlocks.xml", "unlock_bg.tex"))
     self.backdrop:ScaleToSize(900, 550)
 	self.backdrop:SetClickable(false)
-	
+
 	self:BuildTabs(self:GetTabButtonData())
 
 	-----
 	self.last_selected = self.tabs[1]
-	self.last_selected:Select()	
+	self.last_selected:Select()
 	self.last_selected:MoveToFront()
 	self.panel = self.root:AddChild(self.tabs[1].build_panel_fn())
 

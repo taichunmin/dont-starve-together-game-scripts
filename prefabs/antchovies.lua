@@ -10,11 +10,11 @@ local function fn()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddNetwork()    
+    inst.entity:AddNetwork()
     MakeInventoryPhysics(inst)
 
     inst.entity:AddDynamicShadow()
-    
+
     inst.DynamicShadow:SetSize(0.65, 0.25)
 
     inst.AnimState:SetBank("antchovy")
@@ -23,14 +23,14 @@ local function fn()
 
 	inst.Transform:SetTwoFaced()
 
-    inst.entity:SetPristine()    
+    inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
 
     inst:AddComponent("inventoryitem")
-    
+
 	--inst:SetStateGraph("SGantchovies")
 
     inst:AddComponent("edible")
@@ -40,7 +40,7 @@ local function fn()
     inst.components.edible.foodtype = FOODTYPE.MEAT
 
     inst:AddComponent("stackable")
-    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM    
+    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
 
     return inst
 end

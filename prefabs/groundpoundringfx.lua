@@ -15,11 +15,11 @@ local function PlayRingAnim(proxy)
     inst.entity:AddAnimState()
 
     inst.Transform:SetFromProxy(proxy.GUID)
-    
+
     inst.AnimState:SetBank("bearger_ring_fx")
     inst.AnimState:SetBuild("bearger_ring_fx")
     inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.AnimState:SetOrientation( ANIM_ORIENTATION.OnGround )
     inst.AnimState:SetLayer( LAYER_BACKGROUND )
@@ -55,4 +55,4 @@ local function fn()
     return inst
 end
 
-return Prefab("groundpoundring_fx", fn, assets) 
+return Prefab("groundpoundring_fx", fn, assets)

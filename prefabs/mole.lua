@@ -17,6 +17,7 @@ local prefabs =
 
 local brain = require("brains/molebrain")
 
+local MOLE_TAGS = {'mole'}
 local function OnAttacked(inst, data)
     -- Don't spread the word when whacked
     -- V2C: this doesn't work because weapon is an inst
@@ -25,7 +26,7 @@ local function OnAttacked(inst, data)
     --if data and data.weapon and data.weapon == "hammer" then return end
 
     local x,y,z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x,y,z, 30, {'mole'})
+    local ents = TheSim:FindEntities(x,y,z, 30, MOLE_TAGS)
 
     local num_friends = 0
     local maxnum = 5
@@ -89,6 +90,7 @@ end
 local function SetUnderPhysics(inst)
     if inst.isunder ~= true then
         inst.isunder = true
+		inst:AddTag("notdrawable")
         inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
         inst.Physics:ClearCollisionMask()
         inst.Physics:CollidesWith(COLLISION.WORLD)
@@ -99,6 +101,7 @@ end
 local function SetAbovePhysics(inst)
     if inst.isunder ~= false then
         inst.isunder = false
+		inst:RemoveTag("notdrawable")
         ChangeToCharacterPhysics(inst)
     end
 end
@@ -147,7 +150,6 @@ local function fn()
     inst.entity:AddSoundEmitter()
     --inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
-    inst.entity:AddLightWatcher()
 
     --inst.DynamicShadow:SetSize(1, .75)
     inst.Transform:SetFourFaced()
@@ -167,6 +169,8 @@ local function fn()
     inst:AddTag("baitstealer")
     inst:AddTag("cattoy")
     inst:AddTag("catfood")
+    inst:AddTag("whackable")
+    inst:AddTag("stunnedbybomb")
     --inst:AddTag("wildfireprotected") --Only if burnable
 
     --cookable (from cookable component) added to pristine state for optimization
@@ -233,6 +237,7 @@ local function fn()
     inst.components.inspectable.getstatus = getstatus
 
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst.components.sleeper:SetNocturnal(true)
 
     inst.SetUnderPhysics = SetUnderPhysics

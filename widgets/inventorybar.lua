@@ -6,12 +6,18 @@ local Widget = require "widgets/widget"
 local EquipSlot = require "widgets/equipslot"
 local ItemTile = require "widgets/itemtile"
 local Text = require "widgets/text"
-local ThreeSlice = require "widgets/threeslice"
 local HudCompass = require "widgets/hudcompass"
 
 local TEMPLATES = require "widgets/templates"
 
 local HUD_ATLAS = "images/hud.xml"
+local HUD2_ATLAS = "images/hud2.xml"
+
+local HUD_CHARACTERS = 
+{
+    ["wanda"] = HUD2_ATLAS,
+}
+
 local W = 68
 local SEP = 12
 local YSEP = 8
@@ -45,6 +51,9 @@ local Inv = Class(Widget, function(self, owner)
     self.hudcompass:SetScale(1.5, 1.5)
     self.hudcompass:SetMaster()
 
+    self.hand_inv = self.root:AddChild(Widget("hand_inv"))
+    self.hand_inv:SetScale(1.5, 1.5)
+
 	if TheNet:GetServerGameMode() == "lavaarena" then
 	    self.base_scale = .55
 		self:SetScale(self.base_scale)
@@ -64,11 +73,12 @@ local Inv = Class(Widget, function(self, owner)
 		self.bg = self.root:AddChild(Image(HUD_ATLAS, "inventory_bg.tex"))
 		self.bgcover = self.root:AddChild(Image(HUD_ATLAS, "inventory_bg_cover.tex"))
 	end
-	
+
     self.hovertile = nil
     self.cursortile = nil
 
     self.repeat_time = .2
+	self.reps = 0
 
     --this is for the keyboard / controller inventory controls
     self.actionstring = self.root:AddChild(Widget("actionstring"))
@@ -97,6 +107,9 @@ local Inv = Class(Widget, function(self, owner)
     self.inst:ListenForEvent("newactiveitem", function(inst, data) self:OnNewActiveItem(data.item) end, self.owner)
     self.inst:ListenForEvent("itemlose", function(inst, data) self:OnItemLose(self.inv[data.slot]) end, self.owner)
     self.inst:ListenForEvent("refreshinventory", function() self:Refresh() end, self.owner)
+    self.inst:ListenForEvent("refresh_integrated_container", function() self:RefreshIntegratedContainer() end, self.owner)
+    self.inst:ListenForEvent("onplacershown", function() self:OnPlacerChanged(true) end, self.owner)
+    self.inst:ListenForEvent("onplacerhidden", function() self:OnPlacerChanged(false) end, self.owner)
 
     self.root:SetPosition(self.in_pos)
     self:StartUpdating()
@@ -115,6 +128,7 @@ local Inv = Class(Widget, function(self, owner)
     self.hint_update_check = HINT_UPDATE_INTERVAL
 
     self.controller_build = nil
+    self.integrated_backpack = nil
     self.force_single_drop = false
 end)
 
@@ -172,7 +186,7 @@ local function RebuildLayout_Quagmire(self, inventory, overflow, do_integrated_b
     end
 
 
-	x = x 
+	x = x
 
 	local equip_scale = 0.8
 	local equip_y = -74
@@ -225,6 +239,7 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
 
         if v.slot == EQUIPSLOTS.HANDS then
             self.hudcompass:SetPosition(x, do_integrated_backpack and 80 or 40, 0)
+            self.hand_inv:SetPosition(x, do_integrated_backpack and 80 or 40, 0)
         end
 
         x = x + W + SEP
@@ -245,21 +260,22 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
         x = x + W + (k % 5 == 0 and INTERSEP or SEP)
     end
 
-    local image_name = "self_inspect_"..self.owner.prefab..".tex"
-    local atlas_name = "images/avatars/self_inspect_"..self.owner.prefab..".xml"
+    local owner_prefab = self.owner.prefab
+    local image_name = "self_inspect_".. owner_prefab ..".tex"
+    local atlas_name = "images/avatars/self_inspect_".. owner_prefab.. ".xml"
     if softresolvefilepath(atlas_name) == nil then
-        atlas_name = "images/hud.xml"
+        atlas_name = HUD_CHARACTERS[owner_prefab] or HUD_ATLAS
     end
 
     if do_self_inspect then
         self.bg:SetScale(1.22, 1, 1)
         self.bgcover:SetScale(1.22, 1, 1)
 
-        self.inspectcontrol = self.root:AddChild(TEMPLATES.IconButton(atlas_name, image_name, STRINGS.UI.HUD.INSPECT_SELF, false, false, function() self.owner.HUD:InspectSelf() end, nil, "self_inspect_mod.tex"))
+        self.inspectcontrol = self.toprow:AddChild(TEMPLATES.IconButton(atlas_name, image_name, STRINGS.UI.HUD.INSPECT_SELF, false, false, function() self.owner.HUD:InspectSelf() end, nil, "self_inspect_mod.tex"))
         self.inspectcontrol.icon:SetScale(.7)
         self.inspectcontrol.icon:SetPosition(-4, 6)
         self.inspectcontrol:SetScale(1.25)
-        self.inspectcontrol:SetPosition((total_w - W) * .5 + 3, -6, 0)
+        self.inspectcontrol:SetPosition((total_w - W) * .5 + 3, -7, 0)
     else
         self.bg:SetScale(1.15, 1, 1)
         self.bgcover:SetScale(1.15, 1, 1)
@@ -283,6 +299,9 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
         local x = - (num * (W+SEP) / 2)
         --local offset = #self.inv >= num and 1 or 0 --math.ceil((#self.inv - num)/2)
         local offset = 1 + #self.inv - num
+
+		self.integrated_arrow = self.bottomrow:AddChild(Image(HUD_ATLAS, "inventory_bg_arrow.tex"))
+		self.integrated_arrow:SetPosition(self.inv[#self.inv]:GetPosition().x + W * 0.5 + INTERSEP + 61, 8)
 
         for k = 1, num do
             local slot = InvSlot(k, HUD_ATLAS, "inv_slot.tex", self.owner, overflow)
@@ -310,7 +329,6 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
 
     if hadbackpack and self.backpack == nil then
         self:SelectDefaultSlot()
-        self.current_list = self.inv
     end
 
     if self.bg.Flow ~= nil then
@@ -330,6 +348,7 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
         self.bottomrow:SetPosition(0, -.5 * (W + YSEP))
 
         if self.rebuild_snapping then
+			self.root:CancelMoveTo()
             self.root:SetPosition(self.in_pos)
             self:UpdatePosition()
         else
@@ -341,9 +360,10 @@ local function RebuildLayout(self, inventory, overflow, do_integrated_backpack, 
         self.toprow:SetPosition(0, 0)
         self.bottomrow:SetPosition(0, 0)
 
-        if self.controller_build and not self.rebuild_snapping then
+        if do_integrated_backpack and not self.rebuild_snapping then
             self.root:MoveTo(self.in_pos, self.out_pos, .2)
         else
+			self.root:CancelMoveTo()
             self.root:SetPosition(self.out_pos)
             self:UpdatePosition()
         end
@@ -358,6 +378,7 @@ function Inv:Rebuild()
 
     if self.toprow ~= nil then
         self.toprow:Kill()
+		self.inspectcontrol = nil
     end
 
     if self.bottomrow ~= nil then
@@ -371,11 +392,16 @@ function Inv:Rebuild()
     self.equip = {}
     self.backpackinv = {}
 
-    self.controller_build = TheInput:ControllerAttached()
+	local controller_attached = TheInput:ControllerAttached()
+    self.controller_build = controller_attached
+	self.integrated_backpack = controller_attached or Profile:GetIntegratedBackpack()
 
     local inventory = self.owner.replica.inventory
-    local overflow = inventory:GetOverflowContainer()
-    local do_integrated_backpack = overflow ~= nil and self.controller_build
+
+	local overflow = inventory:GetOverflowContainer()
+	overflow = (overflow ~= nil and overflow:IsOpenedBy(self.owner)) and overflow or nil
+
+	local do_integrated_backpack = overflow ~= nil and self.integrated_backpack
     local do_self_inspect = not (self.controller_build or GetGameModeProperty("no_avatar_popup"))
 
 	if TheNet:GetServerGameMode() == "quagmire" then
@@ -387,7 +413,6 @@ function Inv:Rebuild()
     self.actionstring:MoveToFront()
 
     self:SelectDefaultSlot()
-    self.current_list = self.inv
     self:UpdateCursor()
 
     if self.cursor ~= nil then
@@ -396,6 +421,16 @@ function Inv:Rebuild()
 
     self.rebuild_pending = nil
     self.rebuild_snapping = nil
+end
+
+function Inv:RefreshRepeatDelay(control)
+	if self.reps <= 1 then
+		self.repeat_time = TheFrontEnd.inventory_repeat_base
+	elseif self.reps >= 3 and Input:GetAnalogControlValue(control) > 0.95 then
+		self.repeat_time = TheFrontEnd.inventory_repeat_ninja
+	else
+		self.repeat_time = TheFrontEnd.inventory_repeat_fast
+	end
 end
 
 function Inv:OnUpdate(dt)
@@ -421,6 +456,11 @@ function Inv:OnUpdate(dt)
         self:Refresh()
     end
 
+	if self.owner.HUD:IsCraftingOpen() then
+        self.actionstring:Hide()
+		return
+	end
+
     --V2C: Don't set pause in multiplayer, all it does is change the
     --     audio settings, which we don't want to do now
     --if self.open and TheInput:ControllerAttached() then
@@ -441,8 +481,6 @@ function Inv:OnUpdate(dt)
     if self.active_slot ~= nil and not self.active_slot.inst:IsValid() then
         self:SelectDefaultSlot()
 
-        self.current_list = self.inv
-
         if self.cursor ~= nil then
             self.cursor:Kill()
             self.cursor = nil
@@ -454,29 +492,48 @@ function Inv:OnUpdate(dt)
     if self.shown then
         --this is intentionally unaware of focus
         if self.repeat_time <= 0 then
-            if TheInput:IsControlPressed(CONTROL_INVENTORY_LEFT) or (self.open and TheInput:IsControlPressed(CONTROL_MOVE_LEFT)) then
-                self:CursorLeft()
-            elseif TheInput:IsControlPressed(CONTROL_INVENTORY_RIGHT) or (self.open and TheInput:IsControlPressed(CONTROL_MOVE_RIGHT)) then
-                self:CursorRight()
-            elseif TheInput:IsControlPressed(CONTROL_INVENTORY_UP) or (self.open and TheInput:IsControlPressed(CONTROL_MOVE_UP)) then
-                self:CursorUp()
-            elseif TheInput:IsControlPressed(CONTROL_INVENTORY_DOWN) or (self.open and TheInput:IsControlPressed(CONTROL_MOVE_DOWN)) then
-                self:CursorDown()
-            else
-                self.repeat_time = 0
-                self.reps = 0
-                return
-            end
-
             self.reps = self.reps and (self.reps + 1) or 1
 
-            if self.reps <= 1 then
-                self.repeat_time = 5/30
-            elseif self.reps < 4 then
-                self.repeat_time = 2/30
-            else
-                self.repeat_time = 1/30
-            end
+			if self.open then
+				if TheInput:IsControlPressed(CONTROL_MOVE_LEFT) then
+					self:RefreshRepeatDelay(CONTROL_MOVE_LEFT)
+	                self:CursorLeft()
+					return
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_RIGHT) then
+					self:RefreshRepeatDelay(CONTROL_MOVE_RIGHT)
+					self:CursorRight()
+					return
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_UP) then
+					self:RefreshRepeatDelay(CONTROL_MOVE_UP)
+					self:CursorUp()
+					return
+				elseif TheInput:IsControlPressed(CONTROL_MOVE_DOWN) then
+					self:RefreshRepeatDelay(CONTROL_MOVE_DOWN)
+					self:CursorDown()
+					return
+				end
+			end
+
+			if TheInput:IsControlPressed(CONTROL_INVENTORY_LEFT) then
+				self:RefreshRepeatDelay(CONTROL_INVENTORY_LEFT)
+				self:CursorLeft()
+				return
+			elseif TheInput:IsControlPressed(CONTROL_INVENTORY_RIGHT) then
+				self:RefreshRepeatDelay(CONTROL_INVENTORY_RIGHT)
+				self:CursorRight()
+				return
+			elseif TheInput:IsControlPressed(CONTROL_INVENTORY_UP) then
+				self:RefreshRepeatDelay(CONTROL_INVENTORY_UP)
+				self:CursorUp()
+				return
+			elseif TheInput:IsControlPressed(CONTROL_INVENTORY_DOWN) then
+				self:RefreshRepeatDelay(CONTROL_INVENTORY_DOWN)
+				self:CursorDown()
+				return
+			end
+
+			self.repeat_time = 0
+			self.reps = 0
         end
     end
 end
@@ -505,6 +562,15 @@ function Inv:OffsetCursor(offset, val, minval, maxval, slot_is_valid_fn)
     return val
 end
 
+function Inv:PinBarNav(select_pin)
+	if select_pin ~= nil then
+		self.actionstringtime = 0
+		self.actionstring:Hide()
+		self:SelectSlot(select_pin)
+		return true
+	end
+end
+
 function Inv:GetInventoryLists(same_container_only)
     if same_container_only then
         local lists = {self.current_list}
@@ -518,11 +584,9 @@ function Inv:GetInventoryLists(same_container_only)
         return lists
     else
         local lists = {self.inv, self.equip, self.backpackinv}
-
-        local bp = self.owner.HUD:GetFirstOpenContainerWidget()
-        if bp then
-            table.insert(lists, bp.inv)
-        end
+		for _, v in pairs(self.owner.HUD.controls.containers) do
+            table.insert(lists, v.inv)
+		end
 
         return lists
     end
@@ -536,9 +600,12 @@ function Inv:CursorNav(dir, same_container_only)
         self.actionstring:Show()
     end
 
-    if self.active_slot and not self.active_slot.inst:IsValid() then
+	local _, current_list_first_slot = next(self.current_list)
+
+    if self.active_slot == nil or not self.active_slot.inst:IsValid() or self.current_list == nil or current_list_first_slot == nil or not current_list_first_slot.inst:IsValid() then
         self.current_list = self.inv
-        return self:SelectDefaultSlot()
+        self:SelectDefaultSlot()
+		return true
     end
 
     local lists = self:GetInventoryLists(same_container_only)
@@ -550,25 +617,71 @@ function Inv:CursorNav(dir, same_container_only)
 end
 
 function Inv:CursorLeft()
+	if self.pin_nav and not self.owner.HUD.controls.craftingmenu.is_left_aligned then
+		local k, slot = next(self.current_list or {})
+		if slot == nil or not slot.inst:IsValid() then
+			self.current_list = self.equip
+		end
+	end
+
     if self:CursorNav(Vector3(-1,0,0), true) then
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+	elseif not self.open and not self.pin_nav and self.owner.HUD.controls.craftingmenu.is_left_aligned and self:PinBarNav(self.owner.HUD.controls.craftingmenu:InvNavToPin(self.active_slot, -1, 0)) then
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+	elseif self.reps == 1 and (self.current_list == self.inv or self.current_list == self.equip or self.pin_nav) then
+		self.current_list = self.equip[self.equipslotinfo[#self.equipslotinfo].slot] and self.equip or self.inv
+	    self:SelectSlot(self.equip[self.equipslotinfo[#self.equipslotinfo].slot] or self.inv[#self.inv])
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
     end
 end
 
 function Inv:CursorRight()
+	if self.pin_nav and self.owner.HUD.controls.craftingmenu.is_left_aligned then
+		local k, slot = next(self.current_list or {})
+		if slot == nil or not slot.inst:IsValid() then
+			self.current_list = self.inv
+		end
+	end
+
     if self:CursorNav(Vector3(1,0,0), true) then
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+	elseif not self.open and not self.pin_nav and not self.owner.HUD.controls.craftingmenu.is_left_aligned and self:PinBarNav(self.owner.HUD.controls.craftingmenu:InvNavToPin(self.active_slot, 1, 0)) then
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+	elseif self.reps == 1 and (self.current_list == self.inv or self.current_list == self.equip or self.pin_nav) then
+		self:SelectDefaultSlot()
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
     end
 end
 
 function Inv:CursorUp()
-    if self:CursorNav(Vector3(0,1,0)) then
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+	if self.pin_nav then
+		self:PinBarNav(self.active_slot:FindPinUp())
+    else
+		if self:CursorNav(Vector3(0,1,0)) then
+			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+		elseif not self.open and (self.current_list == self.inv or self.current_list == self.equip) then
+			-- go into the pin bar if there are no other open containers above the inventory bar
+			self:PinBarNav(self.owner.HUD.controls.craftingmenu:InvNavToPin(self.active_slot, 0, 1))
+		end
     end
 end
 
 function Inv:CursorDown()
-    if self:CursorNav(Vector3(0,-1,0)) then
+	local pin_nav = self.pin_nav
+	if pin_nav then
+		local next_pin = self.active_slot:FindPinDown()
+		if next_pin then
+			self:PinBarNav(next_pin)
+		else
+			pin_nav = false
+			local k, slot = next(self.current_list or {})
+			if slot == nil or not slot.inst:IsValid() then
+				self.current_list = self.owner.HUD.controls.craftingmenu.is_left_aligned and self.inv or self.equip
+			end
+		end
+    end
+	
+	if not pin_nav and self:CursorNav(Vector3(0,-1,0)) then
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
     end
 end
@@ -578,24 +691,25 @@ function Inv:GetClosestWidget(lists, pos, dir)
     local closest_score = nil
     local closest_list = nil
 
+	local x, y = pos.x, pos.y
+	local dir_x, dir_y = dir.x, dir.y
+
     for kk, vv in pairs(lists) do
         for k,v in pairs(vv) do
             if v ~= self.active_slot then
-                local world_pos = v:GetWorldPosition()
-                local dst = pos:DistSq(world_pos)
-                local local_dir = (world_pos - pos):GetNormalized()
-                local dot = local_dir:Dot(dir)
+				local vx, vy = v.inst.UITransform:GetWorldPosition()
+				local local_dir_x, local_dir_y = vx-x, vy-y
 
+				local dot = VecUtil_Dot(local_dir_x, local_dir_y, dir_x, dir_y)
                 if dot > 0 then
-                    local score = dot/dst
-
-                    if not closest or score > closest_score then
-                        closest = v
-                        closest_score = score
-                        closest_list = vv
-                    end
-                end
-            end
+					local score = local_dir_x * local_dir_x + local_dir_y * local_dir_y
+	                if not closest or score < closest_score then
+	                    closest = v
+	                    closest_score = score
+	                    closest_list = vv
+	                end
+				end
+	        end
         end
     end
 
@@ -675,16 +789,22 @@ function Inv:OpenControllerInventory()
         --V2C: Don't set pause in multiplayer, all it does is change the
         --     audio settings, which we don't want to do now
         --SetPause(true, "inv")
+
+        SetAutopaused(true)
+
         self.open = true
         self.force_single_drop = false --reset the flag
+
+		if self.pin_nav then
+			self:CursorRight()
+		end
 
         self:UpdateCursor()
         self:ScaleTo(self.base_scale,self.selected_scale,.2)
 
-        local bp = self.owner.HUD:GetFirstOpenContainerWidget()
-        if bp ~= nil then
-            bp:ScaleTo(self.base_scale,self.selected_scale,.2)
-        end
+		for _, v in pairs(self.owner.HUD.controls.containers) do
+            v:ScaleTo(self.base_scale,self.selected_scale,.2)
+		end
 
         TheFrontEnd:LockFocus(true)
         self:SetFocus()
@@ -705,6 +825,9 @@ function Inv:CloseControllerInventory()
         --V2C: Don't set pause in multiplayer, all it does is change the
         --     audio settings, which we don't want to do now
         --SetPause(false)
+
+        SetAutopaused(false)
+
         self.owner.HUD.controls:SetDark(false)
 
         self.owner.replica.inventory:ReturnActiveItem()
@@ -717,10 +840,9 @@ function Inv:CloseControllerInventory()
 
         self:ScaleTo(self.selected_scale, self.base_scale, .1)
 
-        local bp = self.owner.HUD:GetFirstOpenContainerWidget()
-        if bp ~= nil then
-            bp:ScaleTo(self.selected_scale,self.base_scale, .1)
-        end
+		for _, w in pairs(self.owner.HUD.controls.containers) do
+            w:ScaleTo(self.selected_scale,self.base_scale, .1)
+		end
 
         TheFrontEnd:LockFocus(false)
     end
@@ -805,7 +927,7 @@ function Inv:UpdateCursorText()
 
                 table.insert(str, TheInput:GetLocalizedControl(controller_id, CONTROL_INVENTORY_DROP) .. " " .. GetDropActionString(self.owner, inv_item))
             end
-        else 
+        else
             if is_equip_slot then
                 --handle the quip slot stuff as a special case because not every item can go there
                 if active_item ~= nil and active_item.replica.equippable ~= nil and active_item.replica.equippable:EquipSlot() == self.active_slot.equipslot and not active_item.replica.equippable:IsRestricted(self.owner) then
@@ -925,13 +1047,22 @@ function Inv:SelectSlot(slot)
         if self.active_slot and self.active_slot ~= slot then
             self.active_slot:DeHighlight()
         end
+
+		if self.pin_nav and not slot.in_pinbar then
+			self.pin_nav = false
+			self.owner.HUD.controls.craftingmenu:ClearFocus()
+		elseif slot.in_pinbar then
+			self.pin_nav = true
+		end
+
         self.active_slot = slot
         return true
     end
 end
 
 function Inv:SelectDefaultSlot()
-    self:SelectSlot(self.inv[1] or self.equip[self.equipslotinfo[1].slot])
+    self.current_list = self.inv[1] and self.inv or self.equip
+	self:SelectSlot(self.inv[1] or self.equip[self.equipslotinfo[1].slot])
 end
 
 function Inv:UpdateCursor()
@@ -975,13 +1106,18 @@ function Inv:UpdateCursor()
             self.cursor:MoveToBack()
             self.active_slot.tile.spoilage:MoveToBack()
             self.active_slot.tile.bg:MoveToBack()
-        else
+        elseif self.active_slot.hide_cursor then
+			self.cursor:Hide()
+            self.active_slot:Highlight()
+		else
             self.cursor:Show()
             self.active_slot:AddChild(self.cursor)
             self.active_slot:Highlight()
 
             self.cursor:MoveToBack()
-            self.active_slot.bgimage:MoveToBack()
+			if self.active_slot.bgimage then
+	            self.active_slot.bgimage:MoveToBack()
+			end
         end
     else
         self.cursor:Hide()
@@ -1041,6 +1177,14 @@ function Inv:Refresh()
         end
     end
 
+    self:RefreshIntegratedContainer()
+
+    self:OnNewActiveItem(activeitem)
+end
+
+function Inv:RefreshIntegratedContainer()
+    local inventory = self.owner.replica.inventory
+
     if #self.backpackinv > 0 then
         local overflow = inventory:GetOverflowContainer()
         if overflow ~= nil then
@@ -1058,8 +1202,26 @@ function Inv:Refresh()
             end
         end
     end
+end
 
-    self:OnNewActiveItem(activeitem)
+function Inv:OnPlacerChanged(placer_shown)
+	if self.hovertile ~= nil then 
+		if placer_shown then
+			if self.hovertile.image ~= nil then
+				self.hovertile.image:Hide() 
+			end
+			if self.hovertile.imagebg ~= nil then
+				self.hovertile.imagebg:Hide() 
+			end
+		else
+			if self.hovertile.image ~= nil then
+				self.hovertile.image:Show() 
+			end
+			if self.hovertile.imagebg ~= nil then
+				self.hovertile.imagebg:Show() 
+			end
+		end
+	end
 end
 
 function Inv:Cancel()
@@ -1074,7 +1236,7 @@ function Inv:OnItemLose(slot)
     if slot then
         slot:SetTile(nil)
     end
-    
+
     --self:UpdateCursor()
 end
 
@@ -1147,7 +1309,7 @@ function Inv:OnItemGet(item, slot, source_pos, ignore_stacksize_anim)
             end
             im:MoveTo(Vector3(TheSim:GetScreenPos(source_pos:Get())), dest_pos, .3, function() tile:Show() tile:ScaleTo(2, 1, .25) im:Kill() end)
         else
-            tile:Show() 
+            tile:Show()
             --tile:ScaleTo(2, 1, .25)
         end
     end

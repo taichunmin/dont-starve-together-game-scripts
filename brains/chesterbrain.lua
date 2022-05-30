@@ -26,14 +26,14 @@ end)
 
 
 function ChesterBrain:OnStart()
-    local root = 
+    local root =
     PriorityNode({
         WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
         Follow(self.inst, function() return self.inst.components.follower.leader end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
         FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, MAX_WANDER_DIST),
-        
+
     }, .25)
     self.bt = BT(self.inst, root)
 end

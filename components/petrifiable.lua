@@ -36,10 +36,11 @@ local function CanChainPetrify(guy)
             guy.components.petrifiable._petrifytask ~= nil)
 end
 
+local PETRIFY_NO_TAGS = { "INLIMBO" }
 local function DoPetrify(inst, self, OnEntityWake)
     self._petrifytask = nil
 
-    local ent = FindEntity(inst, CHAIN_RADIUS, CanChainPetrify, nil, { "INLIMBO" })
+    local ent = FindEntity(inst, CHAIN_RADIUS, CanChainPetrify, nil, PETRIFY_NO_TAGS)
     if ent ~= nil then
         DoChainPetrify(ent, ent.components.petrifiable, DoPetrify, OnEntityWake)
     end

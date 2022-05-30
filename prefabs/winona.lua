@@ -7,15 +7,7 @@ local assets =
     Asset("ANIM", "anim/player_idles_winona.zip"),
 }
 
-local start_inv =
-{
-    default =
-    {
-        "sewing_tape",
-        "sewing_tape",
-        "sewing_tape",
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WINONA
 end
@@ -35,6 +27,12 @@ end
 
 local function master_postinit(inst)
     inst.starting_inventory = start_inv[TheNet:GetServerGameMode()] or start_inv.default
+
+    inst.components.health:SetMaxHealth(TUNING.WENDY_HEALTH)
+    inst.components.hunger:SetMax(TUNING.WENDY_HUNGER)
+    inst.components.sanity:SetMax(TUNING.WENDY_SANITY)
+
+    inst.components.foodaffinity:AddPrefabAffinity("vegstinger", TUNING.AFFINITY_15_CALORIES_MED)
 
     inst.customidleanim = "idle_winona"
 

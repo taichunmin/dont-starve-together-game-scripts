@@ -48,11 +48,12 @@ local function IsDefensive(self)
     return self.inst.components.health.currenthealth < TUNING.STALKER_ATRIUM_PHASE2_HEALTH
 end
 
+local STALKERMINION_TAGS = { "stalkerminion" }
 local function CheckMinions(self)
     local t = GetTime()
     if t > (self.checkminionstime or 0) then
         local x, y, z = (GetStargate(self.inst) or self.inst).Transform:GetWorldPosition()
-        self.hasminions = #TheSim:FindEntities(x, y, z, 8, { "stalkerminion" }) > 0
+        self.hasminions = #TheSim:FindEntities(x, y, z, 8, STALKERMINION_TAGS) > 0
         self.checkminionstime = t + CHECK_MINIONS_PERIOD
     end
 end
@@ -69,13 +70,15 @@ local function ShouldSnare(self)
     return false
 end
 
+local SPIKE_TARGET_MUST_TAGS = { "_combat", "_health" }
+local SPIKE_TARGET_CANT_TAGS = { "fossil", "playerghost", "shadow", "INLIMBO" }
 local function ShouldSpikes(self)
     if not (IsDefensive(self) or self.inst.components.timer:TimerExists("spikes_cd")) then
         if not self.hasminions then
             local stargate = GetStargate(self.inst)
             if stargate == nil or self.inst:IsNear(stargate, 8) then
                 local x, y, z = (stargate or self.inst).Transform:GetWorldPosition()
-                if #TheSim:FindEntities(x, y, z, 8, { "_combat", "_health" }, { "fossil", "playerghost", "shadow", "INLIMBO" }) > 0 then
+                if #TheSim:FindEntities(x, y, z, 8, SPIKE_TARGET_MUST_TAGS, SPIKE_TARGET_CANT_TAGS) > 0 then
                     self.wantstospikes = true
                     return true
                 end
@@ -172,8 +175,9 @@ local function KeepIdleStargate(inst)
     return true
 end
 
+local SHADOWLURE_TAGS = {"shadowlure"}
 local function GetShadowLure(inst)
-    return GetClosestInstWithTag("shadowlure", inst, SAFE_LURE_DIST)
+    return GetClosestInstWithTag(SHADOWLURE_TAGS, inst, SAFE_LURE_DIST)
 end
 
 local function KeepShadowLure(inst, target)

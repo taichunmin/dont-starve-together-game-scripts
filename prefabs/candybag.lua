@@ -62,6 +62,8 @@ local function fn()
 
     inst:AddTag("backpack")
 
+    MakeInventoryFloatable(inst, "med", 0.125, 0.65)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -72,7 +74,6 @@ local function fn()
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem.cangoincontainer = false
-    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
@@ -82,6 +83,8 @@ local function fn()
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("candybag")
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     MakeSmallBurnable(inst)
     MakeSmallPropagator(inst)

@@ -59,7 +59,7 @@ local function SetPlayerReadyToStart(userid, is_ready)
 	if _countdowni:value() ~= COUNTDOWN_INACTIVE then
 		return
 	end
-	    
+
     if is_ready then
 		local empty_slot = nil
 		for i, v in ipairs(_players_ready_to_start) do
@@ -144,7 +144,7 @@ local function StarTimer(time)
 	local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
 	if analytics ~= nil then
 		analytics:SendAnalyticsLobbyEvent("lobby.startmatch", nil, { up_time = CalcLobbyUpTime() })
-	
+
 		for userid, _ in pairs(_client_wait_time) do
 			local data = {play_t = _client_wait_time[userid] ~= nil and (GetTimeRealSeconds() - _client_wait_time[userid]) or 0}
 			analytics:SendAnalyticsLobbyEvent("lobby.clientstartmatch", userid, data)
@@ -196,7 +196,7 @@ local function OnRequestLobbyCharacter(world, data)
 
 	TheNet:SetLobbyCharacter(data.userid, data.prefab_name, data.skin_base, data.clothing_body, data.clothing_hand, data.clothing_legs, data.clothing_feet)
 	SetPlayerReadyToStart(data.userid, false)
-	
+
 	TryStartCountdown()
 end
 
@@ -209,14 +209,14 @@ local function OnLobbyClientConnected(src, data)
 		end
 		_client_wait_time[data.userid] = GetTimeRealSeconds()
 
-		
+
 		local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
 		if analytics ~= nil then
 			local msg = {}
 			msg.up_time = CalcLobbyUpTime()
 			analytics:SendAnalyticsLobbyEvent("lobby.join", nil, msg)
-		end		
-	else		
+		end
+	else
 		-- players will have no choice but to disconncet at this point.
 	end
 end
@@ -226,7 +226,7 @@ local function OnLobbyClientDisconnected(src, data)
 
 	if self:IsAllowingCharacterSelect() and _client_wait_time[data.userid] ~= nil then
 		local wait_time = _client_wait_time[data.userid] and (GetTimeRealSeconds() - _client_wait_time[data.userid]) or 0
-		_client_wait_time[data.userid] = nil 
+		_client_wait_time[data.userid] = nil
 		local num_remaining_players = GetTableSize(_client_wait_time)
 
 		local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
@@ -237,7 +237,7 @@ local function OnLobbyClientDisconnected(src, data)
 			msg.consecutive_match = TheNet:IsConsecutiveMatchForPlayer(data.userid)
 			local analytics = TheWorld.components.lavaarenaanalytics or TheWorld.components.quagmireanalytics
 			analytics:SendAnalyticsLobbyEvent("lobby.leave", data.userid, msg)
-		
+
 			if GetTableSize(_client_wait_time) == 0 then
 				local msg2 = {}
 				msg2.up_time = msg.up_time
@@ -355,7 +355,7 @@ function self:OnUpdate(dt)
         local clients = TheNet:GetClientTable()
         if clients ~= nil then
             local isdedicated = not TheNet:GetServerIsClientHosted()
-            for i, v in ipairs(TheNet:GetClientTable()) do
+            for i, v in ipairs(TheNet:GetClientTable() or {}) do
                 if not isdedicated or v.performance == nil then
                     --Still someone connected
                     return

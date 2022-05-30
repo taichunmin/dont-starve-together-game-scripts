@@ -6,14 +6,14 @@ end)
 
 function Scaler:ApplyScale()
     self.inst.Transform:SetScale(self.scale,self.scale,self.scale)
-    
+
     if self.OnApplyScale then
         self.OnApplyScale(self.inst, self.scale)
     end
 end
 
-function Scaler:OnSave()    
-    return 
+function Scaler:OnSave()
+    return
     {
         scale = self.scale
     }

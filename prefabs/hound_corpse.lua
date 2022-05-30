@@ -73,7 +73,7 @@ end
 local function onextinguish(inst)
 	DefaultExtinguishFn(inst)
 	if inst.spawn_task == nil then
-		inst.perists = false
+		inst.persists = false
 		inst:DoTaskInTime(math.random()*0.5 + 0.5, ErodeAway)
 	end
 end

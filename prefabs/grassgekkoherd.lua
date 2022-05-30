@@ -1,4 +1,4 @@
-local prefabs = 
+local prefabs =
 {
     "grassgekko",
 }

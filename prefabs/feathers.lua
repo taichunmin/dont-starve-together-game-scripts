@@ -19,6 +19,7 @@ local function makefeather(name)
         inst.AnimState:PlayAnimation("idle")
 
         inst:AddTag("cattoy")
+        inst:AddTag("birdfeather")
 
         MakeInventoryFloatable(inst, "small", 0.05, 0.95)
 

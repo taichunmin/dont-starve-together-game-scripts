@@ -54,7 +54,7 @@ local function makeMarbleTree(animnumber)
         local inst = CreateEntity()
 
         inst.entity:AddTransform()
-        inst.entity:AddAnimState()  
+        inst.entity:AddAnimState()
         inst.entity:AddSoundEmitter()
         inst.entity:AddMiniMapEntity()
         inst.entity:AddNetwork()

@@ -63,16 +63,26 @@ end
 
 mod_protect_Recipe = false
 
-Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing, nounlock, numtogive, builder_tag, atlas, image, testfn, product, build_mode, build_distance)
+Recipe = Class(function(self, name, ingredients, tab, level, placer_or_more_data, min_spacing, nounlock, numtogive, builder_tag, atlas, image, testfn, product, build_mode, build_distance) -- do not add more params here, add them to "placer_or_more_data"
     if mod_protect_Recipe then
         print("Warning: Calling Recipe from a mod is now deprecated. Please call AddRecipe from your modmain.lua file.")
     end
+
+	local placer = nil
+	local more_data = {}
+	if type(placer_or_more_data) == "table" then
+		placer = placer_or_more_data.placer
+		more_data = placer_or_more_data
+	else
+		placer = placer_or_more_data
+	end
 
     self.name          = name
 
     self.ingredients   = {}
     self.character_ingredients = {}
     self.tech_ingredients = {}
+	self.filter = more_data.filter
 
     for k,v in pairs(ingredients) do
         table.insert(
@@ -84,7 +94,9 @@ Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing
     end
 
     self.product       = product or name
-    self.tab           = tab
+    self.tab           = tab					-- DEPRECATED
+
+	self.description   = more_data.description -- override the description string in the crafting menu
 
     self.imagefn       = type(image) == "function" and image or nil
     self.image         = self.imagefn == nil and image or (self.product .. ".tex")
@@ -99,20 +111,44 @@ Recipe = Class(function(self, name, ingredients, tab, level, placer, min_spacing
     self.placer        = placer
     self.min_spacing   = min_spacing or 3.2
 
-    --V2C: custom test function if default test isn't enough
-    self.testfn        = testfn
+    
+    self.testfn        = testfn					-- custom placer test function if default test isn't enough
+	self.canbuild      = more_data.canbuild		-- custom test function to see if we should be allowed to craft this recipe, return a build action fail message if false
 
     self.nounlock      = nounlock or false
 
     self.numtogive     = numtogive or 1
 
     self.builder_tag   = builder_tag or nil
+	self.sg_state      = more_data.sg_state or more_data.buildingstate or nil -- overrides the SG state to use when crafting the item (buildingstate is the old variable name)
 
     self.build_mode    = build_mode or BUILDMODE.LAND
     self.build_distance= build_distance or 1
 
+    self.no_deconstruction = more_data.no_deconstruction -- function or bool
+    self.require_special_event = more_data.require_special_event
+
+	self.dropitem      = more_data.dropitem
+
+	self.actionstr     = more_data.actionstr
+	self.hint_msg      = more_data.hint_msg
+
+	self.manufactured = more_data.manufactured -- if true, then it is up to the crafting station to handle creating the item, not the builder component
+
+	self.is_deconstruction_recipe = tab == nil
+
     num                = num + 1
     AllRecipes[name]   = self
+
+    if ModManager then
+        for k,recipepostinit in pairs(ModManager:GetPostInitFns("RecipePostInit")) do
+            recipepostinit(self)
+        end
+
+        for k,recipepostinitany in pairs(ModManager:GetPostInitFns("RecipePostInitAny")) do
+            recipepostinitany(self)
+        end
+    end
 end)
 
 function Recipe:GetAtlas()
@@ -136,7 +172,7 @@ function GetValidRecipe(recname)
         return
     end
     local rec = AllRecipes[recname]
-    return rec ~= nil and rec.tab ~= nil and rec or nil
+    return rec ~= nil and not rec.is_deconstruction_recipe and (rec.require_special_event == nil or IsSpecialEventActive(rec.require_special_event)) and rec or nil
 end
 
 function IsRecipeValid(recname)
@@ -147,3 +183,19 @@ function RemoveAllRecipes()
     AllRecipes = {}
     num = 0
 end
+
+Recipe2 = Class(Recipe, function(self, name, ingredients, tech, config) -- add new optional params to config
+	if config ~= nil then
+		Recipe._ctor(self, name, ingredients, nil, tech, config, config.min_spacing, config.nounlock, config.numtogive, config.builder_tag, config.atlas, config.image, config.testfn, config.product, config.build_mode, config.build_distance)
+	else
+		Recipe._ctor(self, name, ingredients, nil, tech)
+	end
+
+	self.is_deconstruction_recipe = false
+end)
+
+DeconstructRecipe = Class(Recipe, function(self, name, return_ingredients)
+	Recipe._ctor(self, name, return_ingredients, nil, TECH.NONE)
+	self.is_deconstruction_recipe = true
+	self.nounlock = true
+end)

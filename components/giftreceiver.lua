@@ -30,6 +30,12 @@ local GiftReceiver = Class(function(self, inst)
     self.giftcount = 0
     self.giftmachine = nil
 
+    self.onclosepopup = function(doer, data)
+        if data.popup == POPUPS.GIFTITEM then
+            self:OnStopOpenGift(data.args[1])
+        end
+    end
+    inst:ListenForEvent("ms_closepopup", self.onclosepopup)
     --Delay init because a couple frames to wait for userid set
     inst:DoTaskInTime(0, OnInit, 1)
 end,
@@ -38,6 +44,11 @@ nil,
     giftcount = ongiftcount,
     giftmachine = ongiftmachine,
 })
+
+function GiftReceiver:OnRemoveFromEntity()
+    inst:RemoveEventCallback("ms_closepopup", self.onclosepopup)
+    inst:RemoveEventCallback("ms_updategiftitems", OnUpdateGiftItems)
+end
 
 function GiftReceiver:HasGift()
     return self.giftcount > 0

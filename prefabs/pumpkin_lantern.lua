@@ -117,10 +117,10 @@ local function ondeath(inst)
     end
     FadeOut(inst, true)
     inst.components.perishable:StopPerishing()
+    inst.components.lootdropper:SpawnLootPrefab("fireflies")
     if not inst.AnimState:IsCurrentAnimation("rotten") then
         inst.AnimState:PlayAnimation("broken")
         inst.SoundEmitter:PlaySound("dontstarve/common/vegi_smash")
-        inst.components.lootdropper:SpawnLootPrefab("fireflies")
     end
 end
 

@@ -39,19 +39,19 @@ function ShowClosestNodeToPlayer()
 	TheWorld.minimap.MiniMap:ShowArea(x,0,y,15)
 end
 
-function cross(o, a, b) 
+function cross(o, a, b)
    return (a[1] - o[1]) * (b[2] - o[2]) - (a[2] - o[2]) * (b[1] - o[1])
 end
- 
+
 
 -- @param points An array of [X, Y] coordinates
-function convexHull(points) 
+function convexHull(points)
 
-	table.sort(points, function(a, b) 
+	table.sort(points, function(a, b)
 				return a[1] == b[1] and a[2] < b[2]  or a[1] < b[1]
 			end
 		)
- 
+
 	local lower = {}
 	for i = 1,#points do
 		while (#lower >= 2 and cross(lower[#lower - 1], lower[#lower -0], points[i]) <= 0) do
@@ -59,7 +59,7 @@ function convexHull(points)
 		end
 		table.insert(lower,points[i])
 	end
- 
+
 	local upper = {}
 	for i = #points,1,-1 do
 		while (#upper >= 2 and cross(upper[#upper - 1], upper[#upper - 0], points[i]) <= 0) do
@@ -67,7 +67,7 @@ function convexHull(points)
 		end
 		table.insert(upper, points[i])
 	end
- 
+
 	table.remove(upper)
 	table.remove(lower)
 
@@ -109,7 +109,7 @@ function GrabSubGraphAroundNode(node, numnodes)
 		local x = node1.x
 		local y = node1.y
 		TheWorld.minimap.MiniMap:ShowArea(x,0,y,15)
-	end	
+	end
 	]]
 	return selected
 end
@@ -143,7 +143,7 @@ function PlayerSub(count)
 			local y = srcy + dy * 5 * pt
 			TheWorld.minimap.MiniMap:ShowArea(x,0,y,8)
 		end
-		
+
 	end
 end
 
@@ -163,7 +163,7 @@ function DrawWalkableGrid(graph)
 
 	for i=#graph.flattenedEdges,1,-1 do
 		if graph.flattenedEdges[i] then
-			local pi1 = graph.flattenedEdges[i][1] 	
+			local pi1 = graph.flattenedEdges[i][1]
 			local pi2 = graph.flattenedEdges[i][2]
 			local p1 = graph.flattenedPoints[pi1]
 			local p2 = graph.flattenedPoints[pi2]
@@ -193,7 +193,7 @@ function ShowWalkableGrid(graph)
 
 	for i=#graph.flattenedEdges,1,-1 do
 		if graph.flattenedEdges[i] then
-			local pi1 = graph.flattenedEdges[i][1] 	
+			local pi1 = graph.flattenedEdges[i][1]
 			local pi2 = graph.flattenedEdges[i][2]
 			local p1 = graph.flattenedPoints[pi1]
 			local p2 = graph.flattenedPoints[pi2]
@@ -208,7 +208,7 @@ function ShowWalkableGrid(graph)
 			--local endpos = Point(node2.x,0,node2.y)
 			--draw:Line(node1.x, node1.y, node2.x, node2.y, 255,255, 0, 255)
 			-- visit every 5 units
-			local srcx = node1.x 
+			local srcx = node1.x
 			local srcy = node1.y
 			local dstx = node2.x
 			local dsty = node2.y
@@ -229,7 +229,7 @@ end
 
 function ReconstructTopology(graph)
 	local graph = graph or TheWorld.topology
-	
+
 
 	--[[
 	local debugdrawmap = CreateEntity()
@@ -255,7 +255,7 @@ function ReconstructTopology(graph)
 			end
 			table.insert(node.verts, points[key].index)
 		end
-	end 
+	end
 
 
 	print("\t...Sorting edges")
@@ -274,7 +274,7 @@ function ReconstructTopology(graph)
 			local p2 = node.poly[((i+1) % numverts) + 1]
 			draw:Line(p1[1], p1[2], p2[1],p2[2], 255,266, 255, 255)
 			]]
-			if v2 < v1 then 
+			if v2 < v1 then
 				local temp = v1
 				v1 = v2
 				v2 = temp
@@ -287,7 +287,7 @@ function ReconstructTopology(graph)
 			table.insert(node.validedges, edges[key].index)
 		end
 		node.verts = nil
-	end 
+	end
 
 	-- now sort the nodes per edge
 	print("\t...Connecting nodes")
@@ -306,7 +306,7 @@ function ReconstructTopology(graph)
 	-- Find out which node connections are actually valid, remove the ones that aren`t
 	print("\t...Validating connections")
 	for i=#flattenedEdges,1,-1 do
-		local pi1 = flattenedEdges[i][1] 	
+		local pi1 = flattenedEdges[i][1]
 		local pi2 = flattenedEdges[i][2]
 		local p1 = flattenedPoints[pi1]
 		local p2 = flattenedPoints[pi2]

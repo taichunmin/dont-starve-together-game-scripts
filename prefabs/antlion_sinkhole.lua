@@ -91,6 +91,16 @@ local function SmallLaunch(inst, launcher, basespeed)
     inst.Physics:SetVel(math.cos(angle) * speed, 3 * speed + math.random(), math.sin(angle) * speed)
 end
 
+local TOSS_MUST_TAGS = { "_inventoryitem" }
+local TOSS_CANT_TAGS = { "locomotor", "INLIMBO" }
+
+local function start_repairs(inst, repairdata)
+    inst.remainingrepairs = (repairdata and repairdata.num_stages) or NUM_CRACKING_STAGES
+
+    local repairtime = (repairdata and repairdata.time) or TUNING.ANTLION_SINKHOLE.REPAIR_TIME[NUM_CRACKING_STAGES] + (math.random() * TUNING.ANTLION_SINKHOLE.REPAIR_TIME_VARIANCE)
+    inst.components.timer:StartTimer("nextrepair", repairtime)
+end
+
 local function donextcollapse(inst)
     inst.collapsestage = inst.collapsestage + 1
 
@@ -102,8 +112,7 @@ local function donextcollapse(inst)
 
         inst:RemoveTag("scarytoprey")
         ShakeAllCameras(CAMERASHAKE.FULL, COLLAPSE_STAGE_DURATION, .03, .15, inst, TUNING.ANTLION_SINKHOLE.RADIUS*6)
-        inst.remainingrepairs = NUM_CRACKING_STAGES
-        inst.components.timer:StartTimer("nextrepair", TUNING.ANTLION_SINKHOLE.REPAIR_TIME[NUM_CRACKING_STAGES] + (math.random() * TUNING.ANTLION_SINKHOLE.REPAIR_TIME_VARIANCE))
+        start_repairs(inst)
     else
         ShakeAllCameras(CAMERASHAKE.FULL, COLLAPSE_STAGE_DURATION, .015, .15, inst, TUNING.ANTLION_SINKHOLE.RADIUS*4)
     end
@@ -162,7 +171,7 @@ local function donextcollapse(inst)
             end
         end
     end
-    local totoss = TheSim:FindEntities(x, 0, z, TUNING.ANTLION_SINKHOLE.RADIUS, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+    local totoss = TheSim:FindEntities(x, 0, z, TUNING.ANTLION_SINKHOLE.RADIUS, TOSS_MUST_TAGS, TOSS_CANT_TAGS)
     for i, v in ipairs(totoss) do
         if v.components.mine ~= nil then
             v.components.mine:Deactivate()
@@ -249,6 +258,7 @@ local function fn()
     inst.OnLoad = OnLoad
 
     inst:ListenForEvent("startcollapse", onstartcollapse)
+    inst:ListenForEvent("startrepair", start_repairs)
 
     return inst
 end

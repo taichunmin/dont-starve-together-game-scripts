@@ -6,6 +6,41 @@
     - as soon as a player comes within range, start tracking that player and keep tracking that player (PlayerProx.LockAndKeepPlayer)
 --]]
 
+local function AllPlayers(inst, self)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    local players = FindPlayersInRange(x, y, z, self.near, self.alivemode)
+
+    local closeplayers = {}
+    for i, player in ipairs(players) do
+        closeplayers[player] = true
+        if self.closeplayers[player] then
+            self.closeplayers[player] = nil
+        else
+            if self.onnear ~= nil then
+                self.onnear(inst, player)
+            end
+        end
+    end
+
+    local farsq = self.far * self.far
+    for player in pairs(self.closeplayers) do
+        if player:IsValid() then
+            if (self.alivemode == nil or self.alivemode ~= IsEntityDeadOrGhost(player)) and
+            player.entity:IsVisible() and
+            player:GetDistanceSqToPoint(x, y, z) < farsq then
+                closeplayers[player] = true
+            else
+                if self.onfar ~= nil then
+                    self.onfar(inst, player)
+                end
+            end
+        end
+    end
+
+    self.closeplayers = closeplayers
+    self.isclose = not IsTableEmpty(self.closeplayers)
+end
+
 local function AnyPlayer(inst, self)
     local x, y, z = inst.Transform:GetWorldPosition()
     if not self.isclose then
@@ -83,7 +118,7 @@ local function OnTargetLeft(self)
     if self.initialtargetmode == LockAndKeepPlayer or
         self.initialtargetmode == LockOnPlayer then
         self:SetTargetMode(self.initialtargetmode)
-    end 
+    end
     if self.losttargetfn ~= nil then
         self.losttargetfn()
     end
@@ -102,6 +137,7 @@ local PlayerProx = Class(function(self, inst, targetmode, target)
     self.losttargetfn = nil
     self.alivemode = nil
     self._ontargetleft = function() OnTargetLeft(self) end
+    self.closeplayers = {}
 
     self:SetTargetMode(targetmode or AnyPlayer, target)
 end)
@@ -115,6 +151,7 @@ PlayerProx.AliveModes =
 
 PlayerProx.TargetModes =
 {
+    AllPlayers =        AllPlayers,
     AnyPlayer =         AnyPlayer,
     SpecificPlayer =    SpecificPlayer,
     LockOnPlayer =      LockOnPlayer,
@@ -150,7 +187,10 @@ function PlayerProx:SetPlayerAliveMode(alivemode)
     self.alivemode = alivemode
 end
 
-function PlayerProx:Schedule()
+function PlayerProx:Schedule(new_period)
+	if new_period ~= nil then
+		self.period = new_period
+	end
     self:Stop()
     self.task = self.inst:DoPeriodicTask(self.period, self.targetmode, nil, self)
 end

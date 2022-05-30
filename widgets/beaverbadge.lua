@@ -7,11 +7,12 @@ local function OnIsFullMoon(inst, isfullmoon)
 end
 
 local BeaverBadge = Class(Badge, function(self, owner)
-    Badge._ctor(self, "beaver_meter", owner)
+    Badge._ctor(self, "beaver_meter", owner, nil, nil, nil, nil, true)
 
     self.sanityarrow = self.underNumber:AddChild(UIAnim())
     self.sanityarrow:GetAnimState():SetBank("sanity_arrow")
     self.sanityarrow:GetAnimState():SetBuild("sanity_arrow")
+    self.sanityarrow:GetAnimState():AnimateWhilePaused(false)
     self.sanityarrow:SetClickable(false)
 
     self.inst:WatchWorldState("isfullmoon", OnIsFullMoon)

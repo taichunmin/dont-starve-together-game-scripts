@@ -155,7 +155,7 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
     self.server_pw.textbox:SetOnTabGoToTextEditWidget(function() return GetNextTextbox(self, self.server_pw.textbox) end)
 
 	local include_privacy_options = PLATFORM == "WIN32_STEAM" or PLATFORM == "LINUX_STEAM" or PLATFORM == "OSX_STEAM"
-	
+
     if self.forced_settings.privacy_type == nil then
         self.privacy_type = Widget("Privacy Group")
         self.privacy_type.buttons = self.privacy_type:AddChild(RadioButtons(privacy_options, 450, 50, privacy_buttons, true))
@@ -165,7 +165,7 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
             self.dirty_cb(self)
         end)
         self.privacy_type.focus_forward = self.privacy_type.buttons
-        
+
         if not include_privacy_options then
 			self.privacy_type.buttons:Hide()
 		end
@@ -194,11 +194,11 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
 
     if self.forced_settings.game_mode == nil then
         self.game_mode = TEMPLATES.LabelSpinner(STRINGS.UI.SERVERCREATIONSCREEN.GAMEMODE, GetGameModesSpinnerData(ModManager:GetEnabledServerModNames()), narrow_label_width, narrow_input_width, label_height, space_between, NEWFONT, font_size, narrow_field_nudge)
-        self.game_mode.spinner:SetOnChangedFn(function(selected, old) 
+        self.game_mode.spinner:SetOnChangedFn(function(selected, old)
             self.dirty_cb(self)
         end)
 
-        self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "info.tex", nil, false, false, function() 
+        self.game_mode.info_button = self.game_mode:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "info.tex", nil, false, false, function()
             local mode_title = GetGameModeString( self.game_mode.spinner:GetSelectedData() )
             if mode_title == "" then
                 mode_title = STRINGS.UI.GAMEMODES.UNKNOWN
@@ -208,8 +208,8 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
                 mode_body = STRINGS.UI.GAMEMODES.UNKNOWN_DESCRIPTION
             end
             TheFrontEnd:PushScreen(PopupDialogScreen(
-                    mode_title, 
-                    mode_body, 
+                    mode_title,
+                    mode_body,
                     {{ text = STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end }},
                     nil,
                     "big"
@@ -269,7 +269,7 @@ local CloudServerSettingsPopup = Class(Screen, function(self, prev_screen, user_
 
     --Internal data
     self.encode_user_path = true
-    self.use_cluster_path = true
+    self.use_legacy_session_path = nil
 
     -- Skip the intention picker if forced.
     self:SetServerIntention(self.forced_settings.server_intention)
@@ -443,7 +443,7 @@ function CloudServerSettingsPopup:UpdateDetails()
         self.server_desc.textbox:SetString("")
         self.privacy_type.buttons:SetSelected(PRIVACY_TYPE.PUBLIC)
         self.encode_user_path = true
-        self.use_cluster_path = true
+        self.use_legacy_session_path = nil
 
         self:SetServerIntention(nil)
         self:SetOnlineWidgets(online)
@@ -502,7 +502,11 @@ function CloudServerSettingsPopup:GetEncodeUserPath()
 end
 
 function CloudServerSettingsPopup:GetUseClusterPath()
-    return self.use_cluster_path
+    return not self.use_legacy_session_path
+end
+
+function CloudServerSettingsPopup:GetUseLegacySessionPath()
+    return self.use_legacy_session_path
 end
 
 function CloudServerSettingsPopup:GetServerData()
@@ -512,7 +516,7 @@ function CloudServerSettingsPopup:GetServerData()
         game_mode = self:GetGameMode(),
         online_mode = self:GetOnlineMode(),
         encode_user_path = self:GetEncodeUserPath(),
-        use_cluster_path = self:GetUseClusterPath(),
+        use_legacy_session_path = self:GetUseLegacySessionPath(),
         max_players = self:GetMaxPlayers(),
         name = self:GetServerName(),
         password = self:GetPassword(),

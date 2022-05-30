@@ -35,7 +35,7 @@ local events=
 local states =
 {
     State{
-        
+
         name = "idle",
         tags = {"idle", "canrotate"},
         onenter = function(inst, playanim)
@@ -48,15 +48,15 @@ local states =
             end
             inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/idle")
         end,
-        
-        timeline = 
+
+        timeline =
         {
 
         },
-        
+
         events=
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
 
                 if inst.components.combat.target and
                     inst.components.combat.target:HasTag("player") then
@@ -67,14 +67,14 @@ local states =
                     end
                 end
 
-                inst.sg:GoToState("idle") 
+                inst.sg:GoToState("idle")
 
             end),
         },
     },
 
     State{
-        
+
         name = "action",
         onenter = function(inst, playanim)
             inst.Physics:Stop()
@@ -91,23 +91,23 @@ local states =
                 inst.sg:GoToState("idle")
             end),
         }
-    }, 
+    },
 
     State{
-        
+
         name = "eat",
         onenter = function(inst, playanim)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("eat", true)
         end,
-        
+
         onexit = function(inst)
             inst:PerformBufferedAction()
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(8*FRAMES, function(inst) 
+            TimeEvent(8*FRAMES, function(inst)
                 local waittime = FRAMES*8
                 for i = 0, 3 do
                     inst:DoTaskInTime((i * waittime), function() inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/eat") end)
@@ -126,15 +126,15 @@ local states =
     State{
         name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(8*FRAMES, function(inst) 
+            TimeEvent(8*FRAMES, function(inst)
                 --12 fist hits
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/taunt")
                 local waittime = FRAMES*2
@@ -143,7 +143,7 @@ local states =
                 end
             end)
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -153,7 +153,7 @@ local states =
     State{
         name = "throw",
         tags = {"attack", "busy", "canrotate", "throwing"},
-        
+
         onenter = function(inst)
             if not inst.HasAmmo(inst) then
                 inst.sg:GoToState("idle")
@@ -165,12 +165,12 @@ local states =
             inst.AnimState:PlayAnimation("throw")
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(14*FRAMES, function(inst) inst.components.combat:DoAttack()
             inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/throw") end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -185,11 +185,11 @@ CommonStates.AddWalkStates(states,
 
     },
 
-	walktimeline = 
+	walktimeline =
     {
         TimeEvent(4*FRAMES, function(inst) PlayFootstep(inst) end),
         TimeEvent(5*FRAMES, function(inst) PlayFootstep(inst) end),
-        TimeEvent(10*FRAMES, function(inst) 
+        TimeEvent(10*FRAMES, function(inst)
             PlayFootstep(inst)
             if math.random() < 0.1 then
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/idle")
@@ -208,12 +208,12 @@ CommonStates.AddWalkStates(states,
 
 CommonStates.AddSleepStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
-     
+
     },
 
-    sleeptimeline = 
+    sleeptimeline =
     {
     TimeEvent(1*FRAMES, function(inst)
         inst.SoundEmitter:PlaySound("dontstarve/creatures/monkey"..inst.soundtype.."/sleep") end),
@@ -227,7 +227,7 @@ CommonStates.AddSleepStates(states,
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
+    attacktimeline =
     {
         TimeEvent(17*FRAMES, function(inst)
             inst.components.combat:DoAttack()

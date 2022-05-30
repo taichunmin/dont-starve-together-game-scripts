@@ -94,7 +94,7 @@ function AccountItemFrame:PlayUnlock()
     self.inst:DoTaskInTime(.50, function()
         self:GetAnimState():Hide("TINT")
     end)
-    
+
     self:GetAnimState():PlayAnimation("unlock", false)
     self:GetAnimState():PushAnimation("icon", true)
 end

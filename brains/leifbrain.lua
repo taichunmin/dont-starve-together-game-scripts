@@ -15,9 +15,9 @@ function LeifBrain:OnStart()
         {
 			AttackWall(self.inst),
             ChaseAndAttack(self.inst),
-            Wander(self.inst)            
+            Wander(self.inst)
         },1)
-    
+
     self.bt = BT(self.inst, root)
 end
 

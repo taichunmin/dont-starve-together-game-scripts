@@ -16,9 +16,9 @@ local GenericWaitingPopup = Class(Screen, function(self, name, title_text, addit
     if not TheInput:ControllerAttached() then
 		if not self.forbid_cancel then
 			table.insert(buttons, {
-					text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON,
-					cb = function() 
-						self:OnCancel()            
+					text=STRINGS.UI.LOBBYSCREEN.CANCEL,
+					cb = function()
+						self:OnCancel()
 					end
 				})
 		end
@@ -35,7 +35,7 @@ local GenericWaitingPopup = Class(Screen, function(self, name, title_text, addit
 
 	self.buttons = buttons
 	self.default_focus = self.dialog
-	
+
 	self.time = 0
 	self.progress = 0
 end)
@@ -47,7 +47,7 @@ function GenericWaitingPopup:OnUpdate( dt )
 	    if self.progress > 5 then
 	        self.progress = 1
 	    end
-	    
+
 	    local text = string.rep(".", self.progress)
         self.dialog.body:SetString(text)
 	    self.time = 0
@@ -55,11 +55,11 @@ function GenericWaitingPopup:OnUpdate( dt )
 end
 
 function GenericWaitingPopup:OnControl(control, down)
-    if GenericWaitingPopup._base.OnControl(self,control, down) then 
-        return true 
+    if GenericWaitingPopup._base.OnControl(self,control, down) then
+        return true
     end
-    
-    if not self.forbid_cancel and control == CONTROL_CANCEL and not down then    
+
+    if not self.forbid_cancel and control == CONTROL_CANCEL and not down then
         self:OnCancel()
     end
 end

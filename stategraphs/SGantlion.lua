@@ -1,5 +1,11 @@
 require("stategraphs/commonstates")
 
+local ENTERWORLD_TARGET_CANT_TAGS = { "INLIMBO" }
+local ENTERWORLD_TARGET_ONEOF_TAGS = { "CHOP_workable", "DIG_workable", "HAMMER_workable", "MINE_workable" }
+local ENTERWORLD_TOSS_MUST_TAGS = { "_inventoryitem" }
+local ENTERWORLD_TOSS_CANT_TAGS = { "locomotor", "INLIMBO" }
+local ENTERWORLD_TOSSFLOWERS_MUST_TAGS = { "flower", "pickable" }
+
 local function ShakeIfClose(inst)
     ShakeAllCameras(CAMERASHAKE.FULL, .5, .02, .15, inst, 30)
 end
@@ -124,21 +130,20 @@ local events =
             inst.sg.mem.queueleaveworld = true
         end
     end),
-    EventHandler("onsinkholesstarted", function(inst, data) 
+    EventHandler("onsinkholesstarted", function(inst, data)
         inst.sg.mem.causingsinkholes = true
         if CanGoToActionState(inst) then
             inst.sg:GoToState("sinkhole_pre", data)
         end
     end),
-    EventHandler("onsinkholesfinished", function(inst, data) 
+    EventHandler("onsinkholesfinished", function(inst, data)
         inst.sg.mem.causingsinkholes = false
     end),
 }
 
 local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle" },
 
@@ -167,8 +172,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "idle_unhappy",
         tags = { "idle" },
 
@@ -191,8 +195,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "rocktribute",
         tags = { "busy", "nosleep", "nofreeze" },
 
@@ -221,8 +224,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "hightributeresponse",
         tags = { "busy" },
 
@@ -256,8 +258,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "refusetribute",
         tags = { "busy", "nosleep", "nofreeze" },
 
@@ -281,8 +282,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "trinkettribute",
         tags = { "busy", "nosleep", "nofreeze" },
 
@@ -339,8 +339,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "enterworld",
         tags = { "busy", "nosleep", "nofreeze" },
 
@@ -348,17 +347,17 @@ local states =
             inst.AnimState:PlayAnimation("enter")
             inst.sg.statemem.spawnpos = inst:GetPosition()
 
-            for i, v in ipairs(TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 2, nil, { "INLIMBO" }, { "CHOP_workable", "DIG_workable", "HAMMER_workable", "MINE_workable" })) do
+            for i, v in ipairs(TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 2, nil, ENTERWORLD_TARGET_CANT_TAGS, ENTERWORLD_TARGET_ONEOF_TAGS )) do
                 v.components.workable:Destroy(inst)
                 if v:IsValid() and v:HasTag("stump") then
                     v:Remove()
                 end
             end
 
-            local totoss = TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 1.5, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+            local totoss = TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 1.5, ENTERWORLD_TOSS_MUST_TAGS, ENTERWORLD_TOSS_CANT_TAGS)
 
             --toss flowers out of the way
-            for i, v in ipairs(TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 1.5, { "flower", "pickable" })) do
+            for i, v in ipairs(TheSim:FindEntities(inst.sg.statemem.spawnpos.x, 0, inst.sg.statemem.spawnpos.z, 1.5, ENTERWORLD_TOSSFLOWERS_MUST_TAGS)) do
                 local loot = v.components.pickable.product ~= nil and SpawnPrefab(v.components.pickable.product) or nil
                 if loot ~= nil then
                     loot.Transform:SetPosition(v.Transform:GetWorldPosition())
@@ -403,8 +402,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "leaveworld",
         tags = { "busy", "nosleep", "nofreeze" },
 
@@ -423,7 +421,7 @@ local states =
         events =
         {
             EventHandler("animover", function(inst)
-                if inst.AnimState:AnimDone() then 
+                if inst.AnimState:AnimDone() then
                     inst:Remove()
                 end
             end),
@@ -435,8 +433,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "sinkhole_pre",
         tags = { "busy", "attack", "nosleep", "nofreeze" },
 
@@ -462,8 +459,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "sinkhole_loop",
         tags = { "busy", "attack", "nosleep", "nofreeze" },
 
@@ -500,8 +496,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "sinkhole_pst",
         tags = { "busy", "attack", "nosleep", "nofreeze" },
 

@@ -27,11 +27,12 @@ local function attack_detach(inst, target)
 end
 
 local function work_attach(inst, target)
-    if target.components.workmultiplier ~= nil then
-        target.components.workmultiplier:AddMultiplier(ACTIONS.CHOP,   TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
-        target.components.workmultiplier:AddMultiplier(ACTIONS.MINE,   TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
-        target.components.workmultiplier:AddMultiplier(ACTIONS.HAMMER, TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
+    if target.components.workmultiplier == nil then
+        target:AddComponent("workmultiplier")
     end
+    target.components.workmultiplier:AddMultiplier(ACTIONS.CHOP,   TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
+    target.components.workmultiplier:AddMultiplier(ACTIONS.MINE,   TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
+    target.components.workmultiplier:AddMultiplier(ACTIONS.HAMMER, TUNING.BUFF_WORKEFFECTIVENESS_MODIFIER, inst)
 end
 
 local function work_detach(inst, target)
@@ -43,6 +44,7 @@ local function work_detach(inst, target)
 end
 
 local function moisture_attach(inst, target)
+    target:AddTag("moistureimmunity")
     if target.components.moisture ~= nil then
         target.components.moisture:ForceDry(true, inst)
         target.components.moisture:SetWaterproofInventory(true)
@@ -50,6 +52,7 @@ local function moisture_attach(inst, target)
 end
 
 local function moisture_detach(inst, target)
+    target:RemoveTag("moistureimmunity")
     if target.components.moisture ~= nil then
         target.components.moisture:ForceDry(false, inst)
         target.components.moisture:SetWaterproofInventory(false)
@@ -99,6 +102,18 @@ local function electric_detach(inst, target)
     if inst._onattackother ~= nil then
         inst:RemoveEventCallback("onattackother", inst._onattackother, target)
         inst._onattackother = nil
+    end
+end
+
+local function sleepless_attach(inst, target)
+    if target.components.grogginess ~= nil then
+        target.components.grogginess:AddResistanceSource(inst, TUNING.SLEEPRESISTBUFF_VALUE)
+    end
+end
+
+local function sleepless_detach(inst, target)
+    if target.components.grogginess ~= nil then
+        target.components.grogginess:RemoveResistanceSource(inst)
     end
 end
 
@@ -183,4 +198,5 @@ return MakeBuff("attack", attack_attach, nil, attack_detach, TUNING.BUFF_ATTACK_
        MakeBuff("playerabsorption", playerabsorption_attach, nil, playerabsorption_detach, TUNING.BUFF_PLAYERABSORPTION_DURATION, 1),
        MakeBuff("workeffectiveness", work_attach, nil, work_detach, TUNING.BUFF_WORKEFFECTIVENESS_DURATION, 1),
        MakeBuff("moistureimmunity", moisture_attach, nil, moisture_detach, TUNING.BUFF_MOISTUREIMMUNITY_DURATION, 2),
-       MakeBuff("electricattack", electric_attach, electric_extend, electric_detach, TUNING.BUFF_ELECTRICATTACK_DURATION, 2, { "electrichitsparks", "electricchargedfx" })
+       MakeBuff("electricattack", electric_attach, electric_extend, electric_detach, TUNING.BUFF_ELECTRICATTACK_DURATION, 2, { "electrichitsparks", "electricchargedfx" }),
+       MakeBuff("sleepresistance", sleepless_attach, nil, sleepless_detach, TUNING.SLEEPRESISTBUFF_TIME, 2)

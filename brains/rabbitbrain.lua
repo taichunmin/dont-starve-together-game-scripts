@@ -18,8 +18,8 @@ local RabbitBrain = Class(Brain, function(self, inst)
 end)
 
 local function GoHomeAction(inst)
-    if inst.components.homeseeker and 
-       inst.components.homeseeker.home and 
+    if inst.components.homeseeker and
+       inst.components.homeseeker.home and
        inst.components.homeseeker.home:IsValid() and
 	   inst.sg:HasStateTag("trapped") == false then
         return BufferedAction(inst, inst.components.homeseeker.home, ACTIONS.GOHOME)
@@ -51,7 +51,7 @@ function RabbitBrain:OnStart()
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
         RunAway(self.inst, "scarytoprey", AVOID_PLAYER_DIST, AVOID_PLAYER_STOP),
         RunAway(self.inst, "scarytoprey", SEE_PLAYER_DIST, STOP_RUN_DIST, nil, true),
-        EventNode(self.inst, "gohome", 
+        EventNode(self.inst, "gohome",
             DoAction(self.inst, GoHomeAction, "go home", true )),
         WhileNode(function() return not TheWorld.state.isday end, "IsNight",
             DoAction(self.inst, GoHomeAction, "go home", true )),

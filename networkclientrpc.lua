@@ -41,9 +41,9 @@ local function IsPointInRange(player, x, z)
     return distsq(x, z, px, pz) <= 4096
 end
 
-local function ConvertPlatformRelativePositionToAbsolutePosition(relative_x, relative_z, platform, platform_relative)    
+local function ConvertPlatformRelativePositionToAbsolutePosition(relative_x, relative_z, platform, platform_relative)
     if platform_relative then
-		if platform ~= nil then
+		if platform ~= nil and platform.Transform ~= nil then
 			local platform_x, platform_y, platform_z = platform.Transform:GetWorldPosition()
 			return relative_x + platform_x, relative_z + platform_z
 		else
@@ -173,7 +173,7 @@ local RPC_HANDLERS =
         end
     end,
 
-    ControllerActionButtonPoint = function(player, action, x, z, isreleased, noforce, mod_name, platform, platform_relative)
+    ControllerActionButtonPoint = function(player, action, x, z, isreleased, noforce, mod_name, platform, platform_relative, isspecial)
         if not (checknumber(action) and
                 checknumber(x) and
                 checknumber(z) and
@@ -181,7 +181,8 @@ local RPC_HANDLERS =
                 optbool(noforce) and
                 optstring(mod_name) and
 				optentity(platform) and
-				checkbool(platform_relative)) then
+				checkbool(platform_relative) and
+				optbool(isspecial)) then
             printinvalid("ControllerActionButtonPoint", player)
             return
         end
@@ -191,7 +192,7 @@ local RPC_HANDLERS =
 			x, z = ConvertPlatformRelativePositionToAbsolutePosition(x, z, platform, platform_relative)
 			if x ~= nil then
 				if IsPointInRange(player, x, z) then
-					playercontroller:OnRemoteControllerActionButtonPoint(action, Vector3(x, 0, z), isreleased, noforce, mod_name)
+					playercontroller:OnRemoteControllerActionButtonPoint(action, Vector3(x, 0, z), isreleased, noforce, mod_name, isspecial)
 				else
 					print("Remote controller action button point out of range")
 				end
@@ -368,11 +369,12 @@ local RPC_HANDLERS =
         end
         local playercontroller = player.components.playercontroller
         if playercontroller == nil then return end
-        if has_platform and (platform == nil or not platform:IsValid()) then return end
+        if has_platform and (platform == nil or platform.components.walkableplatform == nil) then return end
+        if platform ~= nil and not has_platform then return end
 
         playercontroller:OnRemoteStartHop(x, z, platform)
 
-    end,    
+    end,
 
     SteerBoat = function(player, dir_x, dir_z)
         if not (checknumber(dir_x) and
@@ -384,7 +386,7 @@ local RPC_HANDLERS =
         if steering_wheel_user ~= nil then
             steering_wheel_user:SteerInDir(dir_x, dir_z)
         end
-    end,    
+    end,
 
 
     StopWalking = function(player)
@@ -394,24 +396,20 @@ local RPC_HANDLERS =
         end
     end,
 
+    --"action" and "mod_name" are deprecated, but keep them for mod compatibility
     DoWidgetButtonAction = function(player, action, target, mod_name)
-        if not (checknumber(action) and
-                optentity(target) and
-                optstring(mod_name)) then
+        if not optentity(target) then
             printinvalid("DoWidgetButtonAction", player)
             return
         end
         local playercontroller = player.components.playercontroller
         if playercontroller ~= nil and playercontroller:IsEnabled() and not player.sg:HasStateTag("busy") then
-            if mod_name ~= nil then
-                action = ACTION_MOD_IDS[mod_name] ~= nil and ACTION_MOD_IDS[mod_name][action] ~= nil and ACTIONS[ACTION_MOD_IDS[mod_name][action]] or nil
-            else
-                action = ACTION_IDS[action] ~= nil and ACTIONS[ACTION_IDS[action]] or nil
-            end
-            if action ~= nil then
-                local container = target ~= nil and target.components.container or nil
-                if container == nil or container.opener == player then
-                    BufferedAction(player, target, action):Do()
+            local container = target ~= nil and target.components.container or nil
+            if container ~= nil and container:IsOpenedBy(player) then
+                local widget = container:GetWidget()
+                local buttoninfo = widget ~= nil and widget.buttoninfo or nil
+                if buttoninfo ~= nil and (buttoninfo.validfn == nil or buttoninfo.validfn(target)) and buttoninfo.fn ~= nil then
+                    buttoninfo.fn(target, player)
                 end
             end
         end
@@ -437,7 +435,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:PutOneOfActiveItemInSlot(slot)
+                    container:PutOneOfActiveItemInSlot(slot, player)
                 end
             end
         end
@@ -456,7 +454,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:PutAllOfActiveItemInSlot(slot)
+                    container:PutAllOfActiveItemInSlot(slot, player)
                 end
             end
         end
@@ -475,7 +473,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:TakeActiveItemFromHalfOfSlot(slot)
+                    container:TakeActiveItemFromHalfOfSlot(slot, player, player)
                 end
             end
         end
@@ -494,7 +492,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:TakeActiveItemFromAllOfSlot(slot)
+                    container:TakeActiveItemFromAllOfSlot(slot, player)
                 end
             end
         end
@@ -513,7 +511,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:AddOneOfActiveItemToSlot(slot)
+                    container:AddOneOfActiveItemToSlot(slot, player)
                 end
             end
         end
@@ -532,7 +530,7 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:AddAllOfActiveItemToSlot(slot)
+                    container:AddAllOfActiveItemToSlot(slot, player)
                 end
             end
         end
@@ -551,7 +549,26 @@ local RPC_HANDLERS =
             else
                 container = container.components.container
                 if container ~= nil and container:IsOpenedBy(player) then
-                    container:SwapActiveItemWithSlot(slot)
+                    container:SwapActiveItemWithSlot(slot, player)
+                end
+            end
+        end
+    end,
+
+    SwapOneOfActiveItemWithSlot = function(player, slot, container)
+        if not (checkuint(slot) and
+                optentity(container)) then
+            printinvalid("SwapOneOfActiveItemWithSlot", player)
+            return
+        end
+        local inventory = player.components.inventory
+        if inventory ~= nil then
+            if container == nil then
+                inventory:SwapOneOfActiveItemWithSlot(slot)
+            else
+                container = container.components.container
+                if container ~= nil and container:IsOpenedBy(player) then
+                    container:SwapOneOfActiveItemWithSlot(slot, player)
                 end
             end
         end
@@ -713,7 +730,7 @@ local RPC_HANDLERS =
         end
         local container = srccontainer.components.container
         if container ~= nil and container:IsOpenedBy(player) then
-            container:MoveItemFromAllOfSlot(slot, destcontainer or player)
+            container:MoveItemFromAllOfSlot(slot, destcontainer or player, player)
         end
     end,
 
@@ -726,7 +743,7 @@ local RPC_HANDLERS =
         end
         local container = srccontainer.components.container
         if container ~= nil and container:IsOpenedBy(player) then
-            container:MoveItemFromHalfOfSlot(slot, destcontainer or player)
+            container:MoveItemFromHalfOfSlot(slot, destcontainer or player, player)
         end
     end,
 
@@ -740,35 +757,29 @@ local RPC_HANDLERS =
         if builder ~= nil then
             for k, v in pairs(AllRecipes) do
                 if v.rpc_id == recipe then
-                    builder:MakeRecipeFromMenu(v, skin_index ~= nil and PREFAB_SKINS[v.name] ~= nil and PREFAB_SKINS[v.name][skin_index] or nil)
+                    builder:MakeRecipeFromMenu(v, skin_index ~= nil and PREFAB_SKINS[v.product] ~= nil and PREFAB_SKINS[v.product][skin_index] or nil)
                     return
                 end
             end
         end
     end,
 
-    MovementPredictionEnabled = function(player, target)
-        if ThePlayer ~= target then
-            print("Platform hopping disabled on: " .. target.name)
-            target.components.locomotor:SetAllowPlatformHopping(false)
-        end
-    end,    
+    MovementPredictionEnabled = function(player)
+        player.components.locomotor:SetAllowPlatformHopping(false)
+    end,
 
-    MovementPredictionDisabled = function(player, target)
-        if ThePlayer ~= target then
-            print("Platform hopping enabled on: " .. target.name)
-            target.components.locomotor:SetAllowPlatformHopping(true)
-        end    
-    end,    
+    MovementPredictionDisabled = function(player)
+        player.components.locomotor:SetAllowPlatformHopping(true)
+    end,
 
     Hop = function(player, hopper, hop_x, hop_z, other_platform)
         --print("HOP: ", hop_x, hop_z, other_platform ~= nil and other_platform.name)
-    end,       
+    end,
 
     StopHopping = function(player, hopper)
-        local playercontroller = hopper.components.playercontroller
-        playercontroller:OnRemoteStopHopping()
-    end, 
+        --local playercontroller = hopper.components.playercontroller
+        --playercontroller:OnRemoteStopHopping()
+    end,
 
     MakeRecipeAtPoint = function(player, recipe, x, z, rot, skin_index, platform, platform_relative)
         if not (checknumber(recipe) and
@@ -816,6 +827,20 @@ local RPC_HANDLERS =
         end
     end,
 
+	CannotBuild = function(player, reason)
+        if not checkstring(reason) then
+            printinvalid("CannotBuild", player)
+            return
+        end
+		local str = GetString(player, "ANNOUNCE_CANNOT_BUILD", reason, true)
+		if str ~= nil then
+			local talker = player.components.talker
+			if talker ~= nil then
+				talker:Say(str)
+			end
+		end
+	end,
+
     WakeUp = function(player)
         local playercontroller = player.components.playercontroller
         if playercontroller ~= nil and
@@ -823,6 +848,14 @@ local RPC_HANDLERS =
             player.sleepingbag ~= nil and
             player.sg:HasStateTag("sleeping") and
             (player.sg:HasStateTag("bedroll") or player.sg:HasStateTag("tent")) then
+            player:PushEvent("locomote")
+        end
+    end,
+
+    exitgym = function(player)
+        local playercontroller = player.components.playercontroller
+        if playercontroller ~= nil and
+            playercontroller:IsEnabled() then
             player:PushEvent("locomote")
         end
     end,
@@ -857,33 +890,46 @@ local RPC_HANDLERS =
         end
     end,
 
-    DoneOpenGift = function(player, usewardrobe)
-        if not optbool(usewardrobe) then
-            printinvalid("DoneOpenGift", player)
+    ClosePopup = function(player, popupcode, mod_name, ...)
+        if not (checkuint(popupcode) and
+                optstring(mod_name) and
+                GetPopupFromPopupCode(popupcode, mod_name)) then
+            printinvalid("ClosePopup", player)
             return
         end
-        local giftreceiver = player.components.giftreceiver
-        if giftreceiver ~= nil then
-            giftreceiver:OnStopOpenGift(usewardrobe)
+        local popup = GetPopupFromPopupCode(popupcode, mod_name)
+        if not popup.validaterpcfn(...) then
+            printinvalid("ClosePopup"..tostring(popup.id), player)
+        end
+        popup:Close(player, ...)
+    end,
+
+    RepeatHeldAction = function(player)
+        local playercontroller = player.components.playercontroller
+        if playercontroller then
+            playercontroller:RepeatHeldAction()
         end
     end,
 
-    CloseWardrobe = function(player, base_skin, body_skin, hand_skin, legs_skin, feet_skin)
-        if not (optstring(base_skin) and
-                optstring(body_skin) and
-                optstring(hand_skin) and
-                optstring(legs_skin) and
-                optstring(feet_skin)) then
-            printinvalid("CloseWardrobe", player)
+    ClearActionHold = function(player)
+        local playercontroller = player.components.playercontroller
+        if playercontroller then
+            playercontroller:ClearActionHold()
+        end
+    end,
+
+    GetChatHistory = function(player, last_message_hash, first_message_hash)
+        if not (checkuint(last_message_hash) and
+                optuint(first_message_hash)) then
+            printinvalid("GetChatHistory", player)
             return
         end
-        player:PushEvent("ms_closewardrobe", {
-            base = base_skin,
-            body = body_skin,
-            hand = hand_skin,
-            legs = legs_skin,
-            feet = feet_skin,
-        })
+
+        --if the player is not yet spawned, "player" will be that clients userid.
+        if not player.sent_chat_history then
+            player.sent_chat_history = true
+            ChatHistory:SendChatHistory(player.userid, last_message_hash, first_message_hash)
+        end
     end,
 }
 
@@ -897,10 +943,105 @@ for k, v in orderedPairs(RPC_HANDLERS) do
 end
 i = nil
 
+local USERID_RPCS = {}
+
 --Switch handler keys from code name to code value
 for k, v in orderedPairs(RPC) do
     RPC_HANDLERS[v] = RPC_HANDLERS[k]
     RPC_HANDLERS[k] = nil
+end
+
+--these rpc's don't need special verification because server->client communication is already trusted.
+local CLIENT_RPC_HANDLERS =
+{
+    ShowPopup = function(popupcode, mod_name, show, ...)
+        local popup = GetPopupFromPopupCode(popupcode, mod_name)
+
+        if popup then
+            popup.fn(ThePlayer, show, ...)
+        end
+    end,
+
+    LearnRecipe = function(product, ...)
+        local cookbookupdater = ThePlayer.components.cookbookupdater
+        local ingredients = {...}
+        if cookbookupdater and product and not IsTableEmpty(ingredients) then
+            cookbookupdater:LearnRecipe(product, ingredients)
+        end
+    end,
+
+    LearnFoodStats = function(product)
+        local cookbookupdater = ThePlayer.components.cookbookupdater
+        if cookbookupdater and product then
+            cookbookupdater:LearnFoodStats(product)
+        end
+    end,
+
+    LearnPlantStage = function(plant, stage)
+        local plantregistryupdater = ThePlayer.components.plantregistryupdater
+        if plantregistryupdater and plant and stage then
+            plantregistryupdater:LearnPlantStage(plant, stage)
+        end
+    end,
+
+    LearnFertilizerStage = function(fertilizer)
+        local plantregistryupdater = ThePlayer.components.plantregistryupdater
+        if plantregistryupdater and fertilizer then
+            plantregistryupdater:LearnFertilizer(fertilizer)
+        end
+    end,
+
+    TakeOversizedPicture = function(plant, weight, beardskin, beardlength)
+        local plantregistryupdater = ThePlayer.components.plantregistryupdater
+        if plantregistryupdater and plant and weight then
+            plantregistryupdater:TakeOversizedPicture(plant, weight, beardskin, beardlength)
+        end
+    end,
+
+    RecieveChatHistory = function(chat_history)
+        ChatHistory:RecieveChatHistory(chat_history)
+    end,
+
+    LearnBuilderRecipe = function(product)
+        ThePlayer:PushEvent("LearnBuilderRecipe",{recipe=product})
+    end,
+}
+
+CLIENT_RPC = {}
+
+--Generate RPC codes from table of handlers
+i = 1
+for k, v in orderedPairs(CLIENT_RPC_HANDLERS) do
+    CLIENT_RPC[k] = i
+    i = i + 1
+end
+i = nil
+
+--Switch handler keys from code name to code value
+for k, v in orderedPairs(CLIENT_RPC) do
+    CLIENT_RPC_HANDLERS[v] = CLIENT_RPC_HANDLERS[k]
+    CLIENT_RPC_HANDLERS[k] = nil
+end
+
+--these rpc's don't need special verification because server<->server communication is already trusted.
+local SHARD_RPC_HANDLERS =
+{
+}
+
+SHARD_RPC = {}
+
+--Generate RPC codes from table of handlers
+i = 1
+for k, v in orderedPairs(SHARD_RPC_HANDLERS) do
+    SHARD_RPC[k] = i
+    i = i + 1
+end
+i = nil
+
+--Switch handler keys from code name to code value
+for k, v in orderedPairs(SHARD_RPC) do
+    SHARD_RPC_HANDLERS[v] = SHARD_RPC_HANDLERS[k]
+    SHARD_RPC_HANDLERS[k] = nil
 end
 
 function SendRPCToServer(code, ...)
@@ -908,39 +1049,164 @@ function SendRPCToServer(code, ...)
     TheNet:SendRPCToServer(code, ...)
 end
 
+--SendRPCToClient(CLIENT_RPC.RPCNAME, users, ...)
+--users is either:
+--nil == all connected clients
+--userid == send to that userid
+--table == list of userids to send to
+--all users must be connected to the shard this command originated from
+function SendRPCToClient(code, ...)
+    assert(CLIENT_RPC_HANDLERS[code] ~= nil)
+    TheNet:SendRPCToClient(code, ...)
+end
+
+--SendRPCToShard(SHARD_RPC.RPCNAME, shards, ...)
+--shards is either:
+--nil == all connected shards
+--shardid == send to that shard
+--table == list of shards to send to
+function SendRPCToShard(code, ...)
+    assert(SHARD_RPC_HANDLERS[code] ~= nil)
+    TheNet:SendRPCToShard(code, ...)
+end
+
+local RPC_QUEUE_RATE_LIMIT = 20 -- Per logic tick.
+local RPC_QUEUE_RATE_LIMIT_PER_MOD = 5 -- +this for every mod RPC added.
+local RPC_Queue_Limiter = {}
+local RPC_Queue_Warned = {}
 local RPC_Queue = {}
 local RPC_Timeline = {}
+
+local RPC_Client_Queue = {}
+local RPC_Client_Timeline
+
+local RPC_Shard_Queue = {}
+local RPC_Shard_Timeline = {}
 
 function HandleRPC(sender, tick, code, data)
     local fn = RPC_HANDLERS[code]
     if fn ~= nil then
-        table.insert(RPC_Queue, { fn, sender, data, tick })
+        local senderistable = type(sender) == "table"
+        if USERID_RPCS[fn] or senderistable then
+            local userid = senderistable and sender.userid or nil
+
+            if USERID_RPCS[fn] then
+                sender = userid or sender
+            end
+
+            local limit = RPC_Queue_Limiter[sender] or 0
+            if limit < RPC_QUEUE_RATE_LIMIT then
+                RPC_Queue_Limiter[sender] = limit + 1
+                table.insert(RPC_Queue, { fn, sender, data, tick })
+            else
+                 -- This user is sending way too much for normal activity so take note of it.
+                if not RPC_Queue_Warned[sender] then
+                    RPC_Queue_Warned[sender] = true
+                    print("Rate limiting RPCs from", sender, userid, "last one being ID", tostring(code))
+                end
+            end
+        else
+            print("Invalid RPC sender: expected player, got userid")
+        end
+    else
+        print("Invalid RPC code: "..tostring(code))
+    end
+end
+
+function HandleClientRPC(tick, code, data)
+    if not ThePlayer then return end --ThePlayer being nil means all rpc's are invalid.
+    local fn = CLIENT_RPC_HANDLERS[code]
+    if fn ~= nil then
+        table.insert(RPC_Client_Queue, { fn, data, tick })
+    else
+        print("Invalid RPC code: "..tostring(code))
+    end
+end
+
+function HandleShardRPC(sender, tick, code, data)
+    local fn = SHARD_RPC_HANDLERS[code]
+    if fn ~= nil then
+        table.insert(RPC_Shard_Queue, { fn, sender, data, tick })
     else
         print("Invalid RPC code: "..tostring(code))
     end
 end
 
 function HandleRPCQueue()
-    local i = 1
-    while i <= #RPC_Queue do
-        local fn, sender, data, tick = unpack(RPC_Queue[i])
+    local RPC_Queue_new = {}
+    local RPC_Queue_len = #RPC_Queue
+    for i = 1, RPC_Queue_len do
+        local rpcdata = RPC_Queue[i]
+        local fn, sender, data, tick = unpack(rpcdata)
 
-        if not sender:IsValid() then
-            table.remove(RPC_Queue, i)
+        local limit = (RPC_Queue_Limiter[sender] or 1) - 1
+        if limit == 0 then
+            RPC_Queue_Limiter[sender] = nil
+            RPC_Queue_Warned[sender] = nil
+        else
+            RPC_Queue_Limiter[sender] = limit
+        end
+
+        if type(sender) == "table" and not sender:IsValid() then
+            -- Ignore.
         elseif RPC_Timeline[sender] == nil or RPC_Timeline[sender] == tick then
-            table.remove(RPC_Queue, i)
+            -- Invoke.
             if TheNet:CallRPC(fn, sender, data) then
                 RPC_Timeline[sender] = tick
             end
         else
+            -- Pending.
+            table.insert(RPC_Queue_new, rpcdata)
             RPC_Timeline[sender] = 0
-            i = i + 1
         end
     end
+    RPC_Queue = RPC_Queue_new
+
+    local RPC_Client_Queue_new = {}
+    local RPC_Client_Queue_len = #RPC_Client_Queue
+    for i = 1, RPC_Client_Queue_len do
+        local rpcdata = RPC_Client_Queue[i]
+        local fn, data, tick = unpack(rpcdata)
+
+        if RPC_Client_Timeline == nil or RPC_Client_Timeline == tick then
+            -- Invoke.
+            if TheNet:CallClientRPC(fn, data) then
+                RPC_Client_Timeline = tick
+            end
+        else
+            -- Pending.
+            table.insert(RPC_Client_Queue_new, rpcdata)
+            RPC_Client_Timeline = 0
+        end
+    end
+    RPC_Client_Queue = RPC_Client_Queue_new
+
+    local RPC_Shard_Queue_new = {}
+    local RPC_Shard_Queue_len = #RPC_Shard_Queue
+    for i = 1, RPC_Shard_Queue_len do
+        local rpcdata = RPC_Shard_Queue[i]
+        local fn, sender, data, tick = unpack(rpcdata)
+
+        if not Shard_IsWorldAvailable(tostring(sender)) and tostring(sender) ~= TheShard:GetShardId() then
+            -- Ignore.
+        elseif RPC_Shard_Timeline[sender] == nil or RPC_Shard_Timeline[sender] == tick then
+            -- Invoke.
+            if TheNet:CallShardRPC(fn, sender, data) then
+                RPC_Shard_Timeline[sender] = tick
+            end
+        else
+            -- Pending.
+            table.insert(RPC_Shard_Queue_new, rpcdata)
+            RPC_Shard_Timeline[sender] = 0
+        end
+    end
+    RPC_Shard_Queue = RPC_Shard_Queue_new
 end
 
 function TickRPCQueue()
     RPC_Timeline = {}
+    RPC_Client_Timeline = nil
+    RPC_Shard_Timeline = {}
 end
 
 local function __index_lower(t, k)
@@ -958,8 +1224,20 @@ end
 MOD_RPC = {}
 MOD_RPC_HANDLERS = {}
 
+CLIENT_MOD_RPC = {}
+CLIENT_MOD_RPC_HANDLERS = {}
+
+SHARD_MOD_RPC = {}
+SHARD_MOD_RPC_HANDLERS = {}
+
 setmetadata(MOD_RPC)
 setmetadata(MOD_RPC_HANDLERS)
+
+setmetadata(CLIENT_MOD_RPC)
+setmetadata(CLIENT_MOD_RPC_HANDLERS)
+
+setmetadata(SHARD_MOD_RPC)
+setmetadata(SHARD_MOD_RPC_HANDLERS)
 
 function AddModRPCHandler(namespace, name, fn)
     if MOD_RPC[namespace] == nil then
@@ -974,6 +1252,38 @@ function AddModRPCHandler(namespace, name, fn)
     MOD_RPC[namespace][name] = { namespace = namespace, id = #MOD_RPC_HANDLERS[namespace] }
 
     setmetadata(MOD_RPC[namespace][name])
+
+    RPC_QUEUE_RATE_LIMIT = RPC_QUEUE_RATE_LIMIT + RPC_QUEUE_RATE_LIMIT_PER_MOD
+end
+
+function AddClientModRPCHandler(namespace, name, fn)
+    if CLIENT_MOD_RPC[namespace] == nil then
+        CLIENT_MOD_RPC[namespace] = {}
+        CLIENT_MOD_RPC_HANDLERS[namespace] = {}
+
+        setmetadata(CLIENT_MOD_RPC[namespace])
+        setmetadata(CLIENT_MOD_RPC_HANDLERS[namespace])
+    end
+
+    table.insert(CLIENT_MOD_RPC_HANDLERS[namespace], fn)
+    CLIENT_MOD_RPC[namespace][name] = { namespace = namespace, id = #CLIENT_MOD_RPC_HANDLERS[namespace] }
+
+    setmetadata(CLIENT_MOD_RPC[namespace][name])
+end
+
+function AddShardModRPCHandler(namespace, name, fn)
+    if SHARD_MOD_RPC[namespace] == nil then
+        SHARD_MOD_RPC[namespace] = {}
+        SHARD_MOD_RPC_HANDLERS[namespace] = {}
+
+        setmetadata(SHARD_MOD_RPC[namespace])
+        setmetadata(SHARD_MOD_RPC_HANDLERS[namespace])
+    end
+
+    table.insert(SHARD_MOD_RPC_HANDLERS[namespace], fn)
+    SHARD_MOD_RPC[namespace][name] = { namespace = namespace, id = #SHARD_MOD_RPC_HANDLERS[namespace] }
+
+    setmetadata(SHARD_MOD_RPC[namespace][name])
 end
 
 function SendModRPCToServer(id_table, ...)
@@ -981,11 +1291,68 @@ function SendModRPCToServer(id_table, ...)
     TheNet:SendModRPCToServer(id_table.namespace, id_table.id, ...)
 end
 
+function SendModRPCToClient(id_table, ...)
+    assert(id_table.namespace ~= nil and CLIENT_MOD_RPC_HANDLERS[id_table.namespace] ~= nil and CLIENT_MOD_RPC_HANDLERS[id_table.namespace][id_table.id] ~= nil)
+    TheNet:SendModRPCToClient(id_table.namespace, id_table.id, ...)
+end
+
+function SendModRPCToShard(id_table, ...)
+    assert(id_table.namespace ~= nil and SHARD_MOD_RPC_HANDLERS[id_table.namespace] ~= nil and SHARD_MOD_RPC_HANDLERS[id_table.namespace][id_table.id] ~= nil)
+    TheNet:SendModRPCToShard(id_table.namespace, id_table.id, ...)
+end
+
 function HandleModRPC(sender, tick, namespace, code, data)
     if MOD_RPC_HANDLERS[namespace] ~= nil then
         local fn = MOD_RPC_HANDLERS[namespace][code]
         if fn ~= nil then
-            table.insert(RPC_Queue, { fn, sender, data, tick })
+            local senderistable = type(sender) == "table"
+            if USERID_RPCS[fn] or senderistable then
+                local userid = senderistable and sender.userid or nil
+
+                if USERID_RPCS[fn] then
+                    sender = userid or sender
+                end
+
+                local limit = RPC_Queue_Limiter[sender] or 0
+                if limit < RPC_QUEUE_RATE_LIMIT then
+                    RPC_Queue_Limiter[sender] = limit + 1
+                    table.insert(RPC_Queue, { fn, sender, data, tick })
+                else
+                     -- This user is sending way too much for normal activity so take note of it.
+                    if not RPC_Queue_Warned[sender] then
+                        RPC_Queue_Warned[sender] = true
+                        print("Rate limiting RPCs from [MOD]", sender, userid, "last one being ID", tostring(code), "of namespace", tostring(namespace))
+                    end
+                end
+            else
+                print("Invalid RPC sender: expected player, got userid")
+            end
+        else
+            print("Invalid RPC code: ", namespace, code)
+        end
+    else
+        print("Invalid RPC namespace: ", namespace, code)
+    end
+end
+
+function HandleClientModRPC(tick, namespace, code, data)
+    if CLIENT_MOD_RPC_HANDLERS[namespace] ~= nil then
+        local fn = CLIENT_MOD_RPC_HANDLERS[namespace][code]
+        if fn ~= nil then
+            table.insert(RPC_Client_Queue, { fn, data, tick })
+        else
+            print("Invalid RPC code: ", namespace, code)
+        end
+    else
+        print("Invalid RPC namespace: ", namespace, code)
+    end
+end
+
+function HandleShardModRPC(sender, tick, namespace, code, data)
+    if SHARD_MOD_RPC_HANDLERS[namespace] ~= nil then
+        local fn = SHARD_MOD_RPC_HANDLERS[namespace][code]
+        if fn ~= nil then
+            table.insert(RPC_Shard_Queue, { fn, sender, data, tick })
         else
             print("Invalid RPC code: ", namespace, code)
         end
@@ -998,8 +1365,39 @@ function GetModRPCHandler(namespace, name)
     return MOD_RPC_HANDLERS[namespace][MOD_RPC[namespace][name].id]
 end
 
+function GetClientModRPCHandler(namespace, name)
+    return CLIENT_MOD_RPC_HANDLERS[namespace][CLIENT_MOD_RPC[namespace][name].id]
+end
+
+function GetShardModRPCHandler(namespace, name)
+    return SHARD_MOD_RPC_HANDLERS[namespace][SHARD_MOD_RPC[namespace][name].id]
+end
+
 function GetModRPC(namespace, name)
     return MOD_RPC[namespace][name]
+end
+
+function GetClientModRPC(namespace, name)
+    return CLIENT_MOD_RPC[namespace][name]
+end
+
+function GetShardModRPC(namespace, name)
+    return SHARD_MOD_RPC[namespace][name]
+end
+
+function MarkUserIDRPC(namespace, name)
+    if not name then
+        name = namespace
+        namespace = nil
+    end
+
+    local fn
+    if namespace then
+        fn = GetModRPCHandler(namespace, name)
+    else
+        fn = RPC_HANDLERS[RPC[name]]
+    end
+    USERID_RPCS[fn] = true
 end
 
 --For gamelogic to deactivate world on a client when
@@ -1007,4 +1405,8 @@ end
 function DisableRPCSending()
     SendRPCToServer = function() end
     SendModRPCToServer = SendRPCToServer
+    SendRPCToClient = function() end
+    SendModRPCToClient = SendRPCToClient
+    SendRPCToShard = function() end
+    SendModRPCToShard = SendRPCToShard
 end

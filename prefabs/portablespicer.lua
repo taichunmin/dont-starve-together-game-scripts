@@ -24,6 +24,10 @@ local prefabs =
 }
 for k, v in pairs(cooking.recipes.portablespicer) do
     table.insert(prefabs, v.name)
+
+	if v.overridebuild then
+        table.insert(assets, Asset("ANIM", "anim/"..v.overridebuild..".zip"))
+	end
 end
 
 local prefabs_item =
@@ -109,7 +113,7 @@ local function onopen(inst)
 end
 
 local function onclose(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         if not inst.components.stewer:IsCooking() then
             inst.AnimState:PlayAnimation("close")
             inst.SoundEmitter:KillSound("snd")
@@ -146,7 +150,8 @@ local function ShowProduct(inst)
         if IsModCookingProduct(inst.prefab, inst.components.stewer.product) then
             inst.AnimState:OverrideSymbol("swap_cooked", product, product)
         else
-            inst.AnimState:OverrideSymbol("swap_cooked", "cook_pot_food", product)
+            local symbol_override_build = (recipe ~= nil and recipe.overridebuild) or "cook_pot_food"
+            inst.AnimState:OverrideSymbol("swap_cooked", symbol_override_build, product)
         end
     end
 end
@@ -162,14 +167,14 @@ local function donecookfn(inst)
 end
 
 local function continuedonefn(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("idle_full")
         ShowProduct(inst)
     end
 end
 
 local function continuecookfn(inst)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("cooking_loop", true)
         inst.SoundEmitter:KillSound("snd")
         inst.SoundEmitter:PlaySound("dontstarve/common/together/portable/spicer/cooking_LP", "snd")
@@ -215,8 +220,8 @@ local function OnBurnt(inst)
     if inst.components.workable ~= nil then
         inst:RemoveComponent("workable")
     end
-    if inst.components.portablecookware ~= nil then
-        inst:RemoveComponent("portablecookware")
+    if inst.components.portablestructure ~= nil then
+        inst:RemoveComponent("portablestructure")
     end
     inst.persists = false
     inst:AddTag("FX")
@@ -258,8 +263,8 @@ local function fn()
         return inst
     end
 
-    inst:AddComponent("portablecookware")
-    inst.components.portablecookware:SetOnDismantleFn(OnDismantle)
+    inst:AddComponent("portablestructure")
+    inst.components.portablestructure:SetOnDismantleFn(OnDismantle)
 
     inst:AddComponent("stewer")
     inst.components.stewer.keepspoilage = true
@@ -274,6 +279,8 @@ local function fn()
     inst.components.container:WidgetSetup("portablespicer")
     inst.components.container.onopenfn = onopen
     inst.components.container.onclosefn = onclose
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
@@ -293,7 +300,7 @@ local function fn()
     inst.components.burnable:SetFXLevel(2)
     inst.components.burnable:SetOnBurntFn(OnBurnt)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     return inst

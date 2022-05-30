@@ -7,7 +7,7 @@ MOD_API_VERSION = 10
 
 -----------------------------------------------------------------------------------------------
 -- Last Release ID added is the current
--- This is to allow modders to cleanly support features/prefabs that are currently in beta, without crashing when running on the live branch. 
+-- This is to allow modders to cleanly support features/prefabs that are currently in beta, without crashing when running on the live branch.
 -- When the release id goes to the live branch, no changes will need to be made to the mod.
 -- Test 'if CurrentRelease.GreaterOrEqualTo("R##_ANR_XXX") then' to see if a feature supported on the branch the player currently running.
 AddModReleaseID( "R01_ANR_PART1" )
@@ -18,10 +18,24 @@ AddModReleaseID( "R05_ANR_HERDMENTALITY" )
 AddModReleaseID( "R06_ANR_AGAINSTTHEGRAIN" )
 AddModReleaseID( "R07_ANR_HEARTOFTHERUINS" )
 AddModReleaseID( "R08_ROT_TURNOFTIDES" )
+AddModReleaseID( "R09_ROT_SALTYDOG" )
+AddModReleaseID( "R09_ROT_HOOKLINEANDINKER" )
+AddModReleaseID( "R11_ROT_SHESELLSSEASHELLS" )
+AddModReleaseID( "R12_ROT_TROUBLEDWATERS" )
+AddModReleaseID( "R13_ROT_FORGOTTENKNOWLEDGE" )
+AddModReleaseID( "R14_FARMING_REAPWHATYOUSOW" )
+AddModReleaseID( "R15_QOL_WORLDSETTINGS" )
+AddModReleaseID( "R16_ROT_MOONSTORMS" )
+AddModReleaseID( "R17_WATERLOGGED" )
+AddModReleaseID( "R18_QOL_SERVERPAUSING" )
+AddModReleaseID( "R19_REFRESH_WOLFGANG" )
+AddModReleaseID( "R20_QOL_CRAFTING4LIFE" )
+AddModReleaseID( "R21_REFRESH_WX78" )
 
 -----------------------------------------------------------------------------------------------
 
 MOD_AVATAR_LOCATIONS = { Default = "images/avatars/" }
+MOD_CRAFTING_AVATAR_LOCATIONS = { Default = "images/crafting_menu_avatars/" }
 --Add your avatar atlas locations for each prefab if you don't want to use the default mod avatar location
 
 local function VisitModForums()
@@ -59,7 +73,7 @@ function AreAnyClientModsEnabled()
 			return true
 		end
 	end
-	
+
 	return false
 end
 
@@ -99,15 +113,16 @@ function GetEnabledModNamesDetailed() --just used for callstack reporting
 end
 
 function GetModVersion(mod_name, mod_info_use)
+	KnownModIndex:TryLoadMod(mod_name)
 	if mod_info_use == "update_mod_info" then
 		KnownModIndex:UpdateSingleModInfo(mod_name)
 	end
 	local modinfo = KnownModIndex:GetModInfo(mod_name)
 	if modinfo ~= nil and modinfo.version ~= nil then
-		return modinfo.version 
+		return modinfo.version
 	else
 		return ""
-	end	
+	end
 end
 
 function GetEnabledModsModInfoDetails()
@@ -139,13 +154,13 @@ function GetEnabledServerModsConfigData()
 			if config and type(config) == "table" then
 				for i,v in pairs(config) do
 			  		if v.saved ~= nil then
-						config_data[v.name] = v.saved 
-					else 
+						config_data[v.name] = v.saved
+					else
 						config_data[v.name] = v.default
 					end
 				end
 			end
-	
+
 			mods_config_data[mod_name] = config_data
 		end
 	end
@@ -158,7 +173,7 @@ local runmodfn = function(fn,mod,modtype)
 		if fn then
 			local status, r = xpcall( function() return fn(unpack(arg)) end, debug.traceback)
 			if not status then
-				print("error calling "..modtype.." in mod "..ModInfoname(mod.modname)..": \n"..r)
+				print("error calling "..modtype.." in mod "..ModInfoname(mod.modname)..": \n"..(r or ""))
 				ModManager:RemoveBadMod(mod.modname,r)
 				ModManager:DisplayBadMods()
 			else
@@ -194,7 +209,7 @@ function ModWrangler:GetEnabledServerModTags()
 				end
 		end
 	end
-	return tags	
+	return tags
 end
 
 function ModWrangler:GetEnabledServerModNames()
@@ -219,7 +234,7 @@ end
 
 function ModWrangler:GetServerModsNames()
 	if TheWorld.ismastersim then
-		return self:GetEnabledServerModNames() 
+		return self:GetEnabledServerModNames()
 	else
 		if self.servermods == nil then
 			self.servermods = TheNet:GetServerModNames()
@@ -258,12 +273,12 @@ function ModWrangler:GetModRecords()
 	return self.records
 end
 
-function CreateEnvironment(modname, isworldgen)
+function CreateEnvironment(modname, isworldgen, isfrontend)
 
 	local modutil = require("modutil")
-    require("map/lockandkey")
+	require("map/lockandkey")
 
-	local env = 
+	local env =
 	{
         -- lua
 		pairs = pairs,
@@ -274,12 +289,14 @@ function CreateEnvironment(modname, isworldgen)
 		type = type,
 		string = string,
 		tostring = tostring,
+		require = require,
 		Class = Class,
 
         -- runtime
-        TUNING=TUNING,
+		TUNING=TUNING,
 
         -- worldgen
+		LEVELCATEGORY = LEVELCATEGORY,
         GROUND = GROUND,
         LOCKS = LOCKS,
         KEYS = KEYS,
@@ -314,7 +331,7 @@ function CreateEnvironment(modname, isworldgen)
         end
 	end
 
-	modutil.InsertPostInitFunctions(env, isworldgen)
+	modutil.InsertPostInitFunctions(env, isworldgen, isfrontend)
 
 	return env
 end
@@ -326,16 +343,16 @@ function ModWrangler:LoadServerModsFile()
 	local function ServerModCollectionSetup(collection_id)
 		TheNet:ServerModCollectionSetup(collection_id)
 	end
-	
+
 	local env = {
 		ServerModSetup = ServerModSetup,
 		ServerModCollectionSetup = ServerModCollectionSetup,
 	}
 
 	KnownModIndex:UpdateModInfo() --we have to update the modinfo so that we have the correct mod versions
-	
+
 	TheNet:BeginServerModSetup()
-	
+
 	local filename = MODS_ROOT
 	if DIST_PLATFORM == "Rail" then
 		filename = filename.."dedicated_server_mods_setup_rail.lua"
@@ -351,7 +368,7 @@ function ModWrangler:LoadServerModsFile()
 			print("########################################################")
 			Shutdown()
 		end
-			
+
 		if type(fn)=="string" then
 			mods_err_fn(fn)
 		else
@@ -359,7 +376,7 @@ function ModWrangler:LoadServerModsFile()
 			xpcall( fn, mods_err_fn )
 		end
     end
-	
+
 	TheNet:DownloadServerMods()
 end
 
@@ -382,27 +399,38 @@ function ModWrangler:FrontendLoadMod(modname)
     KnownModIndex:LoadModConfigurationOptions(modname, false)
 
     local initenv = KnownModIndex:GetModInfo(modname)
-    local env = CreateEnvironment(modname,  self.worldgen)
-    env.modinfo = initenv
+	local env = CreateEnvironment(modname,  self.worldgen)
+	local frontend_env = CreateEnvironment(modname,  self.worldgen, true)
 
-    local loadmsg = "Fontend-Loading mod: "..ModInfoname(modname).." Version:"..tostring(env.modinfo.version)
+	env.modinfo = deepcopy(initenv)
+	frontend_env.modinfo = initenv
+
+    local loadmsg = "Fontend-Loading mod: "..ModInfoname(modname).." Version:"..tostring(initenv.version)
     if initenv.modinfo_message and initenv.modinfo_message ~= "" then
         loadmsg = loadmsg .. " ("..initenv.modinfo_message..")"
     end
     print(loadmsg)
 
     local oldpath = package.path
-    package.path = MODS_ROOT..env.modname.."\\scripts\\?.lua;"..package.path
-    self.currentlyloadingmod = env.modname
+	package.path = MODS_ROOT..modname.."\\scripts\\?.lua;"..package.path
+	--intentionally no manifest file, we don't want to load the file up, when basicaly every file will work for the first asset search path optimization anyway.
+	table.insert(package.assetpath, {path = MODS_ROOT..modname.."\\"})
+
+	self.currentlyloadingmod = modname
+
     -- Only worldgenmain, to populate the presets panel etc.
-    self:InitializeModMain(env.modname, env, "modworldgenmain.lua", true)
+	self:InitializeModMain(modname, frontend_env, "modservercreationmain.lua", true)
+	self:InitializeModMain(modname, env, "modworldgenmain.lua", true)
+
     self.currentlyloadingmod = nil
     package.path = oldpath
+	table.remove(package.assetpath)
 end
 
 function ModWrangler:FrontendUnloadMod(modname)
     print(string.format("Frontend-Unloading mod '%s'.", modname or "all"))
-    local Levels = require"map/levels"
+	local Levels = require"map/levels"
+	local Customize = require"map/customize"
     local TaskSets = require"map/tasksets"
     local Tasks = require"map/tasks"
     local Rooms = require"map/rooms"
@@ -411,10 +439,13 @@ function ModWrangler:FrontendUnloadMod(modname)
     TaskSets.ClearModData(modname)
     Tasks.ClearModData(modname)
     Rooms.ClearModData(modname)
-    StartLocations.ClearModData(modname)
+	StartLocations.ClearModData(modname)
+	Customize.ClearModData(modname)
+	KnownModIndex:ClearModDependencies(modname)
+	ModUnloadFrontEndAssets(modname)
 end
 
-function ModWrangler:LoadMods(worldgen)	
+function ModWrangler:LoadMods(worldgen)
 	if not MODS_ENABLED then
 		return
 	end
@@ -427,29 +458,36 @@ function ModWrangler:LoadMods(worldgen)
 
 	local mod_overrides = {}
 	if not worldgen then
-		
+
 		if IsInFrontEnd() then
 			--print("~~~~~~~~~~~~~~~~~~ Disable server mods and clear temp mod flags ~~~~~~~~~~~~~~~~~~ ")
 			KnownModIndex:ClearAllTempModFlags() --clear all old temp mod flags when the game starts incase someone killed the process before disconnecting
 			self:DisableAllServerMods()
 		end
-		
+
 		--print( "### LoadMods for game ###" )
 		KnownModIndex:UpdateModInfo()
 		mod_overrides = KnownModIndex:LoadModOverides()
 		KnownModIndex:ApplyEnabledOverrides(mod_overrides)
 	end
-	
+
 	local moddirs = KnownModIndex:GetModsToLoad(self.worldgen)
-	
+
 	for i,modname in ipairs(moddirs) do
 		if self.worldgen == false or (self.worldgen == true and KnownModIndex:IsModCompatibleWithMode(modname)) then
 			table.insert(self.modnames, modname)
 
 			if self.worldgen == false then
 				-- Make sure we load the config data before the mod (but not during worldgen)
-				KnownModIndex:LoadModConfigurationOptions(modname, not TheNet:GetIsServer())
-				KnownModIndex:ApplyConfigOptionOverrides(mod_overrides)
+				if TheNet:GetIsServer() and not TheNet:IsDedicated() then
+					local options = KnownModIndex:LoadModConfigurationOptions(modname, false)
+
+					KnownModIndex:SetTempModConfigData({[modname] = options})
+
+					KnownModIndex:LoadModConfigurationOptions(modname, true)
+				else
+					KnownModIndex:LoadModConfigurationOptions(modname, not TheNet:GetIsServer())
+				end
 			end
 
 			local initenv = KnownModIndex:GetModInfo(modname)
@@ -464,6 +502,7 @@ function ModWrangler:LoadMods(worldgen)
 			print(loadmsg)
 		end
 	end
+	KnownModIndex:ApplyConfigOptionOverrides(mod_overrides)
 
 	-- Sort the mods by priority, so that "library" mods can load first
 	local function modPrioritySort(a,b)
@@ -480,9 +519,19 @@ function ModWrangler:LoadMods(worldgen)
 	for i,mod in ipairs(self.mods) do
 		table.insert(self.enabledmods, mod.modname)
 		package.path = MODS_ROOT..mod.modname.."\\scripts\\?.lua;"..package.path
+		local manifest
+		--manifests are on by default for workshop mods, off by default for local mods.
+		--manifests can be toggled on and off in modinfo with forcemanifest = false or forcemanifest = true
+		if((mod.modinfo.forcemanifest == nil and IsWorkshopMod(mod.modname)) or
+			(mod.modinfo.forcemanifest ~= nil and mod.modinfo.forcemanifest)) then
+			ManifestManager:LoadModManifest(mod.modname, mod.modinfo.version)
+			manifest = mod.modname
+		end
+		table.insert(package.assetpath, {path = MODS_ROOT..mod.modname.."\\", manifest = manifest})
+
         self.currentlyloadingmod = mod.modname
 		self:InitializeModMain(mod.modname, mod, "modworldgenmain.lua")
-		if not self.worldgen then 
+		if not self.worldgen then
 			-- worldgen has to always run (for customization screen) but modmain can be
 			-- skipped for worldgen. This reduces a lot of issues with missing globals.
 			self:InitializeModMain(mod.modname, mod, "modmain.lua")
@@ -505,7 +554,7 @@ function ModWrangler:InitializeModMain(modname, env, mainfile, safe)
 		print("Mod: "..ModInfoname(modname), "  Mod had no "..mainfile..". Skipping.")
 		return true
 	else
-		
+
 		local status = nil
 		local r = nil
 		if safe then
@@ -540,8 +589,8 @@ function ModWrangler:DisplayBadMods()
 		end
 		return
 	end
-	
-			
+
+
 	-- If the frontend isn't ready yet, just hold onto this until we can display it.
 
 	if #self.failedmods > 0 then
@@ -557,7 +606,7 @@ function ModWrangler:DisplayBadMods()
 	if TheFrontEnd then
 		for k,badmod in ipairs(self.failedmods) do
 			SetGlobalErrorWidget(
-					STRINGS.UI.MAINSCREEN.MODFAILTITLE, 
+					STRINGS.UI.MAINSCREEN.MODFAILTITLE,
 					STRINGS.UI.MAINSCREEN.MODFAILDETAIL.." "..KnownModIndex:GetModFancyName(badmod.name).."\n"..badmod.error.."\n",
 					{
 						{text=STRINGS.UI.MAINSCREEN.SCRIPTERRORQUIT, cb = function() TheSim:ForceAbort() end},
@@ -591,17 +640,17 @@ function ModWrangler:RegisterPrefabs()
 		mod.RegisterPrefabs = RegisterPrefabs
 		mod.Prefabs = {}
 
-		print("Mod: "..ModInfoname(mod.modname), "Registering prefabs")
+		print("Mod: "..ModInfoname(modname), "Registering prefabs")
 
 		-- We initialize the prefabs in the sandbox and collect all the created prefabs back
 		-- into the main world.
 		if mod.PrefabFiles then
-			for i,prefab_path in ipairs(mod.PrefabFiles) do
-				print("Mod: "..ModInfoname(mod.modname), "  Registering prefab file: prefabs/"..prefab_path)
-				local ret = runmodfn( mod.LoadPrefabFile, mod, "LoadPrefabFile" )("prefabs/"..prefab_path)
+			for _, prefab_path in ipairs(mod.PrefabFiles) do
+				print("Mod: "..ModInfoname(modname), "  Registering prefab file: prefabs/"..prefab_path)
+				local ret = runmodfn( mod.LoadPrefabFile, mod, "LoadPrefabFile" )("prefabs/"..prefab_path, nil, MODS_ROOT..modname.."/")
 				if ret then
-					for i,prefab in ipairs(ret) do
-						print("Mod: "..ModInfoname(mod.modname), "    "..prefab.name)
+					for _, prefab in ipairs(ret) do
+						print("Mod: "..ModInfoname(modname), "    "..prefab.name)
 						mod.Prefabs[prefab.name] = prefab
 					end
 				end
@@ -614,16 +663,14 @@ function ModWrangler:RegisterPrefabs()
 			Prefabs[name] = prefab -- copy the prefabs back into the main environment
 		end
 
-		print("Mod: "..ModInfoname(mod.modname), "  Registering default mod prefab")
+		print("Mod: "..ModInfoname(modname), "  Registering default mod prefab")
 
-        if PLATFORM == "PS4" then
-            package.path = MODS_ROOT..mod.modname..package.path
-        end            
-		RegisterPrefabs( Prefab("MOD_"..mod.modname, nil, mod.Assets, prefabnames, true) )
+		local pref = Prefab("MOD_"..modname, nil, mod.Assets, prefabnames, true)
+		pref.search_asset_first_path = MODS_ROOT..modname.."/"
+		RegisterSinglePrefab(pref)
 
-		local modname = "MOD_"..mod.modname
-		TheSim:LoadPrefabs({modname})
-		table.insert(self.loadedprefabs, modname)
+		TheSim:LoadPrefabs({pref.name})
+		table.insert(self.loadedprefabs, pref.name)
 	end
 end
 
@@ -636,7 +683,7 @@ function ModWrangler:GetUnloadPrefabsData()
     local data = {}
     for i, modname in ipairs(self.loadedprefabs) do
         table.insert(data, {
-            infoname = ModInfoname(modname),
+            infoname = ModInfoname(string.sub(modname, 5)),
             name = modname,
         })
     end
@@ -647,6 +694,7 @@ function ModWrangler:UnloadPrefabsFromData(data)
     for i, v in ipairs(data) do
         print("unloading prefabs for mod "..v.infoname)
         TheSim:UnloadPrefabs({ v.name })
+		ManifestManager:UnloadModManifest(string.sub(v.name, 5))
     end
 end
 
@@ -678,7 +726,7 @@ function ModWrangler:SetPostEnv()
 				for i,modfn in ipairs(mod.postinitfns.GamePostInit) do
 					runmodfn( modfn, mod, "gamepostinit" )()
 				end
-	
+
 				forcemodnames = forcemodnames.."\""..KnownModIndex:GetModFancyName(mod.modname).."\" "
 			elseif KnownModIndex:IsModEnabled(mod.modname) then
 				modprint("@ENABLED")
@@ -716,12 +764,12 @@ function ModWrangler:SetPostEnv()
 		moddetail = moddetail.. STRINGS.UI.MAINSCREEN.FORCEMODDETAIL.." "..forcemodnames.."\n\n"
 	end
 
-	if (modnames ~= "" or newmodnames ~= "" or failedmodnames ~= "" or forcemodnames ~= "")  and TheSim:ShouldWarnModsLoaded() then
+	if (modnames ~= "" or newmodnames ~= "" or failedmodnames ~= "" or forcemodnames ~= "")  and TheSim:ShouldWarnModsLoaded() and Profile:GetModsWarning() then
 	--if (#self.enabledmods > 0)  and TheSim:ShouldWarnModsLoaded() then
 		if not DISABLE_MOD_WARNING and IsInFrontEnd() then
 			TheFrontEnd:PushScreen(
 				ModWarningScreen(
-					STRINGS.UI.MAINSCREEN.MODTITLE, 
+					STRINGS.UI.MAINSCREEN.MODTITLE,
 					moddetail,
 					{
 						{text=STRINGS.UI.MAINSCREEN.TESTINGYES, cb = function() TheFrontEnd:PopScreen() end},
@@ -733,12 +781,12 @@ function ModWrangler:SetPostEnv()
 																		end)
 																	end},
 						{text=STRINGS.UI.MAINSCREEN.MODFORUMS, nopop=true, cb = VisitModForums }
-					}))
+					}, nil, nil, nil, true))
 		end
 	elseif KnownModIndex:WasLoadBad() then
 		TheFrontEnd:PushScreen(
 			ModWarningScreen(
-				STRINGS.UI.MAINSCREEN.MODSBADTITLE, 
+				STRINGS.UI.MAINSCREEN.MODSBADTITLE,
 				STRINGS.UI.MAINSCREEN.MODSBADLOAD,
 				{
 					{text=STRINGS.UI.MAINSCREEN.TESTINGYES, cb = function() TheFrontEnd:PopScreen() end},
@@ -847,7 +895,7 @@ function ModWrangler:StartVersionChecking()
                 local modinfo = KnownModIndex:GetModInfo(mod_name)
                 if modinfo.all_clients_require_mod then
                     --print("adding mod to verify", mod_name)
-                    table.insert(mods_to_verify, { name = mod_name, version = modinfo.version })
+                    table.insert(mods_to_verify, { name = mod_name, version = modinfo.version, version_compatible = modinfo.version_compatible })
                 end
             end
         end
@@ -861,7 +909,7 @@ end
 function ModWrangler:GetLinkForMod(mod_name)
 	local url = nil
 	local is_generic_url = false
-		
+
 	if PLATFORM == "WIN32_RAIL" then
 		local is_known = KnownModIndex:GetModInfo(mod_name)
 		if is_known and IsWorkshopMod(mod_name) then

@@ -21,7 +21,7 @@ local display_rows = 5
 
 local DISABLE = 0
 local ENABLE = 1
-    
+
 local mid_col = RESOLUTION_X*.07
 local left_col = -RESOLUTION_X*.3
 local right_col = RESOLUTION_X*.37
@@ -86,9 +86,9 @@ local ModsScreen = Class(Screen, function(self, prev_screen)
 
 	self.mainmenu = self.root:AddChild(Menu(nil, 0, true))
     self.mainmenu:SetPosition(mid_col, 2, 0)
-    
+
 	self.applybutton = self.mainmenu:AddCustomItem(TEMPLATES.Button(STRINGS.UI.MODSSCREEN.APPLY, function() self:Apply() end), Vector3(223, -RESOLUTION_Y*.5 + BACK_BUTTON_Y - 8,0))
-	
+
 	self.modconfigbutton = self.mainmenu:AddCustomItem(TEMPLATES.IconButton("images/button_icons.xml", "configure_mod.tex", STRINGS.UI.MODSSCREEN.CONFIGUREMOD, false, false, function() self:ConfigureSelectedMod() end), Vector3(148, -230, 0))
 	self.modconfigable = false
 
@@ -98,7 +98,7 @@ local ModsScreen = Class(Screen, function(self, prev_screen)
 	self.modlinkbutton = self.mainmenu:AddCustomItem(TEMPLATES.IconButton("images/button_icons.xml", "more_info.tex", STRINGS.UI.MODSSCREEN.MODLINK_MOREINFO, false, false, function() self:ModLinkCurrent() end), Vector3(279, -230, 0))
 
 	self.mainmenu:MoveToFront()
-	
+
 	self.modtypetitle = self.optionschildren:AddChild(Text(BUTTONFONT, 37))
 	self.modtypetitle:SetHAlign(ANCHOR_MIDDLE)
 	self.modtypetitle:SetPosition(0, 240, 0)
@@ -139,10 +139,10 @@ local ModsScreen = Class(Screen, function(self, prev_screen)
 	    local w,h = self.controller_out_of_date.label:GetRegionSize()
 	    self.controller_out_of_date.label:SetPosition(-w + 50, 3)
     end
-    
+
 	self.onlinestatus = self.root:AddChild(OnlineStatus())
 	self.cancelbutton = self.root:AddChild(TEMPLATES.BackButton(function() self:Cancel() end))
-		
+
 	self.currentmodtype = "client"
     --Reminder to DON'T initialize these!
 	----self.modnames_client = {}
@@ -150,7 +150,7 @@ local ModsScreen = Class(Screen, function(self, prev_screen)
 	----self.modnames_client_dl = {}
 	----self.modnames_server_dl = {}
     --
-	
+
 	self:StartWorkshopUpdate()
 
 	self.default_focus = self.servermodsbutton
@@ -181,7 +181,7 @@ function ModsScreen:OnBecomeActive()
 			self.modlinks[1]:SetFocus()
 		end
 	else
-		self.mainmenu:SetFocus()    
+		self.mainmenu:SetFocus()
 	end
 end
 
@@ -197,7 +197,7 @@ function ModsScreen:GenerateRandomPicks(num, numrange)
 	return picks
 end
 
-function ModsScreen:OnStatsQueried( result, isSuccessful, resultCode )	
+function ModsScreen:OnStatsQueried( result, isSuccessful, resultCode )
 	if not (self.inst:IsValid() and self:IsVisible()) then
 		return
 	end
@@ -212,7 +212,7 @@ function ModsScreen:OnStatsQueried( result, isSuccessful, resultCode )
 
 	for i = 1, #self.modlinks do
 		local title = jsonresult["modnames"][randomPicks[i]]
-		if title then 
+		if title then
 			local url = jsonresult["modlinks"][title]
 			title = string.gsub(title, "(ws%-)", "")
 			if string.len(title) > 25 then
@@ -242,18 +242,18 @@ function ModsScreen:CreateTopModsPanel()
 	self.topmodsbg = self.topmods:AddChild( Image( "images/fepanels.xml", "panel_topmods.tex" ) )
 	self.topmodsbg:SetScale(.8,.8,1)
 	self.topmodsbg:SetPosition(0, 10)
-	
+
 	self.topmodsgreybg = self.topmods:AddChild( Image( "images/frontend.xml", "submenu_greybox.tex") )
 	self.topmodsgreybg:SetScale(.6, .8, 1)
 	self.topmodsgreybg:SetPosition(0, 0)
-	self.topmodsgreybg:SetTint(0.7,0.7,0.7,1)	
+	self.topmodsgreybg:SetTint(0.7,0.7,0.7,1)
 
     self.morebutton = self.topmods:AddChild(TEMPLATES.Button(STRINGS.UI.MODSSCREEN.MOREMODS, function() self:MoreWorkshopMods() end))
     self.morebutton:SetPosition(Vector3(0,-230,0))
     self.morebutton:SetScale(.6)
 
     local region_size = 160
-  
+
     self.title = self.topmods:AddChild(Text(TITLEFONT, 36))
     self.title:SetPosition(Vector3(0,170,0))
     self.title:SetRegionSize(region_size, 70)
@@ -261,7 +261,7 @@ function ModsScreen:CreateTopModsPanel()
     self.title:SetString(STRINGS.UI.MODSSCREEN.TOPMODS)
 
 	self.modlinks = {}
-	
+
 	local yoffset = 120
 	for i = 1, 5 do
 		local modlink = self.topmods:AddChild(TextButton("images/ui.xml", "blank.tex","blank.tex","blank.tex","blank.tex"))
@@ -275,8 +275,8 @@ function ModsScreen:CreateTopModsPanel()
 		modlink:SetTextFocusColour(1,1,1,1)
 	    table.insert(self.modlinks, modlink)
 	    yoffset = yoffset - 45
-	end 
-    
+	end
+
 	self.featuredtitle = self.topmods:AddChild(Text(TITLEFONT, 36))
 	self.featuredtitle:SetRegionSize( region_size, 70 )
     self.featuredtitle:SetHAlign(ANCHOR_MIDDLE)
@@ -286,7 +286,7 @@ function ModsScreen:CreateTopModsPanel()
     self.featuredtitleunderline = self.topmods:AddChild( Image( "images/ui.xml", "line_horizontal_white.tex") )
 	self.featuredtitleunderline:SetScale(.8, 1, 1)
 	self.featuredtitleunderline:SetPosition(0, 150)
-    
+
 	self.featuredbutton = self.topmods:AddChild(TextButton("images/ui.xml", "blank.tex","blank.tex","blank.tex","blank.tex"))
     self.featuredbutton:SetPosition(Vector3(3,-170,0))
     self.featuredbutton.text:SetRegionSize(region_size, 70)
@@ -305,8 +305,8 @@ end
 function ModsScreen:DisableConfigButton(modWidget)
 	self.modconfigable = false
 
-	if self.modconfigbutton then 
-		self.modconfigbutton:Select() 
+	if self.modconfigbutton then
+		self.modconfigbutton:Select()
 		self.modconfigbutton:SetHoverText(STRINGS.UI.MODSSCREEN.NOCONFIG)
 	end
 
@@ -320,8 +320,8 @@ end
 function ModsScreen:EnableConfigButton(modWidget)
 	self.modconfigable = true
 
-	if self.modconfigbutton then 
-		self.modconfigbutton:Unselect() 
+	if self.modconfigbutton then
+		self.modconfigbutton:Unselect()
 		self.modconfigbutton:SetHoverText(STRINGS.UI.MODSSCREEN.CONFIGUREMOD)
 	end
 
@@ -342,28 +342,28 @@ function ModsScreen:DisableUpdateButton(mode)
 	else
 		self.modupdatebutton:SetHoverText(STRINGS.UI.MODSSCREEN.UPDATINGMOD)
 	end
-	
+
 	self:DoFocusHookups()
 end
 
 function ModsScreen:EnableUpdateButton(idx)
 	self.modupdateable = true
 
-	self.modupdatebutton:Unselect() 
+	self.modupdatebutton:Unselect()
 	self.modupdatebutton:SetHoverText(STRINGS.UI.MODSSCREEN.UPDATEMOD)
-	
+
 	self:DoFocusHookups()
 end
 
 function ModsScreen:CreateDetailPanel()
 	if self.detailpanel then
-		self.detailpanel:KillAllChildren()		
+		self.detailpanel:KillAllChildren()
 		self.detailpanel:Kill()
 	end
 
 	self.detailpanel = self.optionschildren:AddChild(Widget("detailpanel"))
     self.detailpanel:SetPosition(75,0,0)
-	
+
 	local num_mods = 0
 	if self.currentmodtype == "client" then num_mods = #self.modnames_client else num_mods = #self.modnames_server end
 
@@ -415,24 +415,24 @@ function ModsScreen:CreateDetailPanel()
 		self.detaildesc:SetPosition(80, -8, 0)
 		self.detaildesc:SetRegionSize( 400, 165 )
 		self.detaildesc:EnableWordWrap(true)
-		
+
 		self:DisableConfigButton()
 		self:DisableUpdateButton("uptodate")
-		self.modlinkbutton:SetHoverText(STRINGS.UI.MODSSCREEN.MORE_MODS)
+		self.modlinkbutton:ClearHoverText()
 		self.modlinkbutton:Unselect()
 	end
-	
+
 	self.mainmenu:MoveToFront()
 end
 
 function ModsScreen:StartWorkshopUpdate()
 	local linkpref = (PLATFORM == "WIN32_STEAM" and "external") or "klei"
-	TheSim:QueryStats( '{ "req":"modrank", "field":"Session.Loads.Mods.list", "fieldop":"unwind", "linkpref":"'..linkpref..'", "limit": 20}', 
+	TheSim:QueryStats( '{ "req":"modrank", "field":"Session.Loads.Mods.list", "fieldop":"unwind", "linkpref":"'..linkpref..'", "limit": 20}',
 		function(result, isSuccessful, resultCode) self:OnStatsQueried(result, isSuccessful, resultCode) end)
-		
+
 	self:UpdateForWorkshop()
-	self.updatetask = scheduler:ExecutePeriodic( 1, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
-	
+	self.updatetask = staticScheduler:ExecutePeriodic( 1, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
+
 end
 
 local function ModNameVersionTableContains( modnames_versions, modname )
@@ -493,12 +493,12 @@ function ModsScreen:UpdateForWorkshop()
 		for k,v in pairs( curr_modnames_server ) do
 			v.version = IsWorkshopMod(v.modname) and TheSim:GetWorkshopVersion(v.modname) or ""
 		end
-		
+
 		--check it see if anything changed
 		local need_to_udpate = false
 		if self.modnames_client == nil or
 			not CompareModnamesTable( self.modnames_client, curr_modnames_client ) or
-			not CompareModnamesTable( self.modnames_server, curr_modnames_server ) or 
+			not CompareModnamesTable( self.modnames_server, curr_modnames_server ) or
 			not CompareModDLTable( self.modnames_client_dl, curr_modnames_client_dl ) or
 			not CompareModDLTable( self.modnames_server_dl, curr_modnames_server_dl ) then
 			need_to_udpate = true
@@ -513,20 +513,20 @@ function ModsScreen:UpdateForWorkshop()
 			return
 		end
 		--print("### Do UpdateForWorkshop refresh")
-		
+
 		self.modnames_client = curr_modnames_client
 		self.modnames_server = curr_modnames_server
 		self.modnames_client_dl = curr_modnames_client_dl
 		self.modnames_server_dl = curr_modnames_server_dl
 
 		self:ReloadModInfoPrefabs()
-		
-		if #self.modnames_client == 0 
-			and #self.modnames_server == 0 
+
+		if #self.modnames_client == 0
+			and #self.modnames_server == 0
 			and #self.modnames_client_dl == 0
 			and #self.modnames_server_dl == 0 then
 			self.inst:DoTaskInTime(0.1, function()
-				TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.NO_MODS_TITLE, STRINGS.UI.MODSSCREEN.NO_MODS, 
+				TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.NO_MODS_TITLE, STRINGS.UI.MODSSCREEN.NO_MODS,
 					{
 						{text=STRINGS.UI.MODSSCREEN.NO_MODS_OK, cb = function() self:MoreWorkshopMods() TheFrontEnd:PopScreen() end },
 						{text=STRINGS.UI.MODSSCREEN.CANCEL, cb = function() self:Cancel(true) end },
@@ -561,19 +561,19 @@ function ModsScreen:UpdateForWorkshop()
 		-- Now that we're up to date, build widgets for all the mods
 		self.optionwidgets_client = {}
 		for i,v in ipairs(self.modnames_client) do
-		
+
 			local idx = i
 
 			local modname = v.modname
 			local modinfo = KnownModIndex:GetModInfo(modname)
 			local modstatus = self:GetBestModStatus(modname)
-			
+
 			local opt = TEMPLATES.ModListItem(modname, modinfo, modstatus, KnownModIndex:IsModEnabled(modname))
 			opt.idx = idx
-			
+
 			opt.OnGainFocus =
 				function()
-					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
 					opt.state_bg:Show()
 				end
 
@@ -585,7 +585,7 @@ function ModsScreen:UpdateForWorkshop()
                         opt.o_pos = nil
                     end
 				end
-	            
+
 			opt.StartClick = function()
 				if modname ~= self.currentmodname then
 					self.last_mod_click_time = nil
@@ -638,11 +638,11 @@ function ModsScreen:UpdateForWorkshop()
 				end
 
 			opt.checkbox.OnControl =
-				function(_, control, down) 
+				function(_, control, down)
 					if Widget.OnControl(opt.checkbox, control, down) then return true end
-					if not down then 
-						if opt.o_pos then 
-							opt:SetPosition(opt.o_pos) 
+					if not down then
+						if opt.o_pos then
+							opt:SetPosition(opt.o_pos)
 							opt.o_pos = nil
 						end
 						if control == CONTROL_ACCEPT and (not TheInput:ControllerAttached() or TheFrontEnd.tracking_mouse) then
@@ -660,15 +660,15 @@ function ModsScreen:UpdateForWorkshop()
 			opt.GetHelpText = function()
 				local controller_id = TheInput:GetControllerID()
     			local t = {}
-	    
+
     			table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.HELP.TOGGLE)
         		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HELP.SELECT)
 
 	   			return table.concat(t, "  ")
       		end
-			
+
 			table.insert(self.optionwidgets_client, opt)
-			
+
 			if IsModOutOfDate( modname, v.version ) then
 				out_of_date_mods = out_of_date_mods + 1
 				opt.out_of_date_image:Show()
@@ -689,19 +689,19 @@ function ModsScreen:UpdateForWorkshop()
 
 		self.optionwidgets_server = {}
 		for i,v in ipairs(self.modnames_server) do
-		
+
 			local idx = i
 
 			local modname = v.modname
 			local modinfo = KnownModIndex:GetModInfo(modname)
 			local modstatus = self:GetBestModStatus(modname)
-			
+
 			local opt = TEMPLATES.ModListItem(modname, modinfo, modstatus, KnownModIndex:IsModEnabled(modname))
 			opt.idx = idx
-			
+
 			opt.OnGainFocus =
 				function()
-					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
 					opt.state_bg:Show()
 				end
 
@@ -713,7 +713,7 @@ function ModsScreen:UpdateForWorkshop()
                         opt.o_pos = nil
                     end
 				end
-	        
+
 			opt.OnControl =
 				function(_, control, down)
 					if Widget.OnControl(opt, control, down) then return true end
@@ -740,7 +740,7 @@ function ModsScreen:UpdateForWorkshop()
 			opt.GetHelpText = function()
 				local controller_id = TheInput:GetControllerID()
     			local t = {}
-	    
+
         		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HELP.SELECT)
 
 	   			return table.concat(t, "  ")
@@ -753,9 +753,9 @@ function ModsScreen:UpdateForWorkshop()
 
 			opt.status:Kill()
 			opt.status = nil
-			
+
 			table.insert(self.optionwidgets_server, opt)
-		
+
 			if IsModOutOfDate( modname, v.version ) then
 				out_of_date_mods = out_of_date_mods + 1
 				opt.out_of_date_image:Show()
@@ -781,15 +781,15 @@ function ModsScreen:UpdateForWorkshop()
 		else
 			self.options_scroll_list_client = self.optionschildren:AddChild(ScrollableList(self.optionwidgets_client, 183, 566, 93, 3, nil, nil, nil, nil, nil, -22))
 			self.options_scroll_list_client:SetPosition(-210, -20)
-			self.options_scroll_list_client:SetScale(.8) 
+			self.options_scroll_list_client:SetScale(.8)
 			self.options_scroll_list_server = self.optionschildren:AddChild(ScrollableList(self.optionwidgets_server, 183, 566, 93, 3, nil, nil, nil, nil, nil, -22))
 			self.options_scroll_list_server:SetPosition(-210, -20)
 			self.options_scroll_list_server:SetScale(.8)
 		end
-		
+
 		self:SetModsList(self.currentmodtype)
 		self:ShowModDetails(mod_index, client_mod_type)
-		
+
 		--update the text on Update All button to indicate how many mods are out of date
 		if #self.modnames_client_dl > 0 or #self.modnames_server_dl > 0 then
 			--updating
@@ -824,21 +824,21 @@ function ModsScreen:UpdateForWorkshop()
 			end
 			self.updateallenabled = false
 		end
-		
+
 		--Note(Peter) do we need to do this focus hookup?
 		self:DoFocusHookups()
-		
+
 		TheSim:UnlockModDir()
 	end
 end
 
 function ModsScreen:SetModsList(listtype)
 	self.currentmodtype = listtype
-	
+
 	if self.options_scroll_list_client == nil then
 		return
 	end
-	
+
 	self:CreateDetailPanel()
 	if listtype == "client" then
 		self.options_scroll_list_client:Show()
@@ -893,18 +893,18 @@ function ModsScreen:DoFocusHookups()
 	self.clientmodsbutton:SetFocusChangeDir(MOVE_RIGHT, tomiddlecol)
 	self.clientmodsbutton:SetFocusChangeDir(MOVE_DOWN, self.cancelbutton)
 
-	if self.options_scroll_list_client then 
+	if self.options_scroll_list_client then
 		self.options_scroll_list_client:SetFocusChangeDir(MOVE_RIGHT, self.modconfigbutton)
 		self.options_scroll_list_client:SetFocusChangeDir(MOVE_LEFT, self.servermodsbutton)
 	end
-	
-	if self.options_scroll_list_server then 
-		self.options_scroll_list_server:SetFocusChangeDir(MOVE_RIGHT, self.modconfigbutton) 
+
+	if self.options_scroll_list_server then
+		self.options_scroll_list_server:SetFocusChangeDir(MOVE_RIGHT, self.modconfigbutton)
 		self.options_scroll_list_server:SetFocusChangeDir(MOVE_LEFT, self.servermodsbutton)
 	end
 
 	self.featuredbutton:SetFocusChangeDir(MOVE_UP, self.modlinks[5])
-	self.featuredbutton:SetFocusChangeDir(MOVE_LEFT, self.modlinkbutton) 
+	self.featuredbutton:SetFocusChangeDir(MOVE_LEFT, self.modlinkbutton)
 	self.featuredbutton:SetFocusChangeDir(MOVE_DOWN, self.morebutton)
 
 	self.morebutton:SetFocusChangeDir(MOVE_UP, self.featuredbutton)
@@ -964,22 +964,22 @@ end
 
 function ModsScreen:OnControl(control, down)
 	if ModsScreen._base.OnControl(self, control, down) then return true end
-	
-	if not down then 
-		if control == CONTROL_CANCEL then 
+
+	if not down then
+		if control == CONTROL_CANCEL then
 			self:Cancel()
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-			return true 
-		elseif TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then 
+			return true
+		elseif TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
 			if control == CONTROL_PAUSE then
 				self:Apply()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
-			elseif control == CONTROL_MAP then 
+			elseif control == CONTROL_MAP then
 				self:CleanAllButton()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
-			elseif control == CONTROL_INSPECT then 
+			elseif control == CONTROL_INSPECT then
 				self:UpdateAllButton()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
@@ -1038,7 +1038,7 @@ function ModsScreen:ShowModDetails(idx, client_mod)
     else
         self.last_server_modname = self.currentmodname
     end
-	
+
 	local modinfo = KnownModIndex:GetModInfo(modname)
 	if modinfo.icon and modinfo.icon_atlas then
 		self.detailimage:SetTexture(modinfo.icon_atlas, modinfo.icon)
@@ -1070,19 +1070,19 @@ function ModsScreen:ShowModDetails(idx, client_mod)
     w, h = self.detaildesc:GetRegionSize()
     self.detaildesc:SetPosition(w * .5 - 183, 84 - .5 * h)
 
-	-- if self.modlinkbutton then 
+	-- if self.modlinkbutton then
 	-- 	if (modinfo.forumthread and modinfo.forumthread ~= "") or string.sub(modname, 1, 9) == "workshop-" then
 	-- 		self.modlinkbutton:SetText(STRINGS.UI.MODSSCREEN.MODLINK)
 	-- 	else
 	-- 		self.modlinkbutton:SetText(STRINGS.UI.MODSSCREEN.MODLINKGENERIC)
 	-- 	end
 	-- end
-	
+
 	if modinfo.dst_compatible then
 		if modinfo.dst_compatibility_specified == false then
-			self.detailcompatibility:SetString(STRINGS.UI.MODSSCREEN.COMPATIBILITY_UNKNOWN)	
+			self.detailcompatibility:SetString(STRINGS.UI.MODSSCREEN.COMPATIBILITY_UNKNOWN)
 		else
-			self.detailcompatibility:SetString(STRINGS.UI.MODSSCREEN.COMPATIBILITY_DST)	
+			self.detailcompatibility:SetString(STRINGS.UI.MODSSCREEN.COMPATIBILITY_DST)
 		end
 	else
 		self.detailcompatibility:SetString(STRINGS.UI.MODSSCREEN.COMPATIBILITY_NONE)
@@ -1093,7 +1093,7 @@ function ModsScreen:ShowModDetails(idx, client_mod)
 	else
 		self:DisableConfigButton(modWidget)
 	end
-	
+
 	--is workshop mod and is out of date version, and check if it's updating currently
 	if IsModOutOfDate( modname, modnames_versions[idx].version ) then
 		local is_updating = false
@@ -1113,7 +1113,7 @@ function ModsScreen:ShowModDetails(idx, client_mod)
 	else
 		self:DisableUpdateButton("uptodate")
 	end
-	
+
 	---------------------------------------------
 	-- TODO: enable/disable update button here (similar to config button)
 	---------------------------------------------
@@ -1122,21 +1122,21 @@ function ModsScreen:ShowModDetails(idx, client_mod)
     if modStatus == "WORKING_NORMALLY" then
         self.detailwarning:SetString(STRINGS.UI.MODSSCREEN.WORKING_NORMALLY)
         self.detailwarning:SetColour(59/255, 222/255, 99/255, 1)
-        if widgetTable and widgetTable[idx] and widgetTable[idx].status then 
-            widgetTable[idx].status:SetString(STRINGS.UI.MODSSCREEN.STATUS.WORKING_NORMALLY) 
+        if widgetTable and widgetTable[idx] and widgetTable[idx].status then
+            widgetTable[idx].status:SetString(STRINGS.UI.MODSSCREEN.STATUS.WORKING_NORMALLY)
             widgetTable[idx].status:SetColour(59/255, 222/255, 99/255, 1)
         end
     elseif modStatus == "DISABLED_ERROR" then
         self.detailwarning:SetColour(242/255, 99/255, 99/255, 1) --(242/255, 99/255, 99/255, 1)--0.9,0.3,0.3,1)
         self.detailwarning:SetString(STRINGS.UI.MODSSCREEN.DISABLED_ERROR)
-        if widgetTable and widgetTable[idx] and widgetTable[idx].status then 
+        if widgetTable and widgetTable[idx] and widgetTable[idx].status then
             widgetTable[idx].status:SetColour(242/255, 99/255, 99/255, 1)
             widgetTable[idx].status:SetString(STRINGS.UI.MODSSCREEN.STATUS.DISABLED_ERROR)
         end
     elseif modStatus == "DISABLED_MANUAL" then
         self.detailwarning:SetString(STRINGS.UI.MODSSCREEN.DISABLED_MANUAL)
         self.detailwarning:SetColour(.6,.6,.6,1)
-        if widgetTable and widgetTable[idx] and widgetTable[idx].status then 
+        if widgetTable and widgetTable[idx] and widgetTable[idx].status then
             widgetTable[idx].status:SetColour(.6,.6,.6,1)
             widgetTable[idx].status:SetString(STRINGS.UI.MODSSCREEN.STATUS.DISABLED_MANUAL)
         end
@@ -1169,12 +1169,12 @@ function ModsScreen:OnConfirmEnable(restart, modname)
 	else
 		KnownModIndex:Enable(modname)
 	end
-	
+
 	local modinfo = KnownModIndex:GetModInfo(modname)
-	
+
 	--Warn about incompatible mods being enabled
 	if KnownModIndex:IsModEnabled(modname) and (not modinfo.dst_compatible or modinfo.dst_compatibility_specified == false) then
-		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.MOD_WARNING_TITLE, STRINGS.UI.MODSSCREEN.DST_COMPAT_WARNING, 
+		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.MOD_WARNING_TITLE, STRINGS.UI.MODSSCREEN.DST_COMPAT_WARNING,
 		{
 			{text=STRINGS.UI.MODSSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end }
 		}))
@@ -1195,10 +1195,10 @@ function ModsScreen:EnableCurrent(idx)
 	end
 
 	local modinfo = KnownModIndex:GetModInfo(modname)
-	
+
 	if modinfo and modinfo.restart_required then
 		print("RESTART REQUIRED")
-		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.RESTART_TITLE, STRINGS.UI.MODSSCREEN.RESTART_REQUIRED, 
+		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.RESTART_TITLE, STRINGS.UI.MODSSCREEN.RESTART_REQUIRED,
 		{
 			{text=STRINGS.UI.MODSSCREEN.RESTART, cb = function() self:OnConfirmEnable(true, modname) end },
 			{text=STRINGS.UI.MODSSCREEN.CANCEL, cb = function() TheFrontEnd:PopScreen() end}
@@ -1238,16 +1238,16 @@ function ModsScreen:Cancel(extrapop)
 	if self:IsDirty() then
 		TheFrontEnd:PushScreen(
             PopupDialogScreen( STRINGS.UI.MODSSCREEN.CANCEL_TITLE, STRINGS.UI.MODSSCREEN.CANCEL_BODY,
-              { 
-                { 
-                    text = STRINGS.UI.MODSSCREEN.OK, 
+              {
+                {
+                    text = STRINGS.UI.MODSSCREEN.OK,
                     cb = function()
                         self:MakeClean()
 				        if self.updatetask then
 							self.updatetask:Cancel()
 							self.updatetask = nil
 						end
-						
+
 						KnownModIndex:RestoreCachedSaveData()
 						self.mainmenu:Disable()
 						TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
@@ -1259,22 +1259,22 @@ function ModsScreen:Cancel(extrapop)
 						end)
                     end
                 },
-                
-                { 
-                    text = STRINGS.UI.MODSSCREEN.CANCEL, 
+
+                {
+                    text = STRINGS.UI.MODSSCREEN.CANCEL,
                     cb = function()
-                        TheFrontEnd:PopScreen()                 
+                        TheFrontEnd:PopScreen()
                     end
                 }
               }
             )
-        )       
+        )
 	else
 		if self.updatetask then
 			self.updatetask:Cancel()
 			self.updatetask = nil
 		end
-		
+
 		KnownModIndex:RestoreCachedSaveData()
 		self.mainmenu:Disable()
 		TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
@@ -1291,7 +1291,7 @@ function ModsScreen:Apply()
 		self.updatetask:Cancel()
 		self.updatetask = nil
 	end
-	
+
 	KnownModIndex:Save()
 	self.mainmenu:Disable()
 	TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
@@ -1325,7 +1325,7 @@ function ModsScreen:LoadModInfoPrefabs(prefabtable)
 				Asset("IMAGE", info.iconpath),
 			}
 			local prefab = Prefab("MODSCREEN_"..modname, nil, modinfoassets, nil)
-			RegisterPrefabs( prefab )
+			RegisterSinglePrefab( prefab )
 			table.insert(prefabtable, prefab.name)
 		end
 	end
@@ -1365,17 +1365,17 @@ function ModsScreen:GetHelpText()
     end
 
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.MODSSCREEN.APPLY)
-    
+
     return table.concat(t, "  ")
 end
 
 function ModsScreen:CleanAllButton()
 	local mod_warning = PopupDialogScreen(STRINGS.UI.MODSSCREEN.CLEANALL_TITLE, STRINGS.UI.MODSSCREEN.CLEANALL_BODY,
 		{
-			{text=STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = 
+			{text=STRINGS.UI.SERVERLISTINGSCREEN.OK, cb =
 				function()
 					TheSim:CleanAllMods()
-										
+
 					KnownModIndex:DisableAllMods()
 					KnownModIndex:Save()
 
@@ -1384,10 +1384,10 @@ function ModsScreen:CleanAllButton()
 						self.options_scroll_list_server:Clear()
 					end
 					TheFrontEnd:PopScreen()
-					
+
 					self.mainmenu:Disable()
 					TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
-						
+
 						self:UnloadModInfoPrefabs(self.infoprefabs)
 						ForceAssetReset()
 						SimReset()
@@ -1403,7 +1403,7 @@ function ModsScreen:UpdateAllButton()
 	if self.updateallenabled then
 		local mod_warning = PopupDialogScreen(STRINGS.UI.MODSSCREEN.UPDATEALL_TITLE, STRINGS.UI.MODSSCREEN.UPDATEALL_BODY,
 			{
-				{text=STRINGS.UI.SERVERLISTINGSCREEN.OK, cb = 
+				{text=STRINGS.UI.SERVERLISTINGSCREEN.OK, cb =
 					function()
 						for _,name_version in pairs(self.modnames_client) do
 							if IsWorkshopMod(name_version.modname) and name_version.version ~= "" and name_version.version ~= KnownModIndex:GetModInfo(name_version.modname).version then
@@ -1416,7 +1416,7 @@ function ModsScreen:UpdateAllButton()
 							end
 						end
 						self:UpdateForWorkshop()
-						
+
 						TheFrontEnd:PopScreen()
 					end},
 				{text=STRINGS.UI.SERVERLISTINGSCREEN.CANCEL, cb = function() TheFrontEnd:PopScreen() end}

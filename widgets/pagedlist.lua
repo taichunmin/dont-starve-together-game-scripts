@@ -16,7 +16,7 @@ local MOUSE_SCROLL_REPEAT_TIME = 0
 -- Itemheight and itempadding are used to place the widgets (note: for a grid, each widget should be one row in the grid)
 local PagedList = Class(Widget, function(self, width, updatefn, widgetstoupdate)
     Widget._ctor(self, "PagedList")
-  
+
 
     self.static_widgets = widgetstoupdate
 
@@ -32,7 +32,7 @@ local PagedList = Class(Widget, function(self, width, updatefn, widgetstoupdate)
 	self.page_number = 1
 
    	self.repeat_time = (TheInput:ControllerAttached() and SCROLL_REPEAT_TIME) or MOUSE_SCROLL_REPEAT_TIME
-	
+
 	self.left_button = self:AddChild(ImageButton("images/lobbyscreen.xml", "DSTMenu_PlayerLobby_arrow_paper_L.tex", "DSTMenu_PlayerLobby_arrow_paperHL_L.tex", nil, nil, nil, {1,1}, {0,0}))
 	self.left_button:SetPosition( -width/2, 0, 0)
 	self.left_button:SetScale(.55)
@@ -46,16 +46,16 @@ local PagedList = Class(Widget, function(self, width, updatefn, widgetstoupdate)
 	self.right_button:SetOnClick( function()
 		self:ChangePage(1)
 	end)
-		
+
 
 	self:SetItemsData(nil) --initialize with no data
-	
+
     self:StartUpdating()
 end)
 
 function PagedList:SetItemsData(items)
 	self.items = items or {}
-   	self.num_pages = math.max(1, math.ceil(#self.items/self.items_per_page))   	
+   	self.num_pages = math.max(1, math.ceil(#self.items/self.items_per_page))
  	self:ChangePage(0)
 end
 
@@ -66,17 +66,17 @@ function PagedList:OnUpdate(dt)
 end
 
 function PagedList:ChangePage(dir)
-	if dir > 0 then 
+	if dir > 0 then
 		self.page_number = self.page_number + 1
-	elseif dir < 0 then 
+	elseif dir < 0 then
 		self.page_number = self.page_number - 1
 	end
 
-	if self.page_number < 1 then 
+	if self.page_number < 1 then
 		self.page_number = 1
 	end
 
-	if self.page_number > self.num_pages then 
+	if self.page_number > self.num_pages then
 		self.page_number = self.num_pages
 	end
 
@@ -84,7 +84,7 @@ function PagedList:ChangePage(dir)
 end
 
 function PagedList:SetPage(page)
-	if page and page > 0 and page <= self.num_pages then 
+	if page and page > 0 and page <= self.num_pages then
 		self.page_number = page
 	end
 
@@ -97,7 +97,7 @@ function PagedList:EvaluateArrows()
 	self.left_button:Enable()
 	self.right_button:Show()
 	self.right_button:Enable()
-			
+
 	--if no pages, hide both, otherwise just hide the one at the ends
 	if self.num_pages < 2 then
 		self.left_button:Hide()
@@ -119,8 +119,8 @@ function PagedList:RefreshView()
 	-- figure out which set of data we're using
 	local start_index = ((self.page_number - 1) * self.items_per_page)
 
-	-- call updatefn for each 
-	for i = 1,self.items_per_page do 
+	-- call updatefn for each
+	for i = 1,self.items_per_page do
 		if self.items[start_index + i] then
 			self.updatefn(self.static_widgets[i], self.items[start_index + i] )
 			self.static_widgets[i]:Show()
@@ -153,7 +153,7 @@ function PagedList:GetHelpText()
 	elseif self.right_button and self.right_button:IsEnabled() then
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false) .. " " .. STRINGS.UI.HELP.NEXTPAGE)
 	end
-	
+
 	return table.concat(t, "  ")
 end
 

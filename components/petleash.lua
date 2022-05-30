@@ -93,7 +93,7 @@ function PetLeash:SpawnPetAt(x, y, z, prefaboverride, skin)
             self.onspawnfn(self.inst, pet)
         end
     end
-    
+
     return pet
 end
 

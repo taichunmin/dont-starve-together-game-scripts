@@ -1,13 +1,17 @@
 local assets =
 {
     Asset("ANIM", "anim/guano.zip"),
+	Asset("SCRIPT", "scripts/prefabs/fertilizer_nutrient_defs.lua"),
 }
 
 local prefabs =
 {
     "flies",
     "poopcloud",
+    "gridplacer_farmablesoil",
 }
+
+local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
 
 local function OnBurn(inst)
     DefaultBurnFn(inst)
@@ -34,6 +38,14 @@ local function onpickup(inst)
     end
 end
 
+local function GetFertilizerKey(inst)
+    return inst.prefab
+end
+
+local function fertilizerresearchfn(inst)
+    return inst:GetFertilizerKey()
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -50,6 +62,11 @@ local function fn()
     inst.AnimState:PushAnimation("idle")
 
     MakeInventoryFloatable(inst, "med", 0.1, 0.73)
+    MakeDeployableFertilizerPristine(inst)
+
+    inst:AddTag("fertilizerresearchable")
+
+    inst.GetFertilizerKey = GetFertilizerKey
 
     inst.entity:SetPristine()
 
@@ -62,11 +79,14 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst:AddComponent("stackable")
 
+    inst:AddComponent("fertilizerresearchable")
+    inst.components.fertilizerresearchable:SetResearchFn(fertilizerresearchfn)
+
     inst:AddComponent("fertilizer")
-    inst.components.fertilizer:SetHealingAmount(TUNING.POOP_FERTILIZE_HEALTH)
     inst.components.fertilizer.fertilizervalue = TUNING.GUANO_FERTILIZE
     inst.components.fertilizer.soil_cycles = TUNING.GUANO_SOILCYCLES
     inst.components.fertilizer.withered_cycles = TUNING.GUANO_WITHEREDCYCLES
+    inst.components.fertilizer:SetNutrients(FERTILIZER_DEFS.guano.nutrients)
 
     inst:AddComponent("smotherer")
 
@@ -88,6 +108,7 @@ local function fn()
     inst.components.burnable:SetOnIgniteFn(OnBurn)
     MakeSmallPropagator(inst)
 
+    MakeDeployableFertilizer(inst)
     MakeHauntableLaunchAndIgnite(inst)
 
     inst:AddComponent("savedscale")

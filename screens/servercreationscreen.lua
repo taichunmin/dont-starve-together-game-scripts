@@ -99,7 +99,7 @@ local ServerCreationScreen = Class(Screen, function(self, prev_screen)
     self.title_portrait_bg = self.detail_panel_frame_parent:AddChild(Image("images/saveslot_portraits.xml", "background.tex"))
     self.title_portrait_bg:SetScale(.65, .65, 1)
     self.title_portrait_bg:SetPosition(-367, 175, 0)
-    self.title_portrait_bg:SetClickable(false)   
+    self.title_portrait_bg:SetClickable(false)
 
     self.title_portrait = self.title_portrait_bg:AddChild(Image())
     self.title_portrait:SetClickable(false)
@@ -237,7 +237,7 @@ function ServerCreationScreen:UpdateTabs(slotnum, prevslot, fromDelete)
     self.server_settings_tab:SavePrevSlot(prevslot) --needs to happen before mods_tab:SetSaveSlot so that we don't lose the current game mode selection when the next slot's mods are applied
 
     self.mods_tab:SetSaveSlot(slotnum, fromDelete) --needs to happen before server_settings_tab:UpdateDetails
-    
+
     self.server_settings_tab:UpdateDetails(slotnum, prevslot, fromDelete)
 
     self.world_tab:UpdateSlot(slotnum, prevslot, fromDelete)
@@ -297,15 +297,15 @@ local function BuildTagsStringHosting(self, worldoptions)
 end
 
 function ServerCreationScreen:DeleteSlot(slot, cb)
-    local menu_items = 
+    local menu_items =
     {
         -- ENTER
         {
-            text=STRINGS.UI.SERVERCREATIONSCREEN.DELETE, 
+            text=STRINGS.UI.SERVERCREATIONSCREEN.DELETE,
             cb = function()
                 TheFrontEnd:PopScreen()
 
-                SaveGameIndex:DeleteSlot(slot, function() 
+                SaveGameIndex:DeleteSlot(slot, function()
                     self.save_slots[slot]:Kill()
                     self.save_slots[slot] = self.save_slots:AddChild(self:MakeSaveSlotButton(slot))
                     self:UpdateTabs(slot, nil, true)
@@ -319,9 +319,9 @@ function ServerCreationScreen:DeleteSlot(slot, cb)
         },
         -- ESC
         {
-            text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL, 
-            cb = function() 
-                TheFrontEnd:PopScreen() 
+            text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL,
+            cb = function()
+                TheFrontEnd:PopScreen()
             end
         },
     }
@@ -435,7 +435,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
 
                 if is_multi_level then
                     ShowLoading()
-                    launchingServerPopup = LaunchingServerPopup({}, 
+                    launchingServerPopup = LaunchingServerPopup({},
                         function()
                             local start_worked = TheNet:StartClient(DEFAULT_JOIN_IP, 10999, -1, serverdata.password)
                             if start_worked then
@@ -512,7 +512,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
                                     self:Create(true)
                                 end},
                                 {text=STRINGS.UI.SERVERCREATIONSCREEN.CANCEL, cb = function()
-                                    TheFrontEnd:PopScreen() 
+                                    TheFrontEnd:PopScreen()
                                 end}
                             })
         self.last_focus = TheFrontEnd:GetFocusWidget()
@@ -523,7 +523,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
         local online_only_popup = PopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.ONLINEONYTITLE, STRINGS.UI.SERVERCREATIONSCREEN.ONLINEONLYBODY,
                             {
                                 {text=STRINGS.UI.SERVERCREATIONSCREEN.OK, cb = function()
-                                    TheFrontEnd:PopScreen() 
+                                    TheFrontEnd:PopScreen()
                                 end}
                             })
         self.last_focus = TheFrontEnd:GetFocusWidget()
@@ -539,9 +539,9 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
         self.last_focus = TheFrontEnd:GetFocusWidget()
         TheFrontEnd:PushScreen(TextListPopupDialogScreen(STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGTITLE,
                             modnames,
-                            STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGBODY, 
+                            STRINGS.UI.SERVERCREATIONSCREEN.MODSDISABLEDWARNINGBODY,
                             {
-                                {text=STRINGS.UI.SERVERCREATIONSCREEN.CONTINUE, 
+                                {text=STRINGS.UI.SERVERCREATIONSCREEN.CONTINUE,
                                 cb = function()
                                     TheFrontEnd:PopScreen()
                                     self:Create(true, true)
@@ -590,7 +590,7 @@ function ServerCreationScreen:Create(warnedOffline, warnedDisabledMods, warnedOu
             for i,v in ipairs(warning.menu.items) do
                 v.image:SetScale(.52, .7)
             end
-            warning.menu:SetPosition(86 + -(200*(#warning.menu.items-1))/2, -203, 0) 
+            warning.menu:SetPosition(86 + -(200*(#warning.menu.items-1))/2, -203, 0)
         end
         TheFrontEnd:PushScreen(warning)
 
@@ -669,9 +669,9 @@ function ServerCreationScreen:Cancel()
     if self:IsDirty() then
         TheFrontEnd:PushScreen(
             PopupDialogScreen( STRINGS.UI.SERVERCREATIONSCREEN.CANCEL_TITLE, STRINGS.UI.SERVERCREATIONSCREEN.CANCEL_BODY,
-              { 
-                { 
-                    text = STRINGS.UI.SERVERCREATIONSCREEN.OK, 
+              {
+                {
+                    text = STRINGS.UI.SERVERCREATIONSCREEN.OK,
                     cb = function()
                         self:MakeClean()
                         self:Disable()
@@ -684,16 +684,16 @@ function ServerCreationScreen:Cancel()
                         end)
                     end
                 },
-                
-                { 
-                    text = STRINGS.UI.SERVERCREATIONSCREEN.CANCEL, 
+
+                {
+                    text = STRINGS.UI.SERVERCREATIONSCREEN.CANCEL,
                     cb = function()
-                        TheFrontEnd:PopScreen()                 
+                        TheFrontEnd:PopScreen()
                     end
                 }
               }
             )
-        )       
+        )
     else
         self:Disable()
         self.server_settings_tab:SetEditingTextboxes(false)
@@ -709,7 +709,7 @@ function ServerCreationScreen:OnControl(control, down)
     if ServerCreationScreen._base.OnControl(self, control, down) then return true end
 
     if not down then
-        if control == CONTROL_CANCEL then 
+        if control == CONTROL_CANCEL then
             self:Cancel()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         else
@@ -875,7 +875,7 @@ local function MakeImgButton(parent, xPos, yPos, text, onclick, style)
     elseif style == "delete" then
         btn = parent:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "delete.tex", text, true, false, onclick))
     end
-    
+
     btn:SetPosition(xPos, yPos)
     btn:SetOnClick(onclick)
 
@@ -1002,7 +1002,7 @@ function ServerCreationScreen:SetTab(tabName, direction)
             elseif self.active_tab == "snapshot" then
                 self:ShowModsTab()
             elseif self.active_tab == "bans" then
-                self:ShowSnapshotTab()                
+                self:ShowSnapshotTab()
             end
         elseif direction > 0 then --right
             if self.active_tab == "settings" then

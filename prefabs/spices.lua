@@ -43,6 +43,6 @@ local function MakeSpice(name)
 end
 
 return MakeSpice("spice_garlic"),
-    MakeSpice("spice_sugar"),
-    MakeSpice("spice_chili")
---spice_salt
+       MakeSpice("spice_sugar"),
+       MakeSpice("spice_chili"),
+       MakeSpice("spice_salt")

@@ -28,6 +28,11 @@ local function onextinguish(inst)
     if inst.components.fueled ~= nil then
         inst.components.fueled:InitializeFuelLevel(0)
     end
+	inst:RemoveTag("shadow_fire")
+end
+
+local function onignite(inst)
+	inst:AddTag("shadow_fire")
 end
 
 local function CalcSanityAura(inst, observer)
@@ -114,6 +119,7 @@ local function fn()
     inst.components.burnable:AddBurnFX("nightlight_flame", Vector3(0, 0, 0), "fire_marker")
     inst.components.burnable.canlight = false
     inst:ListenForEvent("onextinguish", onextinguish)
+	inst:ListenForEvent("onignite", onignite)
 
     inst:AddComponent("sanityaura")
     inst.components.sanityaura.aurafn = CalcSanityAura

@@ -40,6 +40,8 @@ local NON_SMASHABLE_TAGS = { "INLIMBO", "playerghost", "meteor_protection" }
 local DENSITY = 0.1 -- the approximate density of rock prefabs in the rocky biomes
 local FIVERADIUS = CalculateFiveRadius(DENSITY)
 local EXCLUDE_RADIUS = 3
+local BOULDER_TAGS = {"boulder"}
+local BOULDERSPAWNBLOCKER_TAGS = { "NOBLOCK", "FX" }
 
 local function onexplode(inst)
     inst.SoundEmitter:PlaySound("dontstarve/common/meteor_impact")
@@ -135,9 +137,9 @@ local function onexplode(inst)
                 local canspawn = true
                 --Check if there's space to deploy rocks
                 --Similar to CanDeployAtPoint check in map.lua
-                local ents = TheSim:FindEntities(x, y, z, FIVERADIUS, {"boulder"})
+                local ents = TheSim:FindEntities(x, y, z, FIVERADIUS, BOULDER_TAGS)
                 if #ents < 5 then
-                    ents = TheSim:FindEntities(x, y, z, EXCLUDE_RADIUS, nil, { "NOBLOCK", "FX" })
+                    ents = TheSim:FindEntities(x, y, z, EXCLUDE_RADIUS, nil, BOULDERSPAWNBLOCKER_TAGS)
                     for k, v in pairs(ents) do
                         if v ~= inst and
                             not launched[v] and
@@ -181,8 +183,8 @@ local function dostrike(inst)
 end
 
 local warntime = 1
-local sizes = 
-{ 
+local sizes =
+{
     small = .7,
     medium = 1,
     large = 1.3,
@@ -253,7 +255,7 @@ local function SetSize(inst, sz, mod)
         else -- Don't check for chance or mod this one: we need to pick a boulder
             inst.loot =
             {
-	            { 
+	            {
                     prefab = "moonrocknugget",
                     chance = TUNING.METEOR_CHANCE_INVITEM_SOMETIMES * mod
                 },
@@ -283,14 +285,14 @@ local function AutoSize(inst)
     inst:SetSize(rand <= .33 and "large" or (rand <= .67 and "medium" or "small"))
 end
 
-local function fn() 
+local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
-    
+
     inst.Transform:SetTwoFaced()
 
     inst.AnimState:SetBank("meteor")

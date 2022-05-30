@@ -36,7 +36,7 @@ function CircuitNode:ConnectTo(tag)
 
         local my_platform = nil
         if not self.connectsacrossplatforms then
-            my_platform = TheWorld.Map:GetPlatformAtPoint(x, z)
+            my_platform = self.inst:GetCurrentPlatform()
         end
 
         for i, v in ipairs(TheSim:FindEntities(x, y, z, self.range, { tag })) do
@@ -44,8 +44,7 @@ function CircuitNode:ConnectTo(tag)
                 if self.connectsacrossplatforms then
                     self:AddNode(v)
                 else
-                    local v_position = v:GetPosition()
-                    if TheWorld.Map:GetPlatformAtPoint(v_position.x, v_position.z) == my_platform then
+                    if v:GetCurrentPlatform() == my_platform then
                         self:AddNode(v)
                     end
                 end

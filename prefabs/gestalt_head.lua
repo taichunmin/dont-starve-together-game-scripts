@@ -3,12 +3,12 @@ local assets =
     Asset("ANIM", "anim/brightmare_gestalt_head.zip"),
 }
 
-local prefabs =
+local assets_guard =
 {
-
+    Asset("ANIM", "anim/brightmare_gestalt_head_evolved.zip"),
 }
 
-local function fn()
+local function fn(bank)
 
     local inst = CreateEntity()
 
@@ -16,8 +16,8 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddFollower()
 
-    inst.AnimState:SetBank("brightmare_gestalt_head")
-    inst.AnimState:SetBuild("brightmare_gestalt_head")     
+    inst.AnimState:SetBank(bank)
+    inst.AnimState:SetBuild(bank)
     inst.AnimState:PlayAnimation("idle", true)
 
     inst.Transform:SetFourFaced()
@@ -35,4 +35,6 @@ local function fn()
     return inst
 end
 
-return Prefab("gestalt_head", fn, assets, prefabs)
+return Prefab("gestalt_head", function() return fn("brightmare_gestalt_head") end, assets),
+		Prefab("gestalt_guard_head", function() return fn("brightmare_gestalt_head_evolved") end, assets_guard)
+

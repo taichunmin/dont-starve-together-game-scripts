@@ -1,7 +1,7 @@
 require("stategraphs/commonstates")
 
 
-local actionhandlers = 
+local actionhandlers =
 {
     ActionHandler(ACTIONS.EAT, "eat"),
 }
@@ -17,10 +17,10 @@ local events =
             inst.sg:GoToState("hit")
         end
     end),
-    EventHandler("doattack", function(inst) 
-        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then 
-            inst.sg:GoToState("attack") 
-        end 
+    EventHandler("doattack", function(inst)
+        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then
+            inst.sg:GoToState("attack")
+        end
     end),
 
     EventHandler("death", function(inst) inst.sg:GoToState("death") end),
@@ -45,7 +45,7 @@ local states =
     State{
         name = "idle",
         tags = {"idle", "canrotate"},
-        
+
         onenter = function(inst, pushanim)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("idle", true)
@@ -67,7 +67,7 @@ local states =
 
         events =
         {
-            EventHandler("startstarving", 
+            EventHandler("startstarving",
                 function(inst, data)
                     --print("smallbird - SG - startstarving")
                     inst.sg:GoToState("idle_peep")
@@ -86,22 +86,22 @@ local states =
     State{
         name = "idle_blink",
         tags = {"idle", "canrotate"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("idle_blink")
             CheckForNewLeader(inst)
         end,
-       
-        timeline = 
+
+        timeline =
         {
             TimeEvent(17*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/blink") end),
         },
 
         events=
         {
-            EventHandler("animover", 
-                function(inst,data) 
+            EventHandler("animover",
+                function(inst,data)
                     if math.random() < 0.1 then
                         inst.sg:GoToState("idle_blink")
                     else
@@ -115,22 +115,22 @@ local states =
     State{
         name = "idle_peep",
         tags = {"idle"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("meep")
             CheckForNewLeader(inst)
         end,
-       
-        timeline = 
+
+        timeline =
         {
             TimeEvent(3*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/chirp") end),
         },
 
         events=
         {
-            EventHandler("animover", 
-                function(inst,data) 
+            EventHandler("animover",
+                function(inst,data)
                     if math.random() <= inst.userfunctions.GetPeepChance(inst) then
                         inst.sg:GoToState("idle_peep")
                     else
@@ -144,15 +144,15 @@ local states =
 	State{
         name = "death",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/death")
             inst.AnimState:PlayAnimation("death")
             inst.components.locomotor:StopMoving()
-            RemovePhysicsColliders(inst)            
-            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+            RemovePhysicsColliders(inst)
+            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         end,
-        
+
     },
 
 
@@ -163,7 +163,7 @@ local states =
             inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/egg_hatch_crack")
             inst.AnimState:PlayAnimation("hatch")
         end,
-        timeline = 
+        timeline =
         {
             TimeEvent(30*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/egg_hatch") end),
         },
@@ -182,7 +182,7 @@ local states =
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("grow")
         end,
-        timeline = 
+        timeline =
         {
             TimeEvent(28*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/leg_sproing") end),
             TimeEvent(30*FRAMES, function(inst) inst.Transform:SetScale(1.1, 1.1, 1.1) end),
@@ -200,7 +200,7 @@ local states =
     State{
         name = "taunt",
         tags = {"busy", "canrotate"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("call")
@@ -208,36 +208,36 @@ local states =
                 inst:FacePoint(Vector3(inst.components.combat.target.Transform:GetWorldPosition()))
             end
         end,
-        
+
         timeline=
         {
             TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/chirp_short") end),
             TimeEvent(17*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/chirp_short") end),
             TimeEvent(28*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/chirp_short") end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
-    },    
-    
+    },
+
     State{
         name = "attack",
         tags = {"attack"},
-        
+
         onenter = function(inst, cb)
             inst.Physics:Stop()
             inst.components.combat:StartAttack()
             inst.AnimState:PushAnimation("atk", false)
         end,
-        
+
         timeline=
         {
             TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/attack") end),
             TimeEvent(12*FRAMES, function(inst) inst.components.combat:DoAttack() end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -247,45 +247,45 @@ local states =
     State{
         name = "hit",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/hurt")
             inst.AnimState:PlayAnimation("hit")
-            inst.Physics:Stop()            
+            inst.Physics:Stop()
         end,
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
-        },        
+        },
     },
     State{
         name = "eat",
         tags = {"busy", "canrotate"},
-        
+
         onenter = function(inst)
-            inst.Physics:Stop()            
+            inst.Physics:Stop()
             inst.AnimState:PlayAnimation("eat")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/scratch_ground")
         end,
-        
+
         timeline=
         {
-            TimeEvent(7*FRAMES, function(inst) 
-                inst:PerformBufferedAction() 
+            TimeEvent(7*FRAMES, function(inst)
+                inst:PerformBufferedAction()
             end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
-        },        
+        },
     },
 }
 
 CommonStates.AddWalkStates(states, {
-    walktimeline = 
-    { 
+    walktimeline =
+    {
         TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/wings") end),
         --TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/footstep") end),
     }
@@ -293,11 +293,11 @@ CommonStates.AddWalkStates(states, {
 
 CommonStates.AddSleepStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/sleep") end)
     },
-    waketimeline = 
+    waketimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/smallbird/wakeup") end)
     },

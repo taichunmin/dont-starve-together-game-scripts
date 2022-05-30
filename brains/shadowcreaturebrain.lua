@@ -63,12 +63,28 @@ local function GetHarassWanderDir(self)
     return (self._harasstarget:GetAngleToPoint(self.inst.Transform:GetWorldPosition()) - 60 + math.random() * 120) * DEGREES
 end
 
+local function targetatsea(inst)
+    if inst.components.combat.target and inst.followtosea then
+        local target = inst.components.combat.target
+        local x,y,z = target.Transform:GetWorldPosition()
+        if not TheWorld.Map:IsVisualGroundAtPoint(x,y,z) then
+           return true
+        end
+    end
+end
+
+local function teleport(inst)
+     inst:PushEvent("teleport_to_sea")
+end
+
 function ShadowCreatureBrain:OnStart()
     -- The brain is restarted when we wake up. The player may be gone by then
     self:SetTarget(self.inst.spawnedforplayer)
 
     local root = PriorityNode(
     {
+        IfNode(function() return targetatsea(self.inst) end, "target on land",
+                    DoAction(self.inst, teleport)),
         WhileNode(function() return ShouldAttack(self) end, "Attack", ChaseAndAttack(self.inst, 100)),
         WhileNode(function() return ShouldHarass(self) end, "Harass",
             PriorityNode({

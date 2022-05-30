@@ -16,6 +16,9 @@ local prefabs =
 
 local brain = require("brains/winonacatapultbrain")
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "INLIMBO", "player", "engineering" }
+
 local function RetargetFn(inst)
     local target = inst.components.combat.target
     if target ~= nil and
@@ -34,7 +37,7 @@ local function RetargetFn(inst)
     end
 
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.WINONA_CATAPULT_MAX_RANGE, { "_combat" }, { "INLIMBO", "player", "engineering" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.WINONA_CATAPULT_MAX_RANGE, RETARGET_MUST_TAGS, RETARGET_CANT_TAGS)
     local tooclosetarget = nil
     for i, v in ipairs(ents) do
         if v ~= inst and
@@ -373,7 +376,7 @@ end
 
 local function OnCircuitChanged(inst)
     --Notify other connected batteries
-    inst.components.circuitnode:ForEachNode(NotifyCircuitChanged)    
+    inst.components.circuitnode:ForEachNode(NotifyCircuitChanged)
 end
 
 local function OnConnectCircuit(inst)--, node)

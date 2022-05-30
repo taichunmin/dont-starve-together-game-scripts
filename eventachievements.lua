@@ -10,14 +10,14 @@ function EventAchievements:LoadAchievementsForEvent(data)
 	local achievements = data.achievements
 	local seasons = data.seasons
 
-    
+
     for _,season in ipairs(seasons) do
         if self._achievement_list[eventid] == nil then
             self._achievement_list[eventid] = {}
         end
 	    self._achievement_list[eventid][season] = achievements
     end
-	
+
     --only load the flattened list if this is the active event + season
 	if eventid == WORLD_FESTIVAL_EVENT and table.contains( seasons,GetFestivalEventSeasons(eventid) ) then
         self._achievement_list_byid = {}
@@ -58,7 +58,7 @@ end
 
 function EventAchievements:GetNumAchievementsUnlocked(eventid, season)
 	local total = 0
-	local unlocked = 0		
+	local unlocked = 0
 	for _, cat in ipairs(self._achievement_list[eventid][season]) do
 		for _, achievement in ipairs(cat.data) do
             if EventAchievements:IsAchievementUnlocked(eventid, season, achievement.achievementid) then

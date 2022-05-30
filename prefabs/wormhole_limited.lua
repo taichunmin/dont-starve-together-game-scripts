@@ -56,7 +56,7 @@ local function OnActivate(inst, doer)
 
         local other = inst.components.teleporter.targetTeleporter
         if other ~= nil then
-            DeleteCloseEntsWithTag("WORM_DANGER", other, 15)
+            DeleteCloseEntsWithTag({"WORM_DANGER"}, other, 15)
         end
 
         if doer.components.talker ~= nil then

@@ -13,16 +13,20 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
 	self.config = KnownModIndex:LoadModConfigurationOptions(modname, client_config)
 
 	self.client_config = client_config
-	
-	self.options = {}
-	
+
+    self.options = {}
+
+    local is_client_only = KnownModIndex:GetModInfo(modname) and KnownModIndex:GetModInfo(modname).client_only_mod
+
 	if self.config and type(self.config) == "table" then
 		for i,v in ipairs(self.config) do
 			-- Only show the option if it matches our format exactly
-			if v.name and v.options and (v.saved ~= nil or v.default ~= nil) then
-				local _value = v.saved
-				if _value == nil then _value = v.default end
-				table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = _value, hover = v.hover})
+            if v.name and v.options and (v.saved ~= nil or v.default ~= nil) then
+                if is_client_only or not v.client or self.client_config then
+                    local _value = v.saved
+                    if _value == nil then _value = v.default end
+                    table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = _value, hover = v.hover})
+                end
 			end
 		end
 	end
@@ -72,7 +76,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
     self.value_description:SetPosition(0,-85)
     self.value_description:SetRegionSize(item_width+30, 25)
 
-    self.optionspanel = self.dialog:InsertWidget(Widget("optionspanel"))	
+    self.optionspanel = self.dialog:InsertWidget(Widget("optionspanel"))
     self.optionspanel:SetPosition(0,-60)
 
 	self.dirty = false
@@ -92,7 +96,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
             self.option_description:SetString(option)
             self.value_description:SetString(value)
         end
-        
+
         widget:SetOnGainFocus(function(_)
             self.options_scroll_list:OnWidgetFocus(widget)
             widget:ApplyDescription()
@@ -109,7 +113,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
             end
 
         widget.focus_forward = widget.opt
-        
+
         return widget
 	end
     local function ApplyDataToWidget(context, widget, data, idx)
@@ -129,7 +133,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
                 widget.opt.spinner:Show()
                 widget.opt.label:SetSize(25) -- same as LabelSpinner's default.
             end
-			
+
 			widget.opt.spinner:SetSelected(data.selected_value)
 
             local label = (data.option.label or data.option.name or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING)
@@ -184,7 +188,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
                 item_ctor_fn = ScrollWidgetsCtor,
                 apply_fn = ApplyDataToWidget,
                 scrollbar_offset = 20,
-                scrollbar_height_offset = -60,
+                scrollbar_height_offset = -60
             }
         ))
     self.options_scroll_list:SetPosition(0,-6)
@@ -226,7 +230,7 @@ function ModConfigurationScreen:ResetToDefaultValues()
     end
 
 	if not self:IsDefaultSettings() then
-		self:ConfirmRevert(function() 
+		self:ConfirmRevert(function()
 			TheFrontEnd:PopScreen()
 			self:MakeDirty()
 			reset()
@@ -237,7 +241,7 @@ end
 function ModConfigurationScreen:Apply()
 	if self:IsDirty() then
 		local settings = self:CollectSettings()
-		KnownModIndex:SaveConfigurationOptions(function() 
+		KnownModIndex:SaveConfigurationOptions(function()
 			self:MakeDirty(false)
 		    TheFrontEnd:PopScreen()
 		end, self.modname, settings, self.client_config)
@@ -250,20 +254,20 @@ end
 function ModConfigurationScreen:ConfirmRevert(callback)
 	TheFrontEnd:PushScreen(
 		PopupDialogScreen( STRINGS.UI.MODSSCREEN.BACKTITLE, STRINGS.UI.MODSSCREEN.BACKBODY,
-		  { 
-		  	{ 
-		  		text = STRINGS.UI.MODSSCREEN.YES, 
+		  {
+		  	{
+		  		text = STRINGS.UI.MODSSCREEN.YES,
 		  		cb = callback or function() TheFrontEnd:PopScreen() end
 			},
-			{ 
-				text = STRINGS.UI.MODSSCREEN.NO, 
+			{
+				text = STRINGS.UI.MODSSCREEN.NO,
 				cb = function()
-					TheFrontEnd:PopScreen()					
+					TheFrontEnd:PopScreen()
 				end
 			}
 		  }
 		)
-	)		
+	)
 end
 
 function ModConfigurationScreen:Cancel()
@@ -305,7 +309,7 @@ end
 
 function ModConfigurationScreen:OnControl(control, down)
     if ModConfigurationScreen._base.OnControl(self, control, down) then return true end
-    
+
     if not down then
 	    if control == CONTROL_CANCEL then
 			self:Cancel()
@@ -318,12 +322,12 @@ function ModConfigurationScreen:OnControl(control, down)
         elseif control == CONTROL_MAP and TheInput:ControllerAttached() then
 			self:ResetToDefaultValues()
 			return true
-        end 
+        end
 	end
 end
 
 function ModConfigurationScreen:HookupFocusMoves()
-	
+
 end
 
 function ModConfigurationScreen:GetHelpText()

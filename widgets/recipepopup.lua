@@ -11,6 +11,7 @@ local Spinner = require "widgets/spinner"
 
 require "widgets/widgetutil"
 require "skinsutils"
+local TechTree = require "techtree"
 
 local TEASER_SCALE_TEXT = 1
 local TEASER_SCALE_BTN = 1.5
@@ -35,10 +36,10 @@ local function GetHintTextForRecipe(player, recipe)
     local adjusted_level = deepcopy(recipe.level)
 
     -- Adjust recipe's level for bonus so that the hint gives the right message
-    adjusted_level.SCIENCE = adjusted_level.SCIENCE - player.replica.builder:ScienceBonus()
-    adjusted_level.MAGIC = adjusted_level.MAGIC - player.replica.builder:MagicBonus()
-    adjusted_level.ANCIENT = adjusted_level.ANCIENT - player.replica.builder:AncientBonus()
-    adjusted_level.SHADOW = adjusted_level.SHADOW - player.replica.builder:ShadowBonus()
+	local tech_bonus = player.replica.builder:GetTechBonuses()
+	for k, v in pairs(adjusted_level) do
+		adjusted_level[k] = math.max(0, v - (tech_bonus[k] or 0))
+	end
 
     for k, v in pairs(TUNING.PROTOTYPER_TREES) do
         local canbuild = CanPrototypeRecipe(adjusted_level, v)
@@ -56,18 +57,14 @@ local function GetHintTextForRecipe(player, recipe)
         --There's more than one machine that gives the valid tech level! We have to find the "lowest" one (taking bonus into account).
         for k,v in pairs(validmachines) do
             for rk,rv in pairs(adjusted_level) do
-                if TUNING.PROTOTYPER_TREES[v.TREE][rk] == rv then
-                    v.SCORE = v.SCORE + 1
-                    if player.replica.builder ~= nil then
-                        if v.TREE == "SCIENCEMACHINE" or v.TREE == "ALCHEMYMACHINE" then
-                            v.SCORE = v.SCORE + player.replica.builder:ScienceBonus()
-                        elseif v.TREE == "PRESTIHATITATOR" or v.TREE == "SHADOWMANIPULATOR" then
-                            v.SCORE = v.SCORE + player.replica.builder:MagicBonus()
-                        elseif v.TREE == "ANCIENTALTAR_LOW" or v.TREE == "ANCIENTALTAR_HIGH" then
-                            v.SCORE = v.SCORE + player.replica.builder:AncientBonus()
-                        elseif v.TREE == "WAXWELLJOURNAL" then
-                            v.SCORE = v.SCORE + player.replica.builder:ShadowBonus()
-                        end
+                local prototyper_level = TUNING.PROTOTYPER_TREES[v.TREE][rk]
+                if prototyper_level and (rv > 0 or prototyper_level > 0) then
+                    if rv == prototyper_level then
+                        --recipe level matches, add 1 to the score
+                        v.SCORE = v.SCORE + 1
+                    elseif rv < prototyper_level then
+                        --recipe level is less than prototyper level, remove 1 per level the prototyper overshot the recipe
+                        v.SCORE = v.SCORE - (prototyper_level - rv)
                     end
                 end
             end
@@ -130,17 +127,32 @@ function RecipePopup:BuildWithSpinner(horizontal)
     self.ing = {}
 
     self.button = self.contents:AddChild(ImageButton())
+    self.button:SetWhileDown(function()
+        if self.recipe_held then
+            DoRecipeClick(self.owner, self.recipe, self.skins_spinner.GetItem())
+        end
+    end)
+    self.button:SetOnDown(function()
+        if self.last_recipe_click and (GetStaticTime() - self.last_recipe_click) < 1 then
+            self.recipe_held = true
+            self.last_recipe_click = nil
+        end
+    end)
     self.button:SetOnClick(function()
-                                if not DoRecipeClick(self.owner, self.recipe, self.skins_spinner.GetItem()) then
-                                    self.owner.HUD.controls.crafttabs:Close()
-                                end
-                                Profile:SetRecipeTimestamp(self.recipe.name, self.timestamp)
-                                Profile:SetLastUsedSkinForItem(self.recipe.name, self.skins_spinner.GetItem())
-                            end)
+        self.last_recipe_click = GetStaticTime()
+        if not self.recipe_held then
+            if not DoRecipeClick(self.owner, self.recipe, self.skins_spinner.GetItem()) then
+                self.owner.HUD.controls.craftingmenu:Close()
+            end
+        end
+        self.recipe_held = false
+        Profile:SetRecipeTimestamp(self.recipe.name, self.timestamp)
+        Profile:SetLastUsedSkinForItem(self.recipe.name, self.skins_spinner.GetItem())
+    end)
     self.button:SetPosition(320, -155, 0)
     self.button:SetScale(.7,.7,.7)
     self.button.image:SetScale(.45, .7)
-    
+
     self.skins_spinner = self.contents:AddChild(self:MakeSpinner())
     self.skins_spinner:SetPosition(307, -100)
 
@@ -209,11 +221,26 @@ function RecipePopup:BuildNoSpinner(horizontal)
     self.button = self.contents:AddChild(ImageButton())
     self.button:SetScale(.7,.7,.7)
     self.button.image:SetScale(.45, .7)
+    self.button:SetWhileDown(function()
+        if self.recipe_held then
+            DoRecipeClick(self.owner, self.recipe)
+        end
+    end)
+    self.button:SetOnDown(function()
+        if self.last_recipe_click and (GetStaticTime() - self.last_recipe_click) < 1 then
+            self.recipe_held = true
+            self.last_recipe_click = nil
+        end
+    end)
     self.button:SetOnClick(function()
-                            if not DoRecipeClick(self.owner, self.recipe) then
-                                    self.owner.HUD.controls.crafttabs:Close()
-                                end
-                            end)
+        self.last_recipe_click = GetStaticTime()
+        if not self.recipe_held then
+            if not DoRecipeClick(self.owner, self.recipe) then
+                self.owner.HUD.controls.craftingmenu:Close()
+            end
+        end
+        self.recipe_held = false
+    end)
 
     self.amulet = self.contents:AddChild(Image( resolvefilepath(GetInventoryItemAtlas("greenamulet.tex")), "greenamulet.tex"))
     self.amulet:SetPosition(415, -105, 0)
@@ -234,9 +261,9 @@ function RecipePopup:Refresh()
     local builder = owner.replica.builder
     local inventory = owner.replica.inventory
 
-    local knows = builder:KnowsRecipe(recipe.name)
+    local knows = builder:KnowsRecipe(recipe)
     local buffered = builder:IsBuildBuffered(recipe.name)
-    local can_build = buffered or builder:CanBuild(recipe.name)
+    local can_build = buffered or builder:HasIngredients(recipe)
     local tech_level = builder:GetTechTrees()
     local should_hint = not knows and ShouldHintRecipe(recipe.level, tech_level) and not CanPrototypeRecipe(recipe.level, tech_level)
 
@@ -262,8 +289,8 @@ function RecipePopup:Refresh()
         end
     end
 
-    self.name:SetTruncatedString(STRINGS.NAMES[string.upper(self.recipe.product)], TEXT_WIDTH, self.smallfonts and 51 or 41, true)
-    self.desc:SetMultilineTruncatedString(STRINGS.RECIPE_DESC[string.upper(self.recipe.product)], 2, TEXT_WIDTH, self.smallfonts and 40 or 33, true)
+    self.name:SetTruncatedString(STRINGS.NAMES[string.upper(self.recipe.name)] or STRINGS.NAMES[string.upper(self.recipe.product)], TEXT_WIDTH+38, nil, false)
+    self.desc:SetMultilineTruncatedString(STRINGS.RECIPE_DESC[string.upper(self.recipe.description or self.recipe.product)], 2, TEXT_WIDTH, self.smallfonts and 40 or 33, true)
 
     for i, v in ipairs(self.ing) do
         v:Kill()
@@ -305,8 +332,8 @@ function RecipePopup:Refresh()
     end
 
     for i, v in ipairs(recipe.ingredients) do
-        local has, num_found = inventory:Has(v.type, RoundBiasedUp(v.amount * builder:IngredientMod()))
-        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
+        local has, num_found = inventory:Has(v.type, math.max(1, RoundBiasedUp(v.amount * builder:IngredientMod())), true)
+        local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), v.amount ~= 0 and v.amount or nil, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
         end
@@ -322,6 +349,10 @@ function RecipePopup:Refresh()
         --#BDOIG - does this need to listen for deltas and change while menu is open?
         --V2C: yes, but the entire craft tabs does. (will be added there)
         local has, amount = builder:HasCharacterIngredient(v)
+
+		if v.type == CHARACTER_INGREDIENT.HEALTH and owner:HasTag("health_as_oldage") then
+			v = Ingredient(CHARACTER_INGREDIENT.OLDAGE, math.ceil(v.amount * TUNING.OLDAGE_HEALTH_SCALE))
+		end
         local ing = self.contents:AddChild(IngredientUI(v:GetAtlas(), v:GetImage(), v.amount, amount, has, STRINGS.NAMES[string.upper(v.type)], owner, v.type))
         if GetGameModeProperty("icons_use_cc") then
             ing.ing:SetEffect("shaders/ui_cc.ksh")
@@ -343,15 +374,18 @@ function RecipePopup:Refresh()
         local str
         if should_hint then
             local hint_text =
-            {
-                ["SCIENCEMACHINE"] = STRINGS.UI.CRAFTING.NEEDSCIENCEMACHINE,
-                ["ALCHEMYMACHINE"] = STRINGS.UI.CRAFTING.NEEDALCHEMYENGINE,
-                ["SHADOWMANIPULATOR"] = STRINGS.UI.CRAFTING.NEEDSHADOWMANIPULATOR,
-                ["PRESTIHATITATOR"] = STRINGS.UI.CRAFTING.NEEDPRESTIHATITATOR,
-                ["CANTRESEARCH"] = STRINGS.UI.CRAFTING.CANTRESEARCH,
-                ["ANCIENTALTAR_HIGH"] = STRINGS.UI.CRAFTING.NEEDSANCIENT_FOUR,
+			{
+                ["SCIENCEMACHINE"] = "NEEDSCIENCEMACHINE",
+                ["ALCHEMYMACHINE"] = "NEEDALCHEMYENGINE",
+                ["SHADOWMANIPULATOR"] = "NEEDSHADOWMANIPULATOR",
+                ["PRESTIHATITATOR"] = "NEEDPRESTIHATITATOR",
+                ["CANTRESEARCH"] = "CANTRESEARCH",
+                ["ANCIENTALTAR_HIGH"] = "NEEDSANCIENT_FOUR",
+                ["SPIDERCRAFT"] = "NEEDSSPIDERFRIENDSHIP",
+                ["ROBOTMODULECRAFT"] = "NEEDSCREATURESCANNING",
             }
-            str = hint_text[GetHintTextForRecipe(owner, recipe)]
+            local prototyper_tree = GetHintTextForRecipe(owner, recipe)
+            str = STRINGS.UI.CRAFTING[hint_text[prototyper_tree] or ("NEEDS"..prototyper_tree)]
         else
             str = STRINGS.UI.CRAFTING.NEEDSTECH[hint_tech_ingredient]
         end
@@ -359,12 +393,19 @@ function RecipePopup:Refresh()
         self.teaser:SetMultilineTruncatedString(str, 3, TEASER_TEXT_WIDTH, 38, true)
         self.teaser:Show()
         showamulet = false
+    elseif TheNet:IsServerPaused() then
+        self.button:Hide()
+
+        self.teaser:SetScale(TEASER_SCALE_TEXT)
+        self.teaser:SetMultilineTruncatedString(STRINGS.UI.CRAFTING.GAMEPAUSED, 3, TEASER_TEXT_WIDTH, 38, true)
+        self.teaser:Show()
     else
         self.teaser:Hide()
 
         local buttonstr =
             (not (knows or recipe.nounlock) and STRINGS.UI.CRAFTING.PROTOTYPE) or
             (buffered and STRINGS.UI.CRAFTING.PLACE) or
+			(recipe.actionstr ~= nil and STRINGS.UI.CRAFTING.RECIPEACTION[recipe.actionstr]) or
             STRINGS.UI.CRAFTING.TABACTION[recipe.tab.str] or
             STRINGS.UI.CRAFTING.BUILD
 
@@ -537,8 +578,8 @@ function RecipePopup:MakeSpinner()
 
     spinner_group.spinner:SetOnChangedFn(function()
                                                     local which = spinner_group.spinner:GetSelectedIndex()
-                                                    if which > 1 then 
-                                                      if self.skins_options[which].new_indicator or testNewTag then 
+                                                    if which > 1 then
+                                                      if self.skins_options[which].new_indicator or testNewTag then
                                                         spinner_group.new_tag:Show()
                                                       else
                                                         spinner_group.new_tag:Hide()
@@ -570,9 +611,9 @@ end
 function RecipePopup:OnControl(control, down)
     if RecipePopup._base.OnControl(self, control, down) then return true end
 
-    -- This function gets called by craftslot when left or right d-pad buttons are pushed. Pass those through to the 
+    -- This function gets called by craftslot when left or right d-pad buttons are pushed. Pass those through to the
     -- spinner.
-    if self.skins_spinner ~= nil and TheInput:ControllerAttached() then 
+    if self.skins_spinner ~= nil and TheInput:ControllerAttached() then
         self.skins_spinner:OnControl(control, down)
     end
 end

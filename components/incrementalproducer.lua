@@ -12,7 +12,7 @@ local IncrementalProducer = Class(function(self, inst)
 	self.incrementdelay = 1
 
 	self.toproduce = 0
-	
+
 	self.lastproduction = 0
 end)
 

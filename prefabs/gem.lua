@@ -39,6 +39,8 @@ local function buildgem(colour, precious)
 
         inst:AddTag("molebait")
         inst:AddTag("quakedebris")
+        inst:AddTag("gem")
+        inst.colour = colour
 
         local fp = FLOATER_PROPERTIES[colour]
         MakeInventoryFloatable(inst, "small", fp[1], fp[2])

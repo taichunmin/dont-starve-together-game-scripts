@@ -7,33 +7,28 @@ local assets =
 	Asset( "ANIM", "anim/wave_hurricane.zip" )
 }
 
-local function onSleep(inst)
-	inst:Remove()
-end
-
-local function animover(inst)
-	inst:Remove()
-end
-
 local function commonfn(Sim)
 	local inst = CreateEntity()
-	local trans = inst.entity:AddTransform()
-    local anim = inst.entity:AddAnimState()
-    anim:SetOceanBlendParams(TUNING.OCEAN_SHADER.WAVE_TINT_AMOUNT)
 
-	inst.persists = false
+	inst.entity:AddTransform()
+    inst.entity:AddAnimState()
 
-    anim:SetLayer(LAYER_BACKGROUND)
-    anim:SetSortOrder(ANIM_SORT_ORDER.OCEAN_WAVES)
+    --[[Non-networked entity]]
+    inst:AddTag("CLASSIFIED")
+
+    inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.WAVE_TINT_AMOUNT)
+    inst.AnimState:SetLayer(LAYER_BACKGROUND)
+    inst.AnimState:SetSortOrder(ANIM_SORT_ORDER.OCEAN_WAVES)
 
 	inst:AddTag("FX")
 	inst:AddTag("NOCLICK")
 	inst:AddTag("NOBLOCK")
 	inst:AddTag("ignorewalkableplatforms")
 
-	inst.OnEntitySleep = onSleep    
-	--swap comments on these lines:
-	inst:ListenForEvent( "animover", animover )
+	inst.OnEntitySleep = inst.Remove
+	inst:ListenForEvent("animover", inst.Remove)
+
+	inst.persists = false
 
     return inst
 end
@@ -70,7 +65,7 @@ local function floodfn(Sim)
 	return inst
 end
 
-return Prefab( "common/fx/wave_shimmer", shallowfn, assets ),
-		Prefab( "common/fx/wave_shimmer_med", medfn, assets ),
-		Prefab( "common/fx/wave_shimmer_deep", deepfn, assets ),
-		Prefab( "common/fx/wave_shimmer_flood", floodfn, assets )
+return Prefab("wave_shimmer", shallowfn, assets),
+		Prefab("wave_shimmer_med", medfn, assets),
+		Prefab("wave_shimmer_deep", deepfn, assets),
+		Prefab("wave_shimmer_flood", floodfn, assets)

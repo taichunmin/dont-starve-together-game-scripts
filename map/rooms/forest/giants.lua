@@ -4,9 +4,9 @@ AddRoom("MooseGooseBreedingGrounds", {
 	colour={r=0.2,g=0.0,b=0.2,a=0.3},
 	value = GROUND.GRASS,
 	tags = {"ForceConnected", "RoadPoison"},
-	contents =  
+	contents =
 	{
-        countprefabs= 
+        countprefabs=
         {
 			moose_nesting_ground = 4,
         },
@@ -31,9 +31,9 @@ AddRoom("MooseGooseBreedingGrounds", {
 -- 	colour={r=0.2,g=0.0,b=0.2,a=0.3},
 -- 	value = GROUND.GRASS,
 -- 	tags = {"ForceConnected", "RoadPoison"},
--- 	contents =  
+-- 	contents =
 -- 	{
---         countprefabs= 
+--         countprefabs=
 --         {
 -- 			moose_nesting_ground = 1,
 --         },
@@ -56,9 +56,9 @@ AddRoom("MooseGooseBreedingGrounds", {
 -- 	colour={r=0.2,g=0.0,b=0.2,a=0.3},
 -- 	value = GROUND.FOREST,
 -- 	tags = {"ForceConnected", "RoadPoison"},
--- 	contents =  
+-- 	contents =
 -- 	{
---         countprefabs= 
+--         countprefabs=
 --         {
 -- 			moose_nesting_ground = 1,
 --         },

@@ -14,8 +14,6 @@ local PopupDialogScreen = require "screens/popupdialog"
 local EmailSignupScreen = require "screens/emailsignupscreen"
 local MovieDialog = require "screens/moviedialog"
 local MultiplayerMainScreen = require "screens/multiplayermainscreen"
-
-local NoAuthenticationPopupDialogScreen = require "screens/noauthenticationpopupdialogscreen"
 local NetworkLoginPopup = require "screens/networkloginpopup"
 
 local OnlineStatus = require "widgets/onlinestatus"
@@ -39,7 +37,7 @@ local MainScreen = Class(Screen, function(self, profile)
     self.profile = profile
 	self.log = true
     self.targetversion = -1
-	self:DoInit() 
+	self:DoInit()
     self.default_focus = self.play_button
     self.music_playing = false
 end)
@@ -49,11 +47,11 @@ function MainScreen:DoInit()
 
 	TheFrontEnd:GetGraphicsOptions():DisableStencil()
 	TheFrontEnd:GetGraphicsOptions():DisableLightMapComponent()
-	
+
 	TheInputProxy:SetCursorVisible(true)
 
     self.portal_root = self:AddChild(Widget("portal_root"))
-    self.bg = self.portal_root:AddChild(TEMPLATES.AnimatedPortalBackground())	
+    self.bg = self.portal_root:AddChild(TEMPLATES.AnimatedPortalBackground())
     self.fg = self.portal_root:AddChild(TEMPLATES.AnimatedPortalForeground())
 
 	-- FIXED ROOT
@@ -68,8 +66,8 @@ function MainScreen:DoInit()
     self.dark_card:SetVAnchor(ANCHOR_MIDDLE)
     self.dark_card:SetHAnchor(ANCHOR_MIDDLE)
     self.dark_card:SetScaleMode(SCALEMODE_FILLSCREEN)
-	self.dark_card:SetTint(0,0,0,.75)	
- 
+	self.dark_card:SetTint(0,0,0,.75)
+
 	--LEFT COLUMN
     self.left_col = self.fixed_root:AddChild(Widget("left"))
 	self.left_col:SetPosition(lcol-100, 0)
@@ -88,7 +86,7 @@ function MainScreen:DoInit()
     self.legalese_image:SetPosition(title_x+subtitle_offset_x, title_y+subtitle_offset_y-50, 0)
     self.legalese_image:SetScale(.7)
     self.legalese_image:SetTint(unpack(FRONTEND_TITLE_COLOUR))
-    
+
     --RIGHT COLUMN
     self.right_col = self.fixed_root:AddChild(Widget("right"))
     self.right_col:SetPosition(rcol, 0)
@@ -170,7 +168,7 @@ function MainScreen:DoInit()
 	--focus moving
     self.play_button:SetFocusChangeDir(MOVE_DOWN, self.exit_button)
     self.exit_button:SetFocusChangeDir(MOVE_UP, self.play_button)
-	
+
 	self:MakeDebugButtons()
     self.play_button:SetFocus()
 end
@@ -222,7 +220,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
             TheFrontEnd:Fade(FADE_IN, PLAY_BUTTON_FADE_TIME, nil, nil, nil, "alpha")
 		end
     end
-    	
+
     local function onCancel()
         self.play_button:Enable()
         self.exit_button:Enable()
@@ -240,7 +238,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
             return "current"
         end
     end
-    	
+
     local function onLogin(forceOffline)
 	    local account_manager = TheFrontEnd:GetAccountManager()
 	    local is_banned = (account_manager:IsBanned() == true)
@@ -248,7 +246,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
 	    local communication_succeeded = account_manager:CommunicationSucceeded()
 	    local inventory_succeeded = TheInventory:HasDownloadedInventory()
 		local has_auth_token = account_manager:HasAuthToken()
-		
+
         if is_banned then -- We are banned
         	TheFrontEnd:PopScreen()
 	        TheNet:NotifyAuthenticationFailure()
@@ -259,27 +257,27 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
         	OnNetworkDisconnect( "E_UPGRADE", true)
         elseif checkVersion() == "old" and not DEBUG_MODE then
             TheFrontEnd:PopScreen()
-            local confirm = PopupDialogScreen( STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_TITLE, STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_BODY, 
+            local confirm = PopupDialogScreen( STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_TITLE, STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_BODY,
                         {
-                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_PLAY, 
-                                    cb = function() 
+                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_PLAY,
+                                    cb = function()
                                         TheFrontEnd:PopScreen()
-                                        TheFrontEnd:Fade(FADE_OUT, PLAY_BUTTON_FADE_TIME, 
+                                        TheFrontEnd:Fade(FADE_OUT, PLAY_BUTTON_FADE_TIME,
                                             function()
-                                                GoToMultiplayerMainMenu(true) 
-                                            end, nil, nil, "alpha") 
+                                                GoToMultiplayerMainMenu(true)
+                                            end, nil, nil, "alpha")
                                     end },
-                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_INSTRUCTIONS, 
-                                    cb = function() 
-                                        onCancel() 
-                                        TheFrontEnd:PopScreen() 
-                                        VisitURL("http://forums.kleientertainment.com/forum/86-check-for-latest-steam-build/") 
+                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_INSTRUCTIONS,
+                                    cb = function()
+                                        onCancel()
+                                        TheFrontEnd:PopScreen()
+                                        VisitURL("http://forums.kleientertainment.com/forum/86-check-for-latest-steam-build/")
                                     end },
-                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_CANCEL,  
-                                    cb = function() 
-                                        onCancel() 
-                                        TheFrontEnd:PopScreen() 
-                                    end}  
+                         {text=STRINGS.UI.MAINSCREEN.VERSION_OUT_OF_DATE_CANCEL,
+                                    cb = function()
+                                        onCancel()
+                                        TheFrontEnd:PopScreen()
+                                    end}
                         }, false, 140)
             for i,v in pairs(confirm.menu.items) do
                 v.image:SetScale(.6, .7)
@@ -292,7 +290,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
                 --if not push_mp_main_screen then
                     TheFrontEnd:PopScreen()
                 --end
-            
+
                 TheFrontEnd:Fade(FADE_OUT, PLAY_BUTTON_FADE_TIME, function()
                     --if push_mp_main_screen then
                         --TheFrontEnd:PopScreen()
@@ -308,48 +306,44 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
             TheFrontEnd:PopScreen()
             local confirm = PopupDialogScreen( STRINGS.UI.MAINSCREEN.OFFLINEMODE,STRINGS.UI.MAINSCREEN.OFFLINEMODEDESC,
 								{
-								  	{text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE, cb = function() 
+								  	{text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE, cb = function()
 								  		TheFrontEnd:PopScreen()
 								  		TheFrontEnd:Fade(FADE_OUT, PLAY_BUTTON_FADE_TIME, function()
-								  			GoToMultiplayerMainMenu(true) 
+								  			GoToMultiplayerMainMenu(true)
                                         end, nil, nil, "alpha")
 								  	end },
-								  	{text=STRINGS.UI.MAINSCREEN.CANCELOFFLINE,   cb = function() 
-								  		onCancel() 
-								  		TheFrontEnd:PopScreen() 
-								  	end}  
+								  	{text=STRINGS.UI.MAINSCREEN.CANCELOFFLINE,   cb = function()
+								  		onCancel()
+								  		TheFrontEnd:PopScreen()
+								  	end}
 								})
             TheFrontEnd:PushScreen(confirm)
             TheNet:NotifyAuthenticationFailure()
         elseif (not inventory_succeeded and has_auth_token) then
             print ( "[Warning] Failed to download local inventory" )
-        else -- We haven't created an account yet
-            TheFrontEnd:PopScreen()
-            TheFrontEnd:PushScreen(NoAuthenticationPopupDialogScreen())
-            TheNet:NotifyAuthenticationFailure()
         end
     end
-	
+
 	if TheSim:IsLoggedOn() or account_manager:HasAuthToken() then
 		if TheSim:GetUserHasLicenseForApp(DONT_STARVE_TOGETHER_APPID) then
 			account_manager:Login( "Client Login" )
-			TheFrontEnd:PushScreen(NetworkLoginPopup(onLogin, checkVersion, onCancel, hadPendingConnection)) 
+			TheFrontEnd:PushScreen(NetworkLoginPopup(onLogin, checkVersion, onCancel, hadPendingConnection))
 		else
 			TheNet:NotifyAuthenticationFailure()
 			OnNetworkDisconnect( "APP_OWNERSHIP_CHECK_FAILED", false, false )
 		end
-	else			
+	else
 		-- Set lan mode
 		TheNet:NotifyAuthenticationFailure()
-		local confirm = PopupDialogScreen( STRINGS.UI.MAINSCREEN.STEAMOFFLINEMODE,STRINGS.UI.MAINSCREEN.STEAMOFFLINEMODEDESC, 
+		local confirm = PopupDialogScreen( STRINGS.UI.MAINSCREEN.STEAMOFFLINEMODE,STRINGS.UI.MAINSCREEN.STEAMOFFLINEMODEDESC,
 						{
 						 {text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE, cb = function() TheFrontEnd:PopScreen() GoToMultiplayerMainMenu(true) end },
-						 {text=STRINGS.UI.MAINSCREEN.CANCELOFFLINE,  cb = function() onCancel() TheFrontEnd:PopScreen() end}  
+						 {text=STRINGS.UI.MAINSCREEN.CANCELOFFLINE,  cb = function() onCancel() TheFrontEnd:PopScreen() end}
 						})
 		TheFrontEnd:PushScreen(confirm)
 	end
-	
-	-- self.menu:Disable()	
+
+	-- self.menu:Disable()
     self.play_button:Disable()
     self.exit_button:Disable()
 end
@@ -444,9 +438,9 @@ function MainScreen:OnUpdate(dt)
         self.music_playing = true
     end
 
-    if self.bg.anim_root.portal:GetAnimState():AnimDone() and not self.leaving then 
-    	if math.random() < .33 then 
-			self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle_eyescratch", false) 
+    if self.bg.anim_root.portal:GetAnimState():AnimDone() and not self.leaving then
+    	if math.random() < .33 then
+			self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle_eyescratch", false)
     	else
     		self.bg.anim_root.portal:GetAnimState():PlayAnimation("portal_idle", false)
     	end
@@ -455,7 +449,7 @@ end
 
 function MainScreen:SetCurrentVersion(str)
 	local status, version = pcall( function() return json.decode(str) end )
-	local most_recent_cl = -2 
+	local most_recent_cl = -2
 	if status and version then
 		if version.main and table.getn(version.main) > 0 then
 			for idx,changelist in ipairs(version.main) do
@@ -474,7 +468,7 @@ function MainScreen:SetTargetGameVersion(ver)
 end
 
 function MainScreen:OnCurrentVersionQueryComplete( result, isSuccessful, resultCode )
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
+ 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then
  		self:SetCurrentVersion(result, true)
  	else
 		self:SetTargetGameVersion(-2)

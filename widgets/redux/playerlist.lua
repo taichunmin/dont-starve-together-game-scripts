@@ -18,15 +18,15 @@ local function GetCharacterPrefab(data)
 	if data == nil then
 		return ""
 	end
-	
+
 	if data.prefab and data.prefab ~= "" then
 		return data.prefab
 	end
-	
+
 	if data.lobbycharacter and data.lobbycharacter ~= "" then
 		return data.lobbycharacter
 	end
-	
+
 	return ""
 end
 
@@ -47,7 +47,7 @@ function PlayerInfoListing:doButtonFocusHookups(nextWidgets)
     end
 
     if self.viewprofile:IsVisible() then
-        if self.mute:IsVisible() then 
+        if self.mute:IsVisible() then
             self.viewprofile:SetFocusChangeDir(MOVE_RIGHT, self.mute)
         else
             self.viewprofile:SetFocusChangeDir(MOVE_RIGHT, nextWidgets.right)
@@ -82,12 +82,12 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
 
     if IsAnyFestivalEventActive() then
         self.rank = self:AddChild(TEMPLATES.FestivalNumberBadge("lavaarena"))
-        self.rank:SetPosition(x + 16, -4)  
+        self.rank:SetPosition(x + 16, -4)
         self.rank:SetScale(.5)
         x = x + 16*2 + nudge_x
     else
         self.rankBadge = self:AddChild(TEMPLATES.RankBadge())
-        self.rankBadge:SetPosition(x + 15, -15)  
+        self.rankBadge:SetPosition(x + 15, -15)
         self.rankBadge:SetScale(.5)
 
        x = x + 16*2 + nudge_x
@@ -107,7 +107,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
 
     self.adminBadge = self:AddChild(ImageButton("images/avatars.xml", "avatar_admin.tex"))
     self.adminBadge:Disable()
-    self.adminBadge:SetPosition(x + 4, -10)  
+    self.adminBadge:SetPosition(x + 4, -10)
     self.adminBadge.image:SetScale(.18)
     self.adminBadge.scale_on_focus = false
     self.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 10, colour = {1,1,1,1}})
@@ -151,7 +151,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     -- Randomize only for testing
     local colours = nil --GetAvailablePlayerColours()
     if colours then
-        self.name:SetColour(unpack(colours[math.random(#colours)])) 
+        self.name:SetColour(unpack(colours[math.random(#colours)]))
     else
         self.name:SetColour(unpack(not empty and v.colour or DEFAULT_PLAYER_COLOUR))
     end
@@ -162,12 +162,12 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self.netscore = self:AddChild(Image())
     self.netscore:SetPosition(x + 20.5, 0)
     self.netscore:SetScale(0.6)
-    
+
     self.viewprofile = self:AddChild(ImageButton("images/scoreboard.xml", "addfriend.tex"))
     self.viewprofile:SetPosition(x + 6, 0)
     self.viewprofile:SetNormalScale(scale)
     self.viewprofile:SetFocusScale(scale * 1.1)
-    self.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
+    self.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
     self.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = -35, offset_y = 0, colour = {1,1,1,1}})
     self.viewprofile:SetOnClick(
         function()
@@ -188,7 +188,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self.mute:SetPosition(x,0,0)
     self.mute:SetNormalScale(scale)
     self.mute:SetFocusScale(scale * 1.1)
-    self.mute:SetFocusSound("dontstarve/HUD/click_mouseover")
+    self.mute:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
     self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, offset_x = -30, offset_y = 0, colour = {1,1,1,1}})
     self.mute.image.inst.OnUpdateVoice = function(inst)
         inst.widget:SetTint(unpack(self.userid ~= nil and TheNet:IsVoiceActive(self.userid) and VOICE_ACTIVE_COLOUR or VOICE_IDLE_COLOUR))
@@ -222,13 +222,13 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
                 TheNet:SetPlayerMuted(self.userid, self.isMuted)
                 if self.isMuted then
                     self.mute.image_focus = "mute.tex"
-                    self.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
-                    self.mute:SetTextures("images/scoreboard.xml", "mute.tex") 
+                    self.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
+                    self.mute:SetTextures("images/scoreboard.xml", "mute.tex")
                     self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
                 else
                     self.mute.image_focus = "chat.tex"
                     self.mute.image:SetTexture("images/scoreboard.xml", "chat.tex")
-                    self.mute:SetTextures("images/scoreboard.xml", "chat.tex") 
+                    self.mute:SetTextures("images/scoreboard.xml", "chat.tex")
                     self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE)
                 end
                 self.mute.image.inst:SetMuted(self.isMuted)
@@ -237,8 +237,8 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
 
     if self.isMuted then
         self.mute.image_focus = "mute.tex"
-        self.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
-        self.mute:SetTextures("images/scoreboard.xml", "mute.tex") 
+        self.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
+        self.mute:SetTextures("images/scoreboard.xml", "mute.tex")
         self.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
     end
     self.mute.image.inst:SetMuted(self.isMuted)
@@ -263,7 +263,7 @@ function PlayerInfoListing:DoInit(v, nextWidgets)
     self:doButtonFocusHookups(nextWidgets)
 end
 
-local function UpdatePlayerListing(context, widget, data, index)   
+local function UpdatePlayerListing(context, widget, data, index)
     local empty = data == nil or next(data) == nil
 
     widget.userid = not empty and data.userid or nil
@@ -273,13 +273,13 @@ local function UpdatePlayerListing(context, widget, data, index)
     else
         widget.bg:Show()
     end
-    
+
     if widget.rankBadge then
         if empty then
             widget.rankBadge:Hide()
         else
             widget.rankBadge:Show()
-        
+
             local profileflair = GetRemotePlayerVanityItem(data.vanity or {}, "profileflair")
             widget.rankBadge:SetRank(profileflair, data.eventlevel, true)
         end
@@ -330,12 +330,12 @@ local function UpdatePlayerListing(context, widget, data, index)
         if widget.isMuted then
             widget.mute.image_focus = "mute.tex"
             widget.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
-            widget.mute:SetTextures("images/scoreboard.xml", "mute.tex")  
+            widget.mute:SetTextures("images/scoreboard.xml", "mute.tex")
             widget.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
         else
             widget.mute.image_focus = "chat.tex"
             widget.mute.image:SetTexture("images/scoreboard.xml", "chat.tex")
-            widget.mute:SetTextures("images/scoreboard.xml", "chat.tex") 
+            widget.mute:SetTextures("images/scoreboard.xml", "chat.tex")
             widget.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE)
         end
     end
@@ -347,7 +347,7 @@ local function UpdatePlayerListing(context, widget, data, index)
         widget.mute:Show()
         widget.mute.image.inst:SetMuted(widget.isMuted)
     end
-    
+
     if widget.netscore ~= nil and empty == false and data.userid == owner and data.netscore ~= nil then
 		widget.netscore:Show()
 		local score = math.clamp(data.netscore, 0, 2)
@@ -378,7 +378,7 @@ function PlayerList:GetDisplayName(clientrecord)
 end
 
 function PlayerList:BuildPlayerList(players, nextWidgets)
-    if not self.player_list then 
+    if not self.player_list then
         self.player_list = self.proot:AddChild(Widget("player_list"))
         self.player_list:SetPosition(190, 680)
     end
@@ -387,7 +387,7 @@ function PlayerList:BuildPlayerList(players, nextWidgets)
         self.title_banner = self.player_list:AddChild(Image("images/global_redux.xml", "player_list_banner.tex"))
         self.title_banner:SetScale(.7)
         self.title_banner:SetPosition(-15, 0)
-        
+
         local sub_banner = self.title_banner:AddChild(Image("images/global_redux.xml", "player_list_banner.tex"))
         sub_banner:SetScale(-1)
         sub_banner:SetPosition(0, -410)
@@ -402,7 +402,7 @@ function PlayerList:BuildPlayerList(players, nextWidgets)
 
     if not self.players_number then
         self.players_number = self.title_banner:AddChild(Text(HEADERFONT, 35, "x/y", UICOLOURS.HIGHLIGHT_GOLD))
-        self.players_number:SetPosition(50, 10) 
+        self.players_number:SetPosition(50, 10)
         self.players_number:SetRegionSize(300, 50)
         self.players_number:SetHAlign(ANCHOR_RIGHT)
     end
@@ -435,7 +435,7 @@ function PlayerList:BuildPlayerList(players, nextWidgets)
                     apply_fn = UpdatePlayerListing,
                     scrollbar_offset = 20,
                     scrollbar_height_offset = -50,
-                    peek_percent = TheNet:GetServerMaxPlayers() > NUM_ROWS and 0.3 or 0,
+                    peek_percent = TheNet:GetServerMaxPlayers() > NUM_ROWS and 0.3 or 0
                 }
             ))
         self.scroll_list:SetPosition(-40, -143)
@@ -459,13 +459,13 @@ function PlayerList:GetPlayerTable()
             break
         end
     end
-    return ClientObjs 
+    return ClientObjs
 end
 
 function PlayerList:Refresh(next_widgets)
     local players = self:GetPlayerTable()
     self.scroll_list:SetItemsData(players)
-    
+
     local maxPlayers = TheNet:GetServerMaxPlayers()
     self.players_number:SetString(subfmt(STRINGS.UI.LOBBYSCREEN.NUM_PLAYERS_FMT, {num = #players, max = tostring(maxPlayers or "?")}))
 end

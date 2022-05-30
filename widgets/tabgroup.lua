@@ -51,7 +51,7 @@ function TabGroup:GetNextIdx()
     while idx < #self.tabs do
         idx = idx + 1
         local tab = self.tabs[idx]
-        
+
         if tab and self.shown[tab] then
             return idx
         end
@@ -138,7 +138,7 @@ function TabGroup:OnTabsChanged()
     end
 
     if self.selected ~= selected then
-        
+
         if self.selected and not selected then
             if self.onclose then self:onclose() end
         elseif not self.selected and selected then

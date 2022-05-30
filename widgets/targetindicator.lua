@@ -40,6 +40,7 @@ end
 
 local TargetIndicator = Class(Widget, function(self, owner, target, data)
     Widget._ctor(self, "TargetIndicator")
+    self:UpdateWhilePaused(false)
     self.owner = owner
     self.isFE = false
     self:SetClickable(true)
@@ -105,6 +106,7 @@ function TargetIndicator:GetTargetIndicatorAlpha(dist)
 end
 
 function TargetIndicator:OnUpdate()
+    if TheNet:IsServerPaused() then return end
     -- figure out how far away they are and scale accordingly
     -- then grab the new position of the target and update the HUD elt's pos accordingly
     -- kill on this is rough: it just pops in/out. would be nice if it faded in/out...
@@ -118,6 +120,10 @@ function TargetIndicator:OnUpdate()
         self.isCharacterState3 = checkbit(userflags, USERFLAGS.CHARACTER_STATE_3)
         self.headbg:SetTexture(DEFAULT_ATLAS, self.isGhost and "avatar_ghost_bg.tex" or "avatar_bg.tex")
         self.head:SetTexture(self:GetAvatarAtlas(), self:GetAvatar(), DEFAULT_AVATAR)
+    end
+
+    if not self.target:IsValid() then
+        return
     end
 
     local dist = self.owner:GetDistanceSqToInst(self.target)
@@ -198,13 +204,13 @@ function TargetIndicator:UpdatePosition(targX, targZ)
     local x = GetXCoord(indicatorAngle, screenWidth)
     local y = GetYCoord(indicatorAngle, screenHeight)
 
-    if x <= LEFT_EDGE_BUFFER + (.5 * w * scale.x) then 
+    if x <= LEFT_EDGE_BUFFER + (.5 * w * scale.x) then
         x = LEFT_EDGE_BUFFER + (.5 * w * scale.x)
     elseif x >= screenWidth - RIGHT_EDGE_BUFFER - (.5 * w * scale.x) then
         x = screenWidth - RIGHT_EDGE_BUFFER - (.5 * w * scale.x)
     end
 
-    if y <= BOTTOM_EDGE_BUFFER + (.5 * h * scale.y) then 
+    if y <= BOTTOM_EDGE_BUFFER + (.5 * h * scale.y) then
         y = BOTTOM_EDGE_BUFFER + (.5 * h * scale.y)
     elseif y >= screenHeight - TOP_EDGE_BUFFER - (.5 * h * scale.y) then
         y = screenHeight - TOP_EDGE_BUFFER - (.5 * h * scale.y)

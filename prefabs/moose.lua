@@ -45,6 +45,8 @@ local SEE_STRUCTURE_DIST = 20
 local TARGET_DIST = 10
 local LOSE_TARGET_DIST = 20
 
+local RETARGET_CANT_TAGS = { "prey", "smallcreature", "mossling", "moose" }
+
 local function RetargetFn(inst)
     if inst.sg:HasStateTag("busy") then return end
 
@@ -55,7 +57,7 @@ local function RetargetFn(inst)
                 return inst.components.combat:CanTarget(guy)
             end,
             nil,
-            { "prey", "smallcreature", "mossling", "moose" })
+            RETARGET_CANT_TAGS)
     end
 
     if not target then
@@ -63,7 +65,7 @@ local function RetargetFn(inst)
                 return inst.components.combat:CanTarget(guy)
             end,
             nil,
-            { "prey", "smallcreature", "mossling", "moose" })
+            RETARGET_CANT_TAGS)
     end
 
     return target
@@ -72,8 +74,8 @@ end
 local function KeepTargetFn(inst, target)
     local landing = inst.components.knownlocations:GetLocation("landpoint") or inst:GetPosition()
 
-    return inst.components.combat:CanTarget(target) 
-    and inst:GetPosition():Dist(target:GetPosition()) <= LOSE_TARGET_DIST 
+    return inst.components.combat:CanTarget(target)
+    and inst:GetPosition():Dist(target:GetPosition()) <= LOSE_TARGET_DIST
     and target:GetPosition():Dist(landing) <= LOSE_TARGET_DIST
 
 end
@@ -84,8 +86,8 @@ local function OnEntitySleep(inst)
     end
 end
 
-local function OnSpringChange(inst, isSpring)
-    inst.shouldGoAway = not isSpring or TheWorld:HasTag("cave")
+local function OnSpringChange(inst, isspring)
+    inst.shouldGoAway = not isspring or TheWorld:HasTag("cave")
     if inst:IsAsleep() then
         OnEntitySleep(inst)
     end
@@ -102,7 +104,7 @@ end
 local function OnSave(inst, data)
     data.WantsToLayEgg = inst.WantsToLayEgg
     data.CanDisarm = inst.CanDisarm
-    data.shouldGoAway = inst.shouldGoAway
+    data.shouldGoAway = inst.shouldGoAway or nil
 end
 
 local function OnLoad(inst, data)
@@ -112,7 +114,9 @@ local function OnLoad(inst, data)
     if data.CanDisarm then
         inst.CanDisarm = data.CanDisarm
     end
-    inst.shouldGoAway = data.shouldGoAway or false
+    if data.shouldGoAway then
+        inst.shouldGoAway = data.shouldGoAway
+    end
 end
 
 local function ontimerdone(inst, data)
@@ -213,7 +217,6 @@ local function fn()
     ------------------------------------------
 
     inst:AddComponent("sleeper")
-    inst.shouldGoAway = false
 
     ------------------------------------------
 
@@ -249,6 +252,8 @@ local function fn()
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("entitysleep", OnEntitySleep)
 
+    OnSpringChange(inst, TheWorld.state.isspring)
+
     ------------------------------------------
 
     MakeLargeBurnableCharacter(inst, "swap_fire")
@@ -261,6 +266,8 @@ local function fn()
     inst.CanDisarm = false
 
     inst.OnPreLoad = OnPreLoad
+    inst.OnSave = OnSave
+    inst.OnLoad = OnLoad
 
     ------------------------------------------
 

@@ -29,7 +29,7 @@ local OnAutoSaverUpdate = _ismastershard and function(src, data)
 end or nil
 
 local OnSnapshotDirty = not _ismastershard and function()
-    _world:PushEvent("slave_autosaverupdate", { snapshot = _snapshot:value() })
+    _world:PushEvent("secondary_autosaverupdate", { snapshot = _snapshot:value() })
 end or nil
 
 --------------------------------------------------------------------------

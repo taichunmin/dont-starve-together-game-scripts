@@ -57,7 +57,7 @@ local function common_fn(anim)
         return inst
     end
 
-    inst:AddComponent("lootdropper") 
+    inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLoot({"rocks"})
     inst.components.lootdropper.numrandomloot = 1
     inst.components.lootdropper:AddRandomLoot("rocks"         , 0.99)

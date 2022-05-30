@@ -171,8 +171,7 @@ local events =
                     end
                 end
             end
-            if (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("caninterrupt")) and
-                (inst.hasshield or (inst.sg.mem.last_hit_time or 0) + TUNING.STALKER_HIT_RECOVERY < GetTime()) then
+            if (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("caninterrupt")) and not CommonHandlers.HitRecoveryDelay(inst, TUNING.STALKER_HIT_RECOVERY) then
                 if inst.hasshield and data.attacker ~= nil and data.attacker:IsValid() then
                     inst:ForceFacePoint(data.attacker.Transform:GetWorldPosition())
                 end
@@ -452,8 +451,8 @@ local states =
                 inst.AnimState:PlayAnimation("hit")
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/together/stalker/hit")
                 inst.sg:SetTimeout(16 * FRAMES)
-                inst.sg.mem.last_hit_time = GetTime()
             end
+            CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         ontimeout = function(inst)
@@ -497,7 +496,7 @@ local states =
                             local targets = inst:FindSnareTargets()
                             if targets ~= nil then
                                 inst.sg:GoToState("snare", targets)
-                                return 
+                                return
                             end
                         end
                         if inst.sg.statemem.dospikes then

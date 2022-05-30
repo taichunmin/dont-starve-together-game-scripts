@@ -6,14 +6,16 @@ local SavingIndicator = Class(Widget, function(self, owner)
     self.owner = owner
 
     Widget._ctor(self, "Saving")
+    self:UpdateWhilePaused(false)
     self.anim = self:AddChild(UIAnim())
     self.anim:GetAnimState():SetBank("saving")
     self.anim:GetAnimState():SetBuild("saving")
+    self.anim:GetAnimState():AnimateWhilePaused(false)
     self:Hide()
 
     self._scale = .5
     self.text = self:AddChild(Text(UIFONT, 50 / self._scale))
-    
+
     self.text:SetString(STRINGS.UI.HUD.SAVING)
     self.text:SetColour(241/255, 199/255, 66/255, 1)
     self.text:SetHAlign(ANCHOR_LEFT)

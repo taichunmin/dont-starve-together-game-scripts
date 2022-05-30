@@ -98,7 +98,7 @@ local function castfxfn()
     inst.AnimState:SetBuild("deer_fire_charge")
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
     inst.AnimState:SetLightOverride(1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:Hide()
 

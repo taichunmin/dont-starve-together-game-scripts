@@ -222,6 +222,8 @@ local function create_hand()
     inst.components.locomotor.directdrive = true
     inst.components.locomotor.slowmultiplier = 1
     inst.components.locomotor.fastmultiplier = 1
+	inst.components.locomotor:SetTriggersCreep(false)
+    inst.components.locomotor.pathcaps = { ignorecreep = true }
 
     inst:AddComponent("sanityaura")
     inst.components.sanityaura.aura = -TUNING.SANITYAURA_MED

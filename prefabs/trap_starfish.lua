@@ -14,7 +14,7 @@ local function on_anim_over(inst)
     if inst.components.mine.issprung then
         return
     end
-    ---soundhelp i can't get these sounds to play at the begining of idle 2 and idle 3 
+    ---soundhelp i can't get these sounds to play at the begining of idle 2 and idle 3
     ---i need your help, your my only hope
     local random_value = math.random()
     if random_value < 0.4 then

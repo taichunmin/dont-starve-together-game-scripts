@@ -30,7 +30,7 @@ local function OnGemTaken(inst)
     inst.AnimState:PlayAnimation("idle_empty")
 end
 
-local function ShatterGem(inst) 
+local function ShatterGem(inst)
     inst.SoundEmitter:KillSound("hover_loop")
     inst.AnimState:ClearBloomEffectHandle()
     inst.AnimState:PlayAnimation("shatter")
@@ -46,7 +46,7 @@ end
 
 local function OnLoad(inst, data)
     if not inst.components.pickable.caninteractwith then
-        OnGemTaken(inst)  
+        OnGemTaken(inst)
     else
         OnGemGiven(inst)
     end

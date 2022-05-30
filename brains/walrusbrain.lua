@@ -61,10 +61,12 @@ local function ShouldRunAway(guy)
             guy:HasTag("monster"))
 end
 
+local EATFOOD_MUST_TAGS = { "edible_MEAT" }
+local CHARACTER_TAGS = {"character"}
 local function EatFoodAction(inst)
-    local target = FindEntity(inst, SEE_FOOD_DIST, nil, { "edible_MEAT" })
+    local target = FindEntity(inst, SEE_FOOD_DIST, nil, EATFOOD_MUST_TAGS)
     --check for scary things near the food, or if it's in the water
-    if target ~= nil and (not target:IsOnValidGround() or GetClosestInstWithTag("character", target, RUN_START_DIST) ~= nil) then
+    if target ~= nil and (not target:IsOnValidGround() or GetClosestInstWithTag(CHARACTER_TAGS, target, RUN_START_DIST) ~= nil) then
         target = nil
     end
     if target ~= nil then

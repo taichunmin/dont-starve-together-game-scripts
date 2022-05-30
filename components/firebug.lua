@@ -29,7 +29,7 @@ function Firebug:OnUpdate(dt)
     elseif self.time_to_fire > dt then
         self.time_to_fire = self.time_to_fire - dt
     else
-        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_LIGHTFIRE"))      
+        self.inst.components.talker:Say(GetString(self.inst, "ANNOUNCE_LIGHTFIRE"))
         if self.prefab ~= nil then
             SpawnPrefab(self.prefab).Transform:SetPosition(self.inst.Transform:GetWorldPosition())
         end

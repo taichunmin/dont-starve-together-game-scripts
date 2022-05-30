@@ -7,12 +7,13 @@ local assets =
 }
 
 local function ondeploy(inst, pt)
-    local lp = SpawnPrefab("lureplant")
+    local lp = SpawnPrefab("lureplant", inst.linked_skinname, inst.skin_id)
     if lp ~= nil then
         lp.Transform:SetPosition(pt:Get())
         inst.components.stackable:Get():Remove()
         PreventCharacterCollisionsWithPlacedObjects(lp)
         lp.sg:GoToState("spawn")
+        lp:AddTag("planted")
     end
 end
 
@@ -54,7 +55,7 @@ local function fn()
 
     inst:AddComponent("deployable")
     --inst.components.deployable:SetDeployMode(DEPLOYMODE.ANYWHERE)
-    inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.NONE)
+    --inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.DEFAULT)
     inst.components.deployable.ondeploy = ondeploy
 
     return inst

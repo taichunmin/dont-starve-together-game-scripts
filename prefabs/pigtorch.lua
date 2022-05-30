@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/pig_torch.zip"),
@@ -84,6 +86,10 @@ local function OnHaunt(inst)
     return true
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_Spawner_PreLoad(inst, data, TUNING.PIGHOUSE_SPAWN_TIME)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -136,7 +142,8 @@ local function fn()
     inst.components.workable:SetOnWorkCallback(onhit)
 
     inst:AddComponent("spawner")
-    inst.components.spawner:Configure("pigguard", TUNING.TOTAL_DAY_TIME * 4)
+    WorldSettings_Spawner_SpawnDelay(inst, TUNING.PIGHOUSE_SPAWN_TIME, TUNING.PIGHOUSE_ENABLED)
+    inst.components.spawner:Configure("pigguard", TUNING.PIGHOUSE_SPAWN_TIME)
     inst.components.spawner:SetOnlySpawnOffscreen(true)
     inst.components.spawner:SetOnVacateFn(OnVacate)
 
@@ -145,6 +152,8 @@ local function fn()
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
     --MakeSnowCovered(inst)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

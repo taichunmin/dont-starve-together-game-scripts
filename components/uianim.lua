@@ -3,7 +3,12 @@ local easing = require("easing")
 
 local UIAnim = Class(function(self, inst)
     self.inst = inst
+    self.update_while_paused = true
 end)
+
+function UIAnim:UpdateWhilePaused(update_while_paused)
+    self.update_while_paused = update_while_paused
+end
 
 function UIAnim:FinishCurrentTint()
     if not self.inst or not self.inst:IsValid() then
@@ -21,6 +26,14 @@ function UIAnim:FinishCurrentTint()
         self.tint_whendone = nil
         whendone()
     end
+end
+
+function UIAnim:CancelTintTo( run_complete_fn )
+	self.tint_t = nil
+	if run_complete_fn ~= nil and self.tint_whendone then
+		self.tint_whendone()
+    end
+	self.tint_whendone = nil
 end
 
 function UIAnim:TintTo(start, dest, duration, whendone)
@@ -49,12 +62,20 @@ function UIAnim:FinishCurrentScale()
     self.scale_t = nil
 
     self.inst.UITransform:SetScale(sx >= 0 and val or -val, sy >= 0 and val or -val, sz >= 0 and val or -val)
-    
+
     if self.scale_whendone then
 		local whendone = self.scale_whendone
         self.scale_whendone = nil
         whendone()
     end
+end
+
+function UIAnim:CancelScaleTo( run_complete_fn )
+	self.scale_t = nil
+	if run_complete_fn ~= nil and self.scale_whendone then
+		self.scale_whendone()
+    end
+	self.scale_whendone = nil
 end
 
 function UIAnim:ScaleTo(start, dest, duration, whendone)
@@ -84,13 +105,13 @@ function UIAnim:MoveTo(start, dest, duration, whendone)
     self.pos_dest = dest
     self.pos_duration = duration
     self.pos_t = 0
-    
+
     if self.pos_whendone then
 		self.pos_whendone()
     end
     self.pos_whendone = whendone
-    
-    
+
+
     self.inst:StartWallUpdatingComponent(self)
     self.inst.UITransform:SetPosition(start.x, start.y, start.z)
 end
@@ -108,7 +129,7 @@ function UIAnim:RotateTo(start, dest, duration, whendone, infinite )
     self.rot_dest = dest
     self.rot_duration = duration
     self.rot_t = 0
-    
+
     if self.rot_whendone then
         self.rot_whendone()
     end
@@ -118,7 +139,7 @@ function UIAnim:RotateTo(start, dest, duration, whendone, infinite )
     if infinite then
         self.rot_infinite = infinite
     end
-    
+
     self.inst:StartWallUpdatingComponent(self)
     self.inst.UITransform:SetRotation(start)
 end
@@ -129,14 +150,16 @@ function UIAnim:OnWallUpdate(dt)
 		self.inst:StopWallUpdatingComponent(self)
 		return
     end
-    
+
+    if not self.update_while_paused and TheNet:IsServerPaused() then return end
+
     local done = false
-    
+
     if self.scale_t then
         local val = 1
         local sx, sy, sz = self.inst.UITransform:GetScale()
         if sx and sy and sz then
-	        
+
 			self.scale_t = self.scale_t + dt
 			if self.scale_t < self.scale_duration then
 				val = easing.outCubic( self.scale_t, self.scale_start, self.scale_dest - self.scale_start, self.scale_duration)

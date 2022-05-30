@@ -22,7 +22,7 @@ local events=
 local states =
 {
      State{
-        
+
         name = "idle",
         tags = {"idle", "canrotate"},
         onenter = function(inst, playanim)
@@ -34,12 +34,12 @@ local states =
                 inst.AnimState:PlayAnimation("idle", true)
             end
         end,
-        
-        timeline = 
+
+        timeline =
         {
 		    TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/idle") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -48,19 +48,19 @@ local states =
 
     State{
         name = "taunt",
-       
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
         end,
-        
-        timeline = 
+
+        timeline =
         {
             TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/taunt") end ),
             TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/taunt") end ),
             TimeEvent(33*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/taunt") end ),
         },
-        
+
 
         events=
         {
@@ -69,7 +69,7 @@ local states =
     },
 
     State{
-        
+
         name = "action",
         onenter = function(inst, playanim)
             inst.Physics:Stop()
@@ -82,7 +82,7 @@ local states =
                 inst.sg:GoToState("idle")
             end),
         }
-    },  
+    },
 
 
     State{
@@ -90,7 +90,7 @@ local states =
     	tags = {"busy","hiding"},
 
     	onenter = function(inst)
-            --If taking fire damage, spawn fire effect. 
+            --If taking fire damage, spawn fire effect.
 
     		inst.components.health:SetAbsorptionAmount(TUNING.SLURTLE_SHELL_ABSORB)
     		inst.Physics:Stop()
@@ -104,7 +104,7 @@ local states =
             inst.components.health:SetAbsorptionAmount(0)
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/hide") end ),
         },
@@ -118,7 +118,7 @@ local states =
             inst.AnimState:PlayAnimation("emerge")
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/emerge") end ),
         },
@@ -137,14 +137,14 @@ local states =
             inst.AnimState:PlayAnimation("eat_pre", false)
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(11*FRAMES, function(inst) 
+            TimeEvent(11*FRAMES, function(inst)
             inst:PerformBufferedAction()
             inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/bite") end ), --take food
-        },        
-        
-        events = 
+        },
+
+        events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end)
         },
@@ -160,23 +160,23 @@ local states =
             inst.sg:SetTimeout(2+math.random()*3)
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(7*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/eat") end ),
             TimeEvent(17*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/eat") end ),
         },
 
-        events = 
+        events =
         {
             EventHandler("attacked", function(inst) inst.components.inventory:DropItem(inst:GetBufferedAction().target) inst.sg:GoToState("idle") end) --drop food
         },
-        
+
         ontimeout= function(inst)
             inst.lastmeal = GetTime()
             inst:PerformBufferedAction()
             inst.sg:GoToState("idle", "eat_pst")
         end,
-    }, 
+    },
 
     State{
         name = "steal", --aquire food aggressively
@@ -201,22 +201,22 @@ local states =
 
 CommonStates.AddWalkStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 	    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
     },
 	walktimeline = {
 		    TimeEvent(0*FRAMES, function(inst)
-		    inst.Physics:Stop()             
+		    inst.Physics:Stop()
             if math.random() <= 0.33 then inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/idle") end
             inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/slide_out")
             end ),
 
-            TimeEvent(13*FRAMES, function(inst)               
+            TimeEvent(13*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/slide_in")
                 inst.components.locomotor:WalkForward()
             end ),
-            TimeEvent(21*FRAMES, function(inst)               
+            TimeEvent(21*FRAMES, function(inst)
                 inst.Physics:Stop()
             end ),
 	},
@@ -239,7 +239,7 @@ local combatanims =
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
+    attacktimeline =
     {
        TimeEvent(10*FRAMES, function(inst) inst.components.combat:DoAttack()
         inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/bite")
@@ -247,7 +247,7 @@ CommonStates.AddCombatStates(states,
     },
     deathtimeline =
     {
-        TimeEvent(1*FRAMES, function(inst)  
+        TimeEvent(1*FRAMES, function(inst)
         inst.SoundEmitter:PlaySound("dontstarve/creatures/slurtle/death")
         end),
     },

@@ -26,17 +26,17 @@ function Debuff:SetChangeFollowSymbolFn(fn)
 end
 
 function Debuff:Stop()
-    if self.target ~= nil and self.target.components.debuffable ~= nil then
-        self.target.components.debuffable:RemoveDebuff(self.name)
+    if self.target then
+        self.target:RemoveDebuff(self.name)
     end
 end
 
 --Should only be called by debuffable component
-function Debuff:AttachTo(name, target, followsymbol, followoffset)
+function Debuff:AttachTo(name, target, followsymbol, followoffset, data)
     self.name = name
     self.target = target
     if self.onattachedfn ~= nil then
-        self.onattachedfn(self.inst, target, followsymbol, followoffset)
+        self.onattachedfn(self.inst, target, followsymbol, followoffset, data)
     end
 end
 
@@ -50,9 +50,9 @@ function Debuff:OnDetach()
     end
 end
 
-function Debuff:Extend(followsymbol, followoffset)
+function Debuff:Extend(followsymbol, followoffset, data)
     if self.onextendedfn ~= nil then
-        self.onextendedfn(self.inst, self.target, followsymbol, followoffset)
+        self.onextendedfn(self.inst, self.target, followsymbol, followoffset, data)
     end
 end
 

@@ -5,6 +5,7 @@ local assets =
     Asset("ANIM", "anim/bernie.zip"),
     Asset("ANIM", "anim/bernie_build.zip"),
     Asset("SOUND", "sound/together.fsb"),
+	Asset("MINIMAP_IMAGE", "bernie"),
 }
 
 local prefabs =
@@ -39,7 +40,7 @@ local function gobig(inst)
     if inst:GetSkinName() ~= nil then
         skin_name = string.gsub(inst:GetSkinName(), "_active", "_big")
     end
-    
+
     local big = SpawnPrefab("bernie_big", skin_name, inst.skin_id, nil)
     if big ~= nil then
         --Rescale health %
@@ -84,6 +85,7 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
+    inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
     MakeCharacterPhysics(inst, 50, .25)
@@ -93,6 +95,8 @@ local function fn()
     inst.AnimState:SetBank("bernie")
     inst.AnimState:SetBuild("bernie_build")
     inst.AnimState:PlayAnimation("idle_loop", true)
+
+    inst.MiniMapEntity:SetIcon("bernie.png")
 
     inst:AddTag("smallcreature")
     inst:AddTag("companion")

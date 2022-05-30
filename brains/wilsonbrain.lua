@@ -14,7 +14,7 @@ function WilsonBrain:OnStart()
     	WhileNode(function() return self.inst.components.playercontroller ~= nil and self.inst.components.playercontroller:IsControlPressed(CONTROL_PRIMARY) end, "Hold LMB", ChaseAndAttack(self.inst, MAX_CHASE_TIME)),
     	ChaseAndAttack(self.inst, MAX_CHASE_TIME, nil, 1),
     },0)
-    
+
     self.bt = BT(self.inst, root)
 
 end

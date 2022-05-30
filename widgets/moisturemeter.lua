@@ -18,12 +18,14 @@ local MoistureMeter = Class(Widget, function(self, owner)
     self.backing:GetAnimState():SetBuild("status_wet")
     self.backing:GetAnimState():Hide("frame")
     self.backing:GetAnimState():Hide("icon")
+    self.backing:GetAnimState():AnimateWhilePaused(false)
     self.backing:SetClickable(true)
 
     self.anim = self:AddChild(UIAnim())
     self.anim:GetAnimState():SetBank("status_meter")
     self.anim:GetAnimState():SetBuild("status_meter")
     self.anim:Hide("icon")
+    self.anim:GetAnimState():AnimateWhilePaused(false)
     self.anim:GetAnimState():SetMultColour(48 / 255, 97 / 255, 169 / 255, 1)
     self.anim:SetClickable(true)
 
@@ -33,6 +35,7 @@ local MoistureMeter = Class(Widget, function(self, owner)
     self.circleframe:GetAnimState():SetBuild("status_meter")
     self.circleframe:GetAnimState():OverrideSymbol("icon", "status_wet", "icon")
     self.circleframe:GetAnimState():Hide("bg")
+    self.circleframe:GetAnimState():AnimateWhilePaused(false)
     self.circleframe:SetClickable(true)
 
     self.arrowdir = "neutral"
@@ -40,6 +43,7 @@ local MoistureMeter = Class(Widget, function(self, owner)
     self.arrow:GetAnimState():SetBank("sanity_arrow")
     self.arrow:GetAnimState():SetBuild("sanity_arrow")
     self.arrow:GetAnimState():PlayAnimation(self.arrowdir)
+    self.arrow:GetAnimState():AnimateWhilePaused(false)
     self.arrow:SetClickable(false)
 
     self.num = self:AddChild(Text(BODYTEXTFONT, 33))
@@ -122,6 +126,8 @@ function MoistureMeter:SetValue(moisture, max, ratescale)
 end
 
 function MoistureMeter:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     local curframe = self.circleframe:GetAnimState():GetCurrentAnimationTime() / FRAMES
     if curframe < 1 then
         self.anim:SetScale(.955, .096, 1)

@@ -1,7 +1,10 @@
+
+local TRAP_MUST_TAGS = { "hound" }
+local TRAP_CANT_TAGS = { "pet_hound", "INLIMBO" }
 local function settrap_hounds(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local staff_hounds = {}
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 20, { "hound" }, { "pet_hound", "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 20, TRAP_MUST_TAGS, TRAP_CANT_TAGS)) do
         if v ~= nil and v.sg ~= nil then
             v.components.sleeper.hibernate = true
             v.sg:GoToState("forcesleep")

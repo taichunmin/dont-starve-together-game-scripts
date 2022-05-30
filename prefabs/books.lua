@@ -4,42 +4,101 @@ local assets =
     --Asset("SOUND", "sound/common.fsb"),
 }
 
-local prefabs =
+local prefabs = -- this should really be broken up per book...
 {
     "tentacle",
     "splash_ocean",
+	"book_horticulture_spell",
 }
+
+local TENTACLES_BLOCKED_CANT_TAGS = { "INLIMBO", "FX" }
+local BIRDSMAXCHECK_MUST_TAGS = { "magicalbird" }
+local SLEEPTARGET_PVP_ONEOF_TAGS = { "sleeper", "player" }
+local SLEEPTARGET_NOPVP_MUST_TAGS = { "sleeper" }
+local SLEEPTARGET_CANT_TAGS = { "playerghost", "FX", "DECOR", "INLIMBO" }
+local GARDENING_CANT_TAGS = { "pickable", "stump", "withered", "barren", "INLIMBO" }
+
+local SILVICULTURE_ONEOF_TAGS = { "silviculture", "tree", "winter_tree" }
+local SILVICULTURE_CANT_TAGS = { "pickable", "stump", "withered", "barren", "INLIMBO" }
+
+local HORTICULTURE_CANT_TAGS = { "pickable", "stump", "withered", "barren", "INLIMBO", "silviculture", "tree", "winter_tree" }
 
 --helper function for book_gardening
 local function trygrowth(inst)
-    if inst:IsInLimbo()
-        or (inst.components.witherable ~= nil and
-            inst.components.witherable:IsWithered()) then
-        return
+    if not inst:IsValid()
+		or inst:IsInLimbo()
+        or (inst.components.witherable ~= nil and inst.components.witherable:IsWithered()) then
+
+        return false
     end
 
     if inst.components.pickable ~= nil then
         if inst.components.pickable:CanBePicked() and inst.components.pickable.caninteractwith then
-            return
+            return false
         end
-        inst.components.pickable:FinishGrowing()
+        if inst.components.pickable:FinishGrowing() then
+			inst.components.pickable:ConsumeCycles(1) -- magic grow is hard on plants
+			return true
+		end
     end
 
     if inst.components.crop ~= nil and (inst.components.crop.rate or 0) > 0 then
-        inst.components.crop:DoGrow(1 / inst.components.crop.rate, true)
+        if inst.components.crop:DoGrow(1 / inst.components.crop.rate, true) then
+			return true
+		end
     end
 
     if inst.components.growable ~= nil then
         -- If we're a tree and not a stump, or we've explicitly allowed magic growth, do the growth.
-        if ((inst:HasTag("tree") or inst:HasTag("winter_tree")) and not inst:HasTag("stump")) or
-                inst.components.growable.magicgrowable then
-            inst.components.growable:DoGrowth()
+        if inst.components.growable.magicgrowable or ((inst:HasTag("tree") or inst:HasTag("winter_tree")) and not inst:HasTag("stump")) then
+			if inst.components.growable.domagicgrowthfn ~= nil then
+				return inst.components.growable:DoMagicGrowth()
+			else
+	            return inst.components.growable:DoGrowth()
+			end
         end
     end
 
     if inst.components.harvestable ~= nil and inst.components.harvestable:CanBeHarvested() and inst:HasTag("mushroom_farm") then
-        inst.components.harvestable:Grow()
+        if inst.components.harvestable:Grow() then
+			return true
+		end
     end
+
+	return false
+end
+
+local function GrowNext(spell, reader)
+	while spell._next <= #spell._targets do
+		local target = spell._targets[spell._next]
+		spell._next = spell._next + 1
+
+		if target:IsValid() and trygrowth(target) then
+			spell._count = spell._count + 1
+			if spell._count < TUNING.BOOK_GARDENING_MAX_TARGETS then
+				spell:DoTaskInTime(0.1 + 0.3 * math.random(), GrowNext)
+				return
+			else
+				break
+			end
+		end
+	end
+
+	spell:Remove()
+end
+
+local function do_book_horticulture_spell(spell, reader)
+    local x, y, z = reader.Transform:GetWorldPosition()
+    local range = 30
+    spell._targets = TheSim:FindEntities(x, y, z, range, nil, HORTICULTURE_CANT_TAGS)
+	if #spell._targets == 0 then
+		spell:Remove()
+		return
+	end
+
+	spell._next = 1
+	spell._count = 0
+	GrowNext(spell, reader)
 end
 
 local book_defs =
@@ -61,7 +120,7 @@ local book_defs =
                     local result_offset = FindValidPositionByFan(theta, radius, 12, function(offset)
                         local pos = pt + offset
                         --NOTE: The first search includes invisible entities
-                        return #TheSim:FindEntities(pos.x, 0, pos.z, 1, nil, { "INLIMBO", "FX" }) <= 0
+                        return #TheSim:FindEntities(pos.x, 0, pos.z, 1, nil, TENTACLES_BLOCKED_CANT_TAGS) <= 0
                             and TheWorld.Map:IsPassableAtPoint(pos:Get())
 							and TheWorld.Map:IsDeployPointClear(pos, nil, 1)
                     end)
@@ -82,6 +141,13 @@ local book_defs =
             end)
             return true
         end,
+        perusefn = function(inst,reader)
+            if reader.peruse_tentacles then
+                reader.peruse_tentacles(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_TENTACLES"))
+            return true
+        end,
     },
 
     {
@@ -96,9 +162,9 @@ local book_defs =
             local pt = reader:GetPosition()
 
             reader.components.sanity:DoDelta(-TUNING.SANITY_HUGE)
-            
+
             --we can actually run out of command buffer memory if we allow for infinite birds
-            local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 10, nil, nil, { "magicalbird" })
+            local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 10, BIRDSMAXCHECK_MUST_TAGS)
             if #ents > 30 then
                 reader.components.talker:Say(GetString(reader, "ANNOUNCE_WAYTOOMANYBIRDS"))
             else
@@ -124,6 +190,13 @@ local book_defs =
 
             return true
         end,
+        perusefn = function(inst,reader)
+            if reader.peruse_birds then
+                reader.peruse_birds(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_BIRDS"))
+            return true
+        end,
     },
 
     {
@@ -146,6 +219,13 @@ local book_defs =
             end)
             return true
         end,
+        perusefn = function(inst,reader)
+            if reader.peruse_brimstone then
+                reader.peruse_brimstone(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_BRIMSTONE"))
+            return true
+        end,
     },
 
     {
@@ -157,8 +237,8 @@ local book_defs =
             local x, y, z = reader.Transform:GetWorldPosition()
             local range = 30
             local ents = TheNet:GetPVPEnabled() and
-                        TheSim:FindEntities(x, y, z, range, nil, { "playerghost", "FX", "DECOR", "INLIMBO" }, { "sleeper", "player" }) or
-                        TheSim:FindEntities(x, y, z, range, { "sleeper" }, { "player", "FX", "DECOR", "INLIMBO" })
+                        TheSim:FindEntities(x, y, z, range, nil, SLEEPTARGET_CANT_TAGS, SLEEPTARGET_PVP_ONEOF_TAGS) or
+                        TheSim:FindEntities(x, y, z, range, SLEEPTARGET_NOPVP_MUST_TAGS, SLEEPTARGET_CANT_TAGS)
             for i, v in ipairs(ents) do
                 if v ~= reader and
                     not (v.components.freezable ~= nil and v.components.freezable:IsFrozen()) and
@@ -179,6 +259,13 @@ local book_defs =
             end
             return true
         end,
+        perusefn = function(inst,reader)
+            if reader.peruse_sleep then
+                reader.peruse_sleep(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_SLEEP"))
+            return true
+        end,
     },
 
     {
@@ -189,7 +276,7 @@ local book_defs =
 
             local x, y, z = reader.Transform:GetWorldPosition()
             local range = 30
-            local ents = TheSim:FindEntities(x, y, z, range, nil, { "pickable", "stump", "withered", "INLIMBO" })
+            local ents = TheSim:FindEntities(x, y, z, range, nil, GARDENING_CANT_TAGS)
             if #ents > 0 then
                 trygrowth(table.remove(ents, math.random(#ents)))
                 if #ents > 0 then
@@ -199,6 +286,65 @@ local book_defs =
                     end
                 end
             end
+            return true
+		end,
+        perusefn = function(inst,reader)
+            if reader.peruse_gardening then
+                reader.peruse_gardening(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_GARDENING"))
+            return true
+        end,
+    },
+
+    {
+        name = "book_horticulture",
+        uses = 5,
+        fn = function(inst, reader)
+			if reader.components.sanity ~= nil then
+	            reader.components.sanity:DoDelta(-TUNING.SANITY_LARGE)
+			end
+
+            local spell = SpawnPrefab("book_horticulture_spell")
+            spell.Transform:SetPosition(reader.Transform:GetWorldPosition())
+			do_book_horticulture_spell(spell, reader)
+
+            return true
+		end,
+        perusefn = function(inst,reader)
+            if reader.peruse_horticulture then
+                reader.peruse_horticulture(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_HORTICULTURE"))
+            return true
+        end,
+    },
+
+    {
+        name = "book_silviculture",
+        uses = 5,
+        fn = function(inst, reader)
+            reader.components.sanity:DoDelta(-TUNING.SANITY_LARGE)
+
+            local x, y, z = reader.Transform:GetWorldPosition()
+            local range = 30
+            local ents = TheSim:FindEntities(x, y, z, range, nil, SILVICULTURE_CANT_TAGS, SILVICULTURE_ONEOF_TAGS)
+            if #ents > 0 then
+                trygrowth(table.remove(ents, math.random(#ents)))
+                if #ents > 0 then
+                    local timevar = 1 - 1 / (#ents + 1)
+                    for i, v in ipairs(ents) do
+                        v:DoTaskInTime(timevar * math.random(), trygrowth)
+                    end
+                end
+            end
+            return true
+        end,
+        perusefn = function(inst,reader)
+            if reader.peruse_silviculture then
+                reader.peruse_silviculture(reader)
+            end
+            reader.components.talker:Say(GetString(reader, "ANNOUNCE_READ_BOOK","BOOK_SILVICULTURE"))
             return true
         end,
     },
@@ -239,6 +385,7 @@ local function MakeBook(def)
         inst:AddComponent("inspectable")
         inst:AddComponent("book")
         inst.components.book.onread = def.fn
+        inst.components.book.onperuse = def.perusefn
 
         inst:AddComponent("inventoryitem")
 
@@ -262,7 +409,30 @@ local function MakeBook(def)
     return Prefab(def.name, fn, assets, prefabs)
 end
 
-local books = {}
+local function book_horticulture_spell_fn()
+	local inst = CreateEntity()
+
+    if not TheWorld.ismastersim then
+        --Not meant for client!
+        inst:DoTaskInTime(0, inst.Remove)
+
+        return inst
+    end
+
+    inst.entity:AddTransform()
+
+    --[[Non-networked entity]]
+    inst.entity:SetCanSleep(false)
+    inst.entity:Hide()
+
+    inst:AddTag("CLASSIFIED")
+
+	inst.persists = false
+
+	return inst
+end
+
+local books = { Prefab("book_horticulture_spell", book_horticulture_spell_fn) }
 for i, v in ipairs(book_defs) do
     table.insert(books, MakeBook(v))
 end

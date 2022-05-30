@@ -43,7 +43,7 @@ local TopModsPanel = Class(Widget, function(self)
 
     self.topmods_panel = self.root:AddChild(Widget("topmods"))
     self.topmods_panel:SetPosition(0,0)
-    
+
 	if PLATFORM ~= "WIN32_RAIL" then
 		self.morebutton = self.root:AddChild(TEMPLATES.StandardButton(
 				function() ModManager:ShowMoreMods() end,
@@ -90,13 +90,13 @@ function TopModsPanel:OnStatsQueried( success, json_body )
     if not (self.inst:IsValid()) then
         return
     end
-    
+
     if not success or string.len(json_body) <= 1 then return end
     local status, jsonresult = pcall( function() return json.decode(json_body) end )
-    
+
     if not jsonresult or type(jsonresult) ~= "table" or not status or jsonresult["modnames"] == nil then return end
-    
-    if next(jsonresult["modnames"]) == nil then return end 
+
+    if next(jsonresult["modnames"]) == nil then return end
 
     local randomPicks = self:GenerateRandomPicks(#self.modlinks, #jsonresult["modnames"])
     for i = 1, #self.modlinks do

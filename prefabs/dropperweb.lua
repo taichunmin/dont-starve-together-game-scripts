@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
 	Asset("MINIMAP_IMAGE", "whitespider_den"),
@@ -7,9 +9,6 @@ local prefabs =
 {
     "spider_dropper",
 }
-
-
-
 
 local function SpawnInvestigators(inst, data)
     if inst.components.childspawner ~= nil then
@@ -23,12 +22,15 @@ local function SpawnInvestigators(inst, data)
     end
 end
 
+local WEBBED_TAGS = {"webbed"}
+local WEBBABLE_TAGS = {"webbable"}
+
 local function OnEntityWake(inst)
     if GetTime() > inst.lastwebtime + TUNING.TOTAL_DAY_TIME then
         local x,y,z = inst.Transform:GetWorldPosition()
-        local webbed = TheSim:FindEntities(x,y,z,TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS,{"webbed"})
+        local webbed = TheSim:FindEntities(x,y,z,TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS, WEBBED_TAGS)
         if #webbed < TUNING.MUSHTREE_WEBBED_MAX_PER_DEN then
-            local webbable = TheSim:FindEntities(x,y,z,TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS,{"webbable"})
+            local webbable = TheSim:FindEntities(x,y,z,TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS, WEBBABLE_TAGS)
             while GetTime() > inst.lastwebtime + TUNING.TOTAL_DAY_TIME
                 and #webbable > 0
                 and #webbed < TUNING.MUSHTREE_WEBBED_MAX_PER_DEN do
@@ -47,6 +49,31 @@ local function OnEntityWake(inst)
             end
         end
         inst.lastwebtime = GetTime()
+    end
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.DROPPERWEB_RELEASE_TIME, TUNING.DROPPERWEB_REGEN_TIME)
+end
+
+local function OnGoHome(inst, child)
+    -- Drops the hat before it goes home if it has any
+    local hat = child.components.inventory:GetEquippedItem(EQUIPSLOTS.HEAD)
+    if hat ~= nil then
+        child.components.inventory:DropItem(hat)
+    end
+end
+
+local function SummonChildren(inst, data)
+    if inst.components.health and not inst.components.health:IsDead() then
+        if inst.components.childspawner ~= nil then
+            local children_released = inst.components.childspawner:ReleaseAllChildren()
+
+            for i,v in ipairs(children_released) do
+                v:AddDebuff("spider_summoned_buff", "spider_summoned_buff")
+                v.sg:GoToState("dropper_enter")
+            end
+        end
     end
 end
 
@@ -75,16 +102,27 @@ local function fn()
     inst.components.health.nofadeout = true
 
     inst:AddComponent("childspawner")
-    inst.components.childspawner:SetRegenPeriod(120)
-    inst.components.childspawner:SetSpawnPeriod(240)
-    inst.components.childspawner:SetMaxChildren(math.random(2, 3))
+    inst.components.childspawner:SetRegenPeriod(TUNING.DROPPERWEB_REGEN_TIME)
+    inst.components.childspawner:SetSpawnPeriod(TUNING.DROPPERWEB_RELEASE_TIME)
+    inst.components.childspawner:SetGoHomeFn(OnGoHome)
+
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.DROPPERWEB_RELEASE_TIME, TUNING.DROPPERWEB_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.DROPPERWEB_REGEN_TIME, TUNING.DROPPERWEB_ENABLED)
+    inst.components.childspawner:SetMaxChildren(math.random(TUNING.DROPPERWEB_MIN_CHILDREN, TUNING.DROPPERWEB_MAX_CHILDREN))
+    if not TUNING.DROPPERWEB_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
     inst.components.childspawner:StartRegen()
     inst.components.childspawner.childname = "spider_dropper"
     inst.components.childspawner.emergencychildname = "spider_dropper"
     inst.components.childspawner.emergencychildrenperplayer = 1
+    inst.components.childspawner.canemergencyspawn = TUNING.DROPPERWEB_ENABLED
+
+    inst.SummonChildren = SummonChildren
 
     inst.lastwebtime = GetTime()
     inst.OnEntityWake = OnEntityWake
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

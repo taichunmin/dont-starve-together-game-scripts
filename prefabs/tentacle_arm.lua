@@ -17,13 +17,16 @@ local function IsAlive(guy)
     return not guy.components.health:IsDead()
 end
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "tentacle_pillar_arm", "tentacle_pillar", "prey", "INLIMBO" }
+local RETARGET_ONEOF_TAGS = { "character", "monster", "animal" }
 local function retargetfn(inst)
     return FindEntity(inst,
             TUNING.TENTACLE_PILLAR_ARM_ATTACK_DIST,
             IsAlive,
-            { "_combat", "_health" },-- see entityscript.lua
-            { "tentacle_pillar_arm", "tentacle_pillar", "prey", "INLIMBO" },
-            { "character", "monster", "animal" }
+            RETARGET_MUST_TAGS,-- see entityscript.lua
+            RETARGET_CANT_TAGS,
+            RETARGET_ONEOF_TAGS
         )
 end
 
@@ -70,7 +73,7 @@ local function ShouldKeepTarget(inst, target)
         and target:IsNear(inst, TUNING.TENTACLE_PILLAR_ARM_STOPATTACK_DIST)
 end
 
-local function OnHit(inst, attacker, damage) 
+local function OnHit(inst, attacker, damage)
     if attacker.components.combat and not attacker:HasTag("player") and math.random() > 0.5 then
         -- Followers should stop hitting the pillar
         attacker.components.combat:SetTarget(nil)

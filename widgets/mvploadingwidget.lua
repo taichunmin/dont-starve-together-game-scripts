@@ -9,7 +9,7 @@ local TEMPLATES = require "widgets/redux/templates"
 local PlayerAvatarPortrait = require "widgets/redux/playeravatarportrait"
 
 --------------------------------------------------------------------------
--- 
+--
 --
 
 local MVPLoadingWidget = Class(Widget, function(self)
@@ -29,7 +29,7 @@ local function UpdatePlayerListing(widget, data)
 
     widget.userid = not empty and data.user.userid or nil
     widget.performance = not empty and data.user.performance or nil
-    
+
     if empty then
 		widget.badge:Hide()
         widget.puppet:Hide()
@@ -104,14 +104,14 @@ function MVPLoadingWidget:PopulateData()
 			widget.description:SetRegionSize( 200, 66 )
 			widget.description:SetVAlign(ANCHOR_TOP)
 			widget.description:EnableWordWrap(true)
-			
+
 			UpdatePlayerListing(widget, data)
 
 			table.insert(self.mvp_widgets, widget)
 		end
-		
-		
-		-- position the widgets 
+
+
+		-- position the widgets
 		local space = 255
 		local offset = space * ((#self.mvp_widgets-1)/2)
 		local y_offset = 25

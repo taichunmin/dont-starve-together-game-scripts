@@ -8,7 +8,7 @@ local PopupDialogScreen = require "screens/popupdialog"
 local CustomizationList = require "widgets/customizationlist"
 local TEMPLATES = require "widgets/templates"
 
-local Customise = require "map/customise"
+local Customize = require "map/customize"
 local Levels = require "map/levels"
 
 local function OnClickTab(self, level)
@@ -266,7 +266,7 @@ function CustomizationTab:UpdatePresetList()
     local location = self:GetLocationForLevel(self.currentmultilevel)
     assert(location ~= nil, "Can only load values for a preset with a location!")
 
-    local options = Customise.GetOptionsWithLocationDefaults(location, self.currentmultilevel == 1)
+    local options = Customize.GetOptionsWithLocationDefaults(location, self.currentmultilevel == 1)
 
     if self.customizationlist ~= nil then
         self.customizationlist:Kill()
@@ -301,7 +301,7 @@ function CustomizationTab:GetValueForOption(level, option)
     end
     return self.current_option_settings[level].tweaks[option]
         or (presetdata ~= nil and presetdata.overrides[option])
-        or Customise.GetLocationDefaultForOption(presetdata.location, option)
+        or Customize.GetLocationDefaultForOption(presetdata.location, option)
 end
 
 function CustomizationTab:AddMultiLevel(level)
@@ -359,7 +359,7 @@ function CustomizationTab:UpdateMultilevelUI()
 
     for i, tabbtn in ipairs(self.multileveltabs.tabs) do
 		local valid_level = self.current_level_locations[i] ~= nil
-		
+
         local locationid = valid_level and self:GetLocationStringID(i) or nil
         local locationname = locationid and STRINGS.UI.SANDBOXMENU.LOCATIONTABNAME[locationid] or ""
 
@@ -465,7 +465,7 @@ function CustomizationTab:SetTweak(level, option, value)
             self.current_option_settings[level].tweaks[option] = value
         end
     else
-        if value == Customise.GetLocationDefaultForOption(presetdata.location, option) then
+        if value == Customize.GetLocationDefaultForOption(presetdata.location, option) then
             self.current_option_settings[level].tweaks[option] = nil
         else
             self.current_option_settings[level].tweaks[option] = value
@@ -597,7 +597,7 @@ function CustomizationTab:CollectOptions()
     local ret = {}
     for level_index,level in ipairs(self.current_option_settings) do
         ret[level_index] = Levels.GetDataForLevelID(level.preset)
-        local options = Customise.GetOptionsWithLocationDefaults(Levels.GetLocationForLevelID(level.preset), level_index == 1)
+        local options = Customize.GetOptionsWithLocationDefaults(Levels.GetLocationForLevelID(level.preset), level_index == 1)
         for i,option in ipairs(options) do
             ret[level_index].overrides[option.name] = self:GetValueForOption(level_index, option.name)
             if option.name ==  "specialevent" then
@@ -641,7 +641,7 @@ function CustomizationTab:UpdateSlot(slotnum, prevslot, delete)
             end
         else
             local location = self.current_level_locations[1]
-            
+
             self:LoadPreset(1, nil)
         end
     else -- Save data

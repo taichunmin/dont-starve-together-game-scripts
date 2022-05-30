@@ -2,7 +2,7 @@ local function onnewobjectfn(inst, obj)
     inst:ListenForEvent("onremove", function(obj)
         table.removearrayvalue(inst.components.objectspawner.objects, obj)
     end, obj)
-    
+
     if inst.listenforprefabsawp then
 		inst:ListenForEvent("onprefabswaped", function(_, data)
 			inst.components.objectspawner:TakeOwnership(data.newobj)
@@ -10,16 +10,19 @@ local function onnewobjectfn(inst, obj)
     end
 end
 
+local TRYSPAWN_CANT_TAGS = { "INLIMBO" }
+
 local function tryspawn(inst)
     if inst.resetruins and #inst.components.objectspawner.objects <= 0 then
         local x, y, z = inst.Transform:GetWorldPosition()
-        for i, v in ipairs(TheSim:FindEntities(x, y, z, 1, nil, { "INLIMBO" })) do
+        for i, v in ipairs(TheSim:FindEntities(x, y, z, 1, nil, TRYSPAWN_CANT_TAGS)) do
             if v.components.workable ~= nil and v.components.workable:GetWorkAction() ~= ACTIONS.NET then
                 v.components.workable:Destroy(v)
             end
         end
 
         local obj = inst.components.objectspawner:SpawnObject(inst.spawnprefab)
+        obj.spawnlocation = Vector3(x, y, z)
         obj.Transform:SetPosition(x, y, z)
   		if inst.onrespawnfn ~= nil then
 			inst.onrespawnfn(obj, inst)
@@ -38,6 +41,12 @@ local function onload(inst, data)
     if data ~= nil then
         inst.resetruins = data.resetruins
     end
+end
+
+local function OnLoadPostPass(inst)
+	if inst.resetruins then
+		tryspawn(inst)
+	end
 end
 
 local function MakeFn(obj, onrespawnfn, data)
@@ -62,6 +71,7 @@ local function MakeFn(obj, onrespawnfn, data)
 
 		inst.OnSave = onsave
 		inst.OnLoad = onload
+		inst.OnLoadPostPass = OnLoadPostPass
 
 		inst.listenforprefabsawp = data ~= nil and data.listenforprefabsawp or nil
 
@@ -79,7 +89,7 @@ local function MakeRuinsRespawnerWorldGen(obj, onrespawnfn, data)
 		local inst = MakeFn(obj, onrespawnfn, data)()
 
 		inst:SetPrefabName(obj.."_ruinsrespawner_inst")
-		
+
         inst.resetruins = true
 		inst:DoTaskInTime(0, tryspawn)
 

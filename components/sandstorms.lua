@@ -30,7 +30,7 @@ end
 local function ToggleSandstorm()
     if _sandstormactive ~= ShouldActivateSandstorm() then
         _sandstormactive = not _sandstormactive
-        inst:PushEvent("ms_sandstormchanged", _sandstormactive)
+        inst:PushEvent("ms_stormchanged", {stormtype=STORM_TYPES.SANDSTORM,setting=_sandstormactive})
     end
 end
 

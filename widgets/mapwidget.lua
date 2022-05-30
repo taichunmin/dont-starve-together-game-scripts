@@ -12,16 +12,16 @@ local MapWidget = Class(Widget, function(self)
     self.bg:SetHAnchor(ANCHOR_MIDDLE)
     self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
 	self.bg.inst.ImageWidget:SetBlendMode( BLENDMODE.Premultiplied )
-    
+
     self.minimap = TheWorld.minimap.MiniMap
-    
+
     self.img = self:AddChild(Image())
     self.img:SetHAnchor(ANCHOR_MIDDLE)
     self.img:SetVAnchor(ANCHOR_MIDDLE)
-    self.img.inst.ImageWidget:SetBlendMode( BLENDMODE.Additive )    
-    
+    self.img.inst.ImageWidget:SetBlendMode( BLENDMODE.Additive )
+
 	self.lastpos = nil
-	self.minimap:ResetOffset()	
+	self.minimap:ResetOffset()
 	self:StartUpdating()
 
 end)
@@ -58,7 +58,7 @@ end
 function MapWidget:OnUpdate(dt)
 
 	if not self.shown then return end
-	
+
 	if TheInput:IsControlPressed(CONTROL_PRIMARY) then
 		local pos = TheInput:GetScreenPosition()
 		if self.lastpos then
@@ -67,7 +67,7 @@ function MapWidget:OnUpdate(dt)
 			local dy = scale * ( pos.y - self.lastpos.y )
 			self.minimap:Offset( dx, dy )
 		end
-		
+
 		self.lastpos = pos
 	else
 		self.lastpos = nil

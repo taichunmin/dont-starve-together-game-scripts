@@ -40,7 +40,7 @@ end
 local function RegisterPrefabs(index)
     local dlcPrefabFilename = string.format("scripts/DLC%03d_prefab_files",index)
     local dlcprefabfiles = GetDLCPrefabFiles(dlcPrefabFilename)
-    for i,v in pairs(dlcprefabfiles) do   
+    for i,v in pairs(dlcprefabfiles) do
         AddPrefab(v)
     end
 end
@@ -99,7 +99,7 @@ function InitDLC(index)
 end
 
 function GetOfficialCharacterList()
-    return DST_CHARACTERLIST    
+    return DST_CHARACTERLIST
 end
 
 function GetActiveCharacterList()
@@ -136,7 +136,7 @@ end
 function DisableAllDLC()
     for i,v in pairs(DLC_LIST) do
         DisableDLC(v)
-    end 
+    end
 end
 
 function EnableAllMenuDLC()

@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
 }
 
@@ -18,7 +18,7 @@ local events=
 local states=
 {
      State{
-        
+
         name = "idle",
         tags = {"idle", "canrotate"},
         onenter = function(inst, playanim)
@@ -30,12 +30,12 @@ local states=
                 inst.AnimState:PlayAnimation("idle_loop", true)
             end
         end,
-        
-        timeline = 
+
+        timeline =
         {
             TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "idle") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -45,17 +45,17 @@ local states=
    State{
         name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
         end,
-        
-        timeline = 
+
+        timeline =
         {
             TimeEvent(19*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "voice") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -64,13 +64,13 @@ local states=
 
     State{  name = "ruinsrespawn",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("spawn")
 	        inst.components.sleeper.isasleep = true
 	        inst.components.sleeper:GoToSleep(.1)
         end,
-        
+
         timeline =
         {
     		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "liedown") end ),
@@ -85,13 +85,13 @@ local states=
 
 CommonStates.AddWalkStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 	    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
     },
 	walktimeline = {
 		    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
-            TimeEvent(7*FRAMES, function(inst) 
+            TimeEvent(7*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound(inst.soundpath .. "bounce")
                 inst.components.locomotor:WalkForward()
             end ),
@@ -105,11 +105,11 @@ CommonStates.AddWalkStates(states,
 
 CommonStates.AddSleepStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 		TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "liedown") end ),
     },
-    
+
 	sleeptimeline = {
         TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "sleep") end),
 	},
@@ -117,17 +117,17 @@ CommonStates.AddSleepStates(states,
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
+    attacktimeline =
     {
 		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "charge") end ),
 		TimeEvent(15*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "shoot") end ),
         TimeEvent(24*FRAMES, function(inst) inst.components.combat:DoAttack() end),
     },
-    hittimeline = 
+    hittimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "hurt") end),
     },
-    deathtimeline = 
+    deathtimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.soundpath .. "death") end),
     },
@@ -135,6 +135,6 @@ CommonStates.AddCombatStates(states,
 
 CommonStates.AddFrozenStates(states)
 
-    
+
 return StateGraph("bishop", states, events, "idle", actionhandlers)
 

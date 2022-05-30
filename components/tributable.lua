@@ -31,7 +31,7 @@ function Tributable:OnGivenReward()
 		self.decaytask:Cancel()
 		self.decaytask = nil
 	end
-	
+
 	if self.ongivenrewardfn ~= nil then
 		self.ongivenrewardfn(self.inst)
 	end

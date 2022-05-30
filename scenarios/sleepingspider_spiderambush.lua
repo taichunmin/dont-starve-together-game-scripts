@@ -8,7 +8,7 @@ local function OnWakeUp(inst, scenariorunner, data)
     local steps = 3
     local ground = TheWorld
     local player = data.attacker
-    
+
     local settarget = function(inst, player)
         if inst and inst.brain then
        		inst.brain.followtarget = player
@@ -19,7 +19,7 @@ local function OnWakeUp(inst, scenariorunner, data)
     for i = 1, steps do
         local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
         local wander_point = pt + offset
-       
+
         if ground.Map and ground.Map:GetTileAtPoint(wander_point.x, wander_point.y, wander_point.z) ~= GROUND.IMPASSABLE then
         	local particle = SpawnPrefab("poopcloud")
             particle.Transform:SetPosition( wander_point.x, wander_point.y, wander_point.z )
@@ -62,7 +62,7 @@ local function OnDestroy(inst)
     end
 end
 
-return 
+return
 {
 	OnCreate = OnCreate,
 	OnLoad = OnLoad,

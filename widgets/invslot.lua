@@ -27,8 +27,12 @@ function InvSlot:OnControl(control, down)
         end
     elseif control == CONTROL_SECONDARY then
         --alt use (usually RMB)
-        self:UseItem()
-    --  the rest are explicit control presses for controllers
+        if TheInput:IsControlPressed(CONTROL_FORCE_TRADE) then
+            self:DropItem(TheInput:IsControlPressed(CONTROL_FORCE_STACK))
+        else
+            self:UseItem()
+        end
+        --the rest are explicit control presses for controllers
     elseif control == CONTROL_SPLITSTACK then
         self:Click(true)
     elseif control == CONTROL_TRADEITEM then
@@ -89,9 +93,7 @@ function InvSlot:Click(stack_mod)
             end
             TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_object")
         elseif container:CanTakeItemInSlot(active_item, slot_number) then
-            if container_item.prefab == active_item.prefab and container_item.skinname == active_item.skinname and
-                container_item.replica.stackable ~= nil and
-                container:AcceptsStacks() then
+            if container_item.prefab == active_item.prefab and container_item.AnimState:GetSkinBuild() == active_item.AnimState:GetSkinBuild() and container_item.replica.stackable ~= nil and container:AcceptsStacks() then --active_item.prefab and container_item.skinname (this does not work on clients, so we're going to use the AnimState hack instead)
                 --Add active item to slot stack
                 if stack_mod and
                     active_item.replica.stackable ~= nil and
@@ -102,11 +104,13 @@ function InvSlot:Click(stack_mod)
                 else
                     --Add entire stack
                     container:AddAllOfActiveItemToSlot(slot_number)
-                end             
+                end
                 TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_object")
-            elseif container:AcceptsStacks() or
-                not (active_item.replica.stackable ~= nil and
-                    active_item.replica.stackable:IsStack()) then
+
+            elseif active_item.replica.stackable ~= nil and active_item.replica.stackable:IsStack() and not container:AcceptsStacks() then
+                container:SwapOneOfActiveItemWithSlot(slot_number)
+
+            elseif container:AcceptsStacks() or not (active_item.replica.stackable ~= nil and active_item.replica.stackable:IsStack()) then
                 --Swap active item with slot item
                 container:SwapActiveItemWithSlot(slot_number)
                 TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_object")
@@ -232,17 +236,8 @@ function InvSlot:TradeItem(stack_mod)
             if backpack ~= nil then
                 exclude_containers[backpack] = true
             end
-            dest_inst = FindBestContainer(self, container_item, opencontainers, exclude_containers)
-            if dest_inst == nil then
-                local playercontainers = {}
-                if inventory:IsOpenedBy(character) then
-                    playercontainers[character] = true
-                end
-                if backpack ~= nil then
-                    playercontainers[backpack] = true
-                end
-                dest_inst = FindBestContainer(self, container_item, playercontainers)
-            end
+            dest_inst = FindBestContainer(self, container_item, opencontainers, exclude_containers) or
+                (inventory:IsOpenedBy(character) and character or backpack)
         end
 
         --if a destination container/inv is found...
@@ -258,6 +253,12 @@ function InvSlot:TradeItem(stack_mod)
         else
             TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/click_negative")
         end
+    end
+end
+
+function InvSlot:DropItem(wholestack)
+    if self.owner and self.owner.replica.inventory and self.tile and self.tile.item then
+        self.owner.replica.inventory:DropItemFromInvTile(self.tile.item, wholestack)
     end
 end
 

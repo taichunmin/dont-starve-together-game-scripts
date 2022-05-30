@@ -3,7 +3,7 @@ chestfunctions = require("scenarios/chestfunctions")
 
 local function OnCreate(inst, scenariorunner)
 
-	local items = 
+	local items =
 	{
 		{
 			item = "cutgrass",
@@ -28,12 +28,12 @@ local function OnCreate(inst, scenariorunner)
 		{
 			item = "axe",
 		},
-		
-	}	
+
+	}
 	chestfunctions.AddChestItems(inst, items)
 end
 
-return 
+return
 {
 	OnCreate = OnCreate
 }

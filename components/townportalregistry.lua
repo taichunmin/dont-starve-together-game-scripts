@@ -33,7 +33,7 @@ local function OnTownPortalActivated(inst, townportal)
 				v:PushEvent("linktownportals", townportal)
 			end
 		end
-	end		
+	end
 end
 
 local function OnTownPortalDeactivated(inst, portal)
@@ -42,7 +42,7 @@ local function OnTownPortalDeactivated(inst, portal)
 		for i, v in ipairs(_townportals) do
 			v:PushEvent("linktownportals")
 		end
-	end		
+	end
 end
 
 local function OnRemoveTownPortal(townportal)
@@ -53,7 +53,7 @@ local function OnRemoveTownPortal(townportal)
             break
         end
     end
-    
+
     if townportal == _activetownportal then
 	    OnTownPortalDeactivated()
 	end

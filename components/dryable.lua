@@ -37,4 +37,12 @@ function Dryable:GetBuildFile()
     return self.buildfile
 end
 
+function Dryable:SetDriedBuildFile(dried_buildfile)
+    self.dried_buildfile = dried_buildfile
+end
+
+function Dryable:GetDriedBuildFile()
+    return self.dried_buildfile or self.buildfile
+end
+
 return Dryable

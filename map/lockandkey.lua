@@ -1,10 +1,10 @@
 -- List of locks
-LOCKS_ARRAY = 
+LOCKS_ARRAY =
 {
 	"NONE",
 	"PIGGIFTS",
 	"TREES",
-	"SPIDERDENS",		
+	"SPIDERDENS",
 	"ROCKS",
 	"FARM",
 	"MEAT",
@@ -56,7 +56,10 @@ LOCKS_ARRAY =
 	"BLUE",
 	"RED",
 	"GREEN",
-	
+
+	"MOONMUSH",
+	"ARCHIVE",
+
 	"QUAGMIRE_GATEWAY",
 	"QUAGMIRE_PARK_L1",
 	"QUAGMIRE_FOOD_L1",
@@ -76,7 +79,7 @@ for i,v in ipairs(LOCKS_ARRAY) do
 end
 
 -- List of keys
-KEYS_ARRAY = 
+KEYS_ARRAY =
 {
 	"NONE",
 	"PICKAXE",
@@ -141,6 +144,9 @@ KEYS_ARRAY =
 	"RED",
 	"GREEN",
 
+	"MOONMUSH",
+	"ARCHIVE",
+
 	"QUAGMIRE_GATEWAY",
 	"QUAGMIRE_PARK_L1",
 	"QUAGMIRE_FOOD_L1",
@@ -160,11 +166,11 @@ end
 
 -- Locks are unlocked if ANY key is provided.
 -- However, ALL locks must be opened for a task to be unlocked.
-LOCKS_KEYS = 
+LOCKS_KEYS =
 {
 	[LOCKS.NONE] =
 	{},
-	[LOCKS.HARD_MONSTERS_DEFEATED] = 
+	[LOCKS.HARD_MONSTERS_DEFEATED] =
 	{
 		KEYS.HARD_WALRUS,
 		KEYS.HARD_SPIDERS,
@@ -173,7 +179,7 @@ LOCKS_KEYS =
 		KEYS.HARD_TENTACLES,
 		KEYS.CHESSMEN,
 	},
-	[LOCKS.MONSTERS_DEFEATED] = 
+	[LOCKS.MONSTERS_DEFEATED] =
 	{
 		KEYS.WALRUS,
 		KEYS.SPIDERS,
@@ -182,7 +188,7 @@ LOCKS_KEYS =
 		KEYS.TENTACLES,
 		KEYS.CHESSMEN,
 	},
-	[LOCKS.SPIDERS_DEFEATED] = 
+	[LOCKS.SPIDERS_DEFEATED] =
 	{
 		KEYS.SPIDERS,
 	},
@@ -196,22 +202,22 @@ LOCKS_KEYS =
 		KEYS.GOLD,
 		KEYS.HONEY,
 	},
-    [LOCKS.ROCKS] = 
+    [LOCKS.ROCKS] =
     {
     	KEYS.PICKAXE
     },
-    [LOCKS.PIGGIFTS] = 
+    [LOCKS.PIGGIFTS] =
     {
     	KEYS.MEAT,
     	KEYS.AXE,
     	KEYS.PICKAXE,
     },
-    [LOCKS.TREES] = 
+    [LOCKS.TREES] =
     {
     	KEYS.AXE,
     	KEYS.FIRE,
     },
-    [LOCKS.SPIDERDENS] = 
+    [LOCKS.SPIDERDENS] =
     {
     	KEYS.PIGS,
     	KEYS.FIRE,
@@ -219,21 +225,21 @@ LOCKS_KEYS =
     	KEYS.PICKAXE,
     	KEYS.HONEY,
     },
-    [LOCKS.BEEHIVE] = 
+    [LOCKS.BEEHIVE] =
     {
     	KEYS.AXE,
     },
-    [LOCKS.FARM] = 
+    [LOCKS.FARM] =
     {
     	KEYS.POOP,
     },
-    [LOCKS.MEAT] = 
+    [LOCKS.MEAT] =
     {
     	KEYS.SPIDERS,
     	KEYS.PIGS,
     	KEYS.FARM,
     },
-	[LOCKS.KILLERBEES] = 
+	[LOCKS.KILLERBEES] =
 	{
 		KEYS.BEEHAT,
 	},
@@ -246,36 +252,36 @@ LOCKS_KEYS =
 		KEYS.AXE,
 		KEYS.PIGS,
 	},
-	[LOCKS.ONLYTIER1] = 
+	[LOCKS.ONLYTIER1] =
 	{
 		KEYS.TIER1,
 	},
-	[LOCKS.TIER0] = 
+	[LOCKS.TIER0] =
 	{
 		KEYS.TIER0,
 		KEYS.TIER1,
 	},
-	[LOCKS.TIER1] = 
+	[LOCKS.TIER1] =
 	{
 		KEYS.TIER1,
 		KEYS.TIER2,
 	},
-	[LOCKS.TIER2] = 
+	[LOCKS.TIER2] =
 	{
 		KEYS.TIER2,
 		KEYS.TIER3,
 	},
-	[LOCKS.TIER3] = 
+	[LOCKS.TIER3] =
 	{
 		KEYS.TIER3,
 		KEYS.TIER4,
 	},
-	[LOCKS.TIER4] = 
+	[LOCKS.TIER4] =
 	{
 		KEYS.TIER4,
 		KEYS.TIER5,
 	},
-	[LOCKS.TIER5] = 
+	[LOCKS.TIER5] =
 	{
 		KEYS.TIER5,
 		KEYS.TIER6,
@@ -309,20 +315,20 @@ LOCKS_KEYS =
     {
         KEYS.ENTRANCE_OUTER,
     },
-	
-	[LOCKS.LIGHT] = 
+
+	[LOCKS.LIGHT] =
 	{
 		KEYS.LIGHT,
 	},
-	[LOCKS.CAVE] = 
+	[LOCKS.CAVE] =
 	{
 		KEYS.CAVE,
 	},
-	[LOCKS.FUNGUS] = 
+	[LOCKS.FUNGUS] =
 	{
 		KEYS.FUNGUS,
 	},
-	[LOCKS.LABYRINTH] = 
+	[LOCKS.LABYRINTH] =
 	{
 		KEYS.LABYRINTH,
 	},
@@ -407,7 +413,7 @@ LOCKS_KEYS =
 	{
 		KEYS.QUAGMIRE_GATEWAY,
 	},
-	
+
 	[LOCKS.QUAGMIRE_PARK_L1] =
 	{
 		KEYS.QUAGMIRE_PARK_L1,
@@ -428,24 +434,34 @@ LOCKS_KEYS =
 		KEYS.QUAGMIRE_GIANT,
 	},
 
-	[LOCKS.ISLAND_TIER1] = 
+	[LOCKS.ISLAND_TIER1] =
 	{
 		KEYS.ISLAND_TIER1,
 	},
 
-	[LOCKS.ISLAND_TIER2] = 
+	[LOCKS.ISLAND_TIER2] =
 	{
 		KEYS.ISLAND_TIER2,
 	},
 
-	[LOCKS.ISLAND_TIER3] = 
+	[LOCKS.ISLAND_TIER3] =
 	{
 		KEYS.ISLAND_TIER3,
 	},
 
-	[LOCKS.ISLAND_TIER4] = 
+	[LOCKS.ISLAND_TIER4] =
 	{
 		KEYS.ISLAND_TIER4,
+	},
+
+	[LOCKS.MOONMUSH] =
+	{
+		KEYS.MOONMUSH,
+	},
+
+	[LOCKS.ARCHIVE] =
+	{
+		KEYS.ARCHIVE,
 	},
 }
 

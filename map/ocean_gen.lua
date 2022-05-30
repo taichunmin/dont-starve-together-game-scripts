@@ -4,6 +4,8 @@ require "map/terrain"
 
 local obj_layout = require("map/object_layout")
 
+local PrefabSwaps = require("prefabswaps")
+
 local world = nil
 
 function Ocean_SetWorldForOceanGen(w)
@@ -12,7 +14,7 @@ end
 
 local function is_waterlined(tile)
 	-- should this tile have a water outline around it?
-	return IsLandTile(tile) or tile == GROUND.OCEAN_REEF
+	return IsLandTile(tile) --or tile == GROUND.OCEAN_BRINEPOOL
 end
 
 local function IsSurroundedByWater(x, y, radius)
@@ -258,9 +260,9 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 				local ground = world:GetTile(x, y)
 				if ground == GROUND.IMPASSABLE then
 					local nx, ny = x/width - 0.5, y/height - 0.5
-					if simplexnoise2d(noise_scale_coral * (nx + offx_coral), noise_scale_coral * (ny + offy_coral), noise_octave_coral, noise_persistence_coral) > init_level_coral then
-						world:SetTile(x, y, GROUND.OCEAN_REEF)
-					else
+					--if simplexnoise2d(noise_scale_coral * (nx + offx_coral), noise_scale_coral * (ny + offy_coral), noise_octave_coral, noise_persistence_coral) > init_level_coral then
+					--	world:SetTile(x, y, GROUND.OCEAN_BRINEPOOL)
+					--else
 						if simplexnoise2d(noise_scale_water * (nx + offx_water), noise_scale_water * (ny + offy_water), noise_octave_water, noise_persistence_water) > init_level_medium then
 							world:SetTile(x, y, GROUND.OCEAN_SWELL)
 						else
@@ -270,7 +272,7 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 								world:SetTile(x, y, GROUND.OCEAN_ROUGH)
 							end
 						end
-					end
+					--end
 				end
 			end
 		end
@@ -283,7 +285,7 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 
 		local cmlevels =
 		{
-			{GROUND.OCEAN_REEF, 1.0}
+			{GROUND.OCEAN_BRINEPOOL, 1.0}
 		}
 		local cm, cmw, cmh = world:GenerateBlendedMap(kernelSize, sigma, cmlevels, 0.0)
 		--print(width, height, cmw, cmh)
@@ -315,8 +317,10 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 					local cmlevel = cm[y * width + x] * falloff
 					local glevel = g[y * width + x] * falloff
 					if ellevel > final_level_shallow then
-						if cmlevel > final_level_coral and tile == GROUND.OCEAN_REEF then
-							world:SetTile(x, y, GROUND.OCEAN_REEF)
+						if tile == GROUND.OCEAN_WATERLOG then
+							world:SetTile(x, y, GROUND.OCEAN_WATERLOG)
+						elseif cmlevel > final_level_coral and tile == GROUND.OCEAN_BRINEPOOL then
+							world:SetTile(x, y, GROUND.OCEAN_BRINEPOOL)
 						else
 							world:SetTile(x, y, GROUND.OCEAN_COASTAL)
 						end
@@ -354,21 +358,21 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 		end
 
 		local function add_boarder(x, y)
-			if world:GetTile(x, y) ~= GROUND.IMPASSABLE then 
-				world:SetTile(x, y, GROUND.OCEAN_ROUGH) 
+			if world:GetTile(x, y) ~= GROUND.IMPASSABLE then
+				world:SetTile(x, y, GROUND.OCEAN_ROUGH)
 			end
 
 		end
 
-		local offset = 14
-		local init_d = 14
+		local offset = OCEAN_WATERFALL_MAX_DIST
+		local init_d = OCEAN_WATERFALL_MAX_DIST
 		local state = {init_d, init_d, init_d}
 
 		local tunings = {
-			middle = {max = 9, deeper_chance = 0.25, shallower_chance = 0.25},
+			middle = {max = math.floor(OCEAN_WATERFALL_MAX_DIST * .7), deeper_chance = 0.25, shallower_chance = 0.25},
 			corner = {max = init_d, deeper_chance = 0.75, shallower_chance = 0.1},
 		}
-	
+
 		for i = 0, height, 1 do
 			local d = calc_next(state, (i <= offset or i >= height - offset - offset) and tunings.corner or tunings.middle)
 			for ii = 0, d do
@@ -386,7 +390,7 @@ function Ocean_ConvertImpassibleToWater(width, height, data)
 			add_boarder(width - d - 1, i)
 			add_boarder(width - d - 2, i)
 		end
-		
+
 		state = {init_d, init_d, init_d}
 		for i = 0, width, 1 do
 			local d = calc_next(state, (i <= offset or i >= width - offset - offset) and tunings.corner or tunings.middle)
@@ -429,8 +433,8 @@ function AddShoreline(width, height)
 		for x = 0, width - 1, 1 do
 			local ground = world:GetTile(x, y)
 			if IsOceanTile(ground) and not IsSurroundedByWaterOrInvalid(x, y, 1) then
-				if ground == GROUND.OCEAN_REEF then
-					world:SetTile(x, y, GROUND.OCEAN_REEF_SHORE)
+				if ground == GROUND.OCEAN_BRINEPOOL then
+					world:SetTile(x, y, GROUND.OCEAN_BRINEPOOL_SHORE)
 				else
 					world:SetTile(x, y, GROUND.OCEAN_COASTAL_SHORE)
 				end
@@ -496,10 +500,10 @@ local function checkAllTiles(populating_tile, x1, y1, x2, y2)
 	return true, 0, 0
 end
 
-local function findLayoutPositions(radius, edge_dist, populating_tile, count)
+local function findLayoutPositions(size, edge_dist, populating_tile, count, min_dist_from_land)
 	local positions = {}
-	local size = 2 * radius
 	edge_dist = edge_dist or 0
+	min_dist_from_land = min_dist_from_land or 0
 
 	local width, height = world:GetWorldSize()
 	local adj_width, adj_height = width - 2 * edge_dist - size, height - 2 * edge_dist - size
@@ -512,11 +516,11 @@ local function findLayoutPositions(radius, edge_dist, populating_tile, count)
 			-- check the corners first
 			local x = ((start_x + i) % adj_width) + edge_dist
 			local x2, y2 = x + size - 1, y + size - 1
-			if checkTile(x2, y, populating_tile) and checkTile(x2, y2, populating_tile) then
-				if checkTile(x, y, populating_tile) and checkTile(x, y2, populating_tile) then
+			if checkTile(x2 + min_dist_from_land, y - min_dist_from_land, populating_tile) and checkTile(x2 + min_dist_from_land, y2 + min_dist_from_land, populating_tile) then
+				if checkTile(x - min_dist_from_land, y - min_dist_from_land, populating_tile) and checkTile(x - min_dist_from_land, y2 + min_dist_from_land, populating_tile) then
 					--print("Found 4 corners", x, y, x2, y2)
 					--check all tiles
-					local ok, last_x, last_y = checkAllTiles(populating_tile, x, y, x2, y2)
+					local ok, last_x, last_y = checkAllTiles(populating_tile, x - min_dist_from_land, y - min_dist_from_land, x2 + min_dist_from_land, y2 + min_dist_from_land)
 					if ok == true then
 						--bottom-left
 						--print(string.format("Location found (%4.2f, %4.2f)", x, y))
@@ -527,6 +531,7 @@ local function findLayoutPositions(radius, edge_dist, populating_tile, count)
 						i = i + size + 1
 					else
 						--print(string.format("Failed at (%4.2f, %4.2f) skip, (%4.2f, %4.2f)", last_x, last_y, x, y))
+						last_x = math.clamp(last_x, x, x2)
 						i = i + last_x - x + 1
 					end
 				else
@@ -544,40 +549,40 @@ local function findLayoutPositions(radius, edge_dist, populating_tile, count)
 	return positions
 end
 
-local function GetLayoutRadius(layout, prefabs)
+local function GetLayoutSize(layout, prefabs) -- box diameter
 	assert(layout ~= nil)
 	assert(prefabs ~= nil)
-
-	local extents = {xmin = 1000000, ymin = 1000000, xmax = -1000000, ymax = -1000000}
-	for i = 1, #prefabs, 1 do
-		--print(string.format("Prefab %s (%4.2f, %4.2f)", tostring(prefabs[i].prefab), prefabs[i].x, prefabs[i].y))
-		if prefabs[i].x < extents.xmin then extents.xmin = prefabs[i].x end
-		if prefabs[i].x > extents.xmax then extents.xmax = prefabs[i].x end
-		if prefabs[i].y < extents.ymin then extents.ymin = prefabs[i].y end
-		if prefabs[i].y > extents.ymax then extents.ymax = prefabs[i].y end
-	end
-
-	local e_width, e_height = extents.xmax - extents.xmin, extents.ymax - extents.ymin
-	local size = math.ceil(layout.scale * math.max(e_width, e_height))
+	local size = 2
 
 	if layout.ground then
 		size = math.max(size, #layout.ground)
+	else
+		local extents = {xmin = 1000000, ymin = 1000000, xmax = -1000000, ymax = -1000000}
+		for i = 1, #prefabs, 1 do
+			--print(string.format("Prefab %s (%4.2f, %4.2f)", tostring(prefabs[i].prefab), prefabs[i].x, prefabs[i].y))
+			if prefabs[i].x < extents.xmin then extents.xmin = prefabs[i].x end
+			if prefabs[i].x > extents.xmax then extents.xmax = prefabs[i].x end
+			if prefabs[i].y < extents.ymin then extents.ymin = prefabs[i].y end
+			if prefabs[i].y > extents.ymax then extents.ymax = prefabs[i].y end
+		end
+
+		local e_width, e_height = extents.xmax - extents.xmin, extents.ymax - extents.ymin
+		size = math.ceil(layout.scale * math.max(e_width, e_height))
 	end
 
-	--print(string.format("Layout %s dims (%4.2f x %4.2f), size %4.2f", layout.name, e_width, e_height, size))
-
+	--print(string.format("Layout %s dims (%4.2f x %4.2f), size %4.2f, scale %4.2f", layout.layout_file, e_width, e_height, size, layout.scale))
 	return size
 end
 
-local function PlaceOceanLayout(layout, prefabs, populating_tile, ReserveAndPlaceLayoutFn)
-	local layoutsize = GetLayoutRadius(layout, prefabs)
-	local positions = findLayoutPositions(layoutsize, OCEAN_MAPWRAPPER_WARN_RANGE + 8, populating_tile, 1)
+local function PlaceOceanLayout(layout, prefabs, populating_tile, ReserveAndPlaceLayoutFn, min_dist_from_land)
+	local layoutsize = GetLayoutSize(layout, prefabs)
+	local positions = findLayoutPositions(layoutsize, OCEAN_WATERFALL_MAX_DIST + 2, populating_tile, 1, min_dist_from_land)
 	if #positions > 0 then
 		local pos = math.random(#positions)
 		local adj = 0.5 * (positions[pos].size - layoutsize)
 		local x, y = positions[pos].x + adj, positions[pos].y + adj --bottom-left
 		--print(string.format("PlaceWaterLayout (%f, %f) from %d of %d", x, y, pos, #positions))
-		ReserveAndPlaceLayoutFn(layout, prefabs, {x, y})
+		ReserveAndPlaceLayoutFn(layout, prefabs, {x, y}, layoutsize)
 
 		for yy = positions[pos].y, positions[pos].y2, 1 do
 			for xx = positions[pos].x, positions[pos].x2, 1 do
@@ -589,19 +594,57 @@ local function PlaceOceanLayout(layout, prefabs, populating_tile, ReserveAndPlac
 	end
 	return false
 end
+               
+local function AddSquareTopology(encoded_topology, left, top, size, add_topology) -- less than ideal, but it will have to do
+	local index = #encoded_topology.ids + 1
+	encoded_topology.ids[index] = add_topology.room_id
+	encoded_topology.story_depths[index] = 0
 
-function Ocean_PlaceSetPieces(set_pieces, add_entity, obj_layout, populating_tile)
+	local node = {}
+	node.area = size * size
+	node.c = 1 -- colour index
+	node.cent = {left + (size / 2), top + (size / 2)}
+	node.neighbours = {}
+	node.poly = { {left, top},
+				  {left + size, top},
+				  {left + size, top + size},
+				  {left, top + size}
+				}
+	node.tags  = add_topology.tags
+	node.type = add_topology.node_type or NODE_TYPE.Default
+	node.x = node.cent[1]
+	node.y = node.cent[2]
+
+	node.validedges = {}
+
+	encoded_topology.nodes[index] = node
+
+	for x = left, left + size do
+		for y = top, top + size do
+			world:SetTileNodeId(x, y, index)
+		end
+	end
+end
+
+function Ocean_PlaceSetPieces(set_pieces, add_entity, obj_layout, populating_tile, min_dist_from_land, encoded_topology, map_width, map_height)
 	print("[Ocean] Placing ocean set pieces.")
-    
+
 	local total = 0
 	local num_placed = 0
 
     if set_pieces ~= nil then
 	    populating_tile = populating_tile or GROUND.IMPASSABLE
 
-	    local function ReserveAndPlaceLayoutFn(layout, prefabs, position)
+	    local function ReserveAndPlaceLayoutFn(layout, prefabs, position, area_size)
 		    obj_layout.ReserveAndPlaceLayout("POSITIONED", layout, prefabs, add_entity, position, world)
+
+			if layout.add_topology ~= nil then
+				local topology_delta = 0
+				AddSquareTopology(encoded_topology, (position[1]-topology_delta)*TILE_SCALE - (map_width * 0.5 * TILE_SCALE), (position[2]-topology_delta)*TILE_SCALE - (map_height * 0.5 * TILE_SCALE), (area_size + (topology_delta*2))*TILE_SCALE, layout.add_topology)
+			end
 	    end
+
+		local set_pieces_to_place = {}
 
 	    for name, data in pairs(set_pieces) do
 		    local layout = obj_layout.LayoutForDefinition(name)
@@ -609,14 +652,19 @@ function Ocean_PlaceSetPieces(set_pieces, add_entity, obj_layout, populating_til
 		    local count = type(data) == "number" and data
 						    or type(data) == "table" and data.count
 						    or data
-		    count = type(count) == "function" and count() or count
+		    count = FunctionOrValue(count)
 		    for i = 1, count or 1 do
-			    if PlaceOceanLayout(layout, prefabs, populating_tile, ReserveAndPlaceLayoutFn) then
-				    num_placed = num_placed + 1
-			    end
-			    total = total + 1
-		    end
+				table.insert(set_pieces_to_place, {layout = layout, prefabs = prefabs})
+			end
 	    end
+
+		shuffleArray(set_pieces_to_place)
+		for _, v in ipairs(set_pieces_to_place) do
+			if PlaceOceanLayout(v.layout, v.prefabs, populating_tile, ReserveAndPlaceLayoutFn, v.layout.min_dist_from_land or min_dist_from_land) then
+				num_placed = num_placed + 1
+			end
+			total = total + 1
+		end
     end
 
 	print("[Ocean] Placed "..tostring(num_placed).." of "..tostring(total).." ocean set pieces.")
@@ -627,17 +675,19 @@ function PopulateWaterPrefabWorldGenCustomizations(populating_tile, spawnFn, ent
 	-- this is populating extra entities based on worldgen customization
 --	print("[Ocean] Populate water extras...")
 
-	local generate_these = {}
+	local amount_to_generate = {}
 	local pos_needed = 0
 
 	if world_gen_choices == nil then
 		return
 	end
 
-	for prefab, mul in pairs(world_gen_choices) do
-		if prefab_list[prefab] then
-			generate_these[prefab] = prefab_list[prefab] * math.max(mul - 1.0, 0.0)
-			pos_needed = pos_needed + generate_these[prefab]
+	for prefab, amt in pairs(world_gen_choices) do
+		if not PrefabSwaps.IsPrefabInactive(prefab) then
+			if prefab_list[prefab] then
+				amount_to_generate[prefab] = math.floor(prefab_list[prefab]*amt) - prefab_list[prefab]
+				pos_needed = pos_needed + amount_to_generate[prefab]
+			end
 		end
 	end
 
@@ -645,19 +695,23 @@ function PopulateWaterPrefabWorldGenCustomizations(populating_tile, spawnFn, ent
 	--dumptable(prefab_list, 1, 2)
 	--dumptable(generate_these, 1, 2)
 
-	local points_x, points_y = GetRandomWaterPoints(populating_tile, width, height, edge_dist, pos_needed + 20)
+	local points_x, points_y = GetRandomWaterPoints(populating_tile, width, height, edge_dist, pos_needed)
 
-	local pos_cur = 1
-	for prefab, count in pairs(generate_these) do 
-		local added = 0
-		while added < count and pos_cur <= #points_x do
-			if terrain.filter[prefab] == nil or not table.contains(terrain.filter[prefab], populating_tile) then
-				local prefab_data = {}
-				prefab_data.data = water_contents.prefabdata and water_contents.prefabdata[prefab] or nil
-				PopulateWorld_AddEntity(prefab, points_x[pos_cur], points_y[pos_cur], populating_tile, entitiesOut, width, height, prefab_list, prefab_data)
-				added = added + 1
+	for idx = 1, math.min(#points_x, pos_needed) do
+		local prefab = spawnFn.pickspawnprefab(amount_to_generate, populating_tile)
+
+		if prefab ~= nil then
+			local prefab_data = {}
+			prefab_data.data = water_contents.prefabdata and water_contents.prefabdata[prefab] or nil
+			PopulateWorld_AddEntity(prefab, points_x[idx], points_y[idx], populating_tile, entitiesOut, width, height, prefab_list, prefab_data)
+
+			amount_to_generate[prefab] = amount_to_generate[prefab] - 1
+
+			-- Remove any complete items from the list
+			if amount_to_generate[prefab] <= 0 then
+				--print("Generated enough",prefab)
+				amount_to_generate[prefab] = nil
 			end
-			pos_cur = pos_cur + 1
 		end
 	end
 
@@ -665,10 +719,11 @@ function PopulateWaterPrefabWorldGenCustomizations(populating_tile, spawnFn, ent
 	--dumptable(prefab_list, 1, 2)
 end
 
-local function PopulateWaterType(populating_tile, spawnFn, entitiesOut, width, height, edge_dist, water_contents, world_gen_choices)
+local function PopulateWaterType(populating_tile, spawnFn, entitiesOut, width, height, edge_dist, water_contents, world_gen_choices, min_dist_from_land, encoded_topology)
 	--add IsTileReserved check back in
 
 	local prefab_list = {}
+	local setpiece_prefab_list = {}
 	local generate_these = {}
 	local pos_needed = 0
 
@@ -680,9 +735,9 @@ local function PopulateWaterType(populating_tile, spawnFn, entitiesOut, width, h
 			fn=function(prefab, points_x, points_y, idx, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
 				PopulateWorld_AddEntity(prefab, points_x[idx], points_y[idx], populating_tile, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
 			end,
-			args={entitiesOut=entitiesOut, width=width, height=height, rand_offset = true, debug_prefab_list=prefab_list}
+			args={entitiesOut=entitiesOut, width=width, height=height, rand_offset = true, debug_prefab_list=setpiece_prefab_list}
 		}
-		Ocean_PlaceSetPieces(water_contents.countstaticlayouts, add_fn, obj_layout, populating_tile)
+		Ocean_PlaceSetPieces(water_contents.countstaticlayouts, add_fn, obj_layout, populating_tile, min_dist_from_land, encoded_topology, width, height)
 	end
 
 	if water_contents.countprefabs ~= nil then
@@ -698,7 +753,7 @@ local function PopulateWaterType(populating_tile, spawnFn, entitiesOut, width, h
 		local points_x, points_y = GetRandomWaterPoints(populating_tile, width, height, edge_dist, 2 * pos_needed + 10)
 
 		local pos_cur = 1
-		for prefab, count in pairs(generate_these) do 
+		for prefab, count in pairs(generate_these) do
 			local added = 0
 			while added < count and pos_cur <= #points_x do
 				if terrain.filter[prefab] == nil or not table.contains(terrain.filter[prefab], populating_tile) then
@@ -731,14 +786,21 @@ local function PopulateWaterType(populating_tile, spawnFn, entitiesOut, width, h
 	end
 
 	PopulateWaterPrefabWorldGenCustomizations(populating_tile, spawnFn, entitiesOut, width, height, edge_dist, water_contents, world_gen_choices, prefab_list)
+
+	for prefab, num in pairs(setpiece_prefab_list) do
+		if prefab_list[prefab] == nil then
+			prefab_list[prefab] = 0
+		end
+		prefab_list[prefab] = prefab_list[prefab] + num
+	end
 end
 
-function PopulateOcean(spawnFn, entitiesOut, width, height, ocean_contents, world_gen_choices)
+function PopulateOcean(spawnFn, entitiesOut, width, height, ocean_contents, world_gen_choices, min_dist_from_land, encoded_topology)
 	print("[Ocean] Populating the ocean with lots of fun things to do...")
 
     if ocean_contents ~= nil then
 	    for i, room in ipairs(ocean_contents) do
-		    PopulateWaterType(room.data.value, spawnFn, entitiesOut, width, height, OCEAN_POPULATION_EDGE_DIST, room.data.contents, world_gen_choices)
+		    PopulateWaterType(room.data.value, spawnFn, entitiesOut, width, height, OCEAN_POPULATION_EDGE_DIST, room.data.contents, world_gen_choices, min_dist_from_land, encoded_topology)
 	    end
     end
 end

@@ -3,16 +3,18 @@ local Oar = Class(function(self, inst)
     self.fail_idx = 0
     self.fail_string_count = 3
 	self.fail_wetness = 9
+
+	self.max_velocity = TUNING.MAX_FORCE_VELOCITY
 end)
 
 function Oar:Row(doer, pos)
-	local doer_x, doer_y, doer_z = doer.Transform:GetWorldPosition()
-	local platform = TheWorld.Map:GetPlatformAtPoint(doer_x, doer_z)
+	local platform = doer:GetCurrentPlatform()
 	if platform == nil or not platform:IsValid() then return end
-	
+
 	local boat_physics = platform.components.boatphysics
 	if boat_physics == nil then return end
 
+	local doer_x, doer_y, doer_z = doer.Transform:GetWorldPosition()
 	local row_dir_x, row_dir_z = VecUtil_Normalize(pos.x - doer_x, pos.z - doer_z)
 
 	if doer.components.playercontroller.isclientcontrollerattached then
@@ -20,7 +22,12 @@ function Oar:Row(doer, pos)
 		row_dir_x, row_dir_z = VecUtil_Normalize(doer_x - boat_x, doer_z - boat_z)
 	end
 
-	boat_physics:ApplyForce(row_dir_x, row_dir_z, self.force)
+	local character_force_mult = doer.components.expertsailor ~= nil and doer.components.expertsailor:GetRowForceMultiplier() or 1
+	local character_extra_max_velocity = doer.components.expertsailor ~= nil and doer.components.expertsailor:GetRowExtraMaxVelocity() or 0
+
+	boat_physics:ApplyRowForce(row_dir_x, row_dir_z, self.force * character_force_mult, self.max_velocity + character_extra_max_velocity)
+
+	doer:PushEvent("rowing")
 end
 
 function Oar:RowFail(doer)

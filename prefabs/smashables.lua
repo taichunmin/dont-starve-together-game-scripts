@@ -165,6 +165,7 @@ local function makefn(name, asset, animated, smashsound, rubble)
         inst:AddTag("smashable")
         inst:AddTag("object")
         inst:AddTag(smashsound == "rock" and "stone" or "clay")
+		inst:AddTag("noauradamage")
 
         inst.displaynamefn = displaynamefn
 

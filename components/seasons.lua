@@ -61,6 +61,7 @@ local _mode
 local _premode
 local _segs
 local _segmod
+local _israndom = {}
 
 --Network
 local _season = net_tinybyte(inst.GUID, "seasons._season", "seasondirty")
@@ -138,14 +139,14 @@ end or nil
 
 local PushSeasonClockSegs = _ismastersim and function()
     if not _ismastershard then
-        return -- mastershard pushes its seg data to the clock, which pushes it to the slaves
+        return -- mastershard pushes its seg data to the clock, which pushes it to the secondary shards
     end
 
     local p = 1 - (_totaldaysinseason:value() > 0 and _remainingdaysinseason:value() / _totaldaysinseason:value() or 0)
     local toseason = p < .5 and GetPrevSeason() or GetNextSeason()
     local tosegs = _segs[toseason]
     local segs = tosegs
-    
+
     if _season:value() ~= toseason then
         local fromsegs = _segs[_season:value()]
         p = .5 - math.sin(PI * p) * .5
@@ -162,7 +163,7 @@ local PushSeasonClockSegs = _ismastersim and function()
     _world:PushEvent("ms_setclocksegs", segs)
 end or nil
 
-local UpdateSeasonMode = _ismastersim and function()
+local UpdateSeasonMode = _ismastersim and function(modified_season)
 
 	local numactiveseasons = 0
 	local allowedseason = nil
@@ -193,7 +194,7 @@ local UpdateSeasonMode = _ismastersim and function()
         _totaldaysinseason:set(2)
         _remainingdaysinseason:set(1)
         _endlessdaysinseason:set(true)
-    else
+    elseif modified_season == nil or modified_season == _season:value() then
 		if _lengths[_season:value()]:value() == 0 then
 			-- We can have a cycle that doesn't include the starting season (a "cycle pre" if you will)
 			_premode = true
@@ -297,7 +298,8 @@ local OnAdvanceSeason = _ismastersim and function()
             _remainingdaysinseason:set(math.max(_remainingdaysinseason:value() - 1, ENDLESS_RAMP_DAYS))
         end
     else
-        return
+		-- we always need to refersh the clock incase something else changed the segs
+		--return
     end
 
     PushSeasonClockSegs()
@@ -384,20 +386,29 @@ local OnSetSeasonClockSegs = _ismastershard and function(src, segs)
 end or nil
 
 local OnSetSeasonLength = _ismastersim and function(src, data)
-	local season = data.season
-	local length = data.length
+	local season = SEASONS[data.season]
+    local length = data.length
 
-	assert(SEASONS[season], "Tried setting the length of an invalid season.")
-	_lengths[SEASONS[season]]:set(length or 0)
+    if data.random == true and _israndom[data.season] == true then
+        return
+    end
+    _israndom[data.season] = data.random == true
 
-	local p = 1
-	if _totaldaysinseason:value() > 0 then
-		p = _remainingdaysinseason:value() / _totaldaysinseason:value()
-	end
+    assert(season, "Tried setting the length of an invalid season.")
+    if _lengths[season]:value() == length then return end --no change
+	_lengths[season]:set(length or 0)
 
-	UpdateSeasonMode()
+	local p
+    if _season:value() == season then
+        p = 1
+        if _totaldaysinseason:value() > 0 then
+            p = _remainingdaysinseason:value() / _totaldaysinseason:value()
+        end
+    end
 
-    if _mode ~= MODES.endless and _mode ~= MODES.always then
+	UpdateSeasonMode(season)
+
+    if _season:value() == season and _mode ~= MODES.endless and _mode ~= MODES.always then
         _remainingdaysinseason:set(math.ceil(_totaldaysinseason:value() * p))
 
         PushSeasonClockSegs()
@@ -460,8 +471,8 @@ if _ismastersim then
     inst:ListenForEvent("ms_setseasonclocksegs", OnSetSeasonClockSegs, _world)
     inst:ListenForEvent("ms_setseasonsegmodifier", OnSetSeasonSegModifier, _world)
     if not _ismastershard then
-        --Register slave shard events
-        inst:ListenForEvent("slave_seasonsupdate", OnSeasonsUpdate, _world)
+        --Register secondary shard events
+        inst:ListenForEvent("secondary_seasonsupdate", OnSeasonsUpdate, _world)
     end
 end
 
@@ -475,6 +486,7 @@ if _ismastersim then function self:OnSave()
     {
         mode = MODE_NAMES[_mode],
         premode = _premode,
+        israndom = _israndom,
         segs = {},
         season = SEASON_NAMES[_season:value()],
         totaldaysinseason = _totaldaysinseason:value(),
@@ -511,6 +523,8 @@ if _ismastersim then function self:OnLoad(data)
         end
 
         _lengths[i]:set(data.lengths and data.lengths[v] or TUNING[string.upper(v).."_LENGTH"] or 0)
+
+        _israndom[v] = data.israndom and data.israndom[v] == true
     end
 
     _premode = data.premode == true

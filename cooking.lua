@@ -1,11 +1,40 @@
 require "tuning"
 
+local official_foods = {}
+
 local cookerrecipes = {}
-function AddCookerRecipe(cooker, recipe)
+
+local cookbook_recipes = {}
+local MOD_COOKBOOK_CATEGORY = "mod"
+function AddCookerRecipe(cooker, recipe, is_mod_food)
+	if is_mod_food then
+		recipe.cookbook_category = MOD_COOKBOOK_CATEGORY
+	else
+		official_foods[recipe.name] = true
+		recipe.cookbook_atlas = "images/cookbook_"..recipe.name..".xml" -- use the high res images
+	end
+
 	if not cookerrecipes[cooker] then
 		cookerrecipes[cooker] = {}
 	end
 	cookerrecipes[cooker][recipe.name] = recipe
+
+	if cooker ~= "portablespicer" and not recipe.no_cookbook then
+		if not cookbook_recipes[recipe.cookbook_category] then
+			cookbook_recipes[recipe.cookbook_category] = {}
+		end
+		if not cookbook_recipes[recipe.cookbook_category][recipe.name] then
+			cookbook_recipes[recipe.cookbook_category][recipe.name] = recipe
+		end
+	end
+end
+
+local function IsModCookerFood(prefab)
+	return not official_foods[prefab] -- note: we cannot test against cookbook_recipes[MOD_COOKBOOK_CATEGORY] because if the mod is unloaded, it would return true
+end
+
+local function HasModCookerFood()
+	return cookbook_recipes[MOD_COOKBOOK_CATEGORY] ~= nil
 end
 
 local ingredients = {}
@@ -48,7 +77,7 @@ function IsModCookingProduct(cooker, name)
     return false
 end
 
-
+-- All Tags: fruit, monster, sweetener, veggie, meat, fish, egg, decoration, fat, dairy, inedible, seed, magic
 local fruits = {"pomegranate", "dragonfruit", "cave_banana"}
 AddIngredientValues(fruits, {fruit=1}, true)
 
@@ -57,6 +86,7 @@ AddIngredientValues({"wormlight_lesser"}, {fruit=.5})
 
 AddIngredientValues({"berries"}, {fruit=.5}, true)
 AddIngredientValues({"berries_juicy"}, {fruit=.5}, true)
+AddIngredientValues({"fig"}, {fruit=.5}, true)
 AddIngredientValues({"durian"}, {fruit=1, monster=1}, true)
 
 AddIngredientValues({"honey", "honeycomb"}, {sweetener=1}, true)
@@ -65,16 +95,29 @@ AddIngredientValues({"royal_jelly"}, {sweetener=3}, true)
 local veggies = {"carrot", "corn", "pumpkin", "eggplant", "cutlichen", "asparagus", "onion", "garlic", "tomato", "potato", "pepper"}
 AddIngredientValues(veggies, {veggie=1}, true)
 
-local mushrooms = {"red_cap", "green_cap", "blue_cap"}
+local mushrooms = {"red_cap", "green_cap", "blue_cap", "moon_cap"}
 AddIngredientValues(mushrooms, {veggie=.5}, true)
 
 AddIngredientValues({"meat"}, {meat=1}, true, true)
 AddIngredientValues({"monstermeat"}, {meat=1, monster=1}, true, true)
-AddIngredientValues({"froglegs", "drumstick"}, {meat=.5}, true)
-AddIngredientValues({"smallmeat"}, {meat=.5}, true, true)
+AddIngredientValues({"froglegs", "drumstick", "batwing"}, {meat=.5}, true)
+AddIngredientValues({"smallmeat", "batnose"}, {meat=.5}, true, true)
 
-AddIngredientValues({"fish", "eel"}, {meat=.5,fish=1}, true)
+AddIngredientValues({"eel"}, {meat=.5,fish=1}, true)
+AddIngredientValues({"fish"}, {meat=1,fish=1}, true)
 
+AddIngredientValues({"pondeel"}, {meat=.5,fish=1}, true)
+AddIngredientValues({"pondfish"}, {meat=.5,fish=.5}, false)
+AddIngredientValues({"fishmeat_small"}, {meat=.5,fish=.5}, true)
+AddIngredientValues({"fishmeat"}, {meat=1,fish=1}, true)
+local oceanfishdefs = require("prefabs/oceanfishdef")
+for _, fish_def in pairs(oceanfishdefs.fish) do
+	if fish_def.cooker_ingredient_value ~= nil then
+		AddIngredientValues({fish_def.prefab.."_inv"}, fish_def.cooker_ingredient_value, false)
+	end
+end
+
+AddIngredientValues({"kelp"}, {veggie=.5}, true, true)
 
 AddIngredientValues({"mandrake"}, {veggie=1, magic=1}, true)
 AddIngredientValues({"egg"}, {egg=1}, true)
@@ -96,10 +139,22 @@ AddIngredientValues({"acorn_cooked"}, {seed=1})
 AddIngredientValues({"goatmilk"}, {dairy=1})
 -- AddIngredientValues({"seeds"}, {seed=1}, true)
 
+AddIngredientValues({"milkywhites"}, {dairy=1})
+
 AddIngredientValues({"nightmarefuel"}, {inedible=1, magic=1})
-AddIngredientValues({"voltgoathorn"}, {inedible=1})
 AddIngredientValues({"boneshard"}, {inedible=1})
 
+AddIngredientValues({"wobster_sheller_land"}, {meat=1.0, fish=1.0})
+
+AddIngredientValues({"barnacle","barnacle_cooked"}, {meat=0.25, fish=0.25})
+
+AddIngredientValues({"plantmeat","plantmeat_cooked"}, {meat=1})
+
+AddIngredientValues({"refined_dust"}, {decoration=2})
+
+AddIngredientValues({"forgetmelots"}, {decoration=1})
+
+AddIngredientValues({"trunk_summer","trunk_winter","trunk_cooked"}, {meat=1})
 
 
 --our naming conventions aren't completely consistent, sadly
@@ -118,6 +173,7 @@ local foods = require("preparedfoods")
 for k,recipe in pairs (foods) do
 	AddCookerRecipe("cookpot", recipe)
 	AddCookerRecipe("portablecookpot", recipe)
+	AddCookerRecipe("archive_cookpot", recipe)
 end
 
 local portable_foods = require("preparedfoods_warly")
@@ -128,6 +184,13 @@ end
 local spicedfoods = require("spicedfoods")
 for k, recipe in pairs(spicedfoods) do
     AddCookerRecipe("portablespicer", recipe)
+end
+
+local nonfoods = require("preparednonfoods")
+for k, recipe in pairs(nonfoods) do
+    AddCookerRecipe("cookpot", recipe)
+    AddCookerRecipe("portablecookpot", recipe)
+    AddCookerRecipe("archive_cookpot", recipe)
 end
 
 local function GetIngredientValues(prefablist)
@@ -237,4 +300,4 @@ end
 
 TestRecipes("cookpot", {"tallbirdegg","meat","carrot","meat"})]]
 
-return { CalculateRecipe = CalculateRecipe, IsCookingIngredient = IsCookingIngredient, recipes = cookerrecipes, ingredients = ingredients, GetRecipe = GetRecipe}
+return { CalculateRecipe = CalculateRecipe, IsCookingIngredient = IsCookingIngredient, recipes = cookerrecipes, ingredients = ingredients, GetRecipe = GetRecipe, cookbook_recipes = cookbook_recipes, HasModCookerFood = HasModCookerFood, IsModCookerFood = IsModCookerFood}

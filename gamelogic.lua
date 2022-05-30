@@ -1,7 +1,11 @@
 require "playerdeaths"
 require "playerhistory"
 require "serverpreferences"
+require "util/profanityfilter"
 require "saveindex"
+require "shardsaveindex"
+require "shardindex"
+require "custompresets"
 require "map/extents"
 require "perfutil"
 require "maputil"
@@ -17,6 +21,7 @@ require "map/ocean_gen" -- for retrofitting the ocean tiles
 local EquipSlot = require("equipslotutil")
 local GroundTiles = require("worldtiledefs")
 local Stats = require("stats")
+local WorldSettings_Overrides = require("worldsettings_overrides")
 
 if PLATFORM == "WIN32_RAIL" then
 	TheSim:SetMemInfoTrackingInterval(5*60)
@@ -70,6 +75,7 @@ local start_game_time = nil
 
 TheSim:SetRenderPassDefaultEffect( RENDERPASS.BLOOM, "shaders/anim_bloom.ksh" )
 TheSim:SetErosionTexture( "images/erosion.tex" )
+TheSim:SetHoloTexture( "images/erosion_holo.tex" )
 
 function RecordEventAchievementProgressForAllPlayers(achievement, data)
 	if TheWorld ~= nil and TheWorld.components.eventachievementtracker ~= nil then
@@ -108,24 +114,24 @@ end
 --this is suuuuuper placeholdery. We need to think about how to handle all of the different types of updates for this
 local function DoAgeWorld()
 	for k,v in pairs(Ents) do
- 
+
 		--send things to their homes
 		if v.components.homeseeker and v.components.homeseeker.home then
-			
+
 			if v.components.homeseeker.home.components.childspawner then
 				v.components.homeseeker.home.components.childspawner:GoHome(v)
 			end
-			
+
 			if v.components.homeseeker.home.components.spawner then
 				v.components.homeseeker.home.components.spawner:GoHome(v)
 			end
 		end
-		
+
 	end
 end
 
 local function KeepAlive()
-	if global_loading_widget then 
+	if global_loading_widget then
 		global_loading_widget:ShowNextFrame()
 		if cancel_tip then
 			cancel_tip:ShowNextFrame()
@@ -139,7 +145,7 @@ local function KeepAlive()
 end
 
 function ShowLoading()
-	if global_loading_widget then 
+	if global_loading_widget and not TheNet:IsDedicated() then
 		global_loading_widget:SetEnabled(true)
 	end
 end
@@ -169,11 +175,18 @@ local function LoadAssets(asset_set, savedata)
 	assert(asset_set)
 	Settings.current_asset_set = asset_set
     Settings.current_world_asset = savedata ~= nil and savedata.map.prefab or nil
-    Settings.current_world_specialevent = savedata ~= nil and (savedata.map.topology ~= nil and savedata.map.topology.overrides ~= nil and savedata.map.topology.overrides.specialevent ~= "default" and savedata.map.topology.overrides.specialevent or WORLD_SPECIAL_EVENT) or nil
+
+	local savedata_overrides = savedata and savedata.map.topology and savedata.map.topology.overrides or nil
+
+    Settings.current_world_specialevent = savedata and (savedata_overrides and savedata_overrides.specialevent ~= "default" and savedata_overrides.specialevent or WORLD_SPECIAL_EVENT) or nil
+	Settings.current_world_extraevents = {}
+
+	local last_world_allevents = GetAllActiveEvents(Settings.last_world_specialevent, Settings.last_world_extraevents)
+	local current_world_allevents = GetAllActiveEvents(Settings.current_world_specialevent, Settings.current_world_extraevents)
 
 	RECIPE_PREFABS = {}
 	for k,v in pairs(AllRecipes) do
-		table.insert(RECIPE_PREFABS, v.name)
+		table.insert(RECIPE_PREFABS, v.product)
 		if v.placer then
 			table.insert(RECIPE_PREFABS, v.placer)
 		end
@@ -203,9 +216,10 @@ local function LoadAssets(asset_set, savedata)
 				TheSim:UnloadPrefabs(RECIPE_PREFABS)
                 --V2C: Replaced by Settings.last_world_asset
                 --TheSim:UnloadPrefabs(BACKEND_PREFABS)
-                if Settings.last_world_specialevent ~= nil then
-                    TheSim:UnloadPrefabs({ Settings.last_world_specialevent.."_event_backend" })
-                end
+
+				for special_event in pairs(last_world_allevents) do
+					TheSim:UnloadPrefabs({ special_event.."_event_backend" })
+				end
                 TheSim:UnloadPrefabs(FESTIVAL_EVENT_BACKEND_PREFABS)
                 if Settings.last_world_asset ~= nil then
                     TheSim:UnloadPrefabs({ Settings.last_world_asset })
@@ -222,7 +236,7 @@ local function LoadAssets(asset_set, savedata)
 			TheSim:UnregisterAllPrefabs()
 
 			RegisterAllDLC()
-			
+
 			local async_batch_validation = Settings.last_asset_set == nil
 			for i,file in ipairs(PREFABFILES) do -- required from prefablist.lua
 				LoadPrefabFile("prefabs/"..file, async_batch_validation)
@@ -256,6 +270,27 @@ local function LoadAssets(asset_set, savedata)
                 LoadPrefabFile("prefabs/audio_test_prefab")
             end
 
+			for special_event in pairs(current_world_allevents) do
+				if not last_world_allevents[special_event] then
+					TheSim:LoadPrefabs({ special_event.."_event_backend" })
+				end
+			end
+
+			for special_event in pairs(last_world_allevents) do
+				if not current_world_allevents[special_event] then
+					TheSim:UnloadPrefabs({ special_event.."_event_backend" })
+				end
+			end
+
+            if Settings.last_world_asset ~= Settings.current_world_asset then
+				if Settings.current_world_asset then
+					TheSim:LoadPrefabs({ Settings.current_world_asset })
+				end
+				if Settings.last_world_asset then
+					TheSim:UnloadPrefabs({ Settings.last_world_asset })
+				end
+            end
+
 			ModManager:RegisterPrefabs()
 		else
 			print("\tUnload FE")
@@ -283,9 +318,12 @@ local function LoadAssets(asset_set, savedata)
 			TheSystemService:SetStalling(true)
             --V2C: Replaced by Settings.current_world_asset
             --TheSim:LoadPrefabs(BACKEND_PREFABS)
-            if Settings.current_world_specialevent ~= nil then
-                TheSim:LoadPrefabs({ Settings.current_world_specialevent.."_event_backend" })
-            end
+
+
+			for special_event in pairs(current_world_allevents) do
+				TheSim:LoadPrefabs({ special_event.."_event_backend" })
+			end
+
             TheSim:LoadPrefabs(FESTIVAL_EVENT_BACKEND_PREFABS)
             if Settings.current_world_asset ~= nil then
                 TheSim:LoadPrefabs({ Settings.current_world_asset })
@@ -306,6 +344,7 @@ local function LoadAssets(asset_set, savedata)
 	Settings.last_asset_set = Settings.current_asset_set
     Settings.last_world_asset = Settings.current_world_asset
     Settings.last_world_specialevent = Settings.current_world_specialevent
+	Settings.last_world_extraevents = Settings.current_world_extraevents
 end
 
 function GetTimePlaying()
@@ -313,7 +352,7 @@ function GetTimePlaying()
 end
 
 local replace =
-{ 
+{
     ["farmplot"] = "slow_farmplot",
     ["farmplot2"] = "fast_farmplot",
     ["farmplot3"] = "fast_farmplot",
@@ -328,6 +367,32 @@ local function PopulateWorld(savedata, profile)
     Print(VERBOSITY.DEBUG, "PopulateWorld")
     Print(VERBOSITY.DEBUG, "[Instantiating objects...]")
     if savedata ~= nil then
+		local savedata_overrides = savedata.map.topology.overrides
+
+		if savedata_overrides then
+			ApplySpecialEvent(savedata_overrides.specialevent or nil)
+			for k, event_name in pairs(SPECIAL_EVENTS) do
+				if savedata_overrides[event_name] == "enabled" then
+					ApplyExtraEvent(event_name)
+				end
+			end
+		end
+
+		if savedata.map.topology.overrides and not IsTableEmpty(savedata.map.topology.overrides) then
+			for name, override in pairs(WorldSettings_Overrides.Pre) do
+				local difficulty = savedata.map.topology.overrides[name]
+				if difficulty and difficulty ~= "default" then
+					print("OVERRIDE: setting", name, "to", difficulty)
+				end
+				override(difficulty or "default")
+			end
+		else
+			--if we lack overrides, all values are defaulted, to guarantee everything is on default values.
+			for name, override in pairs(WorldSettings_Overrides.Pre) do
+				override("default")
+			end
+		end
+
         local world = SpawnPrefab(savedata.map.prefab)
         if DEBUG_MODE then
             -- Common error in development when switching branches.
@@ -376,52 +441,70 @@ local function PopulateWorld(savedata, profile)
 
         local map = world.Map
 
-        if world.has_ocean then            
+        if world.has_ocean then
             local tuning = TUNING.OCEAN_SHADER
             map:SetOceanEnabled(true)
 			map:SetOceanTextureBlurParameters(tuning.TEXTURE_BLUR_PASS_SIZE, tuning.TEXTURE_BLUR_PASS_COUNT)
             map:SetOceanNoiseParameters0(tuning.NOISE[1].ANGLE, tuning.NOISE[1].SPEED, tuning.NOISE[1].SCALE, tuning.NOISE[1].FREQUENCY)
             map:SetOceanNoiseParameters1(tuning.NOISE[2].ANGLE, tuning.NOISE[2].SPEED, tuning.NOISE[2].SCALE, tuning.NOISE[2].FREQUENCY)
             map:SetOceanNoiseParameters2(tuning.NOISE[3].ANGLE, tuning.NOISE[3].SPEED, tuning.NOISE[3].SCALE, tuning.NOISE[3].FREQUENCY)
+
+			local waterfall_tuning = TUNING.WATERFALL_SHADER.NOISE
+
+			map:SetWaterfallFadeParameters(TUNING.WATERFALL_SHADER.FADE_COLOR[1] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[2] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[3] / 255, TUNING.WATERFALL_SHADER.FADE_START)
+			map:SetWaterfallNoiseParameters0(waterfall_tuning[1].SCALE, waterfall_tuning[1].SPEED, waterfall_tuning[1].OPACITY, waterfall_tuning[1].FADE_START)
+			map:SetWaterfallNoiseParameters1(waterfall_tuning[2].SCALE, waterfall_tuning[2].SPEED, waterfall_tuning[2].OPACITY, waterfall_tuning[2].FADE_START)
+
+			local minimap_ocean_tuning = TUNING.OCEAN_MINIMAP_SHADER
+
+			map:SetMinimapOceanEdgeColor0(minimap_ocean_tuning.EDGE_COLOR0[1] / 255, minimap_ocean_tuning.EDGE_COLOR0[2] / 255, minimap_ocean_tuning.EDGE_COLOR0[3] / 255)
+			map:SetMinimapOceanEdgeParams0(minimap_ocean_tuning.EDGE_PARAMS0.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS0.HALF_THRESHOLD_RANGE)
+
+			map:SetMinimapOceanEdgeColor1(minimap_ocean_tuning.EDGE_COLOR1[1] / 255, minimap_ocean_tuning.EDGE_COLOR1[2] / 255, minimap_ocean_tuning.EDGE_COLOR1[3] / 255)
+			map:SetMinimapOceanEdgeParams1(minimap_ocean_tuning.EDGE_PARAMS1.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS1.HALF_THRESHOLD_RANGE)
+
+			map:SetMinimapOceanEdgeShadowColor(minimap_ocean_tuning.EDGE_SHADOW_COLOR[1] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[2] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[3] / 255)
+			map:SetMinimapOceanEdgeShadowParams(minimap_ocean_tuning.EDGE_SHADOW_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_X, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_Y)
+
+			map:SetMinimapOceanEdgeFadeParams(minimap_ocean_tuning.EDGE_FADE_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_FADE_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_FADE_PARAMS.MASK_INSET)
+
+			map:SetMinimapOceanEdgeNoiseParams(minimap_ocean_tuning.EDGE_NOISE_PARAMS.UV_SCALE)
+
+			map:SetMinimapOceanTextureBlurParameters(minimap_ocean_tuning.TEXTURE_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_BLUR_PASS_COUNT, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_PASS_COUNT)
+			map:SetMinimapOceanMaskBlurParameters(minimap_ocean_tuning.MASK_BLUR_SIZE, minimap_ocean_tuning.MASK_BLUR_PASS_COUNT)
         end
 
-        local waterfall_tuning = TUNING.WATERFALL_SHADER.NOISE
-
-        map:SetWaterfallFadeParameters(TUNING.WATERFALL_SHADER.FADE_COLOR[1] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[2] / 255, TUNING.WATERFALL_SHADER.FADE_COLOR[3] / 255, TUNING.WATERFALL_SHADER.FADE_START)
-        map:SetWaterfallNoiseParameters0(waterfall_tuning[1].SCALE, waterfall_tuning[1].SPEED, waterfall_tuning[1].OPACITY, waterfall_tuning[1].FADE_START)
-        map:SetWaterfallNoiseParameters1(waterfall_tuning[2].SCALE, waterfall_tuning[2].SPEED, waterfall_tuning[2].OPACITY, waterfall_tuning[2].FADE_START)
-
-        local minimap_ocean_tuning = TUNING.OCEAN_MINIMAP_SHADER
-
-        map:SetMinimapOceanEdgeColor0(minimap_ocean_tuning.EDGE_COLOR0[1] / 255, minimap_ocean_tuning.EDGE_COLOR0[2] / 255, minimap_ocean_tuning.EDGE_COLOR0[3] / 255)
-        map:SetMinimapOceanEdgeParams0(minimap_ocean_tuning.EDGE_PARAMS0.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS0.HALF_THRESHOLD_RANGE)
-
-        map:SetMinimapOceanEdgeColor1(minimap_ocean_tuning.EDGE_COLOR1[1] / 255, minimap_ocean_tuning.EDGE_COLOR1[2] / 255, minimap_ocean_tuning.EDGE_COLOR1[3] / 255)
-        map:SetMinimapOceanEdgeParams1(minimap_ocean_tuning.EDGE_PARAMS1.THRESHOLD, minimap_ocean_tuning.EDGE_PARAMS1.HALF_THRESHOLD_RANGE)
-
-        map:SetMinimapOceanEdgeShadowColor(minimap_ocean_tuning.EDGE_SHADOW_COLOR[1] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[2] / 255, minimap_ocean_tuning.EDGE_SHADOW_COLOR[3] / 255)
-        map:SetMinimapOceanEdgeShadowParams(minimap_ocean_tuning.EDGE_SHADOW_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_X, minimap_ocean_tuning.EDGE_SHADOW_PARAMS.UV_OFFSET_Y)
-
-        map:SetMinimapOceanEdgeFadeParams(minimap_ocean_tuning.EDGE_FADE_PARAMS.THRESHOLD, minimap_ocean_tuning.EDGE_FADE_PARAMS.HALF_THRESHOLD_RANGE, minimap_ocean_tuning.EDGE_FADE_PARAMS.MASK_INSET)
-
-        map:SetMinimapOceanEdgeNoiseParams(minimap_ocean_tuning.EDGE_NOISE_PARAMS.UV_SCALE)
-		
-        map:SetMinimapOceanTextureBlurParameters(minimap_ocean_tuning.TEXTURE_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_BLUR_PASS_COUNT, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_SIZE, minimap_ocean_tuning.TEXTURE_ALPHA_BLUR_PASS_COUNT)
-        map:SetMinimapOceanMaskBlurParameters(minimap_ocean_tuning.MASK_BLUR_SIZE, minimap_ocean_tuning.MASK_BLUR_PASS_COUNT)
-
+		-- remove the LOOP_BLANK_SUB before we do anything else
+        for i=#savedata.map.topology.ids,1, -1 do
+            local name = savedata.map.topology.ids[i]
+            if string.find(name, "LOOP_BLANK_SUB") ~= nil then
+                table.remove(savedata.map.topology.ids, i)
+                table.remove(savedata.map.topology.nodes, i)
+                for eid=#savedata.map.topology.edges,1,-1 do
+                    if savedata.map.topology.edges[eid].n1 == i or savedata.map.topology.edges[eid].n2 == i then
+                        table.remove(savedata.map.topology.edges, eid)
+                    end
+                end
+            end
+        end
 
         --this was spawned by the level file. kinda lame - we should just do everything from in here.
         map:SetSize(savedata.map.width, savedata.map.height)
-        map:SetFromString(savedata.map.tiles)
+		if savedata.map.width > 1024 and savedata.map.height > 1024 then
+			--increase this by as little as possible!
+			--this number creates a series of small regions that is used to help cull out objects that aren't on screen.
+			--the larger this number is, the larger those regions, and the more wasted time rendering objects that are offscreen.
+			TheSim:UpdateRenderExtents(math.max(savedata.map.width, savedata.map.height) * TILE_SCALE)
+		end
+		map:SetFromString(savedata.map.tiles)
+		map:SetNodeIdTileMapFromString(savedata.map.nodeidtilemap)
         map:ResetVisited()
 
-		if savedata.retrofit_oceantiles then
-			savedata.retrofit_oceantiles = nil
-			print ("Retrofitting for Return Of Them: Turn of Tides - Converting Ocean...")
-			Ocean_SetWorldForOceanGen(TheWorld.Map)
-			Ocean_ConvertImpassibleToWater(savedata.map.width, savedata.map.height, require("map/ocean_gen_config"))
-			print ("Retrofitting for Return Of Them: Turn of Tides - Converting Ocean done")
-			require("map/ocean_retrofit_island").TurnOfTidesRetrofitting_MoonIsland(TheWorld.Map, savedata)
+		-- This happens after calling 'map:SetFromString' so that we can use the map API to read tile data instead of trying to read/write the save data tile stream
+		-- no objects have been spawned, so modifying savedata.ents is the correct thing to do
+		if world.ismastersim then
+			local retrofiting = require("map/retrofit_savedata")
+			retrofiting.DoRetrofitting(savedata, world.Map)
 		end
 
         if savedata.map.prefab == "cave" then
@@ -451,21 +534,8 @@ local function PopulateWorld(savedata, profile)
         assert(savedata.map.topology.ids, "[MALFORMED SAVE DATA] Map missing topology information. This save file is too old, and is missing neccessary information.")
 
 		if savedata.meta ~= nil then
-			print("World generated on version " .. tostring(savedata.meta.build_version) .. ", using seed: " .. tostring(savedata.meta.seed))
+			print("World generated on build " .. tostring(savedata.meta.build_version) .. " with save version: " .. tostring(savedata.meta.generated_on_saveversion) .. ", using seed: " .. tostring(savedata.meta.seed))
 		end
-
-        for i=#savedata.map.topology.ids,1, -1 do
-            local name = savedata.map.topology.ids[i]
-            if string.find(name, "LOOP_BLANK_SUB") ~= nil then
-                table.remove(savedata.map.topology.ids, i)
-                table.remove(savedata.map.topology.nodes, i)
-                for eid=#savedata.map.topology.edges,1,-1 do
-                    if savedata.map.topology.edges[eid].n1 == i or savedata.map.topology.edges[eid].n2 == i then
-                        table.remove(savedata.map.topology.edges, eid)
-                    end
-                end
-            end
-        end
 
         for i,node in ipairs(world.topology.nodes) do
             local story = world.topology.ids[i]
@@ -519,30 +589,23 @@ local function PopulateWorld(savedata, profile)
             --V2C: forward to MOD game mode server configuration HERE
         end
 
-        -- Force overrides for ambient
-        local tuning_override = require("tuning_override")
-        tuning_override.areaambientdefault(savedata.map.prefab)
-
-		ApplySpecialEvent(world.topology.overrides and world.topology.overrides.specialevent or nil)
+		WorldSettings_Overrides.areaambientdefault(savedata.map.prefab)
 
         -- Check for map overrides
-        if world.topology.overrides ~= nil and GetTableSize(world.topology.overrides) > 0 then
-            for override,value in pairs(world.topology.overrides) do
-                if tuning_override[override] ~= nil then
-                    print("OVERRIDE: setting",override,"to",value)
-                    tuning_override[override](value)
-                end
-            end
-
-            -- Clear out one time overrides
-            local onetime = {"season_start", "autumn", "winter", "spring", "summer", "frograin", "wildfires", "prefabswaps_start", "rock_ice"}
-            for i,override in ipairs(onetime) do
-                if world.topology.overrides[override] ~= nil then
-                    print("removing onetime override",override)
-                    world.topology.overrides[override] = nil
-                end
-            end
-        end
+		if world.topology.overrides ~= nil and GetTableSize(world.topology.overrides) > 0 then
+			for name, override in pairs(WorldSettings_Overrides.Post) do
+				local difficulty = world.topology.overrides[name]
+				if difficulty and difficulty ~= "default" then
+					print("OVERRIDE: setting", name, "to", difficulty)
+				end
+				override(difficulty or "default")
+			end
+		else
+			--if we lack overrides, all values are defaulted, to guarantee everything is on default values.
+			for name, override in pairs(WorldSettings_Overrides.Post) do
+				override("default")
+			end
+		end
 
         --instantiate all the dudes
         local newents = {}
@@ -553,7 +616,9 @@ local function PopulateWorld(savedata, profile)
                 SpawnSaveRecord(v, newents)
             end
         end
-
+		if world.components.walkableplatformmanager then
+			world.components.walkableplatformmanager:PostUpdate(0)
+		end
         --post pass in neccessary to hook up references
         for k, v in pairs(newents) do
             v.entity:LoadPostPass(newents, v.data)
@@ -660,7 +725,7 @@ local function SendResumeRequestToServer(world, delay)
         --world reset/regen/disconnect triggered
         return
     elseif delay > 0 then
-        world:DoTaskInTime(0, SendResumeRequestToServer, delay - 1)
+        world:DoStaticTaskInTime(0, SendResumeRequestToServer, delay - 1)
     elseif not TheNet:IsDedicated() and ThePlayer == nil then
         TheNet:SendResumeRequestToServer(TheNet:GetUserID())
     else
@@ -694,7 +759,7 @@ local function DoInitGame(savedata, profile)
 	assert(savedata.map.tiles, "Map tiles missing from savedata on load")
 	assert(savedata.map.width, "Map width missing from savedata on load")
 	assert(savedata.map.height, "Map height missing from savedata on load")
-	
+
 	assert(savedata.map.topology, "Map topology missing from savedata on load")
 	assert(savedata.map.topology.ids, "Topology entity ids are missing from savedata on load")
 	--assert(savedata.map.topology.story_depths, "Topology story_depths are missing from savedata on load")
@@ -710,12 +775,20 @@ local function DoInitGame(savedata, profile)
 
 	assert(savedata.ents, "Entities missing from savedata on load")
 
+	local options = ShardGameIndex:GetGenOptions()
+	if options and options.overrides then
+		for k, v in pairs(options.overrides) do
+			savedata.map.topology.overrides[k] = v
+		end
+	end
+	savedata.map.topology.overrides.original = nil
+
 	if savedata.map.roads then
 		Roads = savedata.map.roads
 		for k, road_data in pairs( savedata.map.roads ) do
 			RoadManager:BeginRoad()
 			local weight = road_data[1]
-			
+
 			if weight == 3 then
 				for i = 2, #road_data do
 					local ctrl_pt = road_data[i]
@@ -725,7 +798,7 @@ local function DoInitGame(savedata, profile)
 				for k, v in pairs( ROAD_STRIPS ) do
 					RoadManager:SetStripEffect( v, "shaders/road.ksh" )
 				end
-				
+
 				RoadManager:SetStripTextures( ROAD_STRIPS.EDGES,	resolvefilepath("images/roadedge.tex"),		resolvefilepath("images/roadnoise.tex") ,		resolvefilepath("images/roadnoise.tex") )
 				RoadManager:SetStripTextures( ROAD_STRIPS.CENTER,	resolvefilepath("images/square.tex"),		resolvefilepath("images/roadnoise.tex") ,		resolvefilepath("images/roadnoise.tex") )
 				RoadManager:SetStripTextures( ROAD_STRIPS.CORNERS,	resolvefilepath("images/roadcorner.tex"),	resolvefilepath("images/roadnoise.tex") ,		resolvefilepath("images/roadnoise.tex") )
@@ -741,7 +814,7 @@ local function DoInitGame(savedata, profile)
 					local ctrl_pt = road_data[i]
 					RoadManager:AddControlPoint( ctrl_pt[1], ctrl_pt[2] )
 				end
-				
+
 				for k, v in pairs( ROAD_STRIPS ) do
 					RoadManager:SetStripEffect( v, "shaders/road.ksh" )
 				end
@@ -754,7 +827,7 @@ local function DoInitGame(savedata, profile)
 						ROAD_PARAMETERS.NUM_SUBDIVISIONS_PER_SEGMENT,
 						0, 0,
 						ROAD_PARAMETERS.MIN_EDGE_WIDTH*4, ROAD_PARAMETERS.MAX_EDGE_WIDTH*4,
-						0, false )						
+						0, false )
 			end
 		end
 		RoadManager:GenerateQuadTree()
@@ -764,10 +837,10 @@ local function DoInitGame(savedata, profile)
     if TheNet:GetIsServer() then
     	-- todo markl
 		-- Make it so the paths used here come directly from the engine
-		
+
 		-- Setup appropriate folders for saving session data
 		TheNet:BeginSession(savedata.meta.session_identifier)
-		
+
    		local ent_ref = savedata.ents
         local snapshot_ref = savedata.snapshot
 		-- local node_ref = savedata.nodes
@@ -864,7 +937,7 @@ local function DoInitGame(savedata, profile)
 
 	--DoStartPause("Ready!")
 	Print(VERBOSITY.DEBUG, "DoInitGame complete")
-    
+
 	if PRINT_TEXTURE_INFO then
 		c_printtextureinfo( "texinfo.csv" )
 		TheSim:Quit()
@@ -872,13 +945,13 @@ local function DoInitGame(savedata, profile)
 
 	inGamePlay = true
 	TheFrontEnd:SetFadeLevel(1)
-	
+
 	TheNet:DoneLoadingMap( )
-	    
+
 	if TheNet:GetIsServer() then
 	    NotifyLoadingState( LoadingStates.DoneLoading )
+		ShardGameIndex:WriteTimeFile()
 	end
-    
 end
 
 local function UpgradeSaveFile(savedata)
@@ -896,17 +969,17 @@ end
 
 local function DoLoadWorldFile(file)
 	local function onload(savedata)
-		assert(savedata, "DoLoadWorld: Savedata is NIL on load")
-		assert(GetTableSize(savedata)>0, "DoLoadWorld: Savedata is empty on load")
+		assert(savedata, "DoLoadWorldFile: Savedata is NIL on load")
+		assert(GetTableSize(savedata)>0, "DoLoadWorldFile: Savedata is empty on load")
 
         UpgradeSaveFile(savedata)
         LoadAssets("BACKEND", savedata)
 		DoInitGame(savedata, Profile)
 	end
-	SaveGameIndex:GetSaveDataFile(file, onload)
+	ShardGameIndex:GetSaveDataFile(file, onload)
 end
 
-local function DoLoadWorld(saveslot)
+local function DoLoadWorld()
 	local function onload(savedata)
 		assert(savedata, "DoLoadWorld: Savedata is NIL on load")
 		assert(GetTableSize(savedata)>0, "DoLoadWorld: Savedata is empty on load")
@@ -915,10 +988,10 @@ local function DoLoadWorld(saveslot)
         LoadAssets("BACKEND", savedata)
 		DoInitGame(savedata, Profile)
 	end
-	SaveGameIndex:GetSaveData(saveslot, onload)
+	ShardGameIndex:GetSaveData(onload)
 end
 
-local function DoGenerateWorld(saveslot)
+local function DoGenerateWorld()
 	local function onComplete(savedata)
 		assert(savedata, "DoGenerateWorld: Savedata is NIL on load")
 		assert(#savedata>0, "DoGenerateWorld: Savedata is empty on load")
@@ -936,15 +1009,25 @@ local function DoGenerateWorld(saveslot)
 			print("Worldgen had an error, displaying...")
 			DisplayError(e)
 		else
-		    local success, world_table = RunInSandbox(savedata)
-			SaveGameIndex:OnGenerateNewWorld(saveslot, savedata, world_table.meta.session_identifier, onsaved)
+			local success, world_table = RunInSandbox(savedata)
+
+			--todo, if we add more values to this, turn this into a function thats called both here and mainfunctions.lua@SaveGame
+			local metadata = {clock = {}, seasons = {}}
+			if savedata and savedata.world_network and savedata.world_network.persistdata then
+				metadata.clock = savedata.world_network.persistdata.clock
+				metadata.seasons = savedata.world_network.persistdata.seasons
+			end
+			local PRETTY_PRINT = BRANCH == "dev"
+			local metadataStr = DataDumper(metadata, nil, not PRETTY_PRINT)
+
+			ShardGameIndex:OnGenerateNewWorld(savedata, metadataStr, world_table.meta.session_identifier, onsaved)
 		end
 	end
 
     local world_gen_data =
     {
-        level_type = GetLevelType(SaveGameIndex:GetGameMode(saveslot)),
-        level_data = SaveGameIndex:GetSlotGenOptions(saveslot),
+        level_type = GetLevelType(ShardGameIndex:GetGameMode()),
+        level_data = ShardGameIndex:GetGenOptions(),
         profile_data = Profile.persistdata,
     }
 
@@ -952,17 +1035,17 @@ local function DoGenerateWorld(saveslot)
 	TheFrontEnd:PushScreen(WorldGenScreen(Profile, onComplete, world_gen_data, hide_worldgen_screen))
 end
 
-local function LoadSlot(slot)
+local function LoadSlot()
     TheFrontEnd:ClearScreens()
-    if SaveGameIndex:CheckWorldFile(slot) then
+    if ShardGameIndex:CheckWorldFile() then
         --print("Load Slot: Has World")
         --LoadAssets("BACKEND")
         --V2C: Loading backend moved to after we know what world prefab we want
-        DoLoadWorld(slot)
+        DoLoadWorld()
     else
         --print("Load Slot: Has no World")
         print("Load Slot: ... generating new world")
-        DoGenerateWorld(slot)
+        DoGenerateWorld()
     end
 end
 
@@ -981,12 +1064,12 @@ local function DoResetAction()
 
 		RECIPE_PREFABS = {}
 		for k,v in pairs(AllRecipes) do
-			table.insert(RECIPE_PREFABS, v.name)
+			table.insert(RECIPE_PREFABS, v.product)
 			if v.placer then
 				table.insert(RECIPE_PREFABS, v.placer)
 			end
-		end		
-			
+		end
+
 		TheSim:LoadPrefabs(RECIPE_PREFABS)
 		print ("load backend")
         --V2C: load ALL the BACKEND_PREFABS for all types of worlds
@@ -1007,27 +1090,31 @@ local function DoResetAction()
 
 	if Settings.reset_action then
 		if Settings.reset_action == RESET_ACTION.DO_DEMO then
-			SaveGameIndex:DeleteSlot(1, function()
-				SaveGameIndex:StartSurvivalMode(1, nil, GetDefaultServerData(), function() 
-					--print("Reset Action: DO_DEMO")
-					DoGenerateWorld(1)
-				end)
+			--print("Reset Action: DO_DEMO")
+			ShardGameIndex:NewShardInSlot(1, "Master")
+			ShardGameIndex:Delete(function()
+				ShardGameIndex:SetServerShardData(
+					nil,
+					GetDefaultServerData(),
+					function()
+						DoGenerateWorld()
+					end)
 			end)
 		elseif Settings.reset_action == RESET_ACTION.LOAD_SLOT then
-			if SaveGameIndex:IsSlotEmpty(Settings.save_slot) then
+			--ShardGameIndex already contains the contextual slot from Settings.save_slot
+			if ShardGameIndex:IsEmpty() then
 				--print("Reset Action: LOAD_SLOT -- Re-generate world")
-                SaveGameIndex:DeleteSlot(Settings.save_slot, function()
-                    SaveGameIndex:StartSurvivalMode(
-                        Settings.save_slot,
-                        SaveGameIndex:GetSlotGenOptions(Settings.save_slot),
-                        SaveGameIndex:GetSlotServerData(Settings.save_slot),
+                ShardGameIndex:Delete(function()
+                    ShardGameIndex:SetServerShardData(
+                        ShardGameIndex:GetGenOptions(),
+                        ShardGameIndex:GetServerData(),
                         function()
-                            DoGenerateWorld(Settings.save_slot)
+                            DoGenerateWorld()
                         end)
                 end, true)
 			else
 				--print("Reset Action: LOAD_SLOT -- current save")
-				LoadSlot(Settings.save_slot)
+				LoadSlot()
 			end
 		elseif Settings.reset_action == RESET_ACTION.LOAD_FILE then
 			--LoadAssets("BACKEND")
@@ -1035,7 +1122,7 @@ local function DoResetAction()
 			DoLoadWorldFile(Settings.save_name)
 		elseif Settings.reset_action == "printtextureinfo" then
 			--print("Reset Action: printtextureinfo")
-			DoGenerateWorld(1)
+			DoGenerateWorld()
 		elseif Settings.reset_action == RESET_ACTION.LOAD_FRONTEND then
 			print("Reset Action: none, loading front end")
 			LoadAssets("FRONTEND")
@@ -1050,12 +1137,13 @@ local function DoResetAction()
         end
 	else
 		if PRINT_TEXTURE_INFO then
-			SaveGameIndex:DeleteSlot(1,
+			ShardGameIndex:NewShardInSlot(1, "Master")
+			ShardGameIndex:Delete(
 				function()
 					local function onsaved()
 						SimReset({reset_action="printtextureinfo",save_slot=1})
 					end
-					SaveGameIndex:StartSurvivalMode(1, nil, GetDefaultServerData(), onsaved)
+					ShardGameIndex:SetServerShardData(nil, GetDefaultServerData(), onsaved)
 				end)
 		else
 			LoadAssets("FRONTEND")
@@ -1072,7 +1160,7 @@ end
 local function OnUpdatePurchaseStateComplete()
 	print("OnUpdatePurchaseStateComplete")
 	--print( "[Settings]",Settings.character, Settings.savefile)
-	
+
 	if TheInput:ControllerAttached() then
 		TheFrontEnd:StopTrackingMouse()
 	end
@@ -1084,8 +1172,8 @@ local function OnFilesLoaded()
     print("OnFilesLoaded()")
     if not (TheNet:IsDedicated() or TheNet:GetIsServer() or TheNet:GetIsClient()) then
         local host_sessions = {}
-        for i = 1, SaveGameIndex:GetNumSlots() do
-            local session = SaveGameIndex:GetSlotSession(i)
+        for i, slot in ipairs(ShardSaveGameIndex:GetValidSlots()) do
+            local session = ShardSaveGameIndex:GetSlotSession(slot, "Master")
             if session ~= nil then
                 table.insert(host_sessions, session)
             end
@@ -1105,21 +1193,51 @@ local function OnFilesLoaded()
 end
 
 SaveGameIndex = SaveIndex()
+ShardSaveGameIndex = ShardSaveIndex()
+ShardGameIndex = ShardIndex()
 Morgue = PlayerDeaths()
 PlayerHistory = PlayerHistory()
 ServerPreferences = ServerPreferences()
+ProfanityFilter = ProfanityFilter()
+CustomPresetManager = CustomPresets()
+CustomPresetManager:Load()
 
 Print(VERBOSITY.DEBUG, "[Loading Morgue]")
-Morgue:Load( function(did_it_load) 
+Morgue:Load( function(did_it_load)
 	--print("Morgue loaded....[",did_it_load,"]")
 end )
 PlayerHistory:Load( function() end )
 ServerPreferences:Load( function() end )
+ProfanityFilter:AddDictionary("default", require("wordfilter"))
+
+--Now let's setup debugging!!!
+if DEBUGGER_ENABLED then
+    local startResult, breakerType = Debuggee.start()
+    print('Debuggee start ->', startResult, breakerType )
+end
 
 Print(VERBOSITY.DEBUG, "[Loading profile and save index]")
-Profile:Load( function() 
-	SaveGameIndex:Load( OnFilesLoaded )
-end )
+Profile:Load( function()
+	SaveGameIndex:Load(function()
+		ShardSaveGameIndex:Load(function()
+			ShardGameIndex:Load( OnFilesLoaded )
+		end)
+	end)
+end)
+
+if not TheNet:IsDedicated() and (TheNet:GetIsClient() or TheNet:GetIsServer()) and not ChatHistory:HasHistory() then
+	local user_table = TheNet:GetClientTableForUser(TheNet:GetUserID())
+
+	if user_table then
+		ChatHistory:AddJoinMessageToHistory(
+			ChatTypes.Announcement,
+			nil,
+			string.format(STRINGS.UI.NOTIFICATION.JOINEDGAME, Networking_Announcement_GetDisplayName(TheNet:GetLocalUserName())),
+			user_table.colour or WHITE,
+			"join_game"
+		)
+	end
+end
 
 require "platformpostload" --Note(Peter): The location of this require is currently only dependent on being after the built in usercommands being loaded
 

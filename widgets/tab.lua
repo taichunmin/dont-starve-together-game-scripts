@@ -81,7 +81,7 @@ function Tab:Overlay()
             if self.overlay_scaling then
                 self.overlay:Hide()
             end
-            scheduler:ExecuteInTime(delay, applychange)
+            staticScheduler:ExecuteInTime(delay, applychange)
         else
             applychange()
         end
@@ -117,7 +117,7 @@ function Tab:Highlight(num, instant, alt)
         end
 
         if delay ~= nil then
-            scheduler:ExecuteInTime(delay, applychange)
+            staticScheduler:ExecuteInTime(delay, applychange)
         else
             applychange()
         end

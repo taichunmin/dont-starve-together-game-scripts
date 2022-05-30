@@ -6,8 +6,6 @@ local MadScienceLab = Class(function(self, inst)
     self.product = nil
 
 	self.stages = {}
-
-    self.inst:AddTag("madsciencelab")
 end)
 
 function MadScienceLab:OnRemoveFromEntity()
@@ -29,7 +27,7 @@ function MadScienceLab:SetStage(stage, time_override) -- time override is for sa
 
 		if self.OnScienceWasMade ~= nil then
 			self.OnScienceWasMade(self.inst, result)
-		end	
+		end
 	else
 		self.stage = stage
 		self.task = self.inst:DoTaskInTime(time_override or self.stages[self.stage].time, function() self:SetStage(self.stage + 1) end)

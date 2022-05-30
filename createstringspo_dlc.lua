@@ -3,9 +3,9 @@
 -- msgctxt is set to the "path" in the table structure which is guaranteed unique
 -- versus the string values (msgid) which are not.
 --
--- Expanded to support v1 and v2 format in event user needs help converting a 
+-- Expanded to support v1 and v2 format in event user needs help converting a
 -- strings.lua based translation. Must use a mod to load the translated strings.lua
--- file into a seperate environment and then pass the alternate strings table to 
+-- file into a seperate environment and then pass the alternate strings table to
 -- CreateStringsPOT along with the actual global strings table for use as a lookup table.
 --
 
@@ -38,7 +38,7 @@ local STRINGS_LOOKUP = {}
 --
 
 local function PrintStringTableV1( base, tbl, file )
-	
+
 	for k,v in pairs(tbl) do
 		local path = base.."."..k
 		if type(v) == "table" then
@@ -47,12 +47,12 @@ local function PrintStringTableV1( base, tbl, file )
 			local str = string.gsub(v, "\n", "\\n")
 			str = string.gsub(str, "\r", "\\r")
 			str = string.gsub(str, "\"", "\\\"")
-			
+
 			if msgids[str] then
 				print("duplicate msgid found: "..str.." (skipping...)")
 			else
 				msgids[str] = true
-				
+
 				file:write("#. "..path)
 				file:write("\n")
 				file:write("#: "..path)
@@ -67,13 +67,13 @@ local function PrintStringTableV1( base, tbl, file )
 end
 
 function PrintTranslatedStringTableV1( base_dta, tbl_dta, lkp_var, file )
-	
+
 	for k,v in pairs(tbl_dta) do
 		local path = base_dta.."."..k
 		if type(v) == "table" then
 			PrintTranslatedStringTableV1(path, v, lkp_var, file)
 		else
-			
+
 			local idstr = LookupIdValue(lkp_var, path)
 			if idstr then
 				idstr = string.gsub(idstr, "\n", "\\n")
@@ -124,7 +124,7 @@ end
 
 --Recursive function to process table structure
 local function PrintStringTableV2( base, tbl, file )
-	
+
 	for k,v in pairs(tbl) do
 		local path = base.."."..k
 		if type(v) == "table" then
@@ -155,7 +155,7 @@ local function PrintTranslatedStringTableV2( base, tbl_dta, lkp_var, file )
 		if type(v) == "table" then
 			PrintTranslatedStringTableV2(path, v, lkp_var, file)
 		else
-			
+
 			local idstr = LookupIdValue(lkp_var, path)
 			if idstr then
 				idstr = string.gsub(idstr, "\n", "\\n")
@@ -269,7 +269,7 @@ end
 -- To generate strings for Reign of Giants (DLC):
 -- 1. Backup the speech_[character].lua files in DontStarve\data\scripts
 -- 2. Copy the speech_[character].lua files in DontStarve\data\DLC0001\scripts and paste them into DontStarve\data\scripts
--- 3. Open strings.lua and find the STRINGS.CHARACTERS table. 
+-- 3. Open strings.lua and find the STRINGS.CHARACTERS table.
 --		Add "WATHGRITHR = require "speech_wathgrithr"" and "WEBBER = require "speech_webber"" (without outer quotes) to the table and save the file.
 -- 4. Open cmd and navigate to the DontStarve\data\scripts folder
 -- 5. Enter "..\..\tools\LUA\lua.exe createstringspo_dlc.lua" (without quotes) into the cmd line and press return

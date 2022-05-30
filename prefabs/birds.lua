@@ -14,9 +14,10 @@ local function ShouldSleep(inst)
     return DefaultSleepTest(inst) and not inst.sg:HasStateTag("flight")
 end
 
+local BIRD_TAGS = { "bird" }
 local function OnAttacked(inst, data)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 30, { "bird" })
+    local ents = TheSim:FindEntities(x, y, z, 30, BIRD_TAGS)
     local num_friends = 0
     local maxnum = 5
     for k, v in pairs(ents) do
@@ -77,11 +78,20 @@ local function SpawnPrefabChooser(inst)
     for i, player in ipairs(players) do
         if player.components.age ~= nil then
             local playerage = player.components.age:GetAgeInDays()
-            if playerage >= 3 then
-                return ChooseSeeds()
-            elseif playerage > oldestplayer then
+            if playerage > oldestplayer then
                 oldestplayer = playerage
             end
+        end
+    end
+
+    if oldestplayer >= 3 then
+        local year = TheWorld.state.autumnlength + TheWorld.state.winterlength + TheWorld.state.springlength + TheWorld.state.summerlength
+        if oldestplayer <= TheWorld.state.autumnlength then
+            return ChooseSeeds()
+        elseif oldestplayer <= year then
+            return math.random() <= 0.8 and ChooseSeeds() or nil
+        else
+            return math.random() <= 0.6 and ChooseSeeds() or nil
         end
     end
 
@@ -230,7 +240,6 @@ local function makebird(name, soundname, no_feather, bank, custom_loot_setup, wa
         inst.entity:AddDynamicShadow()
         inst.entity:AddSoundEmitter()
         inst.entity:AddNetwork()
-        inst.entity:AddLightWatcher()
 
         --Initialize physics
         inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
@@ -247,6 +256,8 @@ local function makebird(name, soundname, no_feather, bank, custom_loot_setup, wa
         inst:AddTag("bird")
         inst:AddTag(name)
         inst:AddTag("smallcreature")
+        inst:AddTag("likewateroffducksback")
+        inst:AddTag("stunnedbybomb")
 
         --cookable (from cookable component) added to pristine state for optimization
         inst:AddTag("cookable")
@@ -303,6 +314,7 @@ local function makebird(name, soundname, no_feather, bank, custom_loot_setup, wa
         inst.components.eater:SetDiet({ FOODTYPE.SEEDS }, { FOODTYPE.SEEDS })
 
         inst:AddComponent("sleeper")
+        inst.components.sleeper.watchlight = true
         inst.components.sleeper:SetSleepTest(ShouldSleep)
 
         inst:AddComponent("inventoryitem")
@@ -340,6 +352,7 @@ local function makebird(name, soundname, no_feather, bank, custom_loot_setup, wa
 
         inst:AddComponent("hauntable")
         inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+		inst.components.hauntable.panicable = true
 
         if not GetGameModeProperty("disable_bird_mercy_items") then
             inst:AddComponent("periodicspawner")

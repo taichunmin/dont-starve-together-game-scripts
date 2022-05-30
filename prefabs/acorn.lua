@@ -26,6 +26,8 @@ local function domonsterstop(ent)
     ent:StopMonster()
 end
 
+local PACIFYTARGET_MUST_TAGS = {"birchnut", "monster"}
+local PACIFYTARGET_CANT_TAGS = {"stump", "burnt", "FX", "NOCLICK","DECOR","INLIMBO"}
 local function ondeploy(inst, pt)
     inst = inst.components.stackable:Get()
     inst.Transform:SetPosition(pt:Get())
@@ -33,7 +35,7 @@ local function ondeploy(inst, pt)
     plant(inst, timeToGrow)
 
     -- Pacify a nearby monster tree
-    local ent = FindEntity(inst, TUNING.DECID_MONSTER_ACORN_CHILL_RADIUS, nil, {"birchnut", "monster"}, {"stump", "burnt", "FX", "NOCLICK","DECOR","INLIMBO"})
+    local ent = FindEntity(inst, TUNING.DECID_MONSTER_ACORN_CHILL_RADIUS, nil, PACIFYTARGET_MUST_TAGS, PACIFYTARGET_CANT_TAGS)
     if ent ~= nil then
         if ent.monster_start_task ~= nil then
             ent.monster_start_task:Cancel()
@@ -72,6 +74,7 @@ local function fn()
     inst:AddTag("icebox_valid")
     inst:AddTag("cattoy")
     inst:AddTag("show_spoilage")
+    inst:AddTag("treeseed")
 
     --cookable (from cookable component) added to pristine state for optimization
     inst:AddTag("cookable")
@@ -116,6 +119,9 @@ local function fn()
     inst:AddComponent("winter_treeseed")
     inst.components.winter_treeseed:SetTree("winter_deciduoustree")
 
+    inst:AddComponent("forcecompostable")
+    inst.components.forcecompostable.brown = true
+
     MakeHauntableLaunchAndIgnite(inst)
 
     inst.OnLoad = OnLoad
@@ -150,6 +156,8 @@ local function cooked()
     inst.components.edible.healthvalue = TUNING.HEALING_TINY
     inst.components.edible.foodtype = "SEEDS"
 
+    inst:AddComponent("tradable")
+
     inst:AddComponent("perishable")
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
     inst.components.perishable:StartPerishing()
@@ -164,6 +172,9 @@ local function cooked()
     MakeSmallPropagator(inst)
 
     inst:AddComponent("inventoryitem")
+
+    inst:AddComponent("forcecompostable")
+    inst.components.forcecompostable.brown = true
 
     MakeHauntableLaunch(inst)
 

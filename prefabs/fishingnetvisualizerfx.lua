@@ -23,7 +23,7 @@ local function fn()
     inst.AnimState:SetBank("boat_net_fx")
     inst.AnimState:SetBuild("boat_net_fx")
     inst.AnimState:PlayAnimation("hit", false)
-    inst.AnimState:SetSortOrder(5)  
+    inst.AnimState:SetSortOrder(5)
 
     inst:ListenForEvent("animover", function() inst:Remove() end)
 
@@ -32,7 +32,7 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
-       
+
     return inst
 end
 

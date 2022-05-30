@@ -76,7 +76,7 @@ local function OnRemoveFlash(inst)
 end
 
 local function OnUpdateFlash(inst)
-    if not inst.target:IsValid() then
+    if not inst.target:IsValid() or inst.AnimState == nil then
         inst.OnRemoveEntity = nil
         inst:RemoveComponent("updatelooper")
     elseif inst.flash > .1 then

@@ -1,5 +1,9 @@
+local Stats = require("stats")
+
 local function onbuilder(self, builder)
-    self.inst.replica.constructionsite:SetBuilder(builder)
+    if self.inst.replica.constructionsite then
+        self.inst.replica.constructionsite:SetBuilder(builder)
+    end
 end
 
 local EMPTY_TABLE = {}
@@ -52,10 +56,17 @@ function ConstructionSite:OnStopConstruction(doer)
 end
 
 function ConstructionSite:OnConstruct(doer, items)
+	local stats = {
+		prefab = self.inst.prefab,
+		target = tostring(self.inst.GUID),
+		recipe_items = {}
+	}
+
     self.builder = nil
     local x, y, z = self.inst.Transform:GetWorldPosition()
     for i, v in ipairs(items) do
         local remainder = self:AddMaterial(v.prefab, v.components.stackable ~= nil and v.components.stackable:StackSize() or 1)
+		table.insert(stats.recipe_items, {prefab = v.prefab, count = (v.components.stackable ~= nil and v.components.stackable:StackSize() or 1) - remainder})
         if remainder > 0 then
             if v.components.stackable ~= nil then
                 v.components.stackable:SetStackSize(math.min(remainder, v.components.stackable.maxsize))
@@ -66,6 +77,10 @@ function ConstructionSite:OnConstruct(doer, items)
             v:Remove()
         end
     end
+
+	stats.victory = self:IsComplete()
+	Stats.PushMetricsEvent("constructionsite", doer, stats)
+
     if self.onconstructedfn ~= nil then
         self.onconstructedfn(self.inst, doer)
     end
@@ -106,6 +121,15 @@ end
 
 function ConstructionSite:GetSlotCount(slot)
     return self:GetMaterialCount(((CONSTRUCTION_PLANS[self.inst.prefab] or EMPTY_TABLE)[slot] or EMPTY_TABLE).type)
+end
+
+function ConstructionSite:IsComplete()
+    for i, v in ipairs(CONSTRUCTION_PLANS[self.inst.prefab] or {}) do
+        if self.inst.components.constructionsite:GetMaterialCount(v.type) < v.amount then
+            return false
+        end
+    end
+	return true
 end
 
 function ConstructionSite:OnSave()

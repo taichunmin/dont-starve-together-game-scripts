@@ -32,7 +32,19 @@ local Wardrobe = Class(function(self, inst)
 
     self:SetCanBeShared(false)
 
-    self.onclosewardrobe = function(doer, skins) -- yay closures ~gj -- yay ~v2c -- yay ~peter
+    self.onclosepopup = function(doer, data)
+        if data.popup == POPUPS.WARDROBE then
+            local skins = {
+                base = data.args[1],
+                body = data.args[2],
+                hand = data.args[3],
+                legs = data.args[4],
+                feet = data.args[5],
+            }
+            self.onclosewardrobe(doer, skins)
+        end
+    end
+    self.onclosewardrobe = function(doer, skins) -- yay closures ~gj -- yay ~v2c -- yay ~peter -- yay ~zach
         if self.changers[doer] and not self:ActivateChanging(doer, skins) then
             self:EndChanging(doer)
         end
@@ -118,7 +130,7 @@ function Wardrobe:BeginChanging(doer)
         self.changers[doer] = true
 
         self.inst:ListenForEvent("onremove", self.onclosewardrobe, doer)
-        self.inst:ListenForEvent("ms_closewardrobe", self.onclosewardrobe, doer)
+        self.inst:ListenForEvent("ms_closepopup", self.onclosepopup, doer)
 
         if doer.sg.currentstate.name == "opengift" then
             doer.sg.statemem.isopeningwardrobe = true
@@ -142,7 +154,7 @@ end
 function Wardrobe:EndChanging(doer)
     if self.changers[doer] then
         self.inst:RemoveEventCallback("onremove", self.onclosewardrobe, doer)
-        self.inst:RemoveEventCallback("ms_closewardrobe", self.onclosewardrobe, doer)
+        self.inst:RemoveEventCallback("ms_closepopup", self.onclosepopup, doer)
 
         self.changers[doer] = nil
 
@@ -186,6 +198,12 @@ end
 
 local function DoDoerChanging(self, doer, skins)
     local old = doer.components.skinner:GetClothing()
+
+    local character_bases = GetCharacterSkinBases(doer.prefab)
+    if skins.base ~= nil and character_bases[skins.base] == nil then
+    	skins.base = doer.prefab.."_none"
+	end
+
     local diff =
     {
         base = skins.base ~= nil and skins.base ~= old.base and skins.base or nil,
@@ -230,7 +248,7 @@ end
 
 function Wardrobe:ApplyTargetSkins(target, doer, skins)
     if target.components.skinner ~= nil then
-        target.AnimState:AssignItemSkins(doer.userid, skins.body, skins.hand, skins.legs, skins.feet)
+        target.AnimState:AssignItemSkins(doer.userid, skins.body or "", skins.hand or "", skins.legs or "", skins.feet or "")
         target.components.skinner:ClearAllClothing()
         target.components.skinner:SetClothing(skins.body)
         target.components.skinner:SetClothing(skins.hand)

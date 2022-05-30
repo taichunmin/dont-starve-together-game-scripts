@@ -57,7 +57,7 @@ local function plantfn()
     inst:AddComponent("pickable")
     inst.components.pickable.picksound = "dontstarve/wilson/pickup_plants"
     inst.components.pickable:SetUp("succulent_picked")
-    inst.components.pickable.onpickedfn = inst.Remove
+	inst.components.pickable.remove_when_picked = true
     inst.components.pickable.quickpick = true
 
     MakeSmallBurnable(inst)

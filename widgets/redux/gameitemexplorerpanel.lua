@@ -15,12 +15,13 @@ local GameItemExplorerPanel = Class(Widget, function(self, owner, profile)
     self.owner = owner
 	self.user_profile = profile
 
-	self:DoInit() 
+	self:DoInit()
 
     self.filter_bar = self:AddChild(FilterBar(self.picker, "collectionscreen"))
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddSorter() )
+    self.picker.header:AddChild( self.filter_bar:AddSearch() )
 
     self:_DoFocusHookups()
     self.focus_forward = self.filter_bar:BuildFocusFinder()
@@ -43,18 +44,20 @@ function GameItemExplorerPanel:OnClickedItem(item_data, is_selected)
     local type, item_type = GetTypeForItem(item_data.item_key)
 	--print( "GameItemExplorerPanel:OnClickedItem", type, item_type )
 
-	if type == nil or item_type == nil then 
+	if type == nil or item_type == nil then
 		return
 	end
 
 	self.current_item_type = item_type
 
-	if type == "base"  then 
+    self.details_panel:Show()
+
+	if type == "base"  then
 		self.details_panel.shadow:SetScale(.4)
-	elseif type == "body" then 
+	elseif type == "body" then
 		self.details_panel.shadow:SetScale(.55)
 	else
-		if type == "item" then 
+		if type == "item" then
 			self.details_panel.shadow:SetScale(.7)
 		else
 			self.details_panel.shadow:SetScale(.6)
@@ -75,7 +78,7 @@ function GameItemExplorerPanel:BuildDetailsPanel()
     self.details_panel.image_root = self.details_panel:AddChild(Widget("image-root"))
 	self.details_panel.image_root:SetPosition(0, 50)
 
-	self.details_panel.image = self.details_panel.image_root:AddChild(AccountItemFrame()) 
+	self.details_panel.image = self.details_panel.image_root:AddChild(AccountItemFrame())
 	self.details_panel.image:HideFrame()
 	self.details_panel.image:GetAnimState():PlayAnimation("icon")
 	self.details_panel.image:SetScale(1.65)
@@ -102,6 +105,9 @@ end
 function GameItemExplorerPanel:BuildInventoryList()
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 140)
+    self.picker.clearSelectionCB = function()
+        self.details_panel:Hide()
+    end
 	self.scroll_list = self.picker.scroll_list
 
 	self.list_widgets = self.scroll_list:GetListWidgets()

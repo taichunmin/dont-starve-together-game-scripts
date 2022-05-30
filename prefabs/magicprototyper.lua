@@ -86,7 +86,7 @@ local function createmachine(level, name, soundprefix, sounddelay, techtree, mer
     end
 
     local function onturnoff(inst)
-        if inst._activetask == nil and not inst:HasTag("burnt") then 
+        if inst._activetask == nil and not inst:HasTag("burnt") then
             if mergeanims then
                 inst.AnimState:PushAnimation("proximity_pst")
             end
@@ -107,7 +107,7 @@ local function createmachine(level, name, soundprefix, sounddelay, techtree, mer
     end
 
     local function onactivate(inst)
-        if not inst:HasTag("burnt") then 
+        if not inst:HasTag("burnt") then
             inst.AnimState:PlayAnimation("use")
             inst.AnimState:PushAnimation("idle", false)
             if not inst.SoundEmitter:PlayingSound("sound") then
@@ -126,7 +126,7 @@ local function createmachine(level, name, soundprefix, sounddelay, techtree, mer
         inst.AnimState:PlayAnimation("place")
         inst.AnimState:PushAnimation("idle", false)
         inst:DoTaskInTime(sounddelay, onbuiltsound, soundprefix)
-        
+
   		if name == "researchlab3" then
 	        AwardPlayerAchievement("build_researchlab3", data.builder)
 	    elseif name == "researchlab4" then

@@ -67,7 +67,7 @@ local function onfinishcallback(inst, worker)
         if worker.components.sanity ~= nil then
             worker.components.sanity:DoDelta(-TUNING.SANITY_SMALL)
         end
-        if not spawnghost(inst, .1) then
+        if not spawnghost(inst, inst.ghost_of_a_chance) then
             local item = math.random() < .5 and PickRandomTrinket() or weighted_random_choice(LOOTS) or nil
             if item ~= nil then
                 inst.components.lootdropper:SpawnLootPrefab(item)
@@ -175,6 +175,7 @@ local function fn()
     inst.components.workable:SetOnFinishCallback(onfinishcallback)
 
     inst.ghost = nil
+    inst.ghost_of_a_chance = 0.1
 
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_SMALL)

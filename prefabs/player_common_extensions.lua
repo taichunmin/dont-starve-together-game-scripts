@@ -13,14 +13,22 @@ local function ShouldKnockout(inst)
     return DefaultKnockoutTest(inst) and not inst.sg:HasStateTag("yawn")
 end
 
+local function GetHopDistance(inst, speed_mult)
+	return speed_mult < 0.8 and TUNING.WILSON_HOP_DISTANCE_SHORT
+			or speed_mult >= 1.2 and TUNING.WILSON_HOP_DISTANCE_FAR
+			or TUNING.WILSON_HOP_DISTANCE
+end
+
 local function ConfigurePlayerLocomotor(inst)
     inst.components.locomotor:SetSlowMultiplier(0.6)
     inst.components.locomotor.pathcaps = { player = true, ignorecreep = true } -- 'player' cap not actually used, just useful for testing
     inst.components.locomotor.walkspeed = TUNING.WILSON_WALK_SPEED -- 4
     inst.components.locomotor.runspeed = TUNING.WILSON_RUN_SPEED -- 6
     inst.components.locomotor.fasteronroad = true
+    inst.components.locomotor:SetFasterOnCreep(inst:HasTag("spiderwhisperer"))
     inst.components.locomotor:SetTriggersCreep(not inst:HasTag("spiderwhisperer"))
     inst.components.locomotor:SetAllowPlatformHopping(true)
+	inst.components.locomotor.hop_distance_fn = GetHopDistance
 end
 
 local function ConfigureGhostLocomotor(inst)
@@ -54,22 +62,59 @@ local function ConfigureGhostActions(inst)
     end
 end
 
+local function PausedActionFilter(inst, action)
+    return action.paused_valid
+end
+
+local function UnpausePlayerActions(inst)
+    if inst.components.playeractionpicker ~= nil then
+        inst.components.playeractionpicker:PopActionFilter(PausedActionFilter)
+    end
+end
+
+local function PausePlayerActions(inst)
+    if inst.components.playeractionpicker ~= nil then
+        inst.components.playeractionpicker:PopActionFilter(PausedActionFilter) --always pop the filter in case one is already there.
+        inst.components.playeractionpicker:PushActionFilter(PausedActionFilter, 999)
+    end
+end
+
+local function OnWorldPaused(inst)
+    if TheNet:IsServerPaused(true) then
+        PausePlayerActions(inst)
+    else
+        UnpausePlayerActions(inst)
+    end
+end
+
 local function RemoveDeadPlayer(inst, spawnskeleton)
-    if spawnskeleton and TheSim:HasPlayerSkeletons() then
+    if spawnskeleton and TheSim:HasPlayerSkeletons() and inst.skeleton_prefab ~= nil then
         local x, y, z = inst.Transform:GetWorldPosition()
 
         -- Spawn a skeleton
-        local skel = SpawnPrefab("skeleton_player")
+        local skel = SpawnPrefab(inst.skeleton_prefab)
         if skel ~= nil then
             skel.Transform:SetPosition(x, y, z)
             -- Set the description
-            skel:SetSkeletonDescription(inst.prefab, inst:GetDisplayName(), inst.deathcause, inst.deathpkname)
+            skel:SetSkeletonDescription(inst.prefab, inst:GetDisplayName(), inst.deathcause, inst.deathpkname, inst.userid)
             skel:SetSkeletonAvatarData(inst.deathclientobj)
         end
 
         -- Death FX
         SpawnPrefab("die_fx").Transform:SetPosition(x, y, z)
     end
+
+    if not GetGameModeProperty("ghost_enabled") and not GetGameModeProperty("revivable_corpse") then
+		local followers = inst.components.leader.followers
+		for k, v in pairs(followers) do
+			if k.components.inventory ~= nil then
+				k.components.inventory:DropEverything()
+			elseif k.components.container ~= nil then
+				k.components.container:DropEverything()
+			end
+		end
+	end
+
     inst:OnDespawn()
     DeleteUserSession(inst)
     inst:Remove()
@@ -108,6 +153,9 @@ local function OnPlayerDeath(inst, data)
 
     inst.deathclientobj = TheNet:GetClientTableForUser(inst.userid)
     inst.deathcause = data ~= nil and data.cause or "unknown"
+	inst.last_death_position = Vector3(inst.Transform:GetWorldPosition())
+	inst.last_death_shardid = TheShard:GetShardId()
+
     if data == nil or data.afflicter == nil then
         inst.deathpkname = nil
     elseif data.afflicter.overridepkname ~= nil then
@@ -190,6 +238,11 @@ local function CommonActualRez(inst)
         inst.rezsource = nil
     end
     inst.remoterezsource = nil
+
+	inst.last_death_position = nil
+	inst.last_death_shardid = nil
+
+	inst:RemoveTag("reviving")
 end
 
 local function DoActualRez(inst, source, item)
@@ -227,7 +280,7 @@ local function DoActualRez(inst, source, item)
     if source ~= nil then
         inst.DynamicShadow:Enable(true)
         inst.AnimState:SetBank("wilson")
-        inst.components.skinner:SetSkinMode("normal_skin") -- restore skin
+        inst.ApplySkinOverrides(inst) -- restore skin
         inst.components.bloomer:PopBloom("playerghostbloom")
         inst.AnimState:SetLightOverride(0)
 
@@ -248,10 +301,30 @@ local function DoActualRez(inst, source, item)
             source:PushEvent("rez_player")
             inst.sg:GoToState("portal_rez")
         end
-    else -- Telltale Heart
-        inst.sg:GoToState("reviver_rebirth", item)
+    else 
+		if item ~= nil and (item.prefab == "pocketwatch_revive" or item.prefab == "pocketwatch_revive_reviver") then
+			inst.DynamicShadow:Enable(true)
+			inst.AnimState:SetBank("wilson")
+			inst.ApplySkinOverrides(inst) -- restore skin
+			inst.components.bloomer:PopBloom("playerghostbloom")
+			inst.AnimState:SetLightOverride(0)
+
+			item:PushEvent("activateresurrection", inst)
+
+            inst.components.inventory:Hide()
+            inst:PushEvent("ms_closepopups")
+			if inst:HasTag("wereplayer") then
+	            inst.sg:GoToState("wakeup")
+			else
+	            inst.sg:GoToState("rewindtime_rebirth")
+			end
+
+			SpawnPrefab("pocketwatch_ground_fx").Transform:SetPosition(inst.Transform:GetWorldPosition())
+		else -- Telltale Heart
+	        inst.sg:GoToState("reviver_rebirth", item)
+		end
     end
- 
+
     --Default to electrocute light values
     inst.Light:SetIntensity(.8)
     inst.Light:SetRadius(.5)
@@ -261,7 +334,7 @@ local function DoActualRez(inst, source, item)
 
     MakeCharacterPhysics(inst, 75, .5)
 
-    CommonActualRez(inst, source, item)
+    CommonActualRez(inst)
 
     inst:RemoveTag("playerghost")
     inst.Network:RemoveUserFlag(USERFLAGS.IS_GHOST)
@@ -326,7 +399,7 @@ local function DoRezDelay(inst, source, delay)
         end
         inst.rezsource = nil
         inst.remoterezsource = nil
-        --Revert DoMoveToRezSource state
+        --Revert DoMoveToRezSource or DoMoveToRezPosition state
         inst:Show()
         inst.Light:Enable(true)
         inst:SetCameraDistance()
@@ -373,10 +446,43 @@ local function DoMoveToRezSource(inst, source, delay)
     DoRezDelay(inst, source, delay)
 end
 
-local function OnRespawnFromGhost(inst, data)
+local PLAYERSKELETON_TAG = {"playerskeleton"}
+
+local function DoMoveToRezPosition(inst, item, delay, fade_in)
+    inst:Hide()
+    inst.Light:Enable(false)
+	if inst.last_death_position ~= nil and inst.last_death_shardid ~= nil then
+		if inst.last_death_shardid == TheShard:GetShardId() then
+			inst.Physics:Teleport(inst.last_death_position:Get())
+			inst:SnapCamera()
+			inst:SetCameraDistance(24)
+
+			if inst.sg.statemem.faded or fade_in then
+				inst.sg.statemem.faded = false
+				inst:ScreenFade(true, 1)
+			end
+
+			inst:DoTaskInTime(delay, DoActualRez, nil, item)
+		elseif Shard_IsWorldAvailable(inst.last_death_shardid) then
+			if inst.sg.statemem.faded or fade_in then
+				inst.sg.statemem.faded = false
+				inst:ScreenFade(true, 0)
+			end
+			TheWorld:PushEvent("ms_playerdespawnandmigrate", { player = inst, portalid = nil, worldid = inst.last_death_shardid, x = inst.last_death_position.x, y = inst.last_death_position.y, z = inst.last_death_position.z })
+		else
+			inst:DoTaskInTime(0, DoActualRez, nil, item)
+		end
+	else
+		inst:DoTaskInTime(0, DoActualRez, nil, item)
+	end
+end
+
+local function OnRespawnFromGhost(inst, data) -- from ListenForEvent "respawnfromghost"
     if not inst:HasTag("playerghost") then
         return
     end
+
+	inst:AddTag("reviving")
 
     inst.deathclientobj = nil
     inst.deathcause = nil
@@ -396,6 +502,16 @@ local function OnRespawnFromGhost(inst, data)
     elseif inst.sg.currentstate.name == "remoteresurrect" then
         inst:DoTaskInTime(0, DoMoveToRezSource, data.source, 24 * FRAMES)
     elseif data.source.prefab == "reviver" then
+        inst:DoTaskInTime(0, DoActualRez, nil, data.source)
+    elseif data.source.prefab == "pocketwatch_revive" then
+        if not data.from_haunt then
+			inst.sg:GoToState("start_rewindtime_revive")
+			inst:DoTaskInTime(24*FRAMES, DoMoveToRezPosition, data.source, inst.skeleton_prefab == nil and 15 * FRAMES or 60 * FRAMES)
+		else
+			inst:ScreenFade(false, 1)
+			inst:DoTaskInTime(9*FRAMES, DoMoveToRezPosition, data.source, inst.skeleton_prefab == nil and 15 * FRAMES or 60 * FRAMES, true)
+		end
+    elseif data.source.prefab == "pocketwatch_revive_reviver" then
         inst:DoTaskInTime(0, DoActualRez, nil, data.source)
     elseif data.source.prefab == "amulet"
         or data.source.prefab == "resurrectionstone"
@@ -469,12 +585,12 @@ local function OnMakePlayerGhost(inst, data)
     local x, y, z = inst.Transform:GetWorldPosition()
 
     -- Spawn a skeleton
-    if data ~= nil and data.skeleton and TheSim:HasPlayerSkeletons() then
-        local skel = SpawnPrefab("skeleton_player")
+    if inst.skeleton_prefab ~= nil and data ~= nil and data.skeleton and TheSim:HasPlayerSkeletons() then
+        local skel = SpawnPrefab(inst.skeleton_prefab)
         if skel ~= nil then
             skel.Transform:SetPosition(x, y, z)
             -- Set the description
-            skel:SetSkeletonDescription(inst.prefab, inst:GetDisplayName(), inst.deathcause, inst.deathpkname)
+            skel:SetSkeletonDescription(inst.prefab, inst:GetDisplayName(), inst.deathcause, inst.deathpkname, inst.userid)
             skel:SetSkeletonAvatarData(inst.deathclientobj)
         end
     end
@@ -518,7 +634,7 @@ local function OnMakePlayerGhost(inst, data)
     inst:AddTag("playerghost")
     inst.Network:AddUserFlag(USERFLAGS.IS_GHOST)
 
-    inst.components.health:SetCurrentHealth(TUNING.RESURRECT_HEALTH)
+    inst.components.health:SetCurrentHealth(TUNING.RESURRECT_HEALTH * (inst.resurrect_multiplier or 1))
     inst.components.health:ForceUpdateHUD(true)
 
     if inst.components.playercontroller ~= nil then
@@ -594,6 +710,37 @@ local function OnMakePlayerCorpse(inst, data)
     end
 end
 
+
+local function GivePlayerStartingItems(inst, items, starting_item_skins)
+    if items ~= nil and #items > 0 and inst.components.inventory ~= nil then
+        inst.components.inventory.ignoresound = true
+        if inst.components.inventory:GetNumSlots() > 0 then
+            for i, v in ipairs(items) do
+                local skin_name = starting_item_skins and starting_item_skins[v]
+                inst.components.inventory:GiveItem(SpawnPrefab(v, skin_name, nil, inst.userid))
+            end
+        else
+            local spawned_items = {}
+            for i, v in ipairs(items) do
+                local item = SpawnPrefab(v)
+                if item.components.equippable ~= nil then
+                    inst.components.inventory:Equip(item)
+                    table.insert(spawned_items, item)
+                else
+                    item:Remove()
+                end
+            end
+            for i, v in ipairs(spawned_items) do
+                if v.components.inventoryitem == nil or not v.components.inventoryitem:IsHeld() then
+                    v:Remove()
+                end
+            end
+        end
+        inst.components.inventory.ignoresound = false
+    end
+end
+
+
 --------------------------------------------------------------------------
 
 local function DoSpookedSanity(inst)
@@ -609,6 +756,48 @@ end
 
 --------------------------------------------------------------------------
 
+local function OnLearnCookbookRecipe(inst, data)
+	local cookbookupdater = data ~= nil and inst.components.cookbookupdater
+	if cookbookupdater then
+		cookbookupdater:LearnRecipe(data.product, data.ingredients)
+	end
+end
+
+local function OnLearnCookbookStats(inst, product)
+	local cookbookupdater = product and inst.components.cookbookupdater
+	if cookbookupdater then
+		cookbookupdater:LearnFoodStats(product)
+	end
+end
+
+local function OnEat(inst, data)
+	local product = (data ~= nil and data.food ~= nil and data.food:HasTag("preparedfood")) and data.food.prefab or nil
+	if product ~= nil then
+		OnLearnCookbookStats(inst, product)
+	end
+end
+
+local function OnLearnPlantStage(inst, data)
+    local plantregistryupdater = data ~= nil and inst.components.plantregistryupdater
+    if plantregistryupdater then
+        plantregistryupdater:LearnPlantStage(data.plant, data.stage)
+    end
+end
+
+local function OnLearnFertilizer(inst, data)
+    local plantregistryupdater = data ~= nil and inst.components.plantregistryupdater
+    if plantregistryupdater then
+        plantregistryupdater:LearnFertilizer(data.fertilizer)
+    end
+end
+
+local function OnTakeOversizedPicture(inst, data)
+    local plantregistryupdater = data ~= nil and inst.components.plantregistryupdater
+    if plantregistryupdater then
+        plantregistryupdater:TakeOversizedPicture(data.plant, data.weight, data.beardskin, data.beardlength)
+    end
+end
+
 return
 {
     ShouldKnockout              = ShouldKnockout,
@@ -616,6 +805,7 @@ return
     ConfigureGhostLocomotor     = ConfigureGhostLocomotor,
     ConfigurePlayerActions      = ConfigurePlayerActions,
     ConfigureGhostActions       = ConfigureGhostActions,
+    OnWorldPaused               = OnWorldPaused,
     OnPlayerDeath               = OnPlayerDeath,
     OnPlayerDied                = OnPlayerDied,
     OnMakePlayerGhost           = OnMakePlayerGhost,
@@ -623,4 +813,11 @@ return
     OnRespawnFromGhost          = OnRespawnFromGhost,
     OnRespawnFromPlayerCorpse   = OnRespawnFromPlayerCorpse,
     OnSpooked                   = OnSpooked,
+	OnLearnCookbookRecipe		= OnLearnCookbookRecipe,
+	OnLearnCookbookStats		= OnLearnCookbookStats,
+	OnEat						= OnEat,
+    OnLearnPlantStage           = OnLearnPlantStage,
+    OnLearnFertilizer           = OnLearnFertilizer,
+    OnTakeOversizedPicture      = OnTakeOversizedPicture,
+	GivePlayerStartingItems		= GivePlayerStartingItems,
 }

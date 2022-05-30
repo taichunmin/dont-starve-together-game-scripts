@@ -26,7 +26,7 @@ local function PlayPuffAnim(proxy)
         inst.AnimState:OverrideItemSkinSymbol("fire_puff", "firepit_firebird", "fire_puff", parent.GUID, "campfire_fire")
         inst.AnimState:PlayAnimation("puff"..tostring(proxy.level:value()))
         inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-        inst.AnimState:SetFinalOffset(-1)
+        inst.AnimState:SetFinalOffset(3)
 
         inst:ListenForEvent("animover", inst.Remove)
     end

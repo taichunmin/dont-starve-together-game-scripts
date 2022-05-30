@@ -1,5 +1,8 @@
 local TIMEOUT = 2
 local TechTree = require("techtree")
+local INSPIRATION_BATTLESONG_DEFS = require("prefabs/battlesongdefs")
+
+local fns = {} -- a table to store local functions in so that we don't hit the 60 upvalues limit
 
 --------------------------------------------------------------------------
 --Server interface
@@ -54,7 +57,9 @@ local function OnHungerDelta(parent, data)
 end
 
 local function UpdateAnimOverrideSanity(parent)
-    parent.AnimState:SetClientSideBuildOverrideFlag("insane", parent.replica.sanity:IsInsanityMode() and (parent.replica.sanity:GetPercentNetworked() <= (parent:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY)))
+    local isinsane = parent.replica.sanity:IsInsanityMode() and (parent.replica.sanity:GetPercentNetworked() <= (parent:HasTag("dappereffects") and TUNING.DAPPER_BEARDLING_SANITY or TUNING.BEARDLING_SANITY))
+    parent.AnimState:SetClientSideBuildOverrideFlag("insane", isinsane)
+    parent:SetClientSideInventoryImageOverrideFlag("insane", isinsane)
 end
 
 local function OnSanityDelta(parent, data)
@@ -115,7 +120,8 @@ local function OnConsumeHealthCost(parent)
     parent.player_classified.builderdamagedevent:push()
 end
 
-local function OnLearnRecipeSuccess(parent)
+local function OnLearnRecipeSuccess(parent, data)
+    SendRPCToClient(CLIENT_RPC.LearnBuilderRecipe, parent.userid, data.recipe)
     parent.player_classified.learnrecipeevent:push()
 end
 
@@ -145,6 +151,14 @@ end
 
 local function OnHoundWarning(parent, houndwarningtype)
     SetDirty(parent.player_classified.houndwarningevent, houndwarningtype)
+end
+
+fns.OnPlayThemeMusic = function(parent, data)
+	if data ~= nil then
+		if data.theme == "farming" then
+			parent.player_classified.start_farming_music:push()
+		end
+	end
 end
 
 local function OnMakeFriend(parent)
@@ -178,6 +192,16 @@ local function SetTemperature(inst, temperature)
         inst.currenttemperaturedata:set(pivot + math.floor(temperature * precision_factor + .5))
     end
 end
+
+fns.SetOldagerRate = function(inst, dps)
+    assert(dps >= -30 and dps <= 30, "Player oldager_rate out of range: "..tostring(dps))
+	inst.oldager_rate:set(dps + 30)
+end
+
+fns.GetOldagerRate = function(inst)
+	return inst.oldager_rate:value() - 30
+end
+
 
 --TouchStoneTracker stuff
 local function SetUsedTouchStones(inst, used)
@@ -341,6 +365,106 @@ local function OnWerenessDirty(inst)
     end
 end
 
+fns.OnInspirationDirty = function(inst)
+    if inst._parent ~= nil then
+        local oldpercent = inst._oldinspirationpercent
+        local percent = inst.currentinspiration:value() * .01
+        local data =
+        {
+            newpercent = percent,
+			slots_available = nil,
+			draining = inst.inspirationdraining:value(),
+        }
+        inst._oldinspirationpercent = percent
+        inst._parent:PushEvent("inspirationdelta", data)
+    else
+        inst._oldinspirationpercent = 0
+    end
+end
+
+fns.OnHasInspirationBuffDirty = function(inst)
+    if inst._parent ~= nil then
+        inst._parent:PushEvent("hasinspirationbuff", {on = inst.hasinspirationbuff:value()})
+	end
+end
+
+fns.InMightyGymDirty = function(inst)
+
+    if inst._parent ~= nil then
+        inst._parent:PushEvent("inmightygym", {ingym = inst.inmightygym:value() + 1, player=inst._parent})
+    end
+end
+
+fns.OnGymBellStart = function(inst)
+    if inst._parent ~= nil then
+        inst._parent:Startbell()
+    end
+end
+
+fns.OnInspirationSongsDirty = function(inst, slot)
+    if inst._parent ~= nil then
+		local song_def = INSPIRATION_BATTLESONG_DEFS.GetBattleSongDefFromNetID(inst.inspirationsongs[slot]:value())
+		inst._parent:PushEvent("inspirationsongchanged", {songdata = song_def, slotnum = slot})
+    end
+end
+
+local function OnMightinessDirty(inst)
+    if inst._parent ~= nil then
+        local percent = inst.currentmightiness:value() * .01
+        local data = 
+        {
+            oldpercent = inst._oldmightinesspercent,
+            newpercent = percent,
+            delta = inst.currentmightiness:value() - (inst._oldmightinesspercent / .01),
+        }
+        inst._oldmightinesspercent = percent
+
+        inst._parent:PushEvent("mightinessdelta", data)
+    end
+end
+
+-- WX78 Upgrade Module UI functions ------------------------------------------
+
+fns.OnEnergyLevelDirty = function(inst)
+    if inst._parent ~= nil then
+        local energylevel = inst.currentenergylevel:value()
+        local data =
+        {
+            old_level = inst._oldcurrentenergylevel,
+            new_level = energylevel,
+        }
+
+        inst._oldcurrentenergylevel = energylevel
+
+        inst._parent:PushEvent("energylevelupdate", data)
+    end
+end
+
+fns.OnUIRobotSparks = function(inst)
+    if inst._parent ~= nil then
+        inst._parent:PushEvent("do_robot_spark")
+    end
+end
+
+fns.OnUpgradeModulesListDirty = function(inst)
+    if inst._parent ~= nil then
+        local module1 = inst.upgrademodules[1]:value()
+        local module2 = inst.upgrademodules[2]:value()
+        local module3 = inst.upgrademodules[3]:value()
+        local module4 = inst.upgrademodules[4]:value()
+        local module5 = inst.upgrademodules[5]:value()
+        local module6 = inst.upgrademodules[6]:value()
+
+        if module1 == 0 and module2 == 0 and module3 == 0 and module4 == 0 and module5 == 0 and module6 == 0 then
+            inst._parent:PushEvent("upgrademoduleowner_popallmodules")
+        else
+            inst._parent:PushEvent("upgrademodulesdirty", {module1, module2, module3, module4, module5, module6})
+        end
+    end
+end
+
+------------------------------------------------------------------------------
+
 local function OnMoistureDirty(inst)
     if inst._parent ~= nil then
         local data =
@@ -392,6 +516,12 @@ local function OnTechTreesDirty(inst)
     end
     if inst._parent ~= nil then
         inst._parent:PushEvent("techtreechange", { level = inst.techtrees })
+    end
+end
+
+fns.RefreshCrafting = function(inst)
+    if inst._parent ~= nil then
+        inst._parent:PushEvent("refreshcrafting")
     end
 end
 
@@ -506,9 +636,9 @@ end
 --Common interface
 --------------------------------------------------------------------------
 
-local function OnSandstormLevelDirty(inst)
+local function OnStormLevelDirty(inst)
     if inst._parent ~= nil then
-        inst._parent:PushEvent("sandstormlevel", { level = inst.sandstormlevel:value() / 7 })
+        inst._parent:PushEvent("stormlevel", { level = inst.stormlevel:value() / 7, stormtype = inst.stormtype:value() }) --
     end
 end
 
@@ -525,6 +655,21 @@ local function OnBuilderDamagedEvent(inst)
     end
 end
 
+local function OnOpenCraftingMenuEvent(inst)
+	local player = inst._parent
+    if player ~= nil and TheFocalPoint.entity:GetParent() == player then
+		if player.HUD ~= nil then
+			player.HUD:OpenCrafting()
+		end
+    end
+end
+
+local function OnInkedEvent(inst)
+    if inst._parent ~= nil and TheFocalPoint.entity:GetParent() == inst._parent then
+        inst._parent:PushEvent("inked")
+    end
+end
+
 local function OnLearnRecipeEvent(inst)
     if inst._parent ~= nil and TheFocalPoint.entity:GetParent() == inst._parent then
         TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/get_gold")
@@ -535,6 +680,20 @@ local function OnLearnMapEvent(inst)
     if inst._parent ~= nil and TheFocalPoint.entity:GetParent() == inst._parent then
         TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/Together_HUD/learn_map")
     end
+end
+
+local function OnRevealMapSpotEvent(inst)
+	local tx, ty, tz = inst.revealmapspot_worldx:value(), 0, inst.revealmapspot_worldz:value()
+	local player = inst._parent
+
+	if player ~= nil and player.HUD ~= nil then
+		player:DoTaskInTime(0, function()
+			if TheFocalPoint.entity:GetParent() == player then
+				TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/Together_HUD/learn_map")
+			end
+			player.HUD.controls:ShowMap(Vector3(tx, ty, tz))
+		end)
+	end
 end
 
 local function OnRepairEvent(inst)
@@ -607,31 +766,14 @@ local function OnPlayerCameraDirty(inst)
     end
 end
 
-local function OnIsWardrobePopUpVisibleDirty(inst)
+fns.OnYotbSkinDirty = function(inst)
     if inst._parent ~= nil and inst._parent.HUD ~= nil then
-        if not inst.iswardrobepopupvisible:value() then
-            inst._parent.HUD:CloseWardrobeScreen()
-        elseif not inst._parent.HUD:OpenWardrobeScreen(inst.wardrobetarget:value()) then
-            if not TheWorld.ismastersim then
-                SendRPCToServer(RPC.CloseWardrobe)
-            else
-                inst._parent:PushEvent("ms_closewardrobe")
-            end
+        if inst.hasyotbskin:value() then
+            TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/get_gold")
         end
-    end
-end
-
-local function OnIsGiftItemPopUpVisibleDirty(inst)
-    if inst._parent ~= nil and inst._parent.HUD ~= nil then
-        if not inst.isgiftitempopupvisible:value() then
-            inst._parent.HUD:CloseItemManagerScreen()
-        elseif not inst._parent.HUD:OpenItemManagerScreen() then
-            if not TheWorld.ismastersim then
-                SendRPCToServer(RPC.DoneOpenGift)
-            elseif inst._parent.components.giftreceiver ~= nil then
-                inst._parent.components.giftreceiver:OnStopOpenGift()
-            end
-        end
+        inst._parent:PushEvent("yotbskinupdate", {
+            active = inst.hasyotbskin:value() or false,
+        })
     end
 end
 
@@ -695,28 +837,32 @@ end
 
 local function OnHoundWarningDirty(inst)
     if inst._parent ~= nil and inst._parent.HUD ~= nil then
-        local soundprefab = nil        
-        if inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1 then            
+        local soundprefab = nil
+        if inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1 then
             soundprefab = "houndwarning_lvl1"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2 then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2 then
             soundprefab = "houndwarning_lvl2"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3 then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3 then
             soundprefab = "houndwarning_lvl3"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4 then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4 then
             soundprefab = "houndwarning_lvl4"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1_WORM then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL1_WORM then
             soundprefab = "wormwarning_lvl1"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2_WORM then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL2_WORM then
             soundprefab = "wormwarning_lvl2"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3_WORM then            
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL3_WORM then
             soundprefab = "wormwarning_lvl3"
-        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4_WORM then            
-            soundprefab = "wormwarning_lvl4"            
-        end        
-        if soundprefab then       
+        elseif inst._parent.player_classified.houndwarningevent:value() == HOUNDWARNINGTYPE.LVL4_WORM then
+            soundprefab = "wormwarning_lvl4"
+        end
+        if soundprefab then
             local sound = SpawnPrefab(soundprefab)
         end
     end
+end
+
+fns.StartFarmingMusicEvent = function(inst)
+	inst._parent:PushEvent("playfarmingmusic")
 end
 
 local function OnMakeFriendEvent(inst)
@@ -751,35 +897,23 @@ end
 --otherwise server HUD events will be one wall-update late
 --and possibly show some flicker
 --------------------------------------------------------------------------
-
-local function SetGhostMode(inst, isghostmode)
+fns.SetGhostMode = function(inst, isghostmode)
     inst.isghostmode:set(isghostmode)
     OnGhostModeDirty(inst)
 end
 
-local function ShowActions(inst, show)
+fns.ShowActions = function(inst, show)
     inst.isactionsvisible:set(show)
 end
 
-local function ShowHUD(inst, show)
+fns.ShowHUD = function(inst, show)
     inst.ishudvisible:set(show)
     OnPlayerHUDDirty(inst)
 end
 
-local function EnableMapControls(inst, enable)
+fns.EnableMapControls = function(inst, enable)
     inst.ismapcontrolsvisible:set(enable)
     OnPlayerHUDDirty(inst)
-end
-
-local function ShowWardrobePopUp(inst, show, target)
-    inst.iswardrobepopupvisible:set(show)
-    inst.wardrobetarget:set(target)
-    OnIsWardrobePopUpVisibleDirty(inst)
-end
-
-local function ShowGiftItemPopUp(inst, show)
-    inst.isgiftitempopupvisible:set(show)
-    OnIsGiftItemPopUpVisibleDirty(inst)
 end
 
 --------------------------------------------------------------------------
@@ -804,7 +938,8 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("wormholetravel", OnWormholeTravel, inst._parent)
         inst:ListenForEvent("makefriend", OnMakeFriend, inst._parent)
         inst:ListenForEvent("feedincontainer", OnFeedInContainer, inst._parent)
-        inst:ListenForEvent("houndwarning", OnHoundWarning, inst._parent)        
+        inst:ListenForEvent("houndwarning", OnHoundWarning, inst._parent)
+        inst:ListenForEvent("play_theme_music", fns.OnPlayThemeMusic, inst._parent)
     else
         inst.ishealthpulseup:set_local(false)
         inst.ishealthpulsedown:set_local(false)
@@ -822,6 +957,14 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("hungerdirty", OnHungerDirty)
         inst:ListenForEvent("sanitydirty", OnSanityDirty)
         inst:ListenForEvent("werenessdirty", OnWerenessDirty)
+        inst:ListenForEvent("inspirationdirty", fns.OnInspirationDirty)
+		inst:ListenForEvent("inspirationsong1dirty", function(_inst) fns.OnInspirationSongsDirty(_inst, 1) end)
+		inst:ListenForEvent("inspirationsong2dirty", function(_inst) fns.OnInspirationSongsDirty(_inst, 2) end)
+		inst:ListenForEvent("inspirationsong3dirty", function(_inst) fns.OnInspirationSongsDirty(_inst, 3) end)
+        inst:ListenForEvent("mightinessdirty", OnMightinessDirty)
+        inst:ListenForEvent("upgrademoduleenergyupdate", fns.OnEnergyLevelDirty)
+        inst:ListenForEvent("upgrademoduleslistdirty", fns.OnUpgradeModulesListDirty)
+        inst:ListenForEvent("uirobotsparksevent", fns.OnUIRobotSparks)
         inst:ListenForEvent("temperaturedirty", OnTemperatureDirty)
         inst:ListenForEvent("moisturedirty", OnMoistureDirty)
         inst:ListenForEvent("techtreesdirty", OnTechTreesDirty)
@@ -836,8 +979,8 @@ local function RegisterNetListeners(inst)
         inst:ListenForEvent("playercamerashake", OnPlayerCameraShake)
         inst:ListenForEvent("playerscreenflashdirty", OnPlayerScreenFlashDirty)
         inst:ListenForEvent("attunedresurrectordirty", OnAttunedResurrectorDirty)
-        inst:ListenForEvent("iswardrobepopupvisibledirty", OnIsWardrobePopUpVisibleDirty)
-        inst:ListenForEvent("isgiftitempopupvisibledirty", OnIsGiftItemPopUpVisibleDirty)
+        
+        
 
         OnIsTakingFireDamageDirty(inst)
         OnTemperatureDirty(inst)
@@ -847,18 +990,27 @@ local function RegisterNetListeners(inst)
             inst._oldhungerpercent = inst.maxhunger:value() > 0 and inst.currenthunger:value() / inst.maxhunger:value() or 0
             inst._oldsanitypercent = inst.maxsanity:value() > 0 and inst.currentsanity:value() / inst.maxsanity:value() or 0
             inst._oldwerenesspercent = inst.currentwereness:value() * .01
+            inst._oldinspirationpercent = inst.currentinspiration:value() * .01
+            inst._oldmightinesspercent = inst.currentmightiness:value() * .01
             inst._oldmoisture = inst.moisture:value()
             UpdateAnimOverrideSanity(inst._parent)
         end
     end
 
-    inst:ListenForEvent("sandstormleveldirty", OnSandstormLevelDirty)
+    inst:ListenForEvent("gym_bell_start", fns.OnGymBellStart)
+    inst:ListenForEvent("inmightygymdirty", fns.InMightyGymDirty)
+    inst:ListenForEvent("stormleveldirty", OnStormLevelDirty)
+    inst:ListenForEvent("hasinspirationbuffdirty", fns.OnHasInspirationBuffDirty)
     inst:ListenForEvent("builder.build", OnBuildEvent)
     inst:ListenForEvent("builder.damaged", OnBuilderDamagedEvent)
+    inst:ListenForEvent("builder.opencraftingmenu", OnOpenCraftingMenuEvent)
     inst:ListenForEvent("builder.learnrecipe", OnLearnRecipeEvent)
+    inst:ListenForEvent("inked", OnInkedEvent)
     inst:ListenForEvent("MapExplorer.learnmap", OnLearnMapEvent)
+	inst:ListenForEvent("MapSpotRevealer.revealmapspot", OnRevealMapSpotEvent)
     inst:ListenForEvent("repair.repair", OnRepairEvent)
     inst:ListenForEvent("giftsdirty", OnGiftsDirty)
+    inst:ListenForEvent("yotbskindirty", fns.OnYotbSkinDirty)
     inst:ListenForEvent("ismounthurtdirty", OnMountHurtDirty)
     inst:ListenForEvent("playercameradirty", OnPlayerCameraDirty)
     inst:ListenForEvent("playercamerasnap", OnPlayerCameraSnap)
@@ -867,15 +1019,17 @@ local function RegisterNetListeners(inst)
     inst:ListenForEvent("leader.makefriend", OnMakeFriendEvent)
     inst:ListenForEvent("eater.feedincontainer", OnFeedInContainerEvent)
     inst:ListenForEvent("morguedirty", OnMorgueDirty)
-    inst:ListenForEvent("houndwarningdirty", OnHoundWarningDirty)    
-    OnSandstormLevelDirty(inst)
+    inst:ListenForEvent("houndwarningdirty", OnHoundWarningDirty)
+	inst:ListenForEvent("startfarmingmusicevent", fns.StartFarmingMusicEvent)
+    inst:ListenForEvent("ingredientmoddirty", fns.RefreshCrafting)
+
+    OnStormLevelDirty(inst)
     OnGiftsDirty(inst)
+    fns.OnYotbSkinDirty(inst)
     OnMountHurtDirty(inst)
     OnGhostModeDirty(inst)
     OnPlayerHUDDirty(inst)
     OnPlayerCameraDirty(inst)
-    OnIsWardrobePopUpVisibleDirty(inst)
-    OnIsGiftItemPopUpVisibleDirty(inst)
 
     --Fade is initialized by OnPlayerActivated in gamelogic.lua
 end
@@ -932,6 +1086,52 @@ local function fn()
     inst.iswerenesspulsedown = net_bool(inst.GUID, "wereness.dodeltaovertime(down)", "werenessdirty")
     inst.werenessdrainrate = net_smallbyte(inst.GUID, "wereness.drainrate")
 
+	--inspiration variables
+    inst._oldinspirationpercent = 0
+    inst.currentinspiration = net_byte(inst.GUID, "inspiration.current", "inspirationdirty")
+    inst.inspirationdraining = net_bool(inst.GUID, "inspiration.draining", "inspirationdirty")
+    inst.inspirationsongs =
+	{
+		net_tinybyte(inst.GUID, "inspiration.song1", "inspirationsong1dirty"),
+		net_tinybyte(inst.GUID, "inspiration.song2", "inspirationsong2dirty"),
+		net_tinybyte(inst.GUID, "inspiration.song3", "inspirationsong3dirty"),
+	}
+    inst.hasinspirationbuff = net_bool(inst.GUID, "inspiration.hasbuff", "hasinspirationbuffdirty")
+    
+    -- Mightiness
+    --mighty gym variables
+    -- this is used to know if someone is on a gym but also what the weight on the gym is when used.
+    -- 0 = not on a gym
+    -- 1 - 7 .. on a gym and the weight is x + 1. So values of 2 to 8
+    inst.inmightygym = net_tinybyte(inst.GUID, "mightygym.in", "inmightygymdirty")
+    inst.inmightygym:set(0)
+
+
+    inst.gym_bell_start = net_event(inst.GUID, "gym_bell_start")
+    inst.currentmightiness = net_byte(inst.GUID, "mightiness.current", "mightinessdirty")
+    inst.mightinessratescale = net_tinybyte(inst.GUID, "mightiness.ratescale")
+
+    -- Upgrade Module Owner
+    inst.uirobotsparksevent = net_event(inst.GUID, "uirobotsparksevent")
+
+    inst._oldcurrentenergylevel = 0
+    inst.currentenergylevel = net_smallbyte(inst.GUID, "upgrademodules.currentenergylevel", "upgrademoduleenergyupdate")
+
+    inst.upgrademodules =
+    {
+        net_smallbyte(inst.GUID, "upgrademodules.mods1", "upgrademoduleslistdirty"),
+        net_smallbyte(inst.GUID, "upgrademodules.mods2", "upgrademoduleslistdirty"),
+        net_smallbyte(inst.GUID, "upgrademodules.mods3", "upgrademoduleslistdirty"),
+        net_smallbyte(inst.GUID, "upgrademodules.mods4", "upgrademoduleslistdirty"),
+        net_smallbyte(inst.GUID, "upgrademodules.mods5", "upgrademoduleslistdirty"),
+        net_smallbyte(inst.GUID, "upgrademodules.mods6", "upgrademoduleslistdirty"),
+    }
+
+	-- oldager
+    inst.oldager_yearpercent = net_float(inst.GUID, "oldager.yearpercent")
+    inst.oldager_rate = net_smallbyte(inst.GUID, "oldager.rate") -- use the Get and Set functions because this value is a signed value incoded into an unsigned net_var
+	inst.GetOldagerRate = fns.GetOldagerRate
+
     --Temperature variables
     inst._oldtemperature = TUNING.STARTING_TEMP
     inst.currenttemperature = inst._oldtemperature
@@ -946,7 +1146,11 @@ local function fn()
     inst.maxmoisture:set(100)
 
     --StormWatcher variables
-    inst.sandstormlevel = net_tinybyte(inst.GUID, "stormwatcher.sandstormlevel", "sandstormleveldirty")
+    inst.stormlevel = net_tinybyte(inst.GUID, "stormwatcher.stormlevel", "stormleveldirty")
+    inst.stormtype = net_tinybyte(inst.GUID, "stormwatcher.stormtype")
+
+    --Inked variables
+    inst.inked = net_event(inst.GUID, "inked")
 
     --PlayerController variables
     inst._pausepredictiontask = nil
@@ -980,7 +1184,11 @@ local function fn()
     inst.fadetime = net_smallbyte(inst.GUID, "frontend.fadetime", "playerfadedirty")
     inst.screenflash = net_tinybyte(inst.GUID, "frontend.screenflash", "playerscreenflashdirty")
     inst.wormholetravelevent = net_tinybyte(inst.GUID, "frontend.wormholetravel", "wormholetraveldirty")
-    inst.houndwarningevent = net_tinybyte(inst.GUID, "frontend.houndwarning", "houndwarningdirty")    
+    inst.houndwarningevent = net_tinybyte(inst.GUID, "frontend.houndwarning", "houndwarningdirty")
+
+	-- busy theme music
+    inst.start_farming_music = net_event(inst.GUID, "startfarmingmusicevent")
+
     inst.isfadein:set(true)
 
     --Builder variables
@@ -988,17 +1196,19 @@ local function fn()
     inst.builderdamagedevent = net_event(inst.GUID, "builder.damaged")
     inst.learnrecipeevent = net_event(inst.GUID, "builder.learnrecipe")
     inst.techtrees = deepcopy(TECH.NONE)
-    inst.sciencebonus = net_tinybyte(inst.GUID, "builder.science_bonus")
-    inst.magicbonus = net_tinybyte(inst.GUID, "builder.magic_bonus")
-    inst.ancientbonus = net_tinybyte(inst.GUID, "builder.ancient_bonus")
-    inst.shadowbonus = net_tinybyte(inst.GUID, "builder.shadow_bonus")
-    inst.ingredientmod = net_tinybyte(inst.GUID, "builder.ingredientmod")
+    inst.ingredientmod = net_tinybyte(inst.GUID, "builder.ingredientmod", "ingredientmoddirty")
+    for i, v in ipairs(TechTree.BONUS_TECH) do
+        local bonus = net_tinybyte(inst.GUID, "builder."..string.lower(v).."bonus")
+		inst[string.lower(v).."bonus"] = bonus
+    end
     for i, v in ipairs(TechTree.AVAILABLE_TECH) do
         local level = net_tinybyte(inst.GUID, "builder.accessible_tech_trees."..v, "techtreesdirty")
         level:set(inst.techtrees[v])
         inst[string.lower(v).."level"] = level
     end
     inst.isfreebuildmode = net_bool(inst.GUID, "builder.freebuildmode", "recipesdirty")
+	inst.current_prototyper = net_entity(inst.GUID, "builder.current_prototyper", "current_prototyper_dirty")
+    inst.opencraftingmenuevent = net_event(inst.GUID, "builder.opencraftingmenu")
     inst.recipes = {}
     inst.bufferedbuilds = {}
     for k, v in pairs(AllRecipes) do
@@ -1012,17 +1222,20 @@ local function fn()
     --MapExplorer variables
     inst.learnmapevent = net_event(inst.GUID, "MapExplorer.learnmap")
 
+	--MapSpotRevealer variables
+	inst.revealmapspotevent = net_event(inst.GUID, "MapSpotRevealer.revealmapspot")
+	inst.revealmapspot_worldx = net_float(inst.GUID, "MapSpotRevealer.worldx")--note from branch: "second argument?"
+	inst.revealmapspot_worldz = net_float(inst.GUID, "MapSpotRevealer.worldz")
+
     --Repair variables
     inst.repairevent = net_event(inst.GUID, "repair.repair")
 
-    --Wardrobe variables
-    inst.iswardrobepopupvisible = net_bool(inst.GUID, "wardrobe.iswardrobepopupvisible", "iswardrobepopupvisibledirty")
-    inst.wardrobetarget = net_entity(inst.GUID, "wardrobe.wardrobetarget")
+    -- Groomer variables
+    inst.hasyotbskin = net_bool(inst.GUID, "groomer.hasyotbskin", "yotbskindirty")
 
     --GiftReceiver variables
     inst.hasgift = net_bool(inst.GUID, "giftreceiver.hasgift", "giftsdirty")
     inst.hasgiftmachine = net_bool(inst.GUID, "giftreceiver.hasgiftmachine", "giftsdirty")
-    inst.isgiftitempopupvisible = net_bool(inst.GUID, "giftreceiver.isgiftitempopupvisible", "isgiftitempopupvisibledirty")
 
     --Combat variables
     inst.lastcombattarget = net_entity(inst.GUID, "combat.lasttarget")
@@ -1037,7 +1250,7 @@ local function fn()
     --Leader variables
     inst.makefriendevent = net_event(inst.GUID, "leader.makefriend")
 
-    --Eater variables (more like feeding)
+    --Eater variables (more like feeding) (more like an event for playing a client sound)
     inst.feedincontainerevent = net_event(inst.GUID, "eater.feedincontainer")
 
     --Rider variables
@@ -1071,7 +1284,7 @@ local function fn()
     inst.deathcause = net_string(inst.GUID, "morgue.deathcause")
 
     --Delay net listeners until after initial values are deserialized
-    inst:DoTaskInTime(0, RegisterNetListeners)
+    inst:DoStaticTaskInTime(0, RegisterNetListeners)
 
     inst.entity:SetPristine()
 
@@ -1092,12 +1305,11 @@ local function fn()
     inst.AddMorgueRecord = AddMorgueRecord
     inst.SetTemperature = SetTemperature
     inst.SetUsedTouchStones = SetUsedTouchStones
-    inst.SetGhostMode = SetGhostMode
-    inst.ShowActions = ShowActions
-    inst.ShowHUD = ShowHUD
-    inst.ShowWardrobePopUp = ShowWardrobePopUp
-    inst.ShowGiftItemPopUp = ShowGiftItemPopUp
-    inst.EnableMapControls = EnableMapControls
+    inst.SetGhostMode = fns.SetGhostMode
+    inst.ShowActions = fns.ShowActions
+    inst.ShowHUD = fns.ShowHUD
+    inst.EnableMapControls = fns.EnableMapControls
+	inst.SetOldagerRate = fns.SetOldagerRate
 
     inst.persists = false
 

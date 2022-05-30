@@ -2,37 +2,12 @@
 require "prefabutil"
 require "maputil"
 
+local bunches = require "map/bunches"
+
 local bunch = {}
-local entities = {} 
+local entities = {}
 local WIDTH = 0
 local HEIGHT = 0
-
-local BUNCH_BLOCKERS = {
-
-}
-
-local bunches = {
-        seastack_spawner_swell = {
-            prefab = "seastack",
-            range = 50,
-            min = 30,
-            max = 50,
-            min_spacing = 8, 
-            valid_tile_types = {
-                GROUND.OCEAN_SWELL,
-            },
-        },
-        seastack_spawner_rough = {
-            prefab = "seastack",
-            range = 30,
-            min = 15,
-            max = 25,
-            min_spacing = 4,
-            valid_tile_types = {
-                GROUND.OCEAN_ROUGH,
-            },
-        },        
-    }
 
 local function setEntity(prop, x, z)
     if entities[prop] == nil then
@@ -43,7 +18,7 @@ local function setEntity(prop, x, z)
 
     --local save_data = {x= (x - WIDTH/2.0)*TILE_SCALE , z= (z - HEIGHT/2.0)*TILE_SCALE}
     local save_data = {x=x , z= z}
-    table.insert(entities[prop], save_data)    
+    table.insert(entities[prop], save_data)
 end
 
 local function exportSpawnersToEntites(add_entity_fn)
@@ -68,7 +43,7 @@ local function checkIfValidGround(world, x, z, valid_tile_types, water)
     z = math.floor((HEIGHT/2)+0.5 + (z/TILE_SCALE))
 
 	if x > OCEAN_POPULATION_EDGE_DIST and x < (WIDTH - OCEAN_POPULATION_EDGE_DIST) and z > OCEAN_POPULATION_EDGE_DIST and z < (HEIGHT - OCEAN_POPULATION_EDGE_DIST) then
-		local original_tile_type = world:GetTile(x, z)    
+		local original_tile_type = world:GetTile(x, z)
 		if original_tile_type ~= GROUND.INVALID and original_tile_type ~= GROUND.IMPASSABLE then
 			if valid_tile_types then
 				for i, tiletype in ipairs(valid_tile_types)do
@@ -76,7 +51,7 @@ local function checkIfValidGround(world, x, z, valid_tile_types, water)
 						return true
 					end
 				end
-			end 
+			end
 		end
     end
     return false
@@ -84,9 +59,9 @@ end
 
 local function AddTempEnts(data,x,z,prefab)
 
-    local entity = {            
+    local entity = {
         x = x,
-        z = z,        
+        z = z,
         prefab = prefab,
     }
 
@@ -95,10 +70,10 @@ local function AddTempEnts(data,x,z,prefab)
     return data
 end
 
-local function findEntsInRange(x,z,range) 
+local function findEntsInRange(x,z,range)
     local ents = {}
 
-    local dist = range*range 
+    local dist = range*range
 
     for k, item in ipairs(bunch) do
         local xdif = math.abs(x - item.x)
@@ -114,7 +89,7 @@ end
 local function checkforblockingitems(x,z,range)
     local spawnOK = true
 
-    for i, prefab in ipairs(BUNCH_BLOCKERS) do        
+    for i, prefab in ipairs(bunches.BunchBlockers) do
         local dist = 4*4
         if entities[prefab] then
             for t, ent in ipairs( entities[prefab] ) do
@@ -128,7 +103,7 @@ local function checkforblockingitems(x,z,range)
             print(">>> BUNCH SPAWN ERROR?",prefab)
         end
     end
-    return spawnOK 
+    return spawnOK
 end
 
 
@@ -143,9 +118,9 @@ local function placeitemoffgrids(world, x1,z1, data)
     local spot_clear = false
     local x,z = nil,nil
     local tries = 0
-    while spot_clear == false and tries < 20 do       
+    while spot_clear == false and tries < 20 do
 
-        local radiusMax = data.range        
+        local radiusMax = data.range
         local rad = math.pow(math.random(),0.8)*radiusMax --math.sqrt(math.random())*radiusMax
         local xdiff = math.random()*rad
         local zdiff = math.sqrt( (rad*rad) - (xdiff*xdiff))
@@ -160,17 +135,25 @@ local function placeitemoffgrids(world, x1,z1, data)
         x = x1+ xdiff
         z = z1+ zdiff
 
-        local ents = findEntsInRange(x,z,data.min_spacing or 1) 
+        local ents = findEntsInRange(x,z,data.min_spacing or 1)
         local test = true
         if #ents > 0 then
             test = false
         end
         tries = tries + 1
-        spot_clear = test   
+        spot_clear = test
     end
     if x and z and checkIfValidGround(world, x, z, data.valid_tile_types, data.water) and checkforblockingitems(x,z) then
-        AddTempEnts(bunch,x,z,data.prefab)
-    end      
+        local prefab = data.prefab
+        if type(prefab) == "function" then
+            local spawnerx = math.floor((WIDTH/2)+0.5 + (x/TILE_SCALE))
+            local spawnerz = math.floor((HEIGHT/2)+0.5 + (z/TILE_SCALE))
+            prefab = prefab(world, spawnerx, spawnerz)
+        end
+        if prefab ~= nil then
+            AddTempEnts(bunch,x,z,prefab)
+        end
+    end
 end
 
 function BunchSpawnerInit(ents, map_width, map_height)
@@ -181,8 +164,8 @@ end
 
 function BunchSpawnerRunSingleBatchSpawner(world, spawner_prefab, x, z, add_entity_fn)
     bunch = {}
-    
-	local data = bunches[spawner_prefab]
+
+	local data = bunches.Bunches[spawner_prefab]
 	if data ~= nil then
 		local number = math.random(data.min, data.max)
 
@@ -191,22 +174,24 @@ function BunchSpawnerRunSingleBatchSpawner(world, spawner_prefab, x, z, add_enti
 		end
 
 		exportSpawnersToEntites(add_entity_fn)
+	else
+		print("Warning: Could not find bunch spawner data for: " .. tostring(spawner_prefab))
 	end
 end
 
 function BunchSpawnerRun(world, add_entity_fn)
-    
-    for spawner_prefab, _ in pairs(bunches)do
+
+    for spawner_prefab, _ in pairs(bunches.Bunches)do
         if entities[spawner_prefab] then
             for i, ent in ipairs(entities[spawner_prefab]) do
                 BunchSpawnerRunSingleBatchSpawner(world, spawner_prefab, ent.x, ent.z, add_entity_fn)
-            end                                 
-        end 
+            end
+        end
     end
-    
+
     return entities
 end
 
 function IsBunchSpawner(prefab)
-	return bunches[prefab] ~= nil
+	return bunches.Bunches[prefab] ~= nil
 end

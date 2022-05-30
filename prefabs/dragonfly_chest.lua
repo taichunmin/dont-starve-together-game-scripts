@@ -76,6 +76,8 @@ local function fn()
     inst:AddComponent("inspectable")
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("dragonflychest")
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     inst.components.container.onopenfn = onopen
     inst.components.container.onclosefn = onclose

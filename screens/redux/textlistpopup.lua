@@ -6,7 +6,7 @@ local TEMPLATES = require "widgets/redux/templates"
 -- A popup displaying a list of text.
 --
 -- body_text can be two lines of text
-local TextListPopup = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing)
+local TextListPopup = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton)
     Screen._ctor(self, "TextListPopup")
 
     local scroll_height = 380
@@ -20,13 +20,15 @@ local TextListPopup = Class(Screen, function(self, list_items, title_text, body_
 
     self.buttons = buttons or {}
 
-    table.insert(self.buttons, {
+    if not nohelpbutton then
+        table.insert(self.buttons, {
             text=STRINGS.UI.HELP.BACK,
             cb = function()
                 self:_Cancel()
             end,
             controller_control = CONTROL_CANCEL,
         })
+    end
     self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(470,
             scroll_height + body_height,
             title_text,
@@ -108,7 +110,7 @@ local TextListPopup = Class(Screen, function(self, list_items, title_text, body_
                 num_columns      = 1,
                 item_ctor_fn = ScrollWidgetsCtor,
                 apply_fn     = ScrollWidgetApply,
-                scrollbar_height_offset = -60,
+                scrollbar_height_offset = -60
             }
         ))
     self.scroll_list:SetPosition(0, 30)

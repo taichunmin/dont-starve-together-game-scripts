@@ -54,7 +54,7 @@ local prefabs =
 	"robin_winter",
 	"canary",
 	"crow",
-	"fish",
+	"pondfish",
 	"transistor",
 	"froglegs",
 	"batwing",
@@ -64,6 +64,7 @@ local prefabs =
 	"acorn",
 	"pinecone",
 	"ice",
+	"redpouch_yot_catcoon",
 }
 
 SetSharedLootTable( 'catcoon',
@@ -161,7 +162,7 @@ local friendGiftPrefabs =
 		"red_cap",
 		"blue_cap",
 		"green_cap",
-		"fish",
+		"pondfish",
 		"froglegs",
 	},
 	{ --tier 6 (live animals + tumbleweed)
@@ -209,6 +210,9 @@ local function KeepTargetFn(inst, target)
 	end
 end
 
+local RETARGET_TAGS = {"_health"}
+local RETARGET_NO_TAGS = {"INLIMBO", "notarget", "invisible" }
+
 local function RetargetFn(inst)
     return FindEntity(inst, TUNING.CATCOON_TARGET_DIST,
         function(guy)
@@ -228,7 +232,8 @@ local function RetargetFn(inst)
 	            	or 	(guy:HasTag("cattoyairborne")
             			and not (inst.components.follower and inst.components.follower:IsLeaderSame(guy)))
 	        end
-        end)
+        end, 
+		RETARGET_TAGS, RETARGET_NO_TAGS)
 end
 
 local function SleepTest(inst)
@@ -256,7 +261,7 @@ local function WakeTest(inst)
 end
 
 local function PickRandomGift(inst, tier)
-	local table = (inst.components.follower and inst.components.follower.leader) and 
+	local table = (inst.components.follower and inst.components.follower.leader) and
 		friendGiftPrefabs or neutralGiftPrefabs
 	-- Neutral and friend tables aren't the same size. Make sure we're in valid range in case loyalty gets added/expired while retching.
 	if tier > #table then tier = #table end
@@ -286,9 +291,9 @@ local function OnGetItemFromPlayer(inst, giver, item)
         inst.last_hairball_time = GetTime()
         inst.hairball_friend_interval = math.random(2,4) -- Jumpstart the hairball timer (slot machine time!)
         inst.components.follower:AddLoyaltyTime(TUNING.CATCOON_LOYALTY_PER_ITEM)
-        if not inst.sg:HasStateTag("busy") then 
+        if not inst.sg:HasStateTag("busy") then
             inst:FacePoint(giver.Transform:GetWorldPosition())
-            inst.sg:GoToState("pawground") 
+            inst.sg:GoToState("pawground")
        	end
     end
     item:Remove()
@@ -298,7 +303,7 @@ local function OnRefuseItem(inst, item)
 	inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/hiss_pre")
 	if inst.components.sleeper:IsAsleep() then
         inst.components.sleeper:WakeUp()
-    -- elseif not inst.sg:HasStateTag("busy") then 
+    -- elseif not inst.sg:HasStateTag("busy") then
     -- 	inst.sg:GoToState("hiss")
     end
 end
@@ -308,6 +313,13 @@ local function OnIsRaining(inst, raining)
 		inst:DoTaskInTime(math.random(2,6), function(inst)
 			inst.raining = true
 		end)
+	end
+end
+
+local function OnWentHome(inst)
+    local den = inst.components.homeseeker and inst.components.homeseeker.home or nil
+	if den ~= nil and den.CacheItemsAtHome ~= nil then
+		den:CacheItemsAtHome(inst)
 	end
 end
 
@@ -358,18 +370,17 @@ local function fn()
     inst.components.combat.battlecryinterval = 20
 
 	inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetChanceLootTable('catcoon') 
+    inst.components.lootdropper:SetChanceLootTable('catcoon')
 
 	inst:AddComponent("follower")
     inst.components.follower.maxfollowtime = TUNING.CATCOON_LOYALTY_MAXTIME
-
-	inst:AddComponent("inventory")
 
 	inst:AddComponent("trader")
     inst.components.trader:SetAcceptTest(ShouldAcceptItem)
     inst.components.trader.onaccept = OnGetItemFromPlayer
     inst.components.trader.onrefuse = OnRefuseItem
     inst.components.trader.deleteitemonaccept = false
+	inst.components.trader.acceptnontradable = true
     inst.last_hairball_time = GetTime()
     inst.hairball_friend_interval = math.random(TUNING.MIN_HAIRBALL_FRIEND_INTERVAL, TUNING.MAX_HAIRBALL_FRIEND_INTERVAL)
     inst.hairball_neutral_interval = math.random(TUNING.MIN_HAIRBALL_NEUTRAL_INTERVAL, TUNING.MAX_HAIRBALL_NEUTRAL_INTERVAL)
@@ -395,11 +406,19 @@ local function fn()
 	inst:AddComponent("locomotor")
 	inst.components.locomotor.walkspeed = 3
 
+    inst:AddComponent("inventory")
+    inst.components.inventory.maxslots = 4
+
     -- boat hopping
     inst.components.locomotor:SetAllowPlatformHopping(true)
     inst:AddComponent("embarker")
+    inst.components.embarker.embark_speed = inst.components.locomotor.walkspeed + 2
+    inst:AddComponent("drownable")
 
 	inst:WatchWorldState("israining", OnIsRaining)
+
+    inst.force_onwenthome_message = true -- for onwenthome event
+    inst:ListenForEvent("onwenthome", OnWentHome)
 
 	MakeSmallBurnableCharacter(inst, "catcoon_torso", Vector3(1,0,1))
 	MakeSmallFreezableCharacter(inst)

@@ -73,8 +73,9 @@ local function WorkMoonBase(inst)
     inst:PushEvent("workmoonbase", { moonbase = GetMoonBase(inst) })
 end
 
+local BREAKSKELETONS_MUST_TAGS = { "playerskeleton", "HAMMER_workable" }
 local function BreakSkeletons(inst)
-    local skel = FindEntity(inst, 1.25, nil, { "playerskeleton", "HAMMER_workable" })
+    local skel = FindEntity(inst, 1.25, nil, BREAKSKELETONS_MUST_TAGS)
     if skel ~= nil then
         skel.components.workable:WorkedBy(inst, 1)
     end

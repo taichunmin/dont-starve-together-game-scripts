@@ -42,12 +42,12 @@ function CheckForUpsellTimeout(dt)
 		if waitingforpurchasetimeout > 30 then
 			--print ("Upsell callback timed out. Very odd.")
 			SetPause(false)
-    		
+
 			local player = ThePlayer
     		if player then
     			player:PushEvent("quit", {})
     		end
-    		upsell_status = "QUITTING"    		
+    		upsell_status = "QUITTING"
     		waitingforpurchasetimeout = 0
 		end
 	end
@@ -66,9 +66,9 @@ end
 function HandleUpsellClose()
 	--print("HandleUpsellClose")
 	upsell_status = "WAITING"
-   
-	UpdateGamePurchasedState( 
-		function(is_purchased) 
+
+	UpdateGamePurchasedState(
+		function(is_purchased)
 			local active_screen = TheFrontEnd:GetActiveScreen()
 			if active_screen and active_screen.Refresh then
 				active_screen:Refresh()

@@ -2,9 +2,12 @@ require("stategraphs/commonstates")
 
 local SHAKE_DIST = 40
 
+local YAWNTARGET_CANT_TAGS = { "playerghost", "FX", "DECOR", "INLIMBO" }
+local YAWNTARGET_ONEOF_TAGS = { "sleeper", "player" }
+
 function yawnfn(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.BEARGER_YAWN_RANGE, nil, { "playerghost", "FX", "DECOR", "INLIMBO" }, { "sleeper", "player" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.BEARGER_YAWN_RANGE, nil, YAWNTARGET_CANT_TAGS, YAWNTARGET_ONEOF_TAGS)
     for i, v in ipairs(ents) do
         if v ~= inst and v:IsValid() and
             not (v.components.freezable ~= nil and v.components.freezable:IsFrozen()) and
@@ -32,6 +35,7 @@ end
 local function onattackedfn(inst, data)
     if inst.components.health ~= nil and
         not inst.components.health:IsDead() and
+		not CommonHandlers.HitRecoveryDelay(inst) and
        (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("frozen")) then
 
         -- Clear out the inventory if he got interrupted
@@ -68,7 +72,7 @@ local function onattackfn(inst)
             inst.components.timer:StartTimer("GroundPound", TUNING.BEARGER_NORMAL_GROUNDPOUND_COOLDOWN)
         end
 
-        if not (inst.canyawn or inst.components.timer:TimerExists("Yawn")) and inst:HasTag("hibernation") then 
+        if not (inst.canyawn or inst.components.timer:TimerExists("Yawn")) and inst:HasTag("hibernation") then
             --print("Starting yawn timer ", TUNING.BEARGER_YAWN_COOLDOWN)
             inst.components.timer:StartTimer("Yawn", TUNING.BEARGER_YAWN_COOLDOWN)
         end
@@ -85,9 +89,10 @@ local function onattackfn(inst)
     end
 end
 
+local DESTROYSTUFF_CANT_TAGS = { "INLIMBO", "NET_workable" }
 local function destroystuff(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 5, nil, { "INLIMBO", "NET_workable" })
+    local ents = TheSim:FindEntities(x, y, z, 5, nil, DESTROYSTUFF_CANT_TAGS)
     for i, v in ipairs(ents) do
         if v:IsValid() and
             v.components.workable ~= nil and
@@ -281,6 +286,7 @@ local states=
 			else
 				inst.AnimState:PlayAnimation("standing_hit")
 			end
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
 		end,
 
 		events =
@@ -294,8 +300,8 @@ local states=
 		tags = {"yawn", "busy"},
 
 		onenter = function(inst)
-			
-			if inst.components.locomotor then 
+
+			if inst.components.locomotor then
 				inst.components.locomotor:StopMoving()
 			end
 
@@ -310,7 +316,7 @@ local states=
 
 		events =
 		{
-			EventHandler("animqueueover", function(inst) 
+			EventHandler("animqueueover", function(inst)
 					if not inst.components.timer:TimerExists("Yawn") then
 						--print("Starting yawn timer ", TUNING.BEARGER_YAWN_COOLDOWN)
 						inst.components.timer:StartTimer("Yawn", TUNING.BEARGER_YAWN_COOLDOWN)
@@ -477,7 +483,7 @@ local states=
 			if (ba and ba.target) then
 				inst.last_food_good = ba.target.components.stackable and ba.target.components.stackable:StackSize() or 1
 
-				if ba.target:HasTag("honeyed") then 
+				if ba.target:HasTag("honeyed") then
 					inst.last_food_good = inst.last_food_good * 2
 				end
 			else

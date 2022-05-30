@@ -8,6 +8,8 @@ local assets =
     Asset("ANIM", "anim/robin_build.zip"),
     Asset("ANIM", "anim/robin_winter_build.zip"),
     Asset("ANIM", "anim/canary_build.zip"),
+    Asset("ANIM", "anim/bird_mutant_build.zip"),
+    Asset("ANIM", "anim/bird_mutant_spitter_build.zip"),
 }
 
 local prefabs =
@@ -18,13 +20,15 @@ local prefabs =
     "robin_winter",
     "canary",
     "guano",
+    "rottenegg",
 }
 
 local invalid_foods =
 {
     "bird_egg",
+    "bird_egg_cooked",
     "rottenegg",
-    "monstermeat",
+    -- "monstermeat",
     -- "cookedmonstermeat",
     -- "monstermeat_dried",
 }
@@ -39,6 +43,9 @@ local CAGE_STATES =
 }
 
 local function SetBirdType(inst, bird)
+    if inst.bird_type then
+        inst.AnimState:ClearOverrideBuild(inst.bird_type.."_build")
+    end
     inst.bird_type = bird
     inst.AnimState:AddOverrideBuild(inst.bird_type.."_build")
 end
@@ -69,26 +76,26 @@ local function DigestFood(inst, food)
     if food.components.edible.foodtype == FOODTYPE.MEAT then
         --If the food is meat:
             --Spawn an egg.
-        inst.components.lootdropper:SpawnLootPrefab("bird_egg")
-    else
-        local seed_name = string.lower(food.prefab .. "_seeds")
-        if Prefabs[seed_name] ~= nil then
-            --If the food has a relavent seed type:
-                --Spawn 1 or 2 of those seeds.
-            local num_seeds = math.random(2)
-            for k = 1, num_seeds do
-                inst.components.lootdropper:SpawnLootPrefab(seed_name)
-            end
-                --Spawn regular seeds on a 50% chance.
-            if math.random() < 0.5 then
-                inst.components.lootdropper:SpawnLootPrefab("seeds")
-            end
+        if inst.components.occupiable and inst.components.occupiable:GetOccupant() and inst.components.occupiable:GetOccupant():HasTag("bird_mutant") then
+            inst.components.lootdropper:SpawnLootPrefab("rottenegg")
         else
-            --Otherwise...
-                --Spawn a poop 1/3 times.
-            if math.random() < 0.33 then
-                local loot = inst.components.lootdropper:SpawnLootPrefab("guano")
-                loot.Transform:SetScale(.33, .33, .33)
+            inst.components.lootdropper:SpawnLootPrefab("bird_egg")
+        end
+    else
+        if inst.components.occupiable and inst.components.occupiable:GetOccupant() and inst.components.occupiable:GetOccupant():HasTag("bird_mutant") then
+            inst.components.lootdropper:SpawnLootPrefab("spoiled_food")
+
+        else
+            local seed_name = string.lower(food.prefab .. "_seeds")
+            if Prefabs[seed_name] ~= nil then
+    			inst.components.lootdropper:SpawnLootPrefab(seed_name)
+            else
+                --Otherwise...
+                    --Spawn a poop 1/3 times.
+                if math.random() < 0.33 then
+                    local loot = inst.components.lootdropper:SpawnLootPrefab("guano")
+                    loot.Transform:SetScale(.33, .33, .33)
+                end
             end
         end
     end
@@ -103,21 +110,11 @@ end
 local function ShouldAcceptItem(inst, item)
     local seed_name = string.lower(item.prefab .. "_seeds")
 
-    --Item should be:
-    --Edible
-        --Seeds
-        --Meat
-
     local can_accept = item.components.edible
-        and (Prefabs[seed_name] 
+        and (Prefabs[seed_name]
         or item.prefab == "seeds"
+        or string.match(item.prefab, "_seeds")
         or item.components.edible.foodtype == FOODTYPE.MEAT)
-
-    --Item should NOT be:
-        --Monster Meat
-        --Eggs
-        --Bird Eggs
-        --Rotton Eggs
 
     if table.contains(invalid_foods, item.prefab) then
         can_accept = false
@@ -135,6 +132,7 @@ local function OnGetItem(inst, giver, item)
     if item.components.edible ~= nil and
         (   item.components.edible.foodtype == FOODTYPE.MEAT
             or item.prefab == "seeds"
+            or string.match(item.prefab, "_seeds")
             or Prefabs[string.lower(item.prefab .. "_seeds")] ~= nil
         ) then
         --If the item is edible...
@@ -228,7 +226,7 @@ end
 local function ShouldSleep(inst)
     --Sleep during night, but not if you're very hungry.
     local bird = GetBird(inst)
-    return DefaultSleepTest(bird) and GetHunger(bird) >= 0.33
+    return bird and bird.components.sleeper and DefaultSleepTest(bird) and GetHunger(bird) >= 0.33
 end
 
 local function GoToSleep(inst)
@@ -242,7 +240,7 @@ end
 local function ShouldWake(inst)
     --Wake during day or if you're very hungry.
     local bird = GetBird(inst)
-    return DefaultWakeTest(bird) or GetHunger(bird) < 0.33
+    return bird and DefaultWakeTest(bird) or GetHunger(bird) < 0.33
 end
 
 local function WakeUp(inst)
@@ -258,6 +256,7 @@ local function OnOccupied(inst, bird)
 
     --Add the sleeper component & initialize
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst.components.sleeper:SetSleepTest(ShouldSleep)
     inst.components.sleeper:SetWakeTest(ShouldWake)
 
@@ -277,6 +276,11 @@ local function OnOccupied(inst, bird)
 end
 
 local function OnEmptied(inst, bird)
+
+    if inst.bird_type then
+        inst.AnimState:ClearOverrideBuild(inst.bird_type.."_build")
+    end
+
     SetCageState(inst, CAGE_STATES.EMPTY)
 
     --Remove sleeper component
@@ -303,6 +307,10 @@ local function OnWorkFinished(inst, worker)
     end
     inst.components.lootdropper:DropLoot()
     inst.components.inventory:DropEverything(true)
+
+    local fx = SpawnPrefab("collapse_small")
+    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+    fx:SetMaterial("metal")
     inst:Remove()
 end
 
@@ -476,7 +484,6 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
-    inst.entity:AddLightWatcher()
 
     MakeObstaclePhysics(inst, .5)
 

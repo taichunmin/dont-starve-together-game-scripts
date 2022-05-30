@@ -92,7 +92,7 @@ AddRoom("Sinkhole", { -- This room is used to tag for the caves - it will be rem
 					                }
 					            }
 					})
-AddRoom("GrassySinkhole", {					
+AddRoom("GrassySinkhole", {
 					colour={r=0,g=0,b=0,a=0.9},
 					value = GROUND.GRASS,
 					contents =  {

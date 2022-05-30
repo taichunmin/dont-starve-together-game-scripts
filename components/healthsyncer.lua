@@ -51,6 +51,23 @@ local HealthSyncer = Class(function(self, inst)
             end
         end)
 
+        self.small_hots = {}
+        self._onremovesmallhots = function(debuff)
+            self.small_hots[debuff] = nil
+        end
+        inst:ListenForEvent("startsmallhealthregen", function(inst, debuff)
+            if self.small_hots[debuff] == nil then
+                self.small_hots[debuff] = true
+                inst:ListenForEvent("onremove", self._onremovesmallhots, debuff)
+            end
+        end)
+        inst:ListenForEvent("stopsmallhealthregen", function(inst, debuff)
+            if self.small_hots[debuff] ~= nil then
+                self._onremovesmallhots(debuff)
+                inst:RemoveEventCallback("onremove", self._onremovesmallhots, debuff)
+            end
+        end)
+
         inst:StartUpdatingComponent(self)
     else
         inst:ListenForEvent("healthstatusdirty", OnStatusDirty)
@@ -88,7 +105,7 @@ function HealthSyncer:OnUpdate(dt)
     -- Show the up-arrow when we're sleeping (but not in a straw roll: that doesn't heal us)
     local up = not down and
         (   (self.inst.player_classified ~= nil and self.inst.player_classified.issleephealing:value()) or
-            next(self.hots) ~= nil or
+            next(self.hots) ~= nil or next(self.small_hots) ~= nil or
             (self.inst.components.inventory ~= nil and self.inst.components.inventory:EquipHasTag("regen"))
         ) and
         self.inst.components.health ~= nil and self.inst.components.health:IsHurt()

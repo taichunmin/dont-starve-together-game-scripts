@@ -95,16 +95,6 @@ local function OnHaunt(inst)
     return false
 end
 
-local function OnSave(inst, data)
-	data._has_debuffable = inst.components.debuffable ~= nil 
-end
-
-local function OnPreLoad(inst, data)
-	if data ~= nil and data._has_debuffable then
-		inst:AddComponent("debuffable")
-	end
-end
-
 local function fn()
     local inst = CreateEntity()
 
@@ -124,6 +114,9 @@ local function fn()
     inst:AddTag("campfire")
     inst:AddTag("blueflame")
     inst:AddTag("NPC_workable")
+
+	-- for storytellingprop component
+	inst:AddTag("storytellingprop")
 
     MakeObstaclePhysics(inst, .3)
 
@@ -157,6 +150,9 @@ local function fn()
     inst.components.fueled:InitializeFuelLevel(TUNING.COLDFIRE_FUEL_START)
 
     -----------------------------
+    inst:AddComponent("storytellingprop")
+
+    -----------------------------
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
@@ -167,9 +163,6 @@ local function fn()
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
     inst:ListenForEvent("onbuilt", onbuilt)
-
-	inst.OnSave = OnSave
-	inst.OnPreLoad = OnPreLoad
 
     return inst
 end

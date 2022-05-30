@@ -6,9 +6,9 @@ local ImageButton = Class(Button, function(self, atlas, normal, focus, disabled,
 
     self.image = self:AddChild(Image())
     self.image:MoveToBack()
-    
+
 	self:SetTextures( atlas, normal, focus, disabled, down, selected, scale, offset )
-    
+
     self.scale_on_focus = true
     self.move_on_click = true
 
@@ -51,7 +51,7 @@ function ImageButton:SetTextures(atlas, normal, focus, disabled, down, selected,
         selected = selected or "button_long_disabled.tex"
         default_textures = true
     end
-    
+
     self.atlas = atlas
 	self.image_normal = normal
     self.image_focus = focus or normal
@@ -69,7 +69,7 @@ function ImageButton:SetTextures(atlas, normal, focus, disabled, down, selected,
     scale = image_scale or self.normal_scale or scale
     offset = image_offset or offset
     self.image_scale = scale
-    self.image_offset = offset 
+    self.image_offset = offset
     self.image:SetPosition(self.image_offset[1], self.image_offset[2])
     self.image:SetScale(self.image_scale[1], self.image_scale[2] or self.image_scale[1])
 
@@ -119,7 +119,7 @@ function ImageButton:OnGainFocus()
     if self:IsEnabled() then
         self.image:SetTexture(self.atlas, self.image_focus)
 
-        if self.size_x and self.size_y then 
+        if self.size_x and self.size_y then
             self.image:ScaleToSize(self.size_x, self.size_y)
         end
     end
@@ -149,7 +149,7 @@ function ImageButton:OnLoseFocus()
     if self:IsEnabled() then
         self.image:SetTexture(self.atlas, self.image_normal)
 
-        if self.size_x and self.size_y then 
+        if self.size_x and self.size_y then
             self.image:ScaleToSize(self.size_x, self.size_y)
         end
     end
@@ -168,13 +168,13 @@ function ImageButton:OnControl(control, down)
 
 	if self:IsSelected() and not self.AllowOnControlWhenSelected then return false end
 
-    if control == self.control then
+	if control == self.control and (not self.mouseonly or TheFrontEnd.isprimary) then
         if down then
             if not self.down then
                 if self.has_image_down then
                     self.image:SetTexture(self.atlas, self.image_down)
 
-                    if self.size_x and self.size_y then 
+                    if self.size_x and self.size_y then
                         self.image:ScaleToSize(self.size_x, self.size_y)
                     end
                 end
@@ -196,7 +196,7 @@ function ImageButton:OnControl(control, down)
                 if self.has_image_down then
                     self.image:SetTexture(self.atlas, self.image_focus)
 
-                    if self.size_x and self.size_y then 
+                    if self.size_x and self.size_y then
                         self.image:ScaleToSize(self.size_x, self.size_y)
                     end
                 end
@@ -229,21 +229,23 @@ function ImageButton:OnDisable()
         self.image:SetTint(unpack(self.imagedisabledcolour))
     end
 
-	if self.size_x and self.size_y then 
+	if self.size_x and self.size_y then
 		self.image:ScaleToSize(self.size_x, self.size_y)
 	end
 end
 
 -- This is roughly equivalent to OnDisable.
 -- Calling "Select" on a button makes it behave as if it were disabled (i.e. won't respond to being clicked), but will still be able
--- to be focused by the mouse or controller. The original use case for this was the page navigation buttons: when you click a button 
--- to navigate to a page, you select that page and, because you're already on that page, the button for that page becomes unable to 
--- be clicked. But because fully disabling the button creates weirdness when navigating with a controller (disabled widgets can't be 
+-- to be focused by the mouse or controller. The original use case for this was the page navigation buttons: when you click a button
+-- to navigate to a page, you select that page and, because you're already on that page, the button for that page becomes unable to
+-- be clicked. But because fully disabling the button creates weirdness when navigating with a controller (disabled widgets can't be
 -- focused), we have this new state, Selected.
 -- NB: For image buttons, you need to set the image_selected variable. Best practice is for this to be the same texture as disabled.
 function ImageButton:OnSelect()
     ImageButton._base.OnSelect(self)
-    self.image:SetTexture(self.atlas, self.image_selected)
+	if self.image_selected then
+	    self.image:SetTexture(self.atlas, self.image_selected)
+	end
     if self.imageselectedcolour then
         self.image:SetTint(unpack(self.imageselectedcolour))
     end
@@ -282,7 +284,7 @@ function ImageButton:SetNormalScale(scaleX, scaleY, scaleZ)
         self.normal_scale = scaleX
     end
 
-    if not self.focus and self.scale_on_focus then
+    if not self.scale_on_focus or not self.focus then
         self.image:SetScale(self.normal_scale[1], self.normal_scale[2], self.normal_scale[3])
     end
 end
@@ -293,7 +295,7 @@ function ImageButton:SetImageNormalColour(r,g,b,a)
     else
         self.imagenormalcolour = r
     end
-    
+
     if self:IsEnabled() and not self.focus and not self.selected then
         self.image:SetTint(self.imagenormalcolour[1], self.imagenormalcolour[2], self.imagenormalcolour[3], self.imagenormalcolour[4])
     end
@@ -305,7 +307,7 @@ function ImageButton:SetImageFocusColour(r,g,b,a)
     else
         self.imagefocuscolour = r
     end
-    
+
     if self.focus and not self.selected then
         self.image:SetTint(unpack(self.imagefocuscolour))
     end
@@ -317,7 +319,7 @@ function ImageButton:SetImageDisabledColour(r,g,b,a)
     else
         self.imagedisabledcolour = r
     end
-    
+
     if not self:IsEnabled() then
         self.image:SetTint(unpack(self.imagedisabledcolour))
     end
@@ -329,7 +331,7 @@ function ImageButton:SetImageSelectedColour(r,g,b,a)
     else
         self.imageselectedcolour = r
     end
-    
+
     if self.selected then
         self.image:SetTint(unpack(self.imageselectedcolour))
     end

@@ -227,8 +227,8 @@ if _ismastersim then
         --Register master simulation events
         inst:ListenForEvent("ms_setworldresettime", OnSetWorldResetTime, _world)
     else
-        --Register slave shard events
-        inst:ListenForEvent("slave_worldresetupdate", OnWorldResetUpdate, _world)
+        --Register secondary shard events
+        inst:ListenForEvent("secondary_worldresetupdate", OnWorldResetUpdate, _world)
     end
 
     --Also reset this flag in case it's invalid

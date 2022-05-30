@@ -55,7 +55,7 @@ local function fn()
     end
 
     inst:AddComponent("inspectable")
-    
+
     inst:AddComponent("prototyper")
     inst.components.prototyper.onturnon = onturnon
     inst.components.prototyper.onturnoff = onturnoff

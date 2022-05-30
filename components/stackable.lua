@@ -62,6 +62,7 @@ function Stackable:Get(num)
     if self.stacksize > num_to_get then
         local instance = SpawnPrefab( self.inst.prefab, self.inst.skinname, self.inst.skin_id, nil )
 
+
         self:SetStackSize(self.stacksize - num_to_get)
         instance.components.stackable:SetStackSize(num_to_get)
 
@@ -74,6 +75,9 @@ function Stackable:Get(num)
         end
 
         if instance.components.inventoryitem ~= nil and self.inst.components.inventoryitem ~= nil then
+            if self.inst.components.inventoryitem.owner then
+                instance.components.inventoryitem:OnPutInInventory(self.inst.components.inventoryitem.owner)
+            end
             instance.components.inventoryitem:InheritMoisture(self.inst.components.inventoryitem:GetMoisture(), self.inst.components.inventoryitem:IsWet())
         end
 
@@ -91,12 +95,12 @@ function Stackable:Put(item, source_pos)
     assert(item ~= self, "cant stack on self" )
     local ret
     if item.prefab == self.inst.prefab and item.skinname == self.inst.skinname then
-        
+
         local num_to_add = item.components.stackable.stacksize
         local newtotal = self.stacksize + num_to_add
-        
+
         local oldsize = self.stacksize
-        local newsize = math.min(self.maxsize, newtotal)        
+        local newsize = math.min(self.maxsize, newtotal)
         local numberadded = newsize - oldsize
 
         if self.inst.components.perishable ~= nil then

@@ -8,8 +8,8 @@ local AreaAware = Class(function(self, inst)
     self.inst:StartUpdatingComponent(self)
 
 	self._ForceUpdate = function() self:UpdatePosition(self.inst.Transform:GetWorldPosition()) end
-    self.inst:ListenForEvent("done_embark_movement", self._ForceUpdate)                
-	
+    self.inst:ListenForEvent("done_embark_movement", self._ForceUpdate)
+
 end)
 
 function AreaAware:OnRemoveFromEntity()
@@ -17,40 +17,53 @@ function AreaAware:OnRemoveFromEntity()
     self.inst:RemoveEventCallback("done_embark_movement", self._ForceUpdate)
 end
 
-function AreaAware:UpdatePosition(x, y, z)
-    self.lastpt.x, self.lastpt.z = x, z
-    if not TheWorld.Map:IsVisualGroundAtPoint(x, 0, z) then
-		if self.current_area_data ~= nil then
-			self.current_area = -1
-			self.current_area_data = nil 
-            self.inst:PushEvent("changearea", self:GetCurrentArea())
-		end
-        return
-    end
+function AreaAware:_TestArea(pt_x, pt_z, on_land, r)
+	local best = {tile_type = GROUND.INVALID, render_layer = -1}
 
-	for i = #TheWorld.topology.nodes, 1, -1 do -- iterating backwards only because retrofitted worlds don't properly fix up the topology mesh
-		local node = TheWorld.topology.nodes[i]
-        if node.type ~= NODE_TYPE.Blank and node.type ~= NODE_TYPE.Blocker and TheSim:WorldPointInPoly(x, z, node.poly) then
-			if self.current_area ~= i then
-				self.current_area = i
-				self.current_area_data = {
-					id = TheWorld.topology.ids[i],
-					type = node.type,
-					center = node.cent,
-					poly = node.poly,
-					tags = node.tags,
-				}
-				self.inst:PushEvent("changearea", self:GetCurrentArea())
+	for _z = -1, 1 do
+		for _x = -1, 1 do
+			local x, z = pt_x + _x*r, pt_z + _z*r
+
+			local tile_type = TheWorld.Map:GetTileAtPoint(x, 0, z)
+			if on_land == IsLandTile(tile_type) then
+				local tile_info = GetTileInfo(tile_type)
+				local render_layer = tile_info ~= nil and tile_info._render_layer or 0
+				if render_layer > best.render_layer then
+					best.tile_type = tile_type
+					best.render_layer = render_layer
+					best.x = x
+					best.z = z
+				end
 			end
-			return
-        end
-    end
+		end
+	end
+
+	return best.tile_type ~= GROUND.INVALID and best or nil
+end
+
+function AreaAware:UpdatePosition(x, y, z)
+	local node, node_index = TheWorld.Map:FindVisualNodeAtPoint(x, y, z)
+	if node_index ~= self.current_area then
+		self.current_area = node_index or 0
+
+		self.current_area_data = node and {
+			id = TheWorld.topology.ids[node_index],
+			type = node.type,
+			center = node.cent,
+			poly = node.poly,
+			tags = node.tags,
+		}
+		or nil
+
+		self.inst:PushEvent("changearea", self.current_area_data)
+	end
 end
 
 function AreaAware:OnUpdate(dt)
     local x, y, z = self.inst.Transform:GetWorldPosition()
     if distsq(x, z, self.lastpt.x, self.lastpt.z) > self.updatedistsq then
         self:UpdatePosition(x, 0, z)
+		self.lastpt.x, self.lastpt.z = x, z
     end
 end
 

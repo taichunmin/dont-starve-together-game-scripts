@@ -15,7 +15,7 @@ function Reader:Read(book)
 				book.components.finiteuses:Use(1)
 			end
 			return true
-		end		
+		end
 	end
 end
 

@@ -44,9 +44,10 @@ local function depleted(inst)
     end
 end
 
+local SPORE_TAGS = {"spore"}
 local function checkforcrowding(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local spores = TheSim:FindEntities(x,y,z, TUNING.MUSHSPORE_MAX_DENSITY_RAD, {"spore"})
+    local spores = TheSim:FindEntities(x,y,z, TUNING.MUSHSPORE_MAX_DENSITY_RAD, SPORE_TAGS)
     if #spores > TUNING.MUSHSPORE_MAX_DENSITY then
         inst.components.perishable:SetPercent(0)
     else
@@ -55,7 +56,7 @@ local function checkforcrowding(inst)
 end
 
 local function onpickup(inst)
-    --These last longer when held    
+    --These last longer when held
     inst.components.perishable:SetLocalMultiplier( TUNING.SEG_TIME * 3/ TUNING.PERISH_SLOW )
     if inst.crowdingtask ~= nil then
         inst.crowdingtask:Cancel()

@@ -15,6 +15,12 @@ local loot = { "meat", "meat" }
 local MAX_CHASEAWAY_DIST = 32
 local MAX_CHASE_DIST = 256
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_PIG_MUST_TAGS = { "pig", "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "tallbird" }
+local RETARGET_WEREPIG_CANT_TAGS = { "werepig" }
+local RETARGET_ONEOF_TAGS = { "character", "monster" }
+local RETARGET_ANIMAL_ONEOF_TAGS = { "character", "animal", "monster" }
 local function Retarget(inst)
     local function IsValidTarget(guy)
         return not guy.components.health:IsDead()
@@ -30,24 +36,24 @@ local function Retarget(inst)
             inst.components.homeseeker.home,
             SpringCombatMod(TUNING.TALLBIRD_DEFEND_DIST),
             IsValidTarget,
-            { "_combat", "_health" },
-            { "tallbird" },
-            { "character", "animal", "monster" })
+            RETARGET_MUST_TAGS,
+            RETARGET_CANT_TAGS,
+            RETARGET_ANIMAL_ONEOF_TAGS)
         or --Nearby pigman (Why the hatred for pigs? It's expensive!)
         FindEntity(
             inst,
             SpringCombatMod(TUNING.TALLBIRD_TARGET_DIST),
             IsValidTarget,
-            { "pig", "_combat", "_health" },
-            { "werepig" })
+            RETARGET_PIG_MUST_TAGS,
+            RETARGET_WEREPIG_CANT_TAGS)
         or --Nearby character or monster
         FindEntity(
             inst,
             SpringCombatMod(TUNING.TALLBIRD_TARGET_DIST),
             IsValidTarget,
-            { "_combat", "_health" },
-            { "tallbird" },
-            { "character", "monster" })
+            RETARGET_MUST_TAGS,
+            RETARGET_CANT_TAGS,
+            RETARGET_ONEOF_TAGS)
 end
 
 local function KeepTarget(inst, target)
@@ -133,7 +139,6 @@ local function fn()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddLightWatcher()
     inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
 
@@ -200,6 +205,7 @@ local function fn()
 
     ------------------
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst.components.sleeper:SetResistance(3)
     inst.components.sleeper.testperiod = GetRandomWithVariance(6, 2)
     inst.components.sleeper:SetSleepTest(ShouldSleep)

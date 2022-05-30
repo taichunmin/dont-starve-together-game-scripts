@@ -95,6 +95,9 @@ local function CanHatTarget(inst, target)
     return hat == nil or hat.prefab ~= inst.prefab
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "INLIMBO", "slurper" }
+local RETARGET_ONEOF_TAGS = { "character", "monster" }
 local function Retarget(inst)
     --Find us a tasty target with a hunger component and the ability to equip hats.
     --Otherwise just find a target that can equip hats.
@@ -109,9 +112,9 @@ local function Retarget(inst)
         FindEntity(inst, 15, function(guy)
             return inst.components.combat:CanTarget(guy)
         end,
-        { "_combat" },
-        { "INLIMBO" },
-        { "character", "monster" })
+        RETARGET_MUST_TAGS,
+        RETARGET_CANT_TAGS,
+        RETARGET_ONEOF_TAGS)
 end
 
 local function KeepTarget(inst, target)
@@ -176,7 +179,7 @@ local function OnEquip(inst, owner)
 end
 
 local function OnUnequip(inst, owner)
-    inst._light.Light:Enable(true) 
+    inst._light.Light:Enable(true)
     inst._light._lightlevel:set(false)
     inst._light._lightframe:set(inst._light._lightframe:value())
     OnLightDirty(inst._light)
@@ -266,6 +269,9 @@ local function fn()
     inst.AnimState:PlayAnimation("idle_loop", true)
 
     inst:AddTag("cavedweller")
+	inst:AddTag("monster")
+	inst:AddTag("hostile")
+	inst:AddTag("slurper")
     inst:AddTag("mufflehat")
 
     inst.entity:SetPristine()
@@ -319,7 +325,7 @@ local function fn()
     inst.components.sleeper:SetWakeTest(WakeTest)
     --inst.components.sleeper:SetNocturnal(true)
 
-    inst:AddComponent("knownlocations")    
+    inst:AddComponent("knownlocations")
 
     inst:AddComponent("sanityaura")
     inst.components.sanityaura.aura = -TUNING.SANITYAURA_SMALL
@@ -349,7 +355,7 @@ local function fn()
         end
         inst:ListenForEvent("onremove", inst.ondetach, owner)
         inst._light.entity:SetParent(owner.entity)
-        inst._owner = owner        
+        inst._owner = owner
     end
     inst.ondetach = function()
         if inst._owner ~= nil then

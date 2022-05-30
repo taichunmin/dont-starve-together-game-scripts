@@ -32,13 +32,13 @@ local function OnActivate(inst, doer)
 
         local other = inst.components.teleporter.targetTeleporter
         if other ~= nil then
-            DeleteCloseEntsWithTag("WORM_DANGER", other, 15)
+            DeleteCloseEntsWithTag({"WORM_DANGER"}, other, 15)
         end
 
         if doer.components.talker ~= nil then
             doer.components.talker:ShutUp()
         end
-        if doer.components.sanity ~= nil then
+        if doer.components.sanity ~= nil and not doer:HasTag("nowormholesanityloss") and not inst.disable_sanity_drain then
             doer.components.sanity:DoDelta(-TUNING.SANITY_MED)
         end
 
@@ -74,6 +74,18 @@ end
 local function StartTravelSound(inst, doer)
     inst.SoundEmitter:PlaySound("dontstarve/common/teleportworm/swallow")
     doer:PushEvent("wormholetravel", WORMHOLETYPE.WORM) --Event for playing local travel sound
+end
+
+local function OnSave(inst, data)
+	if inst.disable_sanity_drain then
+		data.disable_sanity_drain = true
+	end
+end
+
+local function OnLoad(inst, data)
+	if data ~= nil and data.disable_sanity_drain then
+		inst.disable_sanity_drain = true
+	end
 end
 
 local function fn()
@@ -133,6 +145,10 @@ local function fn()
     inst.components.trader.acceptnontradable = true
     inst.components.trader.onaccept = onaccept
     inst.components.trader.deleteitemonaccept = false
+
+
+	inst.OnSave = OnSave
+	inst.OnLoad = OnLoad
 
     return inst
 end

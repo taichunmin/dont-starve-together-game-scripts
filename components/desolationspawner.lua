@@ -39,6 +39,7 @@ local _areadata = {}
 --[[ Private member functions ]]
 --------------------------------------------------------------------------
 
+local TEST_ONEOF_TAGS = { "structure", "wall" }
 local function TestForRegrow(x, y, z, prefab, searchtags)
 
     local ents = TheSim:FindEntities(x,y,z, EXCLUDE_RADIUS)
@@ -47,7 +48,7 @@ local function TestForRegrow(x, y, z, prefab, searchtags)
         return false
     end
 
-    local ents = TheSim:FindEntities(x,y,z, BASE_RADIUS, nil, nil, { "structure", "wall" })
+    local ents = TheSim:FindEntities(x,y,z, BASE_RADIUS, nil, nil, TEST_ONEOF_TAGS)
     if #ents > 0 then
         -- Don't spawn inside bases
         return false
@@ -162,25 +163,25 @@ end
 inst:DoPeriodicTask(UPDATE_PERIOD, function() self:LongUpdate(UPDATE_PERIOD) end)
 
 self:SetSpawningForType("evergreen", "pinecone_sapling", TUNING.EVERGREEN_REGROWTH.DESOLATION_RESPAWN_TIME, {"evergreen"}, function()
-    return (_worldstate.issummer and 2) or (_worldstate.iswinter and 0) or 1
+    return (_worldstate.issummer and TUNING.EVERGREEN_REGROWTH_TIME_MULT * 2) or (_worldstate.iswinter and 0) or TUNING.EVERGREEN_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("evergreen_sparse", "lumpy_sapling", TUNING.EVERGREEN_SPARSE_REGROWTH.DESOLATION_RESPAWN_TIME, {"evergreen_sparse"}, function()
-    return 1
+    return TUNING.EVERGREEN_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("twiggytree", "twiggy_nut_sapling", TUNING.TWIGGY_TREE_REGROWTH.DESOLATION_RESPAWN_TIME, {"twiggytree"}, function()
-    return 1
+    return TUNING.TWIGGYTREE_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("deciduoustree", "acorn_sapling", TUNING.DECIDUOUS_REGROWTH.DESOLATION_RESPAWN_TIME, {"deciduoustree"}, function()
-    return (not _worldstate.isspring and 0) or 1
+    return (not _worldstate.isspring and 0) or TUNING.DECIDIOUS_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("mushtree_tall", "mushtree_tall", TUNING.MUSHTREE_REGROWTH.DESOLATION_RESPAWN_TIME, {"mushtree"}, function()
-    return (not _worldstate.iswinter and 0) or 1
+    return (not _worldstate.iswinter and 0) or TUNING.MUSHTREE_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("mushtree_medium", "mushtree_medium", TUNING.MUSHTREE_REGROWTH.DESOLATION_RESPAWN_TIME, {"mushtree"}, function()
-    return (not _worldstate.issummer and 0) or 1
+    return (not _worldstate.issummer and 0) or TUNING.MUSHTREE_REGROWTH_TIME_MULT
 end)
 self:SetSpawningForType("mushtree_small", "mushtree_small", TUNING.MUSHTREE_REGROWTH.DESOLATION_RESPAWN_TIME, {"mushtree"}, function()
-    return (not _worldstate.isspring and 0) or 1
+    return (not _worldstate.isspring and 0) or TUNING.MUSHTREE_REGROWTH_TIME_MULT
 end)
 
 local moon_tree_mult =
@@ -192,7 +193,7 @@ local moon_tree_mult =
     full = 2.0,
 }
 self:SetSpawningForType("moon_tree", "moonbutterfly_sapling", TUNING.EVERGREEN_REGROWTH.DESOLATION_RESPAWN_TIME, {"moon_tree"}, function()
-    return moon_tree_mult[_worldstate.moonphase] or 0
+    return (TUNING.MOONTREE_REGROWTH_TIME_MULT * moon_tree_mult[_worldstate.moonphase]) or 0
 end)
 
 inst:DoTaskInTime(0, PopulateAreaDataFromReplacements)

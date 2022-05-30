@@ -56,7 +56,7 @@ function Stack:Create()
       print(i, v)
     end
   end
-  
+
   -- find a value
   function t:find(value)
     for i,v in pairs(self._et) do
@@ -66,6 +66,6 @@ function Stack:Create()
     end
     return false
   end
-  
+
   return t
 end

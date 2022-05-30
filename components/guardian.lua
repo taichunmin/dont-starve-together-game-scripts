@@ -108,7 +108,7 @@ function Guardian:SummonGuardian(override)
             self:SetGuardian(SpawnPrefab(self.prefab))
             self.guardian.Transform:SetPosition(self.inst.Transform:GetWorldPosition())
 
-            if self.onsummonfn ~= nil then
+            if self.onsummonfn ~= nil and self.guardian then
                 self.onsummonfn(self.inst, self.guardian)
             end
         end

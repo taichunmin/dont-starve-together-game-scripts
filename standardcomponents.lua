@@ -25,7 +25,8 @@ function DefaultBurntFn(inst)
 
     local my_x, my_y, my_z = inst.Transform:GetWorldPosition()
 
-    if TheWorld.Map:IsVisualGroundAtPoint(my_x, my_y, my_z) then
+    -- Spawn ash everywhere except on the ocean
+    if not TheWorld.Map:IsOceanAtPoint(my_x, my_y, my_z, false) then
         local ash = SpawnPrefab("ash")
         ash.Transform:SetPosition(inst.Transform:GetWorldPosition())
 
@@ -77,7 +78,7 @@ function DefaultBurntStructureFn(inst)
         inst:RemoveComponent("dryer")
     end
     if inst.components.stewer then
-        inst.components.stewer:StopCooking("fire") 
+        inst.components.stewer:StopCooking("fire")
         inst:RemoveComponent("stewer")
     end
     if inst.components.harvestable then
@@ -145,6 +146,7 @@ function MakeMediumBurnable(inst, time, offset, structure, sym)
     end
 end
 
+
 function MakeLargeBurnable(inst, time, offset, structure, sym)
     inst:AddComponent("burnable")
     inst.components.burnable:SetFXLevel(4)
@@ -165,8 +167,8 @@ function MakeSmallPropagator(inst)
     inst.components.propagator:SetOnFlashPoint(DefaultIgniteFn)
     inst.components.propagator.flashpoint = 5 + math.random()*5
     inst.components.propagator.decayrate = 0.5
-    inst.components.propagator.propagaterange = 5
-    inst.components.propagator.heatoutput = 5--8
+    inst.components.propagator.propagaterange = 3 + math.random()*2
+    inst.components.propagator.heatoutput = 3 + math.random()*2--8
 
     inst.components.propagator.damagerange = 2
     inst.components.propagator.damages = true
@@ -178,8 +180,8 @@ function MakeMediumPropagator(inst)
     inst.components.propagator:SetOnFlashPoint(DefaultIgniteFn)
     inst.components.propagator.flashpoint = 15+math.random()*10
     inst.components.propagator.decayrate = 0.5
-    inst.components.propagator.propagaterange = 7
-    inst.components.propagator.heatoutput = 8.5--12
+    inst.components.propagator.propagaterange = 5 + math.random()*2
+    inst.components.propagator.heatoutput = 5 + math.random()*3.5--12
 
     inst.components.propagator.damagerange = 3
     inst.components.propagator.damages = true
@@ -191,8 +193,8 @@ function MakeLargePropagator(inst)
     inst.components.propagator:SetOnFlashPoint(DefaultIgniteFn)
     inst.components.propagator.flashpoint = 45+math.random()*10
     inst.components.propagator.decayrate = 0.5
-    inst.components.propagator.propagaterange = 8
-    inst.components.propagator.heatoutput = 9.5--12
+    inst.components.propagator.propagaterange = 6 + math.random()*2
+    inst.components.propagator.heatoutput = 6 + math.random()*3.5--12
 
     inst.components.propagator.damagerange = 3
     inst.components.propagator.damages = true
@@ -218,12 +220,12 @@ function MakeMediumBurnableCharacter(inst, sym, offset)
     inst.components.propagator.acceptsheat = false
 end
 
-function MakeLargeBurnableCharacter(inst, sym, offset)
+function MakeLargeBurnableCharacter(inst, sym, offset, scale)
     inst:AddComponent("burnable")
     inst.components.burnable:SetFXLevel(3)
     inst.components.burnable.canlight = false
     inst.components.burnable:SetBurnTime(10)
-    inst.components.burnable:AddBurnFX(burnfx.character, offset or Vector3(0, 0, 1), sym)
+    inst.components.burnable:AddBurnFX(burnfx.character, offset or Vector3(0, 0, 1), sym, nil, scale)
     MakeLargePropagator(inst)
     inst.components.propagator.acceptsheat = false
 end
@@ -279,6 +281,21 @@ function MakeInventoryPhysics(inst, mass, rad)
 	phys:CollidesWith(COLLISION.WORLD)
 	phys:CollidesWith(COLLISION.OBSTACLES)
 	phys:CollidesWith(COLLISION.SMALLOBSTACLES)
+	phys:SetSphere(rad)
+    return phys
+end
+
+function MakeProjectilePhysics(inst, mass, rad)
+    mass = mass or 1
+    rad = rad or .5
+	local phys = inst.entity:AddPhysics()
+	phys:SetMass(mass)
+	phys:SetFriction(.1)
+	phys:SetDamping(0)
+	phys:SetRestitution(.5)
+	phys:SetCollisionGroup(COLLISION.ITEMS)
+	phys:ClearCollisionMask()
+	phys:CollidesWith(COLLISION.GROUND)
 	phys:SetSphere(rad)
     return phys
 end
@@ -369,6 +386,18 @@ function MakeGhostPhysics(inst, mass, rad)
     return phys
 end
 
+function MakeTinyGhostPhysics(inst, mass, rad)
+    local phys = inst.entity:AddPhysics()
+    phys:SetMass(mass)
+    phys:SetFriction(0)
+    phys:SetDamping(5)
+    phys:SetCollisionGroup(COLLISION.CHARACTERS)
+    phys:ClearCollisionMask()
+    phys:CollidesWith((TheWorld.has_ocean and COLLISION.GROUND) or COLLISION.WORLD)
+    phys:SetCapsule(rad, 1)
+    return phys
+end
+
 function ChangeToGhostPhysics(inst)
     local phys = inst.Physics
     phys:SetCollisionGroup(COLLISION.CHARACTERS)
@@ -383,12 +412,7 @@ end
 function ChangeToCharacterPhysics(inst)
     local phys = inst.Physics
     phys:SetCollisionGroup(COLLISION.CHARACTERS)
-    phys:ClearCollisionMask()
-    phys:CollidesWith(COLLISION.WORLD)
-    phys:CollidesWith(COLLISION.OBSTACLES)
-    phys:CollidesWith(COLLISION.SMALLOBSTACLES)
-    phys:CollidesWith(COLLISION.CHARACTERS)
-    phys:CollidesWith(COLLISION.GIANTS)
+	phys:SetCollisionMask(COLLISION.WORLD, COLLISION.OBSTACLES, COLLISION.SMALLOBSTACLES, COLLISION.CHARACTERS, COLLISION.GIANTS)
     return phys
 end
 
@@ -568,19 +592,12 @@ local function onperish(inst)
     end
 end
 
-function MakeFeedableSmallLivestockPristine(inst)
+function MakeSmallPerishableCreaturePristine(inst)
     inst:AddTag("show_spoilage")
-    inst:AddTag("small_livestock")
 end
 
-function MakeFeedableSmallLivestock(inst, starvetime, oninventory, ondropped)
-    MakeFeedableSmallLivestockPristine(inst)
-
-    --This is acceptable.  Some eaters are added already to specify diets.
-    if inst.components.eater == nil then
-        inst:AddComponent("eater")
-    end
-    inst.components.eater:SetOnEatFn(oneat)
+function MakeSmallPerishableCreature(inst, starvetime, oninventory, ondropped)
+    MakeSmallPerishableCreaturePristine(inst)
 
     --We want to see the warnings for duplicating perishable
     inst:AddComponent("perishable")
@@ -603,6 +620,23 @@ function MakeFeedableSmallLivestock(inst, starvetime, oninventory, ondropped)
     end)
 end
 
+function MakeFeedableSmallLivestockPristine(inst)
+    MakeSmallPerishableCreaturePristine(inst)
+    inst:AddTag("small_livestock")
+end
+
+function MakeFeedableSmallLivestock(inst, starvetime, oninventory, ondropped)
+    MakeFeedableSmallLivestockPristine(inst)
+
+    --This is acceptable.  Some eaters are added already to specify diets.
+    if inst.components.eater == nil then
+        inst:AddComponent("eater")
+    end
+    inst.components.eater:SetOnEatFn(oneat)
+
+    MakeSmallPerishableCreature(inst, starvetime, oninventory, ondropped)
+end
+
 --Backward compatibility for mods
 --The old "pets" are now "livestock", since
 --DST will have an actual player pet system
@@ -614,6 +648,12 @@ MakeFeedablePet = MakeFeedableSmallLivestock
 function MakeDragonflyBait() end
 MaybeMakeDragonflyBait = MakeDragonflyBait
 RemoveDragonflyBait = MakeDragonflyBait
+
+function MakeHauntable(inst, cooldown, haunt_value)
+    if not inst.components.hauntable then inst:AddComponent("hauntable") end
+    inst.components.hauntable.cooldown = cooldown or TUNING.HAUNT_COOLDOWN_SMALL
+	inst.components.hauntable:SetHauntValue(haunt_value or TUNING.HAUNT_TINY)
+end
 
 function MakeHauntableLaunch(inst, chance, speed, cooldown, haunt_value)
     if not inst.components.hauntable then inst:AddComponent("hauntable") end
@@ -884,6 +924,7 @@ end
 
 function MakeHauntablePanic(inst, panictime, chance, cooldown, haunt_value)
     if not inst.components.hauntable then inst:AddComponent("hauntable") end
+	inst.components.hauntable.panicable = true
     inst.components.hauntable.cooldown = cooldown or TUNING.HAUNT_COOLDOWN_MEDIUM
     inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
         if inst.components.sleeper then -- Wake up, there's a ghost!
@@ -903,6 +944,7 @@ end
 
 function MakeHauntablePanicAndIgnite(inst, panictime, panicchance, ignitechance, cooldown, panic_haunt_value, ignite_haunt_value)
     if not inst.components.hauntable then inst:AddComponent("hauntable") end
+	inst.components.hauntable.panicable = true
     inst.components.hauntable.cooldown = cooldown or TUNING.HAUNT_COOLDOWN_MEDIUM
     inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
         panicchance = panicchance or TUNING.HAUNT_CHANCE_ALWAYS
@@ -970,6 +1012,22 @@ function MakeHauntableGoToState(inst, state, chance, cooldown, haunt_value)
     inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
         chance = chance or TUNING.HAUNT_CHANCE_ALWAYS
         if math.random() <= chance then
+            inst.sg:GoToState(state)
+            inst.components.hauntable.hauntvalue = haunt_value or TUNING.HAUNT_TINY
+            return true
+        end
+        return false
+    end)
+end
+
+function MakeHauntableGoToStateWithChanceFunction(inst, state, chancefn, cooldown, haunt_value)
+    if not (inst and inst.sg) or not state then return end
+    if not inst.components.hauntable then inst:AddComponent("hauntable") end
+
+    inst.components.hauntable.cooldown = cooldown or TUNING.HAUNT_COOLDOWN_SMALL
+    inst.components.hauntable:SetOnHauntFn(function(inst, haunter)
+        local haunt_chance = (chancefn ~= nil and chancefn(inst)) or TUNING.HAUNT_CHANCE_ALWAYS
+        if math.random() <= haunt_chance then
             inst.sg:GoToState(state)
             inst.components.hauntable.hauntvalue = haunt_value or TUNING.HAUNT_TINY
             return true
@@ -1105,10 +1163,12 @@ end
 --NOTE: -prefab must call inst:SetPhysicsRadiusOverride(r) during construction
 --      -must set inst.sg.mem.radius = inst.physicsradiusoverride after adding stategraph
 
+local ONUPDATEPHYSICSRADIUS_MUST_TAGS = { "character", "locomotor" }
+local ONUPDATEPHYSICSRADIUS_CANT_TAGS = { "INLIMBO" }
 local function OnUpdatePhysicsRadius(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local mindist = math.huge
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, ONUPDATEPHYSICSRADIUS_MUST_TAGS, ONUPDATEPHYSICSRADIUS_CANT_TAGS)) do
         if v ~= inst and v.entity:IsVisible() then
             local d = v:GetDistanceSqToPoint(x, y, z)
             d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0
@@ -1196,11 +1256,10 @@ end
 
 --------------------------------------------------------------------------
 --V2C: new for DST, useful for preventing player collisions when placing large objects
-
 local function OnUpdatePlacedObjectPhysicsRadius(inst, data)
     local x, y, z = inst.Transform:GetWorldPosition()
     local mindist = math.huge
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, ONUPDATEPHYSICSRADIUS_MUST_TAGS, ONUPDATEPHYSICSRADIUS_CANT_TAGS)) do
         if v.entity:IsVisible() then
             local d = v:GetDistanceSqToPoint(x, y, z)
             d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0
@@ -1291,7 +1350,43 @@ function MakeInventoryFloatable(inst, size, offset, scale, swap_bank, float_inde
 
     if swap_bank then
         inst.components.floater:SetBankSwapOnFloat(swap_bank, float_index, swap_data)
+    elseif swap_data then
+        inst.components.floater:SetSwapData(swap_data)
     end
+end
+
+--------------------------------------------------------------------------
+
+local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
+
+local function fertilizer_ondeploy(inst, pt, deployer)
+    local tile_x, tile_z = TheWorld.Map:GetTileCoordsAtPoint(pt:Get())
+    local nutrients = inst.components.fertilizer.nutrients
+    TheWorld.components.farming_manager:AddTileNutrients(tile_x, tile_z, nutrients[1], nutrients[2], nutrients[3])
+
+    inst.components.fertilizer:OnApplied(deployer)
+    if deployer ~= nil and deployer.SoundEmitter ~= nil and inst.components.fertilizer.fertilize_sound ~= nil then
+        deployer.SoundEmitter:PlaySound(inst.components.fertilizer.fertilize_sound)
+    end
+end
+
+local function fertilizer_candeploy(inst, pt, mouseover, deployer)
+    return TheWorld.Map:IsFarmableSoilAtPoint(pt:Get())
+end
+
+function MakeDeployableFertilizerPristine(inst)
+    inst._custom_candeploy_fn = fertilizer_candeploy
+    inst.overridedeployplacername = "gridplacer_farmablesoil"
+    inst:AddTag("deployable")
+    inst:AddTag("tile_deploy")
+end
+
+function MakeDeployableFertilizer(inst)
+    inst:AddComponent("deployable")
+    inst.components.deployable:SetDeployMode(DEPLOYMODE.CUSTOM)
+    inst.components.deployable.ondeploy = fertilizer_ondeploy
+    inst.components.deployable:SetUseGridPlacer(false)
+    inst.components.deployable.keep_in_inventory_on_deploy = true
 end
 
 --------------------------------------------------------------------------

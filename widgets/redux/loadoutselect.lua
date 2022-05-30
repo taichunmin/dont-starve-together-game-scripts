@@ -5,6 +5,7 @@ local Widget = require "widgets/widget"
 local ClothingExplorerPanel = require "widgets/redux/clothingexplorerpanel"
 local Subscreener = require "screens/redux/subscreener"
 local SkinPresetsPopup = require "screens/redux/skinpresetspopup"
+local DefaultSkinSelectionPopup = require "screens/redux/defaultskinselection"
 
 local TEMPLATES = require "widgets/redux/templates"
 
@@ -13,7 +14,7 @@ require("util")
 require("networking")
 require("stringutil")
 
-local LoadoutSelect = Class(Widget, function(self, user_profile, character, initial_skintype)
+local LoadoutSelect = Class(Widget, function(self, user_profile, character, initial_skintype, hide_item_skinner)
     Widget._ctor(self, "LoadoutSelect")
     self.user_profile = user_profile
 
@@ -22,9 +23,9 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
     self.show_puppet = self.currentcharacter ~= "random"
     self.have_base_option = table.contains(DST_CHARACTERLIST, self.currentcharacter)
 
-    
-    self.loadout_root = self:AddChild(Widget("LoadoutRoot"))   
-    
+
+    self.loadout_root = self:AddChild(Widget("LoadoutRoot"))
+
     self.heroname = self.loadout_root:AddChild(Image())
     self.heroname:SetScale(.3)
     self.heroname:SetPosition(-35,240)
@@ -35,12 +36,13 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 
     self.characterquote = self.loadout_root:AddChild(Text(TALKINGFONT, 28))
     self.characterquote:SetHAlign(ANCHOR_MIDDLE)
-    self.characterquote:SetVAlign(ANCHOR_TOP)
-    self.characterquote:SetPosition(-35,-275)
-    self.characterquote:SetRegionSize(300, 60)
+    self.characterquote:SetVAlign(ANCHOR_MIDDLE)
+    self.characterquote:SetPosition(-30,-270)
+    self.characterquote:SetRegionSize(300, 150)
     self.characterquote:EnableWordWrap(true)
     self.characterquote:SetColour(UICOLOURS.IVORY)
-    
+
+    self.hide_item_skinner = hide_item_skinner
 
     if self.show_puppet then
         self.heroportrait:Hide()
@@ -60,36 +62,41 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 		self.puppet:SetPosition(self.puppet_base_offset[1], self.puppet_base_offset[2])
 		self.puppet_default_scale = 4.5
         self.puppet:SetScale(self.puppet_default_scale)
-        self.puppet:SetClickable(false)	
+        self.puppet:SetClickable(false)
     else
         self.heroportrait:Show()
     end
-        
+
     self:_LoadSavedSkins()
 
 
 	if IsPrefabSkinned(self.currentcharacter) then
 		self.skinmodes = GetSkinModes(self.currentcharacter)
-	else
-		self.skinmodes = {}
-		table.insert(self.skinmodes, GetSkinModes("default")[1])
+    else
+        self.skinmodes = {}
+        table.insert(self.skinmodes, GetSkinModes("default")[1])
+    end
 
-		if MODCHARACTERMODES[self.currentcharacter] ~= nil then
-			for _,v in pairs(MODCHARACTERMODES[self.currentcharacter]) do
-				table.insert(self.skinmodes,
-				{
-					type = {
-						build = v.build,
-						anim_bank = v.bank,
-						idle_anim = v.idle_anim,
-						play_emotes = v.play_emotes,
-					},
-					scale = v.scale,
-					offset = v.offset,
-				})
-			end
-		end
-	end
+    if MODCHARACTERMODES[self.currentcharacter] ~= nil then
+        --Mod characters with modes set!
+        self.skinmodes = {}
+        table.insert(self.skinmodes, GetSkinModes("default")[1])
+
+        for _,v in pairs(MODCHARACTERMODES[self.currentcharacter]) do
+            table.insert(self.skinmodes,
+                {
+                    type = v.type,
+                    anim_bank = v.anim_bank,
+                    idle_anim = v.idle_anim,
+                    play_emotes = v.play_emotes,
+                    scale = v.scale,
+                    offset = v.offset,
+                }
+            )
+        end
+    end
+
+
 	self.view_index = 1
 	self.selected_skinmode = self.skinmodes[self.view_index]
 
@@ -113,21 +120,21 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
 
         self.frame = self.bg_group:AddChild(Widget("offline frame"))
         self.frame:SetScale(.7)
-	   
+
         self.frame.top = self.frame:AddChild(Image("images/global_redux.xml", "player_list_banner.tex"))
         self.frame.top:SetPosition(0, 150)
-        
+
         self.frame.bottom = self.frame:AddChild(Image("images/global_redux.xml", "player_list_banner.tex"))
         self.frame.bottom:SetScale(-1)
         self.frame.bottom:SetPosition(0, -150)
 
 		local text1 = self.bg_group:AddChild(Text(CHATFONT, 30, STRINGS.UI.LOBBYSCREEN.CUSTOMIZE))
-		text1:SetPosition(0,20) 
+		text1:SetPosition(0,20)
 		text1:SetHAlign(ANCHOR_MIDDLE)
 		text1:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
 
 		local text2 = self.bg_group:AddChild(Text(CHATFONT, 30, STRINGS.UI.LOBBYSCREEN.OFFLINE))
-		text2:SetPosition(0,-20) 
+		text2:SetPosition(0,-20)
 		text2:SetHAlign(ANCHOR_MIDDLE)
 		text2:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
     else
@@ -167,7 +174,7 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
             screen:SetScale(0.85)
             screen:SetPosition(130, -10)
         end
-    
+
         self.subscreener:SetPostMenuSelectionAction( function(selection)
             if selection ~= "base" then
                 self:_CycleView(true)
@@ -181,7 +188,7 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
         local active_sub = self.subscreener:GetActiveSubscreenFn()
         self.focus_forward = active_sub
     end
-    
+
     if not TheInput:ControllerAttached() then
         if self.show_puppet then
             self.portraitbutton = self.loadout_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "player_info.tex", STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW, false, false, function()
@@ -202,10 +209,39 @@ local LoadoutSelect = Class(Widget, function(self, user_profile, character, init
                 self.menu:SetFocusChangeDir(MOVE_LEFT, self.presetsbutton)
                 self.presetsbutton:SetFocusChangeDir(MOVE_RIGHT, self.menu)
                 self.presetsbutton:SetFocusChangeDir(MOVE_DOWN, self.subscreener:GetActiveSubscreenFn())
+
+                if self:_ShouldShowStartingItemSkinsButton() then
+                    self.itemskinsbutton = self.loadout_root:AddChild(TEMPLATES.IconButton("images/button_icons.xml", "sweep.tex", STRINGS.UI.ITEM_SKIN_DEFAULTS.TITLE, false, false, function()
+                            self:_LoadItemSkinsScreen()
+                        end
+                    ))
+                    self.itemskinsbutton:SetPosition(145, 315)
+                    self.itemskinsbutton:SetScale(0.77)
+
+                    self.presetsbutton:SetFocusChangeDir(MOVE_LEFT, self.itemskinsbutton)
+                    self.itemskinsbutton:SetFocusChangeDir(MOVE_RIGHT, self.presetsbutton)
+                    self.itemskinsbutton:SetFocusChangeDir(MOVE_DOWN, self.subscreener:GetActiveSubscreenFn())
+                end
             end
         end
 	end
 end)
+
+function LoadoutSelect:_ShouldShowStartingItemSkinsButton()
+    local inv_item_list = (TUNING.GAMEMODE_STARTING_ITEMS[TheNet:GetServerGameMode()] or TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT)[string.upper(self.currentcharacter)]
+
+    local show_button = false
+    if inv_item_list ~= nil and #inv_item_list > 0 then
+        for _,item in pairs(inv_item_list) do
+            if PREFAB_SKINS[item] then
+                show_button = true
+            end
+        end
+
+    end
+
+    return show_button and not self.hide_item_skinner
+end
 
 function LoadoutSelect:_SetSkinMode(skinmode)
 	self.selected_skinmode = skinmode
@@ -279,10 +315,10 @@ function LoadoutSelect:_MakeMenu(subscreener)
     self.button_legs = subscreener:WardrobeButtonMinimal("legs")
     self.button_feet = subscreener:WardrobeButtonMinimal("feet")
 
-    local menu_items = nil     
+    local menu_items = nil
     if self.have_base_option then
         self.button_base = subscreener:WardrobeButtonMinimal("base")
-        menu_items = 
+        menu_items =
         {
             {widget = self.button_base },
             {widget = self.button_body },
@@ -291,7 +327,7 @@ function LoadoutSelect:_MakeMenu(subscreener)
             {widget = self.button_feet },
         }
     else
-        menu_items = 
+        menu_items =
         {
             {widget = self.button_body },
             {widget = self.button_hand },
@@ -318,13 +354,19 @@ function LoadoutSelect:_LoadSkinPresetsScreen()
     TheFrontEnd:PushScreen( scr )
 end
 
-function LoadoutSelect:ApplySkinPresets(skins) 
+function LoadoutSelect:_LoadItemSkinsScreen()
+	local scr = DefaultSkinSelectionPopup( self.user_profile, self.currentcharacter )
+	scr.owned_by_wardrobe = true
+    TheFrontEnd:PushScreen( scr )
+end
+
+function LoadoutSelect:ApplySkinPresets(skins)
     if skins.base == nil then
         if table.contains(DST_CHARACTERLIST, self.currentcharacter) then --no base option for mod characters
             skins.base = self.currentcharacter.."_none"
         end
     end
-    
+
     if skins.body == nil then
         skins.body = "body_default1"
     end
@@ -340,13 +382,13 @@ function LoadoutSelect:ApplySkinPresets(skins)
     if skins.feet == nil then
         skins.feet = "feet_default1"
     end
-    
+
     self.selected_skins = shallowcopy(skins)
     self.preview_skins = shallowcopy(skins)
 
     ValidateItemsLocal(self.currentcharacter, self.selected_skins)
     ValidatePreviewItems(self.currentcharacter, self.preview_skins)
-    
+
     for _,screen in pairs(self.subscreener.sub_screens) do
         screen:ClearSelection() --we need to clear the selection, so that the refresh will apply without re-selection of previously selected items overriding
     end
@@ -355,7 +397,7 @@ function LoadoutSelect:ApplySkinPresets(skins)
 end
 
 function LoadoutSelect:_LoadSavedSkins()
-    if TheNet:IsOnlineMode() then 
+    if TheNet:IsOnlineMode() then
         self.selected_skins = self.user_profile:GetSkinsForCharacter(self.currentcharacter)
     else
         self.selected_skins = { base = self.currentcharacter.."_none" }
@@ -410,7 +452,7 @@ function LoadoutSelect:_UpdateMenu(skins)
     if self.button_base then
         if skins["base"] then
             self.button_base:SetItem(skins["base"])
-        else      
+        else
             self.button_base:SetItem(self.currentcharacter.."_none")
         end
     end
@@ -449,7 +491,7 @@ function LoadoutSelect:_SetPortrait()
 	local skin = self.preview_skins.base
 
     local found_name = SetHeroNameTexture_Gold(self.heroname, herocharacter)
-    if found_name then 
+    if found_name then
         self.heroname:Show()
     else
         self.heroname:Hide()
@@ -478,6 +520,10 @@ function LoadoutSelect:OnControl(control, down)
             self:_LoadSkinPresetsScreen()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
+        elseif control == CONTROL_MENU_MISC_4 and TheNet:IsOnlineMode() and self:_ShouldShowStartingItemSkinsButton() then
+            self:_LoadItemSkinsScreen()
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+            return true
         end
 	end
 
@@ -498,6 +544,9 @@ function LoadoutSelect:GetHelpText()
         end
         if TheNet:IsOnlineMode() then
 		    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SKIN_PRESETS.TITLE)
+        end
+        if TheNet:IsOnlineMode() and self:_ShouldShowStartingItemSkinsButton() then
+		    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_4) .. " " .. STRINGS.UI.ITEM_SKIN_DEFAULTS.TITLE)
         end
 
 		return table.concat(t, "  ")

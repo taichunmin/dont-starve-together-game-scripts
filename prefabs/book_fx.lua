@@ -21,7 +21,7 @@ local function MakeBookFX(anim, tint)
         inst.AnimState:SetBuild("book_fx")
         inst.AnimState:PlayAnimation(anim)
         --inst.AnimState:SetScale(1.5, 1, 1)
-        inst.AnimState:SetFinalOffset(-1)
+        inst.AnimState:SetFinalOffset(3)
         if tint ~= nil then
             inst.AnimState:SetMultColour(unpack(tint))
         end

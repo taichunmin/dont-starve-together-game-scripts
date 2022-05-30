@@ -44,7 +44,7 @@ local function pulse_light(inst)
     local s = math.abs(math.sin(PI * (timealive + inst._pulseoffs) * 0.05))
     local rad = Lerp(11, 12, s)
     local intentsity = Lerp(0.8, 0.7, s)
-    local falloff = Lerp(0.8, 0.7, s) 
+    local falloff = Lerp(0.8, 0.7, s)
     inst.Light:SetFalloff(falloff)
     inst.Light:SetIntensity(intentsity)
     inst.Light:SetRadius(rad)
@@ -121,9 +121,9 @@ local function makestafflight(name, is_hot, anim, colour, idles, is_fx)
 
             inst:AddTag("daylight")
 
-            inst.SoundEmitter:PlaySound("dontstarve/common/staff_star_LP", "staff_star_loop")
+            inst.SoundEmitter:PlaySound("dontstarve/common/staff_star_LP", "staff_star_loop", nil, not inst._ismastersim)
         else
-            inst.SoundEmitter:PlaySound("dontstarve/common/staff_coldlight_LP", "staff_star_loop")
+            inst.SoundEmitter:PlaySound("dontstarve/common/staff_coldlight_LP", "staff_star_loop", nil, not inst._ismastersim)
         end
 
         inst.entity:SetPristine()

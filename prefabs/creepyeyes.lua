@@ -23,7 +23,7 @@ local function Disappear(inst)
 end
 
 local function OnInit(inst)
-    if inst.LightWatcher:IsInLight() then
+    if inst:IsInLight() then
         inst:Remove()
     else
         inst.entity:Show()

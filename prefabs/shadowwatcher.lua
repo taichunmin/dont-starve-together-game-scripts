@@ -17,7 +17,7 @@ local function Disappear(inst)
 end
 
 local function OnInit(inst)
-    if inst.LightWatcher:IsInLight() then
+    if inst:IsInLight() then
         inst:Remove()
     else
         inst.entity:Show()
@@ -39,7 +39,7 @@ local function fn()
 
     inst.LightWatcher:SetLightThresh(.2)
     inst.LightWatcher:SetDarkThresh(.19)
-    inst:ListenForEvent("enterlight", Disappear) 
+    inst:ListenForEvent("enterlight", Disappear)
 
     inst.AnimState:SetBank("shadowcreatures")
     inst.AnimState:SetBuild("shadow_creatures_ground")

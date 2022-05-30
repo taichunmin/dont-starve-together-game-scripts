@@ -28,8 +28,11 @@ local function IsBetterHeatSource(heat_source, inst, cur_heat)
 	return heat > cur_heat
 end
 
+local HEATSOURCE_MUST_TAGS = {"HASHEATER"}
+local HEATSOURCE_CANT_TAGS = {"monster"}
+
 local function FindNewHome(inst)
-	if inst.components.timer:TimerExists("panicing") 
+	if inst.components.timer:TimerExists("panicing")
 		or inst.components.sleeper:IsAsleep()
 		or inst.components.combat.target ~= nil then
 		return
@@ -40,7 +43,7 @@ local function FindNewHome(inst)
 
 	local cur_heat = new_home ~= nil and new_home.components.heater:GetHeat(inst) or 0
 	local x, y, z = inst.Transform:GetWorldPosition()
-	local heat_sources = TheSim:FindEntities(x, y, z, inst:IsAsleep() and TUNING.FRUITDRAGON.ENTITY_SLEEP_FIND_HOME_RANGE or TUNING.FRUITDRAGON.FIND_HOME_RANGE, {"HASHEATER"}, {"monster"}) 
+	local heat_sources = TheSim:FindEntities(x, y, z, inst:IsAsleep() and TUNING.FRUITDRAGON.ENTITY_SLEEP_FIND_HOME_RANGE or TUNING.FRUITDRAGON.FIND_HOME_RANGE, HEATSOURCE_MUST_TAGS, HEATSOURCE_CANT_TAGS)
 	for i, v in ipairs(heat_sources) do
 		if v ~= inst and v ~= new_home and IsBetterHeatSource(v, inst, cur_heat) then
 			new_home = v
@@ -67,7 +70,7 @@ end
 local function KeepTarget(inst, target)
 	if target:HasTag("fruitdragon") then
 		return (target.components.combat.target == nil or target.components.combat.target:HasTag("fruitdragon"))
-				and not target.components.timer:TimerExists("panicing") 
+				and not target.components.timer:TimerExists("panicing")
 				and inst:IsNear(target, TUNING.FRUITDRAGON.CHALLENGE_DIST)
 	end
 
@@ -75,11 +78,12 @@ local function KeepTarget(inst, target)
 end
 
 local function ShouldTarget(target)
-	return target:HasTag("fruitdragon") 
+	return target:HasTag("fruitdragon")
 			and not target.components.timer:TimerExists("panicing")
 			and target.components.combat.target == nil
 end
 
+local FRUITDRAGON_TAGS = {"fruitdragon"}
 local function RetargetFn(inst)
 	if (inst.components.sleeper == nil or not inst.components.sleeper:IsAsleep())
 		and not inst.components.timer:TimerExists("panicing") then
@@ -87,8 +91,8 @@ local function RetargetFn(inst)
 		if inst.components.combat.target ~= nil and KeepTarget(inst, inst.components.combat.target) then
 			return inst.components.combat.target
 		elseif inst.components.entitytracker:GetEntity("home") ~= nil then
-			return FindEntity(inst, TUNING.FRUITDRAGON.CHALLENGE_DIST, function(guy) return ShouldTarget(guy) end, {"fruitdragon"})
-					or FindEntity(inst.components.entitytracker:GetEntity("home"), TUNING.FRUITDRAGON.CHALLENGE_DIST, function(guy) return guy ~= inst and ShouldTarget(guy) end, {"fruitdragon"})
+			return FindEntity(inst, TUNING.FRUITDRAGON.CHALLENGE_DIST, function(guy) return ShouldTarget(guy) end, FRUITDRAGON_TAGS)
+					or FindEntity(inst.components.entitytracker:GetEntity("home"), TUNING.FRUITDRAGON.CHALLENGE_DIST, function(guy) return guy ~= inst and ShouldTarget(guy) end, FRUITDRAGON_TAGS)
 		end
 	end
     return nil
@@ -200,7 +204,7 @@ end
 
 local function IsHomeGoodEnough(inst, dist, min_temp)
 	local home = inst.components.entitytracker:GetEntity("home")
-	return home ~= nil and home.components.heater ~= nil 
+	return home ~= nil and home.components.heater ~= nil
 			and inst:IsNear(home, dist)
 			and home.components.heater:GetHeat(inst) >= min_temp
 end
@@ -231,7 +235,7 @@ local function Sleeper_SleepTest(inst)
 	return false
 end
 
--- TODO: on lose home, call: inst.components.sleeper:WakeUp() 
+-- TODO: on lose home, call: inst.components.sleeper:WakeUp()
 
 local function Sleeper_WakeTest(inst)
 	if (inst.components.combat ~= nil and inst.components.combat.target ~= nil) then
@@ -259,7 +263,7 @@ end
 
 local function Sleeper_OnWakeUp(inst)
 	if not inst._sleep_interupted then
-		if not inst._ripen_pending and not inst._is_ripe 
+		if not inst._ripen_pending and not inst._is_ripe
 			and IsHomeGoodEnough(inst, TUNING.FRUITDRAGON.NAP_DIST_FROM_HOME, TUNING.FRUITDRAGON.RIPEN_NAP_MIN_HEAT) then
 
 			QueueRipen(inst)
@@ -352,7 +356,6 @@ local fruit_dragon_sounds =
     do_unripen = "turnoftides/creatures/together/fruit_dragon/stretch",
     attack = "turnoftides/creatures/together/fruit_dragon/attack",
     attack_fire = "turnoftides/creatures/together/fruit_dragon/attack_fire",
-    attack_whoosh = "dontstarve/wilson/attack_whoosh",  -- TODO @stevenm remove this when the actual attack sounds are in
     challenge_pre = "turnoftides/creatures/together/fruit_dragon/challenge_pre",
     challenge = "turnoftides/creatures/together/fruit_dragon/challenge",
     challenge_pst = "turnoftides/creatures/together/fruit_dragon/eat",
@@ -416,7 +419,7 @@ local function fn()
     inst.components.combat.hiteffectsymbol = "gecko_torso_middle"
 	inst.components.combat:SetAttackPeriod(TUNING.FRUITDRAGON.ATTACK_PERIOD)
 	inst.components.combat:SetDefaultDamage(TUNING.FRUITDRAGON.UNRIPE_DAMAGE)
-	inst.components.combat:SetRange(TUNING.FRUITDRAGON.ATTACK_RANGE, TUNING.FRUITDRAGON.HIT_ATTACK_RANGE)
+	inst.components.combat:SetRange(TUNING.FRUITDRAGON.ATTACK_RANGE, TUNING.FRUITDRAGON.HIT_RANGE)
     inst.components.combat:SetKeepTargetFunction(KeepTarget)
 	inst.components.combat:SetRetargetFunction(1, RetargetFn)
 	inst:ListenForEvent("doattack", doattack)

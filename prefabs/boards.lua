@@ -24,6 +24,11 @@ local function fn()
         return inst
     end
 
+	inst:AddComponent("edible")
+    inst.components.edible.foodtype = FOODTYPE.WOOD
+    inst.components.edible.healthvalue = 0
+    inst.components.edible.hungervalue = 0
+
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
 
@@ -37,6 +42,7 @@ local function fn()
     inst:AddComponent("repairer")
     inst.components.repairer.repairmaterial = MATERIALS.WOOD
     inst.components.repairer.healthrepairvalue = TUNING.REPAIR_BOARDS_HEALTH
+    inst.components.repairer.boatrepairsound = "turnoftides/common/together/boat/repair_with_wood"
 
     inst:AddComponent("fuel")
     inst.components.fuel.fuelvalue = TUNING.LARGE_FUEL

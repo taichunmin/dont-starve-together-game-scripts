@@ -16,14 +16,10 @@ local assets =
 local prefabs =
 {
     "wormwood_plant_fx",
+	"compostheal_buff",
 }
 
-local start_inv =
-{
-    default =
-    {
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WORMWOOD
 end
@@ -216,14 +212,11 @@ local function OnPollenDirty(inst)
     fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
 end
 
-local function DoSpawnPollen(inst)
+local function DoSpawnPollen(inst, fertilized)
     --This is an untracked task from PollenTick, so we nil check .pollentask instead.
-    if inst.pollentask ~= nil and
-        not (inst.sg:HasStateTag("nomorph") or
-            inst.sg:HasStateTag("silentmorph") or
-            inst.sg:HasStateTag("ghostbuild") or
-            inst.components.health:IsDead()) and
-        inst.entity:IsVisible() then
+    if (fertilized or inst.pollentask ~= nil)
+		and (inst.sg:HasStateTag("self_fertilizing") or not (inst.sg:HasStateTag("nomorph") or inst.sg:HasStateTag("silentmorph") or inst.sg:HasStateTag("ghostbuild") or inst.components.health:IsDead()))
+        and inst.entity:IsVisible() then
         --randomize, favoring ones that haven't been used recently
         local rnd = math.random()
         rnd = table.remove(inst.pollenpool, math.clamp(math.ceil(rnd * rnd * #inst.pollenpool), 1, #inst.pollenpool))
@@ -244,12 +237,28 @@ end
 local PLANTS_RANGE = 1
 local MAX_PLANTS = 18
 
+local PLANTFX_TAGS = { "wormwood_plant_fx" }
 local function PlantTick(inst)
     if inst.sg:HasStateTag("ghostbuild") or inst.components.health:IsDead() or not inst.entity:IsVisible() then
         return
     end
+
+	local t = inst.components.bloomness.timer
+	local chance = TheWorld.state.isspring and 1
+					or t <= TUNING.WORMWOOD_BLOOM_PLANTS_WARNING_TIME_LOW and 1/3
+					or t <= TUNING.WORMWOOD_BLOOM_PLANTS_WARNING_TIME_MED and 2/3
+					or 1
+
+	if chance < 1 and math.random() > chance then
+		return
+	end
+
+	if inst:GetCurrentPlatform() ~= nil then
+		return
+	end
+
     local x, y, z = inst.Transform:GetWorldPosition()
-    if #TheSim:FindEntities(x, y, z, PLANTS_RANGE, { "wormwood_plant_fx" }) < MAX_PLANTS then
+    if #TheSim:FindEntities(x, y, z, PLANTS_RANGE, PLANTFX_TAGS) < MAX_PLANTS then
         local map = TheWorld.Map
         local pt = Vector3(0, 0, 0)
         local offset = FindValidPositionByFan(
@@ -259,14 +268,8 @@ local function PlantTick(inst)
             function(offset)
                 pt.x = x + offset.x
                 pt.z = z + offset.z
-                local tile = map:GetTileAtPoint(pt:Get())
-                return tile ~= GROUND.ROCKY
-                    and tile ~= GROUND.ROAD
-                    and tile ~= GROUND.WOODFLOOR
-                    and tile ~= GROUND.CARPET
-                    and tile ~= GROUND.IMPASSABLE
-                    and tile ~= GROUND.INVALID
-                    and #TheSim:FindEntities(pt.x, 0, pt.z, .5, { "wormwood_plant_fx" }) < 3
+                return map:CanPlantAtPoint(pt.x, 0, pt.z)
+                    and #TheSim:FindEntities(pt.x, 0, pt.z, .5, PLANTFX_TAGS) < 3
                     and map:IsDeployPointClear(pt, nil, .5)
                     and not map:IsPointNearHole(pt, .4)
             end
@@ -295,10 +298,26 @@ local function EnableBeeBeacon(inst, enable)
     end
 end
 
+local PLANT_TAGS = {"tendable_farmplant"}
+local function TendToPlantsAOE(inst)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    for _, v in pairs(TheSim:FindEntities(x, y, z, TUNING.WORMWOOD_BLOOM_FARM_PLANT_INTERACT_RANGE, PLANT_TAGS)) do
+		if v.components.farmplanttendable ~= nil then
+			v.components.farmplanttendable:TendTo(inst)
+		end
+	end
+end
+
 local function EnableFullBloom(inst, enable)
     if enable then
         if not inst.fullbloom then
             inst.fullbloom = true
+			inst.components.temperature.inherentsummerinsulation = TUNING.INSULATION_SMALL
+			if inst.tendplanttask == nil then
+                inst.tendplanttask = inst:DoPeriodicTask(.5, TendToPlantsAOE)
+            end
+
+			-- trail effects
             if inst.pollentask == nil then
                 inst.pollentask = inst:DoPeriodicTask(.7, PollenTick)
             end
@@ -308,6 +327,13 @@ local function EnableFullBloom(inst, enable)
         end
     elseif inst.fullbloom then
         inst.fullbloom = nil
+		inst.components.temperature.inherentsummerinsulation = 0
+        if inst.tendplanttask ~= nil then
+            inst.tendplanttask:Cancel()
+            inst.tendplanttask = nil
+        end
+
+		-- trail effects
         if inst.pollentask ~= nil then
             inst.pollentask:Cancel()
             inst.pollentask = nil
@@ -321,8 +347,9 @@ end
 
 local function SetStatsLevel(inst, level)
     --V2C: setting .runspeed does not stack with mount speed
-    inst.components.locomotor.runspeed = TUNING.WILSON_RUN_SPEED * Remap(level, 0, 3, 1, 1.2)
-    inst.components.hunger:SetRate(Remap(level, 0, 3, TUNING.WILSON_HUNGER_RATE, TUNING.WILSON_HUNGER_RATE * 2))
+	local mult = Remap(level, 0, 3, 1, 1.2)
+    inst.components.locomotor.runspeed = TUNING.WILSON_RUN_SPEED * mult
+    inst.components.hunger:SetRate(TUNING.WILSON_HUNGER_RATE * mult)
 end
 
 local function SetUserFlagLevel(inst, level)
@@ -349,72 +376,10 @@ local function SetSkinType(inst, skintype, defaultbuild)
     end
 end
 
-local function SetBloomStage(inst, stage)
-    --The setters will all check for dirty values, since refreshing bloom
-    --stage can potentially get triggered quite often with state changes.
-
-    local isghost = inst:HasTag("playerghost") or inst.sg:HasStateTag("ghostbuild")
-    if isghost then
-        EnableBeeBeacon(inst, false)
-        EnableFullBloom(inst, false)
-        SetStatsLevel(inst, 0)
-        SetUserFlagLevel(inst, 0)
-    end
-
-    if (inst.sg:HasStateTag("nomorph") or inst.sg:HasStateTag("silentmorph") or not inst.entity:IsVisible()) and not inst._forcestage then
-        return
-    elseif not isghost then
-        EnableBeeBeacon(inst, stage > 0)
-        EnableFullBloom(inst, stage >= 3)
-        SetStatsLevel(inst, stage)
-        SetUserFlagLevel(inst, stage)
-    end
-
-    if stage <= 0 then
-        inst.overrideskinmode = nil
-        if isghost then
-            SetSkinType(inst, "ghost_skin", "ghost_wilson_build")
-        elseif SetSkinType(inst, "normal_skin", "wilson") and not (inst._loading or inst._forcestage or inst.components.health:IsDead()) then
-            SpawnBloomFX(inst)
-        end
-    else
-        if inst.overrideskinmode == nil and not (isghost or inst._loading) then
-            inst.components.talker:Say(GetString(inst, "ANNOUNCE_BLOOMING"))
-        end
-        inst.overrideskinmode = "stage_"..tostring(stage + 1)
-        if isghost then
-            SetSkinType(inst, "ghost_skin", "ghost_wilson_build")
-        elseif SetSkinType(inst, inst.overrideskinmode, "wilson") and not (inst._loading or inst._forcestage or inst.components.health:IsDead()) then
-            SpawnBloomFX(inst)
-        end
-    end
-end
-
-local function OnSeasonProgress(inst, progress)
-    if TheWorld.state.isspring then
-        local progress = math.floor(progress * 6)
-        SetBloomStage(inst, progress < 3 and progress + 1 or math.max(1, 6 - progress))
-    else
-        SetBloomStage(inst, 1)
-    end
-end
-
-local function OnNewState(inst)
-    if inst._wasnomorph ~= (inst.sg:HasStateTag("nomorph") or inst.sg:HasStateTag("silentmorph")) then
-        inst._wasnomorph = not inst._wasnomorph
-        if not inst._wasnomorph then
-            if inst.blooming then
-                OnSeasonProgress(inst, TheWorld.state.seasonprogress)
-            else
-                SetBloomStage(inst, 0)
-                --overrideskinmode == nil means successfully set bloom stage 0
-                if inst.overrideskinmode == nil then
-                    inst._wasnomorph = nil
-                    inst:RemoveEventCallback("newstate", OnNewState)
-                end
-            end
-        end
-    end
+local function OnNewSGState(inst)
+	if not inst.sg:HasStateTag("nomorph") then
+		inst:UpdateBloomStage()
+	end
 end
 
 local function OnStopGhostBuildInState(inst)
@@ -423,91 +388,153 @@ local function OnStopGhostBuildInState(inst)
     end
 end
 
+local function UpdateBloomStage(inst, stage)
+    --The setters will all check for dirty values, since refreshing bloom
+    --stage can potentially get triggered quite often with state changes.
+
+	stage = stage or inst.components.bloomness:GetLevel()
+	local is_blooming = inst.components.bloomness.is_blooming
+
+
+    local isghost = inst:HasTag("playerghost") or inst.sg:HasStateTag("ghostbuild")
+
+    if not isghost and inst.sg:HasStateTag("nomorph") then
+		inst._queued_morph = true
+		inst:ListenForEvent("newstate", OnNewSGState)
+        return
+    else
+        EnableBeeBeacon(inst, stage > 0)
+        EnableFullBloom(inst, stage >= 3)
+        SetStatsLevel(inst, stage)
+        SetUserFlagLevel(inst, stage)
+    end
+
+	if inst._queued_morph then
+		inst._queued_morph = false
+		inst:RemoveEventCallback("newstate", OnNewSGState)
+	end
+
+	local silent = inst._loading or inst.components.health:IsDead() or not inst.entity:IsVisible() or inst.sg:HasStateTag("silentmorph")
+
+    if stage <= 0 then
+	    inst:RemoveEventCallback("stopghostbuildinstate", OnStopGhostBuildInState)
+        inst.overrideskinmode = nil
+        if isghost then
+            SetSkinType(inst, "ghost_skin", "ghost_wilson_build")
+        elseif SetSkinType(inst, "normal_skin", "wilson") and not silent then
+            SpawnBloomFX(inst)
+        end
+    else
+        if inst.overrideskinmode == nil and not silent and not isghost then
+            inst.components.talker:Say(GetString(inst, "ANNOUNCE_BLOOMING"))
+        end
+        inst.overrideskinmode = "stage_"..tostring(stage + 1)
+	    inst:ListenForEvent("stopghostbuildinstate", OnStopGhostBuildInState)
+        if isghost then
+            SetSkinType(inst, "ghost_skin", "ghost_wilson_build")
+        elseif SetSkinType(inst, inst.overrideskinmode, "wilson") and not silent then
+            SpawnBloomFX(inst)
+        end
+    end
+end
+
+local function OnFertilizedWithFormula(inst, value)
+	if value > 0 and inst.components.bloomness ~= nil then
+		inst.components.bloomness:Fertilize(value)
+	end
+end
+
+local function OnFertilizedWithCompost(inst, value)
+	if value > 0 and inst.components.health ~= nil and not inst.components.health:IsDead() then
+		local healing = TUNING.WORMWOOD_COMPOST_HEAL_VALUES[math.ceil(value / 8)] or TUNING.WORMWOOD_COMPOST_HEAL_VALUES[1]
+        inst:AddDebuff("compostheal_buff", "compostheal_buff", {duration = healing * (TUNING.WORMWOOD_COMPOST_HEALOVERTIME_TICK/TUNING.WORMWOOD_COMPOST_HEALOVERTIME_HEALTH)})
+	end
+end
+
+local function OnFertilizedWithManure(inst, value, src)
+	if value > 0 and inst.components.bloomness ~= nil then
+		local healing = TUNING.WORMWOOD_MANURE_HEAL_VALUES[math.ceil(value / 8)] or TUNING.WORMWOOD_MANURE_HEAL_VALUES[1]
+		inst.components.health:DoDelta(healing, false, src.prefab)
+	end
+end
+
+local function OnFertilized(inst, fertilizer_obj)
+	if inst.components.health ~= nil and inst.components.health.canheal then
+		local fertilizer = fertilizer_obj.components.fertilizer
+		if fertilizer ~= nil and fertilizer.nutrients ~= nil then
+			if fertilizer.planthealth ~= nil then
+				--inst.components.health:DoDelta(fertilizer.planthealth, false, fertilizer_obj.prefab)
+			end
+			if fertilizer.nutrients ~= nil then
+				inst:OnFertilizedWithFormula(fertilizer.nutrients[TUNING.FORMULA_NUTRIENTS_INDEX], fertilizer_obj)
+				inst:OnFertilizedWithCompost(fertilizer.nutrients[TUNING.COMPOST_NUTRIENTS_INDEX], fertilizer_obj)
+				inst:OnFertilizedWithManure(fertilizer.nutrients[TUNING.MANURE_NUTRIENTS_INDEX], fertilizer_obj)
+				return true
+			end
+		end
+	end
+end
+
+local function CalcBloomRateFn(inst, level, is_blooming, fertilizer)
+	local season_mult = 1
+	if TheWorld.state.season == "spring" then
+		if is_blooming then
+			season_mult = TUNING.WORMWOOD_SPRING_BLOOM_MOD
+		else
+			return TUNING.WORMWOOD_SPRING_BLOOMDRAIN_RATE
+		end
+	elseif TheWorld.state.season == "winter" then
+		if is_blooming then
+			season_mult = TUNING.WORMWOOD_WINTER_BLOOM_MOD
+		else
+			return TUNING.WORMWOOD_WINTER_BLOOMDRAIN_RATE
+		end
+	end
+
+	local rate = (is_blooming and fertilizer > 0) and (season_mult * (1 + fertilizer * TUNING.WORMWOOD_FERTILIZER_RATE_MOD)) or 1
+	return rate
+end
+
+local function CalcFullBloomDurationFn(inst, value, remaining, full_bloom_duration)
+	value = value * TUNING.WORMWOOD_FERTILIZER_BLOOM_TIME_MOD
+
+	return math.min(remaining + value, TUNING.WORMWOOD_BLOOM_FULL_MAX_DURATION)
+end
+
 local function OnStartBlooming(inst)
-    inst.bloomingtask = nil
-    inst.blooming = true
     inst:ListenForEvent("stopghostbuildinstate", OnStopGhostBuildInState)
-    inst:WatchWorldState("seasonprogress", OnSeasonProgress)
-    OnSeasonProgress(inst, TheWorld.state.seasonprogress)
 
     if inst._wasnomorph == nil then
         inst._wasnomorph = inst.sg:HasStateTag("nomorph") or inst.sg:HasStateTag("silentmorph")
-        inst:ListenForEvent("newstate", OnNewState)
     end
 end
 
 local function OnStopBlooming(inst)
-    inst.unbloomingtask = nil
-    inst.blooming = nil
     inst:RemoveEventCallback("stopghostbuildinstate", OnStopGhostBuildInState)
-    inst:StopWatchingWorldState("seasonprogress", OnSeasonProgress)
-    SetBloomStage(inst, 0)
+
     --overrideskinmode == nil means successfully set bloom stage 0
     if inst._wasnomorph and inst.overrideskinmode == nil then
         inst._wasnomorph = nil
-        inst:RemoveEventCallback("newstate", OnNewState)
     end
 end
 
-local function SetBlooming(inst, blooming, instant)
-    if blooming then
-        if inst.blooming then
-            if inst.unbloomingtask ~= nil then
-                inst.unbloomingtask:Cancel()
-                inst.unbloomingtask = nil
-            end
-            OnSeasonProgress(inst, TheWorld.state.seasonprogress)
-        elseif instant or inst._loading then
-            if inst.bloomingtask ~= nil then
-                inst.bloomingtask:Cancel()
-            end
-            OnStartBlooming(inst)
-        elseif inst.bloomingtask == nil then
-            inst.bloomingtask = inst:DoTaskInTime(math.random() * TUNING.SEG_TIME, OnStartBlooming)
-        end
-    elseif inst.bloomingtask ~= nil then
-        inst.bloomingtask:Cancel()
-        inst.bloomingtask = nil
-    elseif not inst.blooming then
-        --do nothing
-    elseif instant or inst._loading then
-        if inst.unbloomingtask ~= nil then
-            inst.unbloomingtask:Cancel()
-        end
-        OnStopBlooming(inst)
-    elseif inst.unbloomingtask == nil then
-        inst.unbloomingtask = inst:DoTaskInTime(math.random() * TUNING.SEG_TIME, OnStopBlooming)
-    end
-end
-
-local function OnIsSpring(inst, isspring)
-    if not inst:HasTag("playerghost") then
-        SetBlooming(inst, isspring, false)
-    elseif not isspring then
-        SetBlooming(inst, false, true)
+local function OnSeasonChange(inst, season)
+    if season == "spring" and not inst:HasTag("playerghost") then
+		inst.components.bloomness:Fertilize()
+	else
+		inst.components.bloomness:UpdateRate()
     end
 end
 
 local function OnBecameGhost(inst)
-    if inst.blooming then
-        if TheWorld.state.isspring then
-            OnSeasonProgress(inst, TheWorld.state.seasonprogress)
-        else
-            SetBlooming(inst, false, true)
-        end
-    end
+	inst.components.bloomness:SetLevel(0)
     StopWatchingWorldPlants(inst)
 end
 
 local function OnRespawnedFromGhost(inst)
-    inst.components.burnable:SetBurnTime(TUNING.WORMWOOD_BURN_TIME)
-    if inst.blooming then
-        inst._forcestage = not inst.sg:HasStateTag("ghostbuild")
-        OnSeasonProgress(inst, TheWorld.state.seasonprogress)
-        inst._forcestage = nil
-    elseif TheWorld.state.isspring then
-        SetBlooming(inst, true, false)
-    end
+	if TheWorld.state.isspring then
+		inst.components.bloomness:Fertilize()
+	end
     WatchWorldPlants(inst)
 end
 
@@ -516,7 +543,9 @@ local function OnNewSpawn(inst)
         inst.inittask:Cancel()
         inst.inittask = nil
     end
-    SetBlooming(inst, TheWorld.state.isspring, false)
+	if TheWorld.state.isspring then
+		inst.components.bloomness:Fertilize()
+	end
 end
 
 local function OnPreLoad(inst)
@@ -528,7 +557,6 @@ local function OnPreLoad(inst)
 end
 
 local function OnLoad(inst)
-    SetBlooming(inst, TheWorld.state.isspring, true)
     inst._loading = nil
 end
 
@@ -540,7 +568,7 @@ end
 
 local function common_postinit(inst)
     inst:AddTag("plantkin")
-    inst:AddTag("healonfertilize")
+    inst:AddTag("self_fertilizable")
 
     inst.AnimState:AddOverrideBuild("player_wormwood")
     inst.AnimState:AddOverrideBuild("player_wormwood_fertilizer")
@@ -566,6 +594,10 @@ local function master_postinit(inst)
     inst.endtalksound = "dontstarve/characters/wormwood/end"
     --inst.endghosttalksound = nil
 
+    inst.components.health:SetMaxHealth(TUNING.WORMWOOD_HEALTH)
+    inst.components.hunger:SetMax(TUNING.WORMWOOD_HUNGER)
+    inst.components.sanity:SetMax(TUNING.WORMWOOD_SANITY)
+
     inst.customidleanim = customidleanimfn
 
     inst.components.health.fire_damage_scale = TUNING.WORMWOOD_FIRE_DAMAGE
@@ -573,21 +605,20 @@ local function master_postinit(inst)
     inst.plantbonuses = {}
     inst.plantpenalties = {}
     inst.components.sanity.custom_rate_fn = SanityRateFn
+	inst.components.sanity.no_moisture_penalty = true
 
     if inst.components.eater ~= nil then
         --No health from food
         inst.components.eater:SetAbsorptionModifiers(0, 1, 1)
     end
 
+    inst.components.foodaffinity:AddPrefabAffinity("cave_banana_cooked", TUNING.AFFINITY_15_CALORIES_SMALL)
+
     inst.components.burnable:SetBurnTime(TUNING.WORMWOOD_BURN_TIME)
 
-    inst.blooming = nil
-    inst.bloomingtask = nil
-    inst.unbloomingtask = nil
     inst.fullbloom = nil
     inst.beebeacon = nil
     inst.overrideskinmode = nil
-    inst._wasnomorph = nil
 
     inst.pollentask = nil
     inst.pollenpool = { 1, 2, 3, 4, 5 }
@@ -603,12 +634,27 @@ local function master_postinit(inst)
         table.insert(inst.plantpool, table.remove(inst.plantpool, math.random(i)))
     end
 
+	inst:AddComponent("bloomness")
+	inst.components.bloomness:SetDurations(TUNING.WORMWOOD_BLOOM_STAGE_DURATION, TUNING.WORMWOOD_BLOOM_FULL_DURATION)
+	inst.components.bloomness.onlevelchangedfn = UpdateBloomStage
+	inst.components.bloomness.calcratefn = CalcBloomRateFn
+	inst.components.bloomness.calcfullbloomdurationfn = CalcFullBloomDurationFn
+
+	inst:AddComponent("fertilizable")
+	inst.components.fertilizable.onfertlizedfn = OnFertilized
+
+	inst.OnFertilizedWithFormula = OnFertilizedWithFormula
+	inst.OnFertilizedWithCompost = OnFertilizedWithCompost
+	inst.OnFertilizedWithManure = OnFertilizedWithManure
+
     inst:ListenForEvent("equip", OnEquip)
     inst:ListenForEvent("unequip", OnUnequip)
     inst:ListenForEvent("ms_becameghost", OnBecameGhost)
     inst:ListenForEvent("ms_respawnedfromghost", OnRespawnedFromGhost)
-    inst:WatchWorldState("isspring", OnIsSpring)
+    inst:WatchWorldState("season", OnSeasonChange)
     WatchWorldPlants(inst)
+
+	inst.UpdateBloomStage = UpdateBloomStage
 
     inst.OnPreLoad = OnPreLoad
     inst.OnLoad = OnLoad

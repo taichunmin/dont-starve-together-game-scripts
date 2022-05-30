@@ -6,7 +6,6 @@ local hotspring_assets =
 
 local hotspring_prefabs =
 {
-    "bluegem",
     "crater_steam_fx1",
     "crater_steam_fx2",
     "crater_steam_fx3",
@@ -17,33 +16,14 @@ local hotspring_prefabs =
     "slow_steam_fx4",
     "slow_steam_fx5",
     "moonglass",
+    "bluegem",
     "redgem",
 }
 
+local MINED_GLASS_LOOT_TABLE = {"moonglass", "moonglass", "moonglass", "moonglass", "moonglass"}
+
 local function choose_anim_by_level(remaining, low, med, full)
     return (remaining < (TUNING.HOTSPRING_WORK / 3) and low) or (remaining < (TUNING.HOTSPRING_WORK * 2 / 3) and med) or full
-end
-
-local function RemoveGlass(inst)
-    inst._glassed = false
-    inst:RemoveTag("moonglass")
-    inst.components.bathbombable:SetCanBeBathBombed(true)
-
-    inst.AnimState:PlayAnimation("refill", false)
-    inst.AnimState:PushAnimation("idle", true)
-end
-
-local function OnGlassedSpringMineFinished(inst, miner)
-    inst.components.lootdropper:DropLoot()
-    if math.random() < TUNING.HOTSPRING_GEM_DROP_CHANCE then
-        inst.components.lootdropper:SpawnLootPrefab((math.random(2) == 1 and "bluegem") or "redgem")
-    end
-    RemoveGlass(inst)
-end
-
-local function OnGlassSpringMined(inst, miner, mines_remaining, num_mines)
-    local glass_idle = choose_anim_by_level(mines_remaining, "glass_low", "glass_med", "glass_full")
-    inst.AnimState:PlayAnimation(glass_idle)
 end
 
 local function push_special_idle(inst)
@@ -61,7 +41,7 @@ local function push_special_idle(inst)
 
 			inst._glass_sparkle_tick = math.random(1, 3)
 		end
-    elseif inst._bathbombed then
+    elseif inst.components.bathbombable.is_bathbombed then
         local steam_anim_index = math.random(4)
         local x, y, z = inst.Transform:GetWorldPosition()
         SpawnPrefab("crater_steam_fx"..steam_anim_index).Transform:SetPosition(x, y, z)
@@ -72,12 +52,76 @@ local function push_special_idle(inst)
     end
 end
 
-local MINED_GLASS_LOOT_TABLE = {"moonglass", "moonglass", "moonglass", "moonglass", "moonglass"}
+local function StartFx(inst, delay)
+	if inst._fx_task ~= nil then
+		inst._fx_task:Cancel()
+	end
+    inst._fx_task = inst:DoPeriodicTask(TUNING.HOTSPRING_IDLE.BASE, push_special_idle, delay or (math.random() * TUNING.HOTSPRING_IDLE.DELAY))
+end
 
-local function AddGlass(inst, is_loading)
+local function StopFx(inst)
+    if inst._fx_task ~= nil then
+        inst._fx_task:Cancel()
+        inst._fx_task = nil
+    end
+end
+
+local function Refill(inst, snap)
+	if inst.delay_refill_task ~= nil then
+		inst.delay_refill_task:Cancel()
+		inst.delay_refill_task = nil
+	end
+
+    inst._glassed = false
+    inst:RemoveTag("moonglass")
+    inst.components.watersource.available = true
+    inst.components.bathbombable:Reset()
+
+	if not snap then
+		inst.AnimState:PlayAnimation("refill", false)
+		inst.AnimState:PushAnimation("idle", true)
+		StartFx(inst, 30*FRAMES)
+	    inst.SoundEmitter:PlaySound("turnoftides/common/together/water/hotspring/refill")
+	else
+		inst.AnimState:PlayAnimation("idle", true)
+		StartFx(inst)
+	end
+end
+
+local function delay_refill(inst)
+	inst:StopWatchingWorldState("moonphase", delay_refill)
+	inst.delay_refill_task = inst:DoTaskInTime(0.25 + math.random(), Refill)
+end
+
+local function RemoveGlass(inst)
+    inst._glassed = false
+    inst:RemoveTag("moonglass")
+    inst.components.watersource.available = false
+    inst.components.bathbombable:DisableBathBombing()
+	inst.AnimState:PlayAnimation("empty")
+	StopFx(inst)
+
+	inst:WatchWorldState("moonphase", delay_refill)
+end
+
+local function OnGlassedSpringMineFinished(inst, miner)
+    inst.components.lootdropper:DropLoot()
+    if math.random() < TUNING.HOTSPRING_GEM_DROP_CHANCE then
+        inst.components.lootdropper:SpawnLootPrefab((math.random(2) == 1 and "bluegem") or "redgem")
+    end
+    RemoveGlass(inst)
+end
+
+local function OnGlassSpringMined(inst, miner, mines_remaining, num_mines)
+    local glass_idle = choose_anim_by_level(mines_remaining, "glass_low", "glass_med", "glass_full")
+    inst.AnimState:PlayAnimation(glass_idle)
+end
+
+local function TurnToGlassed(inst, is_loading)
     inst._glassed = true
     inst:AddTag("moonglass")
-    inst._bathbombed = false
+    inst.components.watersource.available = false
+	inst.components.bathbombable:DisableBathBombing()
 
     inst.Light:Enable(false)
 
@@ -86,7 +130,11 @@ local function AddGlass(inst, is_loading)
         local glass_idle = choose_anim_by_level(work_remaining, "glass_low", "glass_med", "glass_full")
         inst.AnimState:PlayAnimation(glass_idle)
     else
-        inst.AnimState:PlayAnimation("glassify", false)
+        inst.AnimState:PlayAnimation("glassify")
+        inst.AnimState:PushAnimation("glass_full", false)
+	    inst.SoundEmitter:PlaySound("turnoftides/common/together/water/hotspring/glassify")
+
+        inst.components.workable:SetWorkLeft(TUNING.HOTSPRING_WORK)
     end
 
     inst.components.workable:SetWorkable(true)
@@ -95,93 +143,87 @@ end
 --------------------------------------------------------------------------
 
 local function GetHeat(inst)
-    return (inst._bathbombed and TUNING.HOTSPRING_HEAT.ACTIVE) 
-			or (not inst._glassed and TUNING.HOTSPRING_HEAT.PASSIVE)
+    return (inst.components.bathbombable.is_bathbombed and TUNING.HOTSPRING_HEAT.ACTIVE)
+			or (inst.components.bathbombable.can_be_bathbombed and TUNING.HOTSPRING_HEAT.PASSIVE)
 			or 0
 end
 
 --------------------------------------------------------------------------
 
 local function OnFullMoonChanged(inst, isfullmoon)
-    if not inst._glassed and inst._bathbombed then
+    if not inst._glassed and inst.components.bathbombable.is_bathbombed then
         if isfullmoon then
-            -- Since we're essentially starting a new glass stack, reset the work to max.
-            inst.components.workable:SetWorkLeft(TUNING.HOTSPRING_WORK)
-            AddGlass(inst)
-        else
-            -- NOTE: This shouldn't be reachable; we should glassify if we're bath bombed during the full moon,
-            -- and otherwise the above branch should have been hit. This is to protect against any unforseen edge cases.
-            inst.AnimState:PlayAnimation("glow_pst", false)
-            inst.AnimState:PushAnimation("idle", true)
-            inst.Light:Enable(false)
-            inst._bathbombed = false
+            TurnToGlassed(inst)
         end
     end
 end
 
 --------------------------------------------------------------------------
 
-local function OnBathBombed(inst, bath_bomb)
-    inst.components.bathbombable:SetCanBeBathBombed(false)
-    inst.Light:Enable(true)
-
-    inst.AnimState:PlayAnimation("bath_bomb", false)
-    inst.AnimState:PushAnimation("glow_pre", false)
+local function OnBathBombed(inst)
     if TheWorld.state.isfullmoon then
-        -- Since we're essentially starting a new glass stack, reset the work to max.
-        inst.components.workable:SetWorkLeft(TUNING.HOTSPRING_WORK)
-        AddGlass(inst)
+        TurnToGlassed(inst)
     else
-        -- If we didn't glassify immediately, we should track that we are bathbombed.
-        inst._bathbombed = true
-        inst.AnimState:PushAnimation("glow_loop", true)
+		inst.Light:Enable(true)
+
+		if not POPULATING then
+			inst.AnimState:PlayAnimation("bath_bomb", false)
+			inst.AnimState:PushAnimation("glow_pre", false)
+			inst.AnimState:PushAnimation("glow_loop", true)
+		    inst.SoundEmitter:PlaySound("turnoftides/common/together/water/hotspring/small_splash")
+		    inst.SoundEmitter:PlaySound("turnoftides/common/together/water/hotspring/bathbomb")
+		else
+			inst.AnimState:PlayAnimation("glow_loop", true)
+		end
     end
 end
 
 --------------------------------------------------------------------------
 
-local function OnSave(inst, data)
-    data.glassed = inst._glassed
-    data.isbathbombed = inst._bathbombed
-    -- NOTE: workable state is also saved in its component.
-end
-
-local function OnLoad(inst, data)
-    if data ~= nil then
-        if data.glassed then
-            -- NOTE: Workable component is loaded before this.
-            -- The behavior of AddGlass produces the intended animations by accessing workable.workleft
-            AddGlass(inst, true)
-            inst.components.bathbombable:SetCanBeBathBombed(false)
-        elseif data.isbathbombed then
-            OnBathBombed(inst)
-        end
-    end
-end
-
---------------------------------------------------------------------------
 
 local function OnSleep(inst)
-    if inst._idles_task ~= nil then
-        inst._idles_task:Cancel()
-        inst._idles_task = nil
-    end
-end
-
-local function StartIdles(inst)
-    inst._idles_task = inst:DoPeriodicTask(TUNING.HOTSPRING_IDLE.BASE, push_special_idle, math.random() * TUNING.HOTSPRING_IDLE.DELAY)
+	StopFx(inst)
 end
 
 local function OnWake(inst)
-    if inst._idles_task == nil then
-        StartIdles(inst)
+    if inst._fx_task == nil and (inst.components.bathbombable.is_bathbombed or inst.components.bathbombable.can_be_bathbombed) then
+        StartFx(inst)
     end
 end
 
 local function GetStatus(inst)
 	return inst._glassed and "GLASS"
-			or inst._bathbombed and "BOMBED" 
+			or inst._bathbombed and "BOMBED"
+			or (not inst.components.bathbombable.is_bathbombed and not inst.components.bathbombable.can_be_bathbombed) and "EMPTY"
 			or nil
+end
+
+--------------------------------------------------------------------------
+
+local function OnSave(inst, data)
+	if inst.delay_refill_task ~= nil then
+		data.delay_refill = true
+	elseif inst._glassed then
+		data.glassed = true
+	elseif inst.components.bathbombable.is_bathbombed then
+		data.isbathbombed = true
+	elseif not inst.components.bathbombable.is_bathbombed and not inst.components.bathbombable.can_be_bathbombed then
+		data.empty = true
+	end
+end
+
+local function OnLoad(inst, data)
+    if data ~= nil then
+		if data.delay_refill then
+			Refill(inst, true)
+        elseif data.glassed then
+            TurnToGlassed(inst, true)
+		elseif data.empty then
+			RemoveGlass(inst)
+        elseif data.isbathbombed then
+            inst.components.bathbombable:OnBathBombed()
+        end
+    end
 end
 
 --------------------------------------------------------------------------
@@ -192,6 +234,7 @@ local function hotspring()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddLight()
+    inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
@@ -206,6 +249,7 @@ local function hotspring()
 
     inst.MiniMapEntity:SetIcon("hotspring.png")
 
+    -- From watersource component
     inst:AddTag("watersource")
     inst:AddTag("antlion_sinkhole_blocker")
     inst:AddTag("birdblocker")
@@ -237,8 +281,7 @@ local function hotspring()
 
     inst:AddComponent("bathbombable")
     inst.components.bathbombable:SetOnBathBombedFn(OnBathBombed)
-    inst.components.bathbombable:SetCanBeBathBombed(true)
-    
+
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.MINE)
     inst.components.workable:SetOnFinishCallback(OnGlassedSpringMineFinished)
@@ -250,10 +293,12 @@ local function hotspring()
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLoot(MINED_GLASS_LOOT_TABLE)
 
+    inst:AddComponent("watersource")
+
     inst._bathbombed = false
     inst._glassed = false
 
-    StartIdles(inst)
+    StartFx(inst)
 
     inst.OnSave = OnSave
     inst.OnLoad = OnLoad

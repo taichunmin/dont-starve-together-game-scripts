@@ -7,7 +7,7 @@ local Tackler = Class(function(self, inst)
     self.structure_damage_mult = 2
     self.work_actions = {}
     self.collide_tags = { "_combat" }
-    self.no_collide_tags = { "NPC_workable", "DIG_workable", "FX", "NOCLIC", "DECOR", "INLIMBO" }
+    self.no_collide_tags = { "NPC_workable", "DIG_workable", "FX", "NOCLICK", "DECOR", "INLIMBO" }
     if not TheNet:GetPVPEnabled() then
         table.insert(self.no_collide_tags, "player")
     end

@@ -92,6 +92,7 @@ local assets =
     Asset("IMAGE", "images/colour_cubes/day05_cc.tex"), --default CC at startup
     Asset("IMAGE", "images/colour_cubes/lavaarena2_cc.tex"), --override CC
     Asset("IMAGE", "images/colour_cubes/insane_day_cc.tex"), --default insanity CC
+    Asset("IMAGE", "images/colour_cubes/lunacy_regular_cc.tex"), --default lunacy CC
 
     Asset("ANIM", "anim/progressbar_tiny.zip"),
 }

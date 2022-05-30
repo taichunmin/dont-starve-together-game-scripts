@@ -10,6 +10,15 @@ local Minigame = Class(function(self, inst)
 	self.spectator_dist = 20
 	self.participator_dist = 20
 
+	self.watchdist_min = TUNING.MINIGAME_CROWD_DIST_MIN
+	self.watchdist_target = TUNING.MINIGAME_CROWD_DIST_TARGET
+	self.watchdist_max = TUNING.MINIGAME_CROWD_DIST_MAX
+
+	self.gametype = "unknown"
+	self.excitement_time = 0
+	self.excitement_delay = 5
+	self.state = "intro" -- playing, outro
+
 	self.active_pulse = nil
 end)
 
@@ -59,10 +68,13 @@ function Minigame:Deactivate()
 	end
 end
 
+local SPECTATOR_CANT_TAGS = {"monster", "player"}
+local SPECTATOR_ONEOF_TAGS = {"character"}
+local PARTICIPATOR_MUST_TAG = {"player"}
 function Minigame:DoActivePulse()
 	local x, y, z = self.inst.Transform:GetWorldPosition()
 
-	local spectators = TheSim:FindEntities(x, y, z, self.spectator_dist, nil, {"monster", "player"}, {"character"})
+	local spectators = TheSim:FindEntities(x, y, z, self.spectator_dist, nil, SPECTATOR_CANT_TAGS, SPECTATOR_ONEOF_TAGS)
 	for _, spectator in ipairs(spectators) do
 		if spectator.components.follower == nil or spectator.components.follower.leader == nil then
 			if spectator.components.minigame_spectator == nil then
@@ -72,7 +84,7 @@ function Minigame:DoActivePulse()
 		end
 	end
 
-	local participators = TheSim:FindEntities(x, y, z, self.participator_dist, {"player"}, nil, nil)
+	local participators = TheSim:FindEntities(x, y, z, self.participator_dist, PARTICIPATOR_MUST_TAG)
 	for _, participator in ipairs(participators) do
 		if participator.components.minigame_participator == nil then
 			participator:AddComponent("minigame_participator")
@@ -81,8 +93,44 @@ function Minigame:DoActivePulse()
 	end
 end
 
+function Minigame:SetIsIntro()
+	self.state = "intro"
+end
+
+function Minigame:GetIsIntro()
+	return self.state == "intro"
+end
+
+function Minigame:SetIsPlaying()
+	self.state = "playing"
+end
+
+function Minigame:GetIsPlaying()
+	return self.state == "playing"
+end
+
+function Minigame:SetIsOutro()
+	self.state = "outro"
+end
+
+function Minigame:GetIsOutro()
+	return self.state == "outro"
+end
+
+function Minigame:RecordExcitement()
+	self.excitement_time = GetTime()
+end
+
+function Minigame:TimeSinceLastExcitement()
+	return GetTime() - self.excitement_time
+end
+
+function Minigame:IsExciting()
+	return GetTime() - self.excitement_time <= self.excitement_delay
+end
+
 function Minigame:GetDebugString()
-    return "Is Active: " .. tostring(self.active)
+    return "Is Active: " .. tostring(self.active) .. " Is Exciting: " .. tostring(self:IsExciting())
 end
 
 return Minigame

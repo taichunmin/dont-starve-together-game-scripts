@@ -32,6 +32,9 @@ function WargBrain:OnStart()
     local isclay = self.inst:HasTag("clay")
     local root = PriorityNode(
     {
+        WhileNode(function() return self.inst.sg:HasStateTag("intro_state") end, "intro",
+            StandStill(self.inst)),
+
         WhileNode(function() return isclay and self.inst.sg:HasStateTag("statue") end, "Statue",
             ActionNode(function() TryReanimate(self) end, "TryReanimate")),
 
@@ -39,8 +42,11 @@ function WargBrain:OnStart()
         MinPeriod(self.inst, TUNING.WARG_SUMMONPERIOD, true,
             IfNode(function() return CanSpawnChild(self.inst) end, "needs follower",
                 ActionNode(function()
-                    self.inst.sg:GoToState("howl")
-                    return SUCCESS
+                    if not IsEntityDead(self.inst) then
+                        self.inst.sg:GoToState("howl",{howl = true})
+                        return SUCCESS
+                    end
+                    return FAILED
                 end, "Summon Hound"))),
         ChaseAndAttack(self.inst),
 

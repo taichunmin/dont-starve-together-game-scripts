@@ -59,15 +59,16 @@ local function onload(inst, data)
 end
 
 local function onattunecost(inst, player)
-    if player.components.health == nil or
-        math.ceil(player.components.health.currenthealth) < TUNING.EFFIGY_HEALTH_PENALTY then
-        --round up health to match UI display
+    --round up health to match UI display
+	local amount_required = player:HasTag("health_as_oldage") and math.ceil(TUNING.EFFIGY_HEALTH_PENALTY * TUNING.OLDAGE_HEALTH_SCALE) or TUNING.EFFIGY_HEALTH_PENALTY
+
+    if player.components.health == nil or math.ceil(player.components.health.currenthealth) <= amount_required then
+		--Don't die from attunement!
         return false, "NOHEALTH"
     end
-    --Don't die from attunement!
-    local delta = math.min(math.max(0, player.components.health.currenthealth - 1), TUNING.EFFIGY_HEALTH_PENALTY)
-    player:PushEvent("consumehealthcost")
-    player.components.health:DoDelta(-delta, false, "statue_attune", true, inst, true)
+    
+	player:PushEvent("consumehealthcost")
+    player.components.health:DoDelta(-TUNING.EFFIGY_HEALTH_PENALTY, false, "statue_attune", true, inst, true)
     return true
 end
 

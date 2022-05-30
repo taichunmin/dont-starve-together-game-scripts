@@ -19,13 +19,15 @@ local function ProtectionLevels(inst, data)
     end
 end
 
+local TARGET_MUST_TAGS = { "_combat" }
+local TARGET_CANT_TAGS = { "INLIMBO" }
 local function droptargets(inst)
     inst.task = nil
 
     local owner = inst.components.inventoryitem ~= nil and inst.components.inventoryitem.owner or nil
     if owner ~= nil and owner.sg:HasStateTag("shell") then
         local x, y, z = owner.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x, y, z, 20, { "_combat" }, { "INLIMBO" })
+        local ents = TheSim:FindEntities(x, y, z, 20, TARGET_MUST_TAGS, TARGET_CANT_TAGS)
         for i, v in ipairs(ents) do
             if v.components.combat ~= nil and v.components.combat.target == owner then
                 v.components.combat:SetTarget(nil)
@@ -52,11 +54,11 @@ local function onstopuse(inst)
     end
 end
 
-local function onequip(inst, owner) 
+local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_body_tall", "armor_slurtleshell", "swap_body_tall")
     inst:ListenForEvent("blocked", OnBlocked, owner)
     inst:ListenForEvent("newstate", ProtectionLevels, owner)
-    
+
     -- check for slurtlehat pairing achievement
     if owner:HasTag("player") then
 		local equipped_head = owner.components.inventory ~= nil and owner.components.inventory:GetEquippedItem(EQUIPSLOTS.HEAD) or nil

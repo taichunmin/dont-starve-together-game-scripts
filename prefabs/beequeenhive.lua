@@ -16,8 +16,6 @@ local prefabs =
     "honey_splash",
 }
 
-local MAX_WORK = 16
-local SPAWN_WORK_THRESHOLD = 12
 local PHYS_RAD_LRG = 1.9
 local PHYS_RAD_MED = 1.5
 local PHYS_RAD_SML = .9
@@ -158,7 +156,7 @@ local function DoSpawnQueen(inst, worker, x1, y1, z1)
 end
 
 local function CalcHoneyLevel(workleft)
-    return math.clamp(3 + math.ceil((workleft - MAX_WORK) * .5), 0, 3)
+    return math.clamp(3 + math.ceil((workleft - TUNING.BEEQUEEN_SPAWN_MAX_WORK) * .5), 0, 3)
 end
 
 local function RefreshHoneyState(inst)
@@ -173,7 +171,7 @@ local function OnWorked(inst, worker, workleft)
     inst.components.timer:StopTimer("hiveregen")
 
     if workleft < 1 then
-        inst.components.workable:SetWorkLeft(1)
+        inst.components.workable:SetWorkLeft(TUNING.BEEQUEEN_SPAWN_WORK_THRESHOLD > 0 and 1 or 0)
     end
 
     inst.SoundEmitter:PlaySound("dontstarve/creatures/together/bee_queen/hive_hit")
@@ -184,16 +182,18 @@ local function OnWorked(inst, worker, workleft)
         worker.components.health ~= nil and not worker.components.health:IsDead() and
         worker:HasTag("player") and not worker:HasTag("playerghost") then
 
-        local spawnchance = workleft < SPAWN_WORK_THRESHOLD and math.min(.8, 1 - workleft / SPAWN_WORK_THRESHOLD) or 0
-        if math.random() < spawnchance then
-            inst.components.workable:SetWorkable(false)
-            SetHoneyLevel(inst, 0)
-            local x, y, z = worker.Transform:GetWorldPosition()
-            inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength(), DoSpawnQueen, worker, x, y, z)
-            return
+        if TUNING.BEEQUEEN_SPAWN_WORK_THRESHOLD > 0 then
+            local spawnchance = workleft < TUNING.BEEQUEEN_SPAWN_WORK_THRESHOLD and math.min(.8, 1 - workleft / TUNING.BEEQUEEN_SPAWN_WORK_THRESHOLD) or 0
+            if math.random() < spawnchance then
+                inst.components.workable:SetWorkable(false)
+                SetHoneyLevel(inst, 0)
+                local x, y, z = worker.Transform:GetWorldPosition()
+                inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength(), DoSpawnQueen, worker, x, y, z)
+                return
+            end
         end
 
-        local lootscale = workleft / MAX_WORK
+        local lootscale = workleft / TUNING.BEEQUEEN_SPAWN_MAX_WORK
         local rnd = lootscale > 0 and math.random() / lootscale or 1
         local loot =
             (rnd < .01 and "honeycomb") or
@@ -214,11 +214,11 @@ end
 local function OnHiveRegenTimer(inst, data)
     if data.name == "hiveregen" and
         inst.components.workable.workable and
-        inst.components.workable.workleft < MAX_WORK then
+        inst.components.workable.workleft < TUNING.BEEQUEEN_SPAWN_MAX_WORK then
         local oldhoneylevel = CalcHoneyLevel(inst.components.workable.workleft)
         inst.components.workable:SetWorkLeft(inst.components.workable.workleft + 1)
         local newhoneylevel = CalcHoneyLevel(inst.components.workable.workleft)
-        if inst.components.workable.workleft < MAX_WORK then
+        if inst.components.workable.workleft < TUNING.BEEQUEEN_SPAWN_MAX_WORK then
             inst.components.timer:StartTimer("hiveregen", TUNING.SEG_TIME)
         end
         if oldhoneylevel ~= newhoneylevel and not inst:IsAsleep() then
@@ -477,8 +477,8 @@ local function fn()
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetOnWorkCallback(OnWorked)
-    inst.components.workable:SetMaxWork(MAX_WORK)
-    inst.components.workable:SetWorkLeft(MAX_WORK)
+    inst.components.workable:SetMaxWork(TUNING.BEEQUEEN_SPAWN_MAX_WORK)
+    inst.components.workable:SetWorkLeft(TUNING.BEEQUEEN_SPAWN_MAX_WORK)
     inst.components.workable.savestate = true
 
     MakeHauntableWork(inst)
@@ -501,7 +501,7 @@ local function base_fn()
     ----------------------------------------------------
     inst:AddTag("blocker")
     inst.entity:AddPhysics()
-    inst.Physics:SetMass(0) 
+    inst.Physics:SetMass(0)
     inst.Physics:SetCollisionGroup(COLLISION.OBSTACLES)
     inst.Physics:ClearCollisionMask()
     inst.Physics:CollidesWith(COLLISION.ITEMS)

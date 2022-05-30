@@ -22,23 +22,47 @@ local function onquickaction(self, quickaction)
     end
 end
 
+local function onforcerightclickaction(self, forcerightclickaction)
+    if forcerightclickaction then
+        self.inst:AddTag("activatable_forceright")
+    else
+        self.inst:RemoveTag("activatable_forceright")
+    end
+end
+
+local function onforcenopickupaction(self, forcenopickupaction)
+    if forcenopickupaction then
+        self.inst:AddTag("activatable_forcenopickup")
+    else
+        self.inst:RemoveTag("activatable_forcenopickup")
+    end
+end
+
 local Activatable = Class(function(self, inst, activcb)
     self.inst = inst
     self.OnActivate = activcb
     self.inactive = true
     self.standingaction = false
     self.quickaction = false
+
+    self.forcerightclickaction = false
+    self.forcenopickupaction = false
 end,
 nil,
 {
     inactive = oninactive,
     standingaction = onstandingaction,
     quickaction = onquickaction,
+    forcerightclickaction = onforcerightclickaction,
+    forcenopickupaction = onforcenopickupaction,
 })
 
 function Activatable:OnRemoveFromEntity()
     self.inst:RemoveTag("inactive")
     self.inst:RemoveTag("quickactivation")
+    self.inst:RemoveTag("standingactivation")
+    self.inst:RemoveTag("activatable_forceright")
+    self.inst:RemoveTag("activatable_forcenopickup")
 end
 
 function Activatable:CanActivate(doer)
@@ -48,9 +72,17 @@ end
 function Activatable:DoActivate(doer)
     if self.OnActivate ~= nil then
         self.inactive = false
-        return self.OnActivate(self.inst, doer)
+        local success, msg = self.OnActivate(self.inst, doer)
+		if success then
+			self.inst:PushEvent("onactivated", {doer = doer})
+		end
+		return success, msg
     end
 	return nil
+end
+
+function Activatable:GetDebugString()
+	return tostring(self.inactive)
 end
 
 return Activatable

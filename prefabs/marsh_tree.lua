@@ -165,7 +165,7 @@ local function fn()
     inst.components.burnable:SetOnBurntFn(OnBurnt)
     MakeSmallPropagator(inst)
 
-    inst:AddComponent("lootdropper") 
+    inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetChanceLootTable('marsh_tree')
 
     inst:AddComponent("workable")

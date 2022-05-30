@@ -3,27 +3,15 @@ require("tuning")
 local spicedfoods = {}
 
 local function oneaten_garlic(inst, eater)
-    if eater.components.debuffable ~= nil and eater.components.debuffable:IsEnabled() and
-        not (eater.components.health ~= nil and eater.components.health:IsDead()) and
-        not eater:HasTag("playerghost") then
-        eater.components.debuffable:AddDebuff("buff_playerabsorption", "buff_playerabsorption")
-    end
+    eater:AddDebuff("buff_playerabsorption", "buff_playerabsorption")
 end
 
 local function oneaten_sugar(inst, eater)
-    if eater.components.debuffable ~= nil and eater.components.debuffable:IsEnabled() and
-        not (eater.components.health ~= nil and eater.components.health:IsDead()) and
-        not eater:HasTag("playerghost") then
-        eater.components.debuffable:AddDebuff("buff_workeffectiveness", "buff_workeffectiveness")
-    end
+    eater:AddDebuff("buff_workeffectiveness", "buff_workeffectiveness")
 end
 
 local function oneaten_chili(inst, eater)
-    if eater.components.debuffable ~= nil and eater.components.debuffable:IsEnabled() and
-        not (eater.components.health ~= nil and eater.components.health:IsDead()) and
-        not eater:HasTag("playerghost") then
-        eater.components.debuffable:AddDebuff("buff_attack", "buff_attack")
-    end
+    eater:AddDebuff("buff_attack", "buff_attack")
 end
 
 local SPICES =
@@ -31,6 +19,7 @@ local SPICES =
     SPICE_GARLIC = { oneatenfn = oneaten_garlic, prefabs = { "buff_playerabsorption" } },
     SPICE_SUGAR  = { oneatenfn = oneaten_sugar, prefabs = { "buff_workeffectiveness" } },
     SPICE_CHILI  = { oneatenfn = oneaten_chili, prefabs = { "buff_attack" } },
+    SPICE_SALT   = {},
 }
 
 function GenerateSpicedFoods(foods)
@@ -51,6 +40,8 @@ function GenerateSpicedFoods(foods)
             newdata.basename = foodname
             newdata.name = foodname.."_"..spicename
             newdata.floater = {"med", nil, {0.85, 0.7, 0.85}}
+			newdata.official = true
+			newdata.cookbook_category = fooddata.cookbook_category ~= nil and ("spiced_"..fooddata.cookbook_category) or nil
             spicedfoods[newdata.name] = newdata
 
             if spicename == "spice_chili" then

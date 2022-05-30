@@ -1,11 +1,6 @@
 local Health = Class(function(self, inst)
     self.inst = inst
 
-    self._isdead = net_bool(inst.GUID, "health._isdead")
-    self._isnotfull = net_bool(inst.GUID, "health._isnotfull")
-    self._cannotheal = net_bool(inst.GUID, "health._cannotheal")
-    self._cannotmurder = net_bool(inst.GUID, "health._cannotmurder")
-
     if TheWorld.ismastersim then
         self.classified = inst.player_classified
     elseif self.classified == nil and inst.player_classified ~= nil then
@@ -106,7 +101,7 @@ function Health:GetCurrent()
         return self.inst.components.health.currenthealth
     elseif self.classified ~= nil then
         return self.classified.currenthealth:value()
-    else        
+    else
         return 100
     end
 end
@@ -131,20 +126,16 @@ function Health:IsHurt()
     end
 end
 
-function Health:SetIsFull(isfull)
-    self._isnotfull:set(not isfull)
-end
-
-function Health:IsFull()
-    return not self._isnotfull:value()
-end
-
 function Health:SetIsDead(isdead)
-    self._isdead:set(isdead)
+    if isdead then
+        self.inst:AddTag("isdead")
+    else
+        self.inst:RemoveTag("isdead")
+    end
 end
 
 function Health:IsDead()
-    return self._isdead:value()
+    return self.inst:HasTag("isdead")
 end
 
 function Health:SetIsTakingFireDamage(istakingfiredamage)
@@ -184,19 +175,27 @@ function Health:IsTakingFireDamageFull()
 end
 
 function Health:SetCanHeal(canheal)
-    self._cannotheal:set(not canheal)
+    if not canheal then
+        self.inst:AddTag("cannotheal")
+    else
+        self.inst:RemoveTag("cannotheal")
+    end
 end
 
 function Health:CanHeal()
-    return not self._cannotheal:value()
+    return not self.inst:HasTag("cannotheal")
 end
 
 function Health:SetCanMurder(canmurder)
-    self._cannotmurder:set(not canmurder)
+    if not canmurder then
+        self.inst:AddTag("cannotmurder")
+    else
+        self.inst:RemoveTag("cannotmurder")
+    end
 end
 
 function Health:CanMurder()
-    return not self._cannotmurder:value()
+    return not self.inst:HasTag("cannotmurder")
 end
 
 return Health

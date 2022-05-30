@@ -3,7 +3,7 @@ wxputils = {}
 local function GetLevelProgressFraction()
 	local level = TheInventory:GetWXPLevel(GetActiveFestivalEventServerName())
     local wxp = TheInventory:GetWXP(GetActiveFestivalEventServerName())
-    
+
     local curr_level_wxp = TheItems:GetWXPForLevel(level)
     local next_level_wxp = TheItems:GetWXPForLevel(level+1)
 	return (wxp - curr_level_wxp), (next_level_wxp-curr_level_wxp)

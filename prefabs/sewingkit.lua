@@ -21,7 +21,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
 
     MakeInventoryFloatable(inst, "small", 0.05, 0.8)
-    
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -32,13 +32,13 @@ local function fn()
     inst.components.finiteuses:SetMaxUses(TUNING.SEWINGKIT_USES)
     inst.components.finiteuses:SetUses(TUNING.SEWINGKIT_USES)
     inst.components.finiteuses:SetOnFinished(inst.Remove)
-    
-    
+
+
 
     inst:AddComponent("sewing")
     inst.components.sewing.repair_value = TUNING.SEWINGKIT_REPAIR_VALUE
     inst.components.sewing.onsewn = onsewn
-    ---------------------       
+    ---------------------
 
     inst:AddComponent("inspectable")
 

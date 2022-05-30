@@ -37,12 +37,13 @@ end
 function UseableItem:StartUsingItem()
 	self.inuse = true
 	if self.onusefn then
-		self.onusefn(self.inst)
+		self.inuse = self.onusefn(self.inst) ~= false
 	end
 
 	if self.stopuseevents then
 		self.stopuseevents(self.inst)
 	end
+	return self.inuse
 end
 
 function UseableItem:StopUsingItem()

@@ -3,9 +3,9 @@ local HARD_DELIM = " "
 
 local WordPredictor = Class(function(self, text_edit)
 	self.prediction = nil
-	
+
 	self.text = ""
-	
+
 	self.dictionaries = {}
 end)
 
@@ -55,7 +55,7 @@ local function _find_prediction_start(dictionaries, text, cursor_pos)
 							prediction.dictionary = dic
 						end
 					end
-				end				
+				end
 				break
 			end
 		end
@@ -64,16 +64,16 @@ local function _find_prediction_start(dictionaries, text, cursor_pos)
 		end
 		pos = pos - 1
 	end
-	
+
 	if prediction ~= nil then
 		local matches = prediction.matches
 		table.sort(matches, function(a, b) return (a.i == b.i and a.word < b.word) or a.i < b.i end)
-	
+
 		prediction.matches = {}
-		for _, v in ipairs(matches) do 
+		for _, v in ipairs(matches) do
 			table.insert(prediction.matches, v.word)
 		end
-		
+
 		local str = ""
 		for _, v in ipairs(prediction.matches) do str = str .. ", " .. v end
 	end
@@ -94,8 +94,8 @@ function WordPredictor:Apply(prediction_index)
 		local new_word = self.prediction.matches[math.clamp(prediction_index or 1, 1, #self.prediction.matches)]
 
 		new_text = self.text:sub(1, self.prediction.start_pos) .. new_word .. self.prediction.dictionary.postfix
-		new_cursor_pos = #new_text 
-		
+		new_cursor_pos = #new_text
+
 		local remainder_text = self.text:sub(self.cursor_pos + 1, #self.text) or ""
 		local remainder_strip_pos = remainder_text:find("[^a-zA-Z0-9]") or (#remainder_text + 1)
 		if self.prediction.dictionary.postfix ~= "" and remainder_text:sub(remainder_strip_pos, remainder_strip_pos + (#self.prediction.dictionary.postfix-1)) == self.prediction.dictionary.postfix then
@@ -104,7 +104,7 @@ function WordPredictor:Apply(prediction_index)
 
 		new_text = new_text .. remainder_text:sub(remainder_strip_pos)
 	end
-	
+
 	self:Clear()
 	return new_text, new_cursor_pos
 end

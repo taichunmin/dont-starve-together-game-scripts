@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/rock_light.zip"),
@@ -203,6 +205,9 @@ local function OnEntityWake(inst)
         inst.SoundEmitter:PlaySound("dontstarve/cave/nightmare_spawner_open_LP", "nightmareLP")
     end
 end
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.NIGHTMAREFISSURE_RELEASE_TIME, TUNING.NIGHTMAREFISSURE_REGEN_TIME)
+end
 
 local function fn()
     local inst = CreateEntity()
@@ -253,9 +258,15 @@ local function fn()
     inst:AddComponent("sanityaura")
 
     inst:AddComponent("childspawner")
-    inst.components.childspawner:SetRegenPeriod(5)
-    inst.components.childspawner:SetSpawnPeriod(30)
-    inst.components.childspawner:SetMaxChildren(math.random(2))
+    inst.components.childspawner:SetRegenPeriod(TUNING.NIGHTMAREFISSURE_RELEASE_TIME)
+    inst.components.childspawner:SetSpawnPeriod(TUNING.NIGHTMAREFISSURE_REGEN_TIME)
+    inst.components.childspawner:SetMaxChildren(math.random(TUNING.NIGHTMARELIGHT_MINCHILDREN, TUNING.NIGHTMARELIGHT_MAXCHILDREN))
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.NIGHTMAREFISSURE_RELEASE_TIME, TUNING.NIGHTMARELIGHT_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.NIGHTMAREFISSURE_REGEN_TIME, TUNING.NIGHTMARELIGHT_ENABLED)
+    if not TUNING.NIGHTMARELIGHT_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
+
     inst.components.childspawner.childname = "crawlingnightmare"
     inst.components.childspawner:SetRareChild("nightmarebeak", .35)
 
@@ -266,6 +277,8 @@ local function fn()
 
     inst.OnEntityWake = OnEntityWake
     inst.OnEntitySleep = OnEntitySleep
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

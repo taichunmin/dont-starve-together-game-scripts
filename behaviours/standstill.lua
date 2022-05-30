@@ -27,6 +27,6 @@ function StandStill:Visit()
         end
         self:Sleep(.5)
     end
-    
+
 end
 

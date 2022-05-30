@@ -31,7 +31,7 @@ local function fn()
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
     inst.AnimState:SetMultColour(0, 0, 0, .6)
     inst.AnimState:SetRayTestOnBB(true)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
 

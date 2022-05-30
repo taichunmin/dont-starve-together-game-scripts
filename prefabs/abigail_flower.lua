@@ -1,262 +1,119 @@
 local assets =
 {
     Asset("ANIM", "anim/abigail_flower.zip"),
-    Asset("INV_IMAGE", "abigail_flower2"),
-    Asset("INV_IMAGE", "abigail_flower_haunted"),
+    Asset("ANIM", "anim/abigail_flower_rework.zip"),
+
+	Asset("INV_IMAGE", "abigail_flower_level0"),
+	Asset("INV_IMAGE", "abigail_flower_level2"),
+	Asset("INV_IMAGE", "abigail_flower_level3"),
+
+    Asset("INV_IMAGE", "abigail_flower_old"),		-- deprecated, left in for mods
+    Asset("INV_IMAGE", "abigail_flower2"),			-- deprecated, left in for mods
+    Asset("INV_IMAGE", "abigail_flower_haunted"),	-- deprecated, left in for mods
+    Asset("INV_IMAGE", "abigail_flower_wilted"),	-- deprecated, left in for mods
 }
 
-local prefabs =
-{
-    "abigail",
-    "planted_flower",
-    "small_puff",
-    "petals",
-}
+local function UpdateGroundAnimation(inst)
+	local x, y, z = inst.Transform:GetWorldPosition()
+    local players = {}
+	if not POPULATING then
+		for i, v in ipairs(AllPlayers) do
+			if v:HasTag("ghostlyfriend") and not IsEntityDeadOrGhost(v) and v.components.ghostlybond ~= nil and v.entity:IsVisible() and (v.sg == nil or not v.sg:HasStateTag("ghostbuild")) then
+				local dist = v:GetDistanceSqToPoint(x, y, z)
+				if dist < TUNING.ABIGAIL_FLOWER_PROX_DIST then
+					table.insert(players, {player = v, dist = dist})
+				end
+			end
+		end
+	end
 
-local function getstatus(inst)
-    if inst._chargestate == 3 then
-        return inst.components.inventoryitem.owner ~= nil
-            and "HAUNTED_POCKET"
-            or "HAUNTED_GROUND"
-    end
-    local time_charge = inst.components.cooldown:GetTimeToCharged()
-    return (time_charge < TUNING.TOTAL_DAY_TIME * .5 and "SOON")
-        or (time_charge < TUNING.TOTAL_DAY_TIME * 2 and "MEDIUM")
-        or "LONG"
-end
+	if #players > 1 then
+		table.sort(players, function(a, b) return a.dist < b.dist end)
+	end
 
-local function activate(inst)
-    inst.SoundEmitter:PlaySound("dontstarve/common/haunted_flower_LP", "loop")
-    inst:ListenForEvent("entity_death", inst._onentitydeath, TheWorld)
-end
+	local level = players[1] ~= nil and players[1].player.components.ghostlybond.bondlevel or 0
+	if inst._bond_level ~= level then
+		if inst._bond_level == 0 then
+			inst.AnimState:PlayAnimation("level"..level.."_pre")
+			inst.AnimState:PushAnimation("level"..level.."_loop", true)
+			inst.SoundEmitter:PlaySound("dontstarve/characters/wendy/abigail/haunted_flower_LP", "floating")
+		elseif inst._bond_level > 0 and level == 0 then
+			inst.AnimState:PlayAnimation("level"..inst._bond_level.."_pst")
+			inst.AnimState:PushAnimation("level0_loop", true)
+            inst.SoundEmitter:KillSound("floating")
+		else
+			inst.AnimState:PlayAnimation("level"..level.."_loop", true)
+			inst.SoundEmitter:PlaySound("dontstarve/characters/wendy/abigail/haunted_flower_LP", "floating")
+		end
+	end
 
-local function deactivate(inst)
-    inst.SoundEmitter:KillAllSounds()
-    inst:RemoveEventCallback("entity_death", inst._onentitydeath, TheWorld)
-end
-
-local function IsValidLink(inst, player)
-    return player:HasTag("ghostlyfriend") and player.abigail == nil
-end
-
-local function dodecay(inst)
-    local x, y, z = inst.Transform:GetWorldPosition()
-    local canplant =
-        TheWorld.Map:CanPlantAtPoint(x, 0, z) and
-        TheWorld.Map:CanPlacePrefabFilteredAtPoint(x, 0, z, "flower") and
-        not (RoadManager ~= nil and RoadManager:IsOnRoad(x, 0, z))
-
-    if canplant then
-        local radius = inst:GetPhysicsRadius(0)
-        for i, v in ipairs(TheSim:FindEntities(x, 0, z, 3, nil, { "NOBLOCK", "_inventoryitem", "locomotor", "FX", "INLIMBO", "DECOR" })) do
-            if v ~= inst and v.entity:IsVisible() then
-                local spacing = radius + v:GetPhysicsRadius(.25) - .001
-                if v:GetDistanceSqToPoint(x, 0, z) < (v.deploy_extra_spacing ~= nil and math.max(v.deploy_extra_spacing * v.deploy_extra_spacing, spacing * spacing) or spacing * spacing) then
-                    canplant = false
-                    break
-                end
-            end
-        end
-    end
-
-    if canplant then
-        SpawnPrefab("planted_flower").Transform:SetPosition(x, 0, z)
-    else
-        inst:AddComponent("lootdropper")
-        inst.components.lootdropper:SpawnLootPrefab("petals", Vector3(x, y, z))
-    end
-
-    if not inst:IsAsleep() then
-        SpawnPrefab("small_puff").Transform:SetPosition(x, y, z)
-    end
-
-    inst:Remove()
-end
-
-local function startdecay(inst)
-    if inst._decaytask == nil then
-        inst._decaytask = inst:DoTaskInTime(TUNING.ABIGAIL_FLOWER_DECAY_TIME, dodecay)
-        inst._decaystart = GetTime()
-    end
-end
-
-local function stopdecay(inst)
-    if inst._decaytask ~= nil then
-        inst._decaytask:Cancel()
-        inst._decaytask = nil
-        inst._decaystart = nil
-    end
-end
-
-local function onsave(inst, data)
-    if inst._decaystart ~= nil then
-        local time = GetTime() - inst._decaystart
-        if time > 0 then
-            data.decaytime = time
-        end
-    end
-end
-
-local function onload(inst, data)
-    if inst._decaytask ~= nil and data ~= nil and data.decaytime ~= nil then
-        local remaining = math.max(0, TUNING.ABIGAIL_FLOWER_DECAY_TIME - data.decaytime)
-        inst._decaytask:Cancel()
-        inst._decaytask = inst:DoTaskInTime(remaining, dodecay)
-        inst._decaystart = GetTime() + remaining - TUNING.ABIGAIL_FLOWER_DECAY_TIME
-    end
-end
-
-local function updatestate(inst)
-    if inst._playerlink ~= nil and inst.components.cooldown:IsCharged() then
-        if inst._chargestate ~= 3 then
-            inst._chargestate = 3
-            inst.components.inventoryitem:ChangeImageName("abigail_flower_haunted")
-            inst.AnimState:PlayAnimation("haunted_pre")
-            inst.AnimState:PushAnimation("idle_haunted_loop", true)
-            inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-            if inst.components.inventoryitem.owner == nil then
-                activate(inst)
-            end
-            if not inst._suppress_landed_events then
-                inst:PushEvent("on_no_longer_landed")
-            end
-        end
-    else
-        if inst._chargestate == 3 then
-            inst.AnimState:ClearBloomEffectHandle()
-            deactivate(inst)
-        end
-        if inst._playerlink ~= nil and inst.components.cooldown:GetTimeToCharged() < TUNING.TOTAL_DAY_TIME then
-            if inst._chargestate ~= 2 then
-                inst._chargestate = 2
-                inst.components.inventoryitem:ChangeImageName("abigail_flower2")
-                inst.AnimState:PlayAnimation("idle_2")
-                if not inst._suppress_landed_events then
-                    inst:PushEvent("on_landed")
-                end
-            end
-        elseif inst._chargestate ~= 1 then
-            inst._chargestate = 1
-            inst.components.inventoryitem:ChangeImageName("abigail_flower")
-            inst.AnimState:PlayAnimation("idle_1")
-            if not inst._suppress_landed_events then
-                inst:PushEvent("on_landed")
-            end
-        end
-    end
-end
-
-local function ondeath(inst, deadthing, killer)
-    if inst._chargestate == 3 and
-        inst._playerlink ~= nil and
-        inst._playerlink.abigail == nil and
-        inst._playerlink.components.leader ~= nil and
-        inst.components.inventoryitem.owner == nil and
-        deadthing ~= nil and
-        not (deadthing:HasTag("wall") or
-            deadthing:HasTag("balloon") or
-            deadthing:HasTag("groundspike") or
-            deadthing:HasTag("smashable") or
-            deadthing:HasTag("engineering")) then
-
-        if deadthing:IsValid() then
-            if not inst:IsNear(deadthing, 16) then
-                return
-            end
-        elseif killer == nil or not inst:IsNear(killer, 16) then
-            return
-        end
-
-        inst._playerlink.components.sanity:DoDelta(-TUNING.SANITY_HUGE)
-        local abigail = SpawnPrefab("abigail")
-        if abigail ~= nil then
-            abigail.Transform:SetPosition(inst.Transform:GetWorldPosition())
-            abigail.SoundEmitter:PlaySound("dontstarve/common/ghost_spawn")
-            abigail:LinkToPlayer(inst._playerlink)
-            inst:Remove()
-        end
-    end
-end
-
-local function linktoplayer(inst, player)
-    if player ~= nil and IsValidLink(inst, player) then
-        inst:ListenForEvent("onremove", inst._onremoveplayer, player)
-        inst:ListenForEvent("killed", inst._onplayerkillthing, player)
-        inst._playerlink = player
-        player.abigail_flowers[inst] = true
-    end
-end
-
-local function unlink(inst)
-    if inst._playerlink ~= nil then
-        inst:RemoveEventCallback("onremove", inst._onremoveplayer, inst._playerlink)
-        inst:RemoveEventCallback("killed", inst._onplayerkillthing, inst._playerlink)
-        inst._playerlink.abigail_flowers[inst] = nil
-        inst._playerlink = nil
-    end
-end
-
-local function storeincontainer(inst, container)
-    if container ~= nil and container.components.container ~= nil then
-        inst:ListenForEvent("onopen", inst._ontogglecontainer, container)
-        inst:ListenForEvent("onclose", inst._ontogglecontainer, container)
-        inst:ListenForEvent("onremove", inst._onremovecontainer, container)
-        inst._container = container
-    end
-end
-
-local function unstore(inst)
-    if inst._container ~= nil then
-        inst:RemoveEventCallback("onopen", inst._ontogglecontainer, inst._container)
-        inst:RemoveEventCallback("onclose", inst._ontogglecontainer, inst._container)
-        inst:RemoveEventCallback("onremove", inst._onremovecontainer, inst._container)
-        inst._container = nil
-    end
+	inst._bond_level = level
 end
 
 local function topocket(inst, owner)
-    stopdecay(inst)
-    deactivate(inst)
-    if inst._container ~= owner then
-        unstore(inst)
-        storeincontainer(inst, owner)
-    end
-    if owner.components.container ~= nil then
-        owner = owner.components.container.opener
-    end
-    if inst._playerlink ~= owner then
-        unlink(inst)
-        linktoplayer(inst, owner)
-        updatestate(inst)
-    end
+	if inst._ongroundupdatetask ~= nil then
+		inst._ongroundupdatetask:Cancel()
+		inst._ongroundupdatetask = nil
+	end
 end
 
 local function toground(inst)
-    unstore(inst)
-    if inst._chargestate == 3 then
-        activate(inst)
-    elseif inst._playerlink == nil then
-        startdecay(inst)
-    end
+	inst._bond_level = -1 --to force the animation to update
+	UpdateGroundAnimation(inst)
+	if inst._ongroundupdatetask == nil then
+		inst._ongroundupdatetask = inst:DoPeriodicTask(0.5, UpdateGroundAnimation)
+	end
 end
 
-local function refresh(inst)
-    if inst._playerlink == nil then
-        local owner = inst.components.inventoryitem.owner
-        if owner ~= nil then
-            if owner.components.container ~= nil then
-                owner = owner.components.container.opener
-            end
-            linktoplayer(inst, owner)
-            updatestate(inst)
-        end
-    elseif not IsValidLink(inst, inst._playerlink) then
-        unlink(inst)
-        updatestate(inst)
-        if inst.components.inventoryitem.owner == nil then
-            startdecay(inst)
-        end
-    end
+local function OnEntitySleep(inst)
+	if inst._ongroundupdatetask ~= nil then
+		inst._ongroundupdatetask:Cancel()
+		inst._ongroundupdatetask = nil
+	end
+end
+
+local function OnEntityWake(inst)
+	if not inst.inlimbo and inst._ongroundupdatetask == nil then
+		inst._ongroundupdatetask = inst:DoPeriodicTask(0.5, UpdateGroundAnimation, math.random()*0.5)
+	end
+end
+
+local function GetElixirTarget(inst, doer, elixir)
+	return (doer ~= nil and doer.components.ghostlybond ~= nil) and doer.components.ghostlybond.ghost or nil
+end
+
+local function getstatus(inst, viewer)
+	local _bondlevel = inst._bond_level
+	if inst.components.inventoryitem.owner then
+		_bondlevel = viewer ~= nil and viewer.components.ghostlybond ~= nil and viewer.components.ghostlybond.bondlevel
+	end
+	return _bondlevel == 3 and "LEVEL3"
+		or _bondlevel == 2 and "LEVEL2"
+		or _bondlevel == 1 and "LEVEL1"
+		or nil
+end
+
+local function OnSkinIDDirty(inst)
+	inst.skin_id = inst.flower_skin_id:value()
+
+	inst:DoTaskInTime(0, function()
+		local image_name = string.gsub(inst.AnimState:GetBuild(), "abigail_", "abigail_flower_")
+		if not inst.clientside_imageoverrides[image_name] then
+			inst:SetClientSideInventoryImageOverride("bondlevel0", image_name..".tex", image_name.."_level0.tex")
+			inst:SetClientSideInventoryImageOverride("bondlevel2", image_name..".tex", image_name.."_level2.tex")
+			inst:SetClientSideInventoryImageOverride("bondlevel3", image_name..".tex", image_name.."_level3.tex")
+			inst.clientside_imageoverrides[image_name] = true
+		end
+	end)
+end
+
+local function drawimageoverride(inst)
+	local level = inst._bond_level or 0
+	if level == 1 then
+		return inst:GetSkinName() or "abigail_flower"
+	else
+		return (inst:GetSkinName() or "abigail_flower").."_level" ..tostring(level)
+	end
 end
 
 local function fn()
@@ -268,83 +125,145 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
-    inst.AnimState:SetBank("abigail_flower")
-    inst.AnimState:SetBuild("abigail_flower")
-    inst.AnimState:PlayAnimation("idle_1")
-
+    inst.AnimState:SetBank("abigail_flower_rework")
+    inst.AnimState:SetBuild("abigail_flower_rework")
+    inst.AnimState:PlayAnimation("level0_loop")
     MakeInventoryPhysics(inst)
 
     inst.MiniMapEntity:SetIcon("abigail_flower.png")
 
     MakeInventoryFloatable(inst, "small", 0.15, 0.9)
 
-    inst.entity:SetPristine()
+	inst:AddTag("abigail_flower")
+	inst:AddTag("give_dolongaction")
+	inst:AddTag("ghostlyelixirable") -- for ghostlyelixirable component
+
+    inst:SetClientSideInventoryImageOverride("bondlevel0", "abigail_flower.tex", "abigail_flower_level0.tex")
+    inst:SetClientSideInventoryImageOverride("bondlevel2", "abigail_flower.tex", "abigail_flower_level2.tex")
+    inst:SetClientSideInventoryImageOverride("bondlevel3", "abigail_flower.tex", "abigail_flower_level3.tex")
+
+	inst.clientside_imageoverrides = {
+		abigail_flower_flower_rework = true
+	}
+
+    inst.flower_skin_id = net_hash(inst.GUID, "abi_flower_skin_id", "abiflowerskiniddirty")
+	inst:ListenForEvent("abiflowerskiniddirty", OnSkinIDDirty)
+	OnSkinIDDirty(inst)
+
+	inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
 
-    inst._chargestate = nil
-    inst._playerlink = nil
-    inst._container = nil
-    inst._decaytask = nil
-    inst._decaystart = nil
-
-    inst._onremoveplayer = function()
-        unlink(inst)
-        updatestate(inst)
-        if inst.components.inventoryitem.owner == nil then
-            startdecay(inst)
-        end
-    end
-
-    inst._onplayerkillthing = function(player, data)
-        ondeath(inst, data.victim, player)
-    end
-
-    inst._onentitydeath = function(world, data)
-        ondeath(inst, data.inst)
-    end
-
-    inst._ontogglecontainer = function(container)
-        topocket(inst, container)
-    end
-
-    inst._onremovecontainer = function()
-        unstore(inst)
-    end
-
-    inst._suppress_landed_events = true
-    inst:DoTaskInTime(0, function(i) i._suppress_landed_events = false end)
-
     inst:AddComponent("inventoryitem")
-
-    -----------------------------------
+    inst:AddComponent("lootdropper")
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
 
-    inst:AddComponent("cooldown")
-    inst.components.cooldown.cooldown_duration = TUNING.TOTAL_DAY_TIME * (1 + math.random() * 2)
-    inst.components.cooldown.onchargedfn = updatestate
-    inst.components.cooldown.startchargingfn = updatestate
-    inst.components.cooldown:StartCharging()
+	inst:AddComponent("summoningitem")
 
-    inst:WatchWorldState("phase", updatestate)
-    updatestate(inst)
-    startdecay(inst)
+	inst:AddComponent("ghostlyelixirable")
+	inst.components.ghostlyelixirable.overrideapplytotargetfn = GetElixirTarget
+
+    MakeSmallBurnable(inst, TUNING.SMALL_BURNTIME)
+	inst.components.burnable.fxdata = {}
+    inst.components.burnable:AddBurnFX("campfirefire", Vector3(0, 0, 0))
+
+    MakeSmallPropagator(inst)
+    MakeHauntableLaunch(inst)
 
     inst:ListenForEvent("onputininventory", topocket)
     inst:ListenForEvent("ondropped", toground)
 
-    MakeHauntableLaunch(inst)
+    inst.OnEntitySleep = OnEntitySleep
+    inst.OnEntityWake = OnEntityWake
 
-    inst.OnLoad = onload
-    inst.OnSave = onsave
-    inst.OnRemoveEntity = unlink
-    inst.Refresh = refresh
+	inst._ongroundupdatetask = inst:DoPeriodicTask(0.5, UpdateGroundAnimation, math.random()*0.5)
+	inst._bond_level = 0
+
+    inst.drawimageoverride = drawimageoverride
 
     return inst
 end
 
-return Prefab("abigail_flower", fn, assets, prefabs)
+
+local assets_summonfx =
+{
+    Asset("ANIM", "anim/wendy_channel_flower.zip"),
+    Asset("ANIM", "anim/wendy_mount_channel_flower.zip"),
+}
+
+local assets_unsummonfx =
+{
+    Asset("ANIM", "anim/wendy_recall_flower.zip"),
+    Asset("ANIM", "anim/wendy_mount_recall_flower.zip"),
+}
+
+local assets_levelupfx =
+{
+    Asset("ANIM", "anim/abigail_flower_change.zip"),
+}
+
+local function AlignToTarget(inst)
+	local parent = inst.entity:GetParent()
+	if parent ~= nil then
+	    inst.Transform:SetRotation(parent.Transform:GetRotation())
+	end
+end
+
+local function MakeSummonFX(anim, use_anim_for_build, is_mounted)
+    return function()
+        local inst = CreateEntity()
+
+        inst.entity:AddTransform()
+        inst.entity:AddAnimState()
+        inst.entity:AddNetwork()
+
+        inst:AddTag("FX")
+
+		if is_mounted then
+	        inst.Transform:SetSixFaced()
+		else
+	        inst.Transform:SetFourFaced()
+		end
+
+
+        inst.AnimState:SetBank(anim)
+		if use_anim_for_build then
+	        inst.AnimState:SetBuild(anim)
+	        inst.AnimState:OverrideSymbol("flower", "abigail_flower_rework", "flower")
+		else
+	        inst.AnimState:SetBuild("abigail_flower_rework")
+		end
+        inst.AnimState:PlayAnimation(anim)
+
+		if is_mounted then
+			inst:AddComponent("updatelooper")
+			inst.components.updatelooper:AddOnWallUpdateFn(AlignToTarget)
+		end
+
+        inst.entity:SetPristine()
+
+        if not TheWorld.ismastersim then
+            return inst
+        end
+
+        inst.persists = false
+
+        --Anim is padded with extra blank frames at the end
+        inst:ListenForEvent("animover", inst.Remove)
+
+        return inst
+    end
+end
+
+return Prefab("abigail_flower", fn, assets),
+	Prefab("abigailsummonfx", MakeSummonFX("wendy_channel_flower", true, false), assets_summonfx),
+    Prefab("abigailsummonfx_mount", MakeSummonFX("wendy_mount_channel_flower", true, true), assets_summonfx),
+	Prefab("abigailunsummonfx", MakeSummonFX("wendy_recall_flower", false, false), assets_unsummonfx),
+    Prefab("abigailunsummonfx_mount", MakeSummonFX("wendy_mount_recall_flower", false, true), assets_unsummonfx),
+	Prefab("abigaillevelupfx", MakeSummonFX("abigail_flower_change", false, false), assets_levelupfx)
+
+

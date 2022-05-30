@@ -22,7 +22,7 @@ function MinigameSpectator:SetWatchingMinigame(minigame)
 		self.inst:ListenForEvent("ms_minigamedeactivated", self.onminigameover, minigame)
 
 		-- stop attacking players when the mini game starts
-		if self.inst.components.combat.target ~= nil and self.inst.components.combat.target:HasTag("player") then
+		if self.inst.components.combat ~= nil and self.inst.components.combat.target ~= nil and self.inst.components.combat.target:HasTag("player") then
 			self.inst.components.combat:DropTarget()
 		end
 	end

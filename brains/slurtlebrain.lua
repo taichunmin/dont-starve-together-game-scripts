@@ -33,6 +33,7 @@ local function ShouldGoHome(inst)
     return GetTime() - inst.lastmeal > HUNGER_TOLERANCE
 end
 
+local EATFOOD_CANT_TAGS = { "outofreach" }
 local function EatFoodAction(inst)
     if inst.sg:HasStateTag("busy") then
         return
@@ -51,7 +52,7 @@ local function EatFoodAction(inst)
                 and inst.components.eater:CanEat(item)
         end,
         nil,
-        { "outofreach" }
+        EATFOOD_CANT_TAGS
     )
     if target ~= nil then
         local ba = BufferedAction(inst, target, ACTIONS.PICKUP)
@@ -60,12 +61,14 @@ local function EatFoodAction(inst)
     end
 end
 
+local STEALFOOD_CANT_TAGS = { "playerghost", "fire", "burnt", "INLIMBO", "outofreach" }
+local STEALFOOD_ONEOF_TAGS = { "player", "_container" }
 local function StealFoodAction(inst)
     if inst.sg:HasStateTag("busy") then
         return
     end
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, SEE_FOOD_DIST, nil, { "playerghost", "fire", "burnt", "INLIMBO", "outofreach" }, { "player", "_container" })
+    local ents = TheSim:FindEntities(x, y, z, SEE_FOOD_DIST, nil, STEALFOOD_CANT_TAGS, STEALFOOD_ONEOF_TAGS)
 
     for i, v in ipairs(ents) do
         --go through player inv and find valid food
@@ -91,7 +94,7 @@ local function StealFoodAction(inst)
 
             if #validfood > 0 then
                 local itemtosteal = validfood[math.random(1, #validfood)]
-                if itemtosteal and 
+                if itemtosteal and
                 itemtosteal.components.inventoryitem and
                 itemtosteal.components.inventoryitem.owner and not
                 itemtosteal.components.inventoryitem.owner:HasTag("slurtle") then
@@ -133,10 +136,10 @@ function SlurtleBrain:OnStart()
         DoAction(self.inst, EatFoodAction),
         DoAction(self.inst, StealFoodAction),
         WhileNode(function() return ShouldGoHome(self.inst) end, "ShouldGoHome",
-            DoAction(self.inst, GoHomeAction, "Go Home", true )),   
+            DoAction(self.inst, GoHomeAction, "Go Home", true )),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, 40),
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

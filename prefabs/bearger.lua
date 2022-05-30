@@ -44,6 +44,10 @@ local function HoneyedItem(item)
     return item:HasTag("honeyed")
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_INV_MUST_TAGS = { "_combat", "_inventory" }
+local RETARGET_CANT_TAGS = { "prey", "smallcreature", "INLIMBO" }
+
 local function RetargetFn(inst)
     return not inst.components.sleeper:IsAsleep()
         and (   FindEntity(
@@ -53,8 +57,8 @@ local function RetargetFn(inst)
                         return guy.components.combat.target == inst
                             and inst.components.combat:CanTarget(guy)
                     end,
-                    { "_combat" }, --see entityreplica.lua
-                    { "prey", "smallcreature", "INLIMBO" }
+                    RETARGET_MUST_TAGS, --see entityreplica.lua
+                    RETARGET_CANT_TAGS
                 ) or
                 (   inst.last_eat_time ~= nil and
                     GetTime() - inst.last_eat_time > TUNING.BEARGER_DISGRUNTLE_TIME and
@@ -65,8 +69,8 @@ local function RetargetFn(inst)
                             return guy.components.inventory:FindItem(HoneyedItem) ~= nil
                                 and inst.components.combat:CanTarget(guy)
                         end,
-                        { "_combat", "_inventory" }, --see entityreplica.lua
-                        { "prey", "smallcreature", "INLIMBO" }
+                        RETARGET_INV_MUST_TAGS, --see entityreplica.lua
+                        RETARGET_CANT_TAGS
                     )
                 )
             )
@@ -147,11 +151,13 @@ local function OnCollide(inst, other)
     end
 end
 
+local WORKABLES_CANT_TAGS = { "insect", "INLIMBO" }
+local WORKABLES_ONEOF_TAGS = { "CHOP_workable", "DIG_workable", "HAMMER_workable", "MINE_workable" }
 local function WorkEntities(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local heading_angle = inst.Transform:GetRotation() * DEGREES
     local x1, z1 = math.cos(heading_angle), -math.sin(heading_angle)
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, 5, nil, { "insect", "INLIMBO" }, { "CHOP_workable", "DIG_workable", "HAMMER_workable", "MINE_workable" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, 5, nil, WORKABLES_CANT_TAGS, WORKABLES_ONEOF_TAGS)) do
         local x2, y2, z2 = v.Transform:GetWorldPosition()
         local dx, dz = x2 - x, z2 - z
         local len = math.sqrt(dx * dx + dz * dz)
@@ -176,13 +182,13 @@ local function LaunchItem(inst, target, item)
 end
 
 local function OnGroundPound(inst)
-    if math.random() < .2 then 
+    if math.random() < .2 then
         inst.components.shedder:DoMultiShed(3, false) -- can't drop too many, or it'll be really easy to farm for thick furs
     end
 end
 
 local function OnHitOther(inst, data)
-    if data.target ~= nil and data.target.components.inventory ~= nil then
+    if data.target ~= nil and data.target.components.inventory ~= nil and not data.target:HasTag("stronggrip") then
         local item = data.target.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
         if item ~= nil then
             data.target.components.inventory:DropItem(item)
@@ -194,7 +200,7 @@ end
 local function ontimerdone(inst, data)
     if data.name == "GroundPound" then
         inst.cangroundpound = true
-    elseif data.name == "Yawn" and inst:HasTag("hibernation") then 
+    elseif data.name == "Yawn" and inst:HasTag("hibernation") then
         inst.canyawn = true
     end
 end

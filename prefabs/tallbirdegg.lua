@@ -23,7 +23,7 @@ local loot_cold =
 
 local function Hatch(inst)
     --print("tallbirdegg - Hatch")
-   
+
     local smallbird = SpawnPrefab("smallbird")
     smallbird.Transform:SetPosition(inst.Transform:GetWorldPosition())
     smallbird.sg:GoToState("hatch")
@@ -164,6 +164,7 @@ local function commonfn(anim, withsound, cookable)
     inst.AnimState:PlayAnimation("egg")
 
     inst:AddTag("cattoy")
+	inst:AddTag("tallbirdegg")
 
     if cookable then
         --cookable (from cookable component) added to pristine state for optimization

@@ -1,5 +1,8 @@
 require("stategraphs/commonstates")
 
+local ATTACK_FIRE_CANT_TAGS = {"fruitdragon", "INLIMBO"}
+local ATTACK_FIRE_ONEOF_TAGS = {"_health", "canlight"}
+
 local actionhandlers =
 {
     ActionHandler(ACTIONS.GOHOME, "gohome"),
@@ -23,7 +26,7 @@ local events =
 			end
 		end
 	end),
-	
+
 	EventHandler("attacked", function(inst, data)
 		if inst.components.health ~= nil and not inst.components.health:IsDead()
 			and (not inst.sg:HasStateTag("busy") or
@@ -36,7 +39,7 @@ local events =
 	EventHandler("wake_up_to_challenge", function(inst)
 		inst.sg:GoToState("hit")
 	end),
-	
+
 
 	EventHandler("lostfruitdragonchallenge", function(inst)
 		inst.sg:GoToState("challenge_lose")
@@ -48,7 +51,7 @@ local states=
     State{
         name = "idle",
         tags = {"idle", "canrotate"},
-		
+
         onenter = function(inst)
             inst.components.locomotor:StopMoving()
             inst.SoundEmitter:PlaySound(inst.sounds.idle)
@@ -111,8 +114,7 @@ local states=
         },
     },
 
-	State
-    {
+	State{
         name = "attack",
         tags = { "attack", "busy" },
 
@@ -128,7 +130,6 @@ local states=
         timeline =
 		{
 			TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack) end),
-			-- TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack_whoosh) end),
 			TimeEvent(22*FRAMES, function(inst) inst.components.combat:DoAttack(inst.sg.statemem.target) end),
             TimeEvent(28*FRAMES, function(inst) inst.sg:RemoveStateTag("busy") end),
 		},
@@ -139,8 +140,7 @@ local states=
         },
     },
 
-	State
-    {
+	State{
         name = "attack_fire",
         tags = { "attack", "busy" },
 
@@ -155,30 +155,29 @@ local states=
         timeline =
 		{
 			TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack_fire) end),
-			-- TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(inst.sounds.attack_whoosh) end),
-			TimeEvent(16*FRAMES, function(inst) 
+			TimeEvent(16*FRAMES, function(inst)
 				inst.Light:Enable(true)
 				inst.DynamicShadow:Enable(false)
 			end),
-			TimeEvent(20*FRAMES, function(inst) 
+			TimeEvent(20*FRAMES, function(inst)
                 inst.components.timer:StopTimer("fire_cd")
                 inst.components.timer:StartTimer("fire_cd", TUNING.FRUITDRAGON.FIREATTACK_COOLDOWN)
 
 				local x, y, z = inst.Transform:GetWorldPosition()
-				local ents = TheSim:FindEntities(x, y, z, TUNING.FRUITDRAGON.FIREATTACK_HIT_RANGE + 6, nil, {"fruitdragon", "INLIMBO"}, {"_health", "canlight"})
+				local ents = TheSim:FindEntities(x, y, z, TUNING.FRUITDRAGON.FIREATTACK_HIT_RANGE + 6, nil, ATTACK_FIRE_CANT_TAGS, ATTACK_FIRE_ONEOF_TAGS)
 				for _, ent in ipairs(ents) do
 					if inst:IsNear(ent, ent:GetPhysicsRadius(0) + TUNING.FRUITDRAGON.FIREATTACK_HIT_RANGE) then
 						if ent.components.health ~= nil and not ent.components.health:IsDead() then
 							ent.components.health:DoFireDamage(TUNING.FRUITDRAGON.FIREATTACK_DAMAGE, inst, true)
 						end
-						if ent.components.burnable then
+						if ent.components.burnable and ent.components.fueled == nil then
 							ent.components.burnable:Ignite(true, inst)
 						end
 					end
 				end
 			end),
 
-			TimeEvent(37*FRAMES, function(inst) 
+			TimeEvent(37*FRAMES, function(inst)
 				inst.Light:Enable(false)
 				inst.DynamicShadow:Enable(true)
 				inst.sg:RemoveStateTag("busy")
@@ -195,7 +194,7 @@ local states=
 			inst.DynamicShadow:Enable(true)
 		end
     },
-	
+
 	State{
         name = "challenge_attack_pre",
         tags = {"busy", "canrotate", "caninterrupt"},

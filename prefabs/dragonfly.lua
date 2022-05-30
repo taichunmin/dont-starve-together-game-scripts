@@ -152,7 +152,7 @@ end
 
 local function _OnRevert(inst)
     inst.reverttask = nil
-    if inst.enraged then 
+    if inst.enraged then
         inst:PushEvent("transform", { transformstate = "normal" })
     end
 end
@@ -298,8 +298,8 @@ local function OnNewTarget(inst, data)
         inst.SoftResetTask:Cancel()
         inst.SoftResetTask = nil
     end
-    if data.oldtarget ~= nil then 
-        inst:RemoveEventCallback("death", inst._ontargetdeath, data.oldtarget) 
+    if data.oldtarget ~= nil then
+        inst:RemoveEventCallback("death", inst._ontargetdeath, data.oldtarget)
     end
     if data.target ~= nil  then
         inst:ListenForEvent("death", inst._ontargetdeath, data.target)
@@ -433,7 +433,7 @@ end
 
 local function OnHealthTrigger(inst)
     inst:PushEvent("transform", { transformstate = "normal" })
-    inst.components.rampingspawner:Start() 
+    inst.components.rampingspawner:Start()
 end
 
 local function ShouldSleep(inst)

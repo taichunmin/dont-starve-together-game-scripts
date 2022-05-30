@@ -1,9 +1,6 @@
 local assets =
 {
     --In-game only
-    Asset("ATLAS", "images/hud.xml"),
-    Asset("IMAGE", "images/hud.tex"),
-
     Asset("ATLAS", "images/fx.xml"),
     Asset("IMAGE", "images/fx.tex"),
 
@@ -16,12 +13,20 @@ local assets =
     Asset("ATLAS", "images/fx4.xml"),
     Asset("IMAGE", "images/fx4.tex"),
 
+    Asset("ATLAS", "images/fx5.xml"),
+    Asset("IMAGE", "images/fx5.tex"),
+
     Asset("ANIM", "anim/sand_over.zip"),
+    Asset("ANIM", "anim/moonstorm_over.zip"),
+    Asset("ANIM", "anim/moonstorm_over_static.zip"),
     Asset("ANIM", "anim/mind_control_overlay.zip"),
+    Asset("ANIM", "anim/screenlightning.zip"),
 
     Asset("ANIM", "anim/clock_transitions.zip"),
     Asset("ANIM", "anim/moon_phases_clock.zip"),
+    Asset("ANIM", "anim/moon_phases_clock_alter.zip"),
     Asset("ANIM", "anim/moon_phases.zip"),
+    Asset("ANIM", "anim/moonalter_phases.zip"),
     Asset("ANIM", "anim/cave_clock.zip"),
 
     Asset("PKGREF", "anim/health.zip"),
@@ -35,11 +40,16 @@ local assets =
     Asset("PKGREF", "anim/beaver_meter.zip"),
     Asset("ANIM", "anim/status_meter.zip"),
     Asset("ANIM", "anim/status_health.zip"),
+    Asset("ANIM", "anim/status_abigail.zip"),
     Asset("ANIM", "anim/status_hunger.zip"),
     Asset("ANIM", "anim/status_sanity.zip"),
     Asset("ANIM", "anim/status_wet.zip"),
     Asset("ANIM", "anim/status_boat.zip"),
     Asset("ANIM", "anim/status_were.zip"),
+    Asset("ANIM", "anim/status_wathgrithr.zip"),
+    Asset("ANIM", "anim/status_wolfgang.zip"),
+    Asset("ANIM", "anim/status_meter_circle.zip"),
+    Asset("ANIM", "anim/status_clear_bg.zip"),
     Asset("ANIM", "anim/hunger_health_pulse.zip"),
     Asset("ANIM", "anim/spoiled_meter.zip"),
     Asset("ANIM", "anim/recharge_meter.zip"),
@@ -63,13 +73,14 @@ local assets =
     Asset("IMAGE", "images/serverbrowser.tex"),
     --
 
-    Asset("PKGREF", "anim/wet_meter_player.zip"),     
+    Asset("PKGREF", "anim/wet_meter_player.zip"),
     Asset("ANIM", "anim/wet_meter.zip"),
 
     Asset("PKGREF", "anim/boat_meter.zip"),
     Asset("PKGREF", "anim/boat_meter_leak.zip"),
 
     Asset("ANIM", "anim/tab_gift.zip"),
+    Asset("ANIM", "anim/tab_yotb.zip"),
 
     Asset("INV_IMAGE", "unknown_head"),
     Asset("INV_IMAGE", "unknown_hand"),
@@ -78,6 +89,7 @@ local assets =
     Asset("INV_IMAGE", "decrease_health"),
     Asset("INV_IMAGE", "decrease_hunger"),
     Asset("INV_IMAGE", "decrease_sanity"),
+    Asset("INV_IMAGE", "decrease_oldage"),
 
     Asset("INV_IMAGE", "half_health"),
     Asset("INV_IMAGE", "half_hunger"),
@@ -97,6 +109,13 @@ local assets =
 
 	Asset("DYNAMIC_ATLAS", "images/bg_redux_wardrobe_bg.xml"),
     Asset("PKGREF", "images/bg_redux_wardrobe_bg.tex"),
+
+    Asset("ANIM", "anim/ink_over.zip"),
+
+    Asset("ANIM", "anim/leaves_canopy.zip"),
+
+    Asset("ANIM", "anim/status_wx.zip"),
+    Asset("ANIM", "anim/status_wet_wx.zip"),
 }
 
 local prefabs =

@@ -30,7 +30,7 @@ function CharacterProgress:_BuildProgressBanner(herocharacter)
     self.progressbar:GetAnimState():SetBuild("skin_progressbar")
     self.progressbar:GetAnimState():PlayAnimation("fill_progress", true)
     self.progressbar:GetAnimState():SetPercent("fill_progress", 0)
-    self.progressbar:SetPosition(0, -40) 
+    self.progressbar:SetPosition(0, -40)
     self.progressbar:SetScale(0.7)
 
     self.characterprogress = progress_root:AddChild(Text(HEADERFONT, 20, nil, UICOLOURS.BLACK))
@@ -66,7 +66,7 @@ function CharacterProgress:RefreshInventory()
         self.progressbar:GetAnimState():Hide("platinum")
     end
     self.progressbar:GetAnimState():SetMultColour(unpack(colour))
-    
+
 
     self.icon:RefreshInventory()
 end

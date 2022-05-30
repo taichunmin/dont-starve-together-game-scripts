@@ -4,6 +4,7 @@ require "prefabutil"
 local assets =
 {
     Asset("ANIM", "anim/seeds.zip"),
+	Asset("ANIM", "anim/oceanfishing_lure_mis.zip"),
 }
 
 local prefabs =
@@ -11,13 +12,25 @@ local prefabs =
     "seeds_cooked",
     "spoiled_food",
     "plant_normal_ground",
+	"farm_plant_randomseed",
+	"carrot",
 }
 
 for k,v in pairs(VEGGIES) do
     table.insert(prefabs, k)
+	if v.seed_weight ~= nil and v.seed_weight > 0 then
+	    table.insert(prefabs, "farm_plant_"..k)
+	end
 end
 
-local function pickproduct(inst)
+local WEED_DEFS = require("prefabs/weed_defs").WEED_DEFS
+for k, v in pairs(WEED_DEFS) do
+	if v.seed_weight ~= nil and v.seed_weight > 0 then
+	    table.insert(prefabs, k)
+	end
+end
+
+local function pickproduct()
     local total_w = 0
     for k,v in pairs(VEGGIES) do
         total_w = total_w + (v.seed_weight or 1)
@@ -34,15 +47,11 @@ local function pickproduct(inst)
     return "carrot"
 end
 
-local function OnDeploy(inst, pt)--, deployer, rot)
-    local plant = SpawnPrefab("plant_normal_ground")
-    plant.components.crop:StartGrowing(inst.components.plantable.product(inst), inst.components.plantable.growtime)
-    plant.Transform:SetPosition(pt.x, 0, pt.z)
-    plant.SoundEmitter:PlaySound("dontstarve/wilson/plant_seeds")
-    inst:Remove()
+local function pickfarmplant()
+    return "farm_plant_randomseed"
 end
 
-local function common(anim, cookable)
+local function common(anim, cookable, oceanfishing_lure)
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -58,10 +67,15 @@ local function common(anim, cookable)
 
     if cookable then
         inst:AddTag("deployedplant")
+        inst:AddTag("deployedfarmplant")
 
         --cookable (from cookable component) added to pristine state for optimization
         inst:AddTag("cookable")
     end
+
+	if oceanfishing_lure then
+		inst:AddTag("oceanfishing_lure")
+	end
 
     MakeInventoryFloatable(inst)
 
@@ -98,8 +112,24 @@ local function common(anim, cookable)
     return inst
 end
 
+local function OnDeploy(inst, pt, deployer) --, rot)
+    local plant = SpawnPrefab("farm_plant_randomseed")
+    plant.Transform:SetPosition(pt.x, 0, pt.z)
+    plant:PushEvent("on_planted", {in_soil = false, doer = deployer, seed = inst})
+    TheWorld.Map:CollapseSoilAtPoint(pt.x, 0, pt.z)
+    --plant.SoundEmitter:PlaySound("dontstarve/wilson/plant_seeds")
+    inst:Remove()
+end
+
+local function can_plant_seed(inst, pt, mouseover, deployer)
+	local x, z = pt.x, pt.z
+	return TheWorld.Map:CanTillSoilAtPoint(x, 0, z, true)
+end
+
 local function raw()
-    local inst = common("idle", true)
+    local inst = common("idle", true, true)
+
+	inst._custom_candeploy_fn = can_plant_seed -- for DEPLOYMODE.CUSTOM
 
     if not TheWorld.ismastersim then
         return inst
@@ -109,14 +139,22 @@ local function raw()
     inst.components.edible.hungervalue = TUNING.CALORIES_TINY/2
 
     inst:AddComponent("bait")
+
+    inst:AddComponent("farmplantable")
+    inst.components.farmplantable.plant = pickfarmplant --"farm_plant_watermelon"
+
+	inst:AddComponent("oceanfishingtackle")
+	inst.components.oceanfishingtackle:SetupLure({build = "oceanfishing_lure_mis", symbol = "hook_seeds", single_use = true, lure_data = TUNING.OCEANFISHING_LURE.SEED})
+
+    inst:AddComponent("deployable")
+    inst.components.deployable:SetDeployMode(DEPLOYMODE.CUSTOM) -- use inst._custom_candeploy_fn
+    inst.components.deployable.restrictedtag = "plantkin"
+    inst.components.deployable.ondeploy = OnDeploy
+
+	 -- deprecated (used for crafted farm structures)
     inst:AddComponent("plantable")
     inst.components.plantable.growtime = TUNING.SEEDS_GROW_TIME
     inst.components.plantable.product = pickproduct
-
-    inst:AddComponent("deployable")
-    inst.components.deployable:SetDeployMode(DEPLOYMODE.PLANT)
-    inst.components.deployable.restrictedtag = "plantkin"
-    inst.components.deployable.ondeploy = OnDeploy
 
     return inst
 end
@@ -137,6 +175,28 @@ local function cooked()
     return inst
 end
 
+local function update_seed_placer_outline(inst)
+	local x, y, z = inst.Transform:GetWorldPosition()
+	if TheWorld.Map:CanTillSoilAtPoint(x, y, z) then
+		local cx, cy, cz = TheWorld.Map:GetTileCenterPoint(x, y, z)
+		inst.outline.Transform:SetPosition(cx, cy, cz)
+		inst.outline:Show()
+	else
+		inst.outline:Hide()
+	end
+end
+
+local function seed_placer_postinit(inst)
+	inst.outline = SpawnPrefab("tile_outline")
+
+	inst.outline.Transform:SetPosition(2, 0, 0)
+	inst.outline:ListenForEvent("onremove", function() inst.outline:Remove() end, inst)
+	inst.outline.AnimState:SetAddColour(.25, .75, .25, 0)
+	inst.outline:Hide()
+
+	inst.components.placer.onupdatetransform = update_seed_placer_outline
+end
+
 return Prefab("seeds", raw, assets, prefabs),
     Prefab("seeds_cooked", cooked, assets),
-    MakePlacer("seeds_placer", "plant_normal_ground", "plant_normal_ground", "placer")
+    MakePlacer("seeds_placer", "farm_soil", "farm_soil", "till_idle", nil, nil, nil, nil, nil, nil, seed_placer_postinit)

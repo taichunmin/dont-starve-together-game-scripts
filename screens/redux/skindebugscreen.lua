@@ -27,7 +27,7 @@ function SkinDebugScreen:DoInit()
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
     self.bg = self.root:AddChild(Image("images/bg_spiral.xml", "bg_spiral.tex"))
 
-    
+
     local menu_items = {}
     table.insert( menu_items, {text="Last Shoes", cb= function() self:SetShoes(false) end})
     table.insert( menu_items, {text="Next Shoes", cb= function() self:SetShoes(true) end})
@@ -57,16 +57,16 @@ function SkinDebugScreen:DoInit()
 
     self.puppet = self.puppet_root:AddChild(Puppet())
     self.puppet:SetScale(5.0)
-    self.puppet:SetClickable(false)	
+    self.puppet:SetClickable(false)
 
     self.character = "wilson"
     self.skintypes = GetSkinModes(self.character)
 	self.view_index = 1
     self.selected_skintype = self.skintypes[self.view_index].type
-    
+
     self.puppet:SetSkins(self.character, "wilson_formal", {}, true, self.selected_skintype)
-    
-    
+
+
 
 
     for id,data in pairs( CLOTHING ) do
@@ -115,7 +115,7 @@ end
 function SkinDebugScreen:ResizeShoes(delta)
     local b = self.shoes[self.shoes_index]
     CLOTHING[b.id].feet_cuff_size = (CLOTHING[b.id].feet_cuff_size or 1) + delta
-    
+
     self:SortClothesLists()
     self:UpdatePuppet()
 end
@@ -125,7 +125,7 @@ function SkinDebugScreen:SortClothesLists()
 
     local pants_name = self.pants[self.pants_index].id
     local shoes_name = self.shoes[self.shoes_index].id
-    
+
     table.sort(self.pants,
         function(a,b)
             if (CLOTHING[a.id].legs_cuff_size or 1) == (CLOTHING[b.id].legs_cuff_size or 1) then

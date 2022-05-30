@@ -58,9 +58,12 @@ local function CheckCCToFree(oldcc, newcc, tofree, target)
     end
 end
 
+local SPAWN_CANT_TAGS = { "INLIMBO" }
+local SPAWN_ONEOF_TAGS = { --[["moonbeast",]] "gargoyle", "werepig", "hound" }
+local SPAWN_WALLS_ONEOF_TAGS = { "wall", "playerskeleton" }
 local function DoSpawn(inst, self)
     local pos = inst:GetPosition()
-    local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, self.range, nil, { "INLIMBO" }, { --[["moonbeast",]] "gargoyle", "werepig", "hound" })
+    local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, self.range, nil, SPAWN_CANT_TAGS, SPAWN_ONEOF_TAGS)
     local offscreenworkers, newcc, tofree
     if inst:IsAsleep() then
         offscreenworkers = {}
@@ -110,7 +113,7 @@ local function DoSpawn(inst, self)
         end
         self.cc = newcc
     elseif #offscreenworkers > 0 then
-        local walls = TheSim:FindEntities(pos.x, pos.y, pos.z, 10, nil, nil, { "wall", "playerskeleton" })
+        local walls = TheSim:FindEntities(pos.x, pos.y, pos.z, 10, nil, nil, SPAWN_WALLS_ONEOF_TAGS)
         for i, v in ipairs(walls) do
             if math.random(self.maxspawns * 2 + 1) <= #offscreenworkers then
                 if v.components.health ~= nil and not v.components.health:IsDead() then
@@ -140,7 +143,7 @@ local function DoSpawn(inst, self)
                 offset = FindWalkableOffset(pos, math.random() * 2 * PI, GetRandomMinMax(minrange, math.max(minrange, minrange + .9 * (self.range - minrange) * attempt / numattempts)), 16, false, true)
                 local x1 = pos.x + offset.x
                 local z1 = pos.z + offset.z
-                local collisions = TheSim:FindEntities(x1, 0, z1, 4, nil, { "INLIMBO" })
+                local collisions = TheSim:FindEntities(x1, 0, z1, 4, nil, SPAWN_CANT_TAGS)
                 for i, v in ipairs(collisions) do
                     local r = v:GetPhysicsRadius(0) + 1
                     if v:GetDistanceSqToPoint(x1, 0, z1) < r * r then
@@ -170,9 +173,11 @@ local function DoSpawn(inst, self)
     end
 end
 
+local PETRIFY_MUST_TAGS = { "moonbeast" }
+local PETRIFY_CANT_TAGS = { "INLIMBO" }
 function MoonBeastSpawner:ForcePetrify()
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, self.range, { "moonbeast" }, { "INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, self.range, PETRIFY_MUST_TAGS, PETRIFY_CANT_TAGS)
     for i, v in ipairs(ents) do
         if v.brain ~= nil then
             v.brain:ForcePetrify()
@@ -183,12 +188,13 @@ function MoonBeastSpawner:ForcePetrify()
     end
 end
 
+local GARGOYLE_TAGS = { "gargoyle" }
 function MoonBeastSpawner:Start()
     if not self.started then
         self.started = true
 
         local x, y, z = self.inst.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x, y, z, self.range, { "gargoyle" })
+        local ents = TheSim:FindEntities(x, y, z, self.range, GARGOYLE_TAGS)
         for i, v in ipairs(ents) do
             v:Reanimate(self.inst)
         end

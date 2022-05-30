@@ -48,7 +48,7 @@ local RecipeList = Class(Widget, function(self, clickFn)
 	Widget._ctor(self, "RecipeList")
 
 	self.root = self:AddChild(Widget("specials_container"))
-	self.root:SetPosition(-15, -40)	
+	self.root:SetPosition(-15, -40)
 
 	self.clickFn = clickFn
 
@@ -72,9 +72,9 @@ function RecipeList:DoInit()
     self.recipes_spinner = self.root:AddChild(Spinner( {}, TEXT_WIDTH, nil, {font=BUTTONFONT, size=24}, nil, nil, spinner_lean_images, true, 200, 50))
     self.recipes_spinner:SetOnChangedFn(function()
 											local selectedRecipe = self.data[self.recipes_spinner:GetSelectedIndex()]
-											self:DisplayData(selectedRecipe) 
+											self:DisplayData(selectedRecipe)
 											if selectedRecipe ~= nil then
-	    										if self.clickFn then 
+	    										if self.clickFn then
 	    											self.clickFn(selectedRecipe or {})
 	    										end
 	    									end
@@ -95,7 +95,7 @@ end
 function RecipeList:SetData(recipes)
 	self.data = recipes or {}
 
-	
+
 	local options = {}
 	for k,v in pairs(recipes) do
 		local str = STRINGS.UI.TRADESCREEN.RECIPE_TITLE
@@ -106,7 +106,7 @@ function RecipeList:SetData(recipes)
 		table.insert(options, {text=STRINGS.UI.TRADESCREEN.NO_RECIPES} )
 	end
 	self.recipes_spinner:SetOptions( options )
-	
+
 	self.recipes_spinner:SetSelectedIndex(1) --we've got new data, go back to the start of the list
 	self.recipes_spinner:Changed()
 end
@@ -125,7 +125,7 @@ local function are_restrictions_same( res_data, res )
 	if res_data == nil then
 		return false
 	end
-	
+
 	local type_matches = res_data.item_type == res.ItemType
 	local rarity_matches = res_data.rarity == res.Rarity
 	local tags_match = #res_data.tags == #res.Tags
@@ -137,7 +137,7 @@ local function are_restrictions_same( res_data, res )
 			end
 		end
 	end
-	
+
 	return type_matches and rarity_matches and tags_match
 end
 
@@ -162,7 +162,7 @@ local function coalesce_recipes(recipe_data)
 			if #data.tags > 0 then
 				data.type = GetTypeFromTag(data.tags[1])
 			end
-			
+
 			table.insert( res_data, data )
 			last_idx = last_idx + 1
 
@@ -176,13 +176,13 @@ local function coalesce_recipes(recipe_data)
 end
 
 function RecipeList:DisplayData(recipe_data)
-	if recipe_data ~= nil then	
+	if recipe_data ~= nil then
 		--print( "DisplayData for", recipe_data.RecipeName )
-		
+
 		self.num_needed = {} -- this stores the number of items needed to match each recipe line
 
 		--Coalesce recipe restrictions
-		local res_data = coalesce_recipes(recipe_data)	
+		local res_data = coalesce_recipes(recipe_data)
 
 		-- local vars for getting the max string width so we can center the ingredients list
 		local temp = Text(FONT, FONTSIZE, "")
@@ -202,7 +202,7 @@ function RecipeList:DisplayData(recipe_data)
 					maxwidth = w
 				end
 
-				if show_icon then 
+				if show_icon then
 					self.specials[i].icon:SetItem(coalesce_res.type or "", coalesce_res.item_type, nil, nil)
 				else
 					self.specials[i].icon:ClearFrame()
@@ -221,10 +221,10 @@ function RecipeList:DisplayData(recipe_data)
 		self.specials_root:SetPosition(-.5*(maxwidth - 30), 0, 0)
 
 		temp:Kill()
-		
+
 		local num_days = math.floor( recipe_data.TimeLeft / (60*60*24) )
 		self.days_remaining.days:SetString(""..num_days)
-		
+
 		self.days_remaining.days:Show()
 		self.days_remaining.tag:Show()
 		self.days_remaining.days_text:SetPosition(DAYS_TEXT_POSITION, 0, 0)
@@ -241,7 +241,7 @@ function RecipeList:DisplayData(recipe_data)
 			end
 		elseif num_days == 1 then
 			self.days_remaining.days_text:SetString(STRINGS.UI.TRADESCREEN.DAY_REMAINING)
-		else 
+		else
 			self.days_remaining.days_text:SetString(STRINGS.UI.TRADESCREEN.DAYS_REMAINING)
 		end
 	else
@@ -263,7 +263,7 @@ function RecipeList:BuildString(data)
 	elseif #data.tags > 0 then
 		str = STRINGS.UI.TRADESCREEN.RECIPE_INGREDIENT_TAGS
 		local tags = ""
-		for k,v in pairs(data.tags) do 
+		for k,v in pairs(data.tags) do
     		local type = GetTypeFromTag(v)
     		if type ~= nil then
 				tags = tags .. STRINGS.UI.TRADESCREEN[string.upper(type)] .. " "
@@ -279,11 +279,11 @@ function RecipeList:BuildString(data)
 		str = STRINGS.UI.TRADESCREEN.RECIPE_INGREDIENT_RARITY
 		show_icon = false
 	end
-	
+
 	str = string.gsub(str, "<number>", data.number and ""..data.number or "")
 	str = string.gsub(str, "<plural>", data.number > 1 and "s" or "" )
 	str = string.gsub(str, "<rarity>", STRINGS.UI.RARITY[data.rarity])
-	
+
 	return str, show_icon
 end
 
@@ -292,11 +292,11 @@ end
 function RecipeList:UpdateSelectedIngredients(selected_items)
 	local recipe_data = self.data[self.recipes_spinner:GetSelectedIndex()]
 
-	for i = 1, #self.specials do 
+	for i = 1, #self.specials do
 		self.specials[i]:SetChecked(false)
 	end
 
-	if #selected_items <= 0 then 
+	if #selected_items <= 0 then
 		return
 	end
 
@@ -304,19 +304,19 @@ function RecipeList:UpdateSelectedIngredients(selected_items)
 	local satisfied_restrictions = GetSatisfiedRestrictions(recipe_data, selected_items)
 
 	local function already_satisfied(display_index) -- helper function, determines whether a coalesced line is satisfied or not
-		for k,v in pairs(recipe_data.Restrictions) do 
+		for k,v in pairs(recipe_data.Restrictions) do
 			if v.coalesced_index == display_index and
-				not satisfied_restrictions[k] then 
+				not satisfied_restrictions[k] then
 				return false
 			end
 		end
 
 		return true
-	end 
+	end
 
 	-- Change the displayed lines if they are satisfied
-	for k,v in pairs(self.specials) do 
-		if already_satisfied(k) then 
+	for k,v in pairs(self.specials) do
+		if already_satisfied(k) then
 			self.specials[k]:SetChecked(true)
 		end
 	end
@@ -324,7 +324,7 @@ end
 
 function RecipeList:OnControl(control, down)
 	if RecipeList._base.OnControl(self, control, down) then return true end
-	
+
 	if down then
 		if control == CONTROL_PREVVALUE then
 			self.recipes_spinner:Prev()
@@ -346,14 +346,14 @@ function RecipeList:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 
 	local t = {}
-	if self.prev_hint and self.next_hint then 
-		if self.recipes_spinner.leftimage.enabled and self.recipes_spinner.rightimage.enabled then 
+	if self.prev_hint and self.next_hint then
+		if self.recipes_spinner.leftimage.enabled and self.recipes_spinner.rightimage.enabled then
 			table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PREVVALUE, false, false) .. "/"
 							.. TheInput:GetLocalizedControl(controller_id, CONTROL_NEXTVALUE, false, false) .." "
 							.. self.prev_hint .. "/" .. self.next_hint)
-		elseif self.recipes_spinner.leftimage.enabled then 
+		elseif self.recipes_spinner.leftimage.enabled then
 			table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PREVVALUE, false, false) .. " " .. self.prev_hint)
-		else 
+		else
 			table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_NEXTVALUE, false, false) .. " " .. self.next_hint)
 		end
 	end

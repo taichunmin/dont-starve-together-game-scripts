@@ -7,12 +7,13 @@ local assets =
 local MAXRANGE = 3
 local NO_TAGS_NO_PLAYERS = { "bramble_resistant", "INLIMBO", "notarget", "noattack", "flight", "invisible", "player" }
 local NO_TAGS = { "bramble_resistant", "INLIMBO", "notarget", "noattack", "flight", "invisible", "playerghost" }
+local COMBAT_TARGET_TAGS = { "_combat" }
 
 local function OnUpdateThorns(inst)
     inst.range = inst.range + .75
 
     local x, y, z = inst.Transform:GetWorldPosition()
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, inst.range + 3, { "_combat" }, inst.canhitplayers and NO_TAGS or NO_TAGS_NO_PLAYERS)) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, inst.range + 3, COMBAT_TARGET_TAGS, inst.canhitplayers and NO_TAGS or NO_TAGS_NO_PLAYERS)) do
         if not inst.ignore[v] and
             v:IsValid() and
             v.entity:IsVisible() and

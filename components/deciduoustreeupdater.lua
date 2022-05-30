@@ -89,14 +89,14 @@ end
 local prefabs =
 {
     "green_leaves",
-    "red_leaves",    
+    "red_leaves",
     "orange_leaves",
     "yellow_leaves",
     "deciduous_root",
     "birchnutdrake",
 }
 
-local builds = 
+local builds =
 {
     normal = { --Green
         leavesbuild="tree_leaf_green_build",
@@ -143,6 +143,8 @@ local function OnStopMonster(inst)
     inst:StopMonster()
 end
 
+local DRAKESPAWNTARGET_MUST_TAGS = { "_combat" } --see entityreplica.lua
+local DRAKESPAWNTARGET_CANT_TAGS = { "flying", "birchnutdrake", "wall" }
 local function OnPassDrakeSpawned(passdrake)
     if passdrake.components.combat ~= nil then
         local target = FindEntity(
@@ -151,8 +153,8 @@ local function OnPassDrakeSpawned(passdrake)
                 function(guy)
                     return passdrake.components.combat:CanTarget(guy)
                 end,
-                { "_combat" }, --see entityreplica.lua
-                { "flying", "birchnutdrake", "wall" }
+                DRAKESPAWNTARGET_MUST_TAGS,
+                DRAKESPAWNTARGET_CANT_TAGS
             )
         if target ~= nil then
             passdrake.components.combat:SuggestTarget(target)
@@ -245,8 +247,8 @@ function DeciduousTreeUpdater:OnUpdate(dt)
                     function(guy)
                         return self.inst.components.combat:CanTarget(guy)
                     end,
-                    { "_combat" }, --see entityreplica.lua
-                    { "flying", "birchnutdrake", "wall" }
+                    DRAKESPAWNTARGET_MUST_TAGS, --see entityreplica.lua
+                    DRAKESPAWNTARGET_CANT_TAGS
                 ) or nil
 
             if self.monster_target ~= nil and self.last_monster_target ~= nil and GetTime() - self.last_attack_time > TUNING.DECID_MONSTER_ATTACK_PERIOD then

@@ -21,7 +21,7 @@ local function fn()
     inst:AddTag("NOBLOCK")
     inst:AddTag("DECOR")
 
-    inst.Transform:SetRotation(90)    
+    inst.Transform:SetRotation(90)
 
     inst.entity:SetPristine()
 

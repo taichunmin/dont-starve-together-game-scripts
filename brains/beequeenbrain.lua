@@ -193,7 +193,7 @@ local function ShouldDodge(self)
         self._dodgetime = nil
         self.inst.components.locomotor.walkspeed = TUNING.BEEQUEEN_DODGE_SPEED
         self.inst.hit_recovery = TUNING.BEEQUEEN_DODGE_HIT_RECOVERY
-        self.inst.sg.mem.last_hit_time = t
+        CommonHandlers.UpdateHitRecoveryDelay(self.inst)
         return true
     end
     --Reset dodge timer to retry in half the time

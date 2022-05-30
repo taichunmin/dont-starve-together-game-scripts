@@ -123,7 +123,7 @@ local states =
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("pickup")
-            inst.SoundEmitter:KillAllSounds()    
+            inst.SoundEmitter:KillAllSounds()
             inst.SoundEmitter:PlaySound("dontstarve/creatures/worm/emerge")
         end,
 
@@ -379,7 +379,7 @@ local states =
                 inst.SoundEmitter:KillSound("walkloop")
             end
         end,
-    },  
+    },
 
     State{
         name = "lure_enter",
@@ -456,7 +456,7 @@ local states =
         timeline =
         {
             TimeEvent(FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/worm/lure_retract") end),
-        }, 
+        },
 
         events =
         {

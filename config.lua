@@ -46,7 +46,7 @@ local defaults =
 
 local platform_overrides =
 {
-	
+
 	NACL=
 	{
 		force_netbookmode = true,

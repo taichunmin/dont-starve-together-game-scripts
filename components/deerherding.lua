@@ -16,7 +16,7 @@ local DeerHerding = Class(function(self, inst)
     self.inst = inst
 
     self.inst:StartUpdatingComponent(self)
-    
+
 	self.herdhomelocation = nil
     self.herdlocation = Vector3(0,0,0)
     self.herdheading = 0
@@ -60,7 +60,7 @@ function DeerHerding:CalcHerdCenterPoint(detailedinfo)
 			if dist < ACTIVE_HERD_RADIUS * ACTIVE_HERD_RADIUS then
 				center = center + k:GetPosition()
 				count = count + 1
-				
+
 				if detailedinfo then
 					table.insert(activedeer, k)
 					facing = facing + k.Transform:GetRotation()
@@ -98,7 +98,7 @@ function DeerHerding:UpdateHerdLocation(radius)
 	if self.keepheading then
 		facing = self.herdheading
 	end
-	facing = GetRandomWithVariance(facing, 50) 
+	facing = GetRandomWithVariance(facing, 50)
 
 	local result_offset, result_angle, deflected = FindWalkableOffset(center, facing*DEGREES, radius, 8, true, false, self.valid_area_check) -- try avoiding walls
 	if result_angle == nil then
@@ -122,9 +122,14 @@ function DeerHerding:IsActiveInHerd(deer)
 	return self.herdspawner ~= nil and self.herdspawner:GetDeer()[deer] and true or false
 end
 
+local STRUCTURES_CANT_TAGS = { "INLIMBO", "fire", "burnt" }
+local STRUCTURES_ONEOF_TAGS = { "wall", "structure" }
+local SALTLICK_MUST_TAGS = { "saltlick" }
+local SALTLICK_CANT_TAGS = { "INLIMBO", "fire", "burnt" }
+
 function DeerHerding:UpdateDeerHerdingStatus()
 	local herd_center = self:CalcHerdCenterPoint()
-	
+
 	local alldeer = self.herdspawner:GetDeer()
 	for deer, wasactive in pairs(alldeer) do
 		local isactive = true
@@ -133,14 +138,14 @@ function DeerHerding:UpdateDeerHerdingStatus()
 		else
 		    local x, y, z = deer.Transform:GetWorldPosition()
 			if (herd_center == nil or deer:GetDistanceSqToPoint(herd_center) > (INACTIVE_HERD_RADIUS * INACTIVE_HERD_RADIUS))
-				or #(TheSim:FindEntities(x, y, z, STRUCTURES_FOR_URBAN_RADIUS, nil, { "INLIMBO", "fire", "burnt" }, { "wall", "structure" })) > NUM_STRUCTURES_FOR_URBAN 
-				or #(TheSim:FindEntities(x, y, z, TUNING.SALTLICK_CHECK_DIST, { "saltlick" }, { "INLIMBO", "fire", "burnt" })) > 0
+				or #(TheSim:FindEntities(x, y, z, STRUCTURES_FOR_URBAN_RADIUS, nil, STRUCTURES_CANT_TAGS, STRUCTURES_ONEOF_TAGS)) > NUM_STRUCTURES_FOR_URBAN
+				or #(TheSim:FindEntities(x, y, z, TUNING.SALTLICK_CHECK_DIST, SALTLICK_MUST_TAGS, SALTLICK_CANT_TAGS)) > 0
 				then
-				
+
 				isactive = false
 			end
 		end
-		
+
 		if isactive ~= wasactive then
 			alldeer[deer] = isactive
 		end
@@ -153,17 +158,17 @@ function DeerHerding:CalcIsHerdSpooked()
 	end
 
 	for deer, _ in pairs(self.herdspawner:GetDeer()) do
-		if deer:IsValid() and self:IsActiveInHerd(deer) then			
+		if deer:IsValid() and self:IsActiveInHerd(deer) then
 			if deer.components.health.takingfiredamage
 				or deer.components.combat:HasTarget()
 				or (deer.components.hauntable and deer.components.hauntable.panic)
 				then
-				
+
 				return true
 			end
 		end
 	end
-	
+
 	return false
 end
 
@@ -175,7 +180,7 @@ function DeerHerding:IsAnyEntityAsleep()
 	end
 	return false
 end
-			
+
 
 function DeerHerding:OnUpdate(dt)
 	if self.herdspawner == nil then
@@ -203,7 +208,7 @@ function DeerHerding:OnUpdate(dt)
 			self.lastupdate = curtime
 		end
 	end
-	
+
 	if curtime - self.lastupdate < UPDATE_RATE then
 		return
 	end
@@ -224,7 +229,7 @@ function DeerHerding:OnUpdate(dt)
 					spookdir = spookdir + v:GetPosition()
 				end
 				spookdir = spookdir / #threats
-				
+
 				self.herdheading = math.atan2(spookdir.z - herd_center.z, herd_center.x - spookdir.x)/DEGREES
 			end
 

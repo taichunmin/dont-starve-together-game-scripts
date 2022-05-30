@@ -24,7 +24,7 @@ function Stunnable:TakeDamage(damage)
 	if GetTime() < self.valid_stun_time then return end
 
 	self.damage[GetTime()] = math.abs(damage)
-	
+
 	if self:GetDamageInPeriod() > self.stun_threshold then
 		self:Stun()
 	end
@@ -36,10 +36,10 @@ function Stunnable:GetDamageInPeriod()
 
 	for k,v in pairs(self.damage) do
 
-		if k + self.stun_period > GetTime() then			
-			totaldamage = totaldamage + v		
-		else		
-			table.insert(toremove, k)		
+		if k + self.stun_period > GetTime() then
+			totaldamage = totaldamage + v
+		else
+			table.insert(toremove, k)
 		end
 	end
 

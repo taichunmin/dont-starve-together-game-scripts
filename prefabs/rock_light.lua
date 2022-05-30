@@ -115,7 +115,7 @@ end
 local function onfuelchange(newsection, oldsection, inst)
     --print(string.format("SectionCallback: old=%d, new=%d, perc=%f", oldsection, newsection, inst.components.fueled:GetSectionPercent()))
     if newsection <= 0 then
-        inst.components.burnable:Extinguish() 
+        inst.components.burnable:Extinguish()
         inst:DoTaskInTime(2, function(inst)
                                  inst.components.workable:SetWorkLeft(MAXWORK)
                                  SetWorkLevel( inst, MAXWORK )
@@ -129,7 +129,7 @@ local function onfuelchange(newsection, oldsection, inst)
         --end
         if newsection == 1 then
             SetWorkLevel(inst, MEDIUM)
-            if oldsection == 2 then 
+            if oldsection == 2 then
                 inst.components.workable:SetWorkLeft(MEDIUM)
             end
         elseif newsection == 2 then
@@ -170,7 +170,7 @@ local function fn()
     inst:AddTag("structure")
     inst:AddTag("stone")
 
-    MakeObstaclePhysics(inst, 1)    
+    MakeObstaclePhysics(inst, 1)
 
     inst.entity:SetPristine()
 
@@ -196,7 +196,7 @@ local function fn()
     inst.components.workable:SetWorkLeft(MAXWORK)
     inst.components.workable:SetMaxWork(MAXWORK)
     inst.components.workable:SetOnFinishCallback(onhammered)
-    inst.components.workable:SetOnWorkCallback(onhit)    
+    inst.components.workable:SetOnWorkCallback(onhit)
 
     -------------------------
     inst:AddComponent("fueled")

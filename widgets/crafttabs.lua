@@ -170,7 +170,7 @@ local CraftTabs = Class(Widget, function(self, owner, top_root)
 
 		table.sort(tabnames, function(a,b) return a.sort < b.sort end)
 
-	    self.tabs.spacing = 760 / numtabslots
+	    self.tabs.spacing = 790 / numtabslots
 	end
 
     self.tabbyfilter = {}
@@ -292,6 +292,9 @@ local CraftTabs = Class(Widget, function(self, owner, top_root)
     self.inst:ListenForEvent("unlockrecipe", UpdateRecipes, self.owner)
     self.inst:ListenForEvent("refreshcrafting", UpdateRecipes, self.owner)
     self.inst:ListenForEvent("refreshinventory", UpdateRecipes, self.owner)
+    if TheWorld then
+        self.inst:ListenForEvent("serverpauseddirty", UpdateRecipes, TheWorld)
+    end
     self:DoUpdateRecipes()
     self:SetScale(self.base_scale)
     self:StartUpdating()
@@ -348,6 +351,8 @@ function CraftTabs:CloseControllerCrafting()
         self.controllercraftingopen = false
         self.tabs:DeselectAll()
         self.controllercrafting:Close()
+
+	    SetAutopaused(false)
     end
 end
 
@@ -356,8 +361,10 @@ function CraftTabs:OpenControllerCrafting()
 
     if not self.controllercraftingopen then
         self.controllercraftingopen = true
-        self.crafting:Close()   
-        self.controllercrafting:Open()  
+        self.crafting:Close()
+        self.controllercrafting:Open()
+
+	    SetAutopaused(true)
     end
 end
 
@@ -513,10 +520,10 @@ function CraftTabs:DoUpdateRecipes()
                 if IsRecipeValid(rec.name) then
                     local tab = self.tabbyfilter[rec.tab]
                     if tab ~= nil then
-                        local has_researched = builder:KnowsRecipe(rec.name)
+                        local has_researched = builder:KnowsRecipe(rec)
                         local can_learn = builder:CanLearn(rec.name)
                         local can_see = has_researched or (can_learn and CanPrototypeRecipe(rec.level, current_research_level))
-                        local can_build = can_learn and builder:CanBuild(rec.name)
+                        local can_build = can_learn and builder:HasIngredients(rec)
                         local buffered_build = builder:IsBuildBuffered(rec.name)
                         local can_research = not has_researched and can_see and can_build
 

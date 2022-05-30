@@ -52,9 +52,10 @@ local function decay(inst)
     SpawnPrefab("collapse_small").Transform:SetPosition(x, y, z)
 end
 
-local function SetSkeletonDescription(inst, char, playername, cause, pkname)
+local function SetSkeletonDescription(inst, char, playername, cause, pkname, userid)
     inst.char = char
     inst.playername = playername
+	inst.userid = userid
     inst.pkname = pkname
     inst.cause = pkname == nil and cause:lower() or nil
     inst.components.inspectable.getspecialdescription = getdesc
@@ -88,6 +89,7 @@ local function onsaveplayer(inst, data)
 
     data.char = inst.char
     data.playername = inst.playername
+	data.userid = inst.userid
     data.pkname = inst.pkname
     data.cause = inst.cause
     if inst.skeletonspawntime ~= nil then
@@ -104,6 +106,7 @@ local function onloadplayer(inst, data)
     if data ~= nil and data.char ~= nil and (data.cause ~= nil or data.pkname ~= nil) then
         inst.char = data.char
         inst.playername = data.playername --backward compatibility for nil playername
+		inst.userid = data.userid
         inst.pkname = data.pkname --backward compatibility for nil pkname
         inst.cause = data.cause
         if inst.components.inspectable ~= nil then

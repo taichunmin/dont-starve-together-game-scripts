@@ -1,3 +1,4 @@
+require("worldsettingsutil")
 require "prefabutil"
 local RuinsRespawner = require "prefabs/ruinsrespawner"
 
@@ -105,6 +106,9 @@ local function onsafetospawn(inst)
     end
 end
 
+local TARGET_MUST_TAGS = { "_combat" }
+local TARGET_CANT_TAGS = { "playerghost", "INLIMBO" }
+local TARGET_ONEOF_TAGS = { "character", "monster" }
 local function OnHaunt(inst)
     if inst.components.childspawner == nil or
         not inst.components.childspawner:CanSpawn() or
@@ -116,9 +120,9 @@ local function OnHaunt(inst)
         FindEntity(inst,
             25,
             nil,
-            { "_combat" },
-            { "playerghost", "INLIMBO" },
-            { "character", "monster" }
+            TARGET_MUST_TAGS,
+            TARGET_CANT_TAGS,
+            TARGET_ONEOF_TAGS
         )
 
     if target ~= nil then
@@ -127,6 +131,10 @@ local function OnHaunt(inst)
     end
 
     return false
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.MONKEYBARREL_SPAWN_PERIOD, TUNING.MONKEYBARREL_REGEN_PERIOD)
 end
 
 local function fn()
@@ -154,10 +162,21 @@ local function fn()
         return inst
     end
 
-    inst:AddComponent( "childspawner" )
-    inst.components.childspawner:SetRegenPeriod(120)
-    inst.components.childspawner:SetSpawnPeriod(30)
-    inst.components.childspawner:SetMaxChildren(math.random(3, 4))
+    inst:AddComponent("childspawner")
+    inst.components.childspawner:SetRegenPeriod(TUNING.MONKEYBARREL_REGEN_PERIOD)
+    inst.components.childspawner:SetSpawnPeriod(TUNING.MONKEYBARREL_SPAWN_PERIOD)
+    if TUNING.MONKEYBARREL_CHILDREN.max == 0 then
+        inst.components.childspawner:SetMaxChildren(0)
+    else
+        inst.components.childspawner:SetMaxChildren(math.random(TUNING.MONKEYBARREL_CHILDREN.min, TUNING.MONKEYBARREL_CHILDREN.max))
+    end
+
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.MONKEYBARREL_SPAWN_PERIOD, TUNING.MONKEYBARREL_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.MONKEYBARREL_REGEN_PERIOD, TUNING.MONKEYBARREL_ENABLED)
+    if not TUNING.MONKEYBARREL_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
+
     inst.components.childspawner:StartRegen()
     inst.components.childspawner.childname = "monkey"
     inst.components.childspawner:StartSpawning()
@@ -176,7 +195,7 @@ local function fn()
     local function ondanger()
         if inst.components.childspawner ~= nil then
             inst.components.childspawner:StopSpawning()
-            ReturnChildren(inst) 
+            ReturnChildren(inst)
         end
     end
 
@@ -197,6 +216,8 @@ local function fn()
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
     enqueueShake(inst)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

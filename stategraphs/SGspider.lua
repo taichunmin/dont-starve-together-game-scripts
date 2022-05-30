@@ -2,13 +2,27 @@ require("stategraphs/commonstates")
 
 local actionhandlers =
 {
-    ActionHandler(ACTIONS.EAT, "eat"),
+    ActionHandler(ACTIONS.EAT, 
+        function(inst, action)
+            if action.target:HasTag("spidermutator") and action.target.components.spidermutator:CanMutate(inst) then
+                action.target.components.spidermutator:Mutate(inst, true)
+                return "mutate"
+            else
+                return "eat"
+            end
+        end),
+
     ActionHandler(ACTIONS.GOHOME, "eat"),
     ActionHandler(ACTIONS.INVESTIGATE, "investigate"),
 }
 
 local events =
 {
+    CommonHandlers.OnHop(),
+    CommonHandlers.OnSleep(),
+    CommonHandlers.OnFreeze(),
+    CommonHandlers.OnSink(),
+
     EventHandler("attacked", function(inst)
         if not inst.components.health:IsDead() then
             if inst:HasTag("spider_warrior") or inst:HasTag("spider_spitter") or inst:HasTag("spider_moon") then
@@ -20,7 +34,7 @@ local events =
             end
         end
     end),
-    EventHandler("doattack", function(inst, data) 
+    EventHandler("doattack", function(inst, data)
         if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
             --target CAN go invalid because SG events are buffered
             if inst:HasTag("spider_warrior") then
@@ -47,18 +61,20 @@ local events =
                     or "attack",
                     data.target
                 )
+            elseif inst:HasTag("spider_healer") then
+                if data.target:IsValid() and
+                   (inst.healtime == nil or GetTime() - inst.healtime >= TUNING.SPIDER_HEALING_COOLDOWN) then
+                    inst.sg:GoToState("heal", data.target)
+                else
+                    inst.sg:GoToState("attack", data.target)
+                end
             else
                 inst.sg:GoToState("attack", data.target)
             end
         end
     end),
-    EventHandler("death", function(inst) inst.sg:GoToState("death") end),
-    CommonHandlers.OnSleep(),
-    CommonHandlers.OnFreeze(),
-    EventHandler("entershield", function(inst) inst.sg:GoToState("shield") end),
-    EventHandler("exitshield", function(inst) inst.sg:GoToState("shield_end") end),
 
-    EventHandler("locomote", function(inst) 
+    EventHandler("locomote", function(inst)
         if not inst.sg:HasStateTag("busy") then
             local is_moving = inst.sg:HasStateTag("moving")
             local wants_to_move = inst.components.locomotor:WantsToMoveForward()
@@ -77,12 +93,23 @@ local events =
             inst.sg:GoToState("trapped")
         end
     end),
+
+    EventHandler("mutate", function(inst)
+        if not inst.sg:HasStateTag("mutating") then
+            inst.sg:GoToState("mutate")
+        end
+    end),
+
+    EventHandler("death", function(inst) inst.sg:GoToState("death") end),
+    EventHandler("entershield", function(inst) inst.sg:GoToState("shield") end),
+    EventHandler("exitshield", function(inst) inst.sg:GoToState("shield_end") end),
 }
 
 local function SoundPath(inst, event)
     local creature = "spider"
-
-    if inst:HasTag("spider_moon") then
+    if inst:HasTag("spider_healer") then
+        return "webber1/creatures/spider_cannonfodder/" .. event
+    elseif inst:HasTag("spider_moon") then
 		return "turnoftides/creatures/together/spider_moon/" .. event
     elseif inst:HasTag("spider_warrior") then
         creature = "spiderwarrior"
@@ -105,7 +132,7 @@ local states =
             inst.AnimState:PlayAnimation("death")
             inst.Physics:Stop()
             RemovePhysicsColliders(inst)
-            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         end,
     },
 
@@ -163,11 +190,11 @@ local states =
         onenter = function(inst, start_anim)
             inst.Physics:Stop()
             local animname = "idle"
-            if math.random() < .3 then
+            if math.random() < 0.3 then
                 inst.sg:SetTimeout(math.random()*2 + 2)
             end
 
-            if inst.LightWatcher:GetLightValue() > 1 then
+            if inst:IsLightGreaterThan(1.0) and not inst.bedazzled and not (inst.components.follower and inst.components.follower.leader ~= nil) then
                 inst.AnimState:PlayAnimation("cower" )
                 inst.AnimState:PushAnimation("cower_loop", true)
             elseif start_anim then
@@ -187,14 +214,35 @@ local states =
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("eat")
             inst.sg.statemem.forced = forced
+            inst.SoundEmitter:PlaySound(SoundPath(inst, "eat"), "eating")
         end,
 
         events =
         {
             EventHandler("animover", function(inst)
-                inst.sg:GoToState((inst:PerformBufferedAction() or inst.sg.statemem.forced) and "eat_loop" or "idle")
+                local state = (inst:PerformBufferedAction() or inst.sg.statemem.forced) and "eat_loop" or "idle"
+                if state == "idle" then
+                    inst.SoundEmitter:KillSound("eating")
+                end
+                inst.sg:GoToState(state)
             end),
         },
+    },
+
+    State{
+        name = "eat_loop",
+        tags = {"busy"},
+
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("eat_loop", true)
+            inst.sg:SetTimeout(1+math.random()*1)
+        end,
+
+        ontimeout = function(inst)
+            inst.SoundEmitter:KillSound("eating")
+            inst.sg:GoToState("idle", "eat_pst")
+        end,
     },
 
     State{
@@ -211,20 +259,6 @@ local states =
         },
     },
 
-    State{
-        name = "eat_loop",
-        tags = {"busy"},
-
-        onenter = function(inst)
-            inst.Physics:Stop()
-            inst.AnimState:PlayAnimation("eat_loop", true)
-            inst.sg:SetTimeout(1+math.random()*1)
-        end,
-
-        ontimeout = function(inst)
-            inst.sg:GoToState("idle", "eat_pst")
-        end,       
-    },  
 
     State{
         name = "taunt",
@@ -240,7 +274,7 @@ local states =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
-    },    
+    },
 
     State{
         name = "investigate",
@@ -347,7 +381,7 @@ local states =
 
         timeline =
         {
-            TimeEvent(7*FRAMES, function(inst) 
+            TimeEvent(7*FRAMES, function(inst)
             inst.SoundEmitter:PlaySound(SoundPath(inst, "spit_web")) end),
 
             TimeEvent(21*FRAMES, function(inst) inst.components.combat:DoAttack(inst.sg.statemem.target)
@@ -407,11 +441,37 @@ local states =
     },
 
     State{
+        name = "heal",
+        tags = {"attack", "busy"},
+
+        onenter = function(inst, target)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("heal")
+        end,
+
+        timeline=
+        {
+            TimeEvent(30*FRAMES, function(inst)
+                
+                -- DANY
+                --inst.SoundEmitter:PlaySound("SPIDER SMOKE SOUND")
+
+                inst:DoHeal()
+            end ),
+        },
+
+        events=
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
+        },
+    },
+
+    State{
         name = "hit",
 
         onenter = function(inst)
             inst.AnimState:PlayAnimation("hit")
-            inst.Physics:Stop()            
+            inst.Physics:Stop()
         end,
 
         events=
@@ -441,7 +501,7 @@ local states =
         tags = {"busy", "shield"},
 
         onenter = function(inst)
-            --If taking fire damage, spawn fire effect. 
+            --If taking fire damage, spawn fire effect.
             inst.components.health:SetAbsorptionAmount(TUNING.SPIDER_HIDER_SHELL_ABSORB)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("hide")
@@ -499,6 +559,75 @@ local states =
             inst.sg:GoToState("idle")
         end,
     },
+
+    State{
+        name = "mutate",
+        tags = {"busy", "mutating"},
+
+        onenter = function(inst, start_anim)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("mutate_pre")
+            inst.SoundEmitter:PlaySound(SoundPath(inst, "eat"), "eating")
+        end,
+
+
+        timeline=
+        {
+            TimeEvent(15*FRAMES, function(inst) 
+                inst.SoundEmitter:KillSound("eating")
+                inst.SoundEmitter:PlaySound("webber2/common/mutate") 
+            end),
+        },
+
+        events=
+        {
+            EventHandler("animover", function(inst) 
+                local x,y,z = inst.Transform:GetWorldPosition()        
+                local fx = SpawnPrefab("spider_mutate_fx")
+                fx.Transform:SetPosition(x,y,z)
+
+                inst:DoTaskInTime(0.25, function() 
+
+                    inst.components.inventory:DropEverything()
+
+                    local new_spider = SpawnPrefab(inst.mutation_target)
+                    if new_spider then
+                        local x,y,z = inst.Transform:GetWorldPosition()
+                        new_spider.Transform:SetPosition(x,y,z)
+
+                        if inst.components.follower.leader ~= nil then
+                            new_spider.components.follower:SetLeader(inst.components.follower.leader)
+                        elseif inst.mutator_giver ~= nil then
+                            new_spider.components.follower:SetLeader(inst.mutator_giver)
+                        end
+
+                        if inst.components.combat:HasTarget() then
+                            new_spider.components.combat:SetTarget(inst.components.combat.target)
+                        end
+
+                        new_spider.sg:GoToState("mutate_pst")
+
+                        inst:Remove()
+                    end
+                end)
+            end),
+        },
+    },
+
+    State{
+        name = "mutate_pst",
+        tags = {"busy", "mutating"},
+
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("mutate_pst")
+        end,
+
+        events=
+        {
+            EventHandler("animqueueover", function(inst) inst.sg:GoToState("idle") end),
+        },
+    },
 }
 
 CommonStates.AddSleepStates(states,
@@ -506,7 +635,7 @@ CommonStates.AddSleepStates(states,
     starttimeline = {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(SoundPath(inst, "fallAsleep")) end ),
     },
-    sleeptimeline = 
+    sleeptimeline =
     {
         TimeEvent(35*FRAMES, function(inst) inst.SoundEmitter:PlaySound(SoundPath(inst, "sleeping")) end ),
     },
@@ -514,6 +643,9 @@ CommonStates.AddSleepStates(states,
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound(SoundPath(inst, "wakeUp")) end ),
     },
 })
+
 CommonStates.AddFrozenStates(states)
+CommonStates.AddHopStates(states, true, { pre = "boat_jump_pre", loop = "boat_jump", pst = "boat_jump_pst"})
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("spider", states, events, "idle", actionhandlers)

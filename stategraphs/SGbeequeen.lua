@@ -1,6 +1,8 @@
 require("stategraphs/commonstates")
 
 --------------------------------------------------------------------------
+local FOCUSTARGET_MUST_TAGS = { "_combat", "_health" }
+local FOCUSTARGET_CANT_TAGS = { "INLIMBO", "player", "bee" }
 
 local function ShakeIfClose(inst)
     ShakeAllCameras(CAMERASHAKE.FULL, .5, .02, .15, inst, 30)
@@ -80,7 +82,7 @@ local events =
     EventHandler("attacked", function(inst)
         if not inst.components.health:IsDead() and
             (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("caninterrupt")) and
-            (inst.sg.mem.last_hit_time or 0) + inst.hit_recovery < GetTime() then
+            not CommonHandlers.HitRecoveryDelay(inst, nil, TUNING.BEEQUEEN_MAX_STUN_LOCKS) then
             inst.sg:GoToState("hit")
         end
     end),
@@ -316,7 +318,7 @@ local states =
             inst.components.locomotor:StopMoving()
             inst.AnimState:PlayAnimation("hit")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/bee_queen/hit")
-            inst.sg.mem.last_hit_time = GetTime()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         timeline =
@@ -590,7 +592,7 @@ local states =
                     end
                     if #targets < maxtargets then
                         local x, y, z = inst.Transform:GetWorldPosition()
-                        for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.BEEQUEEN_FOCUSTARGET_RANGE, { "_combat", "_health" }, { "INLIMBO", "player", "bee" })) do
+                        for i, v in ipairs(TheSim:FindEntities(x, y, z, TUNING.BEEQUEEN_FOCUSTARGET_RANGE, FOCUSTARGET_MUST_TAGS, FOCUSTARGET_CANT_TAGS)) do
                             if v.components.combat.target == inst and not v.components.health:IsDead() then
                                 table.insert(targets, v)
                                 if #targets >= maxtargets then

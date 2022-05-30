@@ -40,8 +40,11 @@ local RUN_AWAY_DIST = 5
 local STOP_RUN_AWAY_DIST = 8
 local SEE_PLAYER_DIST = 6
 
+local GETTRADER_MUST_TAGS = { "player" }
+local FINDFOOD_CANT_TAGS = { "outofreach" }
+
 local function GetTraderFn(inst)
-    return FindEntity(inst, TRADE_DIST, function(target) return inst.components.trader:IsTryingToTradeWithMe(target) end, { "player" })
+    return FindEntity(inst, TRADE_DIST, function(target) return inst.components.trader:IsTryingToTradeWithMe(target) end, GETTRADER_MUST_TAGS)
 end
 
 local function KeepTraderFn(inst, target)
@@ -74,7 +77,7 @@ local function FindFoodAction(inst)
                         and item:IsOnPassablePoint()
                 end,
                 nil,
-                { "outofreach" }
+                FINDFOOD_CANT_TAGS
             )
         end
     end
@@ -107,7 +110,7 @@ local function IsHomeOnFire(inst)
 end
 
 local function GetLeader(inst)
-    return inst.components.follower.leader 
+    return inst.components.follower.leader
 end
 
 local function GetHomePos(inst)
@@ -127,7 +130,7 @@ end)
 
 function BunnymanBrain:OnStart()
     --print(self.inst, "PigBrain:OnStart")
-    local root = 
+    local root =
         PriorityNode(
         {
             BrainCommon.PanicWhenScared(self.inst, .25, "RABBIT_PANICBOSS"),

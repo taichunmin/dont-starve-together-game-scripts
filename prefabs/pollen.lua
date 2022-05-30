@@ -21,7 +21,7 @@ local function InitEnvelope()
     EnvelopeManager:AddColourEnvelope(
         COLOUR_ENVELOPE_NAME,
         {   { 0,    IntColour(255, 255, 0, 0) },
-            { .5,   IntColour(255, 255, 0, 127) },              
+            { .5,   IntColour(255, 255, 0, 127) },
             { 1,    IntColour(255, 255, 0, 0) },
         }
     )
@@ -103,7 +103,7 @@ local function fn()
         if map:GetTileAtPoint(x, y, z) ~= GROUND.IMPASSABLE then
             local vx = .03 * (math.random() - .5)
             local vy = 0
-            local vz = .03 * (math.random() - .5)               
+            local vz = .03 * (math.random() - .5)
             if worldstate.isday and worldstate.temperature > TUNING.WILDFIRE_THRESHOLD then
                 vx = vx * .1
                 vy = .01

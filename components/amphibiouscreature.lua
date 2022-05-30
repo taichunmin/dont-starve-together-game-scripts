@@ -53,21 +53,25 @@ function AmphibiousCreature:ShouldTransition(x, z)
 end
 
 function AmphibiousCreature:OnEnterOcean()
-	self.inst.AnimState:SetBank(self.ocean_bank)
-	self.in_water = true
-	self.inst:AddTag("swimming")
-	if self.enterwaterfn then
-		self.enterwaterfn(self.inst)
+	if not self.in_water then
+		self.inst.AnimState:SetBank(self.ocean_bank)
+		self.in_water = true
+		self.inst:AddTag("swimming")
+		if self.enterwaterfn then
+			self.enterwaterfn(self.inst)
+		end
 	end
 end
 
 function AmphibiousCreature:OnExitOcean()
-	self.inst.AnimState:SetBank(self.land_bank)
-	self.in_water = false
-	self.inst:RemoveTag("swimming")
-	if self.exitwaterfn then
-		self.exitwaterfn(self.inst)
-	end	
+	if self.in_water then
+		self.inst.AnimState:SetBank(self.land_bank)
+		self.in_water = false
+		self.inst:RemoveTag("swimming")
+		if self.exitwaterfn then
+			self.exitwaterfn(self.inst)
+		end
+	end
 end
 
 function AmphibiousCreature:SetOnTileChangeFn(fn)
@@ -84,6 +88,10 @@ end
 
 function AmphibiousCreature:SetExitWaterFn(fn)
 	self.exitwaterfn = fn
+end
+
+function AmphibiousCreature:GetDebugString()
+	return "in water: " .. tostring(self.in_water)
 end
 
 return AmphibiousCreature

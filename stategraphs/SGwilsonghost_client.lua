@@ -29,10 +29,9 @@ local events =
     end),
 }
 
-local states = 
+local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle", "canrotate" },
 
@@ -69,11 +68,10 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "run",
         tags = { "moving", "running", "canrotate" },
-        
+
         onenter = function(inst)
             inst.components.locomotor:RunForward()
             if not inst.AnimState:IsCurrentAnimation("idle") then
@@ -86,8 +84,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "remoteresurrect",
         tags = { "doing", "busy" },
 
@@ -118,8 +115,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "haunt_pre",
         tags = { "doing", "busy" },
 
@@ -127,7 +123,7 @@ local states =
             inst.components.locomotor:Stop()
             inst.AnimState:PlayAnimation("dissipate")
             inst.SoundEmitter:PlaySound("dontstarve/ghost/ghost_haunt", nil, nil, true)
-            
+
             inst:PerformPreviewBufferedAction()
             inst.sg:SetTimeout(TIMEOUT)
         end,
@@ -150,8 +146,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "jumpin",
         tags = { "doing", "busy", "canrotate" },
 
@@ -182,8 +177,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "migrate",
         tags = { "doing", "busy", "canrotate" },
 

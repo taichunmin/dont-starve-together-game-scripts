@@ -12,14 +12,7 @@ local prefabs =
     "spellmasterybuff",
 }
 
-local start_inv =
-{
-    default =
-    {
-        "papyrus",
-        "papyrus",
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WICKERBOTTOM
 end
@@ -51,6 +44,10 @@ local function master_postinit(inst)
         inst.components.eater.spoiled_health = TUNING.WICKERBOTTOM_SPOILED_FOOD_HEALTH
     end
 
+    inst.components.foodaffinity:AddPrefabAffinity("surfnturf", TUNING.AFFINITY_15_CALORIES_LARGE)
+
+    inst.components.health:SetMaxHealth(TUNING.WICKERBOTTOM_HEALTH)
+    inst.components.hunger:SetMax(TUNING.WICKERBOTTOM_HUNGER)
     inst.components.sanity:SetMax(TUNING.WICKERBOTTOM_SANITY)
 
     inst.components.builder.science_bonus = 1

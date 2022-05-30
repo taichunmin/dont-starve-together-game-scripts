@@ -7,16 +7,7 @@ local assets =
     Asset("ANIM", "anim/player_idles_warly.zip"),
 }
 
-local start_inv =
-{
-    default =
-    {
-        "portablecookpot_item",
-        "potato",
-        "potato",
-        "garlic",
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WARLY
 end
@@ -36,6 +27,8 @@ local function master_postinit(inst)
 
     inst.customidleanim = "idle_warly"
 
+    inst.components.health:SetMaxHealth(TUNING.WARLY_HEALTH)
+    inst.components.sanity:SetMax(TUNING.WARLY_SANITY)
     inst.components.hunger:SetMax(TUNING.WARLY_HUNGER)
     inst.components.hunger:SetRate(TUNING.WILSON_HUNGER_RATE * TUNING.WARLY_HUNGER_RATE_MODIFIER)
 

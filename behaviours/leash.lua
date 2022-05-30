@@ -20,7 +20,8 @@ function Leash:Visit()
         end
     elseif self.status == RUNNING then
         if self:IsOutsideReturnDist() then
-            self.inst.components.locomotor:GoToPoint(self:GetHomePos(), nil, self.running)
+            local run = FunctionOrValue(self.running, self.inst)
+            self.inst.components.locomotor:GoToPoint(self:GetHomePos(), nil, run)
         else
             self.status = SUCCESS
         end
@@ -32,10 +33,7 @@ function Leash:DBString()
 end
 
 function Leash:GetHomePos()
-    if type(self.homepos) == "function" then 
-        return self.homepos(self.inst)
-    end
-    return self.homepos
+    return FunctionOrValue(self.homepos, self.inst)
 end
 
 function Leash:GetDistFromHomeSq()
@@ -53,17 +51,11 @@ function Leash:IsOutsideReturnDist()
 end
 
 function Leash:GetMaxDistSq()
-    if type(self.maxdist) == "function" then
-        local dist = self.maxdist(self.inst)
-        return dist * dist
-    end
-    return self.maxdist * self.maxdist
+    local dist = FunctionOrValue(self.maxdist, self.inst)
+    return dist * dist
 end
 
 function Leash:GetReturnDistSq()
-    if type(self.returndist) == "function" then
-        local dist = self.returndist(self.inst)
-        return dist * dist
-    end
-    return self.returndist*self.returndist
+    local dist = FunctionOrValue(self.returndist, self.inst)
+    return dist * dist
 end

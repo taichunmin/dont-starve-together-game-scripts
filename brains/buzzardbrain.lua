@@ -1,15 +1,15 @@
 --[[
-    
+
     Buzzards will only eat food laying on the ground already. They will not harvest food.
-   
+
     Buzzard spawner looks for food nearby and spawns buzzards on top of it.
     Buzzard spawners also randomly spawn/ call back buzzards so they have a presence in the world.
 
     When buzzards have food on the ground they'll land on it and consume it, then hang around as a normal creature.
     If the buzzard notices food while wandering the world, it will hop towards the food and eat it.
-    
 
-    If attacked while eating, the buzzard will remain near it's food and defend it. 
+
+    If attacked while eating, the buzzard will remain near it's food and defend it.
     If attacked while wandering the world, the buzzard will fly away.
 
 --]]
@@ -31,6 +31,9 @@ for i, v in ipairs(FOODGROUP.OMNI.types) do
     table.insert(FOOD_TAGS, "edible_"..v)
 end
 
+local FINDTHREAT_MUST_TAGS = { "notarget" }
+local FINDTHREAT_CANT_TAGS = { "player", "monster", "scarytoprey" }
+
 local function FindThreat(inst, radius)
     return FindEntity(
             inst,
@@ -40,8 +43,8 @@ local function FindThreat(inst, radius)
                     or inst:IsNear(guy, inst.components.combat:GetAttackRange() + guy:GetPhysicsRadius(0))
             end,
             nil,
-            { "notarget" },
-            { "player", "monster", "scarytoprey" }
+            FINDTHREAT_MUST_TAGS,
+            FINDTHREAT_CANT_TAGS
         )
 end
 
@@ -96,7 +99,7 @@ end
 function BuzzardBrain:OnStart()
     local root = PriorityNode(
     {
-        WhileNode(function() return not self.inst.sg:HasStateTag("flight") end, "Not Flying", 
+        WhileNode(function() return not self.inst.sg:HasStateTag("flight") end, "Not Flying",
         PriorityNode{
             WhileNode(function() return self.inst.shouldGoAway end, "Go Away",
                 DoAction(self.inst, GoHome)),

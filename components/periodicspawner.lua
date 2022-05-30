@@ -58,6 +58,7 @@ function PeriodicSpawner:SetSpawnTestFn(fn)
     self.spawntest = fn
 end
 
+local PERIODICSPAWNER_CANTTAGS = { "INLIMBO" }
 function PeriodicSpawner:TrySpawn(prefab)
     prefab = prefab or self.prefab
 
@@ -79,7 +80,7 @@ function PeriodicSpawner:TrySpawn(prefab)
             return false
         end
 
-        local ents = TheSim:FindEntities(x, y, z, self.range or self.spacing)
+        local ents = TheSim:FindEntities(x, y, z, self.range or self.spacing, nil, PERIODICSPAWNER_CANTTAGS)
         local count = 0
         for i, v in ipairs(ents) do
             if v.prefab == prefab then
@@ -101,9 +102,13 @@ function PeriodicSpawner:TrySpawn(prefab)
             end
         end
     end
-
-    local inst = SpawnPrefab(prefab)
-    inst.Transform:SetPosition(x, y, z)
+    local inst = nil
+    if not self.inst:GetCurrentPlatform() and not TheWorld.Map:IsVisualGroundAtPoint(x,y,z) and TheWorld.components.flotsamgenerator then
+        inst = TheWorld.components.flotsamgenerator:SpawnFlotsam(Vector3(x,y,z),prefab,true)
+    else
+        inst = SpawnPrefab(prefab)
+        inst.Transform:SetPosition(x, y, z)
+    end
     if self.onspawn ~= nil then
         self.onspawn(self.inst, inst)
     end

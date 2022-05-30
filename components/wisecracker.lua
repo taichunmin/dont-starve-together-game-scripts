@@ -16,8 +16,10 @@ local Wisecracker = Class(function(self, inst)
                             inst.components.eater.strongstomach and
                             data.food:HasTag("monstermeat") or
                             inst.components.eater.healthabsorption == 0
-                        )) then
+                        )) and not (inst.components.foodaffinity and inst.components.foodaffinity:HasPrefabAffinity(data.food)) then
+
                     inst.components.talker:Say(GetString(inst, "ANNOUNCE_EAT", "PAINFUL"))
+
                 elseif data.food.components.perishable ~= nil then
                     if data.food.components.perishable:IsFresh() then
                         local ismasterchef = inst:HasTag("masterchef")
@@ -79,8 +81,8 @@ local Wisecracker = Class(function(self, inst)
         end
     end)
 
-    inst:ListenForEvent("snared", function(inst)
-        inst.components.talker:Say(GetString(inst, "ANNOUNCE_SNARED"))
+    inst:ListenForEvent("snared", function(inst, data)
+        inst.components.talker:Say(GetString(inst, data ~= nil and data.announce or "ANNOUNCE_SNARED"))
     end)
 
     inst:ListenForEvent("repelled", function(inst, data)
@@ -125,7 +127,7 @@ local Wisecracker = Class(function(self, inst)
         end)
 
     inst:ListenForEvent("ghostdelta",
-        function(inst, data) 
+        function(inst, data)
             if data.newpercent <= TUNING.GHOST_THRESH and data.oldpercent > TUNING.GHOST_THRESH then
                 inst.components.talker:Say(GetString(inst, "ANNOUNCE_GHOSTDRAIN"))
             end
@@ -137,7 +139,7 @@ local Wisecracker = Class(function(self, inst)
         end)
 
     inst:ListenForEvent("startoverheating",
-        function(inst, data) 
+        function(inst, data)
             inst.components.talker:Say(GetString(inst, "ANNOUNCE_HOT"))
         end)
 
@@ -185,7 +187,7 @@ local Wisecracker = Class(function(self, inst)
 
     inst:ListenForEvent("on_standing_on_new_leak", function(inst)
         inst.components.talker:Say(GetString(inst, "ANNOUNCE_BOAT_LEAK"))
-    end)    
+    end)
 
     inst:ListenForEvent("digdiseasing", function(inst)
         inst.components.talker:Say(GetString(inst, "ANNOUNCE_DIG_DISEASE_WARNING"))
@@ -223,6 +225,10 @@ local Wisecracker = Class(function(self, inst)
         end)
     end
 
+	inst:ListenForEvent("on_halloweenmoonpotion_failed", function(inst)
+		inst.components.talker:Say(GetString(inst, "ANNOUNCE_MOONPOTION_FAILED"))
+	end)
+
     local function OnFoodBuff(inst, data)
         if data ~= nil and
             data.buff ~= nil and
@@ -246,7 +252,7 @@ function Wisecracker:OnUpdate(dt)
     local nightvision = CanEntitySeeInDark(self.inst)
     local is_talker_busy = false
 
-    if nightvision or self.inst.LightWatcher:IsInLight() then
+    if nightvision or self.inst:IsInLight() then
         if not self.inlight and (nightvision or self.inst.LightWatcher:GetTimeInLight() >= 0.5) then
             self.inlight = true
             if self.inst.components.talker ~= nil and not self.inst:HasTag("playerghost") then

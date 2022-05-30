@@ -12,7 +12,7 @@ function NetworkLoginPopup:_BuildButtons(hideOfflineButton)
     if hideOfflineButton == nil or not hideOfflineButton then
         table.insert(buttons, {
                 text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE,
-                cb = function() 
+                cb = function()
                     self:OnLogin(true)
                 end
             })
@@ -22,9 +22,9 @@ end
 
 function NetworkLoginPopup:OnUpdate( dt )
 	local account_manager = TheFrontEnd:GetAccountManager()
-	local isLoggingIn = account_manager:IsWaitingForResponse() 	
+	local isLoggingIn = account_manager:IsWaitingForResponse()
 	local isDownloadingInventory, inventory_progress = TheInventory:IsDownloadingInventory()
-			
+
 	if not isLoggingIn then
 		if isDownloadingInventory then
 			if IsConsole() then
@@ -36,7 +36,10 @@ function NetworkLoginPopup:OnUpdate( dt )
 					self.inventory_step = INVENTORY_PROGRESS.CHECK_EVENT
 				elseif inventory_progress == INVENTORY_PROGRESS.CHECK_DAILY_GIFT and self.inventory_step ~= INVENTORY_PROGRESS.CHECK_DAILY_GIFT then
 					self.dialog.title:SetString(STRINGS.UI.NOTIFICATION.CHECK_DAILY_GIFT)
-					self.inventory_step = INVENTORY_PROGRESS.CHECK_DAILY_GIFT					
+					self.inventory_step = INVENTORY_PROGRESS.CHECK_DAILY_GIFT
+				elseif inventory_progress == INVENTORY_PROGRESS.CHECK_COOKBOOK and self.inventory_step ~= INVENTORY_PROGRESS.CHECK_COOKBOOK then
+					self.dialog.title:SetString(STRINGS.UI.NOTIFICATION.CHECK_COOKBOOK)
+					self.inventory_step = INVENTORY_PROGRESS.CHECK_COOKBOOK
 				elseif inventory_progress == INVENTORY_PROGRESS.CHECK_INVENTORY and self.inventory_step ~= INVENTORY_PROGRESS.CHECK_INVENTORY then
 					self.dialog.title:SetString(STRINGS.UI.NOTIFICATION.CHECK_INVENTORY)
 					self.inventory_step = INVENTORY_PROGRESS.CHECK_INVENTORY

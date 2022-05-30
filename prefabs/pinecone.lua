@@ -8,6 +8,7 @@ local function plant(inst, growtime)
     inst:Remove()
 end
 
+local LEIF_TAGS = { "leif" }
 local function ondeploy(inst, pt, deployer)
     inst = inst.components.stackable:Get()
     inst.Physics:Teleport(pt:Get())
@@ -15,7 +16,7 @@ local function ondeploy(inst, pt, deployer)
     plant(inst, timeToGrow)
 
     --tell any nearby leifs to chill out
-    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.LEIF_PINECONE_CHILL_RADIUS, { "leif" })
+    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, TUNING.LEIF_PINECONE_CHILL_RADIUS, LEIF_TAGS)
 
     local played_sound = false
     for i, v in ipairs(ents) do
@@ -77,6 +78,7 @@ local function addcone(name, spawn_prefab, bank, build, anim, winter_tree)
 
         inst:AddTag("deployedplant")
         inst:AddTag("cattoy")
+        inst:AddTag("treeseed")
 
         MakeInventoryFloatable(inst, "small", 0.05, 0.9)
 
@@ -108,6 +110,9 @@ local function addcone(name, spawn_prefab, bank, build, anim, winter_tree)
         inst:AddComponent("deployable")
         inst.components.deployable:SetDeployMode(DEPLOYMODE.PLANT)
         inst.components.deployable.ondeploy = ondeploy
+
+        inst:AddComponent("forcecompostable")
+        inst.components.forcecompostable.brown = true
 
         if winter_tree ~= nil then
             -- for winters feast event to plant in winter_treestand

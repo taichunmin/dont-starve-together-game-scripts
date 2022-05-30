@@ -118,7 +118,7 @@ local function fn()
     MakeLargeBurnable(inst, nil, nil, true)
     MakeLargePropagator(inst)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     inst:AddComponent("hauntable")

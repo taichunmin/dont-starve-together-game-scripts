@@ -17,6 +17,8 @@ local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, 
     self.activity_checker_fn = activity_checker_fn
     self.activity_writer_fn = activity_writer_fn
 
+    self.yotb_filter = filter_options and filter_options.yotb_filter or nil
+
     self.picker = self:AddChild(self:_BuildItemExplorer())
     self.picker:SetPosition(310, 130)
 
@@ -25,12 +27,18 @@ local ClothingExplorerPanel = Class(Widget, function(self, owner, user_profile, 
     if filter_options ~= nil and filter_options.ignore_hero then
         hero_filter = GetNullFilter()
     end
-    self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SURVIVOR_FILTER_FMT, "survivor_filter_on.tex", "survivor_filter_off.tex", "heroFilter", hero_filter) )
+
+    if not filter_options or not filter_options.ignore_survivor then
+        self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.SURVIVOR_FILTER_FMT, "survivor_filter_on.tex", "survivor_filter_off.tex", "heroFilter", hero_filter) )
+    end
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddSorter() )
-    if self.item_type == "base" or (filter_options ~= nil and filter_options.ignore_hero) then
+    if self.item_type == "base" or (filter_options ~= nil and filter_options.ignore_hero) or self.yotb_filter  then
         self.filter_bar:HideFilter("heroFilter")
+        self.picker.header:AddChild( self.filter_bar:AddSearch( ) )
+    else
+        self.picker.header:AddChild( self.filter_bar:AddSearch( true ) )
     end
 
     self:_DoFocusHookups()
@@ -72,12 +80,16 @@ function ClothingExplorerPanel:_BuildItemExplorer()
         activity_checker_fn = self.activity_checker_fn,
         activity_writer_fn = function() end, -- ignore writes and use OnClickedItem instead
     }
+
     local item_table = CLOTHING
+    if self.owner.currentcharacter == "beefalo" then
+        item_table = BEEFALO_CLOTHING
+    end
     if self.item_type == "base" then
         item_table = GetCharacterSkinBases(self.owner.currentcharacter)
     end
 
-    return ItemExplorer("", self.item_type, item_table, list_options)
+    return ItemExplorer("", self.item_type, item_table, list_options, self.yotb_filter)
 end
 
 

@@ -17,6 +17,7 @@ local REPLICATABLE_COMPONENTS =
     inventoryitem = true,
     moisture = true,
     named = true,
+    oceanfishingrod = true,
     rider = true,
     sanity = true,
     sheltered = true,

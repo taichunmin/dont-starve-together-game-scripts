@@ -137,7 +137,15 @@ local function MakeSpikeFn(shape, size)
         inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
         inst.components.workable:SetWorkLeft(1)
         inst.components.workable:SetOnWorkCallback(onworked)
-        inst.components.workable:SetOnFinishCallback(onworkfinished)
+		inst.components.workable:SetOnFinishCallback(onworkfinished)
+
+		inst:AddComponent("submersible")
+		inst:AddComponent("symbolswapdata")
+		if shape == "spike" then
+			inst.components.symbolswapdata:SetData("swap_glass_spike", "swap_body_"..inst.animname)
+		else
+			inst.components.symbolswapdata:SetData("swap_glass_block", "swap_body")
+		end
 
         inst:AddComponent("hauntable")
         inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
@@ -160,9 +168,11 @@ for i, v in ipairs(SPIKE_SIZES) do
     table.insert(prefabs, name)
     table.insert(ret, Prefab(name, MakeSpikeFn("spike", v), assets))
 end
+table.insert(prefabs, "underwater_salvageable")
+table.insert(prefabs, "splash_green")
 table.insert(ret, Prefab("glassspike", MakeSpikeFn("spike"), assets, prefabs))
 prefabs = nil
 
-table.insert(ret, Prefab("glassblock", MakeSpikeFn("block"), block_assets))
+table.insert(ret, Prefab("glassblock", MakeSpikeFn("block"), block_assets, { "underwater_salvageable" }))
 
 return unpack(ret)

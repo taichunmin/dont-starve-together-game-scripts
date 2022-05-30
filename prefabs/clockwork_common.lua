@@ -5,11 +5,12 @@ local MAX_CHASEAWAY_DIST_SQ = 40 * 40
 local MAX_TARGET_SHARES = 5
 local SHARE_TARGET_DIST = 40
 
+local CHARACTER_TAGS = {"character"}
 local function _BasicWakeCheck(inst)
     return (inst.components.combat ~= nil and inst.components.combat.target ~= nil)
         or (inst.components.burnable ~= nil and inst.components.burnable:IsBurning())
         or (inst.components.freezable ~= nil and inst.components.freezable:IsFrozen())
-        or GetClosestInstWithTag("character", inst, SLEEP_DIST_FROMTHREAT) ~= nil
+        or GetClosestInstWithTag(CHARACTER_TAGS, inst, SLEEP_DIST_FROMTHREAT) ~= nil
 end
 
 local function ShouldSleep(inst)
@@ -26,6 +27,10 @@ local function ShouldWake(inst)
         or _BasicWakeCheck(inst)
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "INLIMBO" }
+local RETARGET_ONEOF_TAGS = { "character", "monster" }
+local CHESSFRIEND_RANGE_PERCENT = 0.5
 local function Retarget(inst, range)
     local homePos = inst.components.knownlocations:GetLocation("home")
     local myLeader = inst.components.follower ~= nil and inst.components.follower.leader or nil
@@ -45,13 +50,19 @@ local function Retarget(inst, range)
                 end
                 local theirLeader = guy.components.follower ~= nil and guy.components.follower.leader or nil
                 local bothFollowingSamePlayer = myLeader ~= nil and myLeader == theirLeader and myLeader:HasTag("player")
-                return not bothFollowingSamePlayer
-                    and not (guy:HasTag("chess") and theirLeader == nil)
-                    and inst.components.combat:CanTarget(guy)
+                if bothFollowingSamePlayer or (guy:HasTag("chess") and theirLeader == nil) then
+                    return false
+                end
+
+                if not guy:IsNear(inst, range * CHESSFRIEND_RANGE_PERCENT) and guy:HasTag("chessfriend") then
+                    return false
+                end
+
+                return inst.components.combat:CanTarget(guy)
             end,
-            { "_combat" },
-            { "INLIMBO" },
-            { "character", "monster" }
+            RETARGET_MUST_TAGS,
+            RETARGET_CANT_TAGS,
+            RETARGET_ONEOF_TAGS
         )
         or nil
 end

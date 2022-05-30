@@ -18,8 +18,8 @@ local NetworkLoginPopup = Class(Screen, function(self, onLogin, onCancel, hideOf
     self.black:SetVAnchor(ANCHOR_MIDDLE)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
-	self.black:SetTint(0,0,0,.75)	
-    
+	self.black:SetTint(0,0,0,.75)
+
 	self.proot = self:AddChild(Widget("ROOT"))
     self.proot:SetVAnchor(ANCHOR_MIDDLE)
     self.proot:SetHAnchor(ANCHOR_MIDDLE)
@@ -31,8 +31,8 @@ local NetworkLoginPopup = Class(Screen, function(self, onLogin, onCancel, hideOf
     self.bg.fill = self.proot:AddChild(Image("images/fepanel_fills.xml", "panel_fill_tiny.tex"))
 	self.bg.fill:SetScale(.54, .45)
 	self.bg.fill:SetPosition(6, 8)
-		
-	--title	
+
+	--title
 	local title = ""
     self.title = self.proot:AddChild(Text(TITLEFONT, 50))
     self.title:SetPosition(0, 70, 0)
@@ -47,31 +47,31 @@ local NetworkLoginPopup = Class(Screen, function(self, onLogin, onCancel, hideOf
     -- self.text:SetRegionSize(140, 100)
 	self.text:SetHAlign(ANCHOR_LEFT)
 	self.text:SetColour(0,0,0,1)
-  
+
     local spacing = 165
     local buttons = {}
 
 	if hideOfflineButton == nil or not hideOfflineButton then
-		buttons[#buttons+1] = 
-			{text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE, cb = function() 
+		buttons[#buttons+1] =
+			{text=STRINGS.UI.MAINSCREEN.PLAYOFFLINE, cb = function()
 				self:OnLogin(true)
 			end}
 	end
 
-	buttons[#buttons+1] = 
-		{text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function() 
-            self:OnCancel()            
+	buttons[#buttons+1] =
+		{text=STRINGS.UI.LOBBYSCREEN.CANCEL, cb = function()
+            self:OnCancel()
         end}
 
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-	self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -93, 0) 
+	self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -93, 0)
 	for i,v in pairs(self.menu.items) do
 		v:SetScale(.7)
 		v.image:SetScale(.6, .8)
 	end
 	self.buttons = buttons
 	self.default_focus = self.menu
-	
+
 	self.time = 0
 	self.progress = 0
 	self.onLogin = onLogin
@@ -80,20 +80,20 @@ end)
 
 function NetworkLoginPopup:OnUpdate( dt )
 	local account_manager = TheFrontEnd:GetAccountManager()
-	local isWaiting = account_manager:IsWaitingForResponse() 
+	local isWaiting = account_manager:IsWaitingForResponse()
 	local isDownloadingInventory = TheInventory:IsDownloadingInventory()
-	
+
 	if not isWaiting and not isDownloadingInventory then
 	    self:OnLogin()
 	end
-	
+
 	self.time = self.time + dt
 	if self.time > 0.75 then
 	    self.progress = self.progress + 1
 	    if self.progress > 3 then
 	        self.progress = 1
 	    end
-	    
+
 	    local text = STRINGS.UI.NOTIFICATION.LOGIN
 	    for k = 1, self.progress, 1 do
 	        text = text .. "."
@@ -104,11 +104,11 @@ function NetworkLoginPopup:OnUpdate( dt )
 end
 
 function NetworkLoginPopup:OnControl(control, down)
-    if NetworkLoginPopup._base.OnControl(self,control, down) then 
-        return true 
+    if NetworkLoginPopup._base.OnControl(self,control, down) then
+        return true
     end
-    
-    if control == CONTROL_CANCEL and not down then    
+
+    if control == CONTROL_CANCEL and not down then
         self:OnCancel()
     end
 end

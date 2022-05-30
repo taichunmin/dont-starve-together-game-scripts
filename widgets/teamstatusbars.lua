@@ -25,7 +25,7 @@ function TeamStatusBars:OnUpdate(dt)
 			table.insert(player_listing, player)
 		end
 	end
-	
+
 	while #self.healthbars > #player_listing do
 		self.healthbars[#self.healthbars]:Kill()
 		table.remove(self.healthbars, #self.healthbars)
@@ -50,7 +50,7 @@ function TeamStatusBars:OnUpdate(dt)
 	if respositioning == true then
 		self:RespostionBars()
 	end
-	
+
 	if prev_num_bars ~= #self.healthbars and #self.healthbars > 0 then
 		if #self.healthbars - 1 > 0 then
 			self.healthbars[#self.healthbars - 1].anim:GetAnimState():Show("stick")
@@ -63,7 +63,7 @@ end
 function TeamStatusBars:ShowStatusNumbers()
 	for i, bar in ipairs(self.healthbars) do
 	    bar.num:Show()
-	    
+
 	    if bar:IsShowingPet() then
 			bar.pet_heart.num:Show()
 		end
@@ -81,7 +81,7 @@ function TeamStatusBars:RespostionBars()
 	local spacing = -75
 	local pet_spacing = -16
 	local num_pets = 0
-	
+
 	for i, bar in ipairs(self.healthbars) do
 		bar:SetPosition(x, y + spacing*(i-1) + num_pets*pet_spacing)
 		if bar:IsShowingPet() then

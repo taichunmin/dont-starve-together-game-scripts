@@ -20,7 +20,7 @@ local function PlayChunksAnim(proxy)
     inst.AnimState:SetBank("ground_breaking")
     inst.AnimState:SetBuild("ground_chunks_breaking")
     inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.SoundEmitter:PlaySound("dontstarve/common/stone_drop")
 

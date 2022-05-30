@@ -71,19 +71,19 @@ function CameraShake:Update(dt)
         self:StopShaking()
         return
     end
-    
+
     self.currentTime = self.currentTime + dt
-    
+
     if self.currentTime > self.duration + 2*self.speed then
         self:StopShaking()
         return
     end
-    
+
     local shakeDeltas = ShakeDeltas[self.shakeType] or ShakeDeltas[CAMERASHAKE.FULL]
-    
+
     local fromPos = nil
     local toPos = nil
-    
+
     if self.currentTime < self.speed then
         fromPos = Vector3()
         toPos = shakeDeltas[1]
@@ -99,7 +99,7 @@ function CameraShake:Update(dt)
         fromPos = shakeDeltas[fromIndex]
         toPos = shakeDeltas[toIndex]
     end
-    
+
     local t = self.currentTime / self.speed - math.floor(self.currentTime/self.speed)
     local scale = easing.linear(self.currentTime, self.scale, -self.scale, self.duration)
     local shakeDelta = (fromPos*(1-t) + toPos*t) * scale

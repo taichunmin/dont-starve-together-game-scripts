@@ -41,6 +41,7 @@ end
 
 local CravingsStatus = Class(Widget, function(self, owner)
     Widget._ctor(self, "CravingsStatus")
+    self:UpdateWhilePaused(false)
     self.owner = owner
 
     local root_scale_y = 1
@@ -53,6 +54,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
     self.bar:GetAnimState():SetBuild("quagmire_hangry_bar")
     self.bar:GetAnimState():PlayAnimation("bar", true)
     self.bar:GetAnimState():SetDeltaTimeMultiplier(.59)
+    self.bar:GetAnimState():AnimateWhilePaused(false)
 
     self.bar2 = root:AddChild(UIAnim())
     self.bar2:GetAnimState():SetBank("quagmire_hangry_bar")
@@ -60,6 +62,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
     self.bar2:GetAnimState():PlayAnimation("bar", true)
     self.bar2:GetAnimState():SetMultColour(1, 1, 1, .5)
     self.bar2:GetAnimState():SetDeltaTimeMultiplier(.29)
+    self.bar2:GetAnimState():AnimateWhilePaused(false)
     self.bar2:SetScale(-1, 1)
 
     self.meter = GetMeter()
@@ -67,6 +70,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
     self.frame:GetAnimState():SetBank("quagmire_hangry_bar")
     self.frame:GetAnimState():SetBuild("quagmire_hangry_bar")
     self.frame:GetAnimState():SetPercent("frame", self.meter)
+    self.frame:GetAnimState():AnimateWhilePaused(false)
 
     self.level = GetLevel()
     self.nextlevel = nil
@@ -74,6 +78,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
     self.fx:GetAnimState():SetBank("quagmire_hangry_bar_fx")
     self.fx:GetAnimState():SetBuild("quagmire_hangry_bar_fx")
     self.fx:GetAnimState():PlayAnimation(tostring(self.level))
+    self.fx:GetAnimState():AnimateWhilePaused(false)
     self.fx:SetScale(.45, .45)
 
     self.mouthlevel = GetMouthLevel(self.level)
@@ -83,6 +88,7 @@ local CravingsStatus = Class(Widget, function(self, owner)
     self.mouth:GetAnimState():SetBank("quagmire_hangry_status")
     self.mouth:GetAnimState():SetBuild("quagmire_hangry_status")
     self.mouth:GetAnimState():PlayAnimation(self.mouthlevel > 1 and ("idle_"..tostring(self.mouthlevel)) or "idle")
+    self.mouth:GetAnimState():AnimateWhilePaused(false)
     self.mouth:SetScale(1.1, 1.1)
     self.mouth:SetPosition(0, -.5)
 
@@ -214,6 +220,8 @@ function CravingsStatus:Blink(val)
 end
 
 function CravingsStatus:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     if self.blink > 0 then
         self.blink = self.blink > .003 and self.blink * .9 or 0
         UpdateBlinkLight(self, self.blink)

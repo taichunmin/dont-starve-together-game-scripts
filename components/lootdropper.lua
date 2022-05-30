@@ -92,6 +92,26 @@ function LootDropper:PickRandomLoot()
     end
 end
 
+function LootDropper:GetFullRecipeLoot(recipe)
+    local loot = {}
+
+    for k,v in ipairs(recipe.ingredients) do
+        local amt = v.amount
+        for n = 1, amt do
+            if v.deconstruct then
+                local recipeloot = self:GetFullRecipeLoot(AllRecipes[v.type])
+                for k,v in ipairs(recipeloot) do
+                    table.insert(loot, v)
+                end
+            else
+                table.insert(loot, v.type)
+            end
+        end
+    end
+
+    return loot
+end
+
 function LootDropper:GetRecipeLoot(recipe)
     local percent = 1
 
@@ -103,7 +123,7 @@ function LootDropper:GetRecipeLoot(recipe)
 
     for k,v in ipairs(recipe.ingredients) do
         local amt = math.ceil( (v.amount * TUNING.HAMMER_LOOT_PERCENT) * percent)
-        if self.inst:HasTag("burnt") then 
+        if self.inst:HasTag("burnt") then
             amt = math.ceil( (v.amount * TUNING.BURNT_HAMMER_LOOT_PERCENT) * percent)
         end
         for n = 1, amt do
@@ -197,7 +217,7 @@ function LootDropper:SetFlingTarget(pos, variance)
     self.flingtargetvariance = variance
 end
 
-function LootDropper:FlingItem(loot, pt, bouncedcb)
+function LootDropper:FlingItem(loot, pt)
     if loot ~= nil then
         if pt == nil then
             pt = self.inst:GetPosition()
@@ -248,9 +268,9 @@ function LootDropper:FlingItem(loot, pt, bouncedcb)
     end
 end
 
-function LootDropper:SpawnLootPrefab(lootprefab, pt)
+function LootDropper:SpawnLootPrefab( lootprefab, pt, linked_skinname, skin_id, userid )
     if lootprefab ~= nil then
-        local loot = SpawnPrefab(lootprefab)
+        local loot = SpawnPrefab( lootprefab, linked_skinname, skin_id, userid )
         if loot ~= nil then
             if loot.components.inventoryitem ~= nil then
                 if self.inst.components.inventoryitem ~= nil then
@@ -263,7 +283,8 @@ function LootDropper:SpawnLootPrefab(lootprefab, pt)
         -- here? so we can run a full drop loot?
             self:FlingItem(loot, pt)
 
-            loot.PushEvent("on_loot_dropped")
+            loot:PushEvent("on_loot_dropped", {dropper = self.inst})
+            self.inst:PushEvent("loot_prefab_spawned", {loot = loot})
 
             return loot
         end
@@ -300,7 +321,7 @@ function LootDropper:DropLoot(pt)
 
     if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
         local prefabname = string.upper(self.inst.prefab)
-        local num_decor_loot = TUNING.WINTERS_FEAST_TREE_DECOR_LOOT[prefabname] or nil
+        local num_decor_loot = self.GetWintersFeastOrnaments ~= nil and self.GetWintersFeastOrnaments(self.inst) or TUNING.WINTERS_FEAST_TREE_DECOR_LOOT[prefabname] or nil
         if num_decor_loot ~= nil then
             for i = 1, num_decor_loot.basic do
                 self:SpawnLootPrefab(GetRandomBasicWinterOrnament(), pt)

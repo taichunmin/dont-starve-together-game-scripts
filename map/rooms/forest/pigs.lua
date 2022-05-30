@@ -1,6 +1,6 @@
 
 --------------------------------------------------------------------------------
--- Pigs 
+-- Pigs
 --------------------------------------------------------------------------------
 AddRoom("PigTown", {
 					colour={r=0.3,g=.8,b=.5,a=.50},
@@ -12,7 +12,7 @@ AddRoom("PigTown", {
 											pumpkin_lantern = function () return IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) and (1 + math.random(3)) or 0 end,
     									},
 									countstaticlayouts={
-										["PigTown"]=1, 
+										["PigTown"]=1,
 									},
 									distributepercent = .1,
 									distributeprefabs= {
@@ -29,11 +29,11 @@ AddRoom("PigVillage", {
 					contents =  {
 									countstaticlayouts={
 										["Farmplot"]=function() return math.random(2,5) end,
-										["VillageSquare"]= function()	
-																		if math.random() > 0.97 then 
-																			return 1 
-																	  	end 
-																	  	return 0 
+										["VillageSquare"]= function()
+																		if math.random() > 0.97 then
+																			return 1
+																	  	end
+																	  	return 0
 															end,
 									},
 					                countprefabs= {
@@ -61,10 +61,10 @@ AddRoom("PigKingdom", {
 										["DefaultPigking"]=1,
 										["CropCircle"]=function() return math.random(0,1) end,
 										["TreeFarm"]= 	function()
-																		if math.random() > 0.97 then 
-																			return math.random(1,2) 
-																	  	end 
-																	  	return 0 
+																		if math.random() > 0.97 then
+																			return math.random(1,2)
+																	  	end
+																	  	return 0
 										 				end,
 										["HalloweenPumpkins"] = function() return IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) and 1 or 0 end,
 									},
@@ -112,7 +112,7 @@ AddRoom("PigCamp", {
 					})
 AddRoom("PigShrine", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
-					value = GROUND.FOREST, 
+					value = GROUND.FOREST,
 					contents =  {
 									countstaticlayouts={
 										["MaxPigShrine"]=1,

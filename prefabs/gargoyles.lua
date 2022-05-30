@@ -237,7 +237,7 @@ local function makefx(data)
         inst.AnimState:SetBuild("petrified_tree_fx")
         inst.AnimState:PlayAnimation(data.name..data.anim)
         --I think we like 'em behind
-        --inst.AnimState:SetFinalOffset(-1)
+        --inst.AnimState:SetFinalOffset(3)
 
         inst.SoundEmitter:PlaySound("dontstarve/common/together/petrified/post")
 

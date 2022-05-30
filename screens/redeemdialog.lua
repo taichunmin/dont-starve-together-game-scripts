@@ -6,9 +6,11 @@ local Widget = require "widgets/widget"
 local TEMPLATES = require "widgets/redux/templates"
 local ThankYouPopup = require "screens/thankyoupopup"
 
+local KitcoonPuppet = require "widgets/kitcoonpuppet"
+
 local NUM_CODE_GROUPS = 5
 local DIGITS_PER_GROUP = 4
-local DIGIT_WIDTH = 19
+local DIGIT_WIDTH = 21
 local CODE_LENGTH = 24
 -- Codes are 5 groups of 4 characters (letters and numbers) separated by hyphens
 -- i and o are not allowed
@@ -19,10 +21,12 @@ local VALID_CHARS = [[abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ1234567890
 local RedeemDialog = Class(Screen, function(self)
 	Screen._ctor(self, "RedeemDialog")
 
+    self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     local buttons =
     {
         {text=STRINGS.UI.REDEEMDIALOG.SUBMIT, cb = function() self:DoSubmitCode() end },
-        {text=STRINGS.UI.REDEEMDIALOG.CANCEL, cb = function() self:Close() end }  
+        {text=STRINGS.UI.REDEEMDIALOG.CANCEL, cb = function() self:Close() end }
     }
 	if IsConsole() then
         VALID_CHARS = [[abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ1234567890-]]
@@ -32,7 +36,13 @@ local RedeemDialog = Class(Screen, function(self)
 	end
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())	
+    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())
+
+    self.kit_puppet = self.root:AddChild(KitcoonPuppet( Profile, nil, {
+        { x = -80, y = 180, scale = 0.75 },
+        { x = 180, y = 176, scale = 0.75 },
+    } ))
+
 	self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(480, 220, STRINGS.UI.REDEEMDIALOG.TITLE, buttons, nil, ""))
 
     self.proot = self.root:AddChild(Widget("proot"))
@@ -86,6 +96,18 @@ function RedeemDialog:OnBecomeActive()
     	self.entrybox.textboxes[1]:SetEditing(true)
     	self.firsttime = false
     end
+
+    if self.kit_puppet then
+        self.kit_puppet:Enable()
+    end
+end
+
+function RedeemDialog:OnBecomeInactive()
+    self._base.OnBecomeInactive(self)
+
+    if self.kit_puppet then
+        self.kit_puppet:Disable()
+    end
 end
 
 function RedeemDialog:MakeTextEntryBox(parent)
@@ -97,10 +119,10 @@ function RedeemDialog:MakeTextEntryBox(parent)
     entrybox.textboxes = {}
 
     for i = 1, NUM_CODE_GROUPS do
-		entrybox.textboxes[i] = parent:AddChild(TextEditLinked( CODEFONT, 32, nil, UICOLOURS.BLACK ) )
+		entrybox.textboxes[i] = parent:AddChild(TextEditLinked( CODEFONT, 26, nil, UICOLOURS.BLACK ) )
 		entrybox.textboxes[i]:SetForceEdit(true)
 		entrybox.textboxes[i]:SetRegionSize( box_size, box_y )
-		entrybox.textboxes[i]:SetHAlign(ANCHOR_LEFT)
+		entrybox.textboxes[i]:SetHAlign(ANCHOR_MIDDLE)
 		entrybox.textboxes[i]:SetVAlign(ANCHOR_MIDDLE)
 		entrybox.textboxes[i]:SetTextLengthLimit(DIGITS_PER_GROUP)
 		entrybox.textboxes[i]:SetCharacterFilter( VALID_CHARS )
@@ -111,7 +133,7 @@ function RedeemDialog:MakeTextEntryBox(parent)
 		entrybox.textboxes[i]:EnableWordWrap(false)
 		entrybox.textboxes[i]:EnableScrollEditWindow(false)
 		entrybox.textboxes[i]:SetForceUpperCase(true)
-		entrybox.textboxes[i]:SetPosition(i*95 - (NUM_CODE_GROUPS/2+0.5)*95, 2, 0)
+		entrybox.textboxes[i]:SetPosition(i*102 - (NUM_CODE_GROUPS/2+0.5)*102, 2, 0)
 
 		if IsConsole() then
 			entrybox.textboxes[i].bg = entrybox.textboxes[i]:AddChild( Image("images/global_redux.xml", "textbox3_gold_normal.tex") )
@@ -158,7 +180,7 @@ function RedeemDialog:MakeTextEntryBox(parent)
 					    if i ~= 1 then
 						    redeem_code	= redeem_code .. "-"
 					    end
-					    redeem_code	= redeem_code .. entrybox.textboxes[i]:GetString() 
+					    redeem_code	= redeem_code .. entrybox.textboxes[i]:GetString()
 				    end
                 end
 
@@ -170,8 +192,8 @@ function RedeemDialog:MakeTextEntryBox(parent)
 						self.submit_btn:Select()
 					end
 					self.redeem_in_progress = true
-					TheItems:RedeemCode(redeem_code, function(success, status, item_type, category, message)
-						self:DisplayResult(success, status, item_type, category, message)
+					TheItems:RedeemCode(redeem_code, function(success, status, item_type, currency, currency_amt, category, message)
+						self:DisplayResult(success, status, item_type, currency, currency_amt, category, message)
 					end)
 				end
 			end
@@ -211,12 +233,12 @@ function RedeemDialog:MakeTextEntryBox(parent)
     self.entrybox = entrybox
 end
 
-function RedeemDialog:DisplayResult(success, status, item_type, category, message) 
+function RedeemDialog:DisplayResult(success, status, item_type, currency, currency_amt, category, message)
 	-- Possible responses when attempting to query server:
 	--success=true, status="ACCEPTED"
 	--success=false, status="INVALID_CODE"
 	--success=false, status="ALREADY_REDEEMED"
-	--success=false, status="FAILED_TO_CONTACT"	
+	--success=false, status="FAILED_TO_CONTACT"
 
 	if IsNotConsole() then
     	self.submit_btn:Unselect()
@@ -224,10 +246,10 @@ function RedeemDialog:DisplayResult(success, status, item_type, category, messag
     self.redeem_in_progress = false
 
 	--DO WE DEAL WITH item_type = FROMNUM???
-	print( "RedeemDialog:DisplayResult", success, status, item_type, category, message )
+	print( "RedeemDialog:DisplayResult", success, status, item_type, currency, currency_amt, category, message )
 	if success then
 		local items = {} -- early access thank you gifts
-		table.insert(items, {item=item_type, item_id=0, gifttype=category, message=message})
+		table.insert(items, {item=item_type, item_id=0, currency=currency, currency_amt=currency_amt, gifttype=category, message=message})
 
 		for i = 1, NUM_CODE_GROUPS do
 			self.entrybox.textboxes[i]:SetString("")
@@ -270,7 +292,7 @@ end
 function RedeemDialog:OnControl(control, down)
     if RedeemDialog._base.OnControl(self,control, down) then return true end
 
-    if control == CONTROL_CANCEL and not down then    
+    if control == CONTROL_CANCEL and not down then
         if self.buttons and #self.buttons > 1 and self.buttons[#self.buttons] then
             self.buttons[#self.buttons].cb()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -283,7 +305,7 @@ function RedeemDialog:OnControl(control, down)
     end
 end
 
-function RedeemDialog:DoSubmitCode()	
+function RedeemDialog:DoSubmitCode()
 	self.entrybox.textboxes[1]:OnTextEntered()
 end
 
@@ -295,11 +317,11 @@ function RedeemDialog:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
 	if self.buttons and #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
 
     if IsConsole() then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
 	return table.concat(t, "  ")
 end

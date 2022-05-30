@@ -17,7 +17,7 @@ local function fn()
     inst.AnimState:SetBuild("raindrop")
     inst.AnimState:SetBank("raindrop")
 	inst.AnimState:PlayAnimation("anim")
-	
+
 	inst:ListenForEvent("animover", inst.Remove)
 
     return inst

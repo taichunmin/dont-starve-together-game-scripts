@@ -17,7 +17,7 @@ local Spell = Class(function(self,inst)
     self.removeonfinish = false
 
     --Define variables you wish to use within the spell here (fx, dmg, sound etc) using the SetVariables function.
-    self.variables = {} 
+    self.variables = {}
     --These variables are NOT saved between save and load.
 end)
 
@@ -50,7 +50,7 @@ function Spell:OnUpdate(dt)
         end
     end
 
-    if self.timer == nil then      
+    if self.timer == nil then
         if self.fn ~= nil then
             self.fn(self.inst, self.target)
         end

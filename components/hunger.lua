@@ -21,7 +21,7 @@ local Hunger = Class(function(self, inst)
     self.hungerrate = 1
     self.hurtrate = 1
     self.overridestarvefn = nil
-    
+
     self.burning = true
     --100% burn rate. Currently used only by belt of hunger, will have to change unequip if use in something else
     self.burnrate = 1 -- DEPRECATED, please use burnratemodifiers instead
@@ -86,9 +86,9 @@ function Hunger:DoDelta(delta, overtime, ignore_invincible)
         return
     end
 
-    if not ignore_invincible and self.inst.components.health.invincible or self.inst.is_teleporting then
+    if not ignore_invincible and self.inst.components.health and self.inst.components.health:IsInvincible() or self.inst.is_teleporting then
         return
-    end 
+    end
 
     local old = self.current
     self.current = math.clamp(self.current + delta, 0, self.max)

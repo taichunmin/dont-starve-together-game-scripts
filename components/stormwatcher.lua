@@ -1,118 +1,141 @@
-local function onsandstormlevel(self, sandstormlevel)
+local function onstormlevel(self, stormlevel)
     if self.inst.player_classified ~= nil then
-        self.inst.player_classified.sandstormlevel:set(math.floor(sandstormlevel * 7 + .5))
+        self.inst.player_classified.stormlevel:set(math.floor(stormlevel * 7 + .5))
+    end
+end
+
+local function onstormtype(self, stormtype)
+    if self.inst.player_classified ~= nil then
+        self.inst.player_classified.stormtype:set(stormtype)
     end
 end
 
 local StormWatcher = Class(function(self, inst)
     self.inst = inst
 
-    self.sandstormlevel = 0
-    self.sandstormspeedmult = TUNING.SANDSTORM_SPEED_MOD
+    self.stormlevel = 0
     self.delay = nil
+    self.currentstorm = STORM_TYPES.NONE
+    self.currentstorms = {}
 
-    if TheWorld.components.sandstorms ~= nil then
-        inst:ListenForEvent("ms_sandstormchanged", function(src, data) self:ToggleSandstorms(data) end, TheWorld)
-        self:ToggleSandstorms(TheWorld.components.sandstorms:IsSandstormActive())
+    inst:ListenForEvent("ms_stormchanged", function(src, data)
+        self:UpdateStorms(data)
+    end, TheWorld)
+
+    if TheWorld.net.components.moonstorms ~= nil and
+            next(TheWorld.net.components.moonstorms:GetMoonstormNodes()) then
+        self:UpdateStorms({stormtype= STORM_TYPES.MOONSTORM, setting = true})
     end
+
+    if TheWorld.components.sandstorms ~= nil and
+            TheWorld.components.sandstorms:IsSandstormActive() then
+        self:UpdateStorms({stormtype= STORM_TYPES.SANDSTORM, setting = true})
+    end
+
 end,
 nil,
 {
-    sandstormlevel = onsandstormlevel,
+    stormlevel = onstormlevel,
+    currentstorm = onstormtype,
 })
 
 local function OnChangeArea(inst)
     local self = inst.components.stormwatcher
-    self:UpdateSandstormLevel()
-    self.delay = self.sandstormlevel > 0 and self.sandstormlevel < 1 and .5 or 1
+    self:UpdateStormLevel()
+    self.delay = self.stormlevel > 0 and self.stormlevel < 1 and .5 or 1
 end
 
-local function UpdateSandstormWalkSpeed(inst)
-    inst.components.stormwatcher:UpdateSandstormWalkSpeed()
+function StormWatcher:GetCurrentStorm(inst)
+    local currentstorm = STORM_TYPES.NONE
+    if TheWorld.components.sandstorms ~= nil then
+        if TheWorld.components.sandstorms:IsInSandstorm(self.inst) then
+            currentstorm = STORM_TYPES.SANDSTORM
+        end
+    end
+    if TheWorld.net.components.moonstorms ~= nil then
+        if TheWorld.net.components.moonstorms:IsInMoonstorm(self.inst) then
+            assert(currentstorm == STORM_TYPES.NONE,"CAN'T BE IN TWO STORMS AT ONCE")
+            currentstorm = STORM_TYPES.MOONSTORM
+        end
+    end
+    return currentstorm
 end
 
-local function AddSandstormWalkSpeedListeners(inst)
-    inst:ListenForEvent("gogglevision", UpdateSandstormWalkSpeed)
-    inst:ListenForEvent("ghostvision", UpdateSandstormWalkSpeed)
-    inst:ListenForEvent("mounted", UpdateSandstormWalkSpeed)
-    inst:ListenForEvent("dismounted", UpdateSandstormWalkSpeed)
+function StormWatcher:CheckStorms(data)
+
+    local checkstorm = self:GetCurrentStorm(self.inst)
+    if self.currentstorm ~= checkstorm then
+        self.currentstorm = checkstorm
+        if self.currentstorm then
+            self:UpdateStormLevel()
+        else
+            self.stormlevel = 0
+        end
+    end
 end
 
-local function RemoveSandstormWalkSpeedListeners(inst)
-    inst:RemoveEventCallback("gogglevision", UpdateSandstormWalkSpeed)
-    inst:RemoveEventCallback("ghostvision", UpdateSandstormWalkSpeed)
-    inst:RemoveEventCallback("mounted", UpdateSandstormWalkSpeed)
-    inst:RemoveEventCallback("dismounted", UpdateSandstormWalkSpeed)
-    inst.components.locomotor:RemoveExternalSpeedMultiplier(inst, "sandstorm")
-end
+function StormWatcher:UpdateStorms(data)
 
-function StormWatcher:ToggleSandstorms(active)
-    if active then
-        if self.delay == nil then
-            self.delay = math.random()
+    if data and data.stormtype then
+        self.currentstorms[data.stormtype] = data.setting
+    end
+
+    local storms = false
+    for storm,setting in pairs(self.currentstorms)do
+        if setting == true then
             self.inst:StartUpdatingComponent(self)
             self.inst:ListenForEvent("changearea", OnChangeArea)
-            if self.sandstormspeedmult < 1 then
-                AddSandstormWalkSpeedListeners(self.inst)
+            storms = true
+            if self.delay == nil then
+                self.delay = math.random()
             end
-            self:UpdateSandstormLevel()
+            break
         end
-    elseif self.delay ~= nil then
-        self.delay = nil
+    end
+
+    if not storms then
         self.inst:StopUpdatingComponent(self)
         self.inst:RemoveEventCallback("changearea", OnChangeArea)
-        if self.sandstormspeedmult < 1 then
-            RemoveSandstormWalkSpeedListeners(self.inst)
-        end
-        self.sandstormlevel = 0
+        self.delay = nil
+        self:UpdateStormLevel()
     end
 end
 
-function StormWatcher:SetSandstormSpeedMultiplier(mult)
-    mult = math.clamp(mult, 0, 1)
-    if self.sandstormspeedmult ~= mult then
-        if self.delay == nil then
-            self.sandstormspeedmult = mult
-        elseif mult < 1 then
-            if self.sandstormspeedmult >= 1 then
-                AddSandstormWalkSpeedListeners(self.inst)
+function StormWatcher:UpdateStormLevel()
+    self:CheckStorms()
+    if self.currentstorm ~= STORM_TYPES.NONE then
+        local level = self.stormlevel
+
+        if self.currentstorm == STORM_TYPES.SANDSTORM then
+            level = math.floor(TheWorld.components.sandstorms:GetSandstormLevel(self.inst) * 7 + .5) / 7
+            self.inst.components.sandstormwatcher:UpdateSandstormLevel()
+        elseif self.currentstorm == STORM_TYPES.MOONSTORM then
+            level = math.floor(TheWorld.net.components.moonstorms:GetMoonstormLevel(self.inst) * 7 + .5) / 7
+            self.inst.components.moonstormwatcher:UpdateMoonstormLevel()
+        end
+
+        if self.stormlevel ~= level then
+            self.stormlevel = level
+        end
+    else
+        if self.laststorm ~= STORM_TYPES.NONE then
+            if self.laststorm == STORM_TYPES.SANDSTORM then
+                self.inst.components.locomotor:RemoveExternalSpeedMultiplier(self.inst, "sandstorm")
+            elseif self.laststorm == STORM_TYPES.MOONSTORM then
+                self.inst.components.locomotor:RemoveExternalSpeedMultiplier(self.inst, "moonstorm")
             end
-            self.sandstormspeedmult = mult
-            self:UpdateSandstormWalkSpeed()
-        else
-            self.sandstormspeedmult = 1
-            RemoveSandstormWalkSpeedListeners(self.inst)
         end
+        self.stormlevel = 0
     end
-end
-
-function StormWatcher:UpdateSandstormLevel()
-    local level = math.floor(TheWorld.components.sandstorms:GetSandstormLevel(self.inst) * 7 + .5) / 7
-    if self.sandstormlevel ~= level then
-        self.sandstormlevel = level
-        self:UpdateSandstormWalkSpeed()
-    end
-end
-
-function StormWatcher:UpdateSandstormWalkSpeed()
-    if self.sandstormspeedmult < 1 then
-        if self.sandstormlevel < TUNING.SANDSTORM_FULL_LEVEL or
-            self.inst.components.playervision:HasGoggleVision() or
-            self.inst.components.playervision:HasGhostVision() or
-            self.inst.components.rider:IsRiding() then
-            self.inst.components.locomotor:RemoveExternalSpeedMultiplier(self.inst, "sandstorm")
-        else
-            self.inst.components.locomotor:SetExternalSpeedMultiplier(self.inst, "sandstorm", self.sandstormspeedmult)
-        end
-    end
+    self.laststorm = self.currentstorm
 end
 
 function StormWatcher:OnUpdate(dt)
     if self.delay > dt then
         self.delay = self.delay - dt
     else
-        self:UpdateSandstormLevel()
-        self.delay = self.sandstormlevel > 0 and self.sandstormlevel < 1 and .5 or 1
+        self:UpdateStormLevel()
+        self.delay = self.stormlevel > 0 and self.stormlevel < 1 and .5 or 1
     end
 end
 

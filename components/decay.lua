@@ -8,9 +8,9 @@ end)
 function Decay:DoDelta(amount)
 
     local oldhealth = self.currenthealth
-    
+
     self.currenthealth = self.currenthealth + amount
-    
+
     if self.currenthealth <= 0 then
     	if oldhealth > 0 then
     		self.inst:PushEvent("spentfuel")
@@ -31,7 +31,7 @@ local function delta(health, amount, pause, num)
     while true do
         if not health.paused then
             health:DoDelta(amount)
-            
+
             if num then
                 num = num - self.decayrate
                 if num <= 0 then
@@ -39,7 +39,7 @@ local function delta(health, amount, pause, num)
                 end
             end
         end
-        
+
         Sleep(pause)
     end
 
@@ -53,7 +53,7 @@ function Decay:SetTimeDelta(amount, pause, num)
     end
     -- Only set the timer if we are going to need an update
     if pause >0 then
-    	
+
     	self.deltatask = StartThread(function() delta(self, amount, pause, num) self.deltatask = nil end, self.inst.GUID)
     end
 end

@@ -154,7 +154,7 @@ local function refresh(inst)
     end
 
 	if (inst.conceal ~= inst.conceal_queued or inst.active_queue ~= inst.active) and inst.transition_task == nil then
-        inst.transition_task = inst:DoTaskInTime(math.random(), dotransition) 
+        inst.transition_task = inst:DoTaskInTime(math.random(), dotransition)
 	end
 end
 
@@ -224,7 +224,7 @@ local function commonfn(tags)
 	inst.active_queue = false
 --    inst.conceal = nil
 --    inst.conceal_queued = nil
-	
+
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus

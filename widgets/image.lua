@@ -2,9 +2,9 @@ local Widget = require "widgets/widget"
 
 Image = Class(Widget, function(self, atlas, tex, default_tex)
     Widget._ctor(self, "Image")
-    
+
     self.inst.entity:AddImageWidget()
-    
+
     assert( ( atlas == nil and tex == nil ) or ( atlas ~= nil and tex ~= nil ) )
 
     self.tint = {1,1,1,1}
@@ -79,7 +79,7 @@ function Image:SetAlphaRange(min, max)
 	self.inst.ImageWidget:SetAlphaRange(min, max)
 end
 
--- NOTE: the default_tex parameter is handled, but using 
+-- NOTE: the default_tex parameter is handled, but using
 -- it will produce a bunch of warnings in the log.
 function Image:SetTexture(atlas, tex, default_tex)
     assert( atlas ~= nil )
@@ -117,11 +117,26 @@ function Image:GetSize()
     return w, h
 end
 
+function Image:GetScaledSize()
+    local w, h = self.inst.ImageWidget:GetSize()
+    local w1, h1 = self:GetLooseScale()
+    local w2, h2 = self:GetParent():GetLooseScale()
+    return w*w1*w2, h*h1*h2
+end
+
 function Image:ScaleToSize(w, h)
 	local w0, h0 = self.inst.ImageWidget:GetSize()
 	local scalex = w / w0
 	local scaley = h / h0
 	self:SetScale(scalex, scaley, 1)
+end
+
+function Image:ScaleToSizeIgnoreParent(w, h)
+    local w0, h0 = self.inst.ImageWidget:GetSize()
+    local w1, h1 = self:GetParent():GetLooseScale()
+	local scalex = w / w0
+    local scaley = h / h0
+    self:SetScale(scalex/w1, scaley/h1, 1)
 end
 
 function Image:SetTint(r,g,b,a)
@@ -131,7 +146,7 @@ end
 
 function Image:SetFadeAlpha(a, skipChildren)
 	if not self.can_fade_alpha then return end
-	
+
     self.inst.ImageWidget:SetTint(self.tint[1], self.tint[2], self.tint[3], self.tint[4] * a)
     Widget.SetFadeAlpha( self, a, skipChildren )
 end
@@ -174,7 +189,7 @@ end
 
 function Image:SetEffect(filename)
     self.inst.ImageWidget:SetEffect(filename)
-    
+
     if filename == "shaders/ui_cc.ksh" then
         --hack for faked ambient lighting influence (common_postinit, quagmire.lua)
         --might need to get the colour from the gamemode???
@@ -187,14 +202,26 @@ function Image:SetEffectParams(param1, param2, param3, param4)
 	self.inst.ImageWidget:SetEffectParams(param1, param2, param3, param4)
 end
 
+function Image:SetEffectParams2(param1, param2, param3, param4)
+    self.inst.ImageWidget:SetEffectParams2(param1, param2, param3, param4)
+end
+
 function Image:EnableEffectParams(enabled)
 	self.inst.ImageWidget:EnableEffectParams(enabled)
+end
+
+function Image:EnableEffectParams2(enabled)
+    self.inst.ImageWidget:EnableEffectParams2(enabled)
 end
 
 function Image:SetUVScale(xScale, yScale)
 	self.inst.ImageWidget:SetUVScale(xScale, yScale)
 end
-	
+
+function Image:SetUVMode(uvmode)
+    self.inst.ImageWidget:SetUVMode(uvmode)
+end
+
 function Image:SetBlendMode(mode)
 	self.inst.ImageWidget:SetBlendMode(mode)
 end

@@ -2,7 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/nightstick.zip"),
     Asset("ANIM", "anim/swap_nightstick.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
     Asset("SOUND", "sound/common.fsb"),
 }
 

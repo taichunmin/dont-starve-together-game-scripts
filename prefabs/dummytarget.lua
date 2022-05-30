@@ -34,6 +34,8 @@ local function fn()
     inst.AnimState:SetBuild("wilsonstatue")
     inst.AnimState:PlayAnimation("idle")
 
+	inst:AddTag("monster")
+
     MakeSnowCoveredPristine(inst)
 
     inst.entity:SetPristine()

@@ -92,7 +92,7 @@ local function fn()
     inst.components.eater:SetDiet({ FOODGROUP.OMNI }, { FOODGROUP.OMNI })
 
     ------------------------------------------
- 
+
     inst:AddComponent("sleeper")
     inst.components.sleeper:SetResistance(4)
 

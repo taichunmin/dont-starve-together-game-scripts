@@ -15,7 +15,7 @@ local function ShouldWakeUp(inst)
 end
 
 local function ShouldSleep(inst)
-    return (DefaultSleepTest(inst) 
+    return (DefaultSleepTest(inst)
             or IsLeaderSleeping(inst))
             and inst.components.follower:IsNearLeader(SLEEP_NEAR_LEADER_DISTANCE)
 end
@@ -34,7 +34,7 @@ local function oneat(inst, food)
 			inst.components.perishable.perishtime = TUNING.CRITTER_DOMINANTTRAIT_HUNGERTIME_MIN
 		end
 	end
-	
+
     inst.components.perishable:SetPercent(1)
     inst.components.perishable:StartPerishing()
 end
@@ -90,7 +90,7 @@ local function OnLoad(inst, data)
     end
 end
 
-local function OnLoadPostPass(inst, data)
+local function OnLoadPostPass(inst)
 	if inst._special_powers ~= nil then
 		inst:PushEvent("perishchange", {percent = inst.components.perishable:GetPercent()}) -- to init special powers
 	end
@@ -100,9 +100,10 @@ end
 -------------------------------------------------------------------------------
 
 local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
+    local buildname = (data and data.buildname) or animname.."_build"
     local assets =
     {
-	    Asset("ANIM", "anim/"..animname.."_build.zip"),
+        Asset("ANIM", "anim/"..buildname..".zip"),
 	    Asset("ANIM", "anim/"..animname.."_basic.zip"),
 	    Asset("ANIM", "anim/"..animname.."_emotes.zip"),
 	    Asset("ANIM", "anim/"..animname.."_traits.zip"),
@@ -134,7 +135,7 @@ local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
         end
 
         inst.AnimState:SetBank(animname)
-        inst.AnimState:SetBuild(animname.."_build")
+        inst.AnimState:SetBuild(buildname)
         inst.AnimState:PlayAnimation("idle_loop")
 
         if flying then
@@ -190,12 +191,12 @@ local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
         inst.IsAffectionate = IsAffectionate
         inst.IsSuperCute = IsSuperCute
         inst.IsPlayful = IsPlayful
-        
+
 		inst.playmatetags = {"critter"}
 		if data ~= nil and data.playmatetags ~= nil then
 			inst.playmatetags = JoinArrays(inst.playmatetags, data.playmatetags)
 		end
-	
+
         inst:AddComponent("inspectable")
 
         inst:AddComponent("follower")
@@ -234,6 +235,7 @@ local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
 
             inst:AddComponent("embarker")
             inst.components.embarker.embark_speed = inst.components.locomotor.walkspeed
+		    inst:AddComponent("drownable")
         end
 
         inst:AddComponent("crittertraits")
@@ -251,7 +253,7 @@ local function MakeCritter(name, animname, face, diet, flying, data, prefabs)
 		end
 
 		if data ~= nil and data.master_postinit ~= nil then
-			data.master_postinit(inst)
+			data.master_postinit(inst, data)
 		end
 
         inst.OnSave = OnSave
@@ -319,13 +321,13 @@ local function lunarmoth_special_powers_fn(inst, data)
 			--light.Follower:FollowSymbol(inst.GUID, "lm_body", 0, 0, 0)
 			inst._special_powers.buff = light
 			inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-			inst:ListenForEvent("onremove", function(buff) 
-				if inst._special_powers.buff == buff then 
-					inst._special_powers.buff = nil 
+			inst:ListenForEvent("onremove", function(buff)
+				if inst._special_powers.buff == buff then
+					inst._special_powers.buff = nil
 					inst.AnimState:SetLightOverride(0)
 					inst.DynamicShadow:Enable(true)
 					inst.AnimState:ClearBloomEffectHandle()
-				end 
+				end
 			end, inst._special_powers.buff)
 
 			inst.AnimState:SetLightOverride(0.3)
@@ -341,7 +343,7 @@ return MakeCritter("critter_lamb", "sheepington", 6, standard_diet, false, {favo
        MakeBuilder("critter_lamb"),
        MakeCritter("critter_puppy", "pupington", 4, standard_diet, false, {favoritefood="monsterlasagna", allow_platform_hopping=true}),
        MakeBuilder("critter_puppy"),
-       MakeCritter("critter_kitten", "kittington", 6, standard_diet, false, {favoritefood="fishsticks", allow_platform_hopping=true}),
+       MakeCritter("critter_kitten", "kittington", 6, standard_diet, false, {favoritefood="fishsticks", playmatetags={"kitcoon"}, allow_platform_hopping=true}),
        MakeBuilder("critter_kitten"),
        MakeCritter("critter_perdling", "perdling", 4, standard_diet, false, {favoritefood="trailmix", allow_platform_hopping=true}),
        MakeBuilder("critter_perdling"),
@@ -350,4 +352,6 @@ return MakeCritter("critter_lamb", "sheepington", 6, standard_diet, false, {favo
        MakeCritter("critter_glomling", "glomling", 6, standard_diet, true, {favoritefood="taffy", playmatetags={"glommer"}, flyingsoundloop="dontstarve_DLC001/creatures/together/glomling/flap_LP"}),
        MakeBuilder("critter_glomling"),
        MakeCritter("critter_lunarmothling", "lunarmoth", 4, standard_diet, true, {favoritefood="flowersalad", flyingsoundloop="dontstarve_DLC001/creatures/together/dragonling/flap_LP", special_powers_fn = lunarmoth_special_powers_fn}, {"critterbuff_lunarmoth"}),
-       MakeBuilder("critter_lunarmothling")
+       MakeBuilder("critter_lunarmothling"),
+       MakeCritter("critter_eyeofterror", "eyeofterror_mini", 6, standard_diet, true, {buildname = "eyeofterror_mini_basic", favoritefood="baconeggs"--[[, flyingsoundloop = "a hover loop here, IF we want it"]] }),
+       MakeBuilder("critter_eyeofterror")

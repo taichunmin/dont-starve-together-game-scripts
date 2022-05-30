@@ -13,14 +13,7 @@ local prefabs =
     "lavaarena_bernie",
 }
 
-local start_inv =
-{
-    default =
-    {
-        "lighter",
-        "bernie_inactive",
-    },
-}
+local start_inv = {}
 for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
     start_inv[string.lower(k)] = v.WILLOW
 end
@@ -32,11 +25,12 @@ local function customidleanimfn(inst)
     return item ~= nil and item.prefab == "bernie_inactive" and "idle_willow" or nil
 end
 
+local FIRE_TAGS = { "fire" }
 local function sanityfn(inst)--, dt)
     local delta = inst.components.temperature:IsFreezing() and -TUNING.SANITYAURA_LARGE or 0
-    local x, y, z = inst.Transform:GetWorldPosition() 
+    local x, y, z = inst.Transform:GetWorldPosition()
     local max_rad = 10
-    local ents = TheSim:FindEntities(x, y, z, max_rad, { "fire" })
+    local ents = TheSim:FindEntities(x, y, z, max_rad, FIRE_TAGS)
     for i, v in ipairs(ents) do
         if v.components.burnable ~= nil and v.components.burnable:IsBurning() then
             local rad = v.components.burnable:GetLargestLightRadius() or 1
@@ -50,7 +44,9 @@ local function sanityfn(inst)--, dt)
 end
 
 local function GetFuelMasterBonus(inst, item, target)
-    return (target:HasTag("campfire") or target.prefab == "nightlight") and TUNING.WILLOW_CAMPFIRE_FUEL_MULT or 1
+
+    -- The TAG "firefuellight" is used for items that are not campfires in that they won't incubate something but Willow should benefit from fueling it.
+    return (target:HasTag("firefuellight") or target:HasTag("campfire") or target.prefab == "nightlight") and TUNING.WILLOW_CAMPFIRE_FUEL_MULT or 1
 end
 
 local function OnRespawnedFromGhost(inst)
@@ -79,7 +75,10 @@ local function master_postinit(inst)
 
     inst.customidleanim = customidleanimfn
 
+    inst.components.health:SetMaxHealth(TUNING.WILLOW_HEALTH)
     inst.components.health.fire_damage_scale = TUNING.WILLOW_FIRE_DAMAGE
+
+    inst.components.hunger:SetMax(TUNING.WILLOW_HUNGER)
 
     inst.components.sanity:SetMax(TUNING.WILLOW_SANITY)
     inst.components.sanity.custom_rate_fn = sanityfn
@@ -89,6 +88,8 @@ local function master_postinit(inst)
     inst.components.temperature.inherentsummerinsulation = TUNING.INSULATION_TINY
     inst.components.temperature:SetFreezingHurtRate(TUNING.WILSON_HEALTH / TUNING.WILLOW_FREEZING_KILL_TIME)
     inst.components.temperature:SetOverheatHurtRate(TUNING.WILSON_HEALTH / TUNING.WILLOW_OVERHEAT_KILL_TIME)
+
+    inst.components.foodaffinity:AddPrefabAffinity("hotchili", TUNING.AFFINITY_15_CALORIES_LARGE)
 
     inst:ListenForEvent("ms_respawnedfromghost", OnRespawnedFromGhost)
     OnRespawnedFromGhost(inst)

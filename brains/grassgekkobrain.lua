@@ -31,13 +31,13 @@ local GrassgekkoBrain = Class(Brain, function(self, inst)
 end)
 
 function GrassgekkoBrain:OnStart()
-    local root = 
+    local root =
     PriorityNode(
     {
-        WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),        
+        WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
         RunAway(self.inst, "scarytoprey", AVOID_PLAYER_DIST, AVOID_PLAYER_STOP , function() return true end ),
         RunAway(self.inst, "player", AVOID_DIST, AVOID_STOP, nil, nil, NO_TAGS),
-        --Wander(self.inst, function() return self.inst:GetPosition() end, MAX_WANDER_DIST),   
+        --Wander(self.inst, function() return self.inst:GetPosition() end, MAX_WANDER_DIST),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("herd") end, GetWanderDistFn)
     }, .25)
     self.bt = BT(self.inst, root)

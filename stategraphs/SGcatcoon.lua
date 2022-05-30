@@ -2,9 +2,9 @@ require("stategraphs/commonstates")
 
 --hiss_pre, vomit, swipe_pre
 
-local actionhandlers = 
+local actionhandlers =
 {
-    ActionHandler(ACTIONS.GOHOME, "gohome"),
+    ActionHandler(ACTIONS.GOHOME, function(inst) return inst.raining and "gohome_raining" or "gohome" end),
     ActionHandler(ACTIONS.HAIRBALL, "hairball_hack"),
     ActionHandler(ACTIONS.CATPLAYGROUND, "pawgroundaction"),
     ActionHandler(ACTIONS.CATPLAYAIR, "pounceplayaction"),
@@ -14,12 +14,13 @@ local events=
 {
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
-    CommonHandlers.OnAttacked(true),
+    CommonHandlers.OnAttacked(),
     CommonHandlers.OnDeath(),
     CommonHandlers.OnLocomote(false,true),
     CommonHandlers.OnHop(),
-    EventHandler("doattack", function(inst, data) 
-        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then 
+	CommonHandlers.OnSink(),
+    EventHandler("doattack", function(inst, data)
+        if not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then
             if data.target:HasTag("cattoyairborne") then
                 if data.target.sg and (data.target.sg:HasStateTag("landing") or data.target.sg:HasStateTag("landed")) then
                     inst.components.combat:SetTarget(nil)
@@ -27,11 +28,11 @@ local events=
                     inst.sg:GoToState("pounceplay", data.target)
                 end
             elseif data.target and data.target:IsValid() and inst:GetDistanceSqToInst(data.target) > TUNING.CATCOON_MELEE_RANGE*TUNING.CATCOON_MELEE_RANGE then
-                inst.sg:GoToState("pounceattack", data.target) 
+                inst.sg:GoToState("pounceattack", data.target)
             else
-                inst.sg:GoToState("attack", data.target) 
+                inst.sg:GoToState("attack", data.target)
             end
-        end 
+        end
     end),
 }
 
@@ -46,12 +47,12 @@ local states=
             inst.AnimState:PlayAnimation("idle_loop")
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(25*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/swipe_tail") end),
         },
 
-        events = 
+        events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
@@ -61,27 +62,27 @@ local states=
         name = "walk_start",
         tags = {"moving", "canrotate"},
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.AnimState:PlayAnimation("walk_pre")
         end,
 
         events =
-        {   
-            EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),        
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),
         },
     },
-        
-    State{            
+
+    State{
         name = "walk",
         tags = {"moving", "canrotate"},
-        
-        onenter = function(inst) 
+
+        onenter = function(inst)
             inst.components.locomotor:WalkForward()
             inst.AnimState:PlayAnimation("walk_loop")
         end,
         events=
-        {   
-            EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),        
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("walk") end ),
         },
         timeline=
         {
@@ -90,26 +91,26 @@ local states=
             TimeEvent(15*FRAMES, function(inst) PlayFootstep(inst) end),
             TimeEvent(23*FRAMES, function(inst) PlayFootstep(inst) end),
         },
-    },      
-    
-    State{            
+    },
+
+    State{
         name = "walk_stop",
         tags = {"canrotate"},
-        
-        onenter = function(inst) 
+
+        onenter = function(inst)
             inst.components.locomotor:StopMoving()
-            inst.AnimState:PlayAnimation("walk_pst")			
+            inst.AnimState:PlayAnimation("walk_pst")
         end,
 
         events=
-        {   
-            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),        
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
         },
     },
 
     State{
-        
-        name = "gohome",
+        name = "gohome_raining",
+		tags = {"busy"},
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt_pre")
@@ -129,17 +130,37 @@ local states=
 
         events =
         {
-            EventHandler("animqueueover", function(inst) 
+            EventHandler("animqueueover", function(inst)
                 inst:PerformBufferedAction()
-                inst.sg:GoToState("idle") 
+                inst.sg:GoToState("idle")
             end),
         },
-    }, 
+    },
 
+    State{
+        name = "gohome",
+		tags = {"busy"},
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("action")
+            inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pickup")
+        end,
+
+        timeline =
+        {
+            TimeEvent(6*FRAMES, function(inst) PlayFootstep(inst) end),
+            TimeEvent(13*FRAMES, function(inst) PlayFootstep(inst) end),
+            TimeEvent(20*FRAMES, function(inst) PlayFootstep(inst) end),
+            TimeEvent(27*FRAMES, function(inst) PlayFootstep(inst) end),
+            TimeEvent(34*FRAMES, function(inst) PlayFootstep(inst) end),
+            TimeEvent(37*FRAMES, function(inst) inst:PerformBufferedAction() inst.sg:GoToState("idle") end),
+        },
+    },	
+	
 	State{
 		name = "hairball_hack",
 		tags = {"busy"},
-		
+
 		onenter = function(inst)
 			inst.Physics:Stop()
 			inst.AnimState:PlayAnimation("furball_pre_loop")
@@ -157,9 +178,9 @@ local states=
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
                 if math.random() <= .25 then
-                    inst.sg:GoToState("hairball") 
+                    inst.sg:GoToState("hairball")
                 else
                     inst.sg:GoToState("hairball_hack_loop")
                 end
@@ -170,7 +191,7 @@ local states=
     State{
         name = "hairball_hack_loop",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("furball_pre_loop")
@@ -188,7 +209,7 @@ local states=
 
         events =
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
                 local neutralmax = inst.neutralGiftPrefabs and #inst.neutralGiftPrefabs or 7
                 local friendmax = inst.friendGiftPrefabs and #inst.friendGiftPrefabs or 7
                 local MAX_RETCHES = (inst.components.follower and inst.components.follower.leader) and friendmax or neutralmax
@@ -206,7 +227,7 @@ local states=
     State{
         name = "hairball",
         tags = {"busy", "hairball"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PushAnimation("furball", false)
@@ -224,20 +245,37 @@ local states=
         timeline =
         {
             TimeEvent(37*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/hairball_vomit") end),
-            TimeEvent(46*FRAMES, function(inst) 
+            TimeEvent(46*FRAMES, function(inst)
                 inst.vomit = SpawnPrefab(inst:PickRandomGift(inst.numretches))
-                if inst.vomit and inst.vomit.components.inventoryitem and inst.vomit.components.inventoryitem.ondropfn then
-                    inst.vomit.components.inventoryitem.ondropfn(inst.vomit)
-                end
-                if inst.vomit then
-                    local downvec = TheCamera:GetDownVec()
-                    local face = math.atan2(downvec.z, downvec.x) * (180/math.pi)
-                    local pos = inst:GetPosition()
-                    local offset = downvec:Normalize()
-                    inst.vomit.Transform:SetPosition(pos.x + offset.x, pos.y + offset.y, pos.z + offset.z)
-                    inst.Transform:SetRotation(-face)
-                end
-                inst.last_hairball_time = GetTime()
+				if inst.vomit ~= nil then
+					local downvec = TheCamera:GetDownVec()
+					local face = math.atan2(downvec.z, downvec.x) * (180/math.pi)
+					local pos = inst:GetPosition() + downvec:Normalize()
+					inst.Transform:SetRotation(-face)
+
+					inst.vomit.Transform:SetPosition(pos.x, pos.y, pos.z)
+					if inst.vomit.components.inventoryitem and inst.vomit.components.inventoryitem.ondropfn then
+						inst.vomit.components.inventoryitem.ondropfn(inst.vomit)
+					end
+					if inst.vomit.components.weighable ~= nil then
+						inst.vomit.components.weighable.prefab_override_owner = inst.prefab
+					end
+
+					local cur_time = GetTime()
+
+					if IsSpecialEventActive(SPECIAL_EVENTS.YOT_CATCOON) then
+						local redpouch = SpawnPrefab("redpouch_yot_catcoon")
+						local lucky_nugget = SpawnPrefab("lucky_goldnugget")
+						redpouch.components.unwrappable:WrapItems({lucky_nugget})
+						lucky_nugget:Remove()
+
+						redpouch.Transform:SetPosition(pos.x + 0.2, pos.y, pos.z + 0.1)
+					end
+
+					inst.last_hairball_time = cur_time
+				end
+
+
                 inst:PerformBufferedAction()
             end),
             TimeEvent(118*FRAMES, function(inst)
@@ -256,7 +294,7 @@ local states=
 
         events =
         {
-            EventHandler("animqueueover", function(inst) 
+            EventHandler("animqueueover", function(inst)
                 if not inst.hairballfollowup and math.random() <= .5 then
                     inst:DoTaskInTime(5*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pickup") end)
                 end
@@ -268,7 +306,7 @@ local states=
     State{
         name = "pawground",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("action")
@@ -298,7 +336,7 @@ local states=
     State{
         name = "pawgroundaction",
         tags = {"busy"},
-        
+
         onenter = function(inst, target)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("action")
@@ -329,7 +367,7 @@ local states=
     State{
         name = "pounceplayaction",
         tags = {"canrotate", "busy", "jumping"},
-        
+
         onenter = function(inst, target)
             inst.target = target
             inst.components.locomotor:Stop()
@@ -341,7 +379,7 @@ local states=
             inst.components.locomotor:Stop()
             inst.components.locomotor:EnableGroundSpeedMultiplier(true)
         end,
-        
+
         timeline =
         {
             TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pounce_pre") end),
@@ -355,7 +393,7 @@ local states=
                 end),
         },
 
-        events = 
+        events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
@@ -364,16 +402,12 @@ local states=
     State{
         name = "hiss",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt_pre")
             inst.AnimState:PushAnimation("taunt", false)
             inst.AnimState:PushAnimation("taunt_pst", false)
-        end,
-
-        onexit = function(inst)
-
         end,
 
         timeline =
@@ -391,7 +425,7 @@ local states=
     State{
         name = "pounceattack",
         tags = {"attack", "canrotate", "busy", "jumping"},
-        
+
         onenter = function(inst, target)
             inst.components.locomotor:Stop()
             inst.components.locomotor:EnableGroundSpeedMultiplier(false)
@@ -404,12 +438,12 @@ local states=
             inst.components.locomotor:Stop()
             inst.components.locomotor:EnableGroundSpeedMultiplier(true)
         end,
-        
+
         timeline =
         {
             TimeEvent(5*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/attack") end),
-            TimeEvent(6*FRAMES, function(inst) 
-                inst.Physics:SetMotorVelOverride(12,0,0) 
+            TimeEvent(6*FRAMES, function(inst)
+                inst.Physics:SetMotorVelOverride(12,0,0)
                 -- When the catcoon jumps, check if the target is a bird. If so, roll a chance for the bird to fly away
                 local isbird = inst.components.combat and inst.components.combat.target and inst.components.combat.target:HasTag("bird")
                 if isbird and math.random() > TUNING.CATCOON_ATTACK_CONNECT_CHANCE then
@@ -424,13 +458,13 @@ local states=
                     inst.components.locomotor:Stop()
                 end),
         },
-        
+
         events=
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
                 if inst.hiss then
                     inst.hiss = false
-                    inst.sg:GoToState("hiss") 
+                    inst.sg:GoToState("hiss")
                 else
                     inst.sg:GoToState("idle")
                 end
@@ -441,7 +475,7 @@ local states=
     State{
         name = "pounceplay",
         tags = {"canrotate", "busy", "jumping"},
-        
+
         onenter = function(inst, target)
             inst.target = target
             inst.components.locomotor:Stop()
@@ -454,13 +488,13 @@ local states=
             inst.components.locomotor:Stop()
             inst.components.locomotor:EnableGroundSpeedMultiplier(true)
         end,
-        
+
         timeline =
         {
             TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pounce_pre") end),
             TimeEvent(25*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pounce") end),
             TimeEvent(26*FRAMES, function(inst) inst.Physics:SetMotorVelOverride(7,0,0) end),
-            TimeEvent(31*FRAMES, function(inst) 
+            TimeEvent(31*FRAMES, function(inst)
                 if inst.target ~= nil and (inst.target:HasTag("balloon") or inst.target:HasTag("bird")) and math.random() < (TUNING.CATCOON_ATTACK_CONNECT_CHANCE * 2) then
                     inst.components.combat:DoAttack()
                     inst.hiss = true
@@ -474,16 +508,16 @@ local states=
                     inst.components.locomotor:Stop()
                 end),
         },
-        
+
         events=
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
                 inst.target = nil
                 if inst.hiss then
                     inst.hiss = false
                     inst.sg:GoToState("hiss")
                 else
-                    inst.sg:GoToState("idle") 
+                    inst.sg:GoToState("idle")
                 end
             end),
         },
@@ -527,5 +561,6 @@ CommonStates.AddSleepStates(states,
 })
 CommonStates.AddFrozenStates(states)
 CommonStates.AddHopStates(states, true, {pre = "walK_pre", loop = "jump_atk", pst = "walk_pst"})
-  
+CommonStates.AddSinkAndWashAsoreStates(states)
+
 return StateGraph("catcoon", states, events, "idle", actionhandlers)

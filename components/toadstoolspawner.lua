@@ -7,10 +7,10 @@ return Class(function(self, inst)
 assert(TheWorld.ismastersim, "ToadstoolSpawner should not exist on client")
 
 --------------------------------------------------------------------------
---[[ Constants ]]
+--[[ Private constants ]]
 --------------------------------------------------------------------------
 
-local INITIAL_SPAWN_TIME = 10
+local TOADSTOOL_TIMERNAME = "toadstool_respawntask"
 
 --------------------------------------------------------------------------
 --[[ Member variables ]]
@@ -20,6 +20,7 @@ local INITIAL_SPAWN_TIME = 10
 self.inst = inst
 
 --Private
+local _worldsettingstimer = TheWorld.components.worldsettingstimer
 local _spawners = {}
 local _respawntask = nil
 
@@ -47,14 +48,10 @@ local function TriggerRandomSpawner()
 end
 
 local function StopRespawnTimer()
-    if _respawntask ~= nil then
-        _respawntask:Cancel()
-        _respawntask = nil
-    end
+    _worldsettingstimer:StopTimer(TOADSTOOL_TIMERNAME)
 end
 
 local function OnRespawnTimer()
-    _respawntask = nil
     if GetSpawnedToadstool() == nil then
         TriggerRandomSpawner()
     end
@@ -62,7 +59,7 @@ end
 
 local function StartRespawnTimer(t)
     StopRespawnTimer()
-    _respawntask = inst:DoTaskInTime(t or TUNING.TOADSTOOL_RESPAWN_TIME, OnRespawnTimer)
+    _worldsettingstimer:StartTimer(TOADSTOOL_TIMERNAME, t or TUNING.TOADSTOOL_RESPAWN_TIME)
 end
 
 --------------------------------------------------------------------------
@@ -72,7 +69,7 @@ end
 local function OnToadstoolStateChanged()
     if GetSpawnedToadstool() ~= nil then
         StopRespawnTimer()
-    elseif _respawntask == nil then
+    elseif not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME) then
         StartRespawnTimer()
     end
 end
@@ -92,8 +89,8 @@ local function OnRemoveSpawner(spawner)
 
             if GetSpawnedToadstool() ~= nil then
                 StopRespawnTimer()
-            elseif _respawntask == nil and #_spawners > 0 then
-                StartRespawnTimer(INITIAL_SPAWN_TIME)
+            elseif not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME) and #_spawners > 0 then
+                StartRespawnTimer(TUNING.TOADSTOOL_SPAWN_TIME)
             end
             return
         end
@@ -114,10 +111,15 @@ local function OnRegisterToadstoolSpawner(inst, spawner)
 
     if GetSpawnedToadstool() ~= nil then
         StopRespawnTimer()
-    elseif _respawntask == nil then
-        StartRespawnTimer(INITIAL_SPAWN_TIME)
+    elseif not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME) then
+        StartRespawnTimer(TUNING.TOADSTOOL_SPAWN_TIME)
     end
 end
+
+local function OnToadstoolTimerDone(inst, data)
+    OnRespawnTimer()
+end
+_worldsettingstimer:AddTimer(TOADSTOOL_TIMERNAME, TUNING.TOADSTOOL_RESPAWN_TIME, TUNING.SPAWN_TOADSTOOL, OnToadstoolTimerDone)
 
 --------------------------------------------------------------------------
 --[[ Initialization ]]
@@ -126,9 +128,9 @@ end
 --Initialize variables
 
 --Register events
-inst:ListenForEvent("ms_registertoadstoolspawner", OnRegisterToadstoolSpawner)
+inst:ListenForEvent("ms_registertoadstoolspawner", OnRegisterToadstoolSpawner, TheWorld)
 
-StartRespawnTimer(INITIAL_SPAWN_TIME)
+StartRespawnTimer(TUNING.TOADSTOOL_SPAWN_TIME)
 
 --------------------------------------------------------------------------
 --[[ Post initialization ]]
@@ -137,24 +139,8 @@ StartRespawnTimer(INITIAL_SPAWN_TIME)
 function self:OnPostInit()
     if GetSpawnedToadstool() ~= nil then
         StopRespawnTimer()
-    elseif _respawntask == nil then
+    elseif not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME) then
         StartRespawnTimer()
-    end
-end
-
---------------------------------------------------------------------------
---[[ Update ]]
---------------------------------------------------------------------------
-
-function self:LongUpdate(dt)
-    if _respawntask ~= nil then
-        local t = GetTaskRemaining(_respawntask)
-        if t > dt then
-            StartRespawnTimer(t - dt)
-        else
-            StopRespawnTimer()
-            OnRespawnTimer()
-        end
     end
 end
 
@@ -166,7 +152,7 @@ function self:IsEmittingGas()
     --return GetSpawnedToadstool() ~= nil
     --this "should" be the same result, except much faster
     --could differ when a spawnpoint is forcefully removed
-    return _respawntask == nil
+    return not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME)
 end
 
 --------------------------------------------------------------------------
@@ -174,17 +160,14 @@ end
 --------------------------------------------------------------------------
 
 function self:OnSave()
-    return _respawntask ~= nil
-        and {
-            timetorespawn = math.ceil(GetTaskRemaining(_respawntask)),
-        }
-        or nil
+    return {toadstool_queued_spawn = not _worldsettingstimer:ActiveTimerExists(TOADSTOOL_TIMERNAME)}
 end
 
 function self:OnLoad(data)
-    if data.timetorespawn ~= nil then
-        StartRespawnTimer(data.timetorespawn)
-    else
+    --retrofit old timer to new system
+    if data.timetorespawn then
+        StartRespawnTimer(math.min(data.timetorespawn, TUNING.TOADSTOOL_RESPAWN_TIME))
+    elseif data.toadstool_queued_spawn ~= false then
         StopRespawnTimer()
     end
 end
@@ -197,7 +180,7 @@ function self:GetDebugString()
     return string.format(
         "Active Toadstool: %s  Cooldown: %.2f",
         tostring(GetSpawnedToadstool() or "--"),
-        _respawntask ~= nil and GetTaskRemaining(_respawntask) or 0
+        _worldsettingstimer:GetTimeLeft(TOADSTOOL_TIMERNAME) or 0
     )
 end
 

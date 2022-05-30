@@ -35,6 +35,8 @@ local function HasGuardian(inst)
         and inst.components.herdmember.herd.components.guardian:HasGuardian()
 end
 
+local RETARGET_CANT_TAGS = { "prey", "smallcreature", "mossling", "moose" }
+local RETARGET_ONEOF_TAGS = { "monster", "player" }
 local function RetargetFn(inst)
     return (inst.mother_dead or inst:HasGuardian())
         and FindEntity(
@@ -44,8 +46,8 @@ local function RetargetFn(inst)
                     return inst.components.combat:CanTarget(guy)
                 end,
                 nil,
-                { "prey", "smallcreature", "mossling", "moose" },
-                { "monster", "player" }
+                RETARGET_CANT_TAGS,
+                RETARGET_ONEOF_TAGS
             )
         or nil
 end
@@ -59,11 +61,15 @@ end
 
 local function OnSave(inst, data)
     data.mother_dead = inst.mother_dead
+    data.shouldGoAway = inst.shouldGoAway or nil
 end
 
 local function OnLoad(inst, data)
     if data ~= nil and data.mother_dead then
         inst.mother_dead = data.mother_dead
+    end
+    if data ~= nil and data.shouldGoAway then
+        inst.shouldGoAway = data.shouldGoAway
     end
 end
 
@@ -74,7 +80,7 @@ local function OnEntitySleep(inst)
 end
 
 local function OnSpringChange(inst, isspring)
-    inst.shouldGoAway = not isspring
+    inst.shouldGoAway = not isspring or TheWorld:HasTag("cave")
     if inst:IsAsleep() then
         OnEntitySleep(inst)
     end
@@ -179,6 +185,8 @@ local function fn()
     inst:WatchWorldState("isspring", OnSpringChange)
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("entitysleep", OnEntitySleep)
+
+    OnSpringChange(inst, TheWorld.state.isspring)
 
     ------------------------------------------
 

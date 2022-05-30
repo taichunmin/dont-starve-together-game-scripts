@@ -13,6 +13,8 @@ local function SwitchUpdatePeriod(self, period, UpdateLayers)
     end
 end
 
+local FUME_MUST_TAGS = { "sporecloud" }
+
 local function UpdateLayers(inst, self)
     if next(self.corrosives) ~= nil then
         return
@@ -22,7 +24,7 @@ local function UpdateLayers(inst, self)
 
     if not self.owner:HasTag("playerghost") then
         local x, y, z = self.owner.Transform:GetWorldPosition()
-        local fumes = TheSim:FindEntities(x, y, z, 4, { "sporecloud" })
+        local fumes = TheSim:FindEntities(x, y, z, 4, FUME_MUST_TAGS)
         for i, v in ipairs(fumes) do
             --3.5 ^ 2 = 12.25
             --4 ^ 2 = 16
@@ -58,6 +60,7 @@ end
 local FumeOver =  Class(Widget, function(self, owner)
     self.owner = owner
     Widget._ctor(self, "FumeOver")
+    self:UpdateWhilePaused(false)
 
     self:SetClickable(false)
 
@@ -163,6 +166,7 @@ function FumeOver:DoUpdate(layer, dt)
 end
 
 function FumeOver:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
     -- ignore 0 interval
     -- ignore abnormally large intervals as they will destabilize the math in here
     if dt <= 0 or dt > 0.1 then

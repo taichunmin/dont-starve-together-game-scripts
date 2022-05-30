@@ -33,6 +33,8 @@ for k, v in pairs(COLLAPSIBLE_WORK_ACTIONS) do
     table.insert(COLLAPSIBLE_TAGS, k.."_workable")
 end
 local NON_COLLAPSIBLE_TAGS = { "fossil", "flying", "shadow", "ghost", "locomotor", "FX", "NOCLICK", "DECOR", "INLIMBO" }
+local TOSS_MUST_TAGS = { "_inventoryitem" }
+local TOSS_CANT_TAGS = { "locomotor", "INLIMBO" }
 
 local function DoDamage(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
@@ -79,7 +81,7 @@ local function DoDamage(inst)
         end
     end
 
-    local totoss = TheSim:FindEntities(x, 0, z, PHYSICS_RADIUS + DAMAGE_RADIUS_PADDING, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+    local totoss = TheSim:FindEntities(x, 0, z, PHYSICS_RADIUS + DAMAGE_RADIUS_PADDING, TOSS_MUST_TAGS, TOSS_CANT_TAGS)
     for i, v in ipairs(totoss) do
         if v.components.mine ~= nil then
             v.components.mine:Deactivate()

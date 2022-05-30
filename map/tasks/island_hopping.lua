@@ -6,7 +6,7 @@ AddTask("IslandHop_Start", { -- Sweet starting node, horrid other than that (lea
 		locks=LOCKS.NONE,
 		keys_given=KEYS.MEAT,
 		room_choices={
-			["SpiderMarsh"] = function() return 1+math.random(2) end, 
+			["SpiderMarsh"] = function() return 1+math.random(2) end,
 		},
 		room_bg=GROUND.DIRT,
 		background_room="BGMarsh",
@@ -18,7 +18,7 @@ AddTask("IslandHop_Hounds", {
 		keys_given=KEYS.MEAT,
 		entrance_room = "ForceDisconnectedRoom",
 		room_choices={
-			["SpiderForest"] = function() return 1+math.random(2) end, 
+			["SpiderForest"] = function() return 1+math.random(2) end,
 		},
 		room_bg=GROUND.DIRT,
 		background_room="BGBadlands",
@@ -30,10 +30,10 @@ AddTask("IslandHop_Forest", {
 		keys_given=KEYS.MEAT,
 		entrance_room = "ForceDisconnectedRoom",
 		room_choices={
-			["Waspnests"] = function() return 1+math.random(2) end, 
+			["Waspnests"] = function() return 1+math.random(2) end,
 		},
 		-- room_choices={
-		-- 	["DeepForest"] = function() return 1+math.random(2) end, 
+		-- 	["DeepForest"] = function() return 1+math.random(2) end,
 		-- },
 		room_bg=GROUND.DIRT,
 		background_room="BGDeepForest",
@@ -45,10 +45,10 @@ AddTask("IslandHop_Savanna", {
 		keys_given=KEYS.MEAT,
 		entrance_room = "ForceDisconnectedRoom",
 		room_choices={
-			["BeefalowPlain"] = function() return 1+math.random(2) end, 
+			["BeefalowPlain"] = function() return 1+math.random(2) end,
 		},
 		-- room_choices={
-		-- 	["BeefalowPlain"] = function() return 1+math.random(2) end, 
+		-- 	["BeefalowPlain"] = function() return 1+math.random(2) end,
 		-- },
 		room_bg=GROUND.DIRT,
 		background_room="BGSavanna",
@@ -60,7 +60,7 @@ AddTask("IslandHop_Rocky", {
 		keys_given=KEYS.MEAT,
 		entrance_room = "ForceDisconnectedRoom",
 		room_choices={
-			["Rocky"] = function() return 1+math.random(2) end, 
+			["Rocky"] = function() return 1+math.random(2) end,
 		},
 		room_bg=GROUND.DIRT,
 		background_room="BGRocky",
@@ -72,7 +72,7 @@ AddTask("IslandHop_Merm", {
 		keys_given=KEYS.MEAT,
 		entrance_room = "ForceDisconnectedRoom",
 		room_choices={
-			["SlightlyMermySwamp"] = function() return 1+math.random(2) end, 
+			["SlightlyMermySwamp"] = function() return 1+math.random(2) end,
 		},
 		room_bg=GROUND.DIRT,
 		background_room="BGMarsh",

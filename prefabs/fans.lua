@@ -6,7 +6,6 @@ local assets =
 local assets_perd =
 {
     Asset("ANIM", "anim/fan.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs_perd =
@@ -14,9 +13,11 @@ local prefabs_perd =
     "tornado",
 }
 
+local FANTARGET_CANT_TAGS = { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost" }
+local FANTARGET_ONEOF_TAGS = { "smolder", "fire", "player" }
 local function OnUse(inst, target)
     local x, y, z = target.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.FEATHERFAN_RADIUS, nil, { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost" }, { "smolder", "fire", "player" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.FEATHERFAN_RADIUS, nil, FANTARGET_CANT_TAGS, FANTARGET_ONEOF_TAGS)
     for i, v in pairs(ents) do
         if v.components.burnable ~= nil then
             -- Extinguish smoldering/fire and reset the propagator to a heat of .2
@@ -95,7 +96,8 @@ local function common_fn(overridesymbol, onchannelingfn)
         inst:AddTag("channelingfan")
     end
 
-    MakeInventoryFloatable(inst)
+    local swap_data = {bank = "fan", anim = "idle"}
+    MakeInventoryFloatable(inst, nil, nil, nil, nil, nil, swap_data)
 
     inst.entity:SetPristine()
 
@@ -136,7 +138,6 @@ local function feather_fn()
 
     inst.components.finiteuses:SetMaxUses(TUNING.FEATHERFAN_USES)
     inst.components.finiteuses:SetUses(TUNING.FEATHERFAN_USES)
-
 
     return inst
 end

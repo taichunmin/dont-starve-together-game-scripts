@@ -1,4 +1,4 @@
---NOTE - RampingSpawner must be hooked into a brain properly to function! Look @ Dragonfly. 
+--NOTE - RampingSpawner must be hooked into a brain properly to function! Look @ Dragonfly.
 
 local RampingSpawner = Class(function(self, inst)
     self.inst = inst
@@ -90,14 +90,14 @@ end
 
 function RampingSpawner:SpawnEntity()
     local spawn = SpawnPrefab(self.spawn_prefab)
-    
+
     self:TrackSpawn(spawn)
 
     spawn.Transform:SetPosition(self:GetSpawnPos():Get())
     spawn.Transform:SetRotation(self:GetSpawnRot())
     self.current_wave = self.current_wave - 1
     self.inst:PushEvent("rampingspawner_spawn", { newent = spawn })
-    
+
     if self:GetCurrentWave() <= 0 and self:IsActive() then
         if self.SpawnTask ~= nil then
             self.SpawnTask:Cancel()

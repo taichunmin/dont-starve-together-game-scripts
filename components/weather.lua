@@ -164,14 +164,14 @@ local SEASON_DYNRANGE_DAY = {
     autumn = .4,
     winter = .05,
     spring = .4,
-    summer = .65,
+    summer = .3,
 }
 
-local SEASON_DYNRANGE_NIGHT = {
+local SEASON_DYNRANGE_NIGHT = { -- dusk and night
     autumn = .25,
     winter = 0,
     spring = .25,
-    summer = .5,
+    summer = .2,
 }
 
 --------------------------------------------------------------------------
@@ -243,7 +243,7 @@ local _wet = net_bool(inst.GUID, "weather._wet", "wetdirty")
 local function StartAmbientRainSound(intensity)
     if not _rainsound then
         _rainsound = true
-        _world.SoundEmitter:PlaySound("dontstarve/rain/rainAMB", "rain")
+        _world.SoundEmitter:PlaySound("dontstarve/AMB/rain", "rain")
     end
     _world.SoundEmitter:SetParameter("rain", "intensity", intensity)
 end
@@ -375,9 +375,10 @@ local function CalculateLight()
     if _precipmode:value() == PRECIP_MODES.never then
         return 1
     end
+	local season = _season
     local snowlight = _preciptype:value() == PRECIP_TYPES.snow
     local dynrange = snowlight and (_daylight and SEASON_DYNRANGE_DAY["winter"] or SEASON_DYNRANGE_NIGHT["winter"])
-                                or (_daylight and SEASON_DYNRANGE_DAY[_season] or SEASON_DYNRANGE_NIGHT[_season])
+                                or (_daylight and SEASON_DYNRANGE_DAY[season] or SEASON_DYNRANGE_NIGHT[season])
 
     if _precipmode:value() == PRECIP_MODES.always then
         return 1 - dynrange
@@ -531,51 +532,101 @@ local OnSetLightningDelay = _ismastersim and function(src, data)
     _maxlightningdelay = data.max
 end or nil
 
+local LIGHTNINGSTRIKE_CANT_TAGS = { "playerghost", "INLIMBO" }
+local LIGHTNINGSTRIKE_ONEOF_TAGS = { "lightningrod", "lightningtarget", "lightningblocker" }
+local LIGHTNINGSTRIKE_SEARCH_RANGE = 40
 local OnSendLightningStrike = _ismastersim and function(src, pos)
-    local target = nil
-    local isrod = false
-    local mindistsq = nil
-    local pos0 = pos
+    local closest_generic = nil
+    local closest_rod = nil
+    local closest_blocker = nil
 
-    local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, 40, nil, { "playerghost", "INLIMBO" }, { "lightningrod", "lightningtarget" })
-    for k, v in pairs(ents) do
-        local visrod = v:HasTag("lightningrod")
-        local vpos = v:GetPosition()
-        local vdistsq = distsq(pos0.x, pos0.z, vpos.x, vpos.z)
-        --First, check if we're a valid target:
-        --rods are always valid
-        --playerlightning target is valid by chance (when not invincible)
-        if (visrod or
-            (   (v.components.health == nil or not v.components.health:IsInvincible()) and
-                (v.components.playerlightningtarget == nil or math.random() <= v.components.playerlightningtarget:GetHitChance())
-            ))
-            --Now check for better match
-            and (target == nil or
-                (visrod and not isrod) or
-                (visrod == isrod and vdistsq < mindistsq)) then
-            target = v
-            isrod = visrod
-            pos = vpos
-            mindistsq = vdistsq
-        end
-    end
-
-    if isrod then
-        target:PushEvent("lightningstrike")
-    else
-        if target ~= nil and target.components.playerlightningtarget ~= nil then
-            target.components.playerlightningtarget:DoStrike()
+    local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, LIGHTNINGSTRIKE_SEARCH_RANGE, nil, LIGHTNINGSTRIKE_CANT_TAGS, LIGHTNINGSTRIKE_ONEOF_TAGS)
+    local blockers = nil
+    for _, v in pairs(ents) do
+        -- Track any blockers we find, since we redirect the strike position later,
+        -- and might redirect it into their block range.
+        local is_blocker = v.components.lightningblocker ~= nil
+        if is_blocker then
+            if blockers == nil then
+                blockers = {v}
+            else
+                table.insert(blockers, v)
+            end
         end
 
-        ents = TheSim:FindEntities(pos.x, pos.y, pos.z, 3, nil, _lightningexcludetags)
-        for k, v in pairs(ents) do
-            if v.components.burnable ~= nil then
-                v.components.burnable:Ignite()
+        if closest_blocker == nil and is_blocker
+                and (v.components.lightningblocker.block_rsq + 0.0001) > v:GetDistanceSqToPoint(pos:Get()) then
+            closest_blocker = v
+        elseif closest_rod == nil and v:HasTag("lightningrod") then
+            closest_rod = v
+        elseif closest_generic == nil then
+            if (v.components.health == nil or not v.components.health:IsInvincible())
+                    and not is_blocker -- If we're out of range of the first branch, ignore blocker objects.
+                    and (v.components.playerlightningtarget == nil or math.random() <= v.components.playerlightningtarget:GetHitChance()) then
+                closest_generic = v
             end
         end
     end
 
-    SpawnPrefab("lightning").Transform:SetPosition(pos:Get())
+    local strike_position = pos
+    local prefab_type = "lightning"
+
+    if closest_blocker ~= nil then
+        closest_blocker.components.lightningblocker:DoLightningStrike(strike_position)
+        prefab_type = "thunder"
+    elseif closest_rod ~= nil then
+        strike_position = closest_rod:GetPosition()
+
+        -- Check if we just redirected into a lightning blocker's range.
+        if blockers ~= nil then
+            for _, blocker in ipairs(blockers) do
+                if blocker:GetDistanceSqToPoint(strike_position:Get()) < (blocker.components.lightningblocker.block_rsq + 0.0001) then
+                    prefab_type = "thunder"
+                    blocker.components.lightningblocker:DoLightningStrike(strike_position)
+                    break
+                end
+            end
+        end
+
+        -- If we didn't get blocked, push the event that does all the fx and behaviour.
+        if prefab_type == "lightning" then
+            closest_rod:PushEvent("lightningstrike")
+        end
+    else
+        if closest_generic ~= nil then
+            strike_position = closest_generic:GetPosition()
+
+            -- Check if we just redirected into a lightning blocker's range.
+            if blockers ~= nil then
+                for _, blocker in ipairs(blockers) do
+                    if blocker:GetDistanceSqToPoint(strike_position:Get()) < (blocker.components.lightningblocker.block_rsq + 0.0001) then
+                        prefab_type = "thunder"
+                        blocker.components.lightningblocker:DoLightningStrike(strike_position)
+                        break
+                    end
+                end
+            end
+
+            -- If we didn't redirect, strike the playerlightningtarget if there is one.
+            if prefab_type == "lightning" then
+                if closest_generic.components.playerlightningtarget ~= nil then
+                    closest_generic.components.playerlightningtarget:DoStrike()
+                end
+            end
+        end
+
+        -- If we're doing lightning, light nearby unprotected objects on fire.
+        if prefab_type == "lightning" then
+            ents = TheSim:FindEntities(strike_position.x, strike_position.y, strike_position.z, 3, nil, _lightningexcludetags)
+            for _, v in pairs(ents) do
+                if v.components.burnable ~= nil then
+                    v.components.burnable:Ignite()
+                end
+            end
+        end
+    end
+
+    SpawnPrefab(prefab_type).Transform:SetPosition(strike_position:Get())
 end or nil
 
 local OnSimUnpaused = _ismastersim and function()
@@ -643,7 +694,7 @@ if _ismastersim then
     _maxlightningdelay = nil
     _nextlightningtime = 5
     _lightningtargets = {}
-    _lightningexcludetags = { "player", "INLIMBO" }
+    _lightningexcludetags = { "player", "INLIMBO", "lightningblocker" }
 
     for k, v in pairs(FUELTYPE) do
         if v ~= FUELTYPE.USAGE then --Not a real fuel
@@ -972,8 +1023,9 @@ function self:GetDebugString()
         string.format("preciprate:(%2.2f of %2.2f)", preciprate, _peakprecipitationrate:value()),
         string.format("snowlevel:%2.2f", _snowlevel:value()),
         string.format("wetness:%2.2f(%s%2.2f)%s", _wetness:value(), wetrate > 0 and "+" or "", wetrate, _wet:value() and " WET" or ""),
+        string.format("light:%2.5f", CalculateLight()),
     }
-
+	
     if _ismastersim then
         table.insert(str, string.format("lightning:%2.2f", _nextlightningtime))
     end

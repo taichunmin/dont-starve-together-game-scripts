@@ -159,7 +159,7 @@ function UserCommandPickerScreen:OnControl(control, down)
     if UserCommandPickerScreen._base.OnControl(self,control, down) then return true end
 
     if not down and control == CONTROL_CANCEL then
-        TheFrontEnd:PopScreen() 
+        TheFrontEnd:PopScreen()
         return true
     end
 end
@@ -208,7 +208,7 @@ function UserCommandPickerScreen:RefreshButtons()
                 end
             else
                 button:ClearHoverText()
-                if TheInput:ControllerAttached() then                    
+                if TheInput:ControllerAttached() then
                     button:Enable()
 					-- this is the first active widget we've come across so set it as focus
                     if nil == self.force_focus_button then

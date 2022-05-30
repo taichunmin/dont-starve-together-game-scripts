@@ -1,7 +1,7 @@
 require("stategraphs/commonstates")
 
 local actionhandlers =
-{    
+{
     ActionHandler(ACTIONS.CHOP,
         function(inst)
             if not inst.sg:HasStateTag("prechop") then
@@ -10,8 +10,8 @@ local actionhandlers =
                     or "chop_start"
             end
         end),
-    ActionHandler(ACTIONS.MINE, 
-        function(inst) 
+    ActionHandler(ACTIONS.MINE,
+        function(inst)
             if not inst.sg:HasStateTag("premine") then
                 return inst.sg:HasStateTag("mining")
                     and "mine"
@@ -345,9 +345,9 @@ local states =
 
         events =
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
-                    inst.AnimState:PlayAnimation("pickaxe_pst") 
+                    inst.AnimState:PlayAnimation("pickaxe_pst")
                     inst.sg:GoToState("idle", true)
                 end
             end),

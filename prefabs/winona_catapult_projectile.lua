@@ -18,6 +18,7 @@ for i, v in ipairs(NO_TAGS_PVP) do
     table.insert(NO_TAGS, v)
 end
 
+local COMBAT_TAGS = { "_combat" }
 local function OnHit(inst, attacker, target)
     local x, y, z = inst.Transform:GetWorldPosition()
     inst.Physics:Stop()
@@ -38,7 +39,7 @@ local function OnHit(inst, attacker, target)
         attacker = nil
     end
     local hit = false
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 4, { "_combat" }, TheNet:GetPVPEnabled() and NO_TAGS_PVP or NO_TAGS)) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 4, COMBAT_TAGS, TheNet:GetPVPEnabled() and NO_TAGS_PVP or NO_TAGS)) do
         if v:IsValid() and v.entity:IsVisible() and inst.components.combat:CanTarget(v) then
             if attacker ~= nil and not (v.components.combat.target ~= nil and v.components.combat.target:HasTag("player")) then
                 --if target is not targeting a player, then use the catapult as attacker to draw aggro

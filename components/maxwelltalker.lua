@@ -14,7 +14,7 @@ local MaxwellTalker = Class(function(self, inst)
 	self.canskip = false
 	self.defaultvoice = "dontstarve/maxwell/talk_LP"
 	self.inputhandlers = {}
-    table.insert(self.inputhandlers, TheInput:AddControlHandler(CONTROL_PRIMARY, function() self:OnClick() end))    
+    table.insert(self.inputhandlers, TheInput:AddControlHandler(CONTROL_PRIMARY, function() self:OnClick() end))
     table.insert(self.inputhandlers, TheInput:AddControlHandler(CONTROL_SECONDARY, function() self:OnClick() end))
     table.insert(self.inputhandlers, TheInput:AddControlHandler(CONTROL_ATTACK, function() self:OnClick() end))
     table.insert(self.inputhandlers, TheInput:AddControlHandler(CONTROL_INSPECT, function() self:OnClick() end))
@@ -37,7 +37,7 @@ function MaxwellTalker:OnCancel()
 	end
 
 	if self.inst.speech.disableplayer and self.inst.wilson then
-	    if self.inst.wilson.sg.currentstate.name == "sleep" then		
+	    if self.inst.wilson.sg.currentstate.name == "sleep" then
 		    self.inst.SoundEmitter:KillSound("talk")	--ensures any talking sounds have stopped
 		    if self.inst.speech.disappearanim then
                 if SaveGameIndex:GetCurrentMode(Settings.save_slot) == "adventure" then
@@ -50,18 +50,18 @@ function MaxwellTalker:OnCancel()
 	                self.inst:DoTaskInTime(.4, function()
                         self.inst.SoundEmitter:PlaySound("dontstarve/maxwell/disappear")
                         SpawnPrefab("maxwell_smoke").Transform:SetPosition(self.inst.Transform:GetWorldPosition())
-						self.inst.DynamicShadow:Enable(false)        
+						self.inst.DynamicShadow:Enable(false)
 	                end)
 		        end
 		        self.inst.AnimState:PlayAnimation(self.inst.speech.disappearanim, false)
 		    end	--plays the disappear animation and removes from scene
-			self.inst:ListenForEvent("animqueueover", function() self.inst:Remove() end)		    
+			self.inst:ListenForEvent("animqueueover", function() self.inst:Remove() end)
 		    self.inst.wilson.sg:GoToState("wakeup")
 		    self.inst.wilson:DoTaskInTime(1.5, function() self.inst.wilson.components.playercontroller:Enable(true) end)
 		else
             self.inst.wilson.components.playercontroller:Enable(true)
         end
-        
+
 		GetPlayer().HUD:Show()
 		TheCamera:SetDefault()
 	end
@@ -79,7 +79,7 @@ function MaxwellTalker:OnClick()
 end
 
 function MaxwellTalker:StopTalking()
-	
+
     if self.inst.components.talker then
 		self.inst.components.talker:ShutUp()
 	end
@@ -98,19 +98,19 @@ function MaxwellTalker:Initialize()
 		self.inst.wilson = GetPlayer()
 		GetPlayer().HUD:Hide()
         self.inst.wilson.components.playercontroller:Enable(false)
-        self.inst.wilson.sg:GoToState("sleep")		
+        self.inst.wilson.sg:GoToState("sleep")
 
         local pt = Vector3(self.inst.wilson.Transform:GetWorldPosition()) + TheCamera:GetRightVec()*4
         self.inst.Transform:SetPosition(pt.x,pt.y,pt.z)
         self.inst:FacePoint(self.inst.wilson.Transform:GetWorldPosition())
-        	
+
         self.inst:Hide()
 
         --zoom in
         TheCamera:SetOffset( (Vector3(self.inst.Transform:GetWorldPosition()) - Vector3(self.inst.wilson.Transform:GetWorldPosition()))*.5  + Vector3(0,2,0) )
         TheCamera:SetDistance(15)
         TheCamera:Snap()
-        GetPlayer().HUD:Hide()   	
+        GetPlayer().HUD:Hide()
 	end
 end
 
@@ -118,10 +118,10 @@ function MaxwellTalker:IsTalking()
 	return self.inst.speech ~= nil
 end
 
-function MaxwellTalker:DoTalk()	
+function MaxwellTalker:DoTalk()
 	self.inst.speech = self.speeches[self.speech or "NULL_SPEECH"] --This would be specified through whatever spawns this at the start of a level
 	self.inst:Show()
-	
+
 	if self.inst.speech then
 		--GetPlayer().HUD:Hide()
 		if self.inst.speech.delay then
@@ -129,8 +129,8 @@ function MaxwellTalker:DoTalk()
 		end
 		if self.inst.speech.appearanim then self.inst.AnimState:PlayAnimation(self.inst.speech.appearanim) end
 		if self.inst.speech.idleanim then self.inst.AnimState:PushAnimation(self.inst.speech.idleanim, true) end
-		
-		if self.inst.speech.appearanim then			
+
+		if self.inst.speech.appearanim then
             if SaveGameIndex:GetCurrentMode(Settings.save_slot) == "adventure" then
 			    self.inst.SoundEmitter:PlaySound("dontstarve/maxwell/appear_adventure")
 			    Sleep(1.4)
@@ -176,7 +176,7 @@ function MaxwellTalker:DoTalk()
 
         	Sleep(section.waitbetweenlines or 0.5)	--pauses between lines
 		end
-		
+
 		self.inst.SoundEmitter:KillSound("talk")	--ensures any talking sounds have stopped
 
 		if self.inst.speech.disappearanim then
@@ -184,23 +184,23 @@ function MaxwellTalker:DoTalk()
 			    self.inst.SoundEmitter:PlaySound("dontstarve/maxwell/disappear_adventure")
 			    SpawnPrefab("maxwell_smoke").Transform:SetPosition(self.inst.Transform:GetWorldPosition())
 			else
-				self.inst.DynamicShadow:Enable(false)        
+				self.inst.DynamicShadow:Enable(false)
 	            self.inst.SoundEmitter:PlaySound("dontstarve/maxwell/disappear")
 	            SpawnPrefab("maxwell_smoke").Transform:SetPosition(self.inst.Transform:GetWorldPosition())
 			end
 			self.inst.AnimState:PlayAnimation(self.inst.speech.disappearanim, false) --plays the disappear animation and removes from scene
 			self.inst:ListenForEvent("animqueueover", function()  self.inst:Remove() end)
 		end
-		if self.inst.speech.disableplayer and self.inst.wilson and self.inst.wilson.sg.currentstate.name == "sleep" then		
-			self.inst.wilson.sg:GoToState("wakeup") 
-			self.inst.wilson:DoTaskInTime(1.5, function() 
-				self.inst.wilson.components.playercontroller:Enable(true)			
+		if self.inst.speech.disableplayer and self.inst.wilson and self.inst.wilson.sg.currentstate.name == "sleep" then
+			self.inst.wilson.sg:GoToState("wakeup")
+			self.inst.wilson:DoTaskInTime(1.5, function()
+				self.inst.wilson.components.playercontroller:Enable(true)
 				GetPlayer().HUD:Show()
 				TheCamera:SetDefault()
 			end)
 		end
-		
-		
+
+
 		self.inst.speech = nil --remove the speech after done
 	end
 	for k,v in pairs(self.inputhandlers) do

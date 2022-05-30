@@ -11,7 +11,7 @@ require "map/room_functions"
 AddRoom("LightPlantField", {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .2,
         distributeprefabs=
@@ -39,7 +39,7 @@ AddRoom("LightPlantField", {
 AddRoom("WormPlantField", {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .15,
         distributeprefabs=
@@ -67,7 +67,7 @@ AddRoom("WormPlantField", {
 AddRoom("FernGully", {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .25,
         distributeprefabs=
@@ -95,7 +95,7 @@ AddRoom("FernGully", {
 AddRoom("SlurtlePlains", {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .20,
         distributeprefabs=
@@ -121,7 +121,7 @@ AddRoom("SlurtlePlains", {
 AddRoom("MudWithRabbit", {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         countstaticlayouts =
         {
@@ -149,7 +149,7 @@ AddRoom("MudWithRabbit", {
 local bgmud = {
     colour={r=0.7,g=0.5,b=0.3,a=0.9},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .15,
         distributeprefabs=

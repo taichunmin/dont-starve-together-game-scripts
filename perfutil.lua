@@ -34,15 +34,15 @@ end
 
 function GetProfilerSave(results)
     if TheWorld ~= nil and TheWorld.ismastersim then
-        local slotnum = SaveGameIndex:GetCurrentSaveSlot()
-        local session_id = SaveGameIndex:GetSlotSession(slotnum)
+        local session_id = ShardGameIndex:GetSession()
         if session_id ~= nil then
             local function onreadworldfile(load_success, str)
                 if load_success == true then
                     results.levelstring = str
                 end
             end
-            if not TheNet:IsDedicated() and (SaveGameIndex:IsSlotMultiLevel(slotnum) or SaveGameIndex:GetSlotServerData(slotnum).use_cluster_path) then
+            if not TheNet:IsDedicated() and not ShardGameIndex:GetServerData().use_legacy_session_path then
+				local slotnum = ShardGameIndex:GetSlot()
                 local file = TheNet:GetWorldSessionFileInClusterSlot(slotnum, "Master", session_id)
                 if file ~= nil then
                     TheSim:GetPersistentStringInClusterSlot(slotnum, "Master", file, onreadworldfile)
@@ -106,13 +106,13 @@ function GetProfilerMetaData()
 	GetProfilerServerStats(results)
 	GetProfilerSave(results)
 	GetProfilerPlayers(results)
-	GetProfilerModInfo(results)	
+	GetProfilerModInfo(results)
 	return results
 end
 
 function ExpandWorldFromProfile()
 	local profile
-	TheSim:GetPersistentString( "../profile.json",	
+	TheSim:GetPersistentString( "../profile.json",
 		function(load_success, str)
     		if load_success == true then
 				profile = str

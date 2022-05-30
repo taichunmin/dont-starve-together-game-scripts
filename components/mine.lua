@@ -9,7 +9,7 @@ local mine_must_tags = { "_combat" }
 
 local function MineTest(inst, self)
     if self.radius ~= nil then
-        local notags = { "notraptrigger", "flying", "ghost", "playerghost" }
+        local notags = { "notraptrigger", "flying", "ghost", "playerghost", "spawnprotection" }
         table.insert(notags, self.alignment)
 
         local target = FindEntity(inst, self.radius, mine_test_fn, mine_must_tags, notags, mine_test_tags)
@@ -181,7 +181,7 @@ function Mine:Explode(target)
     self:StopTesting()
     self.target = target
     self.issprung = true
-    self.inactive = false    
+    self.inactive = false
     ProfileStatsAdd("trap_sprung_"..(target ~= nil and target.prefab or ""))
     if self.onexplode ~= nil then
         self.onexplode(self.inst, target)

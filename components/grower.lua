@@ -77,15 +77,11 @@ function Grower:Fertilize(obj, doer)
         self.cycles_left = self.cycles_left + obj.components.fertilizer.soil_cycles
     end
 
-    if obj.components.finiteuses ~= nil then
-        obj.components.finiteuses:Use()
-    else
-        obj.components.stackable:Get(1):Remove()
-    end
-
     if self.setfertility ~= nil then
         self.setfertility(self.inst, self:GetFertilePercent())
     end
+
+	return true
 end
 
 function Grower:OnLoad(data, newents)
@@ -155,7 +151,7 @@ function Grower:RemoveCrop(crop)
     self.crops[crop] = nil
 
     for k, v in pairs(self.crops) do
-        return 
+        return
     end
 
     self.isempty = true

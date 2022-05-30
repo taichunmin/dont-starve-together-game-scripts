@@ -33,8 +33,13 @@ local function onmatured(inst)
     end
     inst.AnimState:OverrideSymbol("swap_grown", inst.components.crop.product_prefab, inst.components.crop.product_prefab.."01")
     inst.components.workable:SetWorkAction(nil)
+    local veg = VEGGIES[inst.components.crop.product_prefab]
+	if veg ~= nil and veg.halloweenmoonmutable_settings ~= nil then
+		inst:AddComponent("halloweenmoonmutable")
+		inst.components.halloweenmoonmutable:SetPrefabMutated(veg.halloweenmoonmutable_settings.prefab)
+		inst.components.halloweenmoonmutable:SetOnMutateFn(veg.halloweenmoonmutable_settings.onmutatefn)
+	end
     if inst.components.timer ~= nil then
-        local veg = VEGGIES[inst.components.crop.product_prefab]
         inst.components.timer:StartTimer("rotting", (veg ~= nil and veg.perishtime or TUNING.PERISH_MED) + math.random() * TUNING.SEG_TIME)
     end
 end
@@ -211,7 +216,7 @@ local function MakePlant(name, build, isground)
             inst.entity:AddMiniMapEntity()
             inst.MiniMapEntity:SetIcon("plant_normal_ground.png")
         else
-            inst.AnimState:SetFinalOffset(-1)
+            inst.AnimState:SetFinalOffset(3)
         end
         inst.AnimState:SetBank(build)
         inst.AnimState:SetBuild(build)
@@ -266,6 +271,15 @@ local function MakePlant(name, build, isground)
             inst.OnSave = OnSave
             inst.OnLoad = OnLoad
         end
+
+		inst:ListenForEvent("onhalloweenmoonmutate", function(inst)
+			if inst.components.crop.grower ~= nil and inst.components.crop.grower.components.grower ~= nil then
+                inst.components.crop.matured = false
+                inst.components.crop.growthpercent = 0
+                inst.components.crop.product_prefab = nil
+				inst.components.crop.grower.components.grower:RemoveCrop(inst)
+			end
+		end)
 
         return inst
     end

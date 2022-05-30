@@ -64,7 +64,7 @@ local function fn()
     inst.AnimState:SetBank("warning_shadow")
     inst.AnimState:SetBuild("meteor_shadow")
     inst.AnimState:PlayAnimation("idle", true)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")

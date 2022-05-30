@@ -55,14 +55,24 @@ local function CanDeploy(inst)
     return true
 end
 
-local function OnDeploy(inst, pt, deployer) 
+local function OnDeploy(inst, pt, deployer)
     local flower = SpawnPrefab("planted_flower")
     if flower then
         flower:PushEvent("growfrombutterfly")
         flower.Transform:SetPosition(pt:Get())
         inst.components.stackable:Get():Remove()
         AwardPlayerAchievement("growfrombutterfly", deployer)
+        TheWorld:PushEvent("CHEVO_growfrombutterfly",{target=flower,doer=deployer})
+        if deployer and deployer.SoundEmitter then
+            deployer.SoundEmitter:PlaySound("dontstarve/common/plant")
+        end
     end
+end
+
+local function OnMutate(inst, transformed_inst)
+	if transformed_inst ~= nil then
+		transformed_inst.sg:GoToState("idle")
+	end
 end
 
 local function fn()
@@ -175,6 +185,11 @@ local function fn()
     end
 
     MakeFeedableSmallLivestock(inst, TUNING.BUTTERFLY_PERISH_TIME, OnPickedUp, OnDropped)
+
+	inst:AddComponent("halloweenmoonmutable")
+	inst.components.halloweenmoonmutable:SetPrefabMutated("moonbutterfly")
+	inst.components.halloweenmoonmutable:SetOnMutateFn(OnMutate)
+	inst.components.halloweenmoonmutable.push_attacked_on_new_inst = false
 
     return inst
 end

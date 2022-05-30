@@ -32,7 +32,7 @@ local ConnectingToGamePopup = Class(Screen, function(self)
 	self.bg.fill:SetScale(.54, .45)
 	self.bg.fill:SetPosition(6, 8)
 
-	--title	
+	--title
 	local title = ""
     self.title = self.proot:AddChild(Text(TITLEFONT, 50))
     self.title:SetPosition(0, 70, 0)
@@ -51,19 +51,19 @@ local ConnectingToGamePopup = Class(Screen, function(self)
     local spacing = 165
     local buttons =
     {
-		{text=STRINGS.UI.NOAUTHENTICATIONSCREEN.CANCELBUTTON, cb = function() 
+		{text=STRINGS.UI.LOBBYSCREEN.CANCEL, cb = function()
             self:OnCancel()
         end},
     }
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-	self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -92, 0) 
+	self.menu:SetPosition(-(spacing*(#buttons-1))/2 + 5, -92, 0)
 	for i,v in pairs(self.menu.items) do
 		v:SetScale(.7)
 		v.image:SetScale(.6, .8)
 	end
 	self.buttons = buttons
 	self.default_focus = self.menu
-	
+
 	self.time = 0
 	self.progress = 0
 end)
@@ -86,11 +86,11 @@ function ConnectingToGamePopup:OnUpdate( dt )
 end
 
 function ConnectingToGamePopup:OnControl(control, down)
-    if ConnectingToGamePopup._base.OnControl(self,control, down) then 
+    if ConnectingToGamePopup._base.OnControl(self,control, down) then
         return true
     end
 
-    if control == CONTROL_CANCEL and not down then    
+    if control == CONTROL_CANCEL and not down then
         self:OnCancel()
     end
 end

@@ -37,7 +37,7 @@ else
     if nil ~= currentLocale then
 		local file = LOC.GetStringFile(currentLocale.id)
 		if file then
-			LanguageTranslator:LoadPOFile(file, currentLocale.code)    
+			LanguageTranslator:LoadPOFile(file, currentLocale.code)
 		end
     end
 end

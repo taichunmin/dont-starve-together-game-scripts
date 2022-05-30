@@ -57,10 +57,12 @@ local function onhit(inst)
     end
 end
 
+local PHYSICSGROW_BLOCKER_MUST_TAGS = { "character", "locomotor" }
+local PHYSICSGROW_BLOCKER_CANT_TAGS = { "INLIMBO" }
 local function OnUpdatePhysicsRadius(inst, data)
     local x, y, z = inst.Transform:GetWorldPosition()
     local mindist = math.huge
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, { "character", "locomotor" }, { "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 2, PHYSICSGROW_BLOCKER_MUST_TAGS, PHYSICSGROW_BLOCKER_CANT_TAGS)) do
         if v.entity:IsVisible() then
             local d = v:GetDistanceSqToPoint(x, y, z)
             d = d > 0 and (v.Physics ~= nil and math.sqrt(d) - v.Physics:GetRadius() or math.sqrt(d)) or 0

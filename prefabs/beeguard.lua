@@ -101,6 +101,10 @@ local function KeepTargetFn(inst, target)
             inst:IsNear(target, 40))
 end
 
+local function bonus_damage_via_allergy(inst, target, damage, weapon)
+    return (target:HasTag("allergictobees") and TUNING.BEE_ALLERGY_EXTRADAMAGE) or 0
+end
+
 local function CanShareTarget(dude)
     return dude:HasTag("bee") and not (dude:IsInLimbo() or dude.components.health:IsDead() or dude:HasTag("epic"))
 end
@@ -277,6 +281,7 @@ local function fn()
     inst.components.combat:SetKeepTargetFunction(KeepTargetFn)
     inst.components.combat.battlecryenabled = false
     inst.components.combat.hiteffectsymbol = "mane"
+    inst.components.combat.bonusdamagefn = bonus_damage_via_allergy
 
     inst:AddComponent("entitytracker")
     inst:AddComponent("knownlocations")

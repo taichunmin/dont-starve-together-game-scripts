@@ -41,11 +41,16 @@ end
 
 function Shelf:TakeItem(taker)
     if self.cantakeitem and self.itemonshelf ~= nil then
+
+        if self.takeitemtstfn and not self.takeitemtstfn(self.inst,taker, self.itemonshelf) then
+            return
+        end
+
         if self.ontakeitemfn ~= nil then
             self.ontakeitemfn(self.inst, taker, self.itemonshelf)
         end
 
-        if taker.components.inventory ~= nil then
+        if taker ~= nil and taker.components.inventory ~= nil then
             if self.inst.components.inventory ~= nil then
                 self.inst.components.inventory:RemoveItem(self.itemonshelf)
             end
@@ -55,8 +60,18 @@ function Shelf:TakeItem(taker)
             self.itemonshelf = nil
         else
             self.inst.components.inventory:DropItem(self.itemonshelf)
+			self.itemonshelf = nil
         end
     end
+end
+
+function Shelf:GetDebugString()
+    if self.itemonshelf == nil then
+        return ""
+    end
+
+    local canbetakenstr = (self.cantakeitem and "Can" or "Cannot").." be taken"
+    return self.itemonshelf.prefab..": "..canbetakenstr
 end
 
 return Shelf

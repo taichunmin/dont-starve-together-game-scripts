@@ -20,13 +20,13 @@ local LOWDSP =
 {
     winter =
     {
-        ["set_music"] = 2000,
+        --["set_music"] = 2000,
         --["set_ambience"] = WINTER_FREQUENCY,
         --["set_sfx/HUD"] = WINTER_FREQUENCY,
         ["set_sfx/movement"] = WINTER_FREQUENCY,
-        ["set_sfx/creature"] = WINTER_FREQUENCY,
+        -- ["set_sfx/creature"] = WINTER_FREQUENCY,
         ["set_sfx/player"] = WINTER_FREQUENCY,
-        ["set_sfx/sfx"] = WINTER_FREQUENCY,
+        -- ["set_sfx/sfx"] = WINTER_FREQUENCY,
         ["set_sfx/voice"] = WINTER_FREQUENCY,
     },
 }
@@ -44,13 +44,13 @@ local HIGHDSP =
 {
     summer =
     {
-        ["set_music"] = 500,
+        --["set_music"] = 500,
         --["set_ambience"] = SUMMER_DSP,
         --["set_sfx/HUD"] = SUMMER_DSP,
         ["set_sfx/movement"] = SUMMER_DSP,
-        ["set_sfx/creature"] = SUMMER_DSP,
+        -- ["set_sfx/creature"] = SUMMER_DSP,
         ["set_sfx/player"] = SUMMER_DSP,
-        ["set_sfx/sfx"] = SUMMER_DSP,
+        -- ["set_sfx/sfx"] = SUMMER_DSP,
         ["set_sfx/voice"] = SUMMER_DSP,
     },
 }
@@ -131,7 +131,7 @@ local function UpdateSeasonDSP(season, duration)
 
     if lowdsp then
         for k, v in pairs(lowdsp) do
-            _defaultlowdsp[k] = type(v) == "function" and v() or v
+            _defaultlowdsp[k] = FunctionOrValue(v)
         end
 
         for k in pairs(_defaultlowdsp) do
@@ -149,7 +149,7 @@ local function UpdateSeasonDSP(season, duration)
 
     if highdsp then
         for k, v in pairs(highdsp) do
-            _defaulthighdsp[k] = type(v) == "function" and v() or v
+            _defaulthighdsp[k] = FunctionOrValue(v)
         end
 
         for k in pairs(_defaulthighdsp) do

@@ -138,7 +138,7 @@ TEMPLATES = {
     end,
 
     BackgroundSpiral = function()
-        local bg = Image("images/bg_spiral.xml", "bg_spiral.tex")    
+        local bg = Image("images/bg_spiral.xml", "bg_spiral.tex")
         bg:SetVRegPoint(ANCHOR_MIDDLE)
         bg:SetHRegPoint(ANCHOR_MIDDLE)
         bg:SetVAnchor(ANCHOR_MIDDLE)
@@ -150,7 +150,7 @@ TEMPLATES = {
     end,
 
     BackgroundVignette = function()
-        local vig = Image("images/bg_vignette.xml", "vignette.tex")    
+        local vig = Image("images/bg_vignette.xml", "vignette.tex")
         vig:SetVRegPoint(ANCHOR_MIDDLE)
         vig:SetHRegPoint(ANCHOR_MIDDLE)
         vig:SetVAnchor(ANCHOR_MIDDLE)
@@ -161,16 +161,16 @@ TEMPLATES = {
     end,
 
     BackgroundTint = function(a, rgb)
-        local bg = Image("images/global.xml", "square.tex")    
+        local bg = Image("images/global.xml", "square.tex")
         bg:SetVRegPoint(ANCHOR_MIDDLE)
         bg:SetHRegPoint(ANCHOR_MIDDLE)
         bg:SetVAnchor(ANCHOR_MIDDLE)
         bg:SetHAnchor(ANCHOR_MIDDLE)
         bg:SetScaleMode(SCALEMODE_FILLSCREEN)
-		
+
 		a = a ~= nil and a or 0.75
 		rgb = rgb ~= nil and rgb or {0, 0, 0 }
-		
+
 		bg:SetTint(rgb[1], rgb[2], rgb[3], a)
 
         return bg
@@ -210,7 +210,7 @@ TEMPLATES = {
         grad:SetPosition(.5 * RESOLUTION_X, 0)
 		grad:SetScale(-1)
 
-        return root      
+        return root
     end,
 
     ----------------
@@ -617,7 +617,7 @@ TEMPLATES = {
         panel.frame:AddCrown("BottomCap.tex", ANCHOR_MIDDLE, ANCHOR_BOTTOM, 0, bottomCrownOffset or -42)
         panel.frame:SetSize( x_size or 520, y_size or 475)
         panel.frame:SetScale(frame_x_scale or 1, frame_y_scale or 1)
-        panel.frame:SetPosition(0, 0) 
+        panel.frame:SetPosition(0, 0)
 
 		panel.bg = panel.frame:AddChild(Image("images/options_bg.xml", "options_panel_bg.tex"))
 		panel.bg:SetPosition( bg_x_pos or 9, bg_y_pos or 13)
@@ -670,7 +670,7 @@ TEMPLATES = {
         if not height or height == "short" then
             nav_bar.bg = nav_bar:AddChild(Image("images/frontend.xml", "nav_bg_short.tex"))
             nav_bar.bg:SetScale(.65, .7)
-        elseif height == "medium" then 
+        elseif height == "medium" then
         	nav_bar.bg = nav_bar:AddChild(Image("images/frontend.xml", "nav_bg_short.tex"))
             nav_bar.bg:SetScale(.65, 1)
         elseif height == "tall" then
@@ -795,9 +795,9 @@ TEMPLATES = {
         btn.image:SetScale(.7)
 
         btn:SetText(txt or STRINGS.UI.SERVERLISTINGSCREEN.BACK, true, { shadow_offset and shadow_offset.x or 2, shadow_offset and shadow_offset.y or -1})
-        if txt_offset then 
+        if txt_offset then
             local textPos = btn.text:GetPosition()
-        	btn.text:SetPosition(textPos.x + txt_offset.x, textPos.y + txt_offset.y) 
+        	btn.text:SetPosition(textPos.x + txt_offset.x, textPos.y + txt_offset.y)
             local textShadowPos = btn.text_shadow:GetPosition()
         	btn.text_shadow:SetPosition(textShadowPos.x + txt_offset.x, textShadowPos.y + txt_offset.y)
         end
@@ -810,7 +810,7 @@ TEMPLATES = {
         btn.bg = btn:AddChild(Image("images/ui.xml", "blank.tex"))
         local w,h = btn.text:GetRegionSize()
         btn.bg:ScaleToSize(w+50, h+15)
-        if txt_offset then 
+        if txt_offset then
             btn.bg:SetPosition(txt_offset.x, txt_offset.y)
         end
 
@@ -972,7 +972,7 @@ TEMPLATES = {
     	local button = AnimButton(animname, states)
     	button:SetScale(scale)
     	button:SetOnClick(cb)
-   
+
    		button:SetFont(NEWFONT_OUTLINE)
     	button:SetTextSize(size or 24)
     	button:SetText(text)
@@ -1004,7 +1004,7 @@ TEMPLATES = {
         item.bg:SetClickable(true)
 
     	item.OnControl = function(control, down)
-    		if down and onClickFn then 
+    		if down and onClickFn then
     			onClickFn()
     		end
     	end
@@ -1023,7 +1023,7 @@ TEMPLATES = {
     -- ModListItem --
     -----------------
     -----------------
-    -- A widget that displays info about a mod. To be used in scroll lists etc. 
+    -- A widget that displays info about a mod. To be used in scroll lists etc.
 	ModListItem = function (modname, modinfo, modstatus, isenabled)
 
 		local opt = Widget("option")
@@ -1075,7 +1075,7 @@ TEMPLATES = {
 		opt.status:SetVAlign(ANCHOR_MIDDLE)
 		opt.status:SetHAlign(ANCHOR_LEFT)
 		opt.status:SetString(modname)
-		
+
 		if modstatus == "WORKING_NORMALLY" then
             opt.status:SetColour(59/255,  222/255, 99/255,1)
 			opt.status:SetString(STRINGS.UI.MODSSCREEN.STATUS.WORKING_NORMALLY)
@@ -1088,7 +1088,7 @@ TEMPLATES = {
 		end
 		opt.status:SetPosition(25, -20, 0)
 		opt.status:SetRegionSize( 200, 50 )
-		
+
 		if isenabled then
 			opt.image:SetTint(1,1,1,1)
 			opt.checkbox:SetTextures("images/ui.xml", "checkbox_on.tex", "checkbox_on_highlight.tex", "checkbox_on_disabled.tex", nil, nil, {1,1}, {0,0})
@@ -1096,10 +1096,10 @@ TEMPLATES = {
 			opt.image:SetTint(1.0,0.5,0.5,1)
 			opt.checkbox:SetTextures("images/ui.xml", "checkbox_off.tex", "checkbox_off_highlight.tex", "checkbox_off_disabled.tex", nil, nil, {1,1}, {0,0})
 		end
-		
+
 		return opt
 	end,
-	
+
 	-------------------
     -------------------
     -- ModDLListItem --
@@ -1119,11 +1119,11 @@ TEMPLATES = {
 		opt.name:SetString("Downloading:\n" .. modname)
 		opt.name:SetColour(0,0,0,1)
 		opt.name:SetRegionSize( 330, 100 )
-		
+
 		return opt
 	end,
-	
-	
+
+
     -------------------
     -------------------
     -- Label Textbox --
@@ -1163,7 +1163,7 @@ TEMPLATES = {
             local controller_id = TheInput:GetControllerID()
             local t = {}
             if not self.textbox.editing and not self.textbox.focus then
-                table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.HELP.CHANGE_TEXT)   
+                table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.HELP.CHANGE_TEXT)
             end
             return table.concat(t, "  ")
         end
@@ -1231,24 +1231,24 @@ TEMPLATES = {
     -- Moving Item --
     -----------------------
     -----------------------
-    -- An item image for the inventory screens that moves 
+    -- An item image for the inventory screens that moves
     MovingItem = function(name, slot_index, src_pos, dest_pos, start_scale, end_scale)
 
         local widg = UIAnim()
-       
+
         widg.name = name
 
 		widg.target_slot_index = slot_index
-		
+
         widg:GetAnimState():SetBuild("frames_comp") -- use the animation file as the build, then override it
-        widg:GetAnimState():SetBank("fr") -- top level symbol from frames_comp
+        widg:GetAnimState():SetBank("frames_comp") -- top level symbol from frames_comp
 
         local rarity = GetRarityForItem(name)
 
         widg:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(name), "SWAP_ICON")
         widg:GetAnimState():OverrideSymbol("SWAP_frameBG", "frame_BG", GetFrameSymbolForRarity(rarity))
 
-        widg:GetAnimState():PlayAnimation("icon", true)
+        widg:GetAnimState():PlayAnimation("idle_on", true)
         widg:GetAnimState():Hide("NEW")
 
         widg:Hide()
@@ -1260,7 +1260,7 @@ TEMPLATES = {
                         widg:SetScale(start_scale or 1)
                         widg:Show()
                         widg:ScaleTo(start_scale or 1, end_scale or 1, move_time)
-                        widg:MoveTo(src_pos, dest_pos, move_time, 
+                        widg:MoveTo(src_pos, dest_pos, move_time,
                         function()
                             widg:Kill()
 
@@ -1278,9 +1278,9 @@ TEMPLATES = {
     -- ItemImageText --
     -----------------------
     -----------------------
-    -- An item image with text to the right of it. 
+    -- An item image with text to the right of it.
     ItemImageText = function(type, name, iconScale, font, textsize, string, colour, textwidth, image_offset)
-        textwidth = textwidth or 50 
+        textwidth = textwidth or 50
 
         local widg = Widget("ImageText")
 
@@ -1294,19 +1294,19 @@ TEMPLATES = {
         widg.check:SetPosition(-75, 0)
         widg.check:Hide()
 
-       
-        widg.text = widg:AddChild(Text(font or BUTTONFONT, textsize or 35, 
+
+        widg.text = widg:AddChild(Text(font or BUTTONFONT, textsize or 35,
                                         string or "", colour or BLACK))
 
         widg.text:SetRegionSize(textwidth, 40)
-        
+
         local text_offset = image_offset or 20
         widg.text:SetPosition(text_offset + .5*textwidth, -2)
         widg.text:SetHAlign( ANCHOR_LEFT )
 
-       
+
         widg.SetChecked = function(self, value)
-            if value then 
+            if value then
                 self.check:Show()
             else
                 self.check:Hide()
@@ -1459,7 +1459,7 @@ TEMPLATES = {
 
         return widg
     end,
-    
+
 }
 
 return TEMPLATES

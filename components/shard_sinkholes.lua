@@ -74,7 +74,7 @@ local OnSinkholesDirty = not _ismastershard and function()
             attack = v.state:value() == 2 or nil,
         })
     end
-    _world:PushEvent("slave_sinkholesupdate", { targets = data })
+    _world:PushEvent("secondary_sinkholesupdate", { targets = data })
 end or nil
 
 --------------------------------------------------------------------------

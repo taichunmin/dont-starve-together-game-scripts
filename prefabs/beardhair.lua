@@ -14,7 +14,7 @@ local function fn()
     inst.AnimState:SetBank("beardhair")
     inst.AnimState:SetBuild("beardhair")
     inst.AnimState:PlayAnimation("idle")
-    
+
     inst.entity:AddNetwork()
 
     MakeInventoryFloatable(inst, "med", nil, 0.75)

@@ -15,13 +15,13 @@ function StateGraphWrangler:SendToList(inst, list)
     if old_list then
         old_list[inst] = nil
     end
-    
+
     self.instances[inst] = list
-    
+
     if list then
         list[inst] = true
     end
-    
+
 end
 
 function SGManager:OnEnterNewState(inst)
@@ -117,7 +117,7 @@ function StateGraphWrangler:Update(current_tick)
 
     local updaters = self.updaters
     self.updaters = {}
-    
+
     TheSim:ProfilerPush("updaters")
     for k,v in pairs(updaters) do
         if k.inst:IsValid() then
@@ -141,10 +141,14 @@ function StateGraphWrangler:Update(current_tick)
         end
     end
     TheSim:ProfilerPop()
-    
+
+    self:UpdateEvents()
+end
+
+function StateGraphWrangler:UpdateEvents()
     local evs = self.haveEvents
     self.haveEvents = {}
-    
+
     TheSim:ProfilerPush("events")
     for k,v in pairs(evs) do
         k:HandleEvents()
@@ -154,15 +158,15 @@ end
 
 ActionHandler = Class(
     function(self, action, state, condition)
-        
+
         self.action = action
-        
+
         if type(state) == "string" then
             self.deststate = function(inst) return state end
         else
             self.deststate = state
         end
-        
+
         self.condition = condition
     end)
 
@@ -175,7 +179,7 @@ EventHandler = Class(
         self.name = string.lower(name)
         self.fn = fn
     end)
-    
+
 TimeEvent = Class(
     function(self, time, fn)
         local info = debug.getinfo(3, "Sl")
@@ -184,27 +188,27 @@ TimeEvent = Class(
         assert (type(fn) == "function")
         self.time = time
         self.fn = fn
-    end)    
-    
+    end)
+
 State = Class(
     function(self, args)
         local info = debug.getinfo(3, "Sl")
         self.defline = string.format("%s:%d", info.short_src, info.currentline)
-        
+
         assert(args.name, "State needs name")
         self.name = args.name
         self.onenter = args.onenter
         self.onexit = args.onexit
         self.onupdate = args.onupdate
         self.ontimeout = args.ontimeout
-        
+
         self.tags = {}
         if args.tags then
             for k, v in ipairs(args.tags) do
                 self.tags[v] = true
             end
         end
-        
+
         self.events = {}
         if args.events ~= nil then
             for k,v in pairs(args.events) do
@@ -212,7 +216,7 @@ State = Class(
                 self.events[v.name] = v
             end
         end
-        
+
         self.timeline = {}
         if args.timeline ~= nil then
             for k,v in ipairs(args.timeline) do
@@ -220,12 +224,12 @@ State = Class(
                 table.insert(self.timeline, v)
             end
         end
-        
+
         local function pred(a,b)
             return a.time < b.time
         end
         table.sort(self.timeline, pred)
-        
+
     end
 )
 
@@ -238,7 +242,7 @@ function State:HandleEvent(sg, eventname, data)
     end
     return false
 end
-   
+
 
 
 
@@ -248,7 +252,7 @@ StateGraph = Class( function(self, name, states, events, defaultstate, actionhan
     self.defline = string.format("%s:%d", info.short_src, info.currentline)
     self.name = name
     self.defaultstate = defaultstate
-    
+
     --reindex the tables
     self.actionhandlers = {}
     if actionhandlers then
@@ -298,15 +302,15 @@ end)
 function StateGraph:__tostring()
     return "Stategraph : "..self.name--.. " (currentstate="..self.currentstate.name..":"..self.timeinstate..")"
 end
-    
-    
+
+
 StateGraphInstance = Class( function (self, stategraph, inst)
     self.sg = stategraph
     self.currentstate = nil
     self.timeinstate = 0
     self.lastupdatetime = 0
     self.timelineindex = nil
-    self.prevstate = nil
+    self.laststate = nil
     self.bufferedevents={}
     self.inst = inst
     self.statemem = {}
@@ -323,7 +327,7 @@ function StateGraphInstance:__tostring()
     str = str..[["]]
     return str
 end
-    
+
 function StateGraphInstance:GetTimeInState()
     return GetTime() - self.statestarttime
 end
@@ -386,7 +390,7 @@ function StateGraphInstance:StartAction(bufferedaction)
                 else
                     self.inst:PerformBufferedAction()
                 end
-                    
+
                 return true
             end
         end
@@ -395,7 +399,7 @@ end
 
 function StateGraphInstance:HandleEvents()
     assert(self.currentstate ~= nil, "we are not in a state!")
-    
+
     if self.inst:IsValid() then
         local buff_events = self.bufferedevents
         for k, event in ipairs(buff_events) do
@@ -455,16 +459,14 @@ function StateGraphInstance:HasState(statename)
 end
 function StateGraphInstance:GoToState(statename, params)
     local state = self.sg.states[statename]
-    
-    if not state then 
+
+    if not state then
 		print (self.inst, "TRIED TO GO TO INVALID STATE", statename)
-		return 
+		return
     end
     --assert(state ~= nil, "State not found: " ..tostring(self.sg.name).."."..tostring(statename) )
-    
 
-    self.prevstate = self.currentstate
-    if self.currentstate ~= nil and self.currentstate.onexit ~= nil then 
+    if self.currentstate ~= nil and self.currentstate.onexit ~= nil then
         self.currentstate.onexit(self.inst)
     end
 
@@ -502,16 +504,16 @@ function StateGraphInstance:GoToState(statename, params)
     else
         self.timelineindex = nil
     end
-    
+
     if self.currentstate.onenter ~= nil then
         self.currentstate.onenter(self.inst, params)
     end
-    
+
     self.inst:PushEvent("newstate", {statename = statename})
-    
-    
+
+
     self.lastupdatetime = GetTime()
-    self.statestarttime = self.lastupdatetime    
+    self.statestarttime = self.lastupdatetime
     SGManager:OnEnterNewState(self)
 
 end
@@ -540,14 +542,14 @@ function StateGraphInstance:SetTimeout(time)
 end
 
 function StateGraphInstance:UpdateState(dt)
-    if not self.currentstate then 
+    if not self.currentstate then
         return
     end
 
     self.timeinstate = self.timeinstate + dt
     local startstate = self.currentstate
-    
-    
+
+
     if self.timeout then
         self.timeout = self.timeout - dt
         if self.timeout <= (1/30) then
@@ -560,7 +562,7 @@ function StateGraphInstance:UpdateState(dt)
             end
         end
     end
-    
+
     while self.timelineindex and self.currentstate.timeline[self.timelineindex] and self.currentstate.timeline[self.timelineindex].time <= self.timeinstate do
 
 		local idx = self.timelineindex
@@ -568,18 +570,18 @@ function StateGraphInstance:UpdateState(dt)
         if self.timelineindex > #self.currentstate.timeline then
             self.timelineindex = nil
         end
-        
+
         local old_time = self.timeinstate
         local extra_time = self.timeinstate - self.currentstate.timeline[idx].time
         self.currentstate.timeline[idx].fn(self.inst)
-        
-        
+
+
         if startstate ~= self.currentstate or old_time > self.timeinstate then
             self:Update(extra_time)
             return 0
         end
     end
-    
+
     if self.currentstate.onupdate ~= nil then
         self.currentstate.onupdate(self.inst, dt)
     end
@@ -608,21 +610,21 @@ function StateGraphInstance:Update()
         dt = GetTime() - self.lastupdatetime --+ GetTickTime()
     end
     self.lastupdatetime = GetTime()
-	
-	
+
+
     self:UpdateState(dt)
-	
-   
+
+
     local time_to_sleep = nil
     if self.timelineindex and self.currentstate.timeline and self.currentstate.timeline[self.timelineindex] then
         time_to_sleep = self.currentstate.timeline[self.timelineindex].time - self.timeinstate
     end
-        
-    
+
+
     if self.timeout and (not time_to_sleep or time_to_sleep > self.timeout) then
         time_to_sleep = self.timeout
     end
-        
+
     if self.currentstate.onupdate then
         return 0
     elseif time_to_sleep then
@@ -632,4 +634,4 @@ function StateGraphInstance:Update()
     end
 end
 
-    
+

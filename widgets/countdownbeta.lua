@@ -23,7 +23,7 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 		self.daysuntiltext:SetPosition(0, 5, 0)
 		self.daysuntiltext:SetRegionSize( 240, 50 )
 		self.daysuntiltext:SetClickable(false)
-		
+
 		if release_date ~= nil then
 			self:SetCountdownDate(release_date)
 		else
@@ -53,7 +53,7 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 		self.daysuntiltext:SetPosition(0, -18, 0)
 		self.daysuntiltext:SetRegionSize( 240, 50 )
 		self.daysuntiltext:SetClickable(false)
-		
+
 		self:SetCountdownDate(release_date)
 
 		if mode == "reveal" then
@@ -88,7 +88,7 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 					self.reveal_image:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, .5 )
 				end)
 			end)
-			
+
 			-- Spore Cloud in/out
 			--[[
 			self.smoke = self:AddChild(UIAnim())
@@ -115,8 +115,8 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 				end)
 			end)
 			]]
-			
-			
+
+
 		elseif mode == "released" then
 			self.title2 = lableroot:AddChild(Text(NUMBERFONT, 25))
 			self.title2:SetPosition(0, -3, 0)
@@ -164,7 +164,7 @@ local CountdownBeta = Class(Widget, function(self, owner, mode, image, update_na
 		self.button:SetPosition(0, -55)
 	end
 
-	if self.button ~= nil then 
+	if self.button ~= nil then
 		self.focus_forward = self.button
 	end
 
@@ -197,7 +197,7 @@ function CountdownBeta:SetCountdownDate(date)
 		self.daysuntiltext:SetString(STRINGS.UI.MAINSCREEN.EVENT_IMMINENT)
 		self.image:GetAnimState():PlayAnimation("2", true)
 	end
-		
+
 end
 
 return CountdownBeta

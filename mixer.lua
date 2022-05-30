@@ -9,12 +9,12 @@ end)
 
 function Mix:__tostring()
     local t = {}
-    
+
     for k,v in pairs(self.levels) do
         table.insert(t, string.format("%s:%2.2f", k, v))
     end
     return string.format("%s = pri:%2.2f, fade:%2.2f, levels:[%s]", self.name, self.priority, self.fadeintime, table.concat(t, ",") or "")
-    
+
 end
 
 function Mix:Apply()
@@ -35,7 +35,7 @@ end
 local Mixer = Class(function(self)
     self.mixes = {}
     self.stack = {}
-    
+
     self.lowpassfilters = {}
     self.highpassfilters = {}
 end)
@@ -44,17 +44,17 @@ function Mixer:AddNewMix(name, fadetime, priority, levels)
     local mix = Mix(name)
     mix.fadeintime = fadetime or 1
     mix.priority = priority or 0
-    
+
     self.mixes[name] = mix
     for k,v in pairs(levels) do
         mix:SetLevel(k, v)
     end
-    
+
     return mix
 end
 
 function Mixer:CreateSnapshot()
-    
+
     local top = self.stack[1]
     if top then
         local snap = Mix()
@@ -80,12 +80,12 @@ function Mixer:SetLevel(name, lev)
 end
 
 function Mixer:Update(dt)
-    
+
     local top = self.stack[1]
     if self.snapshot and top then
         self.fadetimer = self.fadetimer + dt
         local lerp = self.fadetimer / top.fadeintime
-        
+
         if lerp > 1 then
             self.snapshot = nil
             top:Apply()
@@ -96,15 +96,15 @@ function Mixer:Update(dt)
             end
         end
     end
-    
+
     self:UpdateFilters(dt)
 end
 
 function Mixer:PopMix(mixname)
     local top = self.stack[1]
     for k, v in ipairs(self.stack) do
-        
-        
+
+
         if mixname == v.name then
             table.remove(self.stack, k)
             if top ~= self.stack[1] then
@@ -115,23 +115,36 @@ function Mixer:PopMix(mixname)
     end
 end
 
+function Mixer:DeleteMix(mixname)
+    local top = self.stack[1]
+    for k, v in ipairs(self.stack) do
+        if mixname == v.name then
+            table.remove(self.stack, k)
+            if top ~= self.stack[1] then
+                self.stack[1]:Apply()
+            end
+            break
+        end
+    end
+end
+
 
 function Mixer:PushMix(mixname)
-    
+
     local mix = self.mixes[mixname]
-    
+
     local current = self.stack[1]
-    
+
     if mix then
         table.insert(self.stack, mix)
         table.sort(self.stack, function(l, r) return l.priority > r.priority end)
-        
+
         if current and current ~= self.stack[1] then
             self:Blend()
         elseif not current then
             mix:Apply()
         end
-        
+
     end
 end
 
@@ -145,11 +158,11 @@ function Mixer:UpdateFilters(dt)
             v.currenttime = v.currenttime + dt
             if v.currenttime < v.totaltime then
                 v.freq = easing.linear(v.currenttime, v.startfreq, v.endfreq - v.startfreq, v.totaltime)
-                TheSim:SetLowPassFilter(k, v.freq)    
+                TheSim:SetLowPassFilter(k, v.freq)
             elseif v.currenttime >= v.totaltime and v.freq and v.endfreq and v.freq ~= v.endfreq then
                 -- Clamp
                 v.freq = v.endfreq
-                TheSim:SetLowPassFilter(k, v.freq)    
+                TheSim:SetLowPassFilter(k, v.freq)
             end
         end
     end
@@ -210,15 +223,15 @@ end
 
 function Mixer:SetLowPassFilter(category, cutoff, timetotake)
 	timetotake = timetotake or 3
-	
+
 	local startfreq = top_val
 	if self.lowpassfilters[category] and self.lowpassfilters[category].freq then
 		startfreq = self.lowpassfilters[category].freq
 	end
-	
+
 	local freq_entry = {startfreq = startfreq, endfreq = cutoff, freq= startfreq, totaltime = timetotake, currenttime = 0}
 	self.lowpassfilters[category] = freq_entry
-	
+
 	if timetotake <= 0 then
 		freq_entry.freq = cutoff
 		TheSim:SetLowPassFilter(category, cutoff)
@@ -227,27 +240,27 @@ end
 
 function Mixer:SetHighPassFilter(category, cutoff, timetotake)
     timetotake = timetotake or 3
-    
+
     local startfreq = bottom_val
     if self.highpassfilters[category] and self.highpassfilters[category].freq then
         startfreq = self.highpassfilters[category].freq
     end
-    
+
     local freq_entry = {startfreq = startfreq, endfreq = cutoff, freq= startfreq, totaltime = timetotake, currenttime = 0}
     self.highpassfilters[category] = freq_entry
-    
+
     if timetotake <= 0 then
         freq_entry.freq = cutoff
         TheSim:SetHighPassFilter(category, cutoff)
-    end 
+    end
 end
 
 function Mixer:ClearLowPassFilter(category, timetotake)
-	self:SetLowPassFilter(category, top_val, timetotake)	
+	self:SetLowPassFilter(category, top_val, timetotake)
 end
 
 function Mixer:ClearHighPassFilter(category, timetotake)
-    self:SetHighPassFilter(category, bottom_val, timetotake)    
+    self:SetHighPassFilter(category, bottom_val, timetotake)
 end
 
 return { Mix = Mix, Mixer = Mixer}

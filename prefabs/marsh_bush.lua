@@ -80,6 +80,7 @@ local function fn()
 
     inst:AddTag("plant")
     inst:AddTag("thorny")
+	inst:AddTag("silviculture") -- for silviculture book
 
     inst.entity:SetPristine()
 

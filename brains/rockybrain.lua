@@ -36,6 +36,9 @@ local function CanPickup(item)
         and item:IsOnValidGround()
 end
 
+local EATFOOD_MUST_TAGS = { "edible_ELEMENTAL", "_inventoryitem" }
+local EATFOOD_CANT_TAGS = { "INLIMBO", "fire", "catchable", "outofreach" }
+
 local function EatFoodAction(inst)
     if inst.sg:HasStateTag("busy") then
         return
@@ -46,7 +49,7 @@ local function EatFoodAction(inst)
         end
     end
 
-    local target = FindEntity(inst, 15, CanPickup, { "edible_ELEMENTAL", "_inventoryitem" }, { "INLIMBO", "fire", "catchable", "outofreach" })
+    local target = FindEntity(inst, 15, CanPickup, EATFOOD_MUST_TAGS, EATFOOD_CANT_TAGS)
     if target ~= nil then
         local ba = BufferedAction(inst, target, ACTIONS.PICKUP)
         ba.distance = 1.5

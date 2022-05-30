@@ -35,7 +35,7 @@ function OvalPortrait:_BuildCharacterDetails()
 
     self.charactertitle = self.character_text:AddChild(Text(HEADERFONT, 25))
     self.charactertitle:SetHAlign(ANCHOR_MIDDLE)
-    self.charactertitle:SetPosition(7, -40) 
+    self.charactertitle:SetPosition(7, -40)
     self.charactertitle:SetRegionSize(300, 50)
     self.charactertitle:SetColour(UICOLOURS.GOLD_SELECTED)
 
@@ -46,11 +46,12 @@ function OvalPortrait:_BuildCharacterDetails()
     self.characterdetails:SetRegionSize(280, 130)
     self.characterdetails:EnableWordWrap(true)
     self.characterdetails:SetColour(UICOLOURS.GREY)
-	
-	if TheNet:GetServerEvent() and TheNet:GetServerGameMode() == FESTIVAL_EVENTS.LAVAARENA then 
+
+	--Note(Peter): server event has been largely removed from the c-side.
+	--[[if TheNet:GetServerEvent() and TheNet:GetServerGameMode() == FESTIVAL_EVENTS.LAVAARENA then
 		self.eventid = TheNet:GetServerGameMode() --Note(Peter):Ahhhhh! we're mixing game mode and event id and server event name, it works though because it's all "lavaarena" due to the c-side being case-insensitive
 		portrait_root:SetPosition(0, 20)
-	
+
 	    self.character_text:SetPosition(0, -150)
 
 		self.la_health = self.character_text:AddChild(Text(HEADERFONT, 28))
@@ -64,7 +65,7 @@ function OvalPortrait:_BuildCharacterDetails()
 		self.la_difficulty:SetRegionSize(300, 30)
 		self.la_difficulty:SetColour(UICOLOURS.EGGSHELL)
 		self.la_difficulty:SetPosition(15, -235)
-        
+
 		self.la_items = self.character_text:AddChild(Text(HEADERFONT, 20))
 		self.la_items:SetVAlign(ANCHOR_TOP)
 		self.la_items:SetHAlign(ANCHOR_LEFT)
@@ -72,7 +73,7 @@ function OvalPortrait:_BuildCharacterDetails()
 		self.la_items:SetColour(UICOLOURS.EGGSHELL)
         self.la_items:EnableWordWrap(true)
 		self.la_items:SetPosition(15, -280)
-		
+
 		self.achievements_root = portrait_root:AddChild(Widget("selfachievements_root"))
 		self.achievements_root:SetPosition(-650, -370)
 		self.la_achievements = {}
@@ -85,17 +86,16 @@ function OvalPortrait:_BuildCharacterDetails()
 			self.la_achievements[i].image:SetPosition(0, 2)
 			self.la_achievements[i].name = achievement_root:AddChild(Text(HEADERFONT, 18, "", UICOLOURS.GOLD_SELECTED))
 		    self.la_achievements[i].name:SetRegionSize(420, 26)
-		    self.la_achievements[i].name:SetPosition(420*0.5 + 30, 12) 
+		    self.la_achievements[i].name:SetPosition(420*0.5 + 30, 12)
 		    self.la_achievements[i].name:SetHAlign(ANCHOR_LEFT)
 			self.la_achievements[i].desc = achievement_root:AddChild(Text(CHATFONT, 18, "", UICOLOURS.GREY))
 		    self.la_achievements[i].desc:SetRegionSize(470, 50)
-		    self.la_achievements[i].desc:SetPosition(470*0.5 + 29, -25) 
+		    self.la_achievements[i].desc:SetPosition(470*0.5 + 29, -25)
 		    self.la_achievements[i].desc:SetHAlign(ANCHOR_LEFT)
 		    self.la_achievements[i].desc:SetVAlign(ANCHOR_TOP)
 		    self.la_achievements[i].desc:EnableWordWrap(true)
 		end
-	end
-	
+	end]]
 
     return portrait_root
 end
@@ -106,7 +106,7 @@ function OvalPortrait:SetPortrait(herocharacter)
     self.currentcharacter = herocharacter
 
     local found_name = SetHeroNameTexture_Gold(self.heroname, herocharacter)
-    if found_name then 
+    if found_name then
         self.heroname:Show()
     else
         self.heroname:Hide()
@@ -123,7 +123,7 @@ function OvalPortrait:SetPortrait(herocharacter)
     if self.characterdetails then
         self.characterdetails:SetString(self.description_getter_fn(herocharacter) or "")
     end
-    
+
     if self.la_health then
 		if TUNING.LAVAARENA_STARTING_HEALTH[string.upper(herocharacter)] ~= nil then
 			self.la_health:SetString(STRINGS.UI.PORTRAIT.HP .. " : " .. TUNING.LAVAARENA_STARTING_HEALTH[string.upper(herocharacter)])
@@ -131,18 +131,18 @@ function OvalPortrait:SetPortrait(herocharacter)
 			self.la_health:SetString("")
 		end
 	end
-	
+
     if self.la_items then
 		local hero_items = TUNING.GAMEMODE_STARTING_ITEMS.LAVAARENA[string.upper(herocharacter)]
 		if hero_items ~= nil then
-			local item1 = STRINGS.NAMES[string.upper(hero_items[1])]
-			local item2 = STRINGS.NAMES[string.upper(hero_items[2])]
+			local item1 = hero_items[1] ~= nil and STRINGS.NAMES[string.upper(hero_items[1])] or "??"
+			local item2 = hero_items[2] ~= nil and STRINGS.NAMES[string.upper(hero_items[2])] or "??"
 			self.la_items:SetString(STRINGS.UI.PORTRAIT.ITEMS .. " : " ..  item1 .. ", " .. item2)
 		else
 			self.la_items:SetString("")
 		end
 	end
-	
+
 	if self.la_difficulty then
 		local dif = TUNING.LAVAARENA_SURVIVOR_DIFFICULTY[string.upper(herocharacter)]
 		if dif ~= nil then
@@ -151,7 +151,7 @@ function OvalPortrait:SetPortrait(herocharacter)
 			self.la_difficulty:SetString("")
 		end
 	end
-	
+
 	if self.la_achievements then
 		self.achievements_root:Hide()
 		local season = GetFestivalEventSeasons(self.eventid)
@@ -170,7 +170,7 @@ function OvalPortrait:SetPortrait(herocharacter)
 			end
 		end
 	end
-		
+
 end
 
 return OvalPortrait

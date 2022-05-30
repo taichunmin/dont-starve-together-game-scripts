@@ -212,7 +212,7 @@ local function fn(type_name, is_large)
     inst.components.burnable:SetOnBurntFn(on_burnt)
     MakeMediumPropagator(inst)
 
-    inst:AddComponent("lootdropper") 
+    inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetChanceLootTable(is_large and "driftwood_tree" or "driftwood_small")
 
     inst:AddComponent("workable")

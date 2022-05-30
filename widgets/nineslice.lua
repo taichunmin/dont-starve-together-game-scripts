@@ -17,7 +17,7 @@ local function SetupSubElement(self, element, atlas, tex, halign, valign, resize
 	if atlas and tex then
 		element:SetTexture(atlas, tex)
 	end
-	
+
     element:SetHRegPoint(OPPOSITEALIGN[halign])
     element:SetVRegPoint(OPPOSITEALIGN[valign])
 
@@ -114,7 +114,7 @@ local function ResizeSubElement(element, w, h)
     if element == nil then
         return
     end
-    
+
     local origw, origh = element:GetSize()
     element:SetSize(element.resizew and w or origw, element.resizeh and h or origh)
 end
@@ -146,7 +146,7 @@ function RescaleSubElement(element, w, h)
 	if element == nil then
         return
     end
-    
+
     --local origw, origh = element:GetSize()
     element:SetScale(not element.resizew and w or 1, not element.resizeh and h or 1)
 end

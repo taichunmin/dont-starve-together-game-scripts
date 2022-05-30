@@ -23,6 +23,7 @@ local function commonfn(anim, dryable, cookable)
 
     inst:AddTag("smallmeat")
     inst:AddTag("catfood")
+    inst:AddTag("rawmeat")
 
     if dryable then
         --dryable (from dryable component) added to pristine state for optimization

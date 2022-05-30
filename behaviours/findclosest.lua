@@ -27,7 +27,7 @@ function FindClosest:Visit()
             self:PickTarget()
         else
 			local valid_target = self.targ ~= nil and self.targ:IsValid()
-			
+
 			-- Has all of the tags
 			if valid_target and self.tags ~= nil then
 				for i,k in ipairs(self.tags) do
@@ -47,7 +47,7 @@ function FindClosest:Visit()
 					end
 				end
 			end
-			
+
 			-- Has or or more of the tags
 			if valid_target and self.one_of_tags ~= nil then
 				valid_target = false
@@ -67,7 +67,7 @@ function FindClosest:Visit()
         if self.targ == nil or not self.targ:IsValid() then
             self.status = FAILED
         else
-            local actual_safe_dist = type(self.safe_dist) == "function" and self.safe_dist(self.inst, self.targ) or self.safe_dist or 5
+            local actual_safe_dist = FunctionOrValue(self.safe_dist, self.inst, self.targ) or 5
             if self.inst:IsNear(self.targ, actual_safe_dist) then
                 self.status = SUCCESS
                 self.inst.components.locomotor:Stop()
@@ -81,7 +81,7 @@ end
 function FindClosest:PickTarget()
     local x, y, z = self.inst.Transform:GetWorldPosition()
     local ents = TheSim:FindEntities(x, y, z, self.see_dist, self.tags, self.exclude_tag, self.one_of_tags)
-    self.targ = (#ents == 0) and nil or (ents[1] ~= self.inst and ents[1] or ents[2])
+    self.targ = ents[1] ~= self.inst and ents[1] or ents[2] -- note: its okay that ents[2] might be nil
 
     self.lastchecktime = GetTime()
 end

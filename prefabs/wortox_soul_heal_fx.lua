@@ -51,7 +51,7 @@ local function fn()
     inst.AnimState:SetBank("wortox_soul_heal_fx")
     inst.AnimState:SetBuild("wortox_soul_heal_fx")
     inst.AnimState:PlayAnimation("heal")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     inst.AnimState:SetScale(1.5, 1.5)
     inst.AnimState:SetDeltaTimeMultiplier(2)
 

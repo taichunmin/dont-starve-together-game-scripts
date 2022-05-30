@@ -24,29 +24,29 @@ local events =
 {
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
-    EventHandler("attacked", function(inst, data) 
+    EventHandler("attacked", function(inst, data)
         inst.flee = true
         inst:DoTaskInTime(math.random(3, 6), onstopflee)
         if data ~= nil and data.weapon ~= nil then
             if data.weapon:HasTag("hammer") then
-                inst.components.inventory:DropEverything(false, true) 
+                inst.components.inventory:DropEverything(false, true)
                 if inst.components.health ~= nil and not inst.components.health:IsDead() then
                     inst.sg:GoToState("stunned", false)
                 end
             elseif not inst.sg:HasStateTag("busy") and inst.components.health ~= nil and not inst.components.health:IsDead() then
-                inst.sg:GoToState("hit") 
+                inst.sg:GoToState("hit")
             end
         end
     end),
     EventHandler("death", function(inst)
         inst.sg:GoToState("death")
     end),
-    EventHandler("trapped", function(inst) 
+    EventHandler("trapped", function(inst)
         inst.flee = true
         inst:DoTaskInTime(math.random(3, 6), onstopflee)
     end),
-    EventHandler("locomote", 
-        function(inst) 
+    EventHandler("locomote",
+        function(inst)
             if inst.sg:HasStateTag("idle") or inst.sg:HasStateTag("moving") then
                 inst.sg:GoToState(
                     inst.components.locomotor:WantsToMoveForward() and
@@ -55,6 +55,10 @@ local events =
                 )
             end
         end),
+
+    EventHandler("stunbomb", function(inst)
+        inst.sg:GoToState("stunned", true)
+    end),
 }
 
 local function SpawnMoveFx(inst)
@@ -73,8 +77,7 @@ end
 
 local states =
 {
-    State
-    {
+    State{
         name = "enter",
         tags = { "busy" },
         onenter = function(inst)
@@ -92,8 +95,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "peek",
         tags = { "busy" },
         onenter = function(inst)
@@ -121,8 +123,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "steal_pre_under",
         tags = { "busy" },
         onenter = function(inst, data)
@@ -157,8 +158,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "steal_pre_above",
         tags = { "busy" },
         onenter = function(inst, data)
@@ -190,8 +190,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "steal",
         tags = { "busy", "canrotate" },
         onenter = function(inst, playanim)
@@ -225,8 +224,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "exit",
         tags = { "busy" },
         onenter = function(inst)
@@ -256,8 +254,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle", "canrotate" },
         onenter = function(inst, playanim)
@@ -285,8 +282,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "walk_pre",
         tags = { "moving", "canrotate", "noattack" },
 
@@ -307,8 +303,7 @@ local states =
         }
     },
 
-    State
-    {
+    State{
         name = "walk",
         tags = { "moving", "canrotate", "noattack" },
 
@@ -336,8 +331,7 @@ local states =
         }
     },
 
-    State
-    {
+    State{
         name = "walk_pst",
         tags = { "canrotate", "noattack" },
 
@@ -363,8 +357,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "gohome",
         tags = { "canrotate" },
 
@@ -387,8 +380,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "make_molehill",
         tags = { "busy", "noattack" },
 
@@ -419,8 +411,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "death",
         tags = { "busy" },
 
@@ -437,8 +428,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "fall",
         tags = { "busy" },
         onenter = function(inst)
@@ -467,10 +457,9 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "stunned",
-        tags = { "busy", "noattack" },
+        tags = { "busy", "noattack","canwxscan" },
 
         onenter = function(inst, skippre)
             inst:ClearBufferedAction()
@@ -519,8 +508,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "stunned_pst",
         tags = { "busy" },
         onenter = function(inst)
@@ -542,8 +530,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "hit",
         tags = { "busy" },
 
@@ -561,11 +548,10 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "sleep",
         tags = { "busy", "sleeping" },
-        
+
         onenter = function(inst)
             inst.components.locomotor:StopMoving()
             if inst.isunder then
@@ -597,8 +583,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "sleeping",
         tags = { "busy", "sleeping" },
         onenter = function(inst)
@@ -619,7 +604,7 @@ local states =
         },
 
         events =
-        {   
+        {
             EventHandler("animover", function(inst)
                 inst.sg:GoToState("sleeping")
             end),
@@ -629,11 +614,10 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "wake",
         tags = { "busy", "waking" },
-        
+
         onenter = function(inst)
             inst:SetAbovePhysics()
             inst.components.locomotor:StopMoving()

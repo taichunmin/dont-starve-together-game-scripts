@@ -13,8 +13,8 @@ local MAX_CHASE_DIST = 8
 local MAX_CHASE_TIME = 10
 
 local function GoHomeAction(inst)
-    if inst.components.homeseeker and 
-       inst.components.homeseeker.home and 
+    if inst.components.homeseeker and
+       inst.components.homeseeker.home and
        inst.components.homeseeker.home:IsValid() then
         return BufferedAction(inst, inst.components.homeseeker.home, ACTIONS.GOHOME)
     end
@@ -53,7 +53,7 @@ function MosquitoBrain:OnStart()
         WhileNode( function() return self.inst.components.combat.target and self.inst.components.combat:InCooldown() end, "Dodge", RunAway(self.inst, function() return self.inst.components.combat.target end, RUN_AWAY_DIST, STOP_RUN_AWAY_DIST) ),
         Wander(self.inst, WanderTarget, MAX_WANDER_DIST, wandertimes)
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

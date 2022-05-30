@@ -20,9 +20,10 @@ local PerdBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
 end)
 
+local BUSH_TAGS = { "bush" }
 local function FindNearestBush(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, SEE_BUSH_DIST, { "bush" })
+    local ents = TheSim:FindEntities(x, y, z, SEE_BUSH_DIST, BUSH_TAGS)
     local emptybush = nil
     for i, v in ipairs(ents) do
         if v ~= inst and v.entity:IsVisible() and v.components.pickable ~= nil then
@@ -49,6 +50,9 @@ local function GoHomeAction(inst)
     return bush ~= nil and BufferedAction(inst, bush, ACTIONS.GOHOME, nil, bush:GetPosition()) or nil
 end
 
+local EATFOOD_MUST_TAGS = { "edible_"..FOODTYPE.VEGGIE }
+local EATFOOD_CANT_TAGS = { "INLIMBO" }
+local SCARY_TAGS = { "scarytoprey" }
 local function EatFoodAction(inst, checksafety)
     local target =
         inst.components.inventory ~= nil and
@@ -60,10 +64,10 @@ local function EatFoodAction(inst, checksafety)
         or nil
 
     if target == nil then
-        target = FindEntity(inst, SEE_FOOD_DIST, nil, { "edible_"..FOODTYPE.VEGGIE }, { "INLIMBO" })
+        target = FindEntity(inst, SEE_FOOD_DIST, nil, EATFOOD_MUST_TAGS, EATFOOD_CANT_TAGS)
         --check for scary things near the food, or if it's in the water
         if target == nil or not target:IsOnValidGround() or
-                ( checksafety and GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) ~= nil ) then
+                ( checksafety and GetClosestInstWithTag(SCARY_TAGS, target, SEE_PLAYER_DIST) ~= nil ) then
             return nil
         end
     end
@@ -89,11 +93,12 @@ local function HasBerry(item)
     return item.components.pickable ~= nil and (item.components.pickable.product == "berries" or item.components.pickable.product == "berries_juicy")
 end
 
+local PICKBERRIES_MUST_TAGS = { "pickable" }
 local function PickBerriesAction(inst)
-    local target = FindEntity(inst, SEE_FOOD_DIST, HasBerry, { "pickable" })
+    local target = FindEntity(inst, SEE_FOOD_DIST, HasBerry, PICKBERRIES_MUST_TAGS)
     --check for scary things near the bush
     return target ~= nil
-        and GetClosestInstWithTag("scarytoprey", target, SEE_PLAYER_DIST) == nil
+        and GetClosestInstWithTag(SCARY_TAGS, target, SEE_PLAYER_DIST) == nil
         and BufferedAction(inst, target, ACTIONS.PICK)
         or nil
 end
@@ -101,6 +106,8 @@ end
 --------------------------------------------------------------------------
 --[[ For special event ]]
 --------------------------------------------------------------------------
+local FINDSHRING_MUST_TAGS = { "perdshrine" }
+local FINDSHRING_CANT_TAGS = { "burnt", "fire" }
 
 local function FindShrine(inst)
     if not inst.seekshrine then
@@ -112,7 +119,7 @@ local function FindShrine(inst)
             inst._shrine.components.burnable:IsBurning() or
             inst._shrine:HasTag("burnt")) then
         local x, y, z = inst.Transform:GetWorldPosition()
-        inst._shrine = TheSim:FindEntities(x, y, z, SEE_SHRINE_DIST, { "perdshrine" }, { "burnt", "fire" })[1]
+        inst._shrine = TheSim:FindEntities(x, y, z, SEE_SHRINE_DIST, FINDSHRING_MUST_TAGS, FINDSHRING_CANT_TAGS)[1]
     end
     return inst._shrine
 end

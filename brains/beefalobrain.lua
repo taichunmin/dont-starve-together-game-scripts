@@ -27,7 +27,12 @@ local MIN_FOLLOW_DIST = 1
 local TARGET_FOLLOW_DIST = 5
 local MAX_FOLLOW_DIST = 5
 
+local MIN_BUDDY_DIST = 0
+local TARGET_BUDDY_DIST = 4
+local MAX_BUDDY_DIST = 18
+
 local GREET_SEARCH_RADIUS = 15
+local GREET_SEARCH_RSQ = GREET_SEARCH_RADIUS * GREET_SEARCH_RADIUS
 local GREET_DURATION = 3
 
 local MIN_GREET_DIST = 1
@@ -69,7 +74,12 @@ local function GetLoiterTarget(inst)
 end
 
 local function GetGreetTarget(inst)
-    return FindClosestPlayerToInstOnLand(inst, GREET_SEARCH_RADIUS, true)
+    if inst._beef_bell ~= nil
+            and inst:GetDistanceSqToInst(inst._beef_bell) < GREET_SEARCH_RSQ then
+        return inst._beef_bell
+    else
+        return FindClosestPlayerToInstOnLand(inst, GREET_SEARCH_RADIUS, true)
+    end
 end
 
 local function GetGreetTargetPosition(inst)
@@ -92,9 +102,7 @@ local function GetLoiterAnchor(inst)
 end
 
 local function TryBeginLoiterState(inst)
-    local herd = inst.components.herdmember and inst.components.herdmember:GetHerd()
-    if (herd and herd.components.mood and herd.components.mood:IsInMood())
-        or (inst.components.mood and inst.components.mood:IsInMood()) then
+    if inst:GetIsInMood() then
         return false
     end
 
@@ -106,9 +114,7 @@ local function TryBeginLoiterState(inst)
 end
 
 local function TryBeginGreetingState(inst)
-    local herd = inst.components.herdmember and inst.components.herdmember:GetHerd()
-    if (herd and herd.components.mood and herd.components.mood:IsInMood())
-        or (inst.components.mood and inst.components.mood:IsInMood()) then
+    if inst:GetIsInMood() then
         return false
     end
 
@@ -123,9 +129,19 @@ local function TryBeginGreetingState(inst)
 end
 
 local function ShouldWaitForHeavyLifter(inst, target)
-    if target ~= nil and
-        target.components.inventory:IsHeavyLifting() and
-        inst.components.rideable.canride then
+    if target ~= nil and target.components.inventoryitem ~= nil then
+        local owner = target.components.inventoryitem:GetGrandOwner()
+        if owner ~= nil then
+            target = owner
+        end
+    end
+
+    if target ~= nil
+        and (
+            target.components.inventory ~= nil and
+            target.components.inventory:IsHeavyLifting()
+        )
+        and inst.components.rideable.canride then
         --Check if target is heavy lifting towards me
         --(dot product between target's facing and target to me > 0)
         local x, y, z = target.Transform:GetWorldPosition()
@@ -145,6 +161,16 @@ end
 local function GetWaitForHeavyLifter(inst)
     local target = GetGreetTarget(inst)
     return ShouldWaitForHeavyLifter(inst, target) and target or nil
+end
+
+local function gottohitchspot(inst)
+
+    if inst.hitchingspot then
+        if inst:HasTag("hitched") then
+            inst.components.hitchable:Unhitch()
+        end
+        return BufferedAction(inst, inst.hitchingspot, ACTIONS.HITCH)
+    end
 end
 
 local function InState(inst, state)
@@ -174,12 +200,30 @@ function BeefaloBrain:OnStart()
         IfNode(function() return self.inst.components.combat.target ~= nil end, "hastarget",
             AttackWall(self.inst)),
         ChaseAndAttack(self.inst, MAX_CHASE_TIME),
+
+        WhileNode(function() return self.inst.components.writeable ~= nil
+                        and self.inst.components.writeable:IsBeingWritten() end, "Name Being Written",
+            StandStill(self.inst)),
+
+        WhileNode(function() return self.inst:HasTag("hitched") and not self.inst.hitchingspot end, "hitched",
+            StandStill(self.inst)),
+
+        IfNode(function() return self.inst.hitchingspot end, "get hitched",
+            DoAction(self.inst, gottohitchspot, "hitchup",true)),
+
         Follow(self.inst, function()
-                return (self.inst.components.follower ~= nil and
-                        self.inst.components.follower.leader ~= nil and
-                        self.inst.components.follower.leader:IsOnValidGround() and
-                        self.inst.components.follower.leader)
+                local bell_owner = self.inst:GetBeefBellOwner() or self.inst.components.follower:GetLeader()
+                return (bell_owner ~= nil and bell_owner:IsOnValidGround() and bell_owner)
                         or nil
+            end, MIN_BUDDY_DIST, TARGET_BUDDY_DIST, MAX_BUDDY_DIST, true),
+        Follow(self.inst, function()
+                local follower = self.inst.components.follower
+                return (follower ~= nil
+                    and follower.leader ~= nil
+                    and not follower.leader:HasTag("bell")
+                    and follower.leader:IsOnValidGround()
+                    and follower.leader)
+                    or nil
             end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST, false),
         FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
 
@@ -205,9 +249,7 @@ function BeefaloBrain:OnStart()
             }),
             Wander(self.inst, function() return GetLoiterAnchor(self.inst) end, GetWanderDistFn),
         }),
-
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("herd") end, GetWanderDistFn)
-
     }, .25)
 
     self.bt = BT(self.inst, root)

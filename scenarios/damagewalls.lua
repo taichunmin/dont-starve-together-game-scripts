@@ -1,10 +1,10 @@
 local function FindWalls(inst)
-    local pt = Vector3(inst.Transform:GetWorldPosition())   
+    local pt = Vector3(inst.Transform:GetWorldPosition())
     local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 1000)
     local walls = {}
     for k,v in pairs(ents) do
         if v and v:HasTag("wall") then
-            walls[v] = v           
+            walls[v] = v
         end
     end
     return walls

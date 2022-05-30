@@ -125,6 +125,7 @@ for k, v in pairs(FUELTYPE) do
     table.insert(NOTAGS, v.."_fueled")
 end
 
+local FREEZETARGET_ONEOF_TAGS = { "locomotor", "freezable", "fire", "smolder" }
 local function OnUpdateIceCircle(inst, x, z)
     inst._rad:set(inst._rad:value() * .98 + ICE_CIRCLE_RADIUS * .02)
 
@@ -139,8 +140,8 @@ local function OnUpdateIceCircle(inst, x, z)
     inst._track1 = inst._track2 or {}
     inst._track2 = {}
 
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, inst._rad:value(), nil, NOTAGS, { "locomotor", "freezable", "fire", "smolder" })) do
-        if v:IsValid() and not (v.components.health ~= nil and v.components.health:IsDead()) then            
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, inst._rad:value(), nil, NOTAGS, FREEZETARGET_ONEOF_TAGS)) do
+        if v:IsValid() and not (v.components.health ~= nil and v.components.health:IsDead()) then
             local gemresist = false
             if v.components.locomotor ~= nil then
                 if v:HasTag("deergemresistance") then
@@ -249,7 +250,8 @@ end
 --------------------------------------------------------------------------
 
 local FIRE_CIRCLE_RADIUS = 3.6
-
+local FIRE_TARGET_ONEOF_TAGS = { "_health", "canlight", "freezable" }
+local FIND_DEER_ICE_CIRCLE_TAG = { "deer_ice_circle" }
 local function OnUpdateFireCircle(inst, x, z)
     inst._rad = inst._rad * .9 + FIRE_CIRCLE_RADIUS * .1
     inst.components.propagator.propagaterange = inst._rad
@@ -267,11 +269,11 @@ local function OnUpdateFireCircle(inst, x, z)
     inst._track2 = {}
 
     local y --dummy
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, inst._rad, nil, NOTAGS, { "_health", "canlight", "freezable" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, inst._rad, nil, NOTAGS, FIRE_TARGET_ONEOF_TAGS)) do
         if v:IsValid() and not (v.components.health ~= nil and v.components.health:IsDead()) then
             x, y, z = v.Transform:GetWorldPosition()
             local iced = false
-            for _, ice in ipairs(TheSim:FindEntities(x, 0, z, ICE_CIRCLE_RADIUS, { "deer_ice_circle" })) do
+            for _, ice in ipairs(TheSim:FindEntities(x, 0, z, ICE_CIRCLE_RADIUS, FIND_DEER_ICE_CIRCLE_TAG)) do
                 if not ice.killed then
                     iced = true
                     break

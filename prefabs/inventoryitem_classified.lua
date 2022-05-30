@@ -196,7 +196,7 @@ local function fn()
         --inst._rechargetask = nil
 
         --Delay net listeners until after initial values are deserialized
-        inst:DoTaskInTime(0, RegisterNetListeners)
+        inst:DoStaticTaskInTime(0, RegisterNetListeners)
         return inst
     end
 

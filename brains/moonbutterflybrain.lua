@@ -26,9 +26,9 @@ function ButterflyBrain:OnStart()
             WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
             WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
             RunAway(self.inst, "scarytoprey", RUN_AWAY_DIST, STOP_RUN_AWAY_DIST),
-            Wander(self.inst, GetHomePos, MAX_WANDER_DIST)            
+            Wander(self.inst, GetHomePos, MAX_WANDER_DIST)
         },1)
-    
+
     self.bt = BT(self.inst, root)
 end
 

@@ -4,6 +4,7 @@ local assets =
 {
     Asset("ANIM", "anim/bernie_big.zip"),
     Asset("ANIM", "anim/bernie_build.zip"),
+	Asset("MINIMAP_IMAGE", "bernie"),
 }
 
 local prefabs =
@@ -60,10 +61,12 @@ local function IsTargetable(inst, target)
             )
 end
 
+local TAUNT_MUST_TAGS = { "_combat", "locomotor" }
+local TAUNT_CANT_TAGS = { "INLIMBO", "player", "companion", "epic", "notaunt" }
 local function TauntCreatures(inst)
     if not inst.components.health:IsDead() then
         local x, y, z = inst.Transform:GetWorldPosition()
-        for i, v in ipairs(TheSim:FindEntities(x, y, z, TAUNT_DIST, { "_combat", "locomotor" }, { "INLIMBO", "player", "companion", "epic", "notaunt" })) do
+        for i, v in ipairs(TheSim:FindEntities(x, y, z, TAUNT_DIST, TAUNT_MUST_TAGS, TAUNT_CANT_TAGS)) do
             if IsTauntable(inst, v) then
                 v.components.combat:SetTarget(inst)
             end
@@ -77,12 +80,16 @@ local function OnLoad(inst)
     inst.sg:GoToState("idle")
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "INLIMBO", "player", "companion" }
+local RETARGET_ONEOF_TAGS = { "locomotor", "epic" }
+
 local function RetargetFn(inst)
     if inst.components.combat:HasTarget() then
         return
     end
     local x, y, z = inst.Transform:GetWorldPosition()
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, TARGET_DIST, { "_combat" }, { "INLIMBO", "player", "companion" }, { "locomotor", "epic" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, TARGET_DIST, RETARGET_MUST_TAGS, RETARGET_CANT_TAGS, RETARGET_ONEOF_TAGS)) do
         if IsTargetable(inst, v) then
             return v
         end
@@ -128,6 +135,7 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
+    inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
     MakeCharacterPhysics(inst, 500, .65)
@@ -139,6 +147,8 @@ local function fn()
     inst.AnimState:SetBank("bernie_big")
     inst.AnimState:SetBuild("bernie_build")
     inst.AnimState:PlayAnimation("idle_loop", true)
+
+    inst.MiniMapEntity:SetIcon("bernie.png")
 
     inst:AddTag("largecreature")
     inst:AddTag("companion")

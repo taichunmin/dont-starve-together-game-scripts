@@ -4,11 +4,23 @@ local BlinkStaff = Class(function(self, inst)
     self.blinktask = nil
     self.frontfx = nil
     self.backfx = nil
+
+    self:ResetSoundFX()
 end)
 
 function BlinkStaff:SetFX(front, back)
     self.frontfx = front
     self.backfx = back
+end
+
+function BlinkStaff:ResetSoundFX()
+    self.presound = "dontstarve/common/staff_blink"
+    self.postsound = "dontstarve/common/staff_blink"
+end
+
+function BlinkStaff:SetSoundFX(presound, postsound)
+    self.presound = presound or self.presound
+    self.postsound = postsound or self.postsound
 end
 
 function BlinkStaff:SpawnEffect(inst)
@@ -38,7 +50,9 @@ local function OnBlinked(caster, self, dpt)
 	    caster.Physics:Teleport(pt:Get())
 	end
     self:SpawnEffect(caster)
-    caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
+    if self.postsound ~= "" then
+        caster.SoundEmitter:PlaySound(self.postsound)
+    end
 end
 
 function BlinkStaff:Blink(pt, caster)
@@ -51,16 +65,18 @@ function BlinkStaff:Blink(pt, caster)
     end
 
     self:SpawnEffect(caster)
-    caster.SoundEmitter:PlaySound("dontstarve/common/staff_blink")
+    if self.presound ~= "" then
+        caster.SoundEmitter:PlaySound(self.presound)
+    end
 
     if caster.sg == nil then
-    caster:Hide()
-    if caster.DynamicShadow ~= nil then
-        caster.DynamicShadow:Enable(false)
-    end
-    if caster.components.health ~= nil then
-        caster.components.health:SetInvincible(true)
-    end
+		caster:Hide()
+		if caster.DynamicShadow ~= nil then
+			caster.DynamicShadow:Enable(false)
+		end
+		if caster.components.health ~= nil then
+			caster.components.health:SetInvincible(true)
+		end
     elseif caster.sg.statemem.onstartblinking ~= nil then
         caster.sg.statemem.onstartblinking()
     end

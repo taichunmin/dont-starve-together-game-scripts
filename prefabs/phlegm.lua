@@ -36,6 +36,8 @@ local function fn()
     inst.components.edible.sanityvalue = -TUNING.SANITY_MED
     inst.components.edible.foodtype = FOODTYPE.GENERIC
 
+    inst:AddComponent("tradable")
+
     MakeHauntableLaunch(inst)
 
     return inst

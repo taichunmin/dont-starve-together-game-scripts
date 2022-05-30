@@ -1,5 +1,5 @@
 local function ScreenFlash()
-    TheWorld:PushEvent("screenflash", 1)
+    TheWorld:PushEvent("screenflash", .5)
 end
 
 local function PlayThunderSound(proxy, theta, radius)
@@ -58,7 +58,7 @@ local function fn()
     inst.entity:SetCanSleep(false)
     inst.persists = false
 
-    local delay = .25 + math.random() * .5
+    local delay = .1 + math.random() * .2
     inst:DoTaskInTime(delay, OnInitRand)
     inst:DoTaskInTime(delay + 1, inst.Remove)
 

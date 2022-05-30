@@ -22,7 +22,7 @@ function Disappears:Disappear()
         self.disappeartask = nil
     end
 
-    if self.disappearFn ~= nil then 
+    if self.disappearFn ~= nil then
         self.disappearFn(self.inst)
     end
 
@@ -39,7 +39,7 @@ function Disappears:Disappear()
         self.inst.components.inventoryitem.canbepickedupalive = false
     end
 
-    if self.sound ~= nil then 
+    if self.sound ~= nil then
         self.inst.SoundEmitter:PlaySound(self.sound)
     end
     self.inst.AnimState:PlayAnimation(self.anim)

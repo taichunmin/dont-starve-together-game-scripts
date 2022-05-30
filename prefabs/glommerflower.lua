@@ -12,9 +12,9 @@ local function OnLoseChild(inst, child)
     inst:AddComponent("perishable")
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
     inst:AddTag("show_spoilage")
-    inst.components.inventoryitem:ChangeImageName("glommerflower_dead")
+    inst:RemoveTag("glommerflower") --this is how we track dead state
     inst.AnimState:PlayAnimation("idle_dead")
-    inst:RemoveTag("glommerflower")
+    inst:RefreshFlowerIcon()
 
     --V2C: I think this is trying to refresh the inventory tile
     --     because show_spoilage doesn't refresh automatically.
@@ -41,6 +41,19 @@ end
 
 local function getstatus(inst)
     return not inst:HasTag("glommerflower") and "DEAD" or nil
+end
+
+local function RefreshFlowerIcon(inst)
+    local inv_img = "glommerflower"
+    if not inst:HasTag("glommerflower") then
+        inv_img = "glommerflower_dead"
+    end
+    
+    local skin_name = inst:GetSkinName()
+    if skin_name ~= nil then
+        inv_img = string.gsub(inv_img, "glommerflower", skin_name)
+    end
+    inst.components.inventoryitem:ChangeImageName(inv_img)
 end
 
 local function OnPreLoad(inst, data)
@@ -101,6 +114,8 @@ local function fn()
 
     inst.OnPreLoad = OnPreLoad
     inst.OnSave = OnSave
+
+    inst.RefreshFlowerIcon = RefreshFlowerIcon
 
     inst:DoTaskInTime(0, OnInit)
 

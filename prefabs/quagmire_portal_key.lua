@@ -1,7 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/quagmire_portal_key.zip"),
-} 
+}
 
 local function fn()
     local inst = CreateEntity()

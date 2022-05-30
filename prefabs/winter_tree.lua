@@ -17,7 +17,6 @@ local statedata =
         name        = "sapling",
         idleanim    = "idle_sapling",
         burntanim   = "burnt",
-        growsound   = "dontstarve/forest/treeGrow",
         workleft    = 1,
         workaction  = "HAMMER",
         growsound   = "dontstarve/wilson/plant_tree",
@@ -184,7 +183,7 @@ local function AddDecor(inst, data)
     else
         inst.AnimState:OverrideSymbol("plain"..data.slot, data.item.winter_ornament_build or "winter_ornaments", data.item.winter_ornamentid)
     end
-    
+
 end
 
 -------------------------------------------------------------------------------
@@ -249,8 +248,9 @@ local function NobodySeesPoint(pt)
     return true
 end
 
+local INLIMBO_TAGS = { "INLIMBO" }
 local function NoOverlap(pt)
-    return NobodySeesPoint(pt) and #TheSim:FindEntities(pt.x, 0, pt.z, .75, nil, { "INLIMBO" }) <= 0
+    return NobodySeesPoint(pt) and #TheSim:FindEntities(pt.x, 0, pt.z, .75, nil, INLIMBO_TAGS) <= 0
 end
 
 local function dogifting(inst)
@@ -272,22 +272,20 @@ local function dogifting(inst)
 					player.components.wintertreegiftable:OnGiftGiven()
                     table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD), stack = math.random(3) + (fully_decorated and 3 or 0)})
                     table.insert(loot, { prefab = not fully_decorated and GetRandomBasicWinterOrnament()
-											or math.random() < 0.5 and GetRandomFancyWinterOrnament() 
+											or math.random() < 0.5 and GetRandomFancyWinterOrnament()
 											or GetRandomFestivalEventWinterOrnament() })
-                    
+
 					table.insert(loot, { prefab = weighted_random_choice(random_gift1) })
 
 					if fully_decorated then
 						table.insert(loot, { prefab = weighted_random_choice(random_gift2) })
 					else
 	                    table.insert(loot, { prefab = PickRandomTrinket() })
-					end						
+					end
                 else
                     table.insert(loot, { prefab = "winter_food".. math.random(NUM_WINTERFOOD), stack = math.random(3) })
                     table.insert(loot, { prefab = "charcoal" })
                 end
-
-				dumptable(loot)
 
                 local items = {}
                 for i, v in ipairs(loot) do
@@ -390,12 +388,12 @@ local function trygifting(inst)
 end
 
 queuegifting = function(inst)
-    if IsSpecialEventActive( SPECIAL_EVENTS.WINTERS_FEAST ) and 
+    if IsSpecialEventActive( SPECIAL_EVENTS.WINTERS_FEAST ) and
 		TheWorld.state.isnight and
         inst.components.container ~= nil and
         not inst.components.container:IsEmpty() and
         inst.giftingtask == nil then
-        
+
         --print("queuegifting")
         inst.giftingtask = inst:DoTaskInTime(2, trygifting, inst)
     end
@@ -814,7 +812,7 @@ local function AddWinterTree(treetype)
         local inst = CreateEntity()
 
         inst.entity:AddTransform()
-        inst.entity:AddAnimState()  
+        inst.entity:AddAnimState()
         inst.entity:AddSoundEmitter()
         inst.entity:AddMiniMapEntity()
         inst.entity:AddLight()
@@ -860,7 +858,6 @@ local function AddWinterTree(treetype)
 
         inst:AddComponent("growable")
         inst.components.growable.stages = GROWTH_STAGES
-        inst.components.growable.loopstages = false
 
         inst:AddComponent("lootdropper")
         inst.components.lootdropper:SetLootSetupFn(lootsetfn)
@@ -876,6 +873,9 @@ local function AddWinterTree(treetype)
         inst:AddComponent("container")
         inst.components.container:WidgetSetup(treetype.name)
         inst.components.container.canbeopened = false
+        -- inst.components.container.skipclosesnd = true
+        -- inst.components.container.skipopensnd = true
+
 
         inst:AddComponent("timer")
 

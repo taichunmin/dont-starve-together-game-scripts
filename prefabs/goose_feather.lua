@@ -19,6 +19,9 @@ local function fn()
 
     MakeInventoryFloatable(inst, "med", 0.05, 0.68)
 
+	inst:AddTag("cattoy")
+    inst:AddTag("birdfeather")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -31,6 +34,11 @@ local function fn()
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
 
+    inst:AddComponent("fuel")
+    inst.components.fuel.fuelvalue = TUNING.TINY_FUEL
+
+    MakeSmallBurnable(inst, TUNING.TINY_BURNTIME)
+    MakeSmallPropagator(inst)
     MakeHauntableLaunch(inst)
 
     return inst

@@ -52,9 +52,10 @@ local function onmoonportalproximity(inst, data)
     inst._task = inst:DoTaskInTime(1.05, onproximitytimeout)
 end
 
+local MOONPORTAL_TAGS = { "moonportal" }
 local function onbuilt(inst, builder)
     local x, y, z = inst.Transform:GetWorldPosition()
-    if #TheSim:FindEntities(x, y, z, 8, { "moonportal" }) > 0 then
+    if #TheSim:FindEntities(x, y, z, 8, MOONPORTAL_TAGS) > 0 then
         onmoonportalproximity(inst, { instant = true })
     end
 end

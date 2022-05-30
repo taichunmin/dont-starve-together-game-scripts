@@ -140,8 +140,6 @@ local function fn()
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")
 
-    inst.Transform:SetFourFaced()
-
     inst.AnimState:SetBank("sporebomb")
     inst.AnimState:SetBuild("sporebomb")
     inst.AnimState:PlayAnimation("sporebomb_pre")

@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/rabbit_hole.zip"),
@@ -184,6 +186,10 @@ local function OnHaunt(inst)
         and inst.components.spawner:ReleaseChild()
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_Spawner_PreLoad(inst, data, TUNING.RABBIT_RESPAWN_TIME)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -212,6 +218,7 @@ local function fn()
     end
 
     inst:AddComponent("spawner")
+    WorldSettings_Spawner_SpawnDelay(inst, TUNING.RABBIT_RESPAWN_TIME, TUNING.RABBIT_ENABLED)
     inst.components.spawner:Configure("rabbit", TUNING.RABBIT_RESPAWN_TIME)
 
     inst.components.spawner:SetOnOccupiedFn(onoccupied)
@@ -237,6 +244,8 @@ local function fn()
 
     inst.OnSave = OnSave
     inst.OnLoad = OnLoad
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

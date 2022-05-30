@@ -44,6 +44,8 @@ local function ShouldRunAway(guy)
     return guy:HasTag("character") and not guy:HasTag("notarget")
 end
 
+local EATFOOD_CANT_TAGS = { "outofreach" }
+
 local function EatFoodAction(inst)
     if inst.sg:HasStateTag("busy") then
         return
@@ -62,19 +64,21 @@ local function EatFoodAction(inst)
                 and inst.components.eater:CanEat(item)
         end,
         nil,
-        { "outofreach" }
+        EATFOOD_CANT_TAGS
     )
     if target ~= nil then
         return BufferedAction(inst, target, ACTIONS.PICKUP)
     end
 end
 
+local STEALFOOD_CANT_TAGS = { "playerghost", "fire", "burnt", "INLIMBO", "outofreach" }
+local STEALFOOD_ONEOF_TAGS = { "player", "_container" }
 local function StealFoodAction(inst)
     if inst.sg:HasStateTag("busy") then
         return
     end
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, SEE_FOOD_DIST, nil, { "playerghost", "fire", "burnt", "INLIMBO", "outofreach" }, { "player", "_container" })
+    local ents = TheSim:FindEntities(x, y, z, SEE_FOOD_DIST, nil, STEALFOOD_CANT_TAGS, STEALFOOD_ONEOF_TAGS)
 
     for i, v in ipairs(ents) do
         --go through player inv and find valid food
@@ -140,7 +144,7 @@ function SlurtleSnailBrain:OnStart()
             DoAction(self.inst, GoHomeAction, "Go Home", true )),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, 40),
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

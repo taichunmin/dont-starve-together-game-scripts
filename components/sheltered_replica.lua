@@ -35,7 +35,7 @@ function Sheltered:OnRemoveFromEntity()
     self.inst.AnimState:OverrideShade(1)
 end
 
-function Sheltered:StartSheltered()
+function Sheltered:StartSheltered(level)
     self._issheltered:set(true)
     self:CheckShade()
 end

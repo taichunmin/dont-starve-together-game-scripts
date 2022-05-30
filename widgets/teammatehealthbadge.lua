@@ -5,7 +5,7 @@ local Image = require "widgets/image"
 local Widget = require "widgets/widget"
 
 local TeammateHealthBadge = Class(Badge, function(self, owner)
-    Badge._ctor(self, "lavaarena_partyhealth", owner)
+    Badge._ctor(self, "lavaarena_partyhealth", owner, nil, nil, nil, nil, true)
 
     self:SetClickable(false)
 
@@ -17,6 +17,7 @@ local TeammateHealthBadge = Class(Badge, function(self, owner)
     self.arrow:GetAnimState():SetBank("sanity_arrow")
     self.arrow:GetAnimState():SetBuild("sanity_arrow")
     self.arrow:GetAnimState():PlayAnimation("neutral")
+	self.arrow:GetAnimState():AnimateWhilePaused(false)
 	self.arrow:SetScale(0.85)
 
     self.name_banner_center = self.name_root:AddChild(Image("images/lavaarena_hud.xml", "username_banner_filler.tex"))
@@ -28,7 +29,7 @@ local TeammateHealthBadge = Class(Badge, function(self, owner)
     self.name_banner_right = self.name_root:AddChild(Image("images/lavaarena_hud.xml", "username_banner_end.tex"))
     self.name_banner_right:SetHRegPoint(ANCHOR_LEFT)
     self.name_banner_right_width = self.name_banner_right:GetSize()
-    
+
     self.playername = self.name_root:AddChild(Text(CHATFONT_OUTLINE, 30))
 
 	self._onclienthealthdirty = function(src, data) self:SetPercent(data.percent) end
@@ -50,10 +51,10 @@ function SetPlayerName(self, player)
     self.playername:SetColour(player.playercolour)
 
 	local banner_right_offset = -10
-	
+
 	self.name_banner_center:SetPosition(name_left, 0)
 	self.name_banner_center:SetScale((text_w + banner_right_offset) / self.name_banner_center_width, 1)
-	
+
 	self.name_banner_right:SetPosition(name_left + text_w + banner_right_offset - 3, 0)
 end
 
@@ -63,7 +64,7 @@ function TeammateHealthBadge:SetPlayer(player)
 		self.inst:RemoveEventCallback("clienthealthstatusdirty", self._onclienthealthstatusdirty, self.player)
 		self:RemovePetHealth()
 	end
-	
+
 	self.player = player
 	self.userid = player.userid
     self.inst:ListenForEvent("clienthealthdirty", self._onclienthealthdirty, player)
@@ -88,7 +89,7 @@ end
 
 function TeammateHealthBadge:SetPercent(val)
 	val = val == 0 and 0 or math.max(val, 0.001)
-	
+
     if self.percent < val then
 		if self.arrowdir <= 0 then
 		    self:PulseGreen()
@@ -134,7 +135,7 @@ function TeammateHealthBadge:AddPet()
 	self.pet_heart.anim:GetAnimState():Hide("stick")
 	self.pet_heart:Hide()
 	self.pet_heart:MoveToBack()
-	
+
     self.inst:ListenForEvent("clientpethealthdirty", self._onpethealthdirty, self.player)
     self.inst:ListenForEvent("clientpethealthsymboldirty", self._onpethealthdirty, self.player)
     if self.player.components.pethealthbar ~= nil then
@@ -148,7 +149,7 @@ function TeammateHealthBadge:RemovePetHealth()
 		self.inst:RemoveEventCallback("clientpethealthsymboldirty", self._onpethealthdirty, self.player)
 		self.pet_heart:Kill()
 		self.pet_heart = nil
-	end	
+	end
 end
 
 function TeammateHealthBadge:RefreshPetHealth()
@@ -156,7 +157,7 @@ function TeammateHealthBadge:RefreshPetHealth()
 	if pethealthbar == nil then
 		return
 	end
-	
+
 	local symbol = pethealthbar:GetSymbol()
 	if symbol == 0 then
 		self.pet_heart:Hide()

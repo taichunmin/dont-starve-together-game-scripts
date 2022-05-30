@@ -23,7 +23,7 @@ local minimap_prefabs =
 }
 
 local function RemoveHudIndicator(inst)  -- client code
-	if ThePlayer ~= nil and ThePlayer.HUD ~= nil then 
+	if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
 		ThePlayer.HUD:RemoveTargetIndicator(inst)
 	end
 end
@@ -53,7 +53,7 @@ local function show_flare_hud(inst)
         local near_audio_gate_distsq = TUNING.MINIFLARE.HUD_MAX_DISTANCE_SQ
         local far_audio_gate_distsq = TUNING.MINIFLARE.FAR_AUDIO_GATE_DISTANCE_SQ
         local volume = (sq_dist_to_flare > far_audio_gate_distsq and TUNING.MINIFLARE.BASE_VOLUME)
-                or (sq_dist_to_flare > near_audio_gate_distsq and 
+                or (sq_dist_to_flare > near_audio_gate_distsq and
                         TUNING.MINIFLARE.BASE_VOLUME + (1 - Remap(sq_dist_to_flare, near_audio_gate_distsq, far_audio_gate_distsq, 0, 1)) * (1-TUNING.MINIFLARE.BASE_VOLUME)
                     )
                 or 1.0
@@ -68,7 +68,7 @@ local function do_flare_minimap_swap(inst)
     end
     inst._small_minimap = flare_index
 
-    local flare_image = (flare_index == 1 and "flare.png") or "flare"..flare_index..".png"
+    local flare_image = (flare_index == 1 and "flare.png") or ("flare"..flare_index..".png")
 
     inst.MiniMapEntity:SetIcon(flare_image)
     inst.icon.MiniMapEntity:SetIcon(flare_image)

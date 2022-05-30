@@ -8,9 +8,9 @@ local events =
     CommonHandlers.OnAttack(),
     CommonHandlers.OnAttacked(),
     CommonHandlers.OnDeath(),
-    -- EventHandler("attacked", function(inst) 
-    --     if inst.components.health and not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then 
-    --         inst.sg:GoToState("hit") 
+    -- EventHandler("attacked", function(inst)
+    --     if inst.components.health and not inst.components.health:IsDead() and not inst.sg:HasStateTag("busy") then
+    --         inst.sg:GoToState("hit")
     --     end
     -- end),
 }
@@ -61,7 +61,7 @@ local states=
         name = "walk_start",
         tags = { "moving", "canrotate" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.AnimState:PlayAnimation("walk_pre")
         end,
 
@@ -159,7 +159,7 @@ local states=
                     inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/lightninggoat/jacobshorn")
                 end
             end),
-            TimeEvent(10*FRAMES, function(inst) 
+            TimeEvent(10*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/lightninggoat/bleet")
             end)
         },

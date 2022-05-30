@@ -44,6 +44,8 @@ local function common(anim, bloom)
         return inst
     end
 
+	inst.persists = false
+
     inst:AddComponent("projectile")
     inst.components.projectile:SetSpeed(50)
     inst.components.projectile:SetOnHitFn(inst.Remove)

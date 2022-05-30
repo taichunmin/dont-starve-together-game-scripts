@@ -109,6 +109,10 @@ local SHOWER_LEVELS =
     },
 }
 
+local function MaxFloat(params)
+    return params.base + params.max_variance
+end
+
 local function RandomizeInteger(params)
     return params.base + math.random(params.min_variance, params.max_variance)
 end
@@ -196,7 +200,7 @@ local function OnUpdate(inst, self)
         self.spawn_mod = (self.spawn_mod or 1) - TUNING.METEOR_SHOWER_OFFSCREEN_MOD
         if self.spawn_mod <= 0 then
             self.spawn_mod = self.spawn_mod + 1
-            self:SpawnMeteor(TUNING.METEOR_SHOWER_OFFSCREEN_MOD)            
+            self:SpawnMeteor(TUNING.METEOR_SHOWER_OFFSCREEN_MOD)
         end
     end
 
@@ -264,14 +268,17 @@ function MeteorShower:StartCooldown()
 end
 
 function MeteorShower:OnSave()
+    local level_params = SHOWER_LEVELS[self.level]
+    local multiplier = self.dt and MaxFloat(level_params.duration) or MaxFloat(level_params.cooldown)
     return
     {
         level = self.level,
-        remainingtime = self.tasktotime ~= nil and self.tasktotime - GetTime() or nil,
+        remainingtime = multiplier ~= 0 and (self.tasktotime ~= nil and (self.tasktotime - GetTime()) / multiplier) or 0,
         interval = self.dt,
         mediumleft = self.medium_remaining,
         largeleft = self.large_remaining,
         retriesleft = self.retries_remaining,
+        version = 2,
     }
 end
 
@@ -280,7 +287,17 @@ function MeteorShower:OnLoad(data)
         self:StopShower()
         self.level = math.clamp(data.level, 1, #SHOWER_LEVELS)
         if data.remainingtime ~= nil then
-            local remaining_time = math.max(0, data.remainingtime)
+            local remaining_time
+            if not data.version then
+                --retrofit old savedata
+                local level_params = SHOWER_LEVELS[self.level]
+                local max = data.interval and MaxFloat(level_params.duration) or MaxFloat(level_params.cooldown)
+                remaining_time = math.clamp(data.remainingtime, 0, max)
+            elseif data.version == 2 then
+                local level_params = SHOWER_LEVELS[self.level]
+                local multiplier = data.interval and MaxFloat(level_params.duration) or MaxFloat(level_params.cooldown)
+                remaining_time = math.max(0, (data.remainingtime * multiplier))
+            end
             if data.interval ~= nil then
                 self.dt = math.max(0, data.interval)
                 self.medium_remaining = math.max(0, data.medium_remaining or 0)

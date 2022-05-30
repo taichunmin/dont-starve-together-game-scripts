@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/atrium_gate.zip"),
@@ -76,9 +78,11 @@ end
 --------------------------------------------------------------------------
 
 local SUPPRESS_SHADOWS_RANGE = math.ceil(ATRIUM_ARENA_SIZE + 5)
+local SUPPRESS_SHADOWS_MUST_TAGS = { "_health" }
+local SUPPRESS_SHADOWS_ONEOF_TAGS = { "stalkerminion", "shadowcreature" }
 
 local function OnSuppressShadows(inst, x, z, range)
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, range, { "_health" }, nil, { "stalkerminion", "shadowcreature" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, range, SUPPRESS_SHADOWS_MUST_TAGS, nil, SUPPRESS_SHADOWS_ONEOF_TAGS)) do
         if not v.components.health:IsDead() then
             local x1, y1, z1 = v.Transform:GetWorldPosition()
             if math.abs(x1 - x) < SUPPRESS_SHADOWS_RANGE and
@@ -110,7 +114,7 @@ end
 --------------------------------------------------------------------------
 
 local function IsDestabilizing(inst)
-    return inst.components.timer:TimerExists("destabilizing")
+    return inst.components.worldsettingstimer:ActiveTimerExists("destabilizing")
 end
 
 local function ShowFx(inst, state)
@@ -223,8 +227,8 @@ local function StartDestabilizing(inst, onload)
     SetCameraFocus(inst, 2)
     EnableShadowSuppression(inst, true)
 
-    if not inst.components.timer:TimerExists("destabilizing") then
-        inst.components.timer:StartTimer("destabilizing", TUNING.ATRIUM_GATE_DESTABILIZE_TIME)
+    if not inst.components.worldsettingstimer:ActiveTimerExists("destabilizing") then
+        inst.components.worldsettingstimer:StartTimer("destabilizing", TUNING.ATRIUM_GATE_DESTABILIZE_TIME)
     end
 
     if not onload then
@@ -260,11 +264,11 @@ local function OnQueueDestabilize(inst, onload)
     SetCameraFocus(inst, 1)
     EnableShadowSuppression(inst, true)
 
-    if inst.components.timer:TimerExists("destabilizedelay") then
-        inst.components.timer:StopTimer("destabilizedelay")
+    if inst.components.worldsettingstimer:ActiveTimerExists("destabilizedelay") then
+        inst.components.worldsettingstimer:StopTimer("destabilizedelay")
     end
 
-    inst.components.timer:StartTimer("destabilizedelay", TUNING.ATRIUM_GATE_DESTABILIZE_DELAY)
+    inst.components.worldsettingstimer:StartTimer("destabilizedelay", TUNING.ATRIUM_GATE_DESTABILIZE_DELAY)
 end
 
 local function Destabilize(inst, failed)
@@ -307,15 +311,15 @@ local function OnDestabilizeExplode(inst)
 end
 
 local function OnCooldown(inst)
-    if inst.components.timer:TimerExists("cooldown") then 
+    if inst.components.worldsettingstimer:ActiveTimerExists("cooldown") then
         inst.AnimState:PlayAnimation("cooldown", true)
         inst.SoundEmitter:PlaySound("dontstarve/common/together/atrium_gate/cooldown_LP", "loop")
     end
 end
 
 local function StartCooldown(inst, immediate)
-    if inst.components.timer:TimerExists("destabilizing") then
-        inst.components.timer:StopTimer("destabilizing")
+    if inst.components.worldsettingstimer:ActiveTimerExists("destabilizing") then
+        inst.components.worldsettingstimer:StopTimer("destabilizing")
         OnDestabilizeExplode(inst)
     end
 
@@ -336,8 +340,8 @@ local function StartCooldown(inst, immediate)
         inst:DoTaskInTime(EXPLOSION_ANIM_LEN, OnCooldown)
     end
 
-    if not inst.components.timer:TimerExists("cooldown") then
-        inst.components.timer:StartTimer("cooldown", TUNING.ATRIUM_GATE_COOLDOWN)
+    if not inst.components.worldsettingstimer:ActiveTimerExists("cooldown") then
+        inst.components.worldsettingstimer:StartTimer("cooldown", TUNING.ATRIUM_GATE_COOLDOWN)
     end
 end
 
@@ -391,8 +395,8 @@ end
 
 local function getstatus(inst)
     return (IsDestabilizing(inst) and "DESTABILIZING")
-        or (inst.components.timer:TimerExists("cooldown") and "COOLDOWN")
-        or ((inst:HasTag("intense") or inst.components.timer:TimerExists("destabilizedelay")) and "CHARGING")
+        or (inst.components.worldsettingstimer:ActiveTimerExists("cooldown") and "COOLDOWN")
+        or ((inst:HasTag("intense") or inst.components.worldsettingstimer:ActiveTimerExists("destabilizedelay")) and "CHARGING")
         or (inst.components.pickable.caninteractwith and "ON")
         or "OFF"
 end
@@ -418,9 +422,9 @@ end
 local function OnLoadPostPass(inst, ents, data)
     if IsDestabilizing(inst) then
         StartDestabilizing(inst, true)
-    elseif inst.components.timer:TimerExists("cooldown") then
+    elseif inst.components.worldsettingstimer:ActiveTimerExists("cooldown") then
         StartCooldown(inst, true)
-    elseif inst.components.pickable.caninteractwith or inst.components.timer:TimerExists("destabilizedelay") then
+    elseif inst.components.pickable.caninteractwith or inst.components.worldsettingstimer:ActiveTimerExists("destabilizedelay") then
         OnKeyGiven(inst)
 
         local stalker = inst.components.entitytracker:GetEntity("stalker")
@@ -428,7 +432,7 @@ local function OnLoadPostPass(inst, ents, data)
             OnTrackStalker(inst, stalker)
         end
 
-        if inst.components.timer:TimerExists("destabilizedelay") then
+        if inst.components.worldsettingstimer:ActiveTimerExists("destabilizedelay") then
             OnQueueDestabilize(inst, true)
         end
     end
@@ -503,9 +507,18 @@ local function CreateFloor()
     inst.AnimState:PlayAnimation("idle_active")
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
-    inst.AnimState:SetSortOrder(2)
+    inst.AnimState:SetSortOrder(-3)
 
     return inst
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_Timer_PreLoad(inst, data, "destabilizing", TUNING.ATRIUM_GATE_DESTABILIZE_TIME)
+    WorldSettings_Timer_PreLoad_Fix(inst, data, "destabilizing", 1)
+    WorldSettings_Timer_PreLoad(inst, data, "destabilizedelay", TUNING.ATRIUM_GATE_DESTABILIZE_DELAY)
+    WorldSettings_Timer_PreLoad_Fix(inst, data, "destabilizedelay", 1)
+    WorldSettings_Timer_PreLoad(inst, data, "cooldown", TUNING.ATRIUM_GATE_COOLDOWN)
+    WorldSettings_Timer_PreLoad_Fix(inst, data, "cooldown", 1)
 end
 
 --------------------------------------------------------------------------
@@ -573,7 +586,10 @@ local function fn()
     inst.components.trader.deleteitemonaccept = true
     inst.components.trader.onaccept = OnKeyGiven
 
-    inst:AddComponent("timer")
+    inst:AddComponent("worldsettingstimer")
+    inst.components.worldsettingstimer:AddTimer("destabilizing", TUNING.ATRIUM_GATE_DESTABILIZE_TIME, true)
+    inst.components.worldsettingstimer:AddTimer("destabilizedelay", TUNING.ATRIUM_GATE_DESTABILIZE_DELAY, true)
+    inst.components.worldsettingstimer:AddTimer("cooldown", TUNING.ATRIUM_GATE_COOLDOWN, true)
     inst:ListenForEvent("timerdone", ontimer)
 
     inst:AddComponent("entitytracker")
@@ -581,6 +597,7 @@ local function fn()
     MakeHauntableWork(inst)
 
     inst.OnLoadPostPass = OnLoadPostPass
+    inst.OnPreLoad = OnPreLoad
 
     inst.OnEntitySleep = OnEntitySleep
     inst.OnEntityWake = OnEntityWake

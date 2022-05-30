@@ -1,5 +1,6 @@
---Update inventoryitem_replica constructor if any more properties are added
+local SourceModifierList = require("util/sourcemodifierlist")
 
+--Update inventoryitem_replica constructor if any more properties are added
 local function onattackrange(self, attackrange)
     if self.inst.replica.inventoryitem ~= nil then
         self.inst.replica.inventoryitem:SetAttackRange(attackrange)
@@ -13,9 +14,12 @@ local Weapon = Class(function(self, inst)
     self.hitrange = nil
     self.onattack = nil
     self.onprojectilelaunch = nil
+	self.onprojectilelaunched = nil
     self.projectile = nil
     self.stimuli = nil
     --self.overridestimulifn = nil
+
+    self.attackwearmultipliers = SourceModifierList(self.inst)
 
     --V2C: Recommended to explicitly add tag to prefab pristine state
     self.inst:AddTag("weapon")
@@ -50,8 +54,16 @@ function Weapon:SetOnProjectileLaunch(fn)
     self.onprojectilelaunch = fn
 end
 
+function Weapon:SetOnProjectileLaunched(fn)
+    self.onprojectilelaunched = fn
+end
+
 function Weapon:SetProjectile(projectile)
     self.projectile = projectile
+end
+
+function Weapon:SetProjectileOffset(offset)
+    self.projectile_offset = offset
 end
 
 function Weapon:SetElectric()
@@ -72,13 +84,22 @@ function Weapon:SetAttackCallback(fn)
     self.onattack = fn
 end
 
+function Weapon:GetDamage(attacker, target)
+    return FunctionOrValue(self.damage, self.inst, attacker, target)
+end
+
 function Weapon:OnAttack(attacker, target, projectile)
     if self.onattack ~= nil then
         self.onattack(self.inst, attacker, target)
     end
 
     if self.inst.components.finiteuses ~= nil then
-        self.inst.components.finiteuses:Use(self.attackwear or 1)
+		local uses = (self.attackwear or 1) * self.attackwearmultipliers:Get()
+		if attacker ~= nil and attacker:IsValid() and attacker.components.efficientuser ~= nil then
+			uses = uses * (attacker.components.efficientuser:GetMultiplier(ACTIONS.ATTACK) or 1)
+		end
+
+		self.inst.components.finiteuses:Use(uses)
     end
 end
 
@@ -91,7 +112,16 @@ function Weapon:LaunchProjectile(attacker, target)
         local proj = SpawnPrefab(self.projectile)
         if proj ~= nil then
             if proj.components.projectile ~= nil then
-                proj.Transform:SetPosition(attacker.Transform:GetWorldPosition())
+				if self.projectile_offset ~= nil then
+					local x, y, z = attacker.Transform:GetWorldPosition()
+
+					local dir = (target:GetPosition() - Vector3(x, y, z)):Normalize()
+					dir = dir * self.projectile_offset
+
+	                proj.Transform:SetPosition(x + dir.x, y, z + dir.z)
+				else
+	                proj.Transform:SetPosition(attacker.Transform:GetWorldPosition())
+				end
                 proj.components.projectile:Throw(self.inst, target, attacker)
                 if self.inst.projectiledelay ~= nil then
                     proj.components.projectile:DelayVisibility(self.inst.projectiledelay)
@@ -100,6 +130,10 @@ function Weapon:LaunchProjectile(attacker, target)
                 proj.Transform:SetPosition(attacker.Transform:GetWorldPosition())
                 proj.components.complexprojectile:Launch(target:GetPosition(), attacker, self.inst)
             end
+        end
+
+        if self.onprojectilelaunched ~= nil then
+            self.onprojectilelaunched(self.inst, attacker, target)
         end
     end
 end

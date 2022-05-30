@@ -44,7 +44,7 @@ end
 function FindClosestPlayerInRangeSq(x, y, z, rangesq, isalive)
     local closestPlayer = nil
     for i, v in ipairs(AllPlayers) do
-        if (isalive == nil or isalive ~= (v.replica.health:IsDead() or v:HasTag("playerghost"))) and
+        if (isalive == nil or isalive ~= IsEntityDeadOrGhost(v)) and
             v.entity:IsVisible() then
             local distsq = v:GetDistanceSqToPoint(x, y, z)
             if distsq < rangesq then
@@ -72,7 +72,7 @@ end
 function FindClosestPlayerOnLandInRangeSq(x, y, z, rangesq, isalive)
     local closestPlayer = nil
     for i, v in ipairs(AllPlayers) do
-        if (isalive == nil or isalive ~= (v.replica.health:IsDead() or v:HasTag("playerghost"))) and
+        if (isalive == nil or isalive ~= IsEntityDeadOrGhost(v)) and
                 v.entity:IsVisible() and
                 v:IsOnValidGround() then
             local distsq = v:GetDistanceSqToPoint(x, y, z)
@@ -93,7 +93,7 @@ end
 function FindPlayersInRangeSq(x, y, z, rangesq, isalive)
     local players = {}
     for i, v in ipairs(AllPlayers) do
-        if (isalive == nil or isalive ~= (v.replica.health:IsDead() or v:HasTag("playerghost"))) and
+        if (isalive == nil or isalive ~= IsEntityDeadOrGhost(v)) and
             v.entity:IsVisible() and
             v:GetDistanceSqToPoint(x, y, z) < rangesq then
             table.insert(players, v)
@@ -108,7 +108,7 @@ end
 
 function IsAnyPlayerInRangeSq(x, y, z, rangesq, isalive)
     for i, v in ipairs(AllPlayers) do
-        if (isalive == nil or isalive ~= (v.replica.health:IsDead() or v:HasTag("playerghost"))) and
+        if (isalive == nil or isalive ~= IsEntityDeadOrGhost(v)) and
             v.entity:IsVisible() and
             v:GetDistanceSqToPoint(x, y, z) < rangesq then
             return true
@@ -121,6 +121,19 @@ function IsAnyPlayerInRange(x, y, z, range, isalive)
     return IsAnyPlayerInRangeSq(x, y, z, range * range, isalive)
 end
 
+function IsAnyOtherPlayerNearInst(inst, rangesq, isalive)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    for i, v in ipairs(AllPlayers) do
+        if (isalive == nil or isalive ~= IsEntityDeadOrGhost(v)) 
+            and v.entity:IsVisible() 
+            and v:GetDistanceSqToPoint(x, y, z) < rangesq 
+            and v ~= inst then
+            return true
+        end
+    end
+    return false
+end
+
 -- Get a location where it's safe to spawn an item so it won't get lost in the ocean
 function FindSafeSpawnLocation(x, y, z)
     local ent = x ~= nil and z ~= nil and FindClosestPlayer(x, y, z) or nil
@@ -130,7 +143,7 @@ function FindSafeSpawnLocation(x, y, z)
         -- we still don't have an enity, find a spawnpoint. That must be in a safe location
         return TheWorld.components.playerspawner:GetAnySpawnPoint()
     else
-        -- if everything failed, return origin  
+        -- if everything failed, return origin
         return 0, 0, 0
     end
 end
@@ -139,6 +152,19 @@ function FindNearbyLand(position, range)
     local finaloffset = FindValidPositionByFan(math.random() * 2 * PI, range or 8, 8, function(offset)
         local x, z = position.x + offset.x, position.z + offset.z
         return TheWorld.Map:IsAboveGroundAtPoint(x, 0, z)
+            and not TheWorld.Map:IsPointNearHole(Vector3(x, 0, z))
+    end)
+    if finaloffset ~= nil then
+        finaloffset.x = finaloffset.x + position.x
+        finaloffset.z = finaloffset.z + position.z
+        return finaloffset
+    end
+end
+
+function FindNearbyOcean(position, range)
+    local finaloffset = FindValidPositionByFan(math.random() * 2 * PI, range or 8, 8, function(offset)
+        local x, z = position.x + offset.x, position.z + offset.z
+        return TheWorld.Map:IsOceanAtPoint(x, 0, z)
             and not TheWorld.Map:IsPointNearHole(Vector3(x, 0, z))
     end)
     if finaloffset ~= nil then
@@ -195,6 +221,15 @@ function ShakeAllCameras(mode, duration, speed, scale, source_or_pt, maxDist)
     end
 end
 
+function ShakeAllCamerasOnPlatform(mode, duration, speed, scale, platform)
+    local walkableplatform = platform and platform.components.walkableplatform or nil
+	if walkableplatform == nil then return end
+
+    for k in pairs(walkableplatform:GetPlayersOnPlatform()) do
+        k:ShakeCamera(mode, duration, speed, scale)
+    end
+end
+
 -- Use this function to fan out a search for a point that meets a condition.
 -- If your condition is basically "walkable ground" use FindWalkableOffset instead.
 -- test_fn takes a parameter "offset" which is check_angle*radius.
@@ -234,7 +269,7 @@ end
 
 -- This function fans out a search from a starting position/direction and looks for a walkable
 -- position, and returns the valid offset, valid angle and whether the original angle was obstructed.
--- starting_angle is in radians
+-- start_angle is in radians
 function FindWalkableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn, allow_water, allow_boats)
     return FindValidPositionByFan(start_angle, radius, attempts,
             function(offset)
@@ -246,24 +281,26 @@ function FindWalkableOffset(position, start_angle, radius, attempts, check_los, 
                         TheWorld.Pathfinder:IsClear(
                             position.x, position.y, position.z,
                             x, y, z,
-                            { ignorewalls = ignore_walls ~= false, ignorecreep = true }))
+                            { ignorewalls = ignore_walls ~= false, ignorecreep = true, allowocean = allow_water }))
                     and (customcheckfn == nil or customcheckfn(Vector3(x, y, z)))
             end)
 end
 
 -- like FindWalkableOffset but only in the ocean
-function FindSwimmableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn)
+function FindSwimmableOffset(position, start_angle, radius, attempts, check_los, ignore_walls, customcheckfn, allow_boats)
     return FindValidPositionByFan(start_angle, radius, attempts,
             function(offset)
                 local x = position.x + offset.x
                 local y = position.y + offset.y
                 local z = position.z + offset.z
-                return (not TheWorld.Map:IsPassableAtPoint(x, y, z))
+                return TheWorld.Map:IsOceanTileAtPoint(x, y, z)                             -- Location is in the ocean tile range
+                    and not TheWorld.Map:IsVisualGroundAtPoint(x, y, z)                     -- Location is NOT in the world overhang space
+                    and (allow_boats or TheWorld.Map:GetPlatformAtPoint(x, z) == nil)  -- The location either accepts boats, or is not the location of a boat
                     and (not check_los or
                         TheWorld.Pathfinder:IsClear(
                             position.x, position.y, position.z,
                             x, y, z,
-                            { ignorewalls = ignore_walls ~= false, ignorecreep = true }))
+                            { ignorewalls = ignore_walls ~= false, ignorecreep = true, allowocean = true, ignoreLand = true }))
                     and (customcheckfn == nil or customcheckfn(Vector3(x, y, z)))
             end)
 end
@@ -296,11 +333,11 @@ function CanEntitySeeInStorm(inst)
     return inst ~= nil and inst:IsValid() and _CanEntitySeeInStorm(inst)
 end
 
-local function _GetEntitySandstormLevel(inst)
-    --NOTE: GetSandstormLevel is available on players on server
+local function _GetEntityStormLevel(inst)
+    --NOTE: GetStormLevel is available on players on server
     --      and clients, but only accurate for local players.
     --      stormwatcher is a server-side component.
-    return (inst.GetSandstormLevel ~= nil and inst:GetSandstormLevel())
+    return (inst.GetStormLevel ~= nil and inst:GetStormLevel())
         or (inst.components.stormwatcher ~= nil and inst.components.stormwatcher.sandstormlevel)
         or 0
 end
@@ -308,9 +345,10 @@ end
 function CanEntitySeePoint(inst, x, y, z)
     return inst ~= nil
         and inst:IsValid()
+        and (not inst.components.inkable or not inst.components.inkable.inked)
         and (TheSim:GetLightAtPoint(x, y, z) > TUNING.DARK_CUTOFF or
             _CanEntitySeeInDark(inst))
-        and (_GetEntitySandstormLevel(inst) < TUNING.SANDSTORM_FULL_LEVEL or
+        and (_GetEntityStormLevel(inst) < TUNING.SANDSTORM_FULL_LEVEL or
             _CanEntitySeeInStorm(inst) or
             inst:GetDistanceSqToPoint(x, y, z) < TUNING.SANDSTORM_VISION_RANGE_SQ)
 end
@@ -357,33 +395,94 @@ function ErodeAway(inst, erode_time)
     end)
 end
 
-function ApplySpecialEvent(event)
-    if event ~= nil and event ~= "default" then
-        WORLD_SPECIAL_EVENT = event
+function ErodeCB(inst, erode_time, cb, restore)
+    local time_to_erode = erode_time or 1
+    local tick_time = TheSim:GetTickTime()
+
+    if inst.DynamicShadow ~= nil then
+        inst.DynamicShadow:Enable(false)
     end
 
-    --LOST tech level when event is not active
+    inst:StartThread(function()
+        local ticks = 0
+        while ticks * tick_time < time_to_erode do
+            local erode_amount = ticks * tick_time / time_to_erode
+            inst.AnimState:SetErosionParams(erode_amount, 0.1, 1.0)
+            ticks = ticks + 1
+            Yield()
+        end
+		if restore then
+            inst.AnimState:SetErosionParams(0, 0, 0)
+		end
+        if cb ~= nil then
+			cb(inst)
+		end
+    end)
+end
+
+local function ApplyEvent(event)
     for k, v in pairs(SPECIAL_EVENTS) do
-        if v ~= SPECIAL_EVENTS.NONE then
+        if v == event and v ~= SPECIAL_EVENTS.NONE then
             local tech = TECH[k]
             if tech ~= nil then
-                tech.SCIENCE = v == WORLD_SPECIAL_EVENT and 0 or 10
+                tech.SCIENCE = 0
             end
         end
     end
 end
 
+function ApplySpecialEvent(event)
+    if event == nil then
+        return
+    end
 
+    if event ~= "default" then
+        WORLD_SPECIAL_EVENT = event
+        print("Overriding World Event to: " .. tostring(event))
+    end
+
+    --LOST tech level when event is not active
+    ApplyEvent(WORLD_SPECIAL_EVENT)
+end
+
+function ApplyExtraEvent(event)
+    if event == nil or event == "default" or event == SPECIAL_EVENTS.NONE then
+        return
+    end
+
+    WORLD_EXTRA_EVENTS[event] = true
+    print("Adding extra World Event: " .. tostring(event))
+
+    --LOST tech level when event is not active
+    ApplyEvent(event)
+end
 
 local inventoryItemAtlasLookup = {}
 
-function GetInventoryItemAtlas(imagename)
+function RegisterInventoryItemAtlas(atlas, imagename)
+	if atlas ~= nil and imagename ~= nil then
+		if inventoryItemAtlasLookup[imagename] ~= nil then
+			if inventoryItemAtlasLookup[imagename] ~= atlas then
+				print("RegisterInventoryItemAtlas: Image '" .. imagename .. "' is already registered to atlas '" .. atlas .."'")
+			end
+		else
+			inventoryItemAtlasLookup[imagename] = atlas
+		end
+	end
+end
+
+function GetInventoryItemAtlas(imagename, no_fallback)
 	local atlas = inventoryItemAtlasLookup[imagename]
 	if atlas then
 		return atlas
 	end
 	local base_atlas = "images/inventoryimages1.xml"
-	atlas = TheSim:AtlasContains(base_atlas, imagename) and base_atlas or "images/inventoryimages2.xml"
-	inventoryItemAtlasLookup[imagename] = atlas
+	local alt_atlas = "images/inventoryimages2.xml"
+	atlas = TheSim:AtlasContains(base_atlas, imagename) and base_atlas
+			or (not no_fallback or TheSim:AtlasContains(alt_atlas, imagename)) and alt_atlas
+			or nil
+	if atlas ~= nil then
+		inventoryItemAtlasLookup[imagename] = atlas
+	end
 	return atlas
 end

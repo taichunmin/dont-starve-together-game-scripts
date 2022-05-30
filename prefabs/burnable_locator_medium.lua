@@ -13,8 +13,8 @@ local function onignite(inst)
 		inst.boat.activefires = inst.boat.activefires + 1
 		inst.task = inst:DoPeriodicTask(1, applytickdamage)
 	end
-	
-	inst:RemoveTag("NOCLICK")   
+
+	inst:RemoveTag("NOCLICK")
 end
 
 local function onstopsmoldering(inst)
@@ -22,10 +22,10 @@ local function onstopsmoldering(inst)
 end
 
 local function onextinguish(inst)
-	if inst.boat ~= nil then	
+	if inst.boat ~= nil then
 		inst.boat.activefires = inst.boat.activefires - 1
 	end
-	inst:AddTag("NOCLICK")   
+	inst:AddTag("NOCLICK")
 
 	if inst.task ~= nil then
 		inst.task:Cancel()
@@ -40,9 +40,10 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
-    inst:AddTag("NOBLOCK")   
-    inst:AddTag("NOCLICK")   
-    
+    inst:AddTag("NOBLOCK")
+    inst:AddTag("NOCLICK")
+    inst:AddTag("ignorewalkableplatforms") -- because it is a child of the boat
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

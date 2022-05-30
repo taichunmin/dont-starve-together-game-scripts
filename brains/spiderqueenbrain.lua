@@ -16,11 +16,13 @@ function SpiderQueenBrain:CanSpawnChild()
 		and self.inst.components.incrementalproducer and self.inst.components.incrementalproducer:CanProduce()
 end
 
-
+local BLOCKER_TAGS = {'blocker'}
+local SPIDERDEN_TAGS = {"spiderden"}
+local SPIDERQUEEN_TAGS = {"spiderqueen"}
 function SpiderQueenBrain:CanPlantNest()
 	if self.inst:GetTimeAlive() > TUNING.SPIDERQUEEN_MINWANDERTIME then
 		local pt = Vector3(self.inst.Transform:GetWorldPosition())
-	    local ents = TheSim:FindEntities(pt.x,pt.y,pt.z, 4, {'blocker'}) 
+	    local ents = TheSim:FindEntities(pt.x,pt.y,pt.z, 4, BLOCKER_TAGS)
 		local min_spacing = 3
 
 	    for k, v in pairs(ents) do
@@ -31,8 +33,8 @@ function SpiderQueenBrain:CanPlantNest()
 			end
 		end
 
-		local den = GetClosestInstWithTag("spiderden", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
-		local queen = GetClosestInstWithTag("spiderqueen", self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
+		local den = GetClosestInstWithTag(SPIDERDEN_TAGS, self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
+		local queen = GetClosestInstWithTag(SPIDERQUEEN_TAGS, self.inst, TUNING.SPIDERQUEEN_MINDENSPACING)
 		if den or queen then
 			return false
 		end
@@ -56,17 +58,17 @@ function SpiderQueenBrain:OnStart()
         IfNode(function() return self:CanPlantNest() end, "can plant nest",
 			ActionNode(function() self.inst.sg:GoToState("makenest") end)),
 
-		IfNode(function() return self:CanSpawnChild() end, "needs follower", 
+		IfNode(function() return self:CanSpawnChild() end, "needs follower",
 			ActionNode(function() self.inst.sg:GoToState("poop_pre") return SUCCESS end, "make child" )),
-        
+
         --SPIDERQUEEN_MINDENSPACING
-        
+
         ChaseAndAttack(self.inst, 60, 40, nil, nil, nil, TUNING.WINONA_CATAPULT_MAX_RANGE + TUNING.MAX_WALKABLE_PLATFORM_RADIUS + TUNING.WINONA_CATAPULT_KEEP_TARGET_BUFFER + 1),
         Wander(self.inst),
     }, 2)
-    
+
     self.bt = BT(self.inst, root)
-    
+
 end
 
 return SpiderQueenBrain

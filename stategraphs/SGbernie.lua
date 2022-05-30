@@ -83,7 +83,7 @@ local states =
             TimeEvent(FRAMES * 20, PlayFootstep),
             TimeEvent(FRAMES * 28, PlayFootstep),
             TimeEvent(FRAMES * 36, PlayFootstep),
-            
+
             TimeEvent(FRAMES * 20, function(inst) inst.sg:RemoveStateTag("busy") end),
         },
 

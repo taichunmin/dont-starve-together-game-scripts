@@ -16,8 +16,6 @@ local prefabs =
 {
     "twigs",
     "dug_sapling",
-    "disease_puff",
-    "diseaseflies",
     "spoiled_food",
 }
 
@@ -25,74 +23,23 @@ local moon_prefabs =
 {
     "twigs",
     "dug_sapling_moon",
-    "disease_puff",
-    "diseaseflies",
     "spoiled_food",
 }
 
-local function SpawnDiseasePuff(inst)
-    SpawnPrefab("disease_puff").Transform:SetPosition(inst.Transform:GetWorldPosition())
-end
-
-local function SetDiseaseBuild(inst)
-    inst.AnimState:SetBuild((inst._is_moon and "sapling_diseased_moon") or "sapling_diseased_build")
-end
-
-local function ondiseasedfn(inst)
-    inst.components.pickable:ChangeProduct("spoiled_food")
-    if POPULATING then
-        SetDiseaseBuild(inst)
-    else
-        if inst.components.pickable:CanBePicked() then
-            inst.AnimState:PlayAnimation("transform")
-            inst.AnimState:PushAnimation("sway", true)
-        elseif inst.components.witherable ~= nil
-            and inst.components.witherable:IsWithered()
-            or inst.components.pickable:IsBarren() then
-            inst.AnimState:PlayAnimation("transform_dead")
-            inst.AnimState:PushAnimation("idle_dead", false)
-        else
-            inst.AnimState:PlayAnimation("transform_empty")
-            inst.AnimState:PushAnimation("empty", false)
-        end
-        inst:DoTaskInTime(6 * FRAMES, SpawnDiseasePuff)
-        inst:DoTaskInTime(10 * FRAMES, SetDiseaseBuild)
-    end
-end
-
-local function makediseaseable(inst)
-    if inst.components.diseaseable == nil then
-        inst:AddComponent("diseaseable")
-        inst.components.diseaseable:SetDiseasedFn(ondiseasedfn)
-    end
-end
-
 local function ontransplantfn(inst)
     inst.components.pickable:MakeEmpty()
-    makediseaseable(inst)
-    inst.components.diseaseable:RestartNearbySpread()
 end
 
 local function dig_up(inst, worker)
     if inst.components.pickable ~= nil and inst.components.lootdropper ~= nil then
         local withered = inst.components.witherable ~= nil and inst.components.witherable:IsWithered()
-        local diseased = inst.components.diseaseable ~= nil and inst.components.diseaseable:IsDiseased()
-
-        if diseased then
-            SpawnDiseasePuff(inst)
-        elseif inst.components.diseaseable ~= nil and inst.components.diseaseable:IsBecomingDiseased() then
-            SpawnDiseasePuff(inst)
-            if worker ~= nil then
-                worker:PushEvent("digdiseasing")
-            end
-        end
 
         if inst.components.pickable:CanBePicked() then
             inst.components.lootdropper:SpawnLootPrefab(inst.components.pickable.product)
         end
 
         inst.components.lootdropper:SpawnLootPrefab(
-            ((withered or diseased) and "twigs")
+            (withered and "twigs")
             or (inst._is_moon and "dug_sapling_moon")
             or "dug_sapling"
         )
@@ -102,16 +49,6 @@ end
 
 local function onpickedfn(inst, picker)
     inst.AnimState:PlayAnimation("picked", false)
-    if inst.components.diseaseable ~= nil then
-        if inst.components.diseaseable:IsDiseased() then
-            SpawnDiseasePuff(inst)
-        elseif inst.components.diseaseable:IsBecomingDiseased() then
-            SpawnDiseasePuff(inst)
-            if picker ~= nil then
-                picker:PushEvent("pickdiseasing")
-            end
-        end
-    end
 end
 
 local function onregenfn(inst)
@@ -144,10 +81,16 @@ local function makebarrenfn(inst, wasempty)
     end
 end
 
-local function OnPreLoad(inst, data)
-    if data ~= nil and (data.pickable ~= nil and data.pickable.transplanted or data.diseaseable ~= nil) then
-        makediseaseable(inst)
-    end
+local function moonconversionoverridefn(inst)
+	inst._is_moon = true
+	inst.AnimState:SetBank("sapling_moon")
+	inst.AnimState:SetBuild("sapling_moon")
+
+	inst.prefab = "sapling_moon"
+
+	inst:RemoveComponent("halloweenmoonmutable")
+
+	return inst, nil
 end
 
 local function sapling_common(inst, is_moon)
@@ -166,6 +109,7 @@ local function sapling_common(inst, is_moon)
 
     inst:AddTag("plant")
     inst:AddTag("renewable")
+	inst:AddTag("silviculture") -- for silviculture book
 
     --witherable (from witherable component) added to pristine state for optimization
     inst:AddTag("witherable")
@@ -206,9 +150,6 @@ local function sapling_common(inst, is_moon)
     MakeNoGrowInWinter(inst)
     MakeHauntableIgnite(inst)
     ---------------------
-
-    inst.OnPreLoad = OnPreLoad
-    inst.MakeDiseaseable = makediseaseable
     inst._is_moon = is_moon
 
     if TheNet:GetServerGameMode() == "quagmire" then
@@ -220,6 +161,13 @@ local function fn()
     local inst = CreateEntity()
 
     sapling_common(inst, false)
+
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+	inst:AddComponent("halloweenmoonmutable")
+	inst.components.halloweenmoonmutable:SetConversionOverrideFn(moonconversionoverridefn)
 
     return inst
 end

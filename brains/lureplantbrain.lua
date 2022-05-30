@@ -11,7 +11,7 @@ function LureplantBrain:OnStart()
         ControlMinions(self.inst),
         --StandStill(self.inst),
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

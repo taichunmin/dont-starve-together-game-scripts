@@ -16,11 +16,12 @@ local TINT_FAIL = {255/255, 155/255, 155/255, 1}
 
 local NotificationWidget = Class(Widget, function(self, owner, centered_layout)
     Widget._ctor(self, "NotificationWidget")
+	self:UpdateWhilePaused(false)
 	self.owner = owner
 
 	self.NUM_SLOTS = centered_layout and 1 or 5
 	self.centered_layout = centered_layout
-	
+
 	self.slots = {}
 	self.queue = {}
 
@@ -35,7 +36,7 @@ function NotificationWidget:OnRecipeMade(data)
 	local params = {string = data.new_recipe and STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.DISCOVERED or STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.MADE}
 	params.sfx = data.new_recipe and "dontstarve/quagmire/HUD/new_recipe" or "dontstarve/quagmire/HUD/meal_cooked"
 	if data.dish ~= nil then
-		
+
         local is_image_loaded = true
         if QUAGMIRE_USE_KLUMP then
             is_image_loaded = IsKlumpLoaded("images/quagmire_food_inv_images_hires_"..data.product..".tex")
@@ -43,16 +44,16 @@ function NotificationWidget:OnRecipeMade(data)
 
         if is_image_loaded and #data.ingredients > 0 then
 			params.tint = TINT_GOOD
-			params.icons = { 
-				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..".tex"}, 
+			params.icons = {
+				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..".tex"},
 				{atlas = "images/quagmire_food_inv_images_hires_"..data.product..".xml", texture = data.product..".tex"}
 			}
 		else
 			params.sfx = "dontstarve/quagmire/HUD/failed_recipe"
 			params.string = data.overcooked and STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.OVERCOOKED or STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.FAILED
 			params.tint = TINT_FAIL
-			params.icons = { 
-				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..".tex"}, 
+			params.icons = {
+				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..".tex"},
 				{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = (data.station=="pot" and "goop_" or "burnt_") .. data.dish .. ".tex"}
 			}
 		end
@@ -61,8 +62,8 @@ function NotificationWidget:OnRecipeMade(data)
 			params.string = STRINGS.UI.HUD.QUAGMIRE_NOTFICATIONS.INGREDIENT_MADE
 		end
 		params.tint = TINT_GOOD
-		params.icons = { 
-			{atlas = GetInventoryItemAtlas(data.product..".tex"), texture = data.product..".tex"}, 
+		params.icons = {
+			{atlas = GetInventoryItemAtlas(data.product..".tex"), texture = data.product..".tex"},
 		}
 	end
 
@@ -74,8 +75,8 @@ function NotificationWidget:OnRecipeAppraised(data)
 	params.tint = TINT_GOOD
 	params.sfx = "dontstarve/quagmire/HUD/recipe_sent"
 
-	params.icons = { 
-		{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..(data.silverdish and "_silver" or "")..".tex"}, 
+	params.icons = {
+		{atlas = "images/quagmire_food_common_inv_images_hires.xml", texture = data.dish..(data.silverdish and "_silver" or "")..".tex"},
 		{atlas = "images/quagmire_food_inv_images_hires_"..data.product..".xml", texture = data.product..".tex"}
 	}
 	params.coins = data.coins
@@ -95,7 +96,7 @@ local function SetupCoins(coins, size, tint)
 		local coin_num = 5 - i
 		local coin_value = coins[coin_num]
 		if coin_value ~= nil and (found_first or coin_value > 0) then
-			--found_first = true 
+			--found_first = true
 			local value = root:AddChild(Text(CHATFONT, size - 3, tostring(coin_value), tint))
 			value:SetRegionSize(text_w, 28)
 			value:SetHAlign(ANCHOR_RIGHT)
@@ -138,10 +139,10 @@ local function ShowPopup(self, root)
 		if root._sfx ~= nil then
 			TheFrontEnd:GetSound():PlaySound(root._sfx)
 		end
-		root.inst:DoTaskInTime(4, 
-			function() 
+		root.inst:DoTaskInTime(4,
+			function()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/quagmire/HUD/slide_out")
-				root:MoveTo(root:GetPosition(), start_position, .25, on_slideoutfn) 
+				root:MoveTo(root:GetPosition(), start_position, .25, on_slideoutfn)
 				end)
 	end
 
@@ -191,14 +192,14 @@ function NotificationWidget:BuildPopupWidget(data)
 
 		bg = root:AddChild(Image("images/quagmire_hud.xml", "quagmire_announcement_bg_centered.tex"))
 		bg:SetClickable(false)
-		x = AddIcons(root, data, 
+		x = AddIcons(root, data,
 		x)
 	end
 
     local str = root:AddChild(Text(UIFONT, 21, nil, data.tint))
     str:SetTruncatedString(data.string, 200, nil, true)
 	local str_w = str:GetRegionSize()
-	
+
 	if data.coins == nil then
 		local underline = root:AddChild(Image("images/quagmire_hud.xml", "quagmire_announcement_linebreak.tex"))
 		underline:SetClickable(false)

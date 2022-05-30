@@ -3,7 +3,6 @@ local assets =
     Asset("ANIM", "anim/diviningrod.zip"),
     Asset("ANIM", "anim/swap_diviningrod.zip"),
     Asset("ANIM", "anim/diviningrod_fx.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local prefabs =
@@ -56,7 +55,7 @@ local function CheckTargetPiece(inst)
         local intensity = 0
         local closeness = nil
         local fxname = nil
-        local target = FindClosestPart(inst) --FindEntity(inst, TUNING.DIVINING_MAXDIST, function(guy) return (guy:HasTag("teleportato") or guy:HasTag("teleportato_part") ) and not guy:IsInLimbo() end)
+        local target = FindClosestPart(inst)
         local nextpingtime = TUNING.DIVINING_DEFAULTPING
         if target ~= nil then
             local distsq = inst.components.inventoryitem.owner:GetDistanceSqToInst(target)
@@ -91,7 +90,7 @@ local function CheckTargetPiece(inst)
         inst.SoundEmitter:PlaySound("dontstarve/common/diviningrod_ping", "ping")
         inst.SoundEmitter:SetParameter("ping", "intensity", intensity)
         inst.task = inst:DoTaskInTime(nextpingtime or 1, CheckTargetPiece)
-    end 
+    end
 end
 
 local function onequip(inst, owner)
@@ -99,8 +98,8 @@ local function onequip(inst, owner)
     owner.AnimState:Hide("ARM_normal")
     owner.AnimState:OverrideSymbol("swap_object", "swap_diviningrod", "swap_diviningrod")
     if not inst.disabled then
-        inst.closeness = nil 
-        inst.tracking_parts = nil       
+        inst.closeness = nil
+        inst.tracking_parts = nil
         inst.task = inst:DoTaskInTime(1, CheckTargetPiece)
     end
 end
@@ -145,7 +144,7 @@ local function fn()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
-    inst.entity:AddSoundEmitter()        
+    inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 

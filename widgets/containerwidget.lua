@@ -18,6 +18,7 @@ local ContainerWidget = Class(Widget, function(self, owner)
 
     self.bganim = self:AddChild(UIAnim())
     self.bgimage = self:AddChild(Image())
+    self.bganim:GetAnimState():AnimateWhilePaused(false)
     self.isopen = false
 end)
 
@@ -189,7 +190,7 @@ function ContainerWidget:OnItemGet(data)
             local im = Image(data.item.replica.inventoryitem:GetAtlas(), data.item.replica.inventoryitem:GetImage())
             im:MoveTo(Vector3(TheSim:GetScreenPos(data.src_pos:Get())), dest_pos, .3, function() tile:Show() im:Kill() end)
         else
-            tile:Show() 
+            tile:Show()
         end
     end
 
@@ -250,7 +251,7 @@ function ContainerWidget:Close()
 
         self.isopen = false
 
-        self.inst:DoTaskInTime(.3, function() self.should_close_widget = true end)
+        self.inst:DoSimTaskInTime(.3, function() self.should_close_widget = true end)
     end
 end
 

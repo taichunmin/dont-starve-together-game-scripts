@@ -21,7 +21,7 @@ function Insulator:IsType(type)
 end
 
 function Insulator:SetInsulation(val)
-	self.insulation = val	
+	self.insulation = val
 end
 
 function Insulator:GetInsulation()

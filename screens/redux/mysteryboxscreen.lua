@@ -9,6 +9,8 @@ local OnlineStatus = require "widgets/onlinestatus"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local ItemBoxOpenerPopup = require "screens/redux/itemboxopenerpopup"
 
+local KitcoonPuppet = require "widgets/kitcoonpuppet"
+
 local TEMPLATES = require("widgets/redux/templates")
 
 
@@ -21,6 +23,8 @@ local MysteryBoxScreen = Class(Screen, function(self, prev_screen, user_profile)
 end)
 
 function MysteryBoxScreen:DoInit()
+    self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     self.root = self:AddChild(Widget("root"))
     self.root:SetVAnchor(ANCHOR_MIDDLE)
     self.root:SetHAnchor(ANCHOR_MIDDLE)
@@ -39,6 +43,11 @@ function MysteryBoxScreen:DoInit()
         end))
     end
 
+    self.kit_puppet = self.root:AddChild(KitcoonPuppet( Profile, nil, {
+        { x = -80, y = 180, scale = 0.75 },
+        { x = 140, y = 180, scale = 0.75 },
+    } ))
+
     self.boxes_root = self:_BuildBoxesPanel()
 
     local no_chest_msg = STRINGS.UI.MYSTERYBOXSCREEN.OUT_OF_BOXES_BODY_NO_EVENT
@@ -47,10 +56,10 @@ function MysteryBoxScreen:DoInit()
     end
     self.alloutofbox = self.root:AddChild(TEMPLATES.CurlyWindow(400,100, nil, nil, nil, no_chest_msg))
     self.alloutofbox:SetPosition(0, -20)
-    
+
 	self:UpdateMysteryBoxInfo()
-	
-    if not TheInput:ControllerAttached() then 
+
+    if not TheInput:ControllerAttached() then
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
                     TheFrontEnd:FadeBack()
@@ -60,7 +69,7 @@ function MysteryBoxScreen:DoInit()
 end
 
 function MysteryBoxScreen:UpdateMysteryBoxInfo()
-	
+
 	--Grab all the mysteryboxes types and check counts if 0 don't add it unless it's the classic one.
 	self.box_counts = GetMysteryBoxCounts()
 
@@ -68,16 +77,16 @@ function MysteryBoxScreen:UpdateMysteryBoxInfo()
 	if next(self.box_counts) == nil then
 		self.box_counts["mysterybox_classic_4"] = 0
 	end
-	
+
     local has_boxes = false
 	local box_options = {}
     for item_type,count in orderedPairs(self.box_counts) do
 		table.insert(box_options, { text = GetSkinName(item_type), data = item_type } )
         has_boxes = has_boxes or count > 0
     end
-    
+
 	self.boxes_root.spinner:SetOptions(box_options)
-	
+
 	--refresh the current display
 	local current_data = self.boxes_root.spinner:GetSelectedData()
 	self.boxes_root.spinner:OnChanged( current_data )
@@ -96,30 +105,30 @@ end
 
 function MysteryBoxScreen:_BuildBoxesPanel()
 	local boxes_ss = self.root:AddChild(Widget("boxes_ss"))
-        
+
     boxes_ss.window  = boxes_ss:AddChild(TEMPLATES.RectangleWindow(450, 330))
     boxes_ss.window:SetPosition(0,10)
-    
+
     boxes_ss.spinner = boxes_ss:AddChild(TEMPLATES.StandardSpinner({}, 450, 40, HEADERFONT, 30))
 	boxes_ss.spinner.background:Hide()
     boxes_ss.spinner:SetPosition( 0, 140, 0 )
     boxes_ss.spinner:SetTextColour( UICOLOURS.GOLD_SELECTED )
-    
+
     boxes_ss.description_text = boxes_ss:AddChild(Text(CHATFONT, 26, "", UICOLOURS.GOLD_UNIMPORTANT ))
     boxes_ss.description_text:SetHAlign(ANCHOR_LEFT)
     boxes_ss.description_text:EnableWordWrap(true)
     boxes_ss.description_text:SetRegionSize(210, 140)
     boxes_ss.description_text:SetPosition( 100, 0 )
-    
+
     boxes_ss.image = boxes_ss:AddChild(UIAnim())
 	boxes_ss.image:GetAnimState():SetBuild("frames_comp")
-	boxes_ss.image:GetAnimState():SetBank("fr")
+	boxes_ss.image:GetAnimState():SetBank("frames_comp")
 	boxes_ss.image:GetAnimState():Hide("frame")
 	boxes_ss.image:GetAnimState():Hide("NEW")
-	boxes_ss.image:GetAnimState():PlayAnimation("icon")
-	boxes_ss.image:SetPosition(-100, 0)
+	boxes_ss.image:GetAnimState():PlayAnimation("idle_on")
+	boxes_ss.image:SetPosition(-100, 15)
 	boxes_ss.image:SetScale(1.75)
-    
+
 	boxes_ss.count_text = boxes_ss.image:AddChild(Text(HEADERFONT, 20, nil, UICOLOURS.WHITE))
     boxes_ss.count_text:SetPosition(0, -70)
     boxes_ss.count_text:SetRegionSize(90, 20)
@@ -152,7 +161,7 @@ function MysteryBoxScreen:_BuildBoxesPanel()
                 else
                     success_cb(item_types)
                     self:UpdateMysteryBoxInfo()
-                end	
+                end
             end)
 		end)
 		TheFrontEnd:PushScreen(box_popup)
@@ -161,23 +170,23 @@ function MysteryBoxScreen:_BuildBoxesPanel()
     boxes_ss.spinner.OnChanged =
         function( _self, item_type, old )
 			boxes_ss.image:GetAnimState():OverrideSkinSymbol("SWAP_ICON", GetBuildForItem(item_type), "SWAP_ICON")
-			
+
 			local item_count_str = string.format("x%d", self.box_counts[item_type])
 			boxes_ss.count_text:SetString(item_count_str)
 
 			boxes_ss.description_text:SetString(GetSkinDescription(item_type))
-			
+
 			if self.box_counts[item_type] == 0 then
 				boxes_ss.open_btn:Disable()
 			else
 				boxes_ss.open_btn:Enable()
 			end
-        end	
+        end
 
     boxes_ss.focus_forward = boxes_ss.open_btn
     boxes_ss.spinner:SetFocusChangeDir(MOVE_DOWN, boxes_ss.open_btn)
     boxes_ss.open_btn:SetFocusChangeDir(MOVE_UP, boxes_ss.spinner)
-	
+
 	return boxes_ss
 end
 
@@ -193,6 +202,18 @@ function MysteryBoxScreen:OnBecomeActive()
     end
 
     self.leaving = nil
+
+    if self.kit_puppet then
+        self.kit_puppet:Enable()
+    end
+end
+
+function MysteryBoxScreen:OnBecomeInactive()
+    MysteryBoxScreen._base.OnBecomeInactive(self)
+
+    if self.kit_puppet then
+        self.kit_puppet:Disable()
+    end
 end
 
 function MysteryBoxScreen:OnControl(control, down)

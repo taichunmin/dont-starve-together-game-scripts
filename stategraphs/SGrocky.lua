@@ -32,7 +32,7 @@ local events =
 
 local function pickrandomstate(inst, choiceA, choiceB, chance)
 	if math.random() >= chance then
-		inst.sg:GoToState(choiceA) 
+		inst.sg:GoToState(choiceA)
 	else
 		inst.sg:GoToState(choiceB)
 	end
@@ -54,13 +54,13 @@ local states =
             else
                 inst.AnimState:PlayAnimation("idle_tendrils")
             end
-            
+
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/idle") end),        
-            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/idle") end),        
+            TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/idle") end),
+            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/idle") end),
         },
 
         events=
@@ -76,17 +76,17 @@ local states =
         onenter = function(inst, playanim)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("idle_tendrils")
-            PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley")            
+            PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley")
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
-            TimeEvent(8*FRAMES, function(inst) 
-                    inst:PerformBufferedAction() 
+            TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
+            TimeEvent(8*FRAMES, function(inst)
+                    inst:PerformBufferedAction()
                     PlayLobSound(inst, "dontstarve/creatures/rocklobster/idle")
                 end),
-            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         },
 
         events=
@@ -100,20 +100,20 @@ local states =
     State{
         name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
             PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley")
             PlayLobSound(inst, "dontstarve/creatures/rocklobster/taunt")
         end,
-        
-        timeline = 
+
+        timeline =
         {
-            TimeEvent(10*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
-            TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),                    
+            TimeEvent(10*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
+            TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -123,7 +123,7 @@ local states =
     State{
         name = "rocklick",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("rocklick_pre")
@@ -131,20 +131,20 @@ local states =
             inst.AnimState:PushAnimation("rocklick_pst", false)
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+            TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
             TimeEvent(10*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/attack") end),
-            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+            TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
             TimeEvent(25*FRAMES, function(inst) inst:PerformBufferedAction() end ),
-            TimeEvent(35*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+            TimeEvent(35*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         },
-        
+
         events=
         {
             EventHandler("animqueueover", function(inst) inst.sg:GoToState("idle") end),
         },
-    }, 
+    },
 
 
 
@@ -170,7 +170,7 @@ local states =
         tags = {"busy", "hiding"},
 
         onenter = function(inst)
-            --If taking fire damage, spawn fire effect. 
+            --If taking fire damage, spawn fire effect.
             inst.components.health:SetAbsorptionAmount(TUNING.ROCKY_ABSORB)
             inst.AnimState:PlayAnimation("hide_loop")
             inst.components.health:StartRegen(TUNING.ROCKY_REGEN_AMOUNT, TUNING.ROCKY_REGEN_PERIOD)
@@ -181,13 +181,13 @@ local states =
             inst.components.health:SetAbsorptionAmount(0)
             inst.components.health:StopRegen()
         end,
-        
+
         ontimeout = function(inst)
-            inst.sg:GoToState("shield")            
+            inst.sg:GoToState("shield")
 
         end,
 
-        timeline = 
+        timeline =
         {
             TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/sleep") end),
         },
@@ -204,9 +204,9 @@ local states =
             PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley")
         end,
 
-        timeline = 
+        timeline =
         {
-            TimeEvent(10*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+            TimeEvent(10*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         },
 
         events=
@@ -225,27 +225,27 @@ CommonStates.AddWalkStates(states,
         TimeEvent(1*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/footstep") end),
         TimeEvent(8*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/footstep") end),
         TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/footstep") end),
-        TimeEvent(15*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(15*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         TimeEvent(26*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/footstep") end),
         TimeEvent(30*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/footstep") end),
     },
     endtimeline = {
-        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),    
+        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
     },
 })
 
 CommonStates.AddSleepStates(states,
 {
     starttimeline = {
-        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
     },
     sleeptimeline = {
         TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/sleep") end),
-        TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(20*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
 
     },
     endtimeline ={
-        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         },
 })
 
@@ -265,39 +265,39 @@ local combatanims =
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
-    {            
-        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+    attacktimeline =
+    {
+        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/attack") end),
-        TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
         TimeEvent(8*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/clawsnap_small") end),
         TimeEvent(12*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/clawsnap_small") end),
         TimeEvent(13*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/attack_whoosh") end),
         TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/rocklobster/clawsnap") end),
         TimeEvent(20*FRAMES, function(inst) inst.components.combat:DoAttack() end),
-        TimeEvent(25*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),                
-        TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(25*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
+        TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
     },
     hittimeline = {
         TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/hurt") end),
-        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
+        TimeEvent(0*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
     },
     deathtimeline = {
-        TimeEvent(0*FRAMES, function(inst) 
-            PlayLobSound(inst, "dontstarve/creatures/rocklobster/death") 
-            PlayLobSound(inst, "dontstarve/creatures/rocklobster/explode") 
+        TimeEvent(0*FRAMES, function(inst)
+            PlayLobSound(inst, "dontstarve/creatures/rocklobster/death")
+            PlayLobSound(inst, "dontstarve/creatures/rocklobster/explode")
         end),
 
-        
+
     },
-}, 
+},
 combatanims)
 
 CommonStates.AddFrozenStates(states)
 CommonStates.AddIdle(states, "idle_tendril", nil ,
 {
-    TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),        
-    TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst,"dontstarve/creatures/rocklobster/foley") end),                    
+    TimeEvent(5*FRAMES, function(inst) PlayLobSound(inst, "dontstarve/creatures/rocklobster/foley") end),
+    TimeEvent(30*FRAMES, function(inst) PlayLobSound(inst,"dontstarve/creatures/rocklobster/foley") end),
 })
 
 return StateGraph("rocky", states, events, "idle", actionhandlers)

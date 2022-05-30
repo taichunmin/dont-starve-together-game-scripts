@@ -76,15 +76,15 @@ local function OnNightmareDawn(inst, dawn)
 end
 
 local function MakeShadowCreature(data)
-    local bank = data.bank 
-    local build = data.build 
+    local bank = data.bank
+    local build = data.build
 
     local assets =
     {
         Asset("ANIM", "anim/"..data.build..".zip"),
     }
 
-    local sounds = 
+    local sounds =
     {
         attack = "dontstarve/sanity/creature"..data.num.."/attack",
         attack_grunt = "dontstarve/sanity/creature"..data.num.."/attack_grunt",
@@ -108,14 +108,15 @@ local function MakeShadowCreature(data)
         MakeCharacterPhysics(inst, 10, 1.5)
         RemovePhysicsColliders(inst)
         inst.Physics:SetCollisionGroup(COLLISION.SANITY)
-        inst.Physics:CollidesWith(COLLISION.SANITY)      
-         
+        inst.Physics:CollidesWith(COLLISION.SANITY)
+
         inst.AnimState:SetBank(bank)
         inst.AnimState:SetBuild(build)
         inst.AnimState:PlayAnimation("idle_loop")
         inst.AnimState:SetMultColour(1, 1, 1, 0.5)
 
         inst:AddTag("nightmarecreature")
+        inst:AddTag("gestaltnoloot")
         inst:AddTag("monster")
         inst:AddTag("hostile")
         inst:AddTag("shadow")
@@ -128,6 +129,8 @@ local function MakeShadowCreature(data)
         end
 
         inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
+	    inst.components.locomotor:SetTriggersCreep(false)
+        inst.components.locomotor.pathcaps = { ignorecreep = true }
         inst.components.locomotor.walkspeed = data.speed
         inst.sounds = sounds
 
@@ -194,4 +197,4 @@ for i, v in ipairs(data) do
     table.insert(ret, MakeShadowCreature(v))
 end
 
-return unpack(ret) 
+return unpack(ret)

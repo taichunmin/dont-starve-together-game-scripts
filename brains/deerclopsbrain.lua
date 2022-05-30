@@ -18,15 +18,17 @@ local function OceanChaseWaryDistance(inst, target)
     return (CanProbablyReachTargetFromShore(inst, target, TUNING.DEERCLOPS_ATTACK_RANGE - 0.25) and 0) or OUTSIDE_CATAPULT_RANGE
 end
 
+local BASEDESTROY_CANT_TAGS = {"wall"}
+
 local function BaseDestroy(inst)
     if inst.components.knownlocations:GetLocation("targetbase") then
-    	local target = FindEntity(inst, SEE_DIST, function(item) 
+    	local target = FindEntity(inst, SEE_DIST, function(item)
     			if item.components.workable and item:HasTag("structure")
     				    and item.components.workable.action == ACTIONS.HAMMER
                         and item:IsOnValidGround() then
     				return true
     			end
-    		end, nil, {"wall"})
+    		end, nil, BASEDESTROY_CANT_TAGS)
     	if target then
     		return BufferedAction(inst, target, ACTIONS.HAMMER)
     	end
@@ -89,12 +91,12 @@ function DeerclopsBrain:OnStart()
             AttackWall(self.inst),
             ChaseAndAttack(self.inst, CHASE_TIME, CHASE_DIST, nil, nil, nil, OceanChaseWaryDistance),
             DoAction(self.inst, BaseDestroy, "DestroyBase", true),
-            WhileNode(function() return self.inst:WantsToLeave() end, "Trying To Leave", 
+            WhileNode(function() return self.inst:WantsToLeave() end, "Trying To Leave",
                 Wander(self.inst, GetHomePos, 30)),
 
             Wander(self.inst, GetWanderPos, 30, {minwwwalktime = 10}),
         },1)
-    
+
     self.bt = BT(self.inst, root)
 end
 

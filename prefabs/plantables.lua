@@ -61,7 +61,7 @@ local function make_plantable(data)
         inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
 
         inst:AddComponent("inspectable")
-        inst.components.inspectable.nameoverride = data.inspectoverride or "dug_"..data.name
+        inst.components.inspectable.nameoverride = data.inspectoverride or ("dug_"..data.name)
         inst:AddComponent("inventoryitem")
 
         inst:AddComponent("fuel")
@@ -79,6 +79,11 @@ local function make_plantable(data)
         if data.mediumspacing then
             inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.MEDIUM)
         end
+
+		if data.halloweenmoonmutable_settings ~= nil then
+			inst:AddComponent("halloweenmoonmutable")
+			inst.components.halloweenmoonmutable:SetPrefabMutated(data.halloweenmoonmutable_settings.prefab)
+		end
 
         ---------------------
         return inst
@@ -110,6 +115,7 @@ local plantables =
         name = "sapling",
         mediumspacing = true,
         floater = {"large", 0.1, 0.55},
+		halloweenmoonmutable_settings = {prefab = "dug_sapling_moon"},
     },
     {
         name = "sapling_moon",
@@ -136,7 +142,7 @@ local plantables =
         anim = "dead1",
         floater = {"med", nil, 0.95},
     },
-	
+
 }
 
 local prefabs = {}

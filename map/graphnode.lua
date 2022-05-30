@@ -15,27 +15,27 @@ local function getFilteredSpawnWeight(list,weight,prefab)
 			total = total + weightList.weight
 		else
 			local add = true
-			
+
 			for cat,catdata in pairs(PrefabSwaps.GetBasePrefabSwaps())do
 				for swap,swapData in ipairs(catdata)do
 					if swapData.primary and prefab == i then
 						add = false -- remove it if the prefab is a primary, will be added in later
-					end	
+					end
 					if add then
 						for p,prefab2 in ipairs(swapData.prefabs)do
 							if not swapData.primary and i == prefab2 then
 								add = false -- remove all alternate prefabs, only keep the primaries.
-							end						
+							end
 						end
 					end
 				end
-			end			
+			end
 			if add then
 				--print(total ,"+",weightList,"=", total + weightList,i)
-				total = total + weightList			
+				total = total + weightList
 			end
 		end
-	end	
+	end
 
 	total = total + weight -- add the prefabs weight to the total at the end.
 
@@ -43,7 +43,7 @@ local function getFilteredSpawnWeight(list,weight,prefab)
 	return  weight / total --getPercentFromWeigth(list,weight)
 end
 
-local function recurseTable(dataTable, removed, fn)	
+local function recurseTable(dataTable, removed, fn)
 	local deleteList = {}
 	local addList = {}
 
@@ -53,11 +53,11 @@ local function recurseTable(dataTable, removed, fn)
 		else
 			local add, delete = fn(k, fn)
 			if add then
-				table.insert(addList,{prefab=add,weight=v})				
-			end			
+				table.insert(addList,{prefab=add,weight=v})
+			end
 			if delete then
-				table.insert(deleteList,k)			
-			end					
+				table.insert(deleteList,k)
+			end
 
 			if not add and delete then
 				removed[k] = v
@@ -67,7 +67,7 @@ local function recurseTable(dataTable, removed, fn)
 
 	for k,v in ipairs(deleteList)do
 		--print("REMOVING PREFAB",v)
-		dataTable[v] = nil 	
+		dataTable[v] = nil
 	end
 
 	-- this isn't really adding a prefab, it's replacing one that may have just been removed with it's actual name. eg: ground_sticks
@@ -108,16 +108,16 @@ Node = Class(function(self, id, data)
 	self.id = id
 	self.graph = nil
 	self.delta_graph = nil
-	
+
     -- Graph properties
     self.edges = {}
-    
+
     -- Data
     self.data = data
-    
+
     -- Search
     self.visited = false
-    
+
     self.colour = data.colour or {r=255,g=255,b=0,a=55}
 
 
@@ -129,11 +129,11 @@ Node = Class(function(self, id, data)
 
 
     if self.data.custom_tiles ~= nil then
- 		self:SetTilesFunction(self.data.custom_tiles)    	
+ 		self:SetTilesFunction(self.data.custom_tiles)
     	self.data.custom_tiles = nil
     end
     if self.data.custom_objects ~= nil then
- 		self:SetPopulateFunction(self.data.custom_objects)    	
+ 		self:SetPopulateFunction(self.data.custom_objects)
     	self.data.custom_objects = nil
     end
 
@@ -145,7 +145,7 @@ function Node:SaveEncode(map)
 	local c_x, c_y = WorldSim:GetSiteCentroid(self.id)
 	c_x = math.floor((c_x-map.width/2.0)*TILE_SCALE*100)/100.0
 	c_y = math.floor((c_y-map.height/2.0)*TILE_SCALE*100)/100.0
-	
+
 	local poly_x, poly_y = WorldSim:GetSitePolygon(self.id)
 	local poly_def = {}
 	for current_pos_idx = 1, #poly_x  do
@@ -162,7 +162,7 @@ function Node:SaveEncode(map)
 				area = WorldSim:GetSiteArea(self.id),
                 tags = self.data.tags,
             }
-	
+
 end
 
 function Node:SetPosition(position)
@@ -175,13 +175,13 @@ end
 
 function Node:IsConnectedTo(node)
 	assert(node)
-	
+
 	for k,edge in pairs(self.edges) do
 		if edge.node1 == node or edge.node2 == node then
 			return true
 		end
 	end
-		
+
 	return false
 end
 
@@ -197,17 +197,17 @@ function PopulateWorld_AddEntity(prefab, tile_x, tile_y, tile_value, entitiesOut
 		x = x + math.random()*2-1
 		y = y + math.random()*2-1
 	end
-	
+
 	x = math.floor(x*100)/100.0
 	y = math.floor(y*100)/100.0
-					
+
 	if entitiesOut[prefab] == nil then
 		entitiesOut[prefab] = {}
 	end
 
 	local save_data = {x=x, z=y}
 	if prefab_data then
-		
+
 		if prefab_data.data then
 			if type(prefab_data.data) == "function" then
 				save_data["data"] = prefab_data.data()
@@ -226,7 +226,7 @@ function PopulateWorld_AddEntity(prefab, tile_x, tile_y, tile_value, entitiesOut
         end
 	end
 	table.insert(entitiesOut[prefab], save_data)
-					
+
 	if prefab_list[prefab] == nil then
 		prefab_list[prefab] = 0
 	end
@@ -236,11 +236,11 @@ end
 
 
 function Node:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
-	local tile = WorldSim:GetTile(points_x[current_pos_idx], points_y[current_pos_idx]) 
+	local tile = WorldSim:GetTile(points_x[current_pos_idx], points_y[current_pos_idx])
 	if tile <= GROUND.IMPASSABLE or tile >= GROUND.UNDERGROUND then
 		return
 	end
-	
+
 	PopulateWorld_AddEntity(prefab, points_x[current_pos_idx], points_y[current_pos_idx], tile, entitiesOut, width, height, prefab_list, prefab_data, rand_offset)
 end
 
@@ -249,34 +249,35 @@ function Node:ConvertGround(spawnFn, entitiesOut, width, height, world_gen_choic
 	--if self.data.value == GROUND.IMPASSABLE then
 		--return
 	--end
-	
+
 	if not self.data.terrain_contents then
 		return
 	end
 	local obj_layout = require("map/object_layout")
 	local prefab_list = {}
-	
+
 	local area = WorldSim:GetSiteArea(self.id)
 
 	-- Get the list of special items for this node
 	local add_fn = {fn=function(...) self:AddEntity(...) end,args={entitiesOut=entitiesOut, width=width, height=height, rand_offset = false, debug_prefab_list=prefab_list}}
 
+	local scratchpad = {} -- shared data between all entries in countstaticlayouts. This is not shared with countprefabs.
 	if self.data.terrain_contents.countstaticlayouts ~= nil then
 		for k,count in pairs(self.data.terrain_contents.countstaticlayouts) do
             --print("STATIC LAYOUTS: adding a "..k.." to "..self.id)
 			if type(count) == "function" then
-				count = count(area)
+				count = count(area, k, scratchpad)
 			end
-			
+
 			for i=1, count do
-				obj_layout.Convert(self.id, k, add_fn)	
+				obj_layout.Convert(self.id, k, add_fn)
 			end
 		end
 	end
-	
+
 	if self.data.terrain_contents_extra and self.data.terrain_contents_extra.static_layouts then
 		for i,layout in pairs(self.data.terrain_contents_extra.static_layouts) do
-			obj_layout.Convert(self.id, layout, add_fn)	
+			obj_layout.Convert(self.id, layout, add_fn)
 		end
 	end
 
@@ -294,7 +295,7 @@ function Node:SetTilesFunction(custom_tiles_data)
 end
 
 function Node:PopulateViaFunction()
-	if self.custom_objects_data == nil then		
+	if self.custom_objects_data == nil then
 		return
 	end
 
@@ -306,7 +307,7 @@ function Node:PopulateViaFunction()
 end
 
 function Node:SetTilesViaFunction(entities, width, height)
-	if self.custom_tiles_data == nil then		
+	if self.custom_tiles_data == nil then
 		return
 	end
 
@@ -340,7 +341,7 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 	if self.data.value == GROUND.IMPASSABLE then
 		return
 	end
-	
+
 	if not self.data.terrain_contents or (self.data.terrain_contents.countprefabs == nil and self.data.terrain_contents.distributeprefabs == nil) then
 		return
 	end
@@ -348,32 +349,33 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 	local prefab_list = {}
 	local generate_these = {}
 	local pos_needed = 0
-	
+
 	local points_x, points_y, points_type = WorldSim:GetPointsForSite(self.id)
 	if #points_x == 0 then
 		print(self.id.." Cant process points")
 		return
 	end
 	local current_pos_idx = 1
-	
-	--print("Number of points returned: " .. tostring(#points_x) .. " for site " .. self.id)	
+
+	--print("Number of points returned: " .. tostring(#points_x) .. " for site " .. self.id)
 
 	local area = #points_x
 
+	local scratchpad = {} -- shared data between all entries in countprefabs. This is not shared with countstaticlayouts.
 	if self.data.terrain_contents.countprefabs ~= nil then
 		for prefab, count in pairs(self.data.terrain_contents.countprefabs) do
 			if type(count) == "function" then
-				count = count(area)
+				count = count(area, prefab, scratchpad)
 			end
 			generate_these[prefab] = count
 			pos_needed = pos_needed + count
 		end
-		
+
 		if #points_x < math.floor(pos_needed) then
 			print(self.id.." Didnt get enough points for all prefabs, got "..#points_x .." need ".. pos_needed)
 			return
 		end
-			
+
 		if self.data.terrain_contents.countprefabs_uses_filters then
 			local cur_pt = #points_x
 
@@ -383,7 +385,7 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 					local prefab_data = {}
 					prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil
 					self:AddEntity(prefab, points_x, points_y, cur_pt, entitiesOut, width, height, prefab_list, prefab_data)
-					
+
 					generate_these[prefab] = generate_these[prefab] - 1
 					if generate_these[prefab] == 0 then
 						generate_these[prefab] = nil
@@ -404,10 +406,10 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 			end
 
 			for p, c in pairs(generate_these) do
-				print ("Warning: CountPrefabs could not be placed : " .. c .. " " .. p .. " in site " .. self.id) 
+				print ("Warning: CountPrefabs could not be placed : " .. c .. " " .. p .. " in site " .. self.id)
 			end
 		else
-			for prefab, count in pairs(generate_these) do 	
+			for prefab, count in pairs(generate_these) do
 				for id = 1, count do
 					if current_pos_idx > #points_x then
 						break
@@ -418,7 +420,7 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 					self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)
 
 					--print("Creating count:", current_pos_idx, self.id, prefab)
-				
+
 					current_pos_idx = current_pos_idx + 1
 				end
 				if current_pos_idx > #points_x then
@@ -450,11 +452,11 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 	local removed = {}
 
 	if self.data.terrain_contents.distributepercent and self.data.terrain_contents.distributeprefabs then
-		
+
 		local idx_left = {}
 
-		local distributeprefabs = resolveswappableprefabs(self.data.terrain_contents.distributeprefabs)		
-		
+		local distributeprefabs = resolveswappableprefabs(self.data.terrain_contents.distributeprefabs)
+
 		distributeprefabs, removed = filterPrefabsForGlobalSwaps(distributeprefabs, removed)
 
 		for current_pos_idx = current_pos_idx, #points_x  do
@@ -462,8 +464,8 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
 				local prefab = spawnFn.pickspawnprefab(distributeprefabs, points_type[current_pos_idx])
 				if prefab ~= nil then
 					local prefab_data = {}
-					prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil			
-					self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)				
+					prefab_data.data = self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab] or nil
+					self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)
 				else
 					table.insert(idx_left, current_pos_idx)
 					--print(self.id.." prefab nil for "..current_pos_idx.. " type "..points_type[current_pos_idx])
@@ -486,8 +488,8 @@ function Node:PopulateVoronoi(spawnFn, entitiesOut, width, height, world_gen_cho
  	if self.data.terrain_contents.distributepercent then
 		for prefab,v in pairs(prefab_list) do
 			-- convererts from actual numbers to a percentage of the distribute percent
-			prefabDensities[self.id][prefab] = v/#points_x 			
-		
+			prefabDensities[self.id][prefab] = v/#points_x
+
 		end
 	end
 	-- merges the items removed due to prefab swaps back into the list
@@ -523,7 +525,7 @@ function Node:PopulateChildren(spawnFn, entitiesOut, width, height, backgroundRo
 		for i,id in ipairs(children) do
 
             local prefab_list = {}
-			
+
 			local points_x, points_y, points_type = WorldSim:GetPointsForSite(id) -- minus the sites that have been taken
 			if points_x == nil then
 				print(self.id.." Cant process points")
@@ -532,7 +534,7 @@ function Node:PopulateChildren(spawnFn, entitiesOut, width, height, backgroundRo
 
 			-- need to stash this incase we are on a multi-terrain ground
 			local room = backgroundRoom
-		
+
 			local idx_left = {}
 
 			for current_pos_idx = 1, #points_x do
@@ -544,8 +546,8 @@ function Node:PopulateChildren(spawnFn, entitiesOut, width, height, backgroundRo
 					local prefab = spawnFn.pickspawnprefab(room.contents.distributeprefabs, points_type[current_pos_idx])
 					if prefab ~= nil then
 						local prefab_data = {}
-						prefab_data.data = room.contents.prefabdata and backgroundRoom.contents.prefabdata[prefab] or nil			
-						self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)				
+						prefab_data.data = room.contents.prefabdata and backgroundRoom.contents.prefabdata[prefab] or nil
+						self:AddEntity(prefab, points_x, points_y, current_pos_idx, entitiesOut, width, height, prefab_list, prefab_data)
 					else
 						--print(self.id.." prefab nil for "..current_pos_idx.. " type "..points_type[current_pos_idx])
 						table.insert(idx_left, current_pos_idx)
@@ -555,7 +557,7 @@ function Node:PopulateChildren(spawnFn, entitiesOut, width, height, backgroundRo
 					table.insert(idx_left, current_pos_idx)
 				end
 			end
-			
+
 			self:PopulateExtra(world_gen_choices, spawnFn, {points_type=points_type, points_x=points_x, points_y=points_y, idx_left=idx_left, entitiesOut=entitiesOut, width=width, height=height, prefab_list=prefab_list})
 
             prefabDensities[self.id] ={}
@@ -573,46 +575,41 @@ function Node:PopulateExtra(world_gen_choices, spawnFn, data)
 	-- add in % more
 	--print("world_gen_choices...", world_gen_choices, #idx_left)
 	if world_gen_choices ~= nil and #data.idx_left >0 then
-			
+
 		local amount_to_generate = {}
 		for prefab,amt in pairs(world_gen_choices) do
-
-			--test if prefab should be used..
 			if not PrefabSwaps.IsPrefabInactive(prefab) then
-				if data.prefab_list[prefab] == nil then
-					-- TODO: Need a better way to increse items in areas where they dont usually generate
-					data.prefab_list[prefab] = math.random(1,2)
+				if type(amt) == "number" then
+					if data.prefab_list[prefab] then
+						amount_to_generate[prefab] = math.floor(data.prefab_list[prefab]*amt) - data.prefab_list[prefab]
+					end
+				else
+					if amt.clumpcount > 0 and 0.25 > math.random() then
+						amt.clumpcount = amt.clumpcount - 1
+						amount_to_generate[prefab] = math.random(amt.clumpsize[1], amt.clumpsize[2])
+					end
 				end
-					
-				local new_amt = math.floor(data.prefab_list[prefab]*amt) - data.prefab_list[prefab]
-				if new_amt > 0 then
-					amount_to_generate[prefab] = new_amt
-				end
-				--print("Need ",prefab,new_amt)
 			end
-		end	
-					
-		local idx = 1 
-		while idx< #data.idx_left do
-				
+		end
+
+		for idx = 1, #data.idx_left do
+
 			-- Choose random prefab
 			local prefab = spawnFn.pickspawnprefab(amount_to_generate, data.points_type[data.idx_left[idx]])
-				
+
 			if prefab ~= nil then
 				local prefab_data = {}
-				prefab_data.data = (self.data.terrain_contents and self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab]) or nil	
-				self:AddEntity(prefab, data.points_x, data.points_y, data.idx_left[idx], data.entitiesOut, data.width, data.height, data.prefab_list, prefab_data)				
-					
+				prefab_data.data = (self.data.terrain_contents and self.data.terrain_contents.prefabdata and self.data.terrain_contents.prefabdata[prefab]) or nil
+				self:AddEntity(prefab, data.points_x, data.points_y, data.idx_left[idx], data.entitiesOut, data.width, data.height, data.prefab_list, prefab_data)
+
 				amount_to_generate[prefab] = amount_to_generate[prefab] - 1
-				
+
 				-- Remove any complete items from the list
 				if amount_to_generate[prefab] <= 0 then
 					--print("Generated enough",prefab)
 					amount_to_generate[prefab] = nil
 				end
 			end
-				
-			idx = idx + 1
 		end
 	end
 end

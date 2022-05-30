@@ -2,11 +2,16 @@ local assets =
 {
     Asset("ANIM", "anim/multitool_axe_pickaxe.zip"),
     Asset("ANIM", "anim/swap_multitool_axe_pickaxe.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_multitool_axe_pickaxe", "swap_object")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_multitool_axe_pickaxe", inst.GUID, "swap_multitool_axe_pickaxe")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_multitool_axe_pickaxe", "swap_multitool_axe_pickaxe")
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -14,6 +19,10 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function fn()
@@ -38,7 +47,7 @@ local function fn()
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")
 
-    local swap_data = {sym_build = "swap_multitool_axe_pickaxe", sym_name = "swap_object"}
+    local swap_data = {sym_build = "swap_multitool_axe_pickaxe"}
     MakeInventoryFloatable(inst, "med", 0.05, {0.7, 0.4, 0.7}, true, -13, swap_data)
 
     inst.entity:SetPristine()
@@ -51,8 +60,8 @@ local function fn()
     inst.components.weapon:SetDamage(TUNING.MULTITOOL_DAMAGE)
     -----
     inst:AddComponent("tool")
-    inst.components.tool:SetAction(ACTIONS.CHOP, 1.33)
-    inst.components.tool:SetAction(ACTIONS.MINE, 1.33)
+    inst.components.tool:SetAction(ACTIONS.CHOP, TUNING.MULTITOOL_AXE_PICKAXE_EFFICIENCY)
+    inst.components.tool:SetAction(ACTIONS.MINE, TUNING.MULTITOOL_AXE_PICKAXE_EFFICIENCY)
     -------
     inst:AddComponent("finiteuses")
     inst.components.finiteuses:SetMaxUses(TUNING.MULTITOOL_AXE_PICKAXE_USES)

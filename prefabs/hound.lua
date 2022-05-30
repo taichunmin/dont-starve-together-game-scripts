@@ -23,6 +23,7 @@ local prefabs =
     "monstermeat",
     "redgem",
     "bluegem",
+    "splash_green",
 	"houndcorpse",
 }
 
@@ -33,7 +34,7 @@ local prefabs_clay =
     "eyeflame",
 }
 
-local gargoyles = 
+local gargoyles =
 {
     "gargoyle_houndatk",
     "gargoyle_hounddeath",
@@ -81,7 +82,6 @@ local sounds_mutated =
     attack = "turnoftides/creatures/together/mutated_hound/attack",
     bite = "turnoftides/creatures/together/mutated_hound/bite",
     bark = "turnoftides/creatures/together/mutated_hound/bark",
-    --barkbark = "turnoftides/creatures/together/mutated_hound/barkbark", TODO @stevenm is this a thing???
     death = "turnoftides/creatures/together/mutated_hound/death",
     sleep = "dontstarve/creatures/hound/sleep",
     growl = "turnoftides/creatures/together/mutated_hound/growl",
@@ -132,6 +132,7 @@ local SHARE_TARGET_DIST = 30
 local HOME_TELEPORT_DIST = 30
 
 local NO_TAGS = { "FX", "NOCLICK", "DECOR", "INLIMBO" }
+local FREEZABLE_TAGS = { "freezable" }
 
 local function ShouldWakeUp(inst)
     return DefaultWakeTest(inst) or (inst.components.follower and inst.components.follower.leader and not inst.components.follower:IsNearLeader(WAKE_TO_FOLLOW_DISTANCE))
@@ -151,6 +152,7 @@ local function OnNewTarget(inst, data)
     end
 end
 
+local RETARGET_CANT_TAGS = { "wall", "houndmound", "hound", "houndfriend" }
 local function retargetfn(inst)
     if inst.sg:HasStateTag("statue") then
         return
@@ -171,7 +173,7 @@ local function retargetfn(inst)
                     return guy ~= leader and inst.components.combat:CanTarget(guy)
                 end,
                 nil,
-                { "wall", "houndmound", "hound", "houndfriend" }
+                RETARGET_CANT_TAGS
             )
         or nil
 end
@@ -196,6 +198,7 @@ local function IsNearMoonBase(inst, dist)
     return moonbase == nil or inst:IsNear(moonbase, dist)
 end
 
+local MOON_RETARGET_CANT_TAGS = { "wall", "houndmound", "hound", "houndfriend", "moonbeast" }
 local function moon_retargetfn(inst)
     return IsNearMoonBase(inst, TUNING.MOONHOUND_AGGRO_DIST)
         and FindEntity(
@@ -205,7 +208,7 @@ local function moon_retargetfn(inst)
                     return inst.components.combat:CanTarget(guy)
                 end,
                 nil,
-                { "wall", "houndmound", "hound", "houndfriend", "moonbeast" }
+                MOON_RETARGET_CANT_TAGS
             )
         or nil
 end
@@ -374,12 +377,12 @@ local function OnStopFollowing(inst)
 end
 
 local function CanMutateFromCorpse(inst)
+    if not TUNING.SPAWN_MUTATED_HOUNDS then return false end
 	if (inst.components.amphibiouscreature == nil or not inst.components.amphibiouscreature.in_water)
-		and math.random() <= TUNING.MUTATEDHOUND_SPAWN_CHANCE 
-		and TheWorld.Map:IsVisualGroundAtPoint(inst.Transform:GetWorldPosition()) then
+		and math.random() <= TUNING.MUTATEDHOUND_SPAWN_CHANCE then
 
-		local node = TheWorld.Map:FindNodeAtPoint(inst.Transform:GetWorldPosition())
-		return node ~= nil and node.tags ~= nil and table.contains(node.tags, "lunacyarea")
+		local x, y, z = inst.Transform:GetWorldPosition()
+		return TheWorld.Map:IsInLunacyArea(x, y, z)
 	end
 	return false
 end
@@ -401,6 +404,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag, data)
     inst.Transform:SetFourFaced()
 
     inst:AddTag("scarytoprey")
+    inst:AddTag("scarytooceanprey")
     inst:AddTag("monster")
     inst:AddTag("hostile")
     inst:AddTag("hound")
@@ -451,11 +455,11 @@ local function fncommon(bank, build, morphlist, custombrain, tag, data)
                 inst.components.locomotor.runspeed = TUNING.HOUND_SWIM_SPEED
                 inst.hop_distance = inst.components.locomotor.hop_distance
                 inst.components.locomotor.hop_distance = 4
-            end)            
+            end)
         inst.components.amphibiouscreature:SetExitWaterFn(
             function(inst)
                 if inst.landspeed then
-                    inst.components.locomotor.runspeed = inst.landspeed 
+                    inst.components.locomotor.runspeed = inst.landspeed
                 end
                 if inst.hop_distance then
                     inst.components.locomotor.hop_distance = inst.hop_distance
@@ -465,7 +469,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag, data)
 		inst.components.locomotor.pathcaps = { allowocean = true }
 	end
 
-    
+
 
     inst:SetBrain(custombrain or brain)
 
@@ -500,7 +504,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag, data)
         inst:AddComponent("eater")
         inst.components.eater:SetDiet({ FOODTYPE.MEAT }, { FOODTYPE.MEAT })
         inst.components.eater:SetCanEatHorrible()
-        inst.components.eater.strongstomach = true -- can eat monster meat!
+        inst.components.eater:SetStrongStomach(true) -- can eat monster meat!
 
         inst:AddComponent("sleeper")
         inst.components.sleeper:SetResistance(3)
@@ -511,6 +515,7 @@ local function fncommon(bank, build, morphlist, custombrain, tag, data)
 
         if morphlist ~= nil then
             MakeHauntableChangePrefab(inst, morphlist)
+			inst.components.hauntable.panicable = true
             inst:ListenForEvent("spawnedfromhaunt", OnSpawnedFromHaunt)
         else
             MakeHauntablePanic(inst)
@@ -540,6 +545,9 @@ local function fndefault()
 
     MakeMediumFreezableCharacter(inst, "hound_body")
     MakeMediumBurnableCharacter(inst, "hound_body")
+
+	inst:AddComponent("halloweenmoonmutable")
+	inst.components.halloweenmoonmutable:SetPrefabMutated("mutatedhound")
 
     return inst
 end
@@ -576,7 +584,7 @@ local function DoIceExplosion(inst)
     inst.components.freezable:SpawnShatterFX()
     inst:RemoveComponent("freezable")
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 4, { "freezable" }, NO_TAGS)
+    local ents = TheSim:FindEntities(x, y, z, 4, FREEZABLE_TAGS, NO_TAGS)
     for i, v in pairs(ents) do
         if v.components.freezable ~= nil then
             v.components.freezable:AddColdness(2)
@@ -686,7 +694,7 @@ local function fnclay()
 end
 
 local function fnmutated()
-    local inst = fncommon("hound", "hound_mutated", nil, nil, nil, {amphibious = true})
+    local inst = fncommon("hound", "hound_mutated", nil, nil, "hound_mutated", {amphibious = true})
 
     if not TheWorld.ismastersim then
         return inst

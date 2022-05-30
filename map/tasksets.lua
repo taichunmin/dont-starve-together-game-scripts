@@ -15,7 +15,7 @@ local function GetGenTasks(id)
 
     return deepcopy(taskgrouplist[id])
 end
- 
+
 local function GetGenTaskLists(world)
     local ret = {}
     for k,v in pairs(taskgrouplist) do

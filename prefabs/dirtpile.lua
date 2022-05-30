@@ -79,7 +79,7 @@ local function create()
     inst:AddComponent("inspectable")
     --inst.components.inspectable.getstatus = GetStatus
 
-    inst:AddComponent("activatable")    
+    inst:AddComponent("activatable")
 
     --set required
     inst.components.activatable.OnActivate = OnInvestigated

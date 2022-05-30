@@ -85,6 +85,47 @@ local prefabs =
     "chessjunk",
     "pandoraschest",
     "sacred_chest",
+
+    -- GROTTO
+    "archive_centipede",
+    "archive_chandelier",
+    "archive_moon_statue",
+    "archive_orchestrina_main",
+    "archive_pillar",
+    "archive_moon_statue",
+    "archive_rune_statue",
+    "archive_security_desk",
+    "archive_lockbox_dispencer",
+    "archive_lockbox_dispencer_temp",
+    "archive_switch",
+    "archive_portal",
+    "archive_cookpot",
+    "archive_ambient_sfx",
+    "rubble2",
+    "rubble1",
+
+    "cavelightmoon",
+    "cavelightmoon_small",
+    "cavelightmoon_tiny",
+    "dustmothden",
+    "fissure_grottowar",
+    "nightmaregrowth",
+    "gestalt_guard",
+    "grotto_pool_big",
+    "grotto_pool_small",
+    "lightflier_flower",
+    "molebat",
+    "mushgnome_spawner",
+    "mushtree_moon",
+    "moonglass_stalactite1",
+    "moonglass_stalactite2",
+    "moonglass_stalactite3",
+    "dustmeringue",
+
+	"retrofit_archiveteleporter",
+	"retrofitted_grotterwar_spawnpoint",
+	"retrofitted_grotterwar_homepoint",
+ --   "wall_ruins_2",
 }
 
 local monsters =
@@ -131,9 +172,11 @@ local wormspawn =
 
     attack_delays =
     {
-        rare        = function() return TUNING.TOTAL_DAY_TIME * 10, math.random() * TUNING.TOTAL_DAY_TIME * 7 end,
-        occasional  = function() return TUNING.TOTAL_DAY_TIME * 8, math.random() * TUNING.TOTAL_DAY_TIME * 7 end,
-        frequent    = function() return TUNING.TOTAL_DAY_TIME * 6, math.random() * TUNING.TOTAL_DAY_TIME * 5 end,
+        intro 		= function() return TUNING.TOTAL_DAY_TIME * 6, math.random() * TUNING.TOTAL_DAY_TIME * 2.5 end,
+        rare 		= function() return TUNING.TOTAL_DAY_TIME * 7, math.random() * TUNING.TOTAL_DAY_TIME * 2.5 end,
+        occasional 	= function() return TUNING.TOTAL_DAY_TIME * 8, math.random() * TUNING.TOTAL_DAY_TIME * 2.5 end,
+        frequent 	= function() return TUNING.TOTAL_DAY_TIME * 9, math.random() * TUNING.TOTAL_DAY_TIME * 2.5 end,
+        crazy 		= function() return TUNING.TOTAL_DAY_TIME * 10, math.random() * TUNING.TOTAL_DAY_TIME * 2.5 end,
     },
 
     warning_speech = "ANNOUNCE_WORMS",
@@ -162,6 +205,9 @@ local function common_postinit(inst)
         inst:AddComponent("dsp")
         inst:AddComponent("colourcube")
         inst:AddComponent("hallucinations")
+
+        -- Grotto
+        inst:AddComponent("grottowaterfallsoundcontroller")
     end
 
     TheWorld.Map:SetUndergroundFadeHeight(5)
@@ -171,7 +217,9 @@ local function master_postinit(inst)
     --Spawners
     inst:AddComponent("shadowcreaturespawner")
     inst:AddComponent("shadowhandspawner")
+    inst:AddComponent("brightmarespawner")
     inst:AddComponent("toadstoolspawner")
+    inst:AddComponent("grottowarmanager")
 
     --gameplay
     inst:AddComponent("caveins")
@@ -183,6 +231,11 @@ local function master_postinit(inst)
     inst:AddComponent("forestresourcespawner") -- a cave version of this would be nice, but it serves it's purpose...
     inst:AddComponent("regrowthmanager")
     inst:AddComponent("desolationspawner")
+    inst:AddComponent("mermkingmanager")
+    inst:AddComponent("feasts")
+
+    inst:AddComponent("yotc_raceprizemanager")
+    inst:AddComponent("yotb_stagemanager")
 
     if METRICS_ENABLED then
         inst:AddComponent("worldoverseer")
@@ -191,9 +244,13 @@ local function master_postinit(inst)
     --cave specifics
     inst:AddComponent("hounded")
     inst.components.hounded:SetSpawnData(wormspawn)
+	inst.components.hounded.max_thieved_spawn_per_thief = 1
 
     --anr update retrofitting
     inst:AddComponent("retrofitcavemap_anr")
+
+    -- Archive
+    inst:AddComponent("archivemanager")
 
     return inst
 end

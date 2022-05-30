@@ -61,10 +61,7 @@ function LeashAndAvoid:DBString()
 end
 
 function LeashAndAvoid:GetHomePos()
-    if type(self.homepos) == "function" then
-        return self.homepos(self.inst)
-    end
-    return self.homepos
+    return FunctionOrValue(self.homepos, self.inst)
 end
 
 function LeashAndAvoid:GetDistFromHomeSq()
@@ -83,17 +80,11 @@ function LeashAndAvoid:IsOutsideReturnDist()
 end
 
 function LeashAndAvoid:GetMaxDistSq()
-    if type(self.maxdist) == "function" then
-        local dist = self.maxdist(self.inst)
-        return dist * dist
-    end
-    return self.maxdist * self.maxdist
+    local dist = FunctionOrValue(self.maxdist, self.inst)
+    return dist * dist
 end
 
 function LeashAndAvoid:GetReturnDistSq()
-    if type(self.returndist) == "function" then
-        local dist = self.returndist(self.inst)
-        return dist * dist
-    end
-    return self.returndist * self.returndist
+    local dist = FunctionOrValue(self.returndist, self.inst)
+    return dist * dist
 end

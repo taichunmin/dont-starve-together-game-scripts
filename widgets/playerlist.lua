@@ -14,15 +14,15 @@ local function GetCharacterPrefab(data)
 	if data == nil then
 		return ""
 	end
-	
+
 	if data.prefab and data.prefab ~= "" then
 		return data.prefab
 	end
-	
+
 	if data.lobbycharacter and data.lobbycharacter ~= "" then
 		return data.lobbycharacter
 	end
-	
+
 	return ""
 end
 
@@ -38,7 +38,7 @@ local function doButtonFocusHookups(playerListing, nextWidgets)
     end
 
     if playerListing.viewprofile:IsVisible() then
-        if playerListing.mute:IsVisible() then 
+        if playerListing.mute:IsVisible() then
             playerListing.viewprofile:SetFocusChangeDir(MOVE_RIGHT, playerListing.mute)
         else
             playerListing.viewprofile:SetFocusChangeDir(MOVE_RIGHT, nextWidgets.right)
@@ -93,7 +93,7 @@ local function listingConstructor(v, i, parent, nextWidgets)
 
     playerListing.adminBadge = playerListing:AddChild(ImageButton("images/avatars.xml", "avatar_admin.tex", "avatar_admin.tex", "avatar_admin.tex", nil, nil, {1,1}, {0,0}))
     playerListing.adminBadge:Disable()
-    playerListing.adminBadge:SetPosition(-89+nudge_x+name_badge_nudge_x,-10,0)  
+    playerListing.adminBadge:SetPosition(-89+nudge_x+name_badge_nudge_x,-10,0)
     playerListing.adminBadge.image:SetScale(.18)
     playerListing.adminBadge.scale_on_focus = false
     playerListing.adminBadge:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.ADMIN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
@@ -131,18 +131,18 @@ local function listingConstructor(v, i, parent, nextWidgets)
 
     -- Testing only
     if colours then
-        playerListing.name:SetColour(unpack(colours[math.random(#colours)])) 
+        playerListing.name:SetColour(unpack(colours[math.random(#colours)]))
     else
         playerListing.name:SetColour(unpack(not empty and v.colour or DEFAULT_PLAYER_COLOUR))
     end
 
     local owner = TheNet:GetUserID()
-    
+
     playerListing.viewprofile = playerListing:AddChild(ImageButton("images/scoreboard.xml", "addfriend.tex", "addfriend.tex", "addfriend.tex", "addfriend.tex", nil, {1,1}, {0,0}))
     playerListing.viewprofile:SetPosition(60+nudge_x,0,0)
     playerListing.viewprofile:SetNormalScale(0.234)
     playerListing.viewprofile:SetFocusScale(0.234*1.1)
-    playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
+    playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
     playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
     playerListing.viewprofile:SetOnClick(
         function()
@@ -162,7 +162,7 @@ local function listingConstructor(v, i, parent, nextWidgets)
     playerListing.mute:SetPosition(85+nudge_x,0,0)
     playerListing.mute:SetNormalScale(0.234)
     playerListing.mute:SetFocusScale(0.234*1.1)
-    playerListing.mute:SetFocusSound("dontstarve/HUD/click_mouseover")
+    playerListing.mute:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
     playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
     playerListing.mute.image.inst.OnUpdateVoice = function(inst)
         inst.widget:SetTint(unpack(playerListing.userid ~= nil and TheNet:IsVoiceActive(playerListing.userid) and VOICE_ACTIVE_COLOUR or VOICE_IDLE_COLOUR))
@@ -196,13 +196,13 @@ local function listingConstructor(v, i, parent, nextWidgets)
                 TheNet:SetPlayerMuted(playerListing.userid, playerListing.isMuted)
                 if playerListing.isMuted then
                     playerListing.mute.image_focus = "mute.tex"
-                    playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
-                    playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex") 
+                    playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
+                    playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex")
                     playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
                 else
                     playerListing.mute.image_focus = "chat.tex"
                     playerListing.mute.image:SetTexture("images/scoreboard.xml", "chat.tex")
-                    playerListing.mute:SetTextures("images/scoreboard.xml", "chat.tex") 
+                    playerListing.mute:SetTextures("images/scoreboard.xml", "chat.tex")
                     playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE)
                 end
                 playerListing.mute.image.inst:SetMuted(playerListing.isMuted)
@@ -211,8 +211,8 @@ local function listingConstructor(v, i, parent, nextWidgets)
 
     if playerListing.isMuted then
         playerListing.mute.image_focus = "mute.tex"
-        playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
-        playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex") 
+        playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
+        playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex")
         playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
     end
     playerListing.mute.image.inst:SetMuted(playerListing.isMuted)
@@ -286,12 +286,12 @@ local function UpdatePlayerListing(widget, data, index)
     if widget.isMuted then
         widget.mute.image_focus = "mute.tex"
         widget.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
-        widget.mute:SetTextures("images/scoreboard.xml", "mute.tex")  
+        widget.mute:SetTextures("images/scoreboard.xml", "mute.tex")
         widget.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
     else
         widget.mute.image_focus = "chat.tex"
         widget.mute.image:SetTexture("images/scoreboard.xml", "chat.tex")
-        widget.mute:SetTextures("images/scoreboard.xml", "chat.tex") 
+        widget.mute:SetTextures("images/scoreboard.xml", "chat.tex")
         widget.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE)
     end
 
@@ -326,7 +326,7 @@ function PlayerList:GetDisplayName(clientrecord)
 end
 
 function PlayerList:BuildPlayerList(players, nextWidgets)
-    if not self.player_list then 
+    if not self.player_list then
         self.player_list = self.proot:AddChild(Widget("player_list"))
         self.player_list:SetPosition(75,RESOLUTION_Y-185,0)
     end
@@ -369,7 +369,7 @@ function PlayerList:BuildPlayerList(players, nextWidgets)
 
     if not self.players_number then
         self.players_number = self.player_list:AddChild(Text(NEWFONT, 20, "x/y"))
-        self.players_number:SetPosition(73, 100) 
+        self.players_number:SetPosition(73, 100)
         self.players_number:SetRegionSize(100,20)
         self.players_number:SetHAlign(ANCHOR_RIGHT)
         self.players_number:SetColour(0, 0, 0, 1)
@@ -418,7 +418,7 @@ function PlayerList:GetPlayerTable()
             break
         end
     end
-    return ClientObjs 
+    return ClientObjs
 end
 
 function PlayerList:Refresh(next_widgets)

@@ -194,6 +194,40 @@ function Input:OnText(text)
     self.ontextinput:HandleEvent("text", text)
 end
 
+-- Specifically for floating text input on Steam Deck
+function Input:OnFloatingTextInputDismissed()			-- called from C++
+	if self.vk_text_widget then
+		self.vk_text_widget:OnVirtualKeyboardClosed()
+		self.vk_text_widget = nil
+	end
+end
+
+function Input:AbortVirtualKeyboard(for_text_widget)
+	if for_text_widget ~= nil and self.vk_text_widget == for_text_widget then
+		self.vk_text_widget = nil
+		TheInputProxy:CloseVirtualKeyboard()
+	end
+end
+
+function Input:OpenVirtualKeyboard(text_widget)
+	if not self.vk_text_widget then
+		local x, y = text_widget.inst.UITransform:GetWorldPosition()
+		local w, h = text_widget:GetRegionSize()
+
+		--local _split = text_widget:GetString():split(",")
+		--x = _split[1] ~= nil and tonumber(_split[1]) or 0
+		--y = _split[2] ~= nil and tonumber(_split[2]) or 0
+		--print("_split", x, y)
+
+		if TheInputProxy:OpenVirtualKeyboard(x, y, w, h, self.allow_newline) then	
+			self.vk_text_widget = text_widget
+			return true
+		end
+	end
+
+	return false
+end
+
 function Input:OnGesture(gesture)
     self.ongesture:HandleEvent(gesture)
 end
@@ -364,7 +398,7 @@ function Input:GetStringIsButtonImage(str)
 end
 
 function Input:PlatformUsesVirtualKeyboard()
-	if IsConsole() then
+	if IsConsole() or IsSteamDeck() then
 		return true
 	end
 
@@ -375,6 +409,10 @@ end
 ---------------- Globals
 
 TheInput = Input()
+
+function OnFloatingTextInputDismissed() -- called from C++
+    TheInput:OnFloatingTextInputDismissed()
+end
 
 function OnPosition(x, y)
     TheInput:UpdatePosition(x, y)

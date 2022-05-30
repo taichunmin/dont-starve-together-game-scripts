@@ -16,7 +16,7 @@ end
 function SinkholeSpawner:StartSinkholes()
     local weighted_players = {}
     local num_players = 0
-    for i, v in ipairs(TheNet:GetClientTable()) do
+    for i, v in ipairs(TheNet:GetClientTable() or {}) do
 		local player = GetPlayerFromClientTable(v)
         if #v.prefab > 0 and (player == nil or TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())) then
             weighted_players[v] = math.sqrt(v.playerage or 1)
@@ -139,18 +139,19 @@ function SinkholeSpawner:DoTargetAttack(targetinfo)
     end
 end
 
+local SINKHOLD_BLOCKER_TAGS = { "antlion_sinkhole_blocker" }
 function SinkholeSpawner:SpawnSinkhole(spawnpt)
     local x = GetRandomWithVariance(spawnpt.x, TUNING.ANTLION_SINKHOLE.RADIUS)
     local z = GetRandomWithVariance(spawnpt.z, TUNING.ANTLION_SINKHOLE.RADIUS)
 
     local function IsValidSinkholePosition(offset)
         local x1, z1 = x + offset.x, z + offset.z
-        if #TheSim:FindEntities(x1, 0, z1, TUNING.ANTLION_SINKHOLE.RADIUS * 1.9, { "antlion_sinkhole_blocker" }) > 0 then
+        if #TheSim:FindEntities(x1, 0, z1, TUNING.ANTLION_SINKHOLE.RADIUS * 1.9, SINKHOLD_BLOCKER_TAGS) > 0 then
             return false
         end
         for dx = -1, 1 do
             for dz = -1, 1 do
-                if not TheWorld.Map:IsPassableAtPoint(x1 + dx * TUNING.ANTLION_SINKHOLE.RADIUS, 0, z1 + dz * TUNING.ANTLION_SINKHOLE.RADIUS) then
+                if not TheWorld.Map:IsPassableAtPoint(x1 + dx * TUNING.ANTLION_SINKHOLE.RADIUS, 0, z1 + dz * TUNING.ANTLION_SINKHOLE.RADIUS, false, true) then
                     return false
                 end
             end

@@ -13,7 +13,7 @@ local TextButton = Class(Button, function(self, name)
     self:SetTextFocusColour({1,1,1,1})
 end)
 
-	
+
 function TextButton:GetSize()
     return self.image:GetSize()
 end

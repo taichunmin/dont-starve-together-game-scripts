@@ -1,7 +1,7 @@
 
 -------------------------------------------------------------------------------
 -- SourceModifierList manages modifiers applied by external sources.
---   Optionally, it will also handle multiple modifiers from the same source, 
+--   Optionally, it will also handle multiple modifiers from the same source,
 --   provided a key is passed in for each modifiers
 -------------------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ SourceModifierList = Class(function(self, inst, base_value, fn)
         self._modifier = 1
         self._base = 1
     end
-    
+
     self._fn = fn or SourceModifierList.multiply
 end)
 
@@ -50,7 +50,7 @@ local function RecalculateModifier(inst)
 end
 
 -------------------------------------------------------------------------------
--- Source can be an object or a name. If it is an object, then it will handle 
+-- Source can be an object or a name. If it is an object, then it will handle
 --   removing the multiplier if the object is forcefully removed from the game.
 -- Key is optional if you are only going to have one multiplier from a source.
 function SourceModifierList:SetModifier(source, m, key)
@@ -61,7 +61,7 @@ function SourceModifierList:SetModifier(source, m, key)
     if key == nil then
         key = "key"
     end
-    
+
     if m == nil or m == self._base then
         self:RemoveModifier(source, key)
         return
@@ -72,7 +72,7 @@ function SourceModifierList:SetModifier(source, m, key)
         self._modifiers[source] = {
             modifiers = { [key] = m },
         }
-        
+
         -- If the source is an object, then add a onremove event listener to cleanup if source is removed from the game
         if type(source) == "table" then
             self._modifiers[source].onremove = function(source)
@@ -82,7 +82,7 @@ function SourceModifierList:SetModifier(source, m, key)
 
             self.inst:ListenForEvent("onremove", self._modifiers[source].onremove, source)
         end
-        
+
         RecalculateModifier(self)
     elseif src_params.modifiers[key] ~= m then
         src_params.modifiers[key] = m
@@ -104,7 +104,7 @@ function SourceModifierList:RemoveModifier(source, key)
             return
         end
     end
-    
+
     --remove the entire source
     if src_params.onremove ~= nil then
         self.inst:RemoveEventCallback("onremove", src_params.onremove, source)
@@ -130,7 +130,7 @@ function SourceModifierList:CalculateModifierFromSource(source, key)
 end
 
 -------------------------------------------------------------------------------
--- 
+--
 function SourceModifierList:CalculateModifierFromKey(key)
     local m = self._base
     for source, src_params in pairs(self._modifiers) do

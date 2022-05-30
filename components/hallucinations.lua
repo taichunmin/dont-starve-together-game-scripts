@@ -101,6 +101,9 @@ HALLUCINATION_TYPES.creepyeyes.spawnfn = function(inst, hallucination)
     end
 end
 
+local NEARFIRE_MUST_TAGS = { "fire" }
+local NEARFIRE_CANT_TAGS = { "_equippable" }
+
 HALLUCINATION_TYPES.shadowwatcher.spawnfn = function(inst, hallucination)
     local sanity = _player.replica.sanity:IsInsanityMode() and _player.replica.sanity:GetPercent() or 1
     if sanity > .5 then
@@ -110,7 +113,7 @@ HALLUCINATION_TYPES.shadowwatcher.spawnfn = function(inst, hallucination)
     end
     local maxcount = sanity > .3 and 1 or 2
     if hallucination.count < maxcount then
-        local fire = FindEntity(_player, 60, nil, { "fire" }, { "_equippable" }, _fueltags)
+        local fire = FindEntity(_player, 60, nil, NEARFIRE_MUST_TAGS, NEARFIRE_CANT_TAGS, _fueltags)
         if fire ~= nil then
             local angle = math.random() * 360
             local x, y, z = fire.Transform:GetWorldPosition()

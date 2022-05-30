@@ -8,7 +8,7 @@ end
 --end
 
 return {
-	    OnCreate=OnCreate, 
+	    OnCreate=OnCreate,
         --OnLoad=OnLoad
 	   }
 

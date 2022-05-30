@@ -39,10 +39,11 @@ local function toground(inst)
     end
 end
 
+local SOUL_TAGS = { "soul" }
 local function OnDropped(inst)
     if inst.components.stackable ~= nil and inst.components.stackable:IsStack() then
         local x, y, z = inst.Transform:GetWorldPosition()
-        local num = 10 - #TheSim:FindEntities(x, y, z, 4, { "soul" })
+        local num = 10 - #TheSim:FindEntities(x, y, z, 4, SOUL_TAGS)
         if num > 0 then
             for i = 1, math.min(num, inst.components.stackable:StackSize()) do
                 local soul = inst.components.stackable:Get()

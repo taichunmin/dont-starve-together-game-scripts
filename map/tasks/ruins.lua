@@ -227,7 +227,27 @@ AddTask("AtriumMaze", {
     },
     room_bg = GROUND.TILES,
     maze_tiles = {rooms = {"atrium_hallway", "atrium_hallway_two", "atrium_hallway_three"}, bosses = {"atrium_hallway_three"}, special = {start={"atrium_start"}, finish={"atrium_end"}}, bridge_ground=GROUND.FAKE_GROUND},
-    background_room="AtriumMazeRooms", 
+    background_room="AtriumMazeRooms",
     make_loop = true,
     colour={r=0.6,g=0.6,b=0.0,a=1},
+})
+
+AddTask("ArchiveMaze", {
+    locks={LOCKS.ARCHIVE},
+    keys_given= {},
+    room_tags = {"nocavein"},
+    required_prefabs = {"archive_orchestrina_main", "archive_lockbox_dispencer", "archive_lockbox_dispencer", "archive_lockbox_dispencer"},
+    entrance_room = "ArchiveMazeEntrance",
+    room_choices =
+    {
+        ["ArchiveMazeRooms"] = 4,
+    },
+    room_bg = GROUND.ARCHIVE,
+--    maze_tiles = {rooms = {"archive_hallway"}, bosses = {"archive_hallway"}, keyroom = {"archive_keyroom"}, archive = {start={"archive_start"}, finish={"archive_end"}}, bridge_ground=GROUND.FAKE_GROUND},
+    maze_tiles = {rooms = {"archive_hallway","archive_hallway_two"}, bosses = {"archive_hallway"}, archive = {keyroom = {"archive_keyroom"}}, special = {finish={"archive_end"},start={"archive_start"}},  bridge_ground=GROUND.FAKE_GROUND},
+    background_room="ArchiveMazeRooms",
+	cove_room_chance = 0,
+	cove_room_max_edges = 0,
+    make_loop = true,
+    colour={r=1,g=0,b=0.0,a=1},
 })

@@ -67,7 +67,7 @@ AddRoom("SymmetryRoom", {
 					})
 AddRoom("TEST_ROOM", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
-					value = GROUND.FUNGUS, 
+					value = GROUND.FUNGUS,
 					contents =  {
 									countstaticlayouts={
 										["test"]=1,

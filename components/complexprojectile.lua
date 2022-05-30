@@ -18,6 +18,8 @@ local ComplexProjectile = Class(function(self, inst)
 
     self.usehigharc = true
 
+	--self.ismeleeweapon = false -- setting to true allows for melee attacks on left lick and toss on right click
+
     --NOTE: projectile and complexprojectile components are mutually
     --      exclusive because they share this tag!
     --V2C: Recommended to explicitly add tag to prefab pristine state
@@ -84,8 +86,8 @@ function ComplexProjectile:CalculateTrajectory(startPos, endPos, speed)
     end
 
     local cosangleXspeed = math.cos(angle) * speed
-    self.velocity.x = dx / range * cosangleXspeed
-    self.velocity.z = dz / range * cosangleXspeed
+    self.velocity.x = cosangleXspeed
+    self.velocity.z = 0.0
     self.velocity.y = math.sin(angle) * speed
 end
 
@@ -94,9 +96,11 @@ function ComplexProjectile:Launch(targetPos, attacker, owningweapon)
     self.owningweapon = owningweapon or self
     self.attacker = attacker
 
+	self.inst:ForceFacePoint(targetPos:Get())
+
     local offset = self.launchoffset
     if attacker ~= nil and offset ~= nil then
-        local facing_angle = attacker.Transform:GetRotation() * DEGREES
+        local facing_angle = self.inst.Transform:GetRotation() * DEGREES
         pos.x = pos.x + offset.x * math.cos(facing_angle)
         pos.y = pos.y + offset.y
         pos.z = pos.z - offset.x * math.sin(facing_angle)
@@ -126,10 +130,12 @@ function ComplexProjectile:Launch(targetPos, attacker, owningweapon)
         self.onlaunchfn(self.inst)
     end
 
+    self.inst:AddTag("activeprojectile")
     self.inst:StartUpdatingComponent(self)
 end
 
 function ComplexProjectile:Hit(target)
+    self.inst:RemoveTag("activeprojectile")
     self.inst:StopUpdatingComponent(self)
 
     self.inst.Physics:SetMotorVel(0,0,0)

@@ -30,11 +30,11 @@ end)
 function FestivalEventScreen:DoInit()
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
     self.fg = self:AddChild(TEMPLATES.ReduxForeground())
-    
+
     if IsFestivalEventActive(FESTIVAL_EVENTS.QUAGMIRE) then
         self.bg_anim = self.root:AddChild(TEMPLATES.QuagmireAnim())
     elseif IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
-		self.bg = self.root:AddChild(TEMPLATES.PlainBackground())	
+		self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
         --self.bg = self.root:AddChild(TEMPLATES.BoarriorBackground())
     end
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.FESTIVALEVENTSCREEN.TITLE[string.upper(WORLD_FESTIVAL_EVENT)]))
@@ -52,7 +52,7 @@ function FestivalEventScreen:DoInit()
 		self.event_details = self.root:AddChild(FestivalEventScreenInfo("images/quagmire_frontend.xml", "gorge_tournament_info.tex", nil, "https://forums.kleientertainment.com/topic/93336-the-gorge-tournament-has-begun/"))
 		local menu_pos = self.menu:GetPosition()
 		self.event_details:SetPosition(menu_pos.x - 40, menu_pos.y + 280)
-	else 
+	else
 		self.event_details = self.root:AddChild(FestivalEventScreenInfo("images/lavaarena_unlocks.xml", "community_unlock_info.tex", STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.URL_LABEL, "https://forums.kleientertainment.com/forge2018/"))
 		local menu_pos = self.menu:GetPosition()
 		self.event_details:SetPosition(menu_pos.x - 20, menu_pos.y + 280)
@@ -86,12 +86,12 @@ function FestivalEventScreen:DoInit()
 		self.menu:SetFocusChangeDir(MOVE_UP, self.event_details)
 		self.event_details:SetFocusChangeDir(MOVE_DOWN, self.menu)
 	end
-		
+
 end
 
 function FestivalEventScreen:_MakeMenu()
     self.tooltip = self.root:AddChild(TEMPLATES.ScreenTooltip())
-	
+
     local button_quickmatch = TEMPLATES.MenuButton(STRINGS.UI.FESTIVALEVENTSCREEN.QUICKMATCH, function() self:OnQuickmatchButton() end, STRINGS.UI.FESTIVALEVENTSCREEN.TOOLTIP_QUICKMATCH, self.tooltip)
     local button_host       = TEMPLATES.MenuButton(STRINGS.UI.FESTIVALEVENTSCREEN.HOST,       function() self:OnHostButton() end,       STRINGS.UI.FESTIVALEVENTSCREEN.TOOLTIP_HOST,       self.tooltip)
     local button_browse     = TEMPLATES.MenuButton(STRINGS.UI.FESTIVALEVENTSCREEN.BROWSE,     function() self:OnBrowseButton() end,     STRINGS.UI.FESTIVALEVENTSCREEN.TOOLTIP_BROWSE,     self.tooltip)
@@ -141,7 +141,7 @@ local function CalcQuickJoinServerScoreForEvent(server)
 end
 
 function FestivalEventScreen:OnQuickmatchButton()
-    TheFrontEnd:PushScreen(QuickJoinScreen(self, false, self.session_data, 
+    TheFrontEnd:PushScreen(QuickJoinScreen(self, false, self.session_data,
 		GetFestivalEventInfo().GAME_MODE,
 		CalcQuickJoinServerScoreForEvent,
 		function() self:OnHostButton() end,
@@ -226,7 +226,7 @@ function FestivalEventScreen:OnBecomeActive()
 	if self.popup_backout then
 		return
 	end
-	
+
     FestivalEventScreen._base.OnBecomeActive(self)
 
     if not self.shown then
@@ -242,7 +242,7 @@ function FestivalEventScreen:OnBecomeActive()
     self.leaving = nil
 
 	if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
-		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY[WORLD_FESTIVAL_EVENT], 
+		TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_TITLE, STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BODY[WORLD_FESTIVAL_EVENT],
 			{
 				{text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
 						SimReset()
@@ -258,7 +258,7 @@ end
 
 function FestivalEventScreen:OnControl(control, down)
 	if self.eventbook ~= nil and self.eventbook:OnControlTabs(control, down) then
-		return true 
+		return true
 	end
 
     if FestivalEventScreen._base.OnControl(self, control, down) then return true end

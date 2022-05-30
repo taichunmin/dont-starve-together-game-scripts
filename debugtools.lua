@@ -104,7 +104,7 @@ end
 
 local function SortByTypeAndValue(a, b)
     local typea, typeb = type(a), type(b)
-    return typea < typeb or (typea == typeb and a < b)
+    return typea < typeb or (typea == typeb and (typea ~= "table" and a < b))
 end
 
 function dumptablequiet(obj, indent, recurse_levels, visit_table)
@@ -165,7 +165,7 @@ function tabletodictstring(obj, fn)
 	local s = "{ "
 	local first = true
 	for k,v in pairs(obj) do
-		if not first then 
+		if not first then
 			s = s..", "
 		else
 			first = false
@@ -183,7 +183,7 @@ function tabletoliststring(obj, fn)
 	local s = "[ "
 	local first = true
 	for i,v in ipairs(obj) do
-		if not first then 
+		if not first then
 			s = s..", "
 		else
 			first = false
@@ -209,14 +209,14 @@ dir = string.gsub(dir, "\\", "/")
 local function oldprint(...)
         local str = ''
         local arg = {n=select('#',...),...}
-     
+
         for i = 1, arg.n do
             if str ~= '' then str = str .. '\t' end
             str = str .. tostring( arg[i] )
         end
-     
+
         --str = str .. '\n'
-     
+
         TheSim:LuaPrint( str )
 end
 
@@ -224,7 +224,7 @@ end
 -- Output directly to stdout after conversion to string representation - no extra cruft
 local function DirectIO(...)
     local arg = {n=select('#',...),...}
- 
+
     for i = 1, arg.n do
         io.stdout:write( tostring( arg[i] ) )
     end
@@ -238,7 +238,7 @@ end
    If DPRINT_USERNAME is defined, then will only print if this equals the string returned by TheSim:GetUsersName()
    if DPRINT_PRINT_SOURCELINE is true, acts like print and outputs calling file and line number
 --]]
-    
+
 
 function dprint(...)
     global("CHEATS_ENABLE_DPRINT")
@@ -250,7 +250,7 @@ function dprint(...)
     end
 
     if DPRINT_USERNAME then
-        if type(TheSim.GetUsersName) == "function" then 
+        if type(TheSim.GetUsersName) == "function" then
             userName = TheSim:GetUsersName()
         end
         if userName ~= DPRINT_USERNAME then
@@ -281,7 +281,7 @@ function IOprint(...)
     end
 
     if DPRINT_USERNAME then
-        if type(TheSim.GetUsersName) == "function" then 
+        if type(TheSim.GetUsersName) == "function" then
             userName = TheSim:GetUsersName()
         end
         if userName ~= DPRINT_USERNAME then
@@ -299,7 +299,7 @@ function eprint(inst,...)
 end
 
 -- Add debug hook to any object:  Author DForsey
--- Usage:  
+-- Usage:
 --      EnableDebugOnEntity(thing)              turns on all debug printing for this thing (same as calling with (thing,"all") )
 --      EnableDebugOnEntity(thing,false)        turns off all debug printing for this thing, resets all items and/or priority
 --      EnableDebugOnEntity(thing,number)       turns on debug printing for requests with priority<number
@@ -398,34 +398,34 @@ function DrawLine(pos1,pos2)
 	draw:SetZ(0.1)
 	draw:Line(pos1.x, pos1.z, pos2.x,pos2.y, 255, 255, 255, 255)
     draw:Flush()
-	
---[[	
+
+--[[
 	for idx,node in ipairs(graph.nodes) do
 		local colour = graph.colours[node.c]
-		
+
 		for i =1, #node.poly-1 do
 			draw:Line(node.poly[i][1], node.poly[i][2], node.poly[i+1][1], node.poly[i+1][2], colour.r, colour.g, colour.b, 255)
 		end
 		draw:Line(node.poly[1][1], node.poly[1][2], node.poly[#node.poly][1], node.poly[#node.poly][2], colour.r, colour.g, colour.b, 255)
-		
+
 		draw:Poly(node.cent[1], node.cent[2], colour.r, colour.g, colour.b, colour.a, node.poly)
-			
+
 		draw:String(graph.ids[idx].."("..node.cent[1]..","..node.cent[2]..")", 	node.cent[1], node.cent[2], node.ts)
-	end 
-	
+	end
+
 	draw:SetZ(0.15)
 
 	for idx,edge in ipairs(graph.edges) do
 		if edge.n1 ~= nil and edge.n2 ~= nil then
 			local colour = graph.colours[edge.c]
-			
+
 			local n1 = graph.nodes[edge.n1]
 			local n2 = graph.nodes[edge.n2]
 			if n1 ~= nil and n2 ~= nil then
 				draw:Line(n1.cent[1], n1.cent[2], n2.cent[1], n2.cent[2], colour.r, colour.g, colour.b, colour.a)
 			end
 		end
-	end 
+	end
 --]]
 end
 

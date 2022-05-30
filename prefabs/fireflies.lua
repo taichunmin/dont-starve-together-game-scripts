@@ -26,6 +26,27 @@ local function resolvefaderate(x)
         or INTENSITY * FRAMES / ((32 - x) / 31 - .75)
 end
 
+local function cancelworktask(inst)
+    if inst._disableworktask ~= nil then
+        inst._disableworktask:Cancel()
+        inst._disableworktask = nil
+    end
+end
+
+local function disableworkcb(inst)
+    inst.components.workable:SetWorkable(false)
+end
+
+local function disablework(inst)
+    cancelworktask(inst)
+    inst._disableworktask = inst:DoTaskInTime(1.5 + math.random(), disableworkcb)
+end
+
+local function enablework(inst)
+    cancelworktask(inst)
+    inst.components.workable:SetWorkable(true)
+end
+
 local function updatefade(inst, rate)
     inst._fadeval:set_local(math.clamp(inst._fadeval:value() + rate, 0, INTENSITY))
 
@@ -39,6 +60,7 @@ local function updatefade(inst, rate)
         inst._fadetask = nil
         if inst._fadeval:value() <= 0 and TheWorld.ismastersim then
             inst:AddTag("NOCLICK")
+            disablework(inst)
             inst.Light:Enable(false)
         end
     end
@@ -49,6 +71,7 @@ local function fadein(inst)
     if not ismastersim or resolvefaderate(inst._faderate:value()) <= 0 then
         if ismastersim then
             inst:RemoveTag("NOCLICK")
+            enablework(inst)
             inst.Light:Enable(true)
             inst.AnimState:PlayAnimation("swarm_pre")
             inst.AnimState:PushAnimation("swarm_loop", true)
@@ -151,14 +174,10 @@ local function fn()
     inst.entity:AddLight()
     inst.entity:AddNetwork()
 
-    inst:AddTag("NOBLOCK")
-    inst:AddTag("NOCLICK")
-
     inst.Light:SetFalloff(1)
-    inst.Light:SetIntensity(INTENSITY)
+    inst.Light:SetIntensity(0)
     inst.Light:SetRadius(1)
     inst.Light:SetColour(180/255, 195/255, 150/255)
-    inst.Light:SetIntensity(0)
     inst.Light:Enable(false)
     inst.Light:EnableClientModulation(true)
 
@@ -168,7 +187,11 @@ local function fn()
     inst.AnimState:SetBuild("fireflies")
     inst.AnimState:SetRayTestOnBB(true)
 
+    inst:AddTag("firefly")
     inst:AddTag("cattoyairborne")
+    inst:AddTag("flying")
+    inst:AddTag("NOBLOCK")
+    inst:AddTag("NOCLICK")
 
     inst._fadeval = net_float(inst.GUID, "fireflies._fadeval")
     inst._faderate = net_smallbyte(inst.GUID, "fireflies._faderate", "onfaderatedirty")
@@ -191,6 +214,7 @@ local function fn()
     inst.components.workable:SetWorkAction(ACTIONS.NET)
     inst.components.workable:SetWorkLeft(1)
     inst.components.workable:SetOnFinishCallback(onworked)
+    inst.components.workable:SetWorkable(false)
 
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
@@ -201,7 +225,6 @@ local function fn()
     inst.components.inventoryitem:SetOnPickupFn(onpickup)
     inst.components.inventoryitem.canbepickedup = false
     inst.components.inventoryitem.canbepickedupalive = true
-    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("tradable")
 

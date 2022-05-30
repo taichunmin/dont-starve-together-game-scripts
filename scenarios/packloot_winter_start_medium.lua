@@ -28,7 +28,7 @@ local function OnCreate(inst, scenariorunner)
                 chance = 0.66,
             },
             {
-                item = "tools_blueprint",
+                item = "blueprint",
             },
         },
 
@@ -54,7 +54,7 @@ local function OnCreate(inst, scenariorunner)
                 item = "redgem",
             },
             {
-                item = "magic_blueprint",
+                item = "blueprint",
             },
         },
 
@@ -68,7 +68,7 @@ local function OnCreate(inst, scenariorunner)
                 item = "bluegem",
             },
             {
-                item = "magic_blueprint",
+                item = "blueprint",
             },
         },
 
@@ -79,7 +79,7 @@ local function OnCreate(inst, scenariorunner)
                 count = math.random(3, 5),
             },
             {
-                item = "magic_blueprint",
+                item = "blueprint",
             },
         },
 
@@ -94,7 +94,7 @@ local function OnCreate(inst, scenariorunner)
                 count = math.random(4, 8),
             },
             {
-                item = "structures_blueprint",
+                item = "blueprint",
             },
         },
 
@@ -109,18 +109,18 @@ local function OnCreate(inst, scenariorunner)
                 count = math.random(5, 10)
             },
             {
-                item = "dress_blueprint",
+                item = "blueprint",
             },
         },
 
         --set8
         {
             {
-                item = "survival_blueprint",
+                item = "blueprint",
                 count = 2,
             },
             {
-                item = "refine_blueprint",
+                item = "blueprint",
                 count = 2,
             },
         },

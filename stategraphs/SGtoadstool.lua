@@ -1,8 +1,13 @@
 require("stategraphs/commonstates")
 
+local DESTROYSTUFF_IGNORE_TAGS = { "INLIMBO", "mushroomsprout", "NET_workable" }
+local BOUNCESTUFF_MUST_TAGS = { "_inventoryitem" }
+local BOUNCESTUFF_CANT_TAGS = { "locomotor", "INLIMBO" }
+SPORECLOUD_TAGS = { "sporecloud" }
+
 local function DestroyStuff(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 3, nil, { "INLIMBO", "mushroomsprout", "NET_workable" })
+    local ents = TheSim:FindEntities(x, y, z, 3, nil, DESTROYSTUFF_IGNORE_TAGS)
     for i, v in ipairs(ents) do
         if v:IsValid() and
             v.components.workable ~= nil and
@@ -36,7 +41,7 @@ local function BounceStuff(inst)
         inst.sg.mem.recentlybounced = {}
     end
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 6, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, 6, BOUNCESTUFF_MUST_TAGS, BOUNCESTUFF_CANT_TAGS)
     for i, v in ipairs(ents) do
         if v:IsValid() and not (v.components.inventoryitem.nobounce or inst.sg.mem.recentlybounced[v]) and v.Physics ~= nil and v.Physics:IsActive() then
             local distsq = v:GetDistanceSqToPoint(x, y, z)
@@ -162,7 +167,7 @@ local events =
     EventHandler("attacked", function(inst)
         if not inst.components.health:IsDead() and
             (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("caninterrupt")) and
-            (inst.sg.mem.last_hit_time or 0) + inst.hit_recovery < GetTime() then
+            not CommonHandlers.HitRecoveryDelay(inst) then
             inst.sg:GoToState("hit")
         end
     end),
@@ -382,7 +387,7 @@ local states =
             inst.components.locomotor:StopMoving()
             inst.AnimState:PlayAnimation("hit")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/toad_stool/hit")
-            inst.sg.mem.last_hit_time = GetTime()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         timeline =
@@ -438,7 +443,7 @@ local states =
             end),
             TimeEvent(35 * FRAMES, function(inst)
                 local x, y, z = inst.Transform:GetWorldPosition()
-                for i, v in ipairs(TheSim:FindEntities(x, y, z, 8, { "sporecloud" })) do
+                for i, v in ipairs(TheSim:FindEntities(x, y, z, 8, SPORECLOUD_TAGS)) do
                     v:FinishImmediately()
                 end
                 ShakeIfClose(inst)
@@ -516,10 +521,7 @@ local states =
         events =
         {
             EventHandler("attacked", function(inst)
-                if not inst.components.health:IsDead() and
-                    (   inst.sg.mem.last_hit_time == nil or
-                        inst.sg.mem.last_hit_time + inst.hit_recovery < GetTime()
-                    ) then
+                if not inst.components.health:IsDead() and not CommonHandlers.HitRecoveryDelay(inst) then
                     inst.sg:GoToState("channel_hit")
                 end
             end),
@@ -561,10 +563,7 @@ local states =
         events =
         {
             EventHandler("attacked", function(inst)
-                if not inst.components.health:IsDead() and
-                    (   inst.sg.mem.last_hit_time == nil or
-                        inst.sg.mem.last_hit_time + inst.hit_recovery < GetTime()
-                    ) then
+                if not inst.components.health:IsDead() and not CommonHandlers.HitRecoveryDelay(inst) then
                     inst.sg.statemem.continuechannel = true
                     inst.sg:GoToState("channel_hit")
                 end
@@ -601,7 +600,7 @@ local states =
             inst.components.locomotor:StopMoving()
             inst.AnimState:PlayAnimation("hit_channeling")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/toad_stool/hit")
-            inst.sg.mem.last_hit_time = GetTime()
+            CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         timeline =

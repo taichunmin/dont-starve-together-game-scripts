@@ -4,10 +4,11 @@
 
 ShardPortals = {}
 
+ShardList = {}
 local ShardConnected = {}
 
 function Shard_IsWorldAvailable(world_id)
-    return ShardConnected[world_id or SHARDID.MASTER] ~= nil
+    return world_id ~= nil and (ShardConnected[world_id or SHARDID.MASTER] ~= nil or world_id == TheShard:GetShardId())
 end
 
 function Shard_IsWorldFull(world_id)
@@ -16,7 +17,7 @@ end
 
 --Called from ShardManager whenever a shard is connected or
 --disconnected, to automatically update known portal states
---On master server, slave tags and worldgen options are also passed through here
+--On master server, secondary tags and worldgen options are also passed through here
 --NOTE: should never be called with for our own world_id
 function Shard_UpdateWorldState(world_id, state, tags, world_data)
     local ready = state == REMOTESHARDSTATE.READY
@@ -30,8 +31,10 @@ function Shard_UpdateWorldState(world_id, state, tags, world_data)
             world_data = {}
         end
         ShardConnected[world_id] = { ready = true, tags = tags, world = world_data }
+        ShardList[world_id] = true
     else
         ShardConnected[world_id] = nil
+        ShardList[world_id] = nil
     end
 
     for k, v in pairs(ShardPortals) do

@@ -39,9 +39,10 @@ function Pollinator:CreateFlower()
     end
 end
 
+local FLOWERDENSITY_ONEOF_TAGS = {"FX", "NOBLOCK", "INLIMBO", "DECOR"}
 function Pollinator:CheckFlowerDensity()
     local x,y,z = self.inst.Transform:GetWorldPosition()
-    local nearbyentities = TheSim:FindEntities(x,y,z, self.distance, nil, {"FX", "NOBLOCK", "INLIMBO", "DECOR"})
+    local nearbyentities = TheSim:FindEntities(x,y,z, self.distance, nil, FLOWERDENSITY_ONEOF_TAGS)
     return #nearbyentities < self.maxdensity
 end
 

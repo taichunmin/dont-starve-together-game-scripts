@@ -37,6 +37,16 @@ LOADING_IMAGES =
         { atlas = "images/bg_loading_yotv1.xml", tex = "bg_image1.tex" },
     },
 
+    [SPECIAL_EVENTS.YOTC] =
+    {
+        { atlas = "images/bg_loading_yotc.xml", tex = "bg_image1.tex" },
+    },
+
+    [SPECIAL_EVENTS.YOT_CATCOON] =
+    {
+        { atlas = "images/bg_loading_yotcc1.xml", tex = "bg_image1.tex" },
+    },
+
     [SPECIAL_EVENTS.NONE] =
     {
         { atlas = "images/bg_spiral_fill1.xml", tex = "bg_image1.tex", spiral = true },
@@ -59,18 +69,10 @@ local SPECIAL_EVENT_DEPS =
         {
             assets =
             {
-                Asset("ANIM", "anim/dst_menu_halloween.zip"),
-            },
-        },
-        backend =
-        {
-            assets =
-            {
-                Asset("ANIM", "anim/player_spooked.zip"),
-            },
-            prefabs =
-            {
-                "battreefx",
+                Asset("ANIM", "anim/dst_menu_halloween2.zip"),
+                Asset("PKGREF", "anim/dst_menu_halloween.zip"),
+                Asset("PKGREF", "anim/dst_menu_wurt.zip"),
+                Asset("PKGREF", "anim/dst_menu_grotto.zip"),
             },
         },
     },
@@ -81,9 +83,35 @@ local SPECIAL_EVENT_DEPS =
         {
             assets =
             {
-                Asset("ANIM", "anim/dst_menu_feast.zip"),
-                Asset("ANIM", "anim/dst_menu_feast_bg.zip"),
+	            Asset("PKGREF", "anim/dst_menu_feast.zip"),
+                Asset("PKGREF", "anim/dst_menu_feast_bg.zip"),
                 Asset("PKGREF", "sound/music_frontend_winters_feast.fsb"),
+                Asset("PKGREF", "anim/dst_menu_inker_winter.zip"),
+                Asset("PKGREF", "anim/dst_menu_farming_winter.zip"),
+
+                Asset("ANIM", "anim/dst_menu_wolfgang.zip"),
+
+            },
+        },
+    },
+
+    [SPECIAL_EVENTS.CARNIVAL] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_carnival.zip"),
+                Asset("ANIM", "anim/dst_menu_webber_carnival.zip"),
+            },
+        },
+        backend =
+        {
+            assets =
+            {
+            },
+            prefabs =
+            {
             },
         },
     },
@@ -128,7 +156,45 @@ local SPECIAL_EVENT_DEPS =
         {
             assets =
             {
-                Asset("ANIM", "anim/pig_king_elite_build.zip"),
+            },
+        },
+    },
+
+    [SPECIAL_EVENTS.YOTC] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_carrat_bg.zip"),
+                Asset("ANIM", "anim/dst_menu_carrat.zip"),
+                Asset("ANIM", "anim/dst_menu_carrat_swaps.zip"),
+                Asset("SOUND", "sound/music_frontend_yotc.fsb"),
+            },
+        },
+    },
+
+    [SPECIAL_EVENTS.YOT_CATCOON] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_yot_catcoon.zip"),
+                --Asset("PKGREF", "sound/music_yot_catcoon.fsb"),
+            },
+        },
+    },
+
+    [SPECIAL_EVENTS.YOTB] =
+    {
+        frontend =
+        {
+            assets =
+            {
+                Asset("ANIM", "anim/dst_menu_beefalo.zip"),
+                Asset("ANIM", "anim/dst_menu_beefalo_bg.zip"),
+                Asset("SOUND", "sound/music_frontend_yotb.fsb"),
             },
         },
     },
@@ -139,14 +205,39 @@ local SPECIAL_EVENT_DEPS =
         {
             assets =
             {
+                Asset("ANIM", "anim/dst_menu_v2.zip"),
+                Asset("ANIM", "anim/dst_menu_v2_bg.zip"),
+                Asset("ANIM", "anim/dst_menu_wx.zip"),
+
+                Asset("PKGREF", "anim/dst_menu_wolfgang.zip"),
+                Asset("PKGREF", "anim/dst_menu_terraria.zip"),
                 Asset("PKGREF", "anim/dst_menu.zip"),
                 Asset("PKGREF", "anim/dst_menu_winona.zip"),
                 Asset("PKGREF", "anim/dst_menu_wortox.zip"),
                 Asset("PKGREF", "anim/dst_menu_willow.zip"),
                 Asset("PKGREF", "anim/dst_menu_wormwood.zip"),
                 Asset("PKGREF", "anim/dst_menu_warly.zip"),
-                Asset("ANIM", "anim/dst_menu_woodie.zip"),
-                Asset("ANIM", "anim/dst_menu_lunacy.zip"),
+                Asset("PKGREF", "anim/dst_menu_lunacy.zip"),
+                Asset("PKGREF", "anim/dst_menu_woodie.zip"),
+                Asset("PKGREF", "anim/dst_menu_rot2.zip"),
+                Asset("PKGREF", "anim/dst_menu_inker.zip"),
+                Asset("PKGREF", "anim/dst_menu_wendy.zip"),
+                Asset("PKGREF", "anim/dst_menu_wes.zip"),
+                Asset("PKGREF", "anim/dst_menu_shesells.zip"),
+                Asset("PKGREF", "anim/dst_menu_walter.zip"),
+                Asset("PKGREF", "anim/dst_menu_wathgrithr.zip"),
+                Asset("PKGREF", "anim/dst_menu_wes2.zip"),
+                Asset("PKGREF", "anim/dst_menu_dangerous_sea.zip"),
+                Asset("PKGREF", "anim/dst_menu_grotto.zip"),
+                Asset("PKGREF", "anim/dst_menu_farming.zip"),
+                Asset("PKGREF", "anim/dst_menu_webber.zip"),
+                Asset("PKGREF", "anim/dst_menu_moonstorm.zip"),
+                Asset("PKGREF", "anim/dst_menu_moonstorm_background.zip"),
+                Asset("PKGREF", "anim/dst_menu_moonstorm_foreground.zip"),
+                Asset("PKGREF", "anim/dst_menu_moonstorm_wagstaff.zip"),
+                Asset("PKGREF", "anim/dst_menu_moonstorm_wrench.zip"),
+                Asset("PKGREF", "anim/dst_menu_waterlogged.zip"),
+                Asset("PKGREF", "anim/dst_menu_wanda.zip"),
             },
         },
     },
@@ -225,3 +316,4 @@ for k, v in pairs(FESTIVAL_EVENTS) do
     AddDependencyPrefab(v.."_fest_backend", deps.backend or {})
 end
 return unpack(ret)
+

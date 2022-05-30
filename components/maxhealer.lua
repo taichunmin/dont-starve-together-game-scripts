@@ -8,7 +8,7 @@ function MaxHealer:SetHealthAmount(health)
     self.healamount = health
 end
 
-function MaxHealer:Heal(target) 
+function MaxHealer:Heal(target)
     if target.components.health ~= nil then
         target.components.health:DeltaPenalty(self.healamount) --remove x% from the penalty.
         --print(target.components.health.penalty)

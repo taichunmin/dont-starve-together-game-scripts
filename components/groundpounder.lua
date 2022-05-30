@@ -39,12 +39,14 @@ function GroundPounder:GetPoints(pt)
 
             theta = theta - (2*PI/numPoints)
         end
-        
+
         radius = radius + self.radiusStepDistance
 
     end
     return points
 end
+
+local WALKABLEPLATFORM_TAGS = {"walkableplatform"}
 
 function GroundPounder:DestroyPoints(points, breakobjects, dodamage, pushplatforms)
     local getEnts = breakobjects or dodamage
@@ -52,6 +54,8 @@ function GroundPounder:DestroyPoints(points, breakobjects, dodamage, pushplatfor
     if dodamage then
         self.inst.components.combat:EnableAreaDamage(false)
     end
+    local ents_hit = {}
+    local platforms_hit = {}
     for k, v in pairs(points) do
         if getEnts then
             local ents = TheSim:FindEntities(v.x, v.y, v.z, 3, nil, self.noTags)
@@ -80,11 +84,13 @@ function GroundPounder:DestroyPoints(points, breakobjects, dodamage, pushplatfor
                 end
                 if dodamage then
                     for i, v2 in ipairs(ents) do
-                        if v2 ~= self.inst and
+                        if v2 ~= self.inst and 
+                            not ents_hit[v2] and
                             v2:IsValid() and
                             v2.components.health ~= nil and
-                            not v2.components.health:IsDead() and 
+                            not v2.components.health:IsDead() and
                             self.inst.components.combat:CanTarget(v2) then
+                            ents_hit[v2] = true
                             self.inst.components.combat:DoAttack(v2, nil, nil, nil, self.groundpounddamagemult)
                         end
                     end
@@ -93,14 +99,19 @@ function GroundPounder:DestroyPoints(points, breakobjects, dodamage, pushplatfor
         end
 
         if pushplatforms then
-            local platform_ents = TheSim:FindEntities(v.x, v.y, v.z, 3 + TUNING.MAX_WALKABLE_PLATFORM_RADIUS, {"walkableplatform"}, self.noTags)
+            local platform_ents = TheSim:FindEntities(v.x, v.y, v.z, 3 + TUNING.MAX_WALKABLE_PLATFORM_RADIUS, WALKABLEPLATFORM_TAGS, self.noTags)
             for i, p_ent in ipairs(platform_ents) do
-                if p_ent ~= self.inst and p_ent:IsValid() and p_ent.Transform ~= nil and p_ent.components.boatphysics ~= nil then
+                if p_ent ~= self.inst
+                    and not platforms_hit[p_ent] 
+                    and p_ent:IsValid() 
+                    and p_ent.Transform ~= nil 
+                    and p_ent.components.boatphysics ~= nil then
                     local v2x, v2y, v2z = p_ent.Transform:GetWorldPosition()
                     local mx, mz = v2x - v.x, v2z - v.z
                     if mx ~= 0 or mz ~= 0 then
+                        ents_hit[p_ent] = true
                         local normalx, normalz = VecUtil_Normalize(mx, mz)
-                        p_ent.components.boatphysics:ApplyForce(normalx, normalz, 5)
+                        p_ent.components.boatphysics:ApplyForce(normalx, normalz, 3)
                     end
                 end
             end
@@ -170,14 +181,14 @@ function GroundPounder:GroundPound_Offscreen(position)
 
     if self.platformPushingRings > 0 then
         local platformPushRadius = self.initialRadius + (self.platformPushingRings - 1) * self.radiusStepDistance
-        local platformEnts = TheSim:FindEntities(position.x, position.y, position.z, platformPushRadius + TUNING.MAX_WALKABLE_PLATFORM_RADIUS, {"walkableplatform"}, self.noTags)
+        local platformEnts = TheSim:FindEntities(position.x, position.y, position.z, platformPushRadius + TUNING.MAX_WALKABLE_PLATFORM_RADIUS, WALKABLEPLATFORM_TAGS, self.noTags)
         for i, p_ent in ipairs(platform_ents) do
             if p_ent ~= self.inst and p_ent:IsValid() and p_ent.Transform ~= nil and p_ent.components.boatphysics ~= nil then
                 local v2x, v2y, v2z = p_ent.Transform:GetWorldPosition()
                 local mx, mz = v2x - v.x, v2z - v.z
                 if mx ~= 0 or mz ~= 0 then
                     local normalx, normalz = VecUtil_Normalize(mx, mz)
-                    p_ent.components.boatphysics:ApplyForce(normalx, normalz, 5)
+                    p_ent.components.boatphysics:ApplyForce(normalx, normalz, 3)
                 end
             end
         end

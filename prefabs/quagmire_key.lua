@@ -1,7 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/quagmire_key.zip"),
-} 
+}
 
 local function MakeKey(name, anim)
     local function fn()

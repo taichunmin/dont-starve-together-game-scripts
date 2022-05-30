@@ -15,11 +15,11 @@ local function TestForVictory(user, data)
 	return data.outcome.won
 end
 
-local Lavaarena_Achievements = 
+local Lavaarena_Achievements =
 {
     {
         category = "quests_daily",
-        data = 
+        data =
         {
 			{achievementid = "laq_dailywin",				daily = true, wxp = WXP_DAILY_WIN},
 			{achievementid = "laq_dailymatch",				daily = true, wxp = WXP_DAILY_MATCH},
@@ -28,7 +28,7 @@ local Lavaarena_Achievements =
     {
         category = "quests_basic",
 		category_wxp = WXP_QUESTS_BASIC,
-        data = 
+        data =
         {
 			{achievementid = "laq_battlestandards"},
 			{achievementid = "laq_reviver"},
@@ -48,7 +48,7 @@ local Lavaarena_Achievements =
     {
         category = "quests_challenge",
 		category_wxp = WXP_QUESTS_CHALLENGE,
-        data = 
+        data =
         {
 			{achievementid = "laq_nodeath_r2", team = true},
 			{achievementid = "laq_nodeath_r3", team = true},
@@ -66,7 +66,7 @@ local Lavaarena_Achievements =
     {
         category = "quests_specialized",
 		category_wxp = WXP_QUESTS_SPECIALIZED,
-        data = 
+        data =
         {
 			{achievementid = "laq_guardsbroken", character_set = {"webber", "willow", "wendy"}},
 			{achievementid = "laq_hammer", character_set = {"wx78", "wolfgang", "winona"}},
@@ -109,7 +109,7 @@ for _, cat in ipairs(Lavaarena_Achievements) do
 	end
 end
 
-return 
+return
 {
     seasons = { 2 },
 	eventid = "lavaarena",

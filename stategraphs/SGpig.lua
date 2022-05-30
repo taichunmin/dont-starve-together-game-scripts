@@ -11,6 +11,7 @@ local actionhandlers =
     ActionHandler(ACTIONS.TAKEITEM, "pickup"),
     ActionHandler(ACTIONS.UNPIN, "pickup"),
     ActionHandler(ACTIONS.DROP, "dropitem"),
+    ActionHandler(ACTIONS.MARK, "dropitem"),
 }
 
 local events =
@@ -20,9 +21,10 @@ local events =
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
     CommonHandlers.OnAttack(),
-    CommonHandlers.OnAttacked(true),
+    CommonHandlers.OnAttacked(nil, TUNING.PIG_MAX_STUN_LOCKS),
     CommonHandlers.OnDeath(),
     CommonHandlers.OnHop(),
+	CommonHandlers.OnSink(),
     EventHandler("transformnormal", function(inst)
         if not inst.components.health:IsDead() then
             inst.sg:GoToState("transformNormal")
@@ -31,6 +33,16 @@ local events =
     EventHandler("doaction", function(inst, data)
         if data.action == ACTIONS.CHOP and not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
             inst.sg:GoToState("chop", data.target)
+        end
+    end),
+    EventHandler("cheer", function(inst, data)
+        if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
+            inst.sg:GoToState("cheer")
+        end
+    end),
+    EventHandler("win_yotb", function(inst, data)
+        if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
+            inst.sg:GoToState("win_yotb")
         end
     end),
 }
@@ -45,7 +57,7 @@ local states =
             inst.Physics:Stop()
             inst.SoundEmitter:PlaySound("dontstarve/pig/oink")
 
-            if inst.components.follower:GetLeader() ~= nil and inst.components.follower:GetLoyaltyPercent() < .05 then
+            if inst.components.follower:GetLeader() ~= nil and inst.components.follower:GetLoyaltyPercent() < 0.05 then
                 inst.AnimState:PlayAnimation("hungry")
                 inst.SoundEmitter:PlaySound("dontstarve/wilson/hungry")
             elseif inst:HasTag("guard") then
@@ -54,7 +66,7 @@ local states =
                 inst.AnimState:PlayAnimation("idle_scared")
             elseif inst.components.combat:HasTarget() then
                 inst.AnimState:PlayAnimation("idle_angry")
-            elseif inst.components.follower:GetLeader() ~= nil and inst.components.follower:GetLoyaltyPercent() > .3 then
+            elseif inst.components.follower:GetLeader() ~= nil and inst.components.follower:GetLoyaltyPercent() > 0.3 then
                 inst.AnimState:PlayAnimation("idle_happy")
             else
                 inst.AnimState:PlayAnimation("idle_creepy")
@@ -204,6 +216,9 @@ local states =
             TimeEvent(10 * FRAMES, function(inst)
                 inst:PerformBufferedAction()
             end),
+            TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/pig/eat") end),
+            TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/beefalo/chew") end),
+            TimeEvent(21*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/beefalo/chew") end),
         },
 
         events =
@@ -222,6 +237,7 @@ local states =
             inst.SoundEmitter:PlaySound("dontstarve/pig/oink")
             inst.AnimState:PlayAnimation("hit")
             inst.Physics:Stop()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         events =
@@ -247,6 +263,40 @@ local states =
                 inst:PerformBufferedAction()
             end),
         },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
+
+    State{
+        name = "cheer",
+        tags = { "busy" },
+
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("buff")
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
+
+    State{
+        name = "win_yotb",
+        tags = { "busy" },
+
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("win")
+        end,
 
         events =
         {
@@ -289,5 +339,6 @@ CommonStates.AddFrozenStates(states)
 CommonStates.AddSimpleActionState(states, "pickup", "pig_pickup", 10 * FRAMES, { "busy" })
 CommonStates.AddSimpleActionState(states, "gohome", "pig_pickup", 4 * FRAMES, { "busy" })
 CommonStates.AddHopStates(states, true, { pre = "boat_jump_pre", loop = "boat_jump_loop", pst = "boat_jump_pst"})
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("pig", states, events, "idle", actionhandlers)

@@ -42,7 +42,7 @@ local function checkregrow(inst)
         if inst.rain <= 0 then
             inst.components.pickable:Regen()
         end
-    end        
+    end
 end
 
 local function GetStatus(inst)
@@ -57,7 +57,7 @@ local function open(inst)
             inst.growtask:Cancel()
         end
         inst.growtask = inst:DoTaskInTime(3 + math.random() * 6, inst.opentaskfn)
-    end        
+    end
 end
 
 local function close(inst)
@@ -245,7 +245,7 @@ local function mushcommonfn(data)
 
     inst:WatchWorldState("iscave"..data.open_time, OnIsOpenPhase)
 
-    inst:DoPeriodicTask(TUNING.SEG_TIME, checkregrow, TUNING.SEG_TIME + math.random()*TUNING.SEG_TIME)        
+    inst:DoPeriodicTask(TUNING.SEG_TIME, checkregrow, TUNING.SEG_TIME + math.random()*TUNING.SEG_TIME)
 
     if data.open_time == TheWorld.state.cavephase then
         inst.AnimState:PlayAnimation(data.animname)

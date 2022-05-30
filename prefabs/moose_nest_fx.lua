@@ -19,7 +19,7 @@ local function PlayFX(proxy)
     inst.AnimState:SetBank("goosemoose_nest_fx")
     inst.AnimState:SetBuild("goosemoose_nest_fx")
     inst.AnimState:PlayAnimation(proxy.anim)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/moose/egg_electric")
 
@@ -41,7 +41,7 @@ local function Make(anim)
         if not TheNet:IsDedicated() then
             --Delay one frame so that we are positioned properly before starting the effect
             --or in case we are about to be removed
-            
+
             inst.anim = anim
             inst:DoTaskInTime(0, PlayFX)
         end

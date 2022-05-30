@@ -31,7 +31,6 @@ local NO_TAGS =
     "NOCLICK",
     "DECOR",
     "INLIMBO",
-    "_container",
     "irreplaceable",
     "heavy",
     "lureplant",
@@ -42,6 +41,7 @@ local NO_TAGS =
     "invisible",
     "catchable",
     "fire",
+    "eyeplant_immune",
 }
 
 local ACT_TAGS =

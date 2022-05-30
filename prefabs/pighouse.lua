@@ -1,3 +1,4 @@
+require("worldsettingsutil")
 require "prefabutil"
 
 local assets =
@@ -20,14 +21,21 @@ local function OnUpdateWindow(window, inst, snow)
         snow:Remove()
         window:Remove()
     elseif inst.Light:IsEnabled() and inst.AnimState:IsCurrentAnimation("lit") then
-        if not window._shown then
-            window._shown = true
-            
-            local build_name = inst.AnimState:GetSkinBuild()
+        local build_name = inst.AnimState:GetSkinBuild()
+        if build_name ~= inst._last_skin_build then
+            inst._last_skin_build = build_name
             if build_name ~= "" then
                 window.AnimState:SetSkin(build_name)
                 snow.AnimState:SetSkin(build_name)
+            else
+                window.AnimState:SetBuild("pig_house")
+                snow.AnimState:SetBuild("pig_house")
             end
+        end
+
+        if not window._shown then
+            window._shown = true
+
             window:Show()
             snow:Show()
         end
@@ -120,7 +128,7 @@ local function onoccupieddoortask(inst)
 end
 
 local function onoccupied(inst, child)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.SoundEmitter:PlaySound("dontstarve/pig/pig_in_hut", "pigsound")
         inst.SoundEmitter:PlaySound("dontstarve/common/pighouse_door")
 
@@ -152,7 +160,7 @@ local function onvacate(inst, child)
                 child.components.werebeast:ResetTriggers()
             end
 
-            local child_platform = child:GetCurrentPlatform()
+            local child_platform = TheWorld.Map:GetPlatformAtPoint(child.Transform:GetWorldPosition())
             if (child_platform == nil and not child:IsOnValidGround()) then
                 local fx = SpawnPrefab("splash_sink")
                 fx.Transform:SetPosition(child.Transform:GetWorldPosition())
@@ -187,7 +195,7 @@ local function onhammered(inst, worker)
 end
 
 local function onhit(inst, worker)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("hit")
         if inst.lightson then
             inst.AnimState:PushAnimation("lit")
@@ -213,7 +221,7 @@ local function onstartdaydoortask(inst)
 end
 
 local function onstartdaylighttask(inst)
-    if inst.LightWatcher:GetLightValue() > 0.8 then -- they have their own light! make sure it's brighter than that out.
+    if inst:IsLightGreaterThan(0.8) then -- they have their own light! make sure it's brighter than that out.
         LightsOff(inst)
         inst.doortask = inst:DoTaskInTime(1 + math.random() * 2, onstartdaydoortask)
     elseif TheWorld.state.iscaveday then
@@ -351,6 +359,10 @@ local function MakeWindowSnow()
     return inst
 end
 
+local function OnPreLoad(inst, data)
+    WorldSettings_Spawner_PreLoad(inst, data, TUNING.PIGHOUSE_SPAWN_TIME)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -360,7 +372,6 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
-    inst.entity:AddLightWatcher()
 
     MakeObstaclePhysics(inst, 1)
 
@@ -404,7 +415,8 @@ local function fn()
     inst.components.workable:SetOnWorkCallback(onhit)
 
     inst:AddComponent("spawner")
-    inst.components.spawner:Configure("pigman", TUNING.TOTAL_DAY_TIME*4)
+    WorldSettings_Spawner_SpawnDelay(inst, TUNING.PIGHOUSE_SPAWN_TIME, TUNING.PIGHOUSE_ENABLED)
+    inst.components.spawner:Configure("pigman", TUNING.PIGHOUSE_SPAWN_TIME)
     inst.components.spawner.onoccupied = onoccupied
     inst.components.spawner.onvacate = onvacate
     inst.components.spawner:SetWaterSpawning(false, true)
@@ -426,13 +438,15 @@ local function fn()
     inst:ListenForEvent("burntup", onburntup)
     inst:ListenForEvent("onignite", onignite)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     MakeHauntableWork(inst)
 
     inst:ListenForEvent("onbuilt", onbuilt)
     inst.inittask = inst:DoTaskInTime(0, oninit)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

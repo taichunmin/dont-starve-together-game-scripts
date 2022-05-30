@@ -4,6 +4,11 @@ local assets =
     Asset("SOUND", "sound/common.fsb"),
 }
 
+local underwater_assets =
+{
+    Asset("ANIM", "anim/bullkelp_underwater.zip"),
+}
+
 local prefabs =
 {
     "kelp",
@@ -12,7 +17,6 @@ local prefabs =
 }
 
 local function onpickedfn(inst)
-    inst.SoundEmitter:PlaySound("dontstarve/wilson/pickup_reeds")
     inst.AnimState:PlayAnimation("picking")
     inst.AnimState:PushAnimation("picked", true)
     inst.underwater.AnimState:PlayAnimation("picking")
@@ -51,13 +55,11 @@ local function fn()
     inst.AnimState:SetBank("bullkelp")
     inst.AnimState:SetBuild("bullkelp")
     inst.AnimState:PlayAnimation("idle", true)
-	inst.AnimState:Hide("below_water")
-	inst.AnimState:Hide("kelp_root1")
 	inst.AnimState:SetFinalOffset(1)
 
 	AddDefaultRippleSymbols(inst, true, false)
-
-    inst:AddTag("blocker")
+    
+    inst:AddTag("kelp")
 
     inst.entity:SetPristine()
 
@@ -65,34 +67,33 @@ local function fn()
         return inst
     end
 
-    ---------------------        
+    ---------------------
 	inst.underwater = SpawnPrefab("bullkelp_plant_leaves")
 	inst.underwater.entity:SetParent(inst.entity)
 	inst.underwater.Transform:SetPosition(0,0,0)
-    ---------------------        
+    ---------------------
 
 	local start_time = math.random() * 2
     inst.AnimState:SetTime(start_time)
     inst.underwater.AnimState:SetTime(start_time)
-	
+
     local color = 0.75 + math.random() * 0.25
     inst.AnimState:SetMultColour(color, color, color, 1)
 
     inst:AddComponent("pickable")
-    inst.components.pickable.picksound = "dontstarve/wilson/pickup_reeds"
+    inst.components.pickable.picksound = "turnoftides/common/together/water/harvest_plant"
     inst.components.pickable:SetUp("kelp", TUNING.BULLKELP_REGROW_TIME)
     inst.components.pickable.onregenfn = onregenfn
     inst.components.pickable.onpickedfn = onpickedfn
     inst.components.pickable.makeemptyfn = makeemptyfn
-    inst.components.pickable.SetRegenTime = 120
 
     inst:AddComponent("inspectable")
 
-    ---------------------        
+    ---------------------
     MakeSmallBurnable(inst, TUNING.SMALL_FUEL)
     MakeSmallPropagator(inst)
-    MakeHauntableIgnite(inst)    
-    ---------------------   
+    MakeHauntableIgnite(inst)
+    ---------------------
 
     return inst
 end
@@ -104,21 +105,12 @@ local function underwaterleafsfn()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
 
-	inst.AnimState:SetBank("bullkelp")
-    inst.AnimState:SetBuild("bullkelp")
+	inst.AnimState:SetBank("bullkelp_underwater")
+    inst.AnimState:SetBuild("bullkelp_underwater")
     inst.AnimState:PlayAnimation("idle", true)
-    inst.AnimState:SetLayer(LAYER_BACKGROUND)    
-
-	inst.AnimState:Hide("water_shadow2")
-	inst.AnimState:Hide("ripple2")
-	inst.AnimState:Hide("water_shadow1")
-	inst.AnimState:Hide("ripple1")
-	inst.AnimState:Hide("kelp_ball")
-	inst.AnimState:Hide("kelp_root2")
-	inst.AnimState:Hide("above_water")
+    inst.AnimState:SetLayer(LAYER_BACKGROUND)
 
 	inst:AddTag("DECOR")
-
 
     inst.entity:SetPristine()
 
@@ -132,4 +124,4 @@ local function underwaterleafsfn()
 end
 
 return Prefab("bullkelp_plant", fn, assets, prefabs),
-		Prefab("bullkelp_plant_leaves", underwaterleafsfn, assets)
+		Prefab("bullkelp_plant_leaves", underwaterleafsfn, underwater_assets)

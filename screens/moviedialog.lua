@@ -29,7 +29,7 @@ local MovieDialog = Class(Screen, function(self, movie_path, callback, do_fadeba
     self.end_delay = 2
 
 	--if AUTOPLAY_SOAK then
-	--	self.soaktask = self.inst:DoTaskInTime(5, 
+	--	self.soaktask = self.inst:DoTaskInTime(5,
 	--	function()
 	--        self:Cancel()
 	--	end)

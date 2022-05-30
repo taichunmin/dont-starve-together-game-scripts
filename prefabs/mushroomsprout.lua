@@ -266,7 +266,7 @@ local function MakeSprout(name)
         ----------------------------------------------------
         inst:AddTag("blocker")
         inst.entity:AddPhysics()
-        inst.Physics:SetMass(0) 
+        inst.Physics:SetMass(0)
         inst.Physics:SetCollisionGroup(COLLISION.OBSTACLES)
         inst.Physics:ClearCollisionMask()
         inst.Physics:CollidesWith(COLLISION.ITEMS)

@@ -24,7 +24,7 @@ local ChatQueue = Class(Widget, function(self, owner)
     Widget._ctor(self, "ChatQueue")
 
     self.owner = owner
-    
+
     self.chat_queue_data = {}
 
     self.widget_rows = {}
@@ -48,7 +48,7 @@ local ChatQueue = Class(Widget, function(self, owner)
         local user_widget = self:AddChild(Text(self.chat_font, self.chat_size))
         user_widget:SetHAlign(ANCHOR_RIGHT)
         self.widget_rows[i].user = user_widget
-        
+
         local y = -400 - i * (self.chat_size + 2)
         local flair_widget = self:AddChild(TEMPLATES.ChatFlairBadge())
         flair_widget:SetPosition(-315, y-12.5)
@@ -76,7 +76,7 @@ function ChatQueue:OnUpdate()
 
     for i = 1, CHAT_QUEUE_SIZE do
         local row_data = self.chat_queue_data[i]
-        
+
         if is_chat_open then
             if row_data.expire_time < current_time then
                 row_data.expire_time = current_time
@@ -90,7 +90,7 @@ function ChatQueue:OnUpdate()
             end
         end
     end
-    
+
     self:RefreshWidgets()
 end
 
@@ -147,7 +147,7 @@ function ChatQueue:PushMessage(username, message, colour, whisper, nolabel, prof
     self.chat_queue_data[CHAT_QUEUE_SIZE].whisper = whisper
     self.chat_queue_data[CHAT_QUEUE_SIZE].nolabel = nolabel
     self.chat_queue_data[CHAT_QUEUE_SIZE].profileflair = profileflair
-    
+
     self:RefreshWidgets()
 end
 
@@ -157,7 +157,7 @@ function ChatQueue:RefreshWidgets()
     --apply the chat data to the widgets
     for i = 1, CHAT_QUEUE_SIZE do
         local row_data = self.chat_queue_data[i]
-        
+
         local y = -400 - i * (self.chat_size + 2)
         local alpha_fade = calcChatAlpha(current_time, row_data.expire_time)
 

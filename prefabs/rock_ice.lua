@@ -84,7 +84,7 @@ local function OnStageDirty(inst)
             if stagedata.name == "empty" then
                 inst._puddle.AnimState:PushAnimation("idle", true)
             end
-                        
+
 			if ismelt and not inst:IsAsleep() and not stagedata.isdriedup then
 				local fx = SpawnPrefab("ice_splash")
 				fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
@@ -100,6 +100,7 @@ local function SerializeStage(inst, stageindex, source)
     OnStageDirty(inst)
 end
 
+local DRYUP_CANT_FLAGS = {"locomotor", "FX"}
 local function SetStage(inst, stage, source, snap_to_stage)
     if stage == inst.stage then
         return
@@ -123,13 +124,13 @@ local function SetStage(inst, stage, source, snap_to_stage)
         else
             return
         end
-        
+
 		if inst.stage == "dryup" then
 			local x, y, z = inst.Transform:GetWorldPosition()
-			if #(TheSim:FindEntities(x, y, z, 1.1, nil, {"locomotor", "FX"})) > 0 then
+			if #(TheSim:FindEntities(x, y, z, 1.1, nil, DRYUP_CANT_FLAGS)) > 0 then
 				return
 			end
-		end        
+		end
     end
 
     -- otherwise just set the stage to the target!
@@ -138,7 +139,7 @@ local function SetStage(inst, stage, source, snap_to_stage)
 
 	if STAGES[targetstage].isdriedup then
 		if inst.remove_on_dryup then
-			inst.presists = false
+			inst.persists = false
 			if inst:IsAsleep() then
 				inst:Remove()
 			else
@@ -259,7 +260,7 @@ local function StartFireMelt(inst)
 end
 
 local function StopFireMelt(inst)
-    if inst.firemelttask ~= nil then 
+    if inst.firemelttask ~= nil then
         inst.firemelttask:Cancel()
         inst.firemelttask = nil
     end

@@ -4,11 +4,16 @@ local assets =
     Asset("ANIM", "anim/goldenpickaxe.zip"),
     Asset("ANIM", "anim/swap_pickaxe.zip"),
     Asset("ANIM", "anim/swap_goldenpickaxe.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_pickaxe", "swap_pickaxe")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_pickaxe", inst.GUID, "swap_pickaxe")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_pickaxe", "swap_pickaxe")
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -16,6 +21,10 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function common_fn(bank, build)
@@ -56,7 +65,7 @@ local function common_fn(bank, build)
     inst:AddComponent("finiteuses")
     inst.components.finiteuses:SetMaxUses(TUNING.PICKAXE_USES)
     inst.components.finiteuses:SetUses(TUNING.PICKAXE_USES)
-    inst.components.finiteuses:SetOnFinished(inst.Remove) 
+    inst.components.finiteuses:SetOnFinished(inst.Remove)
     inst.components.finiteuses:SetConsumption(ACTIONS.MINE, 1)
 
     -------
@@ -78,7 +87,13 @@ local function common_fn(bank, build)
 end
 
 local function onequipgold(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_goldenpickaxe", "swap_goldenpickaxe")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_goldenpickaxe", inst.GUID, "swap_goldenpickaxe")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_goldenpickaxe", "swap_goldenpickaxe")
+    end
     owner.SoundEmitter:PlaySound("dontstarve/wilson/equip_item_gold")
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")

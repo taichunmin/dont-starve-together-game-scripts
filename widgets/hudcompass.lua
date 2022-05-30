@@ -15,7 +15,7 @@ local function TryCompass(self)
     return false
 end
 
---base class for imagebuttons and animbuttons. 
+--base class for imagebuttons and animbuttons.
 local HudCompass = Class(Widget, function(self, owner, isattached)
     self.owner = owner
     Widget._ctor(self, "Hud Compass")

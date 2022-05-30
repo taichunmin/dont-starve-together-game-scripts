@@ -6,10 +6,10 @@ local function OnCreate(inst, scenariorunner)
 			v.components.growable:SetStage(math.random() < .25 and 3 or 2)
 		end
 	end
-	
+
 end
 
-return 
+return
 {
 	OnCreate = OnCreate
 }

@@ -72,8 +72,8 @@ function SubmittingBugReportPopup:OnUpdate( dt )
 
         local popup = PopupDialogScreen(title, text,
             {
-                {text=STRINGS.UI.BUGREPORTSCREEN.OK, cb = 
-                    function() 
+                {text=STRINGS.UI.BUGREPORTSCREEN.OK, cb =
+                    function()
                         TheFrontEnd:PopScreen()
                     end
                 },

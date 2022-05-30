@@ -97,7 +97,7 @@ local function ResumeSleep(inst, seconds)
 
     inst.components.minionspawner.shouldspawn = false
     inst.components.minionspawner:KillAllMinions()
-    
+
     if inst.hibernatetask ~= nil then
         inst.hibernatetask:Cancel()
     end
@@ -144,7 +144,7 @@ end
 local function CollectItems(inst)
     if inst.components.minionspawner.minions ~= nil then
         for k, v in pairs(inst.components.minionspawner.minions) do
-            if v.components.inventory ~= nil then                
+            if v.components.inventory ~= nil then
                 for k = 1, v.components.inventory.maxslots do
                     local item = v.components.inventory.itemslots[k]
                     if item ~= nil and not inst.components.inventory:IsFull() then
@@ -167,7 +167,7 @@ local function CollectItems(inst)
     end
 end
 
-local function SelectLure(inst)    
+local function SelectLure(inst)
     if inst.components.inventory ~= nil then
         local lures = {}
         for k = 1, inst.components.inventory.maxslots do
@@ -191,6 +191,8 @@ local function OnDeath(inst)
     inst.components.minionspawner.shouldspawn = false
     inst.components.minionspawner:KillAllMinions()
     inst.components.lootdropper:DropLoot(inst:GetPosition())
+
+    TheWorld:PushEvent("CHEVO_lureplantdied",{target=inst,pt=Vector3(inst.Transform:GetWorldPosition())})
 end
 
 local function CanDigest(owner, item)
@@ -205,10 +207,14 @@ local function OnLoad(inst, data)
     if data ~= nil and data.timeuntilwake ~= nil then
         ResumeSleep(inst, math.max(0, data.timeuntilwake))
     end
+    if data ~= nil and data.planted then
+        inst:AddTag("planted")
+    end
 end
 
 local function OnSave(inst, data)
     data.timeuntilwake = inst.hibernatetask ~= nil and math.floor(GetTaskRemaining(inst.hibernatetask)) or nil
+    data.planted = inst:HasTag("planted")
 end
 
 local function OnLongUpdate(inst, dt)
@@ -285,6 +291,26 @@ local function OnHaunt(inst)
     --return false
 end
 
+local function OnSpawnMinion(inst, minion)
+    minion:SetSkin(inst:GetSkinBuild(), inst.GUID)
+end
+
+local function SetSkin(inst)
+    if inst.components.minionspawner.minions ~= nil then
+        local skin_build = inst:GetSkinBuild()
+        for k, v in pairs(inst.components.minionspawner.minions) do
+            v:SetSkin(skin_build, inst.GUID)
+        end
+    end
+end
+
+local function OnLootPrefabSpawned(inst, data)
+	local loot = data.loot
+	if loot and loot.prefab == "lureplantbulb" then
+        TheSim:ReskinEntity( loot.GUID, loot.skinname, inst.item_skinname, inst.skin_id )
+	end
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -337,6 +363,7 @@ local function fn()
     inst:AddComponent("minionspawner")
     inst.components.minionspawner.onminionattacked = HideBait
     inst.components.minionspawner.validtiletypes = VALID_TILE_TYPES
+    inst.components.minionspawner.onspawnminionfn = OnSpawnMinion
 
     inst:AddComponent("digester")
     inst.components.digester.itemstodigestfn = CanDigest
@@ -363,6 +390,9 @@ local function fn()
 
     inst.OnLongUpdate = OnLongUpdate
 
+    inst.OnLoadPostPass = SetSkin
+    inst.SetSkin = SetSkin
+
     inst._OnLurePerished = function() HideBait(inst) end
     inst.lurefn = SelectLure
     inst:DoPeriodicTask(2, CollectItems) -- Always do this.
@@ -370,6 +400,8 @@ local function fn()
 
     inst:WatchWorldState("iswinter", OnIsWinter)
     OnIsWinter(inst, TheWorld.state.iswinter)
+
+    inst:ListenForEvent("loot_prefab_spawned", OnLootPrefabSpawned)
 
     inst:SetBrain(brain)
 

@@ -20,30 +20,33 @@ local NUM_BUILDS = 3
 local NUM_GROWTH_STAGES = 3
 local statedata =
 {
-	{ -- short
+	{
+        name		= "short",
 		idleanim    = "idle_short",
-		hitanim     = "hit_short", 
+		hitanim     = "hit_short",
 		breakanim   = "mined_short",
 		growanim    = "grow_tall_to_short",
-		growsound   = "dontstarve/common/together/marble_shrub/wilt_to_grow", 
+		growsound   = "dontstarve/common/together/marble_shrub/wilt_to_grow",
 		workleft    = TUNING.MARBLESHRUB_MINE_SMALL,
 		loot        = function() return {"marble"} end,
 	},
-	{ -- normal
+	{
+        name		= "normal",
 		idleanim    = "idle_normal",
-		hitanim     = "hit_normal", 
+		hitanim     = "hit_normal",
 		breakanim   = "mined_normal",
-		growanim    = "grow_short_to_normal", 
-		growsound   = "dontstarve/common/together/marble_shrub/grow", 
+		growanim    = "grow_short_to_normal",
+		growsound   = "dontstarve/common/together/marble_shrub/grow",
 		workleft    = TUNING.MARBLESHRUB_MINE_NORMAL,
 		loot        = function() return math.random() < 0.75 and {"marble"} or {"marble", "marblebean"} end,
 	},
-	{ -- tall
+	{
+        name		= "tall",
 		idleanim    = "idle_tall",
-		hitanim     = "hit_tall", 
+		hitanim     = "hit_tall",
 		breakanim   = "mined_tall",
-		growanim    = "grow_normal_to_tall", 
-		growsound   = "dontstarve/common/together/marble_shrub/grow", 
+		growanim    = "grow_normal_to_tall",
+		growsound   = "dontstarve/common/together/marble_shrub/grow",
 		workleft    = TUNING.MARBLESHRUB_MINE_TALL,
 		loot        = function() return {"marble", math.random() < 0.5 and "marble" or "marblebean"} end,
 	},
@@ -53,7 +56,7 @@ local function SetGrowth(inst)
 	local new_size = inst.components.growable.stage
     inst.statedata = statedata[new_size]
     inst.AnimState:PlayAnimation(inst.statedata.idleanim)
-    
+
 	inst.components.workable:SetWorkLeft(inst.statedata.workleft)
 end
 
@@ -153,7 +156,7 @@ local function MakeShrub(name, growthstage)
         inst:SetPrefabName("marbleshrub")
 
 		inst.entity:AddTransform()
-		inst.entity:AddAnimState()  
+		inst.entity:AddAnimState()
 		inst.entity:AddSoundEmitter()
 		inst.entity:AddMiniMapEntity()
 		inst.entity:AddNetwork()
@@ -177,7 +180,7 @@ local function MakeShrub(name, growthstage)
 
 		inst.shapenumber = 1
 		inst.statedata = statedata[growthstage]
-		
+
 		inst.growfromseed = GrowFromSeed
 
         inst:AddComponent("growable")
@@ -208,7 +211,7 @@ local function MakeShrub(name, growthstage)
 
 		return inst
 	end
-	
+
 	return Prefab(name, fn, assets, prefabs)
 end
 

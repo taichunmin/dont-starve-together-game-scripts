@@ -56,13 +56,16 @@ local function SelectedTargetTimeout(target)
     target.selectedasmoletarget = nil
 end
 
+local TAKEBAIT_MUST_TAGS = { "molebait" }
+local TAKEBAIT_CANT_TAGS = { "outofreach", "INLIMBO", "fire" }
+
 local function TakeBaitAction(inst)
     -- Don't look for bait if just spawned, busy making a new home, or has full inventory
     if inst:GetTimeAlive() < 3 or inst.sg:HasStateTag("busy") or ShouldMakeHome(inst) or (inst.components.inventory and inst.components.inventory:IsFull()) then
         return
     end
 
-    local target = FindEntity(inst, SEE_BAIT_DIST, IsMoleBait, { "molebait" }, { "outofreach", "INLIMBO", "fire" })
+    local target = FindEntity(inst, SEE_BAIT_DIST, IsMoleBait, TAKEBAIT_MUST_TAGS, TAKEBAIT_CANT_TAGS)
     if target ~= nil and not target.selectedasmoletarget and target:IsOnValidGround() then
         target.selectedasmoletarget = true
         target:DoTaskInTime(5, SelectedTargetTimeout)
@@ -83,7 +86,7 @@ function MoleBrain:OnStart()
     local root = PriorityNode(
     {
         WhileNode( function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
-        WhileNode( function() return ShouldMakeHome(self.inst) end, "HomeDugUp", 
+        WhileNode( function() return ShouldMakeHome(self.inst) end, "HomeDugUp",
             DoAction(self.inst, MakeNewHomeAction, "make home", false)),
         WhileNode(function() return self.inst.flee == true end, "Flee",
             RunAway(self.inst, "scarytoprey", AVOID_PLAYER_DIST, AVOID_PLAYER_STOP)),
@@ -91,10 +94,10 @@ function MoleBrain:OnStart()
             DoAction(self.inst, PeekAction, "peek", false)),
         WhileNode(function() return self.inst.components.inventory:IsFull() end, "DepositInv",
             DoAction(self.inst, GoHomeAction, "go home", false)),
-        EventNode(self.inst, "gohome", 
+        EventNode(self.inst, "gohome",
             DoAction(self.inst, GoHomeAction, "go home", false)),
         DoAction(self.inst, TakeBaitAction, "take bait", false),
-        WhileNode(function() return TheWorld.state.isday or (TheWorld.state.iscaveday and self.inst.LightWatcher:IsInLight()) end, "IsDay",
+        WhileNode(function() return TheWorld.state.isday or (TheWorld.state.iscaveday and self.inst:IsInLight()) end, "IsDay",
             DoAction(self.inst, GoHomeAction, "go home", false )),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, MAX_WANDER_DIST),
     }, .25)

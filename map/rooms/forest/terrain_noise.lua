@@ -24,7 +24,7 @@ AddRoom("BGNoise", {
 										berrybush_juicy = 0.025,
 										sapling=0.2,
 										twiggytree = 0.2,
-										ground_twigs = 0.06,											
+										ground_twigs = 0.06,
 										pond=.001,
 					                    blue_mushroom = .001,
 					                    green_mushroom = .001,

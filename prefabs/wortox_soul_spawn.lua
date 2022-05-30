@@ -35,7 +35,7 @@ local function CreateTail()
     inst.AnimState:SetBuild("wortox_soul_ball")
     inst.AnimState:PlayAnimation("disappear")
     inst.AnimState:SetScale(SCALE, SCALE)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:ListenForEvent("animover", inst.Remove)
 
@@ -226,7 +226,7 @@ local function fn()
     inst.AnimState:SetBuild("wortox_soul_ball")
     inst.AnimState:PlayAnimation("idle_pre")
     inst.AnimState:SetScale(SCALE, SCALE)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     --weapon (from weapon component) added to pristine state for optimization
     inst:AddTag("weapon")

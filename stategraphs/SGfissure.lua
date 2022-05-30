@@ -17,7 +17,7 @@ local states=
         onexit = function(inst)
 
         end,
-    }, 
+    },
         State{
         name = "idle_turnoff",
         tags = {"idle"},
@@ -28,13 +28,13 @@ local states=
         ontimeout = function(inst)
             inst.sg:GoToState("idle_off")
         end,
-    },    
+    },
 
     State{
         name = "idle_on",
         tags = {"idle"},
         onenter = function(inst)
-        
+
         end,
         onexit = function(inst)
 
@@ -50,8 +50,8 @@ local states=
         ontimeout = function(inst)
             inst.sg:GoToState("idle_on")
         end,
-    },    
+    },
 }
-    
+
 return StateGraph("fissure", states, events, "idle")
 

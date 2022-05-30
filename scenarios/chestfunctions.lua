@@ -51,10 +51,10 @@ local function AddChestItems(chest, loot, num)
 	end
 end
 
-local function InitializeChestTrap(inst, scenariorunner, openfn)
-	inst.scene_triggerfn = function(inst, data)  
+local function InitializeChestTrap(inst, scenariorunner, openfn, chance)
+	inst.scene_triggerfn = function(inst, data)
 		data.player = data.doer or data.worker
-		chestfunctions.OnOpenChestTrap(inst,  openfn, scenariorunner, data)
+		chestfunctions.OnOpenChestTrap(inst,  openfn, scenariorunner, data, chance)
 		scenariorunner:ClearScenario()
 	end
 	inst:ListenForEvent("onopen", inst.scene_triggerfn)
@@ -62,8 +62,8 @@ local function InitializeChestTrap(inst, scenariorunner, openfn)
 
 end
 
-local function OnOpenChestTrap(inst, openfn, scenariorunner, data) 
-	if math.random() < .66 then
+local function OnOpenChestTrap(inst, openfn, scenariorunner, data, chance)
+	if math.random() <= (chance or .66) then
 		local talkabouttrap = function(inst, txt)
 			if inst.components.talker then  -- Apparently inst can be Deerclops, and Deerclops has no talker
 				inst.components.talker:Say(txt)

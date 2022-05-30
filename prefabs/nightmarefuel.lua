@@ -16,6 +16,7 @@ local function fn()
     inst.AnimState:SetBuild("nightmarefuel")
     inst.AnimState:PlayAnimation("idle_loop", true)
     inst.AnimState:SetMultColour(1, 1, 1, 0.5)
+    inst.AnimState:UsePointFiltering(true)
 
     MakeInventoryFloatable(inst)
 
@@ -26,7 +27,7 @@ local function fn()
     end
 
     inst:AddComponent("stackable")
-    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM    
+    inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
     inst:AddComponent("inspectable")
     inst:AddComponent("fuel")
     inst.components.fuel.fueltype = FUELTYPE.NIGHTMARE

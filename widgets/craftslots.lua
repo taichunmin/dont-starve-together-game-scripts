@@ -4,7 +4,7 @@ local CraftSlot = require "widgets/craftslot"
 
 local CraftSlots = Class(Widget, function(self, num, owner)
     Widget._ctor(self, "CraftSlots")
-    
+
     local CRAFTING_ATLAS = GetGameModeProperty("hud_atlas") or HUD_ATLAS
 
     self.owner = owner
@@ -20,7 +20,7 @@ end)
 function CraftSlots:SetNumSlots(num)
     if num >= #self.slots then
         self:ShowAll()
-        return 
+        return
     end
 
     self:HideAll()
@@ -56,13 +56,13 @@ function CraftSlots:Refresh()
 end
 
 function CraftSlots:Open(idx)
-	if idx > 0 and idx <= #self.slots then	
+	if idx > 0 and idx <= #self.slots then
 		self.slots[idx]:Open()
 	end
 end
 
 function CraftSlots:LockOpen(idx)
-	if idx > 0 and idx <= #self.slots then	
+	if idx > 0 and idx <= #self.slots then
 		self.slots[idx]:LockOpen()
 	end
 end

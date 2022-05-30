@@ -73,7 +73,7 @@ end
 function Subscreener:OnMenuButtonSelected(selection)
     self.menu:UnselectAll()
 	self.buttons[selection]:Select()
-	
+
 	for _,ss in pairs(self.sub_screens) do
 		ss:Hide()
 	end

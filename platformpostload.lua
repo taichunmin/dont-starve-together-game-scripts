@@ -8,11 +8,11 @@ if PLATFORM == "WIN32_RAIL" then
 			return 1, voteresults.options[1]
 		end
 	end
-	
-	local UserCommands = require("usercommands")	
+
+	local UserCommands = require("usercommands")
 	local kick_command = UserCommands.GetCommandFromName("kick")
 	kick_command.voteresultfn = YesNoTwoThirdsVote
-	
+
 	--user commands
 	RailUserCommandInject( "help", "帮助", {"指令"} )
 	RailUserCommandInject( "emote", "表情", {"表情姓名"} )
@@ -23,9 +23,9 @@ if PLATFORM == "WIN32_RAIL" then
 	RailUserCommandInject( "roll", "摇骰子", {"骰子"} )
 	RailUserCommandInject( "rollback", "回滚", {"保存次数"} )
 	RailUserCommandInject( "regenerate", "重新生成" )
-	
+
 	RailUserCommandRemove( "bug" )
-	
+
 	--emote commands
 	RailUserCommandInject( "wave", "挥手", nil, "再见" )
 	RailUserCommandInject( "rude", "挑事" )
@@ -41,4 +41,5 @@ if PLATFORM == "WIN32_RAIL" then
 	RailUserCommandInject( "facepalm", "叹" )
 	RailUserCommandInject( "kiss", "吻" )
 	RailUserCommandInject( "pose", "姿势" )
+	RailUserCommandInject( "toast", "干杯" )
 end

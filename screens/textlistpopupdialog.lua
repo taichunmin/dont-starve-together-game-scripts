@@ -34,7 +34,7 @@ local TextListPopupDialogScreen = Class(Screen, function(self, title, str, body,
     self.bg.fill:SetPosition(8, 10)
     self.bg:SetPosition(0,0,0)
 
-    --title 
+    --title
     self.title = self.proot:AddChild(Text(BUTTONFONT, 45))
     self.title:SetPosition(5, 170, 0)
     self.title:SetString(title)

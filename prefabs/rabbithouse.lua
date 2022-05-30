@@ -1,3 +1,4 @@
+require("worldsettingsutil")
 require "prefabutil"
 
 local assets =
@@ -31,7 +32,7 @@ local function onvacate(inst, child)
     --inst.SoundEmitter:KillSound("pigsound")
 
     if not inst:HasTag("burnt") and child ~= nil then
-        local child_platform = child:GetCurrentPlatform()
+        local child_platform = TheWorld.Map:GetPlatformAtPoint(child.Transform:GetWorldPosition())
         if (child_platform == nil and not child:IsOnValidGround()) then
             local fx = SpawnPrefab("splash_sink")
             fx.Transform:SetPosition(child.Transform:GetWorldPosition())
@@ -62,9 +63,14 @@ local function onhammered(inst, worker)
 end
 
 local function onhit(inst, worker)
-    if not inst:HasTag("burnt") then 
+    if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("hit")
         inst.AnimState:PushAnimation("idle")
+
+        if inst.glow_fx ~= nil then
+            inst.glow_fx.AnimState:PlayAnimation("hit")
+            inst.glow_fx.AnimState:PushAnimation("idle")
+        end
     end
 end
 
@@ -135,12 +141,20 @@ local function onburntup(inst)
         inst.inittask:Cancel()
         inst.inittask = nil
     end
+    if inst.glow_fx ~= nil then
+        inst.glow_fx:Remove()
+        inst.glow_fx = nil
+    end
 end
 
 local function onignite(inst)
     if inst.components.spawner ~= nil and inst.components.spawner:IsOccupied() then
         inst.components.spawner:ReleaseChild()
     end
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_Spawner_PreLoad(inst, data, TUNING.RABBITHOUSE_SPAWN_TIME)
 end
 
 local function fn()
@@ -186,7 +200,8 @@ local function fn()
     inst.components.workable:SetOnWorkCallback(onhit)
 
     inst:AddComponent("spawner")
-    inst.components.spawner:Configure("bunnyman", TUNING.TOTAL_DAY_TIME)
+    WorldSettings_Spawner_SpawnDelay(inst, TUNING.RABBITHOUSE_SPAWN_TIME, TUNING.RABBITHOUSE_ENABLED)
+    inst.components.spawner:Configure("bunnyman", TUNING.RABBITHOUSE_SPAWN_TIME)
     --inst.components.spawner.onoccupied = onoccupied
     inst.components.spawner.onvacate = onvacate
     inst.components.spawner:CancelSpawning()
@@ -202,13 +217,15 @@ local function fn()
     inst:ListenForEvent("burntup", onburntup)
     inst:ListenForEvent("onignite", onignite)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     inst:ListenForEvent("onbuilt", onbuilt)
     inst.inittask = inst:DoTaskInTime(0, oninit)
 
     MakeHauntableWork(inst)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

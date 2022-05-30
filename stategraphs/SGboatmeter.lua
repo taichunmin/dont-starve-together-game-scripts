@@ -1,13 +1,18 @@
 local events =
 {
-    EventHandler("close_meter", function(inst) inst.sg:GoToState("close_pre") end),
+    EventHandler("close_meter", function(inst, data)
+        if data.instant then
+            inst.sg:GoToState("closed")
+        else
+            inst.sg:GoToState("close_pre")
+        end
+    end),
     EventHandler("open_meter", function(inst) inst.sg:GoToState("open_pre") end),
 }
 
 local states =
 {
-    State
-    {
+    State{
         name = "open",
         onenter = function(inst)
             inst.widget.backing:Show()
@@ -21,8 +26,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "open_pre",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("open_pre")
@@ -34,8 +38,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "open_pst",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("open_pst")
@@ -51,8 +54,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "close_pre",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("close_pre")
@@ -64,8 +66,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "close_pst",
         onenter = function(inst)
             inst.widget.anim:GetAnimState():PlayAnimation("close_pst")
@@ -81,8 +82,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "closed",
         onenter = function(inst)
             inst.widget.backing:Hide()

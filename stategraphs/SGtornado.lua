@@ -55,9 +55,11 @@ local TARGET_TAGS = { "_combat" }
 for k, v in pairs(WORK_ACTIONS) do
     table.insert(TARGET_TAGS, k.."_workable")
 end
+local TARGET_IGNORE_TAGS = { "INLIMBO" }
+
 local function destroystuff(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 3, nil, { "INLIMBO" }, TARGET_TAGS)
+    local ents = TheSim:FindEntities(x, y, z, 3, nil, TARGET_IGNORE_TAGS, TARGET_TAGS)
     for i, v in ipairs(ents) do
         --stuff might become invalid as we work or damage during iteration
         if v ~= inst.WINDSTAFF_CASTER and v:IsValid() then
@@ -95,8 +97,7 @@ end
 
 local states =
 {
-    State
-    {
+    State{
         name = "empty",
         tags = {"idle", "empty"},
 
@@ -106,8 +107,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "idle",
         tags = {"idle"},
 
@@ -125,8 +125,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "spawn",
         tags = {"moving", "canrotate"},
 
@@ -143,8 +142,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "despawn",
         tags = {"busy"},
 
@@ -161,8 +159,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "walk_start",
         tags = {"moving", "canrotate"},
 
@@ -171,8 +168,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "walk",
         tags = {"moving", "canrotate"},
 
@@ -195,8 +191,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "walk_stop",
         tags = {"canrotate"},
 
@@ -205,8 +200,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "run_start",
         tags = {"moving", "running", "canrotate"},
 
@@ -228,8 +222,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "run",
         tags = {"moving", "running", "canrotate"},
 
@@ -251,8 +244,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "run_stop",
         tags = {"idle"},
 

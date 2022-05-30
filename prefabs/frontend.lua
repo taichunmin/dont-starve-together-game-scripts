@@ -1,3 +1,5 @@
+local prefabs = {}
+
 local assets =
 {
 	Asset("ATLAS", "images/quagmire_food_common_inv_images.xml"),
@@ -24,6 +26,11 @@ local assets =
     Asset("IMAGE", "images/customisation.tex"),
     Asset("ATLAS", "images/customisation.xml"),
 
+    Asset("IMAGE", "images/worldgen_customization.tex"),
+    Asset("ATLAS", "images/worldgen_customization.xml"),
+    Asset("IMAGE", "images/worldsettings_customization.tex"),
+    Asset("ATLAS", "images/worldsettings_customization.xml"),
+
     --BETA
     Asset("DYNAMIC_ATLAS", "images/anr_silhouettes.xml"),
     Asset("PKGREF", "images/anr_silhouettes.tex"),
@@ -33,11 +40,11 @@ local assets =
 
     Asset("ATLAS", "images/frontscreen.xml"),
     Asset("IMAGE", "images/frontscreen.tex"),
-        
+
     -- Asset("ANIM", "anim/portrait_frame.zip"), -- Not currently used, but likely to come back
 
     Asset("ANIM", "anim/build_status.zip"),
-    
+
     -- Swirly fire frontend menu background
     --~ Asset("ANIM", "anim/animated_title.zip"), -- Not currently used, but likely to come back
     --~ Asset("ANIM", "anim/animated_title2.zip"), -- Not currently used, but likely to come back
@@ -46,9 +53,6 @@ local assets =
     -- Used by TEMPLATES.Background
     -- Asset("ATLAS", "images/bg_color.xml"), -- Not currently used, but likely to come back
     -- Asset("IMAGE", "images/bg_color.tex"), -- Not currently used, but likely to come back
-
-    Asset("ATLAS", "images/servericons.xml"),
-    Asset("IMAGE", "images/servericons.tex"),
 
     Asset("ATLAS", "images/server_intentions.xml"),
     Asset("IMAGE", "images/server_intentions.tex"),
@@ -62,6 +66,10 @@ local assets =
     Asset("FILE", "images/motd_box4.xml"),
     Asset("FILE", "images/motd_box5.xml"),
     Asset("FILE", "images/motd_box6.xml"),
+    Asset("FILE", "images/motd_box7.xml"),
+    Asset("FILE", "images/motd_box8.xml"),
+    Asset("FILE", "images/motd_box9.xml"),
+    Asset("FILE", "images/motd_box10.xml"),
     Asset("DYNAMIC_ATLAS", "images/motd_fallbacks_box1.xml"),
     Asset("PKGREF", "images/motd_fallbacks_box1.tex"),
     Asset("DYNAMIC_ATLAS", "images/motd_fallbacks_box2.xml"),
@@ -81,6 +89,14 @@ local assets =
     Asset("IMAGE", "images/bg_redux_dark_bottom_solid.tex"),
 	Asset("ATLAS", "images/bg_redux_dark_bottom_vignette1.xml"),
 	Asset("IMAGE", "images/bg_redux_dark_bottom_vignette1.tex"),
+	Asset("ATLAS", "images/bg_redux_motd_frame_small_gold.xml"),
+	Asset("IMAGE", "images/bg_redux_motd_frame_small_gold.tex"),
+	Asset("ATLAS", "images/bg_redux_motd_frame_small_gold2.xml"),
+	Asset("IMAGE", "images/bg_redux_motd_frame_small_gold2.tex"),
+	Asset("ATLAS", "images/bg_redux_motd_frame_large_gold.xml"),
+	Asset("IMAGE", "images/bg_redux_motd_frame_large_gold.tex"),
+	Asset("ATLAS", "images/bg_redux_black_sidebar.xml"),
+	Asset("IMAGE", "images/bg_redux_black_sidebar.tex"),
 
     --character portraits
     Asset("ATLAS", "images/saveslot_portraits.xml"),
@@ -99,10 +115,25 @@ local assets =
     Asset("ANIM", "anim/skin_progressbar.zip"),
     Asset("ANIM", "anim/player_emotes.zip"), -- item emotes
     Asset("ANIM", "anim/player_emote_extra.zip"), -- item emotes
+    Asset("ANIM", "anim/player_emotes_dance0.zip"),
     Asset("ANIM", "anim/player_emotes_dance2.zip"), -- item emotes
-    -- If we want nonitem emotes, we need these too.
-    --~ Asset("ANIM", "anim/player_emotes_dance0.zip"),
-    --~ Asset("ANIM", "anim/player_emotes_sit.zip"),
+    Asset("ANIM", "anim/player_emotes_sit.zip"),
+    Asset("ANIM", "anim/player_actions_item.zip"),
+    Asset("ANIM", "anim/player_idles_warly.zip"),
+    Asset("ANIM", "anim/player_idles_wendy.zip"),
+    Asset("ANIM", "anim/player_idles_willow.zip"),
+    Asset("ANIM", "anim/player_idles_winona.zip"),
+    Asset("ANIM", "anim/player_idles_woodie.zip"),
+    Asset("ANIM", "anim/player_idles_wormwood.zip"),
+    Asset("ANIM", "anim/player_idles_wortox.zip"),
+    Asset("ANIM", "anim/player_idles_wurt.zip"),
+    Asset("ANIM", "anim/player_idles_wathgrithr.zip"),
+    Asset("ANIM", "anim/player_idles_wes.zip"),
+    Asset("ANIM", "anim/player_idles_webber.zip"),
+    Asset("ANIM", "anim/player_idles_wanda.zip"),
+    Asset("ANIM", "anim/player_idles_wx.zip"),
+    Asset("ANIM", "anim/bernie_build.zip"),
+    Asset("ANIM", "anim/swap_lucy_axe.zip"),
 
     -- Wardrobe
     Asset("ANIM", "anim/player_emotesxl.zip"), -- idle emote animations
@@ -113,7 +144,7 @@ local assets =
     Asset("DYNAMIC_ATLAS", "images/serverbrowser.xml"),
     Asset("PKGREF", "images/serverbrowser.tex"),
     --
-    
+
     Asset("ATLAS", "images/tradescreen.xml"),
     Asset("IMAGE", "images/tradescreen.tex"),
     Asset("ATLAS", "images/tradescreen_overflow.xml"),
@@ -129,7 +160,7 @@ local assets =
 
 
     Asset("ANIM", "anim/mod_player_build.zip"),
-    
+
 
     -- DISABLE SPECIAL RECIPES
     --Asset("ANIM", "anim/button_weeklyspecial.zip"),
@@ -147,6 +178,8 @@ local assets =
     Asset("ANIM", "anim/shoppe_frames.zip"),
     Asset("ANIM", "anim/skin_collector.zip"),
     Asset("ANIM", "anim/textbox.zip"),
+
+    Asset("ANIM", "anim/kleipoints.zip"),
 
     Asset("ANIM", "anim/chest_bg.zip"),
 
@@ -171,9 +204,72 @@ local assets =
     Asset("DYNAMIC_ANIM", "anim/dynamic/box_shared.zip"),
     Asset("PKGREF", "anim/dynamic/box_shared.dyn"),
 
-    
+
     Asset("DYNAMIC_ANIM", "anim/dynamic/box_bolt.zip"),
     Asset("PKGREF", "anim/dynamic/box_bolt.dyn"),
+
+
+    --Mini Game Assets
+    Asset("ANIM", "anim/crow_kids.zip"),
+    Asset("ANIM", "anim/crow.zip"),
+    Asset("ANIM", "anim/crow_build.zip"),
+    Asset("ANIM", "anim/robin_winter_build.zip"),
+    Asset("ANIM", "anim/robin_build.zip"),
+    Asset("ANIM", "anim/explode.zip"),
+    Asset("ANIM", "anim/minigametile.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_egg.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_egg_rotten.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_crow.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_snowbird.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_chevron_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_dotted_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_flower_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_foil_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_paper_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_striped_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_bluestriped_wrapper.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_roastturkey.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_gravy.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_berrysauce.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/oddment_pumpkinpie.zip"),
+    Asset("PKGREF", "anim/dynamic/oddment_egg.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_egg_rotten.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_crow.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_snowbird.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_chevron_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_dotted_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_flower_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_foil_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_paper_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_striped_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_bluestriped_wrapper.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_roastturkey.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_gravy.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_berrysauce.dyn"),
+    Asset("PKGREF", "anim/dynamic/oddment_pumpkinpie.dyn"),
+    Asset("DYNAMIC_ATLAS", "images/maze.xml"),
+    Asset("ASSET_PKGREF", "images/maze.tex"),
+    
+    Asset("ANIM", "anim/kitcoon_nametag.zip"),   
+    Asset("ANIM", "anim/kitcoon_forest_build.zip"),
+    Asset("ANIM", "anim/kitcoon_savanna_build.zip"),
+    Asset("ANIM", "anim/kitcoon_deciduous_build.zip"),
+    Asset("ANIM", "anim/kitcoon_marsh_build.zip"),
+    Asset("ANIM", "anim/kitcoon_grass_build.zip"),
+    Asset("ANIM", "anim/kitcoon_rocky_build.zip"),
+    Asset("ANIM", "anim/kitcoon_desert_build.zip"),
+    Asset("ANIM", "anim/kitcoon_moon_build.zip"),
+    Asset("ANIM", "anim/kitcoon_yot_build.zip"), 
+    Asset("ANIM", "anim/kitcoon_basic.zip"),
+    Asset("ANIM", "anim/kitcoon_emotes.zip"),
+    Asset("ANIM", "anim/kitcoon_traits.zip"),
+    Asset("ANIM", "anim/kitcoon_jump.zip"),
+    Asset("ANIM", "anim/kitcoon_poop.zip"),
+    Asset("ANIM", "anim/kitcoon_food.zip"),
+    Asset("ANIM", "anim/kitcoon_pouch.zip"),
+    Asset("ANIM", "anim/kitcoon_bg.zip"),
+    Asset("IMAGE", "images/colour_cubes/day05_cc.tex"),
+    Asset("IMAGE", "images/colour_cubes/dusk03_cc.tex"),
 }
 
 --Including these here as well as global to ensure the exporter's resizing dependency works
@@ -197,18 +293,32 @@ if IsConsole() then
 	    table.insert(assets, Asset("ATLAS", "images/ui_ps4.xml"))
 	    table.insert(assets, Asset("IMAGE", "images/ui_ps4.tex"))
 	end
-end
 
-if IsPS4() then
-    table.insert(assets, Asset("ATLAS", "images/ps4.xml"))
-    table.insert(assets, Asset("IMAGE", "images/ps4.tex"))
-    table.insert(assets, Asset("ATLAS", "images/ps4_controllers.xml"))
-    table.insert(assets, Asset("IMAGE", "images/ps4_controllers.tex"))
-elseif IsXB1() then
-    table.insert(assets, Asset("ATLAS", "images/xb1_controllers.xml"))
-    table.insert(assets, Asset("IMAGE", "images/xb1_controllers.tex"))
-    table.insert(assets, Asset("ATLAS", "images/blit.xml"))
-    table.insert(assets, Asset("IMAGE", "images/blit.tex"))
+	if IsPS4() then
+		table.insert(assets, Asset("ATLAS", "images/ps4.xml"))
+		table.insert(assets, Asset("IMAGE", "images/ps4.tex"))
+		table.insert(assets, Asset("ATLAS", "images/ps4_controllers.xml"))
+		table.insert(assets, Asset("IMAGE", "images/ps4_controllers.tex"))
+	elseif IsXB1() then
+		table.insert(assets, Asset("ATLAS", "images/xb1_controllers.xml"))
+		table.insert(assets, Asset("IMAGE", "images/xb1_controllers.tex"))
+		table.insert(assets, Asset("ATLAS", "images/blit.xml"))
+		table.insert(assets, Asset("IMAGE", "images/blit.tex"))
+	elseif IsSWITCH() then
+		table.insert(assets, Asset("ATLAS", "images/nx_controllers.xml"))
+		table.insert(assets, Asset("IMAGE", "images/nx_controllers.tex"))
+		table.insert(assets, Asset("ATLAS", "images/nx.xml"))
+		table.insert(assets, Asset("IMAGE", "images/nx.tex"))
+	else
+		assert(0) -- Add platform
+	end
+elseif BRANCH == "dev" then
+	table.insert(assets, Asset("ATLAS", "images/ps4_controllers.xml"))
+	table.insert(assets, Asset("IMAGE", "images/ps4_controllers.tex"))
+	table.insert(assets, Asset("ATLAS", "images/xb1_controllers.xml"))
+	table.insert(assets, Asset("IMAGE", "images/xb1_controllers.tex"))
+	--table.insert(assets, Asset("ATLAS", "images/nx_controllers.xml"))
+	--table.insert(assets, Asset("IMAGE", "images/nx_controllers.tex"))
 end
 
 if PLATFORM == "WIN32_RAIL" then
@@ -244,6 +354,14 @@ if not QUAGMIRE_USE_KLUMP then
     end
 end
 
+-- adding these here so they can be used in the FrontEnd
+table.insert( assets, Asset("ANIM", "anim/trophyscale_oversizedveggies.zip") )
+for k, v in pairs(require("prefabs/farm_plant_defs").PLANT_DEFS) do
+	table.insert(prefabs, v.prefab)
+end
+for k, v in pairs(require("prefabs/weed_defs").WEED_DEFS) do
+	table.insert(prefabs, v.prefab)
+end
 
 
 --we don't actually instantiate this prefab. It's used for controlling asset loading
@@ -251,4 +369,4 @@ local function fn()
     return CreateEntity()
 end
 
-return Prefab("frontend", fn, assets)
+return Prefab("frontend", fn, assets, prefabs)

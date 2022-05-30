@@ -66,39 +66,12 @@ local function SetBeardlingLoot(lootdropper)
     end
 end
 
-local function MakeInventoryRabbit(inst)
-    inst._crazyinv = nil
-    inst.components.inventoryitem:ChangeImageName(IsWinterRabbit(inst) and "rabbit_winter" or "rabbit")
-    inst.components.health.murdersound = inst.sounds.hurt
-    SetRabbitLoot(inst.components.lootdropper)
-end
-
-local function MakeInventoryBeardMonster(inst)
-    inst._crazyinv = true
-    SetBeardlingLoot(inst.components.lootdropper)
-    inst.components.inventoryitem:ChangeImageName("beard_monster")
-    inst.components.health.murdersound = beardsounds.hurt
-end
-
-local function UpdateInventoryState(inst)
-    local viewer = inst.components.inventoryitem:GetGrandOwner()
-    while viewer ~= nil and viewer.components.container ~= nil do
-        viewer = viewer.components.container.opener
-    end
-    if IsCrazyGuy(viewer) then
-        MakeInventoryBeardMonster(inst)
-    else
-        MakeInventoryRabbit(inst)
-    end
-end
-
 local function BecomeRabbit(inst)
     if inst.components.health:IsDead() then
         return
     end
     inst.AnimState:SetBuild("rabbit_build")
     inst.sounds = rabbitsounds
-    UpdateInventoryState(inst)
     if inst.components.hauntable ~= nil then
         inst.components.hauntable.haunted = false
     end
@@ -110,7 +83,6 @@ local function BecomeWinterRabbit(inst)
     end
     inst.AnimState:SetBuild("rabbit_winter_build")
     inst.sounds = wintersounds
-    UpdateInventoryState(inst)
     if inst.components.hauntable ~= nil then
         inst.components.hauntable.haunted = false
     end
@@ -182,9 +154,11 @@ local function LootSetupFunction(lootdropper)
     end
 end
 
+local RABBIT_MUST_TAGS = { "rabbit" }
+local RABBIT_CANT_TAGS = { "INLIMBO" }
 local function OnAttacked(inst, data)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 30, { "rabbit" }, { "INLIMBO" })
+    local ents = TheSim:FindEntities(x, y, z, 30, RABBIT_MUST_TAGS, RABBIT_CANT_TAGS)
     local maxnum = 5
     for i, v in ipairs(ents) do
         v:PushEvent("gohome")
@@ -194,53 +168,16 @@ local function OnAttacked(inst, data)
     end
 end
 
-local function StopWatchingSanity(inst)
-    if inst._sanitywatching ~= nil then
-        inst:RemoveEventCallback("sanitydelta", inst.OnWatchSanityDelta, inst._sanitywatching)
-        inst._sanitywatching = nil
-    end
-end
-
-local function WatchSanity(inst, target)
-    StopWatchingSanity(inst)
-    if target ~= nil then
-        inst:ListenForEvent("sanitydelta", inst.OnWatchSanityDelta, target)
-        inst._sanitywatching = target
-    end
-end
-
-local function StopWatchingForOpener(inst)
-    if inst._openerwatching ~= nil then
-        inst:RemoveEventCallback("onopen", inst.OnContainerOpened, inst._openerwatching)
-        inst:RemoveEventCallback("onclose", inst.OnContainerClosed, inst._openerwatching)
-        inst._openerwatching = nil
-    end
-end
-
-local function WatchForOpener(inst, target)
-    StopWatchingForOpener(inst)
-    if target ~= nil then
-        inst:ListenForEvent("onopen", inst.OnContainerOpened, target)
-        inst:ListenForEvent("onclose", inst.OnContainerClosed, target)
-        inst._openerwatching = target
-    end
-end
-
-local function OnPickup(inst, owner)
-    if owner.components.container ~= nil then
-        WatchForOpener(inst, owner)
-        WatchSanity(inst, owner.components.container.opener)
-    else
-        StopWatchingForOpener(inst)
-        WatchSanity(inst, owner)
-    end
-    UpdateInventoryState(inst)
-end
-
 local function OnDropped(inst)
-    StopWatchingSanity(inst)
-    UpdateInventoryState(inst)
     inst.sg:GoToState("stunned")
+end
+
+local function getmurdersound(inst, doer)
+    return IsCrazyGuy(doer) and beardsounds.hurt or inst.sounds.hurt
+end
+
+local function drawimageoverride(inst, viewer)
+    return IsCrazyGuy(viewer) and "beard_monster"
 end
 
 local function fn()
@@ -251,7 +188,6 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
-    inst.entity:AddLightWatcher()
 
     MakeCharacterPhysics(inst, 1, 0.5)
 
@@ -269,12 +205,16 @@ local function fn()
     inst:AddTag("canbetrapped")
     inst:AddTag("cattoy")
     inst:AddTag("catfood")
+    inst:AddTag("stunnedbybomb")
 
     --cookable (from cookable component) added to pristine state for optimization
     inst:AddTag("cookable")
 
     inst.AnimState:SetClientsideBuildOverride("insane", "rabbit_build", "beard_monster")
     inst.AnimState:SetClientsideBuildOverride("insane", "rabbit_winter_build", "beard_monster")
+
+    inst:SetClientSideInventoryImageOverride("insane", "rabbit.tex", "beard_monster.tex")
+    inst:SetClientSideInventoryImageOverride("insane", "rabbit_winter.tex", "beard_monster.tex")
 
     MakeFeedableSmallLivestockPristine(inst)
 
@@ -310,9 +250,11 @@ local function fn()
 
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(TUNING.RABBIT_HEALTH)
+    inst.components.health.murdersound = getmurdersound
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:SetLootSetupFn(LootSetupFunction)
+    LootSetupFunction(inst.components.lootdropper)
 
     if TheNet:GetServerGameMode() == "quagmire" then
         event_server_data("quagmire", "prefabs/rabbit").master_postinit(inst)
@@ -326,31 +268,8 @@ local function fn()
 
     inst:AddComponent("inspectable")
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst:AddComponent("tradable")
-
-    --declared here so it can be used for event handlers
-    inst.OnWatchSanityDelta = function(viewer)
-        if IsCrazyGuy(viewer) then
-            if not inst._crazyinv then
-                MakeInventoryBeardMonster(inst)
-            end
-        elseif inst._crazyinv then
-            MakeInventoryRabbit(inst)
-        end
-    end
-
-    inst.OnContainerOpened = function(container, data)
-        WatchSanity(inst, data.doer)
-        UpdateInventoryState(inst)
-    end
-
-    inst.OnContainerClosed = function()
-        StopWatchingSanity(inst)
-        UpdateInventoryState(inst)
-    end
-
-    inst._sanitywatching = nil
-    inst._openerwatching = nil
 
     inst.sounds = nil
     inst.task = nil
@@ -361,7 +280,9 @@ local function fn()
 
     inst:ListenForEvent("attacked", OnAttacked)
 
-    MakeFeedableSmallLivestock(inst, TUNING.RABBIT_PERISH_TIME, OnPickup, OnDropped)
+    MakeFeedableSmallLivestock(inst, TUNING.RABBIT_PERISH_TIME, nil, OnDropped)
+
+    inst.drawimageoverride = drawimageoverride
 
     return inst
 end

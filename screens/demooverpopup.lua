@@ -17,7 +17,7 @@ local DemoOverPopup = Class(Screen, function(self, callbackfn)
 
     global("TAB")
     TAB = self
-	
+
     --darken everything behind the dialog
     self.black = self:AddChild(Image("images/global.xml", "square.tex"))
     self.black:SetVRegPoint(ANCHOR_MIDDLE)
@@ -32,17 +32,17 @@ local DemoOverPopup = Class(Screen, function(self, callbackfn)
     self.center_root:SetVAnchor(ANCHOR_MIDDLE)
     self.center_root:SetHAnchor(ANCHOR_MIDDLE)
     self.center_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
-	
+
     self.proot = self.center_root:AddChild(Widget("ROOT_P"))
     self.proot:MoveTo({x=0,y=RESOLUTION_Y,z=0}, {x=0,y=0,z=0}, TRANSITION_DURATION, nil)
-    
+
     self.bg = self.proot:AddChild(Image())
 	self.bg:SetVRegPoint(ANCHOR_MIDDLE)
     self.bg:SetHRegPoint(ANCHOR_MIDDLE)
     self.bg:SetScale(.97)
     self.bg:SetTexture("images/thankyou_gift.xml", "gift.tex")
 
-    --title 
+    --title
     self.title = self.proot:AddChild(Text(TITLEFONT, 60))
     self.title:SetPosition(0, 235, 0)
 	self.title:SetString( STRINGS.UI.DEMOOVERDIALOG.TITLE_FREEWEEKEND )
@@ -68,7 +68,7 @@ local DemoOverPopup = Class(Screen, function(self, callbackfn)
     self.close_btn:SetScale(0.65)
     self.close_btn:SetPosition(0, -320, 0)
     self.close_btn:SetOnClick(function() self:GoAway() end)
-    
+
 end)
 
 function DemoOverPopup:OnUpdate(dt)
@@ -89,7 +89,7 @@ end
 function DemoOverPopup:GoAway(purchased)
 	if not self.closing then
 		self.closing = true
-		
+
 		self.proot:MoveTo({x=0,y=0,z=0}, {x=0,y=RESOLUTION_Y,z=0}, TRANSITION_DURATION, nil)
         self.black:TintTo({r=0,g=0,b=0,a=0.75}, {r=0,g=0,b=0,a=0}, TRANSITION_DURATION, function()
             TheFrontEnd:PopScreen(self)
@@ -108,8 +108,8 @@ function DemoOverPopup:GoAway(purchased)
 end
 
 function DemoOverPopup:OnControl(control, down)
-    if DemoOverPopup._base.OnControl(self,control, down) then 
-        return true 
+    if DemoOverPopup._base.OnControl(self,control, down) then
+        return true
     end
 end
 

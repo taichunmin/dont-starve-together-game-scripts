@@ -52,7 +52,7 @@ local function emit_sparkle_fn(effect, sphere_emitter)
     local lifetime = MAX_LIFETIME * (.7 + UnitRand() * .3)
     local px, py, pz = sphere_emitter()
 
-    local angle = math.random() * 360    
+    local angle = math.random() * 360
     local uv_offset = math.random(0, 3) * .25
     local ang_vel = (UnitRand() - 1) * 5
 
@@ -122,7 +122,7 @@ local function fn()
         local per_tick = Lerp(low_per_tick, high_per_tick, move)
 
         inst.last_pos = inst:GetPosition()
-                
+
         num_to_emit = num_to_emit + per_tick * math.random() * 3
         while num_to_emit > 1 do
             emit_sparkle_fn(effect, sphere_emitter)

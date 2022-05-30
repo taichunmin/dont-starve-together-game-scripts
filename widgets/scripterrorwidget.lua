@@ -9,6 +9,8 @@ local Widget = require "widgets/widget"
 local ScriptErrorWidget = Class(Widget, function(self, title, text, buttons, texthalign, additionaltext, textsize, timeout)
     Widget._ctor(self, "ScriptErrorWidget")
 
+	self.is_screen = true -- hack to reduce log spam of: "Widget:SetFocusFromChild is happening on a widget outside of the screen/widget hierachy"
+
     self:SetHAnchor(ANCHOR_LEFT)
     self:SetVAnchor(ANCHOR_BOTTOM)
 
@@ -32,7 +34,7 @@ local ScriptErrorWidget = Class(Widget, function(self, title, text, buttons, tex
     self.root:SetPosition(0,0,0)
     self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
-    --title 
+    --title
     self.title = self.root:AddChild(Text(TITLEFONT, 50))
     self.title:SetPosition(0, 170, 0)
     self.title:SetString(title)
@@ -93,10 +95,9 @@ end)
 function ScriptErrorWidget:OnControl(control, down)
     if ScriptErrorWidget._base.OnControl(self, control, down) then return true end
 
-    -- If the user does anything, close the game (or whatever that left-hand option is)
-    if control == CONTROL_ACCEPT then
-        self.menu.items[1].onclick()
-    end
+    if control == Controls.Digital.MENU_ACCEPT then
+		self:_ClickFocusedButton()
+	end
 end
 
 function ScriptErrorWidget:OnUpdate( dt )
@@ -115,6 +116,13 @@ function ScriptErrorWidget:OnUpdate( dt )
             self.timeout.cb()
         end
     end
+
+    -- DebugKeys are disabled at this point, so check manually
+	if TheInput:IsKeyDown(KEY_R) and TheInput:IsKeyDown(KEY_CTRL) then
+        TheSim:ResetError()
+        c_reset()
+    end
+
     return true
 end
 

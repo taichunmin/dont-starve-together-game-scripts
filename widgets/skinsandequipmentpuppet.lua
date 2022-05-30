@@ -20,8 +20,8 @@ local anims =
 
 local function VerifyCharacter(character)
     local characterAllowed = false
-    for k,v in pairs(DST_CHARACTERLIST) do 
-        if v == character then 
+    for k,v in pairs(DST_CHARACTERLIST) do
+        if v == character then
             --print("Character ok", v, character)
             characterAllowed = true
         end
@@ -33,11 +33,11 @@ end
 local SkinsAndEquipmentPuppet = Class(SkinsPuppet, function(self, character, colour, scale)
     SkinsPuppet._ctor(self, "SkinsAndEquipmentPuppet")
 
-    if VerifyCharacter(character) then 
+    if VerifyCharacter(character) then
         self.character = character
         self:SetCharacter(character)
     else
-        -- This is a mod character or the player was still selecting their character. 
+        -- This is a mod character or the player was still selecting their character.
         -- Pick a random valid character to replace it.
         newCharacter = DST_CHARACTERLIST[math.random(1, #DST_CHARACTERLIST)]
         --print("Picked new character", character, newCharacter)
@@ -68,10 +68,10 @@ end
 
 function SkinsAndEquipmentPuppet:InitSkins(player_data)
 
-    if player_data then 
-    	
+    if player_data then
+
         -- If we got a mod character or something, default to the previously chosen random character.
-        local prefabOk = VerifyCharacter(player_data.prefab) 
+        local prefabOk = VerifyCharacter(player_data.prefab)
         self.character = prefabOk and player_data.prefab or self.character
 
         local base = (prefabOk) and player_data.base_skin or nil
@@ -81,11 +81,11 @@ function SkinsAndEquipmentPuppet:InitSkins(player_data)
     	clothing["hand"] = player_data.hand_skin
     	clothing["legs"] = player_data.legs_skin
     	clothing["feet"] = player_data.feet_skin
-		
+
 		--track if there was a body or base so that we can determine later if we want to show the torso item or hat item
 		self.has_body = clothing["body"] ~= ""
 		self.has_base = base ~= nil
-		
+
     	self:SetSkins(self.character, base, clothing, true)
     	self.name:SetTruncatedString(player_data.name, 200, 25, true)
     end
@@ -139,8 +139,8 @@ function SkinsAndEquipmentPuppet:OnUpdate(dt)
 	self.timetonewanim = self.timetonewanim and self.timetonewanim - dt or 5 +math.random()*5
 
 	if self.timetonewanim < 0 then
-		self.animstate:PushAnimation(weighted_random_choice(anims))		
-		self.animstate:PushAnimation("idle", true)		
+		self.animstate:PushAnimation(weighted_random_choice(anims))
+		self.animstate:PushAnimation("idle", true)
 		self.timetonewanim = 10 + math.random()*15
 	end
 end

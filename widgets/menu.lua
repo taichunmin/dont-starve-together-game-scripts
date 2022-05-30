@@ -64,7 +64,7 @@ function Menu:GetSize()
 	end
 
 	return nil, nil
-end 
+end
 
 
 function Menu:SetMenuIndex(index)
@@ -75,7 +75,7 @@ function Menu:SetFocus(index)
     if index == nil then
         index = index or self.last_focused_index or (self.reverse and -1 or 1)
         if index < 0 then
-            index = index + #self.items +1 
+            index = index + #self.items +1
         end
     end
 
@@ -111,7 +111,7 @@ function Menu:DoFocusHookups()
         if k < #self.items then
             self.items[k]:SetFocusChangeDir(fwd, self.items[k+1])
         end
-        
+
         self.items[k]:SetOnGainFocus( function() self:SetMenuIndex(k) end )
     end
 
@@ -188,7 +188,7 @@ function Menu:AddItem(text, cb, offset, style, size, control)
 
     if offset then
         pos = pos + offset
-    end 
+    end
 
     if style == nil then
         style = self.style
@@ -315,14 +315,14 @@ function Menu:EditItem(num, text, text_size, cb)
 end
 
 function Menu:DisableItem(num)
-	if self.items[num] then 
+	if self.items[num] then
 		local i = self.items[num]
 		i:Disable()
 	end
 end
 
 function Menu:EnableItem(num)
-	if self.items[num] then 
+	if self.items[num] then
 		local i = self.items[num]
 		i:Enable()
 	end

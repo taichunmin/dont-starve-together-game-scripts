@@ -49,7 +49,7 @@ function MinigameParticipator:SetMinigame(minigame)
 		self.inst:ListenForEvent("ms_minigamedeactivated", self.onminigameover, minigame)
 
 		if not self.notimeout then
-			self.updatecheck = self.inst:DoPeriodicTask(0.9, function() if self.expireytime - GetTime() < 0 then self:onminigameover() end end) 
+			self.updatecheck = self.inst:DoPeriodicTask(0.9, function() if self.expireytime - GetTime() < 0 then self:onminigameover() end end)
 		end
 
 		if self.inst.components.leader ~= nil then

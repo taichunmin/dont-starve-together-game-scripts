@@ -438,7 +438,7 @@ local FriendsManager = Class(Widget, function(self)
     local party = TheNet:GetPartyTable()
     self.tab = #party > 1 and "party" or "friends"
     self:OnShow()
-    
+
 	if not SHOW_FRIENDS_MANAGER then
         self:Hide()
     end

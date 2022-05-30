@@ -90,7 +90,7 @@ local OnSeasonsDirty = not _ismastershard and function()
     for i,v in ipairs(_lengths) do
         data.lengths[i] = v:value()
     end
-    _world:PushEvent("slave_seasonsupdate", data)
+    _world:PushEvent("secondary_seasonsupdate", data)
 end or nil
 
 --------------------------------------------------------------------------

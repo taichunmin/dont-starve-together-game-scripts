@@ -12,36 +12,13 @@ assert(TheWorld.ismastersim, "Kramped should not exist on client")
 
 local SPAWN_DIST = 30
 
-local NAUGHTY_VALUE =
-{
-    ["pigman"] = 3,
-    ["babybeefalo"] = 6,
-    ["teenbird"] = 2,
-    ["smallbird"] = 6,
-    ["beefalo"] = 4,
-    ["deer"] = 4,
-    ["crow"] = 1,
-    ["robin"] = 2,
-    ["robin_winter"] = 2,
-    ["canary"] = 2,
-    ["butterfly"] = 1,
-    ["moonbutterfly"] = 1,
-    ["rabbit"] = 1,
-    ["mole"] = 1,
-    ["tallbird"] = 2,
-    ["bunnyman"] = 3,
-    ["penguin"] = 2,
-    ["glommer"] = 50, -- You've been bad!
-    ["catcoon"] = 5,
-}
-
 --------------------------------------------------------------------------
 --[[ Member variables ]]
 --------------------------------------------------------------------------
 
 --Public
 self.inst = inst
-    
+
 --Private
 local _activeplayers = {}
 
@@ -115,7 +92,8 @@ local function OnKilledOther(player, data)
             if not (data.victim.prefab == "pigman" and
                     data.victim.components.werebeast ~= nil and
                     data.victim.components.werebeast:IsInWereState()) then
-                OnNaughtyAction(naughtiness * (data.stackmult or 1), playerdata)
+                local naughty_val = FunctionOrValue(naughtiness, player, data)
+                OnNaughtyAction(naughty_val * (data.stackmult or 1), playerdata)
             end
         end
     end
@@ -163,7 +141,7 @@ local function OnForceNaughtiness(src, data)
         local playerdata = _activeplayers[data.player]
         if playerdata ~= nil then
             --Reset existing naughtiness
-            playerdata.threshold = TUNING.KRAMPUS_THRESHOLD + math.random(TUNING.KRAMPUS_THRESHOLD_VARIANCE)
+            playerdata.threshold = TUNING.KRAMPUS_THRESHOLD ~= -1 and (TUNING.KRAMPUS_THRESHOLD + math.random(TUNING.KRAMPUS_THRESHOLD_VARIANCE)) or nil
             playerdata.actions = 0
         end
 

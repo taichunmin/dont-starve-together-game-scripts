@@ -24,7 +24,7 @@ local prefabs_item =
 }
 
 local function ondeploy(inst, pt)--, deployer)
-    local ent = SpawnPrefab("minisign")
+    local ent = SpawnPrefab("minisign", inst.linked_skinname, inst.skin_id )
 
     if inst.components.stackable ~= nil then
         inst.components.stackable:Get():Remove()
@@ -41,11 +41,11 @@ end
 local function dig_up(inst)--, worker)
     local image = inst.components.drawable:GetImage()
     if image ~= nil then
-        local item = inst.components.lootdropper:SpawnLootPrefab("minisign_drawn")
+        local item = inst.components.lootdropper:SpawnLootPrefab("minisign_drawn", nil, inst.linked_skinname_drawn, inst.skin_id )
         item.components.drawable:OnDrawn(image, nil, inst.components.drawable:GetAtlas(), inst.components.drawable:GetBGImage(), inst.components.drawable:GetBGAtlas())
         item._imagename:set(inst._imagename:value())
     else
-        inst.components.lootdropper:SpawnLootPrefab("minisign_item")
+        inst.components.lootdropper:SpawnLootPrefab("minisign_item", nil, inst.linked_skinname, inst.skin_id )
     end
     inst:Remove()
 end
@@ -70,6 +70,7 @@ local function OnDrawnFn(inst, image, src, atlas, bgimage, bgatlas)
         else
             inst.AnimState:ClearOverrideSymbol("SWAP_SIGN_BG")
         end
+
         if inst:HasTag("sign") then
             inst.components.drawable:SetCanDraw(false)
             inst._imagename:set(src ~= nil and (src.drawnameoverride or src:GetBasicDisplayName()) or "")

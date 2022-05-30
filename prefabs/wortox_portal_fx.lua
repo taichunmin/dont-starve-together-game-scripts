@@ -18,7 +18,7 @@ local function MakeFX(name, anim)
         inst.AnimState:SetBank("wilson")
         inst.AnimState:SetBuild("wortox_portal")
         inst.AnimState:PlayAnimation(anim)
-        inst.AnimState:SetFinalOffset(-1)
+        inst.AnimState:SetFinalOffset(3)
 
         inst.entity:SetPristine()
 

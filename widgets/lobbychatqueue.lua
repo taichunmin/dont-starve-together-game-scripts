@@ -89,10 +89,10 @@ function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
 
     local startidx = math.max(1, (#self.list_items - MAX_MESSAGES) + 1) -- older messages are dropped
     local list_widgets = {}
-    for k,v in pairs(self.list_items) do 
-        if k >= startidx then 
+    for k,v in pairs(self.list_items) do
+        if k >= startidx then
             local list = message_constructor(v)
-            for k2,v2 in pairs(list) do 
+            for k2,v2 in pairs(list) do
                 table.insert(list_widgets, v2)
             end
         end
@@ -114,7 +114,7 @@ function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
 end
 
 function LobbyChatQueue:DoFocusHookups()
-    if self.scroll_list then 
+    if self.scroll_list then
         self.default_focus = self.scroll_list
         self.scroll_list:SetFocusChangeDir(MOVE_RIGHT, self.nextWidget)
     else
@@ -150,11 +150,11 @@ function LobbyChatQueue:GetHelpText()
     local t = {}
 
     if self.scroll_list and self.scroll_list.scroll_bar and self.scroll_list.scroll_bar:IsVisible() then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)   
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)
     end
 
     if self.chatbox then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.LOBBYSCREEN.CHAT)   
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.LOBBYSCREEN.CHAT)
     end
 
     return table.concat(t, "  ")

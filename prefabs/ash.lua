@@ -85,7 +85,7 @@ local function fn()
     inst.components.edible.foodtype = FOODTYPE.BURNT
     inst.components.edible.hungervalue = 20
     inst.components.edible.healthvalue = 20
-    
+
     inst:AddComponent("tradable")
 
     inst:ListenForEvent("stacksizechange", OnStackSizeChange)

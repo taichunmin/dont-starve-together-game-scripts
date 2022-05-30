@@ -55,7 +55,7 @@ function Grid:DoFocusHookups()
 			if item then
 				item:ClearFocusDirs()
 				local up = r > 1 and self:GetItemInSlot(c,r-1)
-				local down = r < self.rows and self:GetItemInSlot(c,r+1) 
+				local down = r < self.rows and self:GetItemInSlot(c,r+1)
 				local left = c > 1 and self:GetItemInSlot(c-1,r)
 				local right = c < self.cols and self:GetItemInSlot(c+1,r)
 
@@ -63,7 +63,7 @@ function Grid:DoFocusHookups()
 					if c == 1 then left = self:GetItemInSlot(self.cols,r) end
 					if c == self.cols then right = self:GetItemInSlot(1,r) end
 				end
-				
+
 				if self.v_loop then
 					if r == 1 then up = self:GetItemInSlot(c,self.rows) end
 					if r == self.rows then down = self:GetItemInSlot(c,1) end
@@ -75,7 +75,7 @@ function Grid:DoFocusHookups()
 				if right then item:SetFocusChangeDir(MOVE_RIGHT, right) end
 			end
 		end
-	end	
+	end
 
 end
 
@@ -140,7 +140,7 @@ function Grid:AddItem(widget, c, r)
 	if r > self.rows or c > self.cols then return end
 
 	local old_item = self:GetItemInSlot(c,r)
-	
+
 	if old_item then
 		old_item:Kill()
 		self.items_by_coords[r][c] = nil
@@ -149,7 +149,7 @@ function Grid:AddItem(widget, c, r)
 	self:AddChild(widget)
 
 	self.items_by_coords[r][c] = widget
-	
+
     self:_Layout(c,r, widget)
 
 	self:DoFocusHookups()
@@ -198,9 +198,9 @@ end
 --      1  2
 --      3
 function Grid:FillGrid(num_columns, coffset, roffset, items)
-    local num_rows = math.ceil(#items / num_columns)
+    self.num_rows = math.ceil(#items / num_columns)
     self:UseNaturalLayout()
-    self:InitSize(num_columns, num_rows, coffset, roffset)
+    self:InitSize(num_columns, self.num_rows, coffset, roffset)
     self:AddList(items)
 end
 

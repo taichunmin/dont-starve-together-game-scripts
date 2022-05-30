@@ -68,7 +68,7 @@ local PauseScreen = Class(Screen, function(self)
 
     local buttons = {}
     table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.CONTINUE, cb=function() self:unpause() end })
-    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.OPTIONS, cb=function() 
+    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.OPTIONS, cb=function()
         TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
             TheFrontEnd:PushScreen(OptionsScreen())
             TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
@@ -80,12 +80,8 @@ local PauseScreen = Class(Screen, function(self)
         end)
     end })
     table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.DISCONNECT, cb=function() self:doconfirmquit()	end})
-    if PLATFORM == "WIN32_RAIL" then
-		if TheSim:RAILGetPlatform() == "TGP" then
-		    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://plat.tgp.qq.com/forum/index.html#!/2000004/detail/115888") end })
-		else
-		    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://qqgame.gamebbs.qq.com/forum.php?mod=forumdisplay&fid=31043") end })
-		end
+    if IsRail() then
+	    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://plat.tgp.qq.com/forum/index.html#!/2000004/detail/115888") end })
 	else
 		table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://forums.kleientertainment.com/klei-bug-tracker/dont-starve-together/") end })
 	end
@@ -93,18 +89,13 @@ local PauseScreen = Class(Screen, function(self)
     self.menu = self.proot:AddChild(Menu(buttons, -button_h, false))
     self.menu:SetPosition(0, 35, 0)
     for i,v in pairs(self.menu.items) do
-		if PLATFORM == "WIN32_RAIL" then
+		if IsRail() then
 			if v:GetText() == STRINGS.UI.PAUSEMENU.ISSUE then
 				v:Select()
 				v:SetHoverText(STRINGS.UI.PAUSEMENU.NOT_YET_OPEN)
 			end
 		end
         v:SetScale(.7)
-    end
-
-    if JapaneseOnPS4() then
-        self.menu:SetTextSize(30)
-        --self.afk_menu:SetTextSize(30)
     end
 
     TheInputProxy:SetCursorVisible(true)
@@ -118,21 +109,6 @@ function PauseScreen:unpause()
     SetPause(false)
     TheWorld:PushEvent("continuefrompause")
 end
-
---[[
-function PauseScreen:goafk()
-	self:unpause()
-
-	local player = ThePlayer
-	if player.components.combat and player.components.combat:IsInDanger() then
-		--it's too dangerous to afk
-		player.components.talker:Say(GetString(player, "ANNOUNCE_NODANGERAFK"))
-		return
-	end	
-
-	player.replica.afk:PrepareForAFK()
-end
-]]
 
 function PauseScreen:doconfirmquit()
  	self.active = false

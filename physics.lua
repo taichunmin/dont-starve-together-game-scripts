@@ -32,24 +32,31 @@ function Launch(inst, launcher, basespeed)
     end
 end
 
-function Launch2(inst, launcher, basespeed, speedmult, startheight, startradius)
+function Launch2(inst, launcher, basespeed, speedmult, startheight, startradius, vertical_speed, force_angle)
     if inst ~= nil and inst.Physics ~= nil and inst.Physics:IsActive() and launcher ~= nil then
 	    local x, y, z = launcher.Transform:GetWorldPosition()
 		local x1, y1, z1 = inst.Transform:GetWorldPosition()
 		local dx, dz = x1 - x, z1 - z
 		local dsq = dx * dx + dz * dz
-		local angle
-		if dsq > 0 then
-			local dist = math.sqrt(dsq)
-			angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
-		else
-			angle = 2 * PI * math.random()
+		local angle = force_angle ~= nil and (force_angle*DEGREES) or nil
+		if not angle then
+			if dsq > 0 then
+				local dist = math.sqrt(dsq)
+				angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
+			else
+				angle = 2 * PI * math.random()
+			end
 		end
 		local sina, cosa = math.sin(angle), math.cos(angle)
 		local speed = basespeed + math.random() * speedmult
+		local vertical_speed = vertical_speed or (speed * 5 + math.random() * 2)
 		inst.Physics:Teleport(x + startradius * cosa, startheight, z + startradius * sina)
-		inst.Physics:SetVel(cosa * speed, speed * 5 + math.random() * 2, sina * speed)
+		inst.Physics:SetVel(cosa * speed, vertical_speed, sina * speed)
+
+		return angle
 	end
+
+	return 0
 end
 
 function LaunchAt(inst, launcher, target, speedmult, startheight, startradius, randomangleoffset)
@@ -101,7 +108,7 @@ function DestroyEntity(ent, destroyer, kill_all_creatures, remove_entity_as_fall
         if isworkable then
             ent.components.workable:Destroy(destroyer)
             if ent:IsValid() and ent:HasTag("stump") then
-                ent:Remove()                
+                ent:Remove()
             end
         elseif ent.components.pickable ~= nil
             and ent.components.pickable:CanBePicked()
@@ -131,6 +138,8 @@ function DestroyEntity(ent, destroyer, kill_all_creatures, remove_entity_as_fall
     end
 end
 
+local TOSS_MUST_TAGS = { "_inventoryitem" }
+local TOSS_CANT_TAGS = { "locomotor", "INLIMBO" }
 function LaunchAndClearArea(inst, radius, launch_basespeed, launch_speedmult, launch_startheight, launch_startradius)
     local x, y, z = inst.Transform:GetWorldPosition()
 
@@ -139,7 +148,7 @@ function LaunchAndClearArea(inst, radius, launch_basespeed, launch_speedmult, la
 		DestroyEntity(v, inst)
     end
 
-    local totoss = TheSim:FindEntities(x, 0, z, radius, { "_inventoryitem" }, { "locomotor", "INLIMBO" })
+    local totoss = TheSim:FindEntities(x, 0, z, radius, TOSS_MUST_TAGS, TOSS_CANT_TAGS)
     for i, v in ipairs(totoss) do
         if v.components.mine ~= nil then
             v.components.mine:Deactivate()

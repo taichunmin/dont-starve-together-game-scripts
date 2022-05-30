@@ -16,7 +16,7 @@ end
 
 local QuickJoinScreen = Class(GenericWaitingPopup, function(self, prev_screen, offline, session_mapping, event_id, scorefn, tohostscreencb, tobrowsescreencb)
 	GenericWaitingPopup._ctor(self, "QuickJoinScreen", (event_id == "" and STRINGS.UI.QUICKJOINSCREEN or STRINGS.UI.EVENT_QUICKJOINSCREEN).TITLE)
-	
+
 	self.event_id = event_id or ""
 	self.string_table = self.event_id == "" and STRINGS.UI.QUICKJOINSCREEN or STRINGS.UI.EVENT_QUICKJOINSCREEN
 
@@ -42,8 +42,8 @@ local QuickJoinScreen = Class(GenericWaitingPopup, function(self, prev_screen, o
     self.session_mapping = session_mapping
 
     TheNet:SearchServers(self.event_id)
-    self.startsearchtime = GetTime()
-    
+    self.startsearchtime = GetStaticTime()
+
     self.keepsearchingtimer = 0
     self:KeepSearching(5)
 end)
@@ -64,8 +64,8 @@ function QuickJoinScreen:ProcessPlayerData(session)
                 }
             end
         end
-    end 
-    
+    end
+
     return self.sessions[session] ~= nil and self.sessions[session] ~= false
 end
 
@@ -141,7 +141,7 @@ function QuickJoinScreen:OnUpdate(dt)
 end
 
 function QuickJoinScreen:ShouldKeepSearching()
-	return TheNet:GetServerListingReadDirty() and TheNet:IsSearchingServers() and (GetTime() - self.startsearchtime) < MAX_INITIAL_SEARCH_TIME
+	return TheNet:GetServerListingReadDirty() and TheNet:IsSearchingServers() and (GetStaticTime() - self.startsearchtime) < MAX_INITIAL_SEARCH_TIME
 end
 
 local function PickBestServers(servers)
@@ -166,7 +166,7 @@ local function PickBestServers(servers)
 	for i = 1, MAX_JOIN_ATTEMPTS do
 		table.insert(servers, all_servers[i])
 	end
-	
+
 	-- shuffle best rated servers then sort on priorty (without sorting on ping)
 	shuffleArray(servers)
 	table.sort(servers, function(a,b)
@@ -176,18 +176,18 @@ local function PickBestServers(servers)
 			return false
 		end
 	end)
-	
+
 	return servers
 end
 
 function QuickJoinScreen:TryPickServer()
     if self:ShouldKeepSearching() then
 	    self:KeepSearching(1)
-	    
-	    --print("[QuickJoin]: Still Searching", (GetTime() - self.startsearchtime))
+
+	    --print("[QuickJoin]: Still Searching", (GetStaticTime() - self.startsearchtime))
 	    return
 	end
-	
+
 	self.servertojoin = nil
     self.filtered_servers = {}
 
@@ -198,7 +198,7 @@ function QuickJoinScreen:TryPickServer()
 				v._has_character_on_server = self:ProcessPlayerData(v.session)
 				local score = self.scorefn ~= nil and self.scorefn(v) or 0
 				if score >= 0 then
-					table.insert(self.filtered_servers, 
+					table.insert(self.filtered_servers,
 						{
                     		score = score,
 							actualindex = i,
@@ -213,7 +213,7 @@ function QuickJoinScreen:TryPickServer()
     end
 
 	if #self.filtered_servers == 0 then
-	    if (GetTime() - self.startsearchtime) < MAX_SEARCH_TIME then
+	    if (GetStaticTime() - self.startsearchtime) < MAX_SEARCH_TIME then
 		    self:KeepSearching(2)
 		else
 			print("[QuickJoin]: no servers passed the filters.")
@@ -225,8 +225,8 @@ function QuickJoinScreen:TryPickServer()
 			self:TryNextServer()
 		end
 	else
-	    print("[QuickJoin]: Done Searching. " .. string.format("Searched for %.2fs. %d of %d servers passed the filter", (GetTime() - self.startsearchtime), #self.filtered_servers, #servers))
-	    
+	    print("[QuickJoin]: Done Searching. " .. string.format("Searched for %.2fs. %d of %d servers passed the filter", (GetStaticTime() - self.startsearchtime), #self.filtered_servers, #servers))
+
 		self:KeepSearching(0)
 	    TheNet:StopSearchingServers()
 
@@ -235,8 +235,8 @@ function QuickJoinScreen:TryPickServer()
 		if BRANCH == "dev" then
 			for k,v in ipairs(self.filtered_servers) do print(" " .. k .. ": " .. v.score .. ", " .. v.ping .. " - " .. v.name) end
 	    end
-	    
-		self.servertojoin = 1 
+
+		self.servertojoin = 1
 	    self.queuejoingame = true
 	end
 
@@ -257,24 +257,24 @@ function QuickJoinScreen:TryNextServer(error, reason)
 		values.special_event = (self.event_id and #self.event_id > 0) and self.event_id or nil
 		Stats.PushMetricsEvent("quickjoin.failed", TheNet:GetUserID(), values)
 
-		TheFrontEnd:PushScreen(PopupDialogScreen(self.string_table.NO_SERVERS_TITLE, self.string_table.NO_SERVERS_MSG, 
+		TheFrontEnd:PushScreen(PopupDialogScreen(self.string_table.NO_SERVERS_TITLE, self.string_table.NO_SERVERS_MSG,
 			{
 				{text=self.string_table.NO_SERVERS_BROWSE, cb = function()
-						TheFrontEnd:PopScreen() 
+						TheFrontEnd:PopScreen()
 						self.tobrowsescreencb()
 					end},
 
 				{text=self.string_table.NO_SERVERS_HOST, cb = function()
-						TheFrontEnd:PopScreen() 
+						TheFrontEnd:PopScreen()
 						self.tohostscreencb()
 					end},
 
 				{text=self.string_table.NO_SERVERS_CLOSE, cb = function()
-						TheFrontEnd:PopScreen() 
+						TheFrontEnd:PopScreen()
 					end},
 			}))
 
-		
+
 		self:Close()
 	end
 end
@@ -288,7 +288,7 @@ function QuickJoinScreen:JoinGame()
 		local sel_serv = TheNet:GetServerListingFromActualIndex(server.actualindex)
 	    if sel_serv then
 		    print(string.format("[QuickJoin]: %d - Trying to join: %s, %s", self.servertojoin, server.name, tostring(server.ip)))
-		    
+
 		    local passworld = ""
 			local start_worked = TheNet:JoinServerResponse( false, sel_serv.guid, passworld )
 			if start_worked then
@@ -302,7 +302,7 @@ end
 function QuickJoinScreen:OnControl(control, down)
     if QuickJoinScreen._base.OnControl(self,control, down) then return true end
 end
-   
+
 -- base calls OnCancel
 function QuickJoinScreen:OnCancel()
 	local values = {}
@@ -324,7 +324,7 @@ function QuickJoinScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
 	return table.concat(t, "  ")
 end

@@ -69,7 +69,7 @@ local LoadingWidget = Class(Widget, function(self, imageRand)
     self.cached_string  = ""
     self.elipse_state = 0
     self.cached_fade_level = 0.0
-    self.step_time = GetTime()
+    self.step_time = GetStaticTime()
 
 end)
 
@@ -81,7 +81,7 @@ function LoadingWidget:SetEnabled(enabled)
     self.is_enabled = enabled
     if enabled then
 		self.root_classic:Show()
-		
+
         self:Show()
 	    self:StartUpdating()
     else
@@ -100,13 +100,13 @@ function LoadingWidget:KeepAlive(auto_increment)
 
         local fade_sq = self.cached_fade_level * self.cached_fade_level
         self.loading_widget:SetColour(243/255, 244/255, 243/255, fade_sq)
-        
+
 		self.bg:SetTint(FRONTEND_PORTAL_COLOUR[1], FRONTEND_PORTAL_COLOUR[2], FRONTEND_PORTAL_COLOUR[3], fade_sq)
 		self.active_image:SetTint(1, 1, 1, fade_sq)
 		self.vig:SetTint(1, 1, 1, fade_sq)
-		
-        local time = GetTime()
-        local time_delta = time - self.step_time 
+
+        local time = GetStaticTime()
+        local time_delta = time - self.step_time
         local NEXT_STATE = 1.0
         if time_delta > NEXT_STATE or auto_increment then
             if self.elipse_state == 0 then

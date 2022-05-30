@@ -1,9 +1,12 @@
 local ModsTab = require "widgets/redux/modstab"
 local Screen = require "widgets/screen"
 local Widget = require "widgets/widget"
+local Text = require "widgets/text"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TEMPLATES = require "widgets/redux/templates"
 local OnlineStatus = require "widgets/onlinestatus"
+
+local KitcoonPuppet = require "widgets/kitcoonpuppet"
 
 -- numbers copied from ServerCreationScreen
 local dialog_size_x = 830
@@ -14,11 +17,20 @@ local bottom_button_y = -310
 local ModsScreen = Class(Screen, function(self, prev_screen)
     Screen._ctor(self, "ModsScreen")
 
+    self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     self.dirty = false
 
     self.root = self:AddChild(TEMPLATES.ScreenRoot("root"))
     self.bg = self.root:AddChild(TEMPLATES.PlainBackground())
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.MODSSCREEN.MODTITLE, ""))
+
+    self.kit_puppet = self.root:AddChild(KitcoonPuppet( Profile, nil, {
+        { x = 290, y = 284, scale = 0.75 },
+        { x = 490, y = 284, scale = 0.75 },
+        { x = -25,  y = 284, scale = 0.75 },
+        { x = 125,   y = 284, scale = 0.75 },
+    } ))
 
     self.optionspanel = self.root:AddChild(TEMPLATES.RectangleWindow(dialog_size_x, dialog_size_y))
     self.optionspanel:SetPosition(140, 0)
@@ -86,6 +98,30 @@ function ModsScreen:RepositionModsButtonMenu(allmodsmenu, selectedmodmenu)
     end
 end
 
+function ModsScreen:ShowWorkshopDownloadingNotification()
+	if self.workshop_indicator ~= nil then
+		return
+	end
+
+	self.workshop_indicator = self.mods_page:AddChild(Widget("workshop_indicator"))
+    self.workshop_indicator:SetPosition(390, 250)
+
+	local text = self.workshop_indicator:AddChild(Text(BODYTEXTFONT, 18, STRINGS.UI.MODSSCREEN.DOWNLOADING_MODS, UICOLOURS.GOLD_UNIMPORTANT))
+    text:SetPosition(0, -27)
+
+	local image = self.workshop_indicator:AddChild(Image("images/avatars.xml", "loading_indicator.tex"))
+	local function dorotate() image:RotateTo(0, -360, .75, dorotate) end
+	dorotate()
+	image:SetTint(unpack(UICOLOURS.GOLD_UNIMPORTANT))
+end
+
+function ModsScreen:RemoveWorkshopDownloadingNotification()
+	if self.workshop_indicator ~= nil then
+		self.workshop_indicator:Kill()
+		self.workshop_indicator = nil
+	end
+end
+
 function ModsScreen:DirtyFromMods(_)
     self:MakeDirty()
 end
@@ -150,6 +186,20 @@ function ModsScreen:OnBecomeActive()
     ModsScreen._base.OnBecomeActive(self)
 
     self.mods_page:OnBecomeActive()
+
+    if self.kit_puppet then
+        self.kit_puppet:Enable()
+    end
+end
+
+function ModsScreen:OnBecomeInactive()
+    ModsScreen._base.OnBecomeInactive(self)
+
+    self.mods_page:OnBecomeInactive()
+
+    if self.kit_puppet then
+        self.kit_puppet:Disable()
+    end
 end
 
 function ModsScreen:GetHelpText()

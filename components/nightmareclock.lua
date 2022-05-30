@@ -247,7 +247,7 @@ function self:OnUpdate(dt)
             end
         end
     else
-        --Clients and slaves must wait at end of phase for a server sync
+        --Clients and secondary shards must wait at end of phase for a server sync
         _remainingtimeinphase:set_local(math.min(.001, _remainingtimeinphase:value()))
     end
 

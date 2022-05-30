@@ -49,6 +49,10 @@ function ConstructionBuilder:StartConstruction(target)
             return false, "INUSE"
         end
 
+        if target:HasTag("burnt") then
+            return false, "BURNT"
+        end
+
         self.constructionsite = target
         self.constructioninst = SpawnPrefab(target.components.constructionsite.constructionprefab)
         if self.constructioninst ~= nil then

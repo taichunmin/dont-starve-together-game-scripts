@@ -16,7 +16,7 @@ local function fn()
 
     MakeInventoryPhysics(inst)
 
-    inst:AddTag("cattoy") 
+    inst:AddTag("cattoy")
 
     MakeInventoryFloatable(inst)
 

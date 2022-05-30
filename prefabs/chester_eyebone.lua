@@ -14,10 +14,18 @@ local assets =
 
 local SPAWN_DIST = 30
 
+local function SetEye(inst, inv_img)
+    local skin_name = inst:GetSkinName()
+    if skin_name ~= nil then
+        inv_img = string.gsub(inv_img, "chester_eyebone", skin_name)
+    end
+    inst.components.inventoryitem:ChangeImageName(inv_img)
+end
+
 local function OpenEye(inst)
     if not inst.isOpenEye then
         inst.isOpenEye = true
-        inst.components.inventoryitem:ChangeImageName(inst.openEye)
+        SetEye(inst, inst.openEye)
         inst.AnimState:PlayAnimation("idle_loop", true)
     end
 end
@@ -25,33 +33,58 @@ end
 local function CloseEye(inst)
     if inst.isOpenEye then
         inst.isOpenEye = nil
-        inst.components.inventoryitem:ChangeImageName(inst.closedEye)
+        SetEye(inst, inst.closedEye)
         inst.AnimState:PlayAnimation("dead", true)
     end
 end
 
 local function RefreshEye(inst)
-    inst.components.inventoryitem:ChangeImageName(inst.isOpenEye and inst.openEye or inst.closedEye)
+    local inv_img = inst.isOpenEye and inst.openEye or inst.closedEye
+    SetEye(inst, inv_img)
+end
+
+local function SetBuild(inst)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        local state = ""
+        if inst.EyeboneState == "SHADOW" then
+            state = "_shadow"
+        elseif inst.EyeboneState == "SNOW" then
+            state = "_snow"
+        end
+
+        inst.AnimState:OverrideItemSkinSymbol("eyeball", skin_build, "eyeball" .. state, inst.GUID, "chester_eyebone")
+        inst.AnimState:OverrideItemSkinSymbol("eyebone01", skin_build, "eyebone01" .. state, inst.GUID, "chester_eyebone")
+        inst.AnimState:OverrideItemSkinSymbol("lids", skin_build, "lids" .. state, inst.GUID, "chester_eyebone")
+    else
+        inst.AnimState:ClearAllOverrideSymbols()
+
+        local build = "chester_eyebone_build"
+        if inst.EyeboneState == "SHADOW" then
+            build = "chester_eyebone_shadow_build"
+        elseif inst.EyeboneState == "SNOW" then
+            build = "chester_eyebone_snow_build"
+        end
+        inst.AnimState:SetBuild(build)
+    end
 end
 
 local function MorphShadowEyebone(inst)
-    inst.AnimState:SetBuild("chester_eyebone_shadow_build")
-
     inst.openEye = "chester_eyebone_shadow"
     inst.closedEye = "chester_eyebone_closed_shadow"
     RefreshEye(inst)
 
     inst.EyeboneState = "SHADOW"
+    SetBuild(inst)
 end
 
 local function MorphSnowEyebone(inst)
-    inst.AnimState:SetBuild("chester_eyebone_snow_build")
-
     inst.openEye = "chester_eyebone_snow"
     inst.closedEye = "chester_eyebone_closed_snow"
     RefreshEye(inst)
 
     inst.EyeboneState = "SNOW"
+    SetBuild(inst)
 end
 
 --[[
@@ -82,7 +115,7 @@ local function SpawnChester(inst)
     local spawn_pt = GetSpawnPoint(pt)
     if spawn_pt ~= nil then
         --print("    at", spawn_pt)
-        local chester = SpawnPrefab("chester")
+        local chester = SpawnPrefab("chester", inst.linked_skinname, inst.skin_id )
         if chester ~= nil then
             chester.Physics:Teleport(spawn_pt:Get())
             chester:FacePoint(pt:Get())
@@ -138,7 +171,7 @@ local function FixChester(inst)
     --take an existing chester if there is one
     if not RebindChester(inst) then
         CloseEye(inst)
-        
+
         if inst.components.inventoryitem.owner ~= nil then
             local time_remaining = inst.respawntime ~= nil and math.max(0, inst.respawntime - GetTime()) or 0
             StartRespawn(inst, time_remaining)
@@ -233,6 +266,9 @@ local function fn()
     inst.OnSave = OnSave
 
     inst.fixtask = inst:DoTaskInTime(1, FixChester)
+
+    inst.RefreshEye = RefreshEye
+    inst.SetBuild = SetBuild
 
     return inst
 end

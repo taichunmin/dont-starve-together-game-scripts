@@ -15,11 +15,11 @@ function UpdateextentsForNode(extents, node)
 end
 
 function ResetextentsForNodes(nodes)
-	local extents = {xmin=1000000,ymin=1000000,xmax=-1000000,ymax=-1000000}	
+	local extents = {xmin=1000000,ymin=1000000,xmax=-1000000,ymax=-1000000}
 	for k,node in pairs(nodes) do
 		Updateextents(extents, node)
 	end
-	
+
 	return extents
 end
 
@@ -29,20 +29,20 @@ function GetMinimumRadiusForNodes(nodes)
 	for k,node in pairs(nodes) do
 		table.insert(floats, node.data.position.x)
 		table.insert(floats, node.data.position.y)
-		
+
 		local radius = node.data.size
-		
+
 		-- plus radius
 		table.insert(floats, node.data.position.x+radius)
 		table.insert(floats, node.data.position.y)
 		table.insert(floats, node.data.position.x-radius)
 		table.insert(floats, node.data.position.y)
-		
+
 		table.insert(floats, node.data.position.x)
 		table.insert(floats, node.data.position.y+radius)
 		table.insert(floats, node.data.position.x)
 		table.insert(floats, node.data.position.y-radius)
-		
+
 	end
 
 	return getminimumradius(floats) --sim:GetMinimumRadius(floats)
@@ -63,12 +63,12 @@ local function UpdateextentsForPoint(extents, point)
 	end
 end
 function ResetextentsForPoly(poly)
-	local extents = {xmin=1000000,ymin=1000000,xmax=-1000000,ymax=-1000000}	
-	
+	local extents = {xmin=1000000,ymin=1000000,xmax=-1000000,ymax=-1000000}
+
 	for i =1, #poly do
 		UpdateextentsForPoint(extents, poly[i])
 	end
-	
+
 	extents.size = {x = extents.xmax - extents.xmin, y = extents.ymax - extents.ymin}
 
 	if  extents.size.x > extents.size.y then

@@ -10,6 +10,11 @@ function BundleMaker:SetBundlingPrefabs(bundling, bundled)
     self.bundledprefab = bundled
 end
 
+function BundleMaker:SetSkinData(skinname, skin_id)
+    self.bundledskinname = skinname
+    self.bundledskin_id = skin_id
+end
+
 function BundleMaker:SetOnStartBundlingFn(fn)
     self.onstartbundlingfn = fn
 end

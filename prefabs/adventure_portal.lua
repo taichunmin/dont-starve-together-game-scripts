@@ -8,11 +8,11 @@ local assets =
 
 local function OnActivate(inst)
 	--do popup confirmation
-	--do portal presentation 
+	--do portal presentation
 	--save and do restart
     ProfileStatsSet("portal_used", true)
 	SetPause(true,"portal")
-	
+
 	local function startadventure()
 		local function onsaved()
 		    StartNextInstance({reset_action=RESET_ACTION.LOAD_SLOT, save_slot = SaveGameIndex:GetCurrentSaveSlot()}, true)
@@ -26,7 +26,7 @@ local function OnActivate(inst)
 
 	local function rejectadventure()
 		TheFrontEnd:PopScreen()
-		SetPause(false) 
+		SetPause(false)
 		inst.components.activatable.inactive = true
 		ProfileStatsSet("portal_rejected", true)
 	end

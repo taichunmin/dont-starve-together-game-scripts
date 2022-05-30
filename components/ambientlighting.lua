@@ -82,8 +82,10 @@ local _overridecolour = {
 }
 local _flashstate = 0
 local _flashtime = 0
+local _flash_holdtime = 0
 local _flashintensity = 1
 local _flashcolour = 0
+local _flash_str_setting = SCREEN_FLASH_SCALING[Profile:GetScreenFlash() or 1]
 local _activatedplayer = nil --cached for activation/deactivation only, NOT for logic use
 local _nightvision = false -- This is whether or not the active player is wearing a mole hat
 local _overridefixedcolour = nil
@@ -111,15 +113,12 @@ local function Stop()
 end
 
 local function PushCurrentColour()
-    if _flashstate <= 0 then
-        TheSim:SetAmbientColour(_realcolour.currentcolour.x * _realcolour.lightpercent, _realcolour.currentcolour.y * _realcolour.lightpercent, _realcolour.currentcolour.z * _realcolour.lightpercent)
-        TheSim:SetVisualAmbientColour(_overridecolour.currentcolour.x * _overridecolour.lightpercent, _overridecolour.currentcolour.y * _overridecolour.lightpercent, _overridecolour.currentcolour.z * _overridecolour.lightpercent)
-    elseif _flashstate <= 1 then
+	if _flashstate == 1 then
         TheSim:SetAmbientColour(_flashcolour, _flashcolour, _flashcolour)
         TheSim:SetVisualAmbientColour(_flashcolour, _flashcolour, _flashcolour)
     else
-        TheSim:SetAmbientColour(_realcolour.currentcolour.x * _realcolour.lightpercent * _flashcolour, _realcolour.currentcolour.y * _realcolour.lightpercent * _flashcolour, _realcolour.currentcolour.z * _realcolour.lightpercent * _flashcolour)
-        TheSim:SetVisualAmbientColour(_overridecolour.currentcolour.x * _overridecolour.lightpercent * _flashcolour, _overridecolour.currentcolour.y * _overridecolour.lightpercent * _flashcolour, _overridecolour.currentcolour.z * _overridecolour.lightpercent * _flashcolour)
+        TheSim:SetAmbientColour(_realcolour.currentcolour.x * _realcolour.lightpercent,	_realcolour.currentcolour.y * _realcolour.lightpercent, _realcolour.currentcolour.z * _realcolour.lightpercent)
+        TheSim:SetVisualAmbientColour(_overridecolour.currentcolour.x * _overridecolour.lightpercent, _overridecolour.currentcolour.y * _overridecolour.lightpercent, _overridecolour.currentcolour.z * _overridecolour.lightpercent)
     end
 end
 
@@ -180,10 +179,33 @@ local function OnNightVision(player, enabled)
     PushCurrentColour()
 end
 
+local function clac_flash(x)
+	return x > 0.8 and (x - 0.25*_flashintensity*_flash_str_setting)
+			or ((x-1)*(1-_flashintensity*_flash_str_setting) + 1)
+end
+
 local function OnScreenFlash(src, intensity)
     _flashstate = 1
     _flashtime = 0
     _flashintensity = intensity
+
+    if _realcolour.remainingtimeinlerp > 0 then
+		_realcolour.remainingtimeinlerp = 0
+		SetColour(_realcolour.currentcolour, _realcolour.lerptocolour)
+	end
+
+    if _overridecolour.remainingtimeinlerp > 0 then
+		_overridecolour.remainingtimeinlerp = 0
+		SetColour(_overridecolour.currentcolour, _overridecolour.lerptocolour)
+
+		_flashintensity = intensity * 0.9
+	end
+
+	_flash_holdtime = 8 * FRAMES
+
+	local vr, vg, vb = _overridecolour.currentcolour.x * _overridecolour.lightpercent, _overridecolour.currentcolour.y * _overridecolour.lightpercent, _overridecolour.currentcolour.z * _overridecolour.lightpercent
+	_flashcolour = clac_flash((vr+vg+vb)/3)
+
     Start()
 end
 
@@ -219,6 +241,10 @@ local function OnOverrideAmbientLighting(inst, colour)
     end
 end
 
+local function OnContinueFromPause()
+	_flash_str_setting = SCREEN_FLASH_SCALING[Profile:GetScreenFlash() or 1]
+end
+
 --------------------------------------------------------------------------
 --[[ Initialization ]]
 --------------------------------------------------------------------------
@@ -237,6 +263,7 @@ end
 inst:ListenForEvent("playeractivated", OnPlayerActivated)
 inst:ListenForEvent("playerdeactivated", OnPlayerDeactivated)
 inst:ListenForEvent("overrideambientlighting", OnOverrideAmbientLighting)
+inst:ListenForEvent("continuefrompause", OnContinueFromPause)
 
 --------------------------------------------------------------------------
 --[[ Public member functions ]]
@@ -262,6 +289,9 @@ local function DoUpdate(dt, targetsettings)
             targetsettings.currentcolour.z = targetsettings.lerpfromcolour.z * frompercent + targetsettings.lerptocolour.z * topercent
             return true
         else
+			if _flashstate == 2 then
+				_flashstate = 0
+			end
             SetColour(targetsettings.currentcolour, targetsettings.lerptocolour)
             return false
         end
@@ -270,29 +300,21 @@ local function DoUpdate(dt, targetsettings)
 end
 
 local function DoUpdateFlash(dt)
-    if _flashstate > 0 then
-        _flashtime = _flashtime + dt
-        if _flashtime < 3 / 60 then
-            _flashcolour = 0
-            return true
-        elseif _flashtime < 7 / 60 then
-            _flashcolour = _flashintensity
-            return true
-        elseif _flashtime < 9 / 60 then
-            _flashcolour = 0
-            return true
-        elseif _flashtime < 17 / 60 then
-            _flashcolour = _flashintensity
-            return true
-        elseif _flashtime < 107 / 60 then
-            _flashcolour = .5 + (_flashtime * 60 - 17) / 180
-            _flashstate = 2
-            return true
-        else
-            _flashstate = 0
-            return false
-        end
-    end
+	if _flashstate == 1 then
+	    _flashtime = _flashtime + dt
+	    if _flashtime > _flash_holdtime then
+			-- Note: we have to compenstate for the light colour that will be applied in _flashstate 2
+			_realcolour.currentcolour.x, _realcolour.currentcolour.y, _realcolour.currentcolour.z = _flashcolour/_realcolour.lightpercent, _flashcolour/_realcolour.lightpercent, _flashcolour/_realcolour.lightpercent
+			_overridecolour.currentcolour.x, _overridecolour.currentcolour.y, _overridecolour.currentcolour.z = _flashcolour/_overridecolour.lightpercent, _flashcolour/_overridecolour.lightpercent, _flashcolour/_overridecolour.lightpercent
+			ComputeTargetColour(_realcolour, 0.5)
+			ComputeTargetColour(_overridecolour, 0.5)
+			DoUpdate(0, _realcolour)
+			DoUpdate(0, _overridecolour)
+			_flashstate = 2
+			return true
+		end
+        return true
+	end
     return false
 end
 

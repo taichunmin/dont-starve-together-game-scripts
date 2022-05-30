@@ -10,9 +10,9 @@ local IDLE_SPEECH_DELAY = 180
 
 local MagicSkinCollector = Class(Widget, function(self)
     Widget._ctor(self, "MagicSkinCollector")
-    
+
     self.root = self:AddChild(Widget("root"))
-    
+
     self.innkeeper = self.root:AddChild(UIAnim())
   	self.innkeeper:GetAnimState():SetBank("skin_collector")
     self.innkeeper:GetAnimState():SetBuild("skin_collector")
@@ -27,18 +27,18 @@ local MagicSkinCollector = Class(Widget, function(self)
     self.speech_bubble:SetPosition(40, 550)
     self.speech_bubble:SetScale(-.66, .95, .66)
     self.speech_bubble:Show()
-    
+
     self.text = self.root:AddChild(Text(BUTTONFONT, 35, "", WHITE))
     self.text:SetRegionSize( 250, 180)
     self.text:SetVAlign(ANCHOR_MIDDLE)
     self.text:EnableWordWrap(true)
     self.text:SetPosition(50, 550)
 
-    self.hand = self.root:AddChild(TEMPLATES.InvisibleButton(15, 15, 
-			    											function() if not self.talking then 
-			    														self:Say(STRINGS.UI.TRADESCREEN.MAGICSKIN_COLLECTOR_SPEECH.HAND) 
+    self.hand = self.root:AddChild(TEMPLATES.InvisibleButton(15, 15,
+			    											function() if not self.talking then
+			    														self:Say(STRINGS.UI.TRADESCREEN.MAGICSKIN_COLLECTOR_SPEECH.HAND)
 			    													   end
-			    											end, 
+			    											end,
 			   												nil ))
     self.hand:SetPosition(-75, 75)
 
@@ -73,37 +73,37 @@ function MagicSkinCollector:Say(text, rarity, name, number)
 	assert(text, "Bad text string for MagicSkinCollector speech")
 
 	local str = text
-	if type(text) == "table" then 
+	if type(text) == "table" then
 		str = GetRandomItem(text)
 	end
 
-	if rarity then 
+	if rarity then
 		str = string.gsub(str, "<rarity>", rarity)
 	end
 
-	if name then 
+	if name then
 		str = string.gsub(str, "<item>", name)
 	end
-	
-	if number then 
+
+	if number then
 		str = string.gsub(str, "<number>", number)
 	end
 
-	self.last_speech_time = GetTime()
-	
+	self.last_speech_time = GetStaticTime()
+
 	if not (self.innkeeper:GetAnimState():IsCurrentAnimation("dialog_pre") or self.innkeeper:GetAnimState():IsCurrentAnimation("dial_loop")) then
 		self.innkeeper:GetAnimState():PlayAnimation("dialog_pre", false)
 		self.innkeeper:GetAnimState():PushAnimation("dial_loop", true)
 	end
-	
+
 	self.speech_bubble:Show()
-	if not self.speech_bubble:GetAnimState():IsCurrentAnimation("open") then 
+	if not self.speech_bubble:GetAnimState():IsCurrentAnimation("open") then
 		self.speech_bubble:GetAnimState():PlayAnimation("open", false)
 	end
 
 	self.text_string = str
 	self.display_text_time = SPEECH_TIME
-	
+
 	self.talking = true
 end
 
@@ -123,16 +123,16 @@ end
 
 function MagicSkinCollector:OnUpdate(dt)
 	-- Do intro if appear animation has finished
-	if not self.intro_done and 
-		self.innkeeper:GetAnimState():IsCurrentAnimation("appear") and 
-		self.innkeeper:GetAnimState():AnimDone() then 
+	if not self.intro_done and
+		self.innkeeper:GetAnimState():IsCurrentAnimation("appear") and
+		self.innkeeper:GetAnimState():AnimDone() then
 		self.innkeeper:GetAnimState():PlayAnimation("idle", true)
 		self.intro_done = true
 		self:Say(STRINGS.UI.TRADESCREEN.MAGICSKIN_COLLECTOR_SPEECH.START)
 	elseif self.innkeeper:GetAnimState():IsCurrentAnimation("disappear") then
-		if self.innkeeper:GetAnimState():AnimDone() then 
+		if self.innkeeper:GetAnimState():AnimDone() then
 			self:StopUpdating()
-			if self.exit_callback then 
+			if self.exit_callback then
 				self.exit_callback()
 			end
 		end
@@ -140,20 +140,20 @@ function MagicSkinCollector:OnUpdate(dt)
 		return
 	end
 
-	if self.intro_done and (GetTime() - self.last_speech_time) > IDLE_SPEECH_DELAY then 
-		--print("Playing idle speech at ", GetTime(), self.last_speech_time)
+	if self.intro_done and (GetStaticTime() - self.last_speech_time) > IDLE_SPEECH_DELAY then
+		--print("Playing idle speech at ", GetStaticTime(), self.last_speech_time)
 		-- It's been a while since the last speech. Say something random
 		self:Say(STRINGS.UI.TRADESCREEN.MAGICSKIN_COLLECTOR_SPEECH.IDLE)
 	end
 
 	-- Update text
 	if self.talking then
-		if self.speech_bubble:GetAnimState():IsCurrentAnimation("open") and 
-			self.speech_bubble:GetAnimState():AnimDone() then 
+		if self.speech_bubble:GetAnimState():IsCurrentAnimation("open") and
+			self.speech_bubble:GetAnimState():AnimDone() then
 
 			self.text:SetString(self.text_string)
 
-			if not self.sound_started then 
+			if not self.sound_started then
 				--print("Playing skin collector talk sound")
 				TheFrontEnd:GetSound():PlaySound("dontstarve/characters/skincollector/talk_LP", "skincollector")
 				self.sound_started = true

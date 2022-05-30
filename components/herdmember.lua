@@ -20,7 +20,7 @@ local HerdMember = Class(function(self, inst)
 
     self.herd = nil
     self.herdprefab = "beefaloherd"
-    
+
     self.task = self.inst:DoTaskInTime(5, OnInit)
 end,
 nil,
@@ -49,7 +49,7 @@ function HerdMember:GetHerd()
 end
 
 function HerdMember:CreateHerd()
-    if self.enabled and not self.herd then
+    if self.enabled and (self.herd == nil or not self.herd:IsValid()) and (self.inst.components.health == nil or not self.inst.components.health:IsDead()) then
         local herd = SpawnPrefab(self.herdprefab)
         if herd then
             herd.Transform:SetPosition(self.inst.Transform:GetWorldPosition() )
@@ -60,10 +60,20 @@ function HerdMember:CreateHerd()
     end
 end
 
-function HerdMember:Enable(enabled)
-    if not enabled and self.herd ~= nil then
+function HerdMember:Leave()
+    if self.herd ~= nil and self.herd:IsValid() then
         self.herd.components.herd:RemoveMember(self.inst)
-    elseif enabled and self.herd == nil then
+	end
+
+	if self.enabled then
+        self.task = self.inst:DoTaskInTime(5, OnInit)
+	end
+end
+
+function HerdMember:Enable(enabled)
+    if not enabled and self.herd ~= nil and self.herd:IsValid() then
+        self.herd.components.herd:RemoveMember(self.inst)
+    elseif enabled and (self.herd == nil or not self.herd:IsValid()) then
         self.task = self.inst:DoTaskInTime(5, OnInit)
     end
     self.enabled = enabled

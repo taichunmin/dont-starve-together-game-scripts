@@ -68,13 +68,18 @@ end
 
 function Text:SetFadeAlpha(a, skipChildren)
     if not self.can_fade_alpha then return end
-    
+
     self.inst.TextWidget:SetColour(self.colour[1], self.colour[2], self.colour[3], self.colour[4] * a)
     Widget.SetFadeAlpha( self, a, skipChildren )
 end
 
 function Text:SetAlpha(a)
     self.inst.TextWidget:SetColour(1,1,1, a)
+end
+
+function Text:UpdateAlpha(a)
+    self.colour[4] = a
+    self.inst.TextWidget:SetColour(unpack(self.colour))
 end
 
 function Text:SetFont(font)
@@ -133,6 +138,7 @@ end
 --  3) Use that number as an estimate for maxchars, or round up
 --     a little just in case dots aren't the smallest character
 function Text:SetTruncatedString(str, maxwidth, maxchars, ellipses)
+	local str_fits = true
     str = str ~= nil and str:match("^[^\n\v\f\r]*") or ""
     if #str > 0 then
         if type(ellipses) ~= "string" then
@@ -141,6 +147,7 @@ function Text:SetTruncatedString(str, maxwidth, maxchars, ellipses)
         if maxchars ~= nil and str:utf8len() > maxchars then
             str = str:utf8sub(1, maxchars)
             self.inst.TextWidget:SetString(str..ellipses)
+			str_fits = false
         else
             self.inst.TextWidget:SetString(str)
         end
@@ -148,11 +155,13 @@ function Text:SetTruncatedString(str, maxwidth, maxchars, ellipses)
             while self.inst.TextWidget:GetRegionSize() > maxwidth do
                 str = str:utf8sub(1, -2)
                 self.inst.TextWidget:SetString(str..ellipses)
+				str_fits = false
             end
         end
     else
         self.inst.TextWidget:SetString("")
     end
+	return str_fits
 end
 
 local function IsWhiteSpace(charcode)
@@ -170,88 +179,99 @@ local function IsNewLine(charcode)
 end
 
 -- maxwidth can be a single number or an array of numbers if maxwidth is different per line
-function Text:SetMultilineTruncatedString(str, maxlines, maxwidth, maxcharsperline, ellipses, shrink_to_fit)
+function Text:SetMultilineTruncatedString_Impl(str, maxlines, maxwidth, maxcharsperline, ellipses)
+	local str_fits = true
     if str == nil or #str <= 0 then
         self.inst.TextWidget:SetString("")
-        return
+        return str_fits
     end
     local tempmaxwidth = type(maxwidth) == "table" and maxwidth[1] or maxwidth
     if maxlines <= 1 then
-        self:SetTruncatedString(str, tempmaxwidth, maxcharsperline, ellipses)
+        str_fits = self:SetTruncatedString(str, tempmaxwidth, maxcharsperline, ellipses) -- returns true if the string was truncated
     else
         self:SetTruncatedString(str, tempmaxwidth, maxcharsperline, false)
         local line = self:GetString()
         if #line < #str then
-            --check if the first word fits while being wrapped
-            local words = {}
-            local first = str:match("([^%s]+)(.+)")
-
-            if shrink_to_fit and not self.shrink_in_progress then       
-                --ensure that we reset the size back to the original size when we get new text
-                if self.original_size ~= nil then
-                    self:SetSize( self.original_size )
+            if IsNewLine(str:byte(#line + 1)) then
+                str = str:sub(#line + 2)
+            elseif not IsWhiteSpace(str:byte(#line + 1)) then
+                local found_white = false
+                for i = #line, 1, -1 do
+                    if IsWhiteSpace(line:byte(i)) then
+                        line = line:sub(1, i)
+                        found_white = true
+                        break
+                    end
                 end
-                self.original_size = self:GetSize()
-            end
+                str = str:sub(#line + 1)
 
-            if shrink_to_fit and LOC.GetShouldTextFit() and not string.match(line, first) and self:GetSize() > 16 then --the 16 is a semi reasonable "smallest" size that is okay. This is to stop stackoverflow from infinite recursion due to bad string data.
-                --drop size to fit a whole word
-                self:SetSize( self:GetSize() - 1 )
-                self.shrink_in_progress = true
-                self:SetMultilineTruncatedString(str, maxlines, maxwidth, maxcharsperline, ellipses, shrink_to_fit)
-                self.shrink_in_progress = false
+                if not found_white then
+                    --Testing for finding areas where we've had to split on
+                    --print("Warning: ".. line .. " was split on non-whitespace.")
+                end
             else
-                if IsNewLine(str:byte(#line + 1)) then
-                    str = str:sub(#line + 2)
-                elseif not IsWhiteSpace(str:byte(#line + 1)) then
-                    local found_white = false
-                    for i = #line, 1, -1 do
-                        if IsWhiteSpace(line:byte(i)) then
-                            line = line:sub(1, i)
-                            found_white = true
-                            break
+                str = str:sub(#line + 2)
+                while #str > 0 and IsWhiteSpace(str:byte(1)) do
+                    str = str:sub(2)
+                end
+            end
+            if #str > 0 then
+                if type(maxwidth) == "table" then
+                    if #maxwidth > 2 then
+                        tempmaxwidth = {}
+                        for i = 2, #maxwidth do
+                            table.insert(tempmaxwidth, maxwidth[i])
                         end
-                    end
-                    str = str:sub(#line + 1)
-                    
-                    if not found_white then
-                        --Testing for finding areas where we've had to split on
-                        --print("Warning: ".. line .. " was split on non-whitespace.")
-                    end
-                else
-                    str = str:sub(#line + 2)
-                    while #str > 0 and IsWhiteSpace(str:byte(1)) do
-                        str = str:sub(2)
+                    elseif #maxwidth == 2 then
+                        tempmaxwidth = maxwidth[2]
                     end
                 end
-                if #str > 0 then
-                    if type(maxwidth) == "table" then
-                        if #maxwidth > 2 then
-                            tempmaxwidth = {}
-                            for i = 2, #maxwidth do
-                                table.insert(tempmaxwidth, maxwidth[i])
-                            end
-                        elseif #maxwidth == 2 then
-                            tempmaxwidth = maxwidth[2]
-                        end
-                    end
-                    self:SetMultilineTruncatedString(str, maxlines - 1, tempmaxwidth, maxcharsperline, ellipses)
-                    self.inst.TextWidget:SetString(line.."\n"..(self.inst.TextWidget:GetString() or ""))
-                end
+                str_fits = self:SetMultilineTruncatedString_Impl(str, maxlines - 1, tempmaxwidth, maxcharsperline, ellipses)
+                self.inst.TextWidget:SetString(line.."\n"..(self.inst.TextWidget:GetString() or ""))
             end
         end
     end
+
+	return str_fits
 end
 
+function Text:UpdateOriginalSize()
+	self.original_size = self.size
+end
 
---Note(Peter): Nothing is currently using this, but I'll leave it here for legacy mod support
+function Text:SetMultilineTruncatedString(str, maxlines, maxwidth, maxcharsperline, ellipses, shrink_to_fit, min_shrink_font_size)
+    if str == nil or #str <= 0 then
+        self.inst.TextWidget:SetString("")
+        return
+    end
+
+	if shrink_to_fit then
+		--ensure that we reset the size back to the original size when we get new text
+		if self.original_size ~= nil then
+			self:SetSize( self.original_size )
+		else
+			self.original_size = self:GetSize()
+		end
+	end
+
+	local str_fits = self:SetMultilineTruncatedString_Impl(str, maxlines, maxwidth, maxcharsperline, ellipses)
+	while not str_fits and shrink_to_fit and LOC.GetShouldTextFit() and self:GetSize() > (min_shrink_font_size or 16) do -- the 16 is a semi reasonable "smallest" size that is okay. This is to stop stackoverflow from infinite recursion due to bad string data.
+		local new_size = self:GetSize() - 1 --drop size to fit a whole word
+		local shrinked_maxlines = math.floor(maxlines * self.original_size / new_size)  -- num lines that fit in original size
+
+		self:SetSize( new_size )
+		str_fits = self:SetMultilineTruncatedString_Impl(str, shrinked_maxlines, maxwidth, maxcharsperline, ellipses)
+	end
+end
+
 function Text:SetAutoSizingString(str, max_width, allow_scaling_up)
+-- Note: Use SetMultilineTruncatedString instead of this
     self:SetString(str)
 	self.inst.TextWidget:ResetRegionSize()
 
 	self.target_font_size = self:GetSize()
 	local w = self:GetRegionSize()
-	
+
 	local scale = allow_scaling_up and (max_width / w) or math.min(1, max_width / w)
 	if scale ~= 1 then
 		self:SetSize(self.target_font_size * scale)

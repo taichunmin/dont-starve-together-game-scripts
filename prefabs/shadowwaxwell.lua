@@ -22,6 +22,8 @@ local function OnAttacked(inst, data)
     end
 end
 
+local RETARGET_MUST_TAGS = { "_combat" }
+local RETARGET_CANT_TAGS = { "playerghost", "INLIMBO" }
 local function retargetfn(inst)
     --Find things attacking leader
     local leader = inst.components.follower:GetLeader()
@@ -35,8 +37,8 @@ local function retargetfn(inst)
                         guy.components.combat:TargetIs(inst))
                     and inst.components.combat:CanTarget(guy)
             end,
-            { "_combat" }, -- see entityreplica.lua
-            { "playerghost", "INLIMBO" }
+            RETARGET_MUST_TAGS, -- see entityreplica.lua
+            RETARGET_CANT_TAGS
         )
         or nil
 end
@@ -128,6 +130,7 @@ local function MakeMinion(prefab, tool, hat, master_postinit)
 
         inst:AddComponent("locomotor")
         inst.components.locomotor.runspeed = TUNING.SHADOWWAXWELL_SPEED
+	    inst.components.locomotor:SetTriggersCreep(false)
         inst.components.locomotor.pathcaps = { ignorecreep = true }
         inst.components.locomotor:SetSlowMultiplier(.6)
 

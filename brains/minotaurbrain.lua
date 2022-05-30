@@ -13,6 +13,8 @@ local CHASE_GIVEUP_DIST = 10
 local RUN_AWAY_DIST = 5
 local STOP_RUN_AWAY_DIST = 15
 
+local MAX_JUMP_ATTACK_RANGE = 15
+
 local MinotaurBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
 end)
@@ -55,29 +57,121 @@ local function ShouldGoHome(inst)
             inst.components.combat.target == nil)
 end
 
+local PILLAR_HASTAG = {"quake_on_charge"}
+local function closetopillar(inst)
+    local x,y,z = inst.Transform:GetWorldPosition()
+      
+    local ents = TheSim:FindEntities(x,y,z, 4, PILLAR_HASTAG)
+    if #ents > 0 then
+        return true
+    end
+end
+
+local function shouldramattack(inst)
+    if inst.components.combat.target == nil then
+        return nil
+    end
+    
+    if inst.hasrammed and inst.components.combat.target:IsNear(inst, inst.physicsradius + inst.components.combat.attackrange) then
+        inst.hasrammed = nil
+        BufferedAction(inst, inst.components.combat.target, ACTIONS.ATTACK, nil, nil, nil, .2)
+        return nil
+    end
+
+    if inst.components.timer:TimerExists("rammed") and not inst.sg:HasStateTag("running") then
+        return nil
+    end
+
+    if inst.sg:HasStateTag("leapattack") then
+        return nil
+    end
+    
+    if closetopillar(inst) then
+        return nil
+    end
+
+    return true
+end
+
+
+local function shouldjumpattack(inst)
+    if inst.components.health:GetPercent() > 0.6 then
+        return false
+    end
+
+    if inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("running") then
+        return false
+    end
+
+    if inst.components.timer:TimerExists("stunned") then
+        return false
+    end        
+
+    if inst.components.combat.target then
+        local target = inst.components.combat.target
+        if target then
+            if target:IsValid() then
+                local x,y,z = inst.Transform:GetWorldPosition()
+                local ents = TheSim:FindEntities(x,y,z,  MAX_JUMP_ATTACK_RANGE, PILLAR_HASTAG)
+                
+                local targetdist = inst:GetDistanceSqToInst(target)
+
+                if #ents > 0 then
+                    for i,ent in ipairs(ents)do
+                        local dist = inst:GetDistanceSqToInst(ent)
+                        local p1 = Vector3(ent.Transform:GetWorldPosition())
+                        local p2 = Vector3(target.Transform:GetWorldPosition())
+                        if dist < targetdist then
+                            local diff = anglediff(inst:GetAngleToPoint(p1), inst:GetAngleToPoint(p2) )
+                            if diff < 90 then
+                                return false
+                            end
+                        end
+                    end
+                end
+
+                local combatrange = inst.components.combat:CalcAttackRangeSq(target)
+                
+                if targetdist > combatrange and targetdist < MAX_JUMP_ATTACK_RANGE * MAX_JUMP_ATTACK_RANGE then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function dojumpAttack(inst)
+    if inst.components.combat.target and not inst.sg:HasStateTag("leapattack") then
+        local target = inst.components.combat.target
+        inst:FacePoint(target.Transform:GetWorldPosition())
+        inst:PushEvent("doleapattack")
+    end
+end
+
 function MinotaurBrain:OnStart()
+
     local root = PriorityNode(
     {
-        WhileNode(function()
-                return self.inst.components.combat.target ~= nil
-                    and (self.inst.sg:HasStateTag("running") or
-                        not self.inst.components.combat.target:IsNear(self.inst, 6))
-            end,
-            "RamAttack", ChaseAndRam(self.inst, MAX_CHASE_TIME, CHASE_GIVEUP_DIST, MAX_CHARGE_DIST)),
-        WhileNode(function()
-                return self.inst.components.combat.target ~= nil
-                    and not self.inst.sg:HasStateTag("running")
-                    and self.inst.components.combat.target:IsNear(self.inst, 6)
-            end,
-            "NormalAttack", ChaseAndAttack(self.inst, 3, 5)),
-        WhileNode(function() return self.inst.components.combat.target ~= nil and self.inst.components.combat:InCooldown() end, "Rest",
-            StandStill(self.inst)),
-        WhileNode(function() return self.inst.components.hauntable ~= nil and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
-        WhileNode(function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
-        WhileNode(function() return ShouldGoHome(self.inst) end, "ShouldGoHome",
-            DoAction(self.inst, GoHomeAction, "Go Home", false)),
-        FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
-        StandStill(self.inst)
+        WhileNode( function() return not self.inst.sg:HasStateTag("leapattack") end, "not jumping",
+            PriorityNode{             
+                WhileNode(function() return shouldjumpattack(self.inst) end, "JumpAttack", 
+                    DoAction(self.inst, function() return dojumpAttack(self.inst) end, "jump", true)),
+
+                WhileNode(function() return shouldramattack(self.inst)  end, "RamAttack",
+                    ChaseAndRam(self.inst, MAX_CHASE_TIME, CHASE_GIVEUP_DIST, MAX_CHARGE_DIST)),
+
+                ChaseAndAttack(self.inst, 3, 30, nil, nil, true ),
+
+                WhileNode(function() return self.inst.components.combat.target ~= nil and self.inst.components.combat:InCooldown() end, "Rest",
+                    StandStill(self.inst)),
+                WhileNode(function() return self.inst.components.hauntable ~= nil and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
+                WhileNode(function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
+                WhileNode(function() return ShouldGoHome(self.inst) end, "ShouldGoHome",
+                    DoAction(self.inst, GoHomeAction, "Go Home", false)),
+                FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
+                StandStill(self.inst)
+        }, 1)
     }, .25)
 
     self.bt = BT(self.inst, root)

@@ -16,23 +16,26 @@ local function checkmaster(tar, inst)
     end
 end
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "INLIMBO", "plantkin" }
+local RETARGET_ONEOF_TAGS = { "character", "monster", "animal", "prey", "eyeplant", "lureplant" }
 local function retargetfn(inst)
     return FindEntity(
         inst,
         TUNING.EYEPLANT_ATTACK_DIST,
-        function(guy) 
+        function(guy)
             return not (guy.components.health:IsDead() or checkmaster(guy, inst))
         end,
-        { "_combat", "_health" }, -- see entityreplica.lua
-        { "INLIMBO", "plantkin" },
-        { "character", "monster", "animal", "prey", "eyeplant", "lureplant" }
+        RETARGET_MUST_TAGS, -- see entityreplica.lua
+        RETARGET_CANT_TAGS,
+        RETARGET_ONEOF_TAGS
     )
 end
 
 local function shouldKeepTarget(inst, target)
     if target and target:IsValid() and target.components.health and not target.components.health:IsDead() then
         local distsq = target:GetDistanceSqToInst(inst)
-        
+
         return distsq < TUNING.EYEPLANT_STOPATTACK_DIST*TUNING.EYEPLANT_STOPATTACK_DIST
     else
         return false
@@ -50,6 +53,25 @@ local function ongotnewitem(inst, data)
     --print (debugstack())
     if data.item.components.health ~= nil then
         inst:DoTaskInTime(0, inst.PushBufferedAction, BufferedAction(inst, data.item, ACTIONS.MURDER))
+    end
+end
+
+local function SetSkin(inst, skin_build, GUID)
+    if skin_build then
+        inst.AnimState:OverrideItemSkinSymbol("black", skin_build, "black", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("green", skin_build, "green", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("white", skin_build, "white", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf1", skin_build, "leaf1", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf2", skin_build, "leaf2", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf3", skin_build, "leaf3", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf4", skin_build, "leaf4", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf5", skin_build, "leaf5", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("leaf6", skin_build, "leaf6", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("shdw", skin_build, "shdw", GUID, "eyeplant")
+        inst.AnimState:OverrideItemSkinSymbol("ground_fx", skin_build, "ground_fx", GUID, "eyeplant")
+    else
+        inst.AnimState:ClearAllOverrideSymbols()
+        inst.AnimState:SetBuild("eyeplant")
     end
 end
 
@@ -111,6 +133,8 @@ local function fn()
     inst:SetStateGraph("SGeyeplant")
 
     inst:AddComponent("lootdropper")
+
+    inst.SetSkin = SetSkin
 
     MakeSmallBurnable(inst)
     MakeMediumPropagator(inst)

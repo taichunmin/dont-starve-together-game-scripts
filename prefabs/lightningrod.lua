@@ -95,6 +95,22 @@ local function getstatus(inst)
     return inst.charged and "CHARGED" or nil
 end
 
+------------------------------------------------------------------------------
+
+local function CanBeUsedAsBattery(inst, user)
+    if inst.charged then
+        return true
+    else
+        return false, "NOT_ENOUGH_CHARGE"
+    end
+end
+
+local function UseAsBattery(inst, user)
+    discharge(inst)
+end
+
+------------------------------------------------------------------------------
+
 local function onbuilt(inst)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:PushAnimation("idle")
@@ -105,7 +121,7 @@ local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
-    inst.entity:AddAnimState() 
+    inst.entity:AddAnimState()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddLight()
     inst.entity:AddSoundEmitter()
@@ -145,6 +161,10 @@ local function fn()
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
+
+    inst:AddComponent("battery")
+    inst.components.battery.canbeused = CanBeUsedAsBattery
+    inst.components.battery.onused = UseAsBattery
 
     MakeSnowCovered(inst)
     inst:ListenForEvent("onbuilt", onbuilt)

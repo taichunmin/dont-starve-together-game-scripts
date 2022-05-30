@@ -19,7 +19,7 @@ local function PlayCloudAnim(proxy)
     inst.AnimState:SetBank("poopcloud")
     inst.AnimState:SetBuild("poop_cloud")
     inst.AnimState:PlayAnimation("idle")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:ListenForEvent("animover", inst.Remove)
 end

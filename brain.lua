@@ -30,22 +30,22 @@ function BrainWrangler:NameList(list)
             end
         end
     end
-    
+
     return "Unknown"
 
 end
 
 function BrainWrangler:SendToList(inst, list)
-    
+
     local old_list = self.instances[inst]
 --    print ("HI!", inst.inst, self:NameList(old_list), self:NameList(list))
     if old_list and old_list ~= list then
         if old_list then
             old_list[inst] = nil
         end
-        
+
         self.instances[inst] = list
-        
+
         if list then
             list[inst] = true
         end
@@ -67,9 +67,9 @@ end
 function BrainWrangler:Sleep(inst, time_to_wait)
     local sleep_ticks = time_to_wait/GetTickTime()
     if sleep_ticks == 0 then sleep_ticks = 1 end
-    
+
     local target_tick = math.floor(GetTick() + sleep_ticks)
-    
+
     if target_tick > GetTick() then
         local waiters = self.tickwaiters[target_tick]
 
@@ -77,10 +77,10 @@ function BrainWrangler:Sleep(inst, time_to_wait)
             waiters = {}
             self.tickwaiters[target_tick] = waiters
         end
-        
+
         --print ("BRAIN SLEEPS", inst.inst)
         self:SendToList(inst, waiters)
-        
+
     end
 end
 
@@ -93,7 +93,7 @@ function BrainWrangler:RemoveInstance(inst)
         v[inst] = nil
     end
     self.instances[inst] = nil
-    
+
 end
 
 function BrainWrangler:AddInstance(inst)
@@ -103,13 +103,13 @@ function BrainWrangler:AddInstance(inst)
 end
 
 function BrainWrangler:Update(current_tick)
-	
+
 	--[[
 	local num = 0;
 	local types = {}
 	for k,v in pairs(self.instances) do
-		
-		num = num + 1 
+
+		num = num + 1
 		types[k.inst.prefab] = types[k.inst.prefab] and types[k.inst.prefab] + 1 or 1
 	end
 	print ("NUM BRAINS:", num)
@@ -117,8 +117,8 @@ function BrainWrangler:Update(current_tick)
 		print ("    ",k,v)
 	end
 	--]]
-	
-	
+
+
     local waiters = self.tickwaiters[current_tick]
     if waiters then
         for k,v in pairs(waiters) do
@@ -128,7 +128,7 @@ function BrainWrangler:Update(current_tick)
         end
         self.tickwaiters[current_tick] = nil
     end
-    
+
 
     for k,v in pairs(self.updaters) do
         if k.inst.entity:IsValid() and not k.inst:IsAsleep() then
@@ -160,12 +160,12 @@ function Brain:ForceUpdate()
     if self.bt then
         self.bt:ForceUpdate()
     end
-    
+
     BrainManager:Wake(self)
 end
 
 function Brain:__tostring()
-    
+
     if self.bt then
         return string.format("--brain--\nsleep time: %2.2f\n%s", self:GetSleepTime(), tostring(self.bt))
     end
@@ -180,7 +180,7 @@ function Brain:GetSleepTime()
     if self.bt then
         return self.bt:GetSleepTime()
     end
-    
+
     return 0
 end
 
@@ -203,11 +203,11 @@ function Brain:Start()
 end
 
 function Brain:OnUpdate()
-    
+
     if self.DoUpdate then
 		self:DoUpdate()
     end
-    
+
     if self.bt then
         self.bt:Update()
     end
@@ -227,7 +227,7 @@ end
 
 function Brain:PushEvent(event, data)
     local handler = self.events[event]
-    
+
     if handler then
         handler(data)
     end

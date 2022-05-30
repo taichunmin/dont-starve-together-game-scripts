@@ -9,7 +9,13 @@ local function makepiece(name)
     {
         Asset("ANIM", "anim/sculpture_pieces.zip"),
         Asset("ANIM", "anim/swap_sculpture_"..name..".zip"),
-    }
+	}
+
+	local prefabs =
+	{
+		"underwater_salvageable",
+		"splash_green",
+	}
 
     local function onequip(inst, owner)
         owner.AnimState:OverrideSymbol("swap_body", "swap_sculpture_"..name, "swap_body")
@@ -22,9 +28,12 @@ local function makepiece(name)
         inst.entity:AddAnimState()
         inst.entity:AddSoundEmitter()
         inst.entity:AddNetwork()
+        inst.entity:AddMiniMapEntity()
 
         MakeSmallHeavyObstaclePhysics(inst, PHYSICS_RADIUS)
         inst:SetPhysicsRadiusOverride(PHYSICS_RADIUS)
+
+        inst.MiniMapEntity:SetIcon("sculpture_"..name..".png")
 
         inst.AnimState:SetBank("sculpture_pieces")
         inst.AnimState:SetBuild("swap_sculpture_"..name)
@@ -59,7 +68,11 @@ local function makepiece(name)
 
         inst:AddComponent("repairer")
         inst.components.repairer.repairmaterial = MATERIALS.SCULPTURE
-        inst.components.repairer.workrepairvalue = TUNING.SCULPTURE_COMPLETE_WORK
+		inst.components.repairer.workrepairvalue = TUNING.SCULPTURE_COMPLETE_WORK
+
+		inst:AddComponent("submersible")
+		inst:AddComponent("symbolswapdata")
+		inst.components.symbolswapdata:SetData("swap_sculpture_"..name, "swap_body")
 
         inst:AddComponent("hauntable")
         inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
@@ -67,7 +80,7 @@ local function makepiece(name)
         return inst
     end
 
-    return Prefab("sculpture_"..name, fn, assets)
+    return Prefab("sculpture_"..name, fn, assets, prefabs)
 end
 
 --For searching: "sculpture_knighthead", "sculpture_bishophead", "sculpture_rooknose"

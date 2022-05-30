@@ -94,7 +94,7 @@ local function castfxfn()
 
     inst.AnimState:SetBank("lavaarena_heal_projectile")
     inst.AnimState:SetBuild("lavaarena_heal_projectile")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:Hide()
 

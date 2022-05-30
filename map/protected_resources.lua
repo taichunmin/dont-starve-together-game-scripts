@@ -11,13 +11,13 @@ local Forest = {
 }
 
 local Grasslands = {
-	["pigguard_berries"] = StaticLayout.Get("map/static_layouts/pigguard_berries"), 	
-	["pigguard_berries_easy"] = StaticLayout.Get("map/static_layouts/pigguard_berries_easy"), 	
-	["wasphive_grass_easy"] = StaticLayout.Get("map/static_layouts/wasphive_grass_easy"), 	
+	["pigguard_berries"] = StaticLayout.Get("map/static_layouts/pigguard_berries"),
+	["pigguard_berries_easy"] = StaticLayout.Get("map/static_layouts/pigguard_berries_easy"),
+	["wasphive_grass_easy"] = StaticLayout.Get("map/static_layouts/wasphive_grass_easy"),
 }
 
 local Dirt = {
-	["hound_rocks"] = StaticLayout.Get("map/static_layouts/hound_rocks"), 	
+	["hound_rocks"] = StaticLayout.Get("map/static_layouts/hound_rocks"),
 }
 
 local Swamp = {
@@ -29,8 +29,8 @@ local Rocky = {
 }
 
 local Savanna = {
-	["pigguard_grass"] = StaticLayout.Get("map/static_layouts/pigguard_grass"), 	
-	["pigguard_grass_easy"] = StaticLayout.Get("map/static_layouts/pigguard_grass_easy"), 	
+	["pigguard_grass"] = StaticLayout.Get("map/static_layouts/pigguard_grass"),
+	["pigguard_grass_easy"] = StaticLayout.Get("map/static_layouts/pigguard_grass_easy"),
 }
 
 local BlueFungal = {

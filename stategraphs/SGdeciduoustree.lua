@@ -7,7 +7,7 @@ local states=
         onenter = function(inst, data)
             if data and data.push ~= nil and data.skippre ~= nil then
                 if inst.monster and data.skippre == false then
-                    if data.push then 
+                    if data.push then
                         inst.AnimState:PushAnimation(inst.anims.swayaggropre, false)
                     else
                         inst.AnimState:PlayAnimation(inst.anims.swayaggropre, false)
@@ -25,12 +25,12 @@ local states=
                 end
             end
         end,
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("gnash") end),
             EventHandler("animqueueover", function(inst) inst.sg:GoToState("gnash") end),
-        }        
+        }
     },
 
     State{
@@ -44,17 +44,17 @@ local states=
                 inst.sg:GoToState("empty")
             end
         end,
-        
+
         events=
         {
             EventHandler("animqueueover", function(inst)
                 if inst.monster then
                     inst.sg:GoToState("gnash_pst")
                 else
-                    inst.sg:GoToState("empty")     
+                    inst.sg:GoToState("empty")
                 end
             end)
-        }        
+        }
     },
 
     State{
@@ -67,7 +67,7 @@ local states=
                 inst.sg:GoToState("empty")
             end
         end,
-        
+
         events=
         {
             EventHandler("animqueueover", function(inst)
@@ -78,10 +78,10 @@ local states=
                         inst.sg:GoToState("gnash_idle")
                     end
                 else
-                    inst.sg:GoToState("empty")     
+                    inst.sg:GoToState("empty")
                 end
             end)
-        }        
+        }
     },
 
     State{
@@ -94,7 +94,7 @@ local states=
                 inst.sg:GoToState("empty")
             end
         end,
-        
+
         events=
         {
             EventHandler("animqueueover", function(inst)
@@ -105,12 +105,12 @@ local states=
                         inst.sg:GoToState("gnash_idle")
                     end
                 else
-                    inst.sg:GoToState("empty")     
+                    inst.sg:GoToState("empty")
                 end
             end)
-        }        
+        }
     },
-    
+
     State{
         name = "gnash_idle",
         tags = {"idle"},
@@ -124,15 +124,15 @@ local states=
                 inst.sg:GoToState("empty")
             end
         end,
-        
+
         events=
         {
-            EventHandler("animqueueover", function(inst) 
+            EventHandler("animqueueover", function(inst)
                 if inst.monster then
                     if inst.components.deciduoustreeupdater and not inst.components.deciduoustreeupdater.monster_target and not inst.components.deciduoustreeupdater.last_monster_target then
                         inst.sg:GoToState("gnash_idle")
                     else
-                        inst.sg:GoToState("gnash_pre", {push=false, skippre=false})  
+                        inst.sg:GoToState("gnash_pre", {push=false, skippre=false})
                     end
                 else
                     inst.sg:GoToState("empty")
@@ -177,13 +177,13 @@ local states=
             EventHandler("animover", function(inst) inst.sg:GoToState("burning_pre") end),
         }
     },
-    
+
 	State{
         name = "empty",
         onenter = function()
         end,
     },
-} 
+}
 
 
 return StateGraph("deciduoustree", states, {}, "empty")

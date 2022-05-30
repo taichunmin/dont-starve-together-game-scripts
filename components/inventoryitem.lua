@@ -36,7 +36,7 @@ end
 
 local function OnExitLimbo(inst, data)
     local self = inst.components.inventoryitem
-    self:SetLanded(false, true)    
+    self:SetLanded(false, true)
 end
 
 local InventoryItem = Class(function(self, inst)
@@ -56,6 +56,7 @@ local InventoryItem = Class(function(self, inst)
     self.onactiveitemfn = nil
     self.trappable = true
     self.sinks = false
+    self.droprandomdir = false
 
     self.pushlandedevents = true
     self:SetLanded(false, true)
@@ -126,7 +127,7 @@ function InventoryItem:SetOwner(owner)
     self.owner = owner
 end
 
-function InventoryItem:ClearOwner(owner)
+function InventoryItem:ClearOwner()
     self.owner = nil
 end
 
@@ -135,7 +136,7 @@ function InventoryItem:SetOnDroppedFn(fn)
 end
 
 function InventoryItem:SetOnActiveItemFn(fn)
-    self.onactiveitemfn = fn 
+    self.onactiveitemfn = fn
 end
 
 function InventoryItem:SetOnPickupFn(fn)
@@ -187,7 +188,7 @@ end
 function InventoryItem:OnPutInInventory(owner)
 --    print(string.format("InventoryItem:OnPutInInventory[%s]", self.inst.prefab))
 --    print("   transform=", Point(self.inst.Transform:GetWorldPosition()))
-    self.inst.components.inventoryitem:SetOwner(owner)
+    self:SetOwner(owner)
     owner:AddChild(self.inst)
     self.inst:RemoveFromScene()
     self.inst.Transform:SetPosition(0,0,0) -- transform is now local?
@@ -197,6 +198,12 @@ function InventoryItem:OnPutInInventory(owner)
         self.onputininventoryfn(self.inst, owner)
     end
     self.inst:PushEvent("onputininventory", owner)
+
+	if self.inst.components.container ~= nil then
+		for _, item in pairs(self.inst.components.container.slots) do
+			item:PushEvent("onownerputininventory", owner)
+		end
+	end
 end
 
 function InventoryItem:OnRemoved()
@@ -210,6 +217,7 @@ end
 
 function InventoryItem:OnDropped(randomdir, speedmult)
     if not self.inst:IsValid() then
+		self.owner = nil
         return
     end
 
@@ -223,13 +231,19 @@ function InventoryItem:OnDropped(randomdir, speedmult)
     end
     self.inst:PushEvent("ondropped")
 
+	if self.inst.components.container ~= nil then
+		for _, item in pairs(self.inst.components.container.slots) do
+			item:PushEvent("onownerdropped")
+		end
+	end
+
     if self.inst.components.propagator ~= nil then
         self.inst.components.propagator:Delay(5)
     end
 end
 
 function InventoryItem:DoDropPhysics(x, y, z, randomdir, speedmult)
-    
+
     self:SetLanded(false, true)
 
     if self.inst.Physics ~= nil then
@@ -259,9 +273,9 @@ end
 
 -- If this function retrns true then it has destroyed itself and you shouldnt give it to the player
 function InventoryItem:OnPickup(pickupguy, src_pos)
--- not only the player can have inventory!   
+-- not only the player can have inventory!
 
-    self:SetLanded(false, false)    
+    self:SetLanded(false, false)
 
     if self.isnew and self.inst.prefab and pickupguy:HasTag("player") then
         ProfileStatsAdd("collect_"..self.inst.prefab)
@@ -276,9 +290,9 @@ function InventoryItem:OnPickup(pickupguy, src_pos)
         end
     end
 
-    self.inst.Transform:SetPosition(0, 0, 0)
+
     self.inst:PushEvent("onpickup", { owner = pickupguy })
-    return type(self.onpickupfn) == "function" and self.onpickupfn(self.inst, pickupguy, src_pos)
+    return self.onpickupfn and self.onpickupfn(self.inst, pickupguy, src_pos)
 end
 
 function InventoryItem:IsHeld()
@@ -320,7 +334,7 @@ function InventoryItem:GetGrandOwner()
 end
 
 function InventoryItem:IsSheltered()
-    return self:IsHeld() and 
+    return self:IsHeld() and
     ((self.owner.components.container) or (self.owner.components.inventory and self.owner.components.inventory:IsWaterproof()))
 end
 
@@ -328,6 +342,8 @@ function InventoryItem:SetLanded(is_landed, should_poll_for_landing)
     if not is_landed then
         if should_poll_for_landing then
             self.inst:StartUpdatingComponent(self)
+        else
+            self.inst:StopUpdatingComponent(self)
         end
 
         -- If we're going from landed to not landed
@@ -363,9 +379,9 @@ end
 function InventoryItem:OnUpdate(dt)
     local x,y,z = self.inst.Transform:GetWorldPosition()
 
-    if x and y and z then 
-        local vely = 0 
-        if self.inst.Physics then 
+    if x and y and z then
+        local vely = 0
+        if self.inst.Physics then
             local vx, vy, vz = self.inst.Physics:GetVelocity()
             vely = vy or 0
 

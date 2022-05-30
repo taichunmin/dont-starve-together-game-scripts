@@ -41,6 +41,7 @@ local EmotesExplorerPanel = Class(Widget, function(self, owner, user_profile)
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.OWNED_FILTER_FMT, "owned_filter_on.tex", "owned_filter_off.tex", "lockedFilter", GetLockedSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddFilter(STRINGS.UI.WARDROBESCREEN.WEAVEABLE_FILTER_FMT, "weave_filter_on.tex", "weave_filter_off.tex", "weaveableFilter", GetWeaveableSkinFilter()) )
     self.picker.header:AddChild( self.filter_bar:AddSorter() )
+    self.picker.header:AddChild( self.filter_bar:AddSearch() )
 
     self:_DoFocusHookups()
     self.focus_forward = self.heroselector

@@ -1,7 +1,7 @@
 AddRoom("BGChessRocky", {
 					colour={r=.66,g=.66,b=.66,a=.50},
 					value = GROUND.ROCKY,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone", "Astral_1"},
 					contents =  {
 									countstaticlayouts = {
 										["ChessSpot1"] = function() return math.random(0,3) end,
@@ -22,14 +22,14 @@ AddRoom("BGChessRocky", {
 AddRoom("BGRocky", {
 					colour={r=.66,g=.66,b=.66,a=.50},
 					value = GROUND.ROCKY,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone", "Astral_2"},
 					contents =  {
 					                distributepercent = .1,
 					                distributeprefabs=
 					                {
 										flint=0.5,
-										rock1=1,										
-										rock2=1,										
+										rock1=1,
+										rock2=1,
 										rock_ice=0.4,
 										tallbirdnest=0.008,
 										grassgekko = 0.3,
@@ -40,7 +40,7 @@ AddRoom("BGRocky", {
 AddRoom("Rocky", {
 					colour={r=.55,g=.75,b=.75,a=.50},
 					value = GROUND.DIRT,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone", "Astral_1"},
 					contents =  {
 									countprefabs=
 									{
@@ -64,7 +64,7 @@ AddRoom("Rocky", {
 AddRoom("RockyBuzzards", {
 					colour={r=.55,g=.75,b=.75,a=.50},
 					value = GROUND.ROCKY,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone", "Astral_2"},
 					contents =  {
 					                distributepercent = .1,
 					                distributeprefabs=
@@ -80,7 +80,7 @@ AddRoom("RockyBuzzards", {
 AddRoom("GenericRockyNoThreat", {
 					colour={r=.55,g=.75,b=.75,a=.50},
 					value = GROUND.ROCKY,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone", "Astral_1"},
 					contents =  {
 					                distributepercent = .1,
 					                distributeprefabs=
@@ -100,7 +100,7 @@ AddRoom("GenericRockyNoThreat", {
 
 AddRoom("MolesvilleRocky", {
 					colour={r=.55,g=.75,b=.75,a=.50},
-					value = GROUND.ROCKY, 
+					value = GROUND.ROCKY,
 					contents =  {
 									distributepercent = 0.1,
 									distributeprefabs =
@@ -112,7 +112,7 @@ AddRoom("MolesvilleRocky", {
 										rocks = .5,
 										flint = .1,
 										grass = 0.1,
-										molehill = 1,										
+										molehill = 1,
 										grassgekko = 0.3,
 									},
 					            }

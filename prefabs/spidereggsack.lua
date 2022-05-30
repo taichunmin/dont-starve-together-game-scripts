@@ -49,7 +49,7 @@ local function fn()
     end
 
     inst:AddComponent("stackable")
-    inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM    
+    inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
     inst:AddComponent("inspectable")
 
     inst:AddComponent("fuel")
@@ -67,11 +67,16 @@ local function fn()
 
     inst:AddComponent("deployable")
     --inst.components.deployable:SetDeployMode(DEPLOYMODE.ANYWHERE)
-    inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.NONE)
+    --inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.DEFAULT)
     inst.components.deployable.ondeploy = ondeploy
 
     return inst
 end
 
+local function placer_postinit(placer)
+    placer.AnimState:HideSymbol("bedazzled_flare")
+end
+
 return Prefab("spidereggsack", fn, assets, prefabs),
-    MakePlacer("spidereggsack_placer", "spider_cocoon", "spider_cocoon", "cocoon_small")
+    --function MakePlacer(name, bank, build, anim, onground, snap, metersnap, scale, fixedcameraoffset, facing, postinit_fn, offset, onfailedplacement)
+    MakePlacer("spidereggsack_placer", "spider_cocoon", "spider_cocoon", "cocoon_small", nil, nil, nil, nil, nil, nil, placer_postinit)

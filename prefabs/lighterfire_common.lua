@@ -5,7 +5,7 @@ local function CreateLight()
     inst:AddTag("playerlight")
     --[[Non-networked entity]]
     inst.entity:SetCanSleep(false)
-    inst.perists = false
+    inst.persists = false
 
     inst.entity:AddTransform()
     inst.entity:AddLight()

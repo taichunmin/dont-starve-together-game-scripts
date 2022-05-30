@@ -35,6 +35,11 @@ local function fn()
         return inst
     end
 
+	inst:AddComponent("edible")
+    inst.components.edible.foodtype = FOODTYPE.WOOD
+    inst.components.edible.healthvalue = 0
+    inst.components.edible.hungervalue = 0
+
     inst:AddComponent("fuel")
     inst.components.fuel.fuelvalue = TUNING.MED_FUEL
     inst.components.fuel:SetOnTakenFn(FuelTaken)
@@ -53,6 +58,7 @@ local function fn()
     inst:AddComponent("repairer")
     inst.components.repairer.repairmaterial = MATERIALS.WOOD
     inst.components.repairer.healthrepairvalue = TUNING.REPAIR_LOGS_HEALTH * 3
+    inst.components.repairer.boatrepairsound = "turnoftides/common/together/boat/repair_with_wood"
 
     inst:ListenForEvent("onignite", onignite)
 

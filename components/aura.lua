@@ -4,6 +4,7 @@ local Aura = Class(function(self, inst)
     self.tickperiod = 1
     self.active = false
     self.applying = false
+    self.pretickfn = nil
     self.auratestfn = nil
     self.auraexcludetags = { "noauradamage", "INLIMBO", "notarget", "noattack", "flight", "invisible", "playerghost" }
     self._fn = function(target) return self.auratestfn(inst, target) end
@@ -41,6 +42,11 @@ function Aura:Enable(val)
 end
 
 function Aura:OnTick()
+
+    if self.pretickfn then
+        self.pretickfn(self.inst)
+    end
+
     local applied =
         self.inst.components.combat ~= nil and
         self.inst.components.combat:DoAreaAttack(

@@ -1,5 +1,13 @@
 local function onproduce(self, produce)
-    if produce > 0 then
+    if self.enabled and produce > 0 then
+        self.inst:AddTag("harvestable")
+    else
+        self.inst:RemoveTag("harvestable")
+    end
+end
+
+local function onenabled(self, enabled)
+    if enabled and self.produce > 0 then
         self.inst:AddTag("harvestable")
     else
         self.inst:RemoveTag("harvestable")
@@ -13,10 +21,15 @@ local Harvestable = Class(function(self, inst)
     self.product = nil
     self.ongrowfn = nil
     self.maxproduce = 1
+
+    self.enabled = true
+
+    --self.can_harvest_fn = nil
 end,
 nil,
 {
     produce = onproduce,
+    enabled = onenabled,
 })
 
 function Harvestable:OnRemoveFromEntity()
@@ -50,7 +63,21 @@ function Harvestable:SetGrowTime(time)
 end
 
 function Harvestable:CanBeHarvested()
-    return self.produce > 0
+    return self.enabled and self.produce > 0
+end
+
+function Harvestable:SetCanHarvestFn(fn)
+    self.can_harvest_fn = fn
+end
+
+function Harvestable:Disable()
+    self:PauseGrowing()
+    self.enabled = false
+end
+
+function Harvestable:Enable()
+    self:StartGrowing()
+    self.enabled = true
 end
 
 function Harvestable:OnSave()
@@ -59,6 +86,7 @@ function Harvestable:OnSave()
     if self.targettime and self.targettime > time then
         data.time = self.targettime - time
     end
+    data.pausetime = self.pausetime
     data.produce = self.produce
     return data
 end
@@ -66,6 +94,7 @@ end
 function Harvestable:OnLoad(data)
     --print(self.inst, "Harvestable:OnLoad")
     self.produce = data.produce
+    self.pausetime = data.pausetime
     if data.time then
         self:StartGrowing(data.time)
     end
@@ -76,6 +105,8 @@ function Harvestable:GetDebugString()
     local str = string.format("%d "..tostring(self.product).." grown", self.produce)
     if self.targettime then
         str = str.." ("..tostring(self.targettime - GetTime())..")"
+    elseif self.pausetime then
+        str = str.." (paused: "..tostring(self.pausetime)..")"
     end
     return str
 end
@@ -91,15 +122,32 @@ function Harvestable:Grow()
         else
             self:StopGrowing()
         end
+
+		return true
     end
+
+	return false
 end
 
 function Harvestable:StartGrowing(time)
     self:StopGrowing()
-    local growtime = time or self.growtime
+    local growtime = time or self.pausetime or self.growtime
+    self.pausetime = nil
     if growtime then
         self.task = self.inst:DoTaskInTime(growtime, function() self:Grow() end, "grow")
         self.targettime = GetTime() + growtime
+    end
+end
+
+function Harvestable:PauseGrowing()
+    if self.task then
+        self.task:Cancel()
+        self.task = nil
+        local time = GetTime()
+        if self.targettime and self.targettime > time then
+            self.pausetime = self.targettime - time
+        end
+        self.targettime = nil
     end
 end
 
@@ -113,6 +161,13 @@ end
 
 function Harvestable:Harvest(picker)
     if self:CanBeHarvested() then
+        if self.can_harvest_fn ~= nil then
+            local can_harvest, fail_reason = self.can_harvest_fn(self.inst, picker)
+            if not can_harvest then
+                return false, fail_reason
+            end
+        end
+
         local produce = self.produce
         self.produce = 0
 

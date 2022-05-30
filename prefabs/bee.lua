@@ -52,6 +52,10 @@ local function OnWorked(inst, worker)
     end
 end
 
+local function bonus_damage_via_allergy(inst, target, damage, weapon)
+    return (target:HasTag("allergictobees") and TUNING.BEE_ALLERGY_EXTRADAMAGE) or 0
+end
+
 local function OnDropped(inst)
     if inst.buzzing and not (inst:IsAsleep() or inst.SoundEmitter:PlayingSound("buzz")) then
         inst.SoundEmitter:PlaySound(inst.sounds.buzz, "buzz")
@@ -110,14 +114,17 @@ local function OnSleep(inst)
     inst.SoundEmitter:KillSound("buzz")
 end
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "insect", "INLIMBO", "plantkin" }
+local RETARGET_ONEOF_TAGS = { "character", "animal", "monster" }
 local function KillerRetarget(inst)
     return FindEntity(inst, SpringCombatMod(8),
         function(guy)
             return inst.components.combat:CanTarget(guy)
         end,
-        { "_combat", "_health" },
-        { "insect", "INLIMBO" },
-        { "character", "animal", "monster" })
+        RETARGET_MUST_TAGS,
+        RETARGET_CANT_TAGS,
+        RETARGET_ONEOF_TAGS)
 end
 
 local function SpringBeeRetarget(inst)
@@ -126,9 +133,9 @@ local function SpringBeeRetarget(inst)
             function(guy)
                 return inst.components.combat:CanTarget(guy)
             end,
-            { "_combat", "_health" },
-            { "insect", "INLIMBO" },
-            { "character", "animal", "monster" })
+			RETARGET_MUST_TAGS,
+			RETARGET_CANT_TAGS,
+			RETARGET_ONEOF_TAGS)
         or nil
 end
 
@@ -138,7 +145,6 @@ local function commonfn(build, tags)
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddLightWatcher()
     inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
 
@@ -190,7 +196,7 @@ local function commonfn(build, tags)
 
     inst:AddComponent("lootdropper")
     inst.components.lootdropper:AddRandomLoot("honey", 1)
-    inst.components.lootdropper:AddRandomLoot("stinger", 5)   
+    inst.components.lootdropper:AddRandomLoot("stinger", 5)
     inst.components.lootdropper.numrandomloot = 1
 
     ------------------
@@ -209,10 +215,12 @@ local function commonfn(build, tags)
     inst.components.combat:SetRange(TUNING.BEE_ATTACK_RANGE)
     inst.components.combat.hiteffectsymbol = "body"
     inst.components.combat:SetPlayerStunlock(PLAYERSTUNLOCK.RARELY)
+    inst.components.combat.bonusdamagefn = bonus_damage_via_allergy
 
     ------------------
 
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     ------------------
 
     inst:AddComponent("knownlocations")
@@ -274,6 +282,7 @@ local function workerbee()
     inst.sounds = workersounds
 
     MakeHauntableChangePrefab(inst, "killerbee")
+	inst.components.hauntable.panicable = true
 
     return inst
 end
@@ -302,7 +311,7 @@ local function killerbee()
     inst:ListenForEvent("spawnedfromhaunt", OnSpawnedFromHaunt)
 
     return inst
-end 
+end
 
 return Prefab("bee", workerbee, assets, prefabs),
         Prefab("killerbee", killerbee, assets, prefabs)

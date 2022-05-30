@@ -10,12 +10,10 @@ assert(TheWorld.ismastersim, "Shadow creature spawner should not exist on client
 --[[ Constants ]]
 --------------------------------------------------------------------------
 
-local POP_CHANGE_INTERVAL = 10
-local POP_CHANGE_VARIANCE = 10
-local SPAWN_INTERVAL = 5
-local SPAWN_VARIANCE = 10
 local NON_INSANITY_MODE_DESPAWN_INTERVAL = 0.1
 local NON_INSANITY_MODE_DESPAWN_VARIANCE = 0.1
+
+local OCEAN_SPAWN_ATTEMPTS = 4
 
 --------------------------------------------------------------------------
 --[[ Member variables ]]
@@ -28,6 +26,8 @@ self.inst = inst
 local _map = TheWorld.Map
 local _players = {}
 
+local _failed_ocean_spawn_attempts = 0
+
 --------------------------------------------------------------------------
 --[[ Private member functions ]]
 --------------------------------------------------------------------------
@@ -39,7 +39,7 @@ local function StopTracking(player, params, ent)
 
     if params.targetpop ~= #params.ents then
         if params.spawntask == nil then
-            params.spawntask = player:DoTaskInTime(SPAWN_INTERVAL + SPAWN_VARIANCE * math.random(), UpdateSpawn, params)
+            params.spawntask = player:DoTaskInTime(TUNING.SANITYMONSTERS_SPAWN_INTERVAL + TUNING.SANITYMONSTERS_SPAWN_VARIANCE * math.random(), UpdateSpawn, params)
         end
     elseif params.spawntask ~= nil then
         params.spawntask:Cancel()
@@ -57,6 +57,10 @@ local function StartTracking(player, params, ent)
         end
     end, ent)
 
+    inst:ListenForEvent("entitysleep", function()
+        inst:DoTaskInTime(0, function() ent:Remove() end)
+    end, ent)
+
     ent:ListenForEvent("onremove", function()
         ent.spawnedforplayer = nil
         ent.persists = false
@@ -64,27 +68,82 @@ local function StartTracking(player, params, ent)
     end, player)
 end
 
+local function OnExchangeShadowCreature(inst, data)
+    local origent = data.ent
+    local exchangedent = data.exchangedent
+
+    local player = origent.spawnedforplayer
+    if not player then return end
+
+    local params = _players[player]
+    if not table.contains(params.ents, origent) then return end
+
+    StartTracking(player, params, exchangedent)
+end
+
+local function SpawnLandShadowCreature(player)
+    return SpawnPrefab(
+        player.components.sanity:GetPercent() < .1 and
+        math.random() < TUNING.TERRORBEAK_SPAWN_CHANCE and
+        "terrorbeak" or
+        "crawlinghorror"
+    )
+end
+
+local function SpawnOceanShadowCreature(player)
+    return SpawnPrefab("oceanhorror")
+end
+
 UpdateSpawn = function(player, params)
     if params.targetpop > #params.ents then
-        local angle = math.random() * 2 * PI
         local x, y, z = player.Transform:GetWorldPosition()
-        x = x + 15 * math.cos(angle)
-        z = z - 15 * math.sin(angle)
-        if _map:IsPassableAtPoint(x, 0, z) then
-            local ent = SpawnPrefab(
-                player.components.sanity:GetPercent() < .1 and
-                math.random() < .5 and
-                "terrorbeak" or
-                "crawlinghorror"
-            )
-            ent.Transform:SetPosition(x, 0, z)
-            StartTracking(player, params, ent)
+
+        local boat = player:GetCurrentPlatform()
+        if player.components.sanity:GetPercent() < .1 and boat ~= nil then
+            local boat_x, boat_y, boat_z = boat.Transform:GetWorldPosition()
+
+            local angle = math.random() * 2 * PI
+            local offset = (boat.components.walkableplatform ~= nil and boat.components.walkableplatform.platform_radius or 4) + 3 + math.random() * 8
+            local spawn_x = boat_x + offset * math.cos(angle)
+            local spawn_z = boat_z - offset * math.sin(angle)
+
+            if _map:IsOceanAtPoint(spawn_x, 0, spawn_z) then
+                _failed_ocean_spawn_attempts = 0
+
+                local ent = SpawnOceanShadowCreature(player)
+                ent.Transform:SetPosition(spawn_x, 0, spawn_z)
+                StartTracking(player, params, ent)
+            else
+                _failed_ocean_spawn_attempts = _failed_ocean_spawn_attempts + 1
+
+                if _failed_ocean_spawn_attempts >= OCEAN_SPAWN_ATTEMPTS then
+                    if _map:IsPassableAtPoint(spawn_x, 0, spawn_z, false, false) then
+                        _failed_ocean_spawn_attempts = 0
+
+                        local ent = SpawnLandShadowCreature(player)
+                        ent.Transform:SetPosition(spawn_x, 0, spawn_z)
+                        StartTracking(player, params, ent)
+                    end
+                end
+            end
+        else
+            _failed_ocean_spawn_attempts = 0
+
+            local angle = math.random() * 2 * PI
+            x = x + 15 * math.cos(angle)
+            z = z - 15 * math.sin(angle)
+            if _map:IsPassableAtPoint(x, 0, z) then
+                local ent = SpawnLandShadowCreature(player)
+
+                ent.Transform:SetPosition(x, 0, z)
+                StartTracking(player, params, ent)
+            end
         end
 
         --Reschedule spawning if we haven't reached our target population
         params.spawntask =
             params.targetpop ~= #params.ents
-            and player:DoTaskInTime(SPAWN_INTERVAL + SPAWN_VARIANCE * math.random(), UpdateSpawn, params)
+            and player:DoTaskInTime(TUNING.SANITYMONSTERS_SPAWN_INTERVAL + TUNING.SANITYMONSTERS_SPAWN_VARIANCE * math.random(), UpdateSpawn, params)
             or nil
     elseif params.targetpop < #params.ents then
         --Remove random monsters until we reach our target population
@@ -94,6 +153,7 @@ UpdateSpawn = function(player, params)
                 table.insert(toremove, v)
             end
         end
+
         for i = #toremove, params.targetpop + 1, -1 do
             local ent = table.remove(toremove, math.random(i))
             ent.persists = false
@@ -122,12 +182,12 @@ local function StopSpawn(player, params)
 end
 
 local function UpdatePopulation(player, params)
-	local is_inasnity_mode = player.components.sanity:IsInsanityMode()
+	local is_insanity_mode = player.components.sanity:IsInsanityMode()
 
-    if is_inasnity_mode and player.components.sanity.inducedinsanity then
-        local maxpop = 5
-        local inc_chance = .7
-        local dec_chance = .4
+    if is_insanity_mode and player.components.sanity.inducedinsanity then
+        local maxpop = TUNING.SANITYMONSTERS_INDUCED_MAXPOP
+        local inc_chance = TUNING.SANITYMONSTERS_INDUCED_CHANCES.inc
+        local dec_chance = TUNING.SANITYMONSTERS_INDUCED_CHANCES.dec
         local targetpop = params.targetpop
 
         --Figure out our new target
@@ -138,7 +198,9 @@ local function UpdatePopulation(player, params)
                 targetpop = targetpop + 1
             end
         elseif targetpop > 0 and math.random() < dec_chance then
-            targetpop = targetpop - 1
+            if targetpop < maxpop then
+                targetpop = targetpop - 1
+            end
         end
 
         --Start spawner if target population has changed
@@ -154,29 +216,28 @@ local function UpdatePopulation(player, params)
         local inc_chance = 0
         local dec_chance = 0
         local targetpop = params.targetpop
-        local sanity = is_inasnity_mode and player.components.sanity:GetPercent() or 1
+        local sanity = is_insanity_mode and player.components.sanity:GetPercent() or 1
 
-        if sanity > .5 then
+        if sanity > 0.5 then
             --We're pretty sane. Clean up the monsters
             maxpop = 0
-        elseif sanity > .1 then
+        elseif sanity > 0.1 then
             --Have at most one monster, sometimes
-            maxpop = 1
+            maxpop = TUNING.SANITYMONSTERS_MAXPOP[1]
             if targetpop >= maxpop then
-                dec_chance = .1
+                dec_chance = TUNING.SANITYMONSTERS_CHANCES[1].dec
             else
-                inc_chance = .3
+                inc_chance = TUNING.SANITYMONSTERS_CHANCES[1].inc
             end
         else
-            --Have at most one or two monsters, usually 1
-            maxpop = 2
+            maxpop = TUNING.SANITYMONSTERS_MAXPOP[2]
             if targetpop >= maxpop then
-                dec_chance = .2
+                dec_chance = TUNING.SANITYMONSTERS_CHANCES[2].dec
             elseif targetpop <= 0 then
-                inc_chance = .3
+                inc_chance = TUNING.SANITYMONSTERS_CHANCES[2].inc
             else
-                inc_chance = .2
-                dec_chance = .2
+                inc_chance = TUNING.SANITYMONSTERS_CHANCES[2].inc
+                dec_chance = TUNING.SANITYMONSTERS_CHANCES[2].dec
             end
         end
 
@@ -188,7 +249,9 @@ local function UpdatePopulation(player, params)
                 targetpop = targetpop + 1
             end
         elseif dec_chance > 0 and math.random() < dec_chance then
-            targetpop = targetpop - 1
+            if targetpop < maxpop then
+                targetpop = targetpop - 1
+            end
         end
 
         --Start spawner if target population has changed
@@ -198,7 +261,7 @@ local function UpdatePopulation(player, params)
         end
 
         --Reschedule population update
-        params.poptask = player:DoTaskInTime(is_inasnity_mode and (POP_CHANGE_INTERVAL + POP_CHANGE_VARIANCE * math.random()) 
+        params.poptask = player:DoTaskInTime(is_insanity_mode and (TUNING.SANITYMONSTERS_POP_CHANGE_INTERVAL + TUNING.SANITYMONSTERS_POP_CHANGE_VARIANCE * math.random())
 												or (NON_INSANITY_MODE_DESPAWN_INTERVAL + NON_INSANITY_MODE_DESPAWN_VARIANCE * math.random())
 											, UpdatePopulation, params)
     end
@@ -263,6 +326,7 @@ end
 --Register events
 inst:ListenForEvent("ms_playerjoined", OnPlayerJoined)
 inst:ListenForEvent("ms_playerleft", OnPlayerLeft)
+inst:ListenForEvent("ms_exchangeshadowcreature", OnExchangeShadowCreature)
 
 --------------------------------------------------------------------------
 --[[ Debug ]]

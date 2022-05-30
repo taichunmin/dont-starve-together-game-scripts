@@ -11,7 +11,7 @@ local TEMPLATES = require "widgets/templates"
 local CharacterLoadoutSelectScreen = Class(Screen, function(self, profile)
 	Screen._ctor(self, "CharacterLoadoutSelectScreen")
 
-	
+
 	--darken everything behind the dialog
     self.black = self:AddChild(Image("images/global.xml", "square.tex"))
     self.black:SetVRegPoint(ANCHOR_MIDDLE)
@@ -20,7 +20,7 @@ local CharacterLoadoutSelectScreen = Class(Screen, function(self, profile)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
 	self.black:SetTint(0,0,0,.75)
-    
+
 	self.proot = self:AddChild(Widget("ROOT"))
     self.proot:SetVAnchor(ANCHOR_MIDDLE)
     self.proot:SetHAnchor(ANCHOR_MIDDLE)
@@ -45,18 +45,18 @@ local CharacterLoadoutSelectScreen = Class(Screen, function(self, profile)
 
     local button_w = 160
     local buttons = {}
-    
-    if not TheInput:ControllerAttached() then 
+
+    if not TheInput:ControllerAttached() then
 		table.insert(buttons, {text=STRINGS.UI.SKINSSCREEN.BACK, cb=function() self:Close() end })
 	end
-	
-	table.insert(buttons, {text=STRINGS.UI.SKINSSCREEN.SELECT, cb=function() 
+
+	table.insert(buttons, {text=STRINGS.UI.SKINSSCREEN.SELECT, cb=function()
 						self:Hide()
 						TheFrontEnd:PushScreen(CharacterLoadoutPopupScreen(profile, self.character_list.herocharacter or "wilson")) end
 						})
-    
+
 	self.menu = self.proot:AddChild(Menu(buttons, button_w, true))
-	self.menu:SetPosition(10-(button_w*(#buttons-1))/2, -285, 0) 
+	self.menu:SetPosition(10-(button_w*(#buttons-1))/2, -285, 0)
 	for i,v in pairs(self.menu.items) do
 		v:SetScale(.7)
 	end
@@ -86,19 +86,19 @@ local MOUSE_SCROLL_REPEAT_TIME = 0
 local STICK_SCROLL_REPEAT_TIME = .25
 
 function CharacterLoadoutSelectScreen:OnControl(control, down)
-    
+
     if CharacterLoadoutSelectScreen._base.OnControl(self, control, down) then return true end
 
     if not self.no_cancel and
-    	not down and control == CONTROL_CANCEL then 
+    	not down and control == CONTROL_CANCEL then
 		self:Close()
-		return true 
+		return true
     end
 
-   	if down then 
+   	if down then
 	 	if control == CONTROL_PREVVALUE then  -- r-stick left
 	    	self:ScrollBack(control)
-			return true 
+			return true
 		elseif control == CONTROL_NEXTVALUE then -- r-stick right
 			self:ScrollFwd(control)
 			return true
@@ -119,7 +119,7 @@ function CharacterLoadoutSelectScreen:ScrollBack(control)
         self.character_list.repeat_time =
             TheInput:GetControlIsMouseWheel(control)
             and MOUSE_SCROLL_REPEAT_TIME
-            or (control == CONTROL_SCROLLBACK and SCROLL_REPEAT_TIME) 
+            or (control == CONTROL_SCROLLBACK and SCROLL_REPEAT_TIME)
             or (control == CONTROL_PREVVALUE and STICK_SCROLL_REPEAT_TIME)
     end
 end
@@ -131,7 +131,7 @@ function CharacterLoadoutSelectScreen:ScrollFwd(control)
         self.character_list.repeat_time =
             TheInput:GetControlIsMouseWheel(control)
             and MOUSE_SCROLL_REPEAT_TIME
-            or (control == CONTROL_SCROLLFWD and SCROLL_REPEAT_TIME) 
+            or (control == CONTROL_SCROLLFWD and SCROLL_REPEAT_TIME)
             or (control == CONTROL_NEXTVALUE and STICK_SCROLL_REPEAT_TIME)
     end
 end
@@ -139,13 +139,13 @@ end
 function CharacterLoadoutSelectScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
     local t = {}
-    
+
     if not self.no_cancel then
     	table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
- 
+
  	table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_PREVVALUE) .. "/" .. TheInput:GetLocalizedControl(controller_id, CONTROL_NEXTVALUE) .." " .. STRINGS.UI.HELP.CHANGECHARACTER)
-   
+
    	return table.concat(t, "  ")
 end
 

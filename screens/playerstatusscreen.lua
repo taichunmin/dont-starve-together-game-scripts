@@ -53,6 +53,8 @@ function PlayerStatusScreen:OnBecomeActive()
     self:DoInit()
     self.time_to_refresh = REFRESH_INTERVAL
     self.scroll_list:SetFocus()
+
+    SetAutopaused(true)
 end
 
 function PlayerStatusScreen:OnBecomeInactive()
@@ -61,6 +63,9 @@ function PlayerStatusScreen:OnBecomeInactive()
             v.mute.image.inst:DisableMute()
         end
     end
+
+    SetAutopaused(false)
+
     PlayerStatusScreen._base.OnBecomeInactive(self)
 end
 
@@ -69,21 +74,23 @@ function PlayerStatusScreen:OnDestroy()
     self:ClearFocus()
     self:StopFollowMouse()
     self:Hide()
+
+    if self.onclosefn ~= nil then
+        self.onclosefn()
+    end
 end
 
 function PlayerStatusScreen:GetHelpText()
     local controller_id = TheInput:GetControllerID()
     local t = {}
 
-    table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_TOGGLE_PLAYER_STATUS) .. " " .. STRINGS.UI.HELP.BACK)
+    table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.CLOSE)
 
     if self.server_group ~= "" then
         table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.HELP.VIEWGROUP)
     end
 
-    if #UserCommands.GetServerActions(self.owner) > 0 then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.HELP.SERVERACTIONS)
-    end
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SERVERLISTINGSCREEN.TOGGLE_SERVER_NAME)
 
     return table.concat(t, "  ")
 end
@@ -97,17 +104,18 @@ function PlayerStatusScreen:OnControl(control, down)
         --jcheng: don't allow debug menu stuff going on right now
         return true
     elseif not down then
-        if (control == CONTROL_SHOW_PLAYER_STATUS
-            or (control == CONTROL_TOGGLE_PLAYER_STATUS and
-                not TheInput:IsControlPressed(CONTROL_SHOW_PLAYER_STATUS))) then
+        if control == CONTROL_SHOW_PLAYER_STATUS
+			or (control == CONTROL_TOGGLE_PLAYER_STATUS and not TheInput:IsControlPressed(CONTROL_SHOW_PLAYER_STATUS))
+			or (self.click_to_close and (control == CONTROL_PAUSE or control == CONTROL_CANCEL))
+             then
             self:Close()
             return true
         elseif control == CONTROL_MENU_MISC_2 and self.server_group ~= "" then
             TheNet:ViewNetProfile(self.server_group)
             return true
         elseif control == CONTROL_MENU_MISC_1 then
-            TheFrontEnd:PopScreen()
-            self:OpenUserCommandPickerScreen(nil)
+			ServerPreferences:ToggleNameAndDescriptionFilter()
+			self:RefreshServerName()
             return true
         end
     end
@@ -174,7 +182,7 @@ function PlayerStatusScreen:OnUpdate(dt)
                             local w, h = playerListing.name:GetRegionSize()
                             playerListing.name:SetPosition(playerListing.name._align.x + w * .5, 0, 0)
 
-                            playerListing.characterBadge:Set(client.prefab or "", client.colour or DEFAULT_PLAYER_COLOUR, playerListing.ishost, client.userflags or 0)
+                            playerListing.characterBadge:Set(client.prefab or "", client.colour or DEFAULT_PLAYER_COLOUR, playerListing.ishost, client.userflags or 0, client.base_skin)
 
                             if playerListing.characterBadge:IsAFK() then
                                 playerListing.age:SetString(STRINGS.UI.PLAYERSTATUSSCREEN.AFK)
@@ -220,6 +228,33 @@ function PlayerStatusScreen:GetDisplayName(clientrecord)
     return clientrecord.name or ""
 end
 
+function PlayerStatusScreen:RefreshServerName()
+    local serverNameStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_NAME or TheNet:GetServerName()
+    if serverNameStr == "" then
+        self.servertitle:SetString(serverNameStr)
+    elseif self.servermenunumbtns > 1 then
+        self.servertitle:SetTruncatedString(serverNameStr, 550, 100, true)
+    elseif self.servermenunumbtns > 0 then
+        self.servertitle:SetTruncatedString(serverNameStr, 600, 110, true)
+    else
+        self.servertitle:SetTruncatedString(serverNameStr, 800, 145, true)
+    end
+
+    local serverDescStr = TheNet:GetServerDescription()
+    if serverDescStr == "" then
+        self.serverdesc:SetString(serverDescStr)
+    else
+		serverDescStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_DESCRIPTION or serverDescStr
+		if self.servermenunumbtns > 1 then
+			self.serverdesc:SetTruncatedString(serverDescStr, 550, 175, true)
+		elseif self.servermenunumbtns > 0 then
+			self.serverdesc:SetTruncatedString(serverDescStr, 600, 190, true)
+		else
+			self.serverdesc:SetTruncatedString(serverDescStr, 800, 250, true)
+		end
+	end
+end
+
 function PlayerStatusScreen:DoInit(ClientObjs)
 
     TheInput:EnableDebugToggle(false)
@@ -229,14 +264,17 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         --bleed outside the screen a bit, otherwise it may not cover
         --the edge of the screen perfectly when scaled to some sizes
         local bleeding = 4
-        self.black = self:AddChild(Image("images/global.xml", "square.tex"))
-        self.black:SetSize(RESOLUTION_X + bleeding, RESOLUTION_Y + bleeding)
-        self.black:SetVRegPoint(ANCHOR_MIDDLE)
-        self.black:SetHRegPoint(ANCHOR_MIDDLE)
-        self.black:SetVAnchor(ANCHOR_MIDDLE)
-        self.black:SetHAnchor(ANCHOR_MIDDLE)
-        self.black:SetScaleMode(SCALEMODE_FIXEDPROPORTIONAL)
-        self.black:SetTint(0,0,0,0) -- invisible, but clickable!
+        self.black = self:AddChild(ImageButton("images/global.xml", "square.tex"))
+        self.black.image:SetVRegPoint(ANCHOR_MIDDLE)
+        self.black.image:SetHRegPoint(ANCHOR_MIDDLE)
+        self.black.image:SetVAnchor(ANCHOR_MIDDLE)
+        self.black.image:SetHAnchor(ANCHOR_MIDDLE)
+        self.black.image:SetScaleMode(SCALEMODE_FILLSCREEN)
+        self.black.image:SetTint(0,0,0,0) -- invisible, but clickable!
+
+	    self.black:SetHelpTextMessage("")
+	    self.black:SetOnClick(function() if self.click_to_close then TheFrontEnd:PopScreen(self) end end)
+		self.black:MoveToBack()
     end
 
     if not self.root then
@@ -269,34 +307,34 @@ function PlayerStatusScreen:DoInit(ClientObjs)
 		self.serverstate:SetString(modeStr.." "..STRINGS.UI.PLAYERSTATUSSCREEN.AGE_PREFIX..self.serverage)
 	end
 
-    local servermenunumbtns = 0
+    self.servermenunumbtns = 0
 
     self.server_group = TheNet:GetServerClanID()
     if self.server_group ~= "" and not TheInput:ControllerAttached() then
         if self.viewgroup_button == nil then
             self.viewgroup_button = self.root:AddChild(ImageButton("images/scoreboard.xml", "clan_normal.tex", "clan_hover.tex", "clan.tex", "clan.tex", nil, { .4, .4 }, { 0, 0 }))
             self.viewgroup_button:SetOnClick(function() TheNet:ViewNetProfile(self.server_group) end)
-            self.viewgroup_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.VIEWGROUP, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 48, colour = WHITE})
+            self.viewgroup_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.VIEWGROUP, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 38, colour = WHITE})
         end
-        servermenunumbtns = servermenunumbtns + 1
+        self.servermenunumbtns = self.servermenunumbtns + 1
     elseif self.viewgroup_button ~= nil then
         self.viewgroup_button:Kill()
         self.viewgroup_button = nil
     end
 
-    if not TheInput:ControllerAttached() and #UserCommands.GetServerActions(self.owner) > 0 then
-        if self.serveractions_button == nil then
-            self.serveractions_button = self.root:AddChild(ImageButton("images/scoreboard.xml", "more_actions_normal.tex", "more_actions_hover.tex", "more_actions.tex", "more_actions.tex", nil, { .4, .4 }, { 0, 0 }))
-            self.serveractions_button:SetOnClick(function()
-                TheFrontEnd:PopScreen()
-                self:OpenUserCommandPickerScreen(nil)
+    if not TheInput:ControllerAttached() then
+        if self.toggleservertext_button == nil then
+            self.toggleservertext_button = self.root:AddChild(ImageButton("images/scoreboard.xml", "toggle_server_name_normal.tex", "toggle_server_name_hover.tex", "toggle_server_name.tex", "toggle_server_name.tex", nil, { .4, .4 }, { 0, 0 }))
+            self.toggleservertext_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.TOGGLE_SERVER_NAME, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 38, colour = WHITE})
+            self.toggleservertext_button:SetOnClick(function()
+				ServerPreferences:ToggleNameAndDescriptionFilter()
+				self:RefreshServerName()
             end)
-            self.serveractions_button:SetHoverText(STRINGS.UI.SERVERLISTINGSCREEN.SERVERACTIONS, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 48, colour = WHITE})
-        end
-        servermenunumbtns = servermenunumbtns + 1
-    elseif self.serveractions_button ~= nil then
-        self.serveractions_button:Kill()
-        self.serveractions_button = nil
+		end
+        self.servermenunumbtns = self.servermenunumbtns + 1
+    elseif self.toggleservertext_button ~= nil then
+        self.toggleservertext_button:Kill()
+        self.toggleservertext_button = nil
     end
 
     if ClientObjs == nil then
@@ -306,14 +344,13 @@ function PlayerStatusScreen:DoInit(ClientObjs)
 
     if not self.players_number then
         self.players_number = self.root:AddChild(Text(UIFONT, 25))
-        self.players_number:SetPosition(318,170) 
+        self.players_number:SetPosition(318,170)
         self.players_number:SetRegionSize(100,30)
         self.players_number:SetHAlign(ANCHOR_RIGHT)
         self.players_number:SetColour(1,1,1,1)
     end
     self.players_number:SetString(tostring(not TheNet:GetServerIsClientHosted() and self.numPlayers - 1 or self.numPlayers).."/"..(TheNet:GetServerMaxPlayers() or "?"))
 
-    local serverDescStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_NAME or TheNet:GetServerDescription()
     if not self.serverdesc then
         self.serverdesc = self.root:AddChild(Text(UIFONT,30))
         self.serverdesc:SetColour(1,1,1,1)
@@ -326,13 +363,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
     local servermenux = -329
     local servermenubtnoffs = 24
     if self.viewgroup_button ~= nil then
-        self.viewgroup_button:SetPosition(servermenux - (servermenunumbtns > 1 and servermenubtnoffs or 0), 200)
-    end
-    if self.serveractions_button ~= nil then
-        self.serveractions_button:SetPosition(servermenux + (servermenunumbtns > 1 and servermenubtnoffs or 0), 200)
+        self.viewgroup_button:SetPosition(servermenux - (self.servermenunumbtns > 1 and servermenubtnoffs or 0), 200)
     end
 
-    if serverDescStr == "" then
+    if self.toggleservertext_button ~= nil then
+        self.toggleservertext_button:SetPosition(servermenux + (self.servermenunumbtns > 1 and servermenubtnoffs or 0), 200)
+    end
+
+    if TheNet:GetServerDescription() == "" then
         self.servertitle:SetPosition(0,215)
         self.serverdesc:SetPosition(0,175)
         self.serverstate:SetPosition(0,175)
@@ -349,26 +387,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         self.divider:SetPosition(0,149)
     end
 
-    local serverNameStr = ServerPreferences:IsNameAndDescriptionHidden() and STRINGS.UI.SERVERLISTINGSCREEN.HIDDEN_NAME or TheNet:GetServerName()
-    if serverNameStr == "" then
-        self.servertitle:SetString(serverNameStr)
-    elseif servermenunumbtns > 1 then
-        self.servertitle:SetTruncatedString(serverNameStr, 550, 100, true)
-    elseif servermenunumbtns > 0 then
-        self.servertitle:SetTruncatedString(serverNameStr, 600, 110, true)
-    else
-        self.servertitle:SetTruncatedString(serverNameStr, 800, 145, true)
-    end
-
-    if serverDescStr == "" then
-        self.serverdesc:SetString(serverDescStr)
-    elseif servermenunumbtns > 1 then
-        self.serverdesc:SetTruncatedString(serverDescStr, 550, 175, true)
-    elseif servermenunumbtns > 0 then
-        self.serverdesc:SetTruncatedString(serverDescStr, 600, 190, true)
-    else
-        self.serverdesc:SetTruncatedString(serverDescStr, 800, 250, true)
-    end
+	self:RefreshServerName()
 
     if not self.servermods and TheNet:GetServerModsEnabled() then
         local modsStr = TheNet:GetServerModsDescription()
@@ -455,14 +474,14 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.viewprofile:SetPosition(120,3,0)
         playerListing.viewprofile:SetNormalScale(0.39)
         playerListing.viewprofile:SetFocusScale(0.39*1.1)
-        playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover")
+        playerListing.viewprofile:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
         playerListing.viewprofile:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
 
         playerListing.mute = playerListing:AddChild(ImageButton("images/scoreboard.xml", "chat.tex", "chat.tex", "chat.tex", "chat.tex", nil, {1,1}, {0,0}))
         playerListing.mute:SetPosition(170,3,0)
         playerListing.mute:SetNormalScale(0.39)
         playerListing.mute:SetFocusScale(0.39*1.1)
-        playerListing.mute:SetFocusSound("dontstarve/HUD/click_mouseover")
+        playerListing.mute:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
         playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.MUTE, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.mute.image.inst.OnUpdateVoice = function(inst)
             inst.widget:SetTint(unpack(playerListing.userid ~= nil and TheNet:IsVoiceActive(playerListing.userid) and VOICE_ACTIVE_COLOUR or VOICE_IDLE_COLOUR))
@@ -496,7 +515,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
                     TheNet:SetPlayerMuted(playerListing.userid, playerListing.isMuted)
                     if playerListing.isMuted then
                         playerListing.mute.image_focus = "mute.tex"
-                        playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
+                        playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
                         playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex")
                         playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
                     else
@@ -514,7 +533,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.kick = playerListing:AddChild(ImageButton("images/scoreboard.xml", "kickout.tex", "kickout.tex", "kickout_disabled.tex", "kickout.tex", nil, {1,1}, {0,0}))
         playerListing.kick:SetNormalScale(0.39)
         playerListing.kick:SetFocusScale(0.39*1.1)
-        playerListing.kick:SetFocusSound("dontstarve/HUD/click_mouseover")
+        playerListing.kick:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
         playerListing.kick:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.KICK, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         local gainfocusfn = playerListing.kick.OnGainFocus
         playerListing.kick.OnGainFocus = function()
@@ -557,7 +576,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.ban:SetPosition(220,3,0)
         playerListing.ban:SetNormalScale(0.39)
         playerListing.ban:SetFocusScale(0.39*1.1)
-        playerListing.ban:SetFocusSound("dontstarve/HUD/click_mouseover")
+        playerListing.ban:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
         playerListing.ban:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.BAN, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.ban:SetOnClick( function()
             if playerListing.userid then
@@ -570,7 +589,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.useractions:SetPosition(220,3,0)
         playerListing.useractions:SetNormalScale(0.39)
         playerListing.useractions:SetFocusScale(0.39*1.1)
-        playerListing.useractions:SetFocusSound("dontstarve/HUD/click_mouseover")
+        playerListing.useractions:SetFocusSound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
         playerListing.useractions:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.USERACTIONS, { font = NEWFONT_OUTLINE, offset_x = 0, offset_y = 30, colour = {1,1,1,1}})
         playerListing.useractions:SetOnClick(function()
             TheFrontEnd:PopScreen()
@@ -603,7 +622,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.displayName = self:GetDisplayName(client)
 
         playerListing.userid = client.userid
-        
+
         if self.show_player_badge then
             if client.netid ~= nil then
                 local _, _, _, profileflair, rank = GetSkinsDataFromClientTableData(client)
@@ -614,7 +633,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
             end
         end
 
-        playerListing.characterBadge:Set(client.prefab or "", client.colour or DEFAULT_PLAYER_COLOUR, client.performance ~= nil, client.userflags or 0)
+        playerListing.characterBadge:Set(client.prefab or "", client.colour or DEFAULT_PLAYER_COLOUR, client.performance ~= nil, client.userflags or 0, client.base_skin)
         playerListing.characterBadge:Show()
 
         if client.admin then
@@ -690,7 +709,7 @@ function PlayerStatusScreen:DoInit(ClientObjs)
         playerListing.isMuted = client.muted == true
         if playerListing.isMuted then
             playerListing.mute.image_focus = "mute.tex"
-            playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex") 
+            playerListing.mute.image:SetTexture("images/scoreboard.xml", "mute.tex")
             playerListing.mute:SetTextures("images/scoreboard.xml", "mute.tex")
             playerListing.mute:SetHoverText(STRINGS.UI.PLAYERSTATUSSCREEN.UNMUTE)
         else

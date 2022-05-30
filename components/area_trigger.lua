@@ -6,8 +6,8 @@ local AreaTrigger = Class(function(self, inst)
 end)
 
 function AreaTrigger:DoOverride(overrides)
-	local retune = require("tuning_override")  
-	for i, override in ipairs(overrides) do	
+	local retune = require("tuning_override")
+	for i, override in ipairs(overrides) do
 		if retune[override[1]] ~= nil then
 			--print("Tuning", area.story, override[1], override[2])
 			retune[override[1]](override[2])
@@ -16,7 +16,7 @@ function AreaTrigger:DoOverride(overrides)
 end
 
 
-function AreaTrigger:CheckTrigger(area) 
+function AreaTrigger:CheckTrigger(area)
 	--print("AreaTrigger:CheckTrigger", area.story)
 	if self.stories[area.story] ~= nil then
 		self:DoOverride(self.stories[area.story])

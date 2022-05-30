@@ -14,6 +14,17 @@ local events =
     CommonHandlers.OnDeath(),
     CommonHandlers.OnLocomote(true, false),
 
+    EventHandler("doattack", function(inst, data)
+		if inst.components.health ~= nil and not inst.components.health:IsDead()
+			and (not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("hit")) then
+			if inst:HasTag("gingerbread") and (inst._next_goo_time == nil or inst._next_goo_time < GetTime()) then
+				inst.sg:GoToState("attack_icing")
+			else
+				inst.sg:GoToState("attack")
+			end
+		end
+	end),
+
     EventHandler("heardwhistle", function(inst, data)
         if not (inst.sg:HasStateTag("statue") or
                 inst.components.health:IsDead() or
@@ -26,7 +37,7 @@ local events =
                     inst.components.combat:SetTarget(nil)
                 end
                 if not inst.sg:HasStateTag("howling") then
-                    inst.sg:GoToState("howl", 2)
+                    inst.sg:GoToState("howl", {count=2})
                 end
             end
         end
@@ -44,6 +55,10 @@ local function SpawnHound(inst)
     local hounded = TheWorld.components.hounded
     if hounded ~= nil then
         local num = inst:NumHoundsToSpawn()
+        if inst.max_hound_spawns then
+            num = math.min(num,inst.max_hound_spawns)
+            inst.max_hound_spawns = inst.max_hound_spawns - num
+        end
         local pt = inst:GetPosition()
         for i = 1, num do
             local hound = hounded:SummonSpawn(pt)
@@ -107,8 +122,7 @@ end
 
 local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle" },
 
@@ -128,16 +142,16 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "howl",
         tags = { "busy", "howling" },
 
-        onenter = function(inst, count)
+        onenter = function(inst, data)
+
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("howl")
             inst.SoundEmitter:PlaySound(inst.sounds.howl)
-            inst.sg.statemem.count = count
+            inst.sg.statemem.count = data and data.count or nil
         end,
 
         timeline =
@@ -156,7 +170,7 @@ local states =
             end),
             EventHandler("animover", function(inst)
                 if inst.sg.statemem.count ~= nil and inst.sg.statemem.count > 1 then
-                    inst.sg:GoToState("howl", inst.sg.statemem.count - 1)
+                    inst.sg:GoToState("howl", {count=inst.sg.statemem.count - 1})
                 else
                     inst.sg:GoToState("idle")
                 end
@@ -164,9 +178,83 @@ local states =
         },
     },
 
+	--Gingerbread warg
+    State{
+        name = "attack_icing",
+        tags = { "attack", "busy" },
+
+        onenter = function(inst)
+            if inst.components.locomotor ~= nil then
+                inst.components.locomotor:StopMoving()
+            end
+            inst.AnimState:PlayAnimation("attack_icing")
+            inst.components.combat:StartAttack()
+        end,
+
+        timeline =
+		{
+            TimeEvent(14 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(14*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+            TimeEvent(17 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(17*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+            TimeEvent(26 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(26*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+            TimeEvent(33 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(33*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+            TimeEvent(42 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(42*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+            TimeEvent(49 * FRAMES, function(inst) inst:LaunchGooIcing() end),
+            TimeEvent(49*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/whoosh") end),
+		},
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+				if inst.AnimState:AnimDone() then
+			        inst.sg:GoToState("idle")
+			    end
+			end),
+        },
+    },
+
+    State{
+        name = "gingerbread_intro",
+        tags = { "intro_state" },
+
+        onenter = function(inst)
+            if inst.components.locomotor ~= nil then
+                inst.components.locomotor:StopMoving()
+            end
+            inst.AnimState:PlayAnimation("gingerbread_eat_loop")
+        end,
+
+        timeline =
+		{
+			TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/eat") end),
+            TimeEvent(6*FRAMES, function(inst) if math.random() < 0.5 then inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbreadpig/vocal") end end),
+            TimeEvent(12*FRAMES, function(inst) if math.random() < 0.7 then inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/vargr/idle") end end),
+            TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/eat") end),
+            -- TimeEvent(16*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbreadpig/vocal") end),
+            TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbread_vargr/eat") end),
+            -- TimeEvent(26*FRAMES, function(inst) inst.SoundEmitter:PlaySound("wintersfeast2019/creatures/gingerbreadpig/vocal") end),
+		},
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+				if inst.AnimState:AnimDone() then
+					if inst.components.combat == nil or inst.components.combat:HasTarget() then
+				        inst.sg:GoToState("idle")
+					else
+				        inst.sg:GoToState("gingerbread_intro")
+					end
+			    end
+			end),
+        },
+    },
+
     --Clay warg
-    State
-    {
+    State{
         name = "statue",
         tags = { "busy", "noattack", "statue" },
 
@@ -192,8 +280,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "reanimatestatue",
         tags = { "busy", "noattack", "statue" },
 
@@ -240,8 +327,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "transformstatue",
         tags = { "busy", "noattack", "statue" },
 

@@ -43,7 +43,7 @@ local function fn()
     inst:AddComponent("sewing")
     inst.components.sewing.repair_value = TUNING.SEWING_TAPE_REPAIR_VALUE
     inst.components.sewing.onsewn = onsewn
-    ---------------------       
+    ---------------------
 
     inst:AddComponent("inspectable")
 

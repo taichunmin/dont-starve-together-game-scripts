@@ -86,7 +86,7 @@ function Beaverness:SetPercent(percent, overtime)
 end
 
 function Beaverness:OnSave()
-    return 
+    return
     {
         current = self.current,
     }

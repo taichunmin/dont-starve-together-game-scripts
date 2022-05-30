@@ -22,13 +22,13 @@ BeargerOffScreen = Class(BehaviourNode, function(self, inst)
 --	self.draw:SetZ(0.1)
 end)
 
-local function distSquared(p1, p2) 
+local function distSquared(p1, p2)
 	local dx = p1.x - p2.x
 	local dy = p1.y - p2.y
 	return dx*dx + dy*dy
 end
 
-local function distPointToSegmentSquared(p, v1, v2) 
+local function distPointToSegmentSquared(p, v1, v2)
 	local l2 = distSquared(v1, v2)
 	if (l2 == 0) then
 		return distSquared(p, v1)
@@ -43,8 +43,8 @@ local function distPointToSegmentSquared(p, v1, v2)
 	return distSquared(p, { x = v1.x + t * (v2.x - v1.x), y =v1.y + t * (v2.y - v1.y) });
 end
 
-local function distPointToSegment(p, v1, v2) 
-	return math.sqrt(distPointToSegmentSquared(p, v2, v2)); 
+local function distPointToSegment(p, v1, v2)
+	return math.sqrt(distPointToSegmentSquared(p, v2, v2));
 end
 
 local function GetEntitiesAlongLine(x1,y1,x2,y2,r,musthavetags, canthavetags, musthaveoneoftags)
@@ -120,7 +120,7 @@ end
 function BeargerOffScreen:SetupRoaming()
 	local x,_,y = self.inst.Transform:GetWorldPosition()
 	local node = GetClosestNode(x,y)
-	local nodes 
+	local nodes
 	if not self.roamedBefore then
 		self.roamedBefore = true
 		nodes = GrabSubGraphAroundNode(node, numNodesForInitialRoamingRegion)
@@ -153,10 +153,10 @@ function BeargerOffScreen:SetupRoaming()
 			local y = srcy + dy * 5 * pt
 			TheWorld.minimap.MiniMap:ShowArea(x,0,y,8)
 		end
-		
+
 	end
 	]]
-	
+
 	self.boundary = ressorted
 	self.roamAreaNode = node
 	self.roamAreaReached = false
@@ -168,7 +168,7 @@ function BeargerOffScreen:Roam()
 	local newx = self.destpos.x
 	local newy = self.destpos.z
 
-	self.inst.Transform:SetPosition(newx,origy,newy)			
+	self.inst.Transform:SetPosition(newx,origy,newy)
 
 	self:WorkEntitiesAlongLine(x,y,newx,newy,3)
 	self:DropTrail(x,y,newx,newy,dropsPerMeterChance)
@@ -198,8 +198,8 @@ function BeargerOffScreen:Visit()
 end
 
 function FindWalkableOffsetWithBoundary(position, start_angle, radius, attempts, check_los, ignore_walls, boundarypoints)
-    	if ignore_walls == nil then 
-        	ignore_walls = true 
+    	if ignore_walls == nil then
+        	ignore_walls = true
     	end
 
 	local test = function(offset)
@@ -244,12 +244,12 @@ function BeargerOffScreen:GetRandomWanderDestWithinBoundary(lookAhead, moveRadiu
 		y = y + offset.y * fraction
 		z = z + offset.z * fraction
 	end
-	return Point(x,y,z), check_angle	
+	return Point(x,y,z), check_angle
 end
 
 function BeargerOffScreen:PickNewDirection_Rampage()
 	if not self.roamAreaReached then
-		-- we're not inside our roaming area yet - let's try to go there by trying to walk to the center		
+		-- we're not inside our roaming area yet - let's try to go there by trying to walk to the center
 		local x,y,z = self.inst.Transform:GetWorldPosition()
 		local dstx = self.roamAreaNode.x
 		local dsty = y
@@ -268,7 +268,7 @@ function BeargerOffScreen:PickNewDirection_Rampage()
 			x = x + dx * moveRadius
 			z = z + dz * moveRadius
 		end
-		self.destpos = Point(x,y,z)	
+		self.destpos = Point(x,y,z)
 		if TheSim:WorldPointInPoly(x, z, self.boundary) then
 			self.roamAreaReached = true
 		end

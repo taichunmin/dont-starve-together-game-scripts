@@ -148,8 +148,6 @@ local states=
         onenter = function(inst, cb)
             inst.Physics:Stop()
             inst.components.locomotor:Stop()
-			local angle = TheCamera:GetHeadingTarget()*DEGREES -- -22.5*DEGREES
-			inst.Transform:SetRotation(angle / DEGREES)
             inst.AnimState:PlayAnimation("poop_pre")
 
         end,
@@ -223,15 +221,15 @@ local states=
 	State{
         name = "death",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/spiderqueen/die")
             inst.AnimState:PlayAnimation("death")
             inst.components.locomotor:StopMoving()
-            RemovePhysicsColliders(inst)            
-            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+            RemovePhysicsColliders(inst)
+            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         end,
-        
+
     },
 
 }

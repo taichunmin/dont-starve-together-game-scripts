@@ -53,11 +53,6 @@ local function MakeWereItem(were_mode)
         inst:AddComponent("stackable")
         inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
 
-        inst:AddComponent("perishable")
-        inst.components.perishable:SetPerishTime(TUNING.PERISH_FASTISH)
-        inst.components.perishable:StartPerishing()
-        inst.components.perishable.onperishreplacement = "spoiled_food"
-
         MakeSmallBurnable(inst)
         MakeSmallPropagator(inst)
         MakeHauntableLaunchAndPerish(inst)

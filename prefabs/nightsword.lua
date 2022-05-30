@@ -2,11 +2,16 @@ local assets =
 {
     Asset("ANIM", "anim/nightmaresword.zip"),
     Asset("ANIM", "anim/swap_nightmaresword.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_nightmaresword", "swap_nightmaresword")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_nightmaresword", inst.GUID, "swap_nightmaresword")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_nightmaresword", "swap_nightmaresword")
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -14,6 +19,10 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function fn()
@@ -30,6 +39,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
     --inst.AnimState:SetMultColour(1, 1, 1, .6)
 
+    inst:AddTag("shadow_item")
     inst:AddTag("shadow")
     inst:AddTag("sharp")
 
@@ -63,6 +73,7 @@ local function fn()
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
     inst.components.equippable.dapperness = TUNING.CRAZINESS_MED
+    inst.components.equippable.is_magic_dapperness = true
 
     MakeHauntableLaunch(inst)
 

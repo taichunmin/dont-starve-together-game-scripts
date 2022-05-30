@@ -11,6 +11,9 @@ local function OnSaltlickPlaced(inst)
     inst:RemoveEventCallback("saltlick_placed", OnSaltlickPlaced)
 end
 
+local FINDSALTLICK_MUST_TAGS = { "saltlick" }
+local FINDSALTLICK_CANT_TAGS = { "INLIMBO", "fire", "burnt" }
+
 local function FindSaltlick(inst)
     if inst._brainsaltlick == nil or
         not inst._brainsaltlick:IsValid() or
@@ -19,7 +22,7 @@ local function FindSaltlick(inst)
         (inst._brainsaltlick.components.burnable ~= nil and inst._brainsaltlick.components.burnable:IsBurning()) or
         inst._brainsaltlick:HasTag("burnt") then
         local hadsaltlick = inst._brainsaltlick ~= nil
-        inst._brainsaltlick = FindEntity(inst, TUNING.SALTLICK_CHECK_DIST, nil, { "saltlick" }, { "INLIMBO", "fire", "burnt" })
+        inst._brainsaltlick = FindEntity(inst, TUNING.SALTLICK_CHECK_DIST, nil, FINDSALTLICK_MUST_TAGS, FINDSALTLICK_CANT_TAGS)
         if inst._brainsaltlick ~= nil then
             if not hadsaltlick then
                 inst:ListenForEvent("saltlick_placed", OnSaltlickPlaced)
@@ -137,6 +140,115 @@ local function PanicWhenScared(inst, loseloyaltychance, chatty)
 end
 
 BrainCommon.PanicWhenScared = PanicWhenScared
+
+--------------------------------------------------------------------------
+-- Actions: MINE, CHOP
+
+local MINE_TAGS = { "MINE_workable" }
+local CHOP_TAGS = { "CHOP_workable" }
+
+local function IsDeciduousTreeMonster(guy)
+    return guy.monster and guy.prefab == "deciduoustree"
+end
+
+local function FindDeciduousTreeMonster(inst, finddist)
+    return FindEntity(inst, finddist / 3, IsDeciduousTreeMonster, CHOP_TAGS)
+end
+
+
+local AssistLeaderDefaults = {
+    MINE = {
+        Starter = function(inst, leaderdist, finddist)
+            return inst.components.follower.leader ~= nil and
+                    inst.components.follower.leader.sg ~= nil and
+                    inst.components.follower.leader.sg:HasStateTag("mining")
+        end,
+        KeepGoing = function(inst, leaderdist, finddist)
+            return inst.components.follower.leader ~= nil and
+                    inst:IsNear(inst.components.follower.leader, leaderdist)
+        end,
+        FindNew = function(inst, leaderdist, finddist)
+            local target = FindEntity(inst, finddist, nil, MINE_TAGS)
+
+            if target == nil and inst.components.follower.leader ~= nil then
+                target = FindEntity(inst.components.follower.leader, finddist, nil, MINE_TAGS)
+            end
+
+            if target ~= nil then
+                return BufferedAction(inst, target, ACTIONS.MINE)
+            end
+        end,
+    },
+    CHOP = {
+        Starter = function(inst, finddist)
+            return inst.tree_target ~= nil
+                or (inst.components.follower.leader ~= nil and
+                    inst.components.follower.leader.sg ~= nil and
+                    inst.components.follower.leader.sg:HasStateTag("chopping"))
+                or FindDeciduousTreeMonster(inst, finddist) ~= nil
+        end,
+        KeepGoing = function(inst, leaderdist, finddist)
+            return inst.tree_target ~= nil
+                or (inst.components.follower.leader ~= nil and
+                    inst:IsNear(inst.components.follower.leader, leaderdist))
+                or FindDeciduousTreeMonster(inst, finddist) ~= nil
+        end,
+        FindNew = function(inst, leaderdist, finddist)
+            local target = FindEntity(inst, finddist, nil, CHOP_TAGS)
+
+            if target == nil and inst.components.follower.leader ~= nil then
+                target = FindEntity(inst.components.follower.leader, finddist, nil, CHOP_TAGS)
+            end
+
+            if target ~= nil then
+                if inst.tree_target ~= nil then
+                    target = inst.tree_target
+                    inst.tree_target = nil
+                else
+                    target = FindDeciduousTreeMonster(inst, finddist) or target
+                end
+
+                return BufferedAction(inst, target, ACTIONS.CHOP)
+            end
+        end,
+    },
+}
+-- Mod support access.
+BrainCommon.AssistLeaderDefaults = AssistLeaderDefaults
+
+--NOTES(JBK): This helps followers do a task once they see the leader is doing an act.
+--            Since actions are very context sensitive, there are defaults above to help clarify context.
+local function NodeAssistLeaderDoAction(self, parameters)
+    local action = parameters.action
+    local defaults = AssistLeaderDefaults[action]
+
+    local starter = parameters.starter or defaults.Starter
+    local keepgoing = parameters.keepgoing or defaults.KeepGoing
+    local finder = parameters.finder or defaults.FindNew
+
+    local keepgoing_leaderdist = parameters.keepgoing_leaderdist or TUNING.FOLLOWER_HELP_LEADERDIST
+    local finder_finddist = parameters.finder_finddist or TUNING.FOLLOWER_HELP_FINDDIST
+
+    local function ifnode()
+        return starter(self.inst, keepgoing_leaderdist, finder_finddist)
+    end
+    local function whilenode()
+        return keepgoing(self.inst, keepgoing_leaderdist, finder_finddist)
+    end
+    local function findnode()
+        return finder(self.inst, keepgoing_leaderdist, finder_finddist)
+    end
+    local looper
+    if parameters.chatterstring then
+        looper = LoopNode{ConditionNode(whilenode), ChattyNode(self.inst, parameters.chatterstring, DoAction(self.inst, findnode))}
+    else
+        looper = LoopNode{ConditionNode(whilenode), DoAction(self.inst, findnode)}
+    end
+
+    return IfThenDoWhileNode(ifnode, whilenode, action, looper)
+end
+
+BrainCommon.NodeAssistLeaderDoAction = NodeAssistLeaderDoAction
 
 --------------------------------------------------------------------------
 return BrainCommon

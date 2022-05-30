@@ -19,6 +19,8 @@ local function fn()
 
     inst:AddTag("molebait")
 
+	MakeInventoryFloatable(inst, "med", nil, 0.65)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -27,7 +29,6 @@ local function fn()
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
 
     inst:AddComponent("tradable")
     inst.components.tradable.goldvalue = TUNING.GOLD_VALUES.ANTLION
@@ -35,7 +36,7 @@ local function fn()
 
     inst:AddComponent("stackable")
     inst.components.stackable.maxsize = TUNING.STACK_SIZE_SMALLITEM
-    
+
     MakeHauntableLaunch(inst)
 
     return inst

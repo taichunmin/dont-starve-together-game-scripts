@@ -51,6 +51,23 @@ end
 -- GLOBAL functions
 ------------------------------------------------------------------
 
+local function RefreshWorldTabs()
+	if not rawget(_G, "TheFrontEnd") then return end
+	--HACK probably need a better way to update the world tabs when the customize data changes
+	local servercreationscreen
+    for _, screen_in_stack in pairs(TheFrontEnd.screenstack) do
+        if screen_in_stack.name == "ServerCreationScreen" then
+			servercreationscreen = screen_in_stack
+			break
+        end
+	end
+    if servercreationscreen then
+		for k, v in pairs(servercreationscreen.world_tabs) do
+			v:RefreshOptionItems()
+        end
+    end
+end
+
 function AddStartLocation(name, data)
     if ModManager.currentlyloadingmod ~= nil then
         AddModStartLocation(ModManager.currentlyloadingmod, name, data)
@@ -67,6 +84,7 @@ function AddModStartLocation(mod, name, data)
     end
     if modstartlocations[mod] == nil then modstartlocations[mod] = {} end
     modstartlocations[mod][name] = data
+    RefreshWorldTabs()
 end
 
 ------------------------------------------------------------------
@@ -83,21 +101,21 @@ AddStartLocation("default", {
 AddStartLocation("plus", {
     name = STRINGS.UI.SANDBOXMENU.PLUSSTART,
     location = "forest",
-    start_setpeice = "DefaultPlusStart",	
+    start_setpeice = "DefaultPlusStart",
     start_node = {"DeepForest", "Forest", "SpiderForest", "Plain", "Rocky", "Marsh"},
 })
 
 AddStartLocation("darkness", {
     name = STRINGS.UI.SANDBOXMENU.DARKSTART,
     location = "forest",
-    start_setpeice = "DarknessStart",	
-    start_node = {"DeepForest", "Forest"},	
+    start_setpeice = "DarknessStart",
+    start_node = {"DeepForest", "Forest"},
 })
 
 AddStartLocation("caves", {
     name = STRINGS.UI.SANDBOXMENU.CAVESTART,
     location = "cave",
-    start_setpeice = "CaveStart",	
+    start_setpeice = "CaveStart",
     start_node = {
         "RabbitArea",
         "RabbitTown",

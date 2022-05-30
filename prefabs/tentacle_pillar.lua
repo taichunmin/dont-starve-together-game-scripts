@@ -4,7 +4,7 @@ local assets =
     Asset("SOUND", "sound/tentacle.fsb"),
 }
 
-local prefabs = 
+local prefabs =
 {
     "tentacle_pillar_arm",
     "tentacle_pillar_hole",
@@ -52,6 +52,7 @@ local function StartTrackingArm(inst, arm)
     inst:ListenForEvent("death", inst._onstoptrackingarm, arm)
 end
 
+local FINDARMS_MUST_TAGS = { "tentacle_pillar" }
 local function SpawnArms(inst, attacker)
     if inst.numArms >= TUNING.TENTACLE_PILLAR_ARMS_TOTAL - 3 then
         --despawn tentacles away from players
@@ -78,7 +79,7 @@ local function SpawnArms(inst, attacker)
         inst.spawnLocal = nil
     end
 
-    -- Walk the circle trying to find a valid spawn point 
+    -- Walk the circle trying to find a valid spawn point
     local map = TheWorld.Map
     for r = 1, rings do
         local theta = GetRandomWithVariance(0, PI / 2)
@@ -86,7 +87,7 @@ local function SpawnArms(inst, attacker)
             local radius = GetRandomWithVariance(ringdelta, ringdelta / 3) + minRadius
             local x = pt.x + radius * math.cos(theta)
             local z = pt.z - radius * math.sin(theta)
-            local pillars = TheSim:FindEntities(x, 0, z, 3.5, { "tentacle_pillar" })
+            local pillars = TheSim:FindEntities(x, 0, z, 3.5, FINDARMS_MUST_TAGS)
             if #pillars > 0 then
                 pillarLoc = pillars[1]:GetPosition()
             end
@@ -112,7 +113,7 @@ local function OnFar(inst)
     end
 end
 
-local function OnHit(inst, attacker, damage) 
+local function OnHit(inst, attacker, damage)
     if attacker.components.combat ~= nil and not attacker:HasTag("player") and math.random() < .5 then
         -- Followers should stop hitting the pillar
         attacker.components.combat:SetTarget(nil)
@@ -214,7 +215,7 @@ local function OnDeath(inst)
 end
 
 local function OnEntityWake(inst)
-    inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentapiller_idle_LP", "loop") 
+    inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentapiller_idle_LP", "loop")
 end
 
 local function OnEntitySleep(inst)

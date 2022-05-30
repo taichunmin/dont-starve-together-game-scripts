@@ -3,59 +3,24 @@ local assets =
     Asset("ANIM", "anim/lightning.zip"),
 }
 
-local function PlayLightningAnim(pos)
-    local inst = CreateEntity()
+local LIGHTNING_MAX_DIST_SQ = 140*140
 
-    inst:AddTag("FX")
-    --[[Non-networked entity]]
-    inst.entity:SetCanSleep(false)
-    inst.persists = false
+local function PlayThunderSound(lighting)
+	if not lighting:IsValid() or TheFocalPoint == nil then
+		return
+	end
 
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddLight()
-
-    inst.Transform:SetPosition(pos:Get())
-    inst.Transform:SetScale(2, 2, 2)
-
-    inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-    inst.AnimState:SetLightOverride(1)
-    inst.AnimState:SetBank("lightning")
-    inst.AnimState:SetBuild("lightning")
-    inst.AnimState:PlayAnimation("anim")
-
-    inst:ListenForEvent("animover", inst.Remove)
-end
-
-local function PlayThunderSound(pos)
-    local inst = CreateEntity()
-
-    --[[Non-networked entity]]
-
-    inst.entity:AddTransform()
-    inst.entity:AddSoundEmitter()
-
-    inst.Transform:SetPosition(pos:Get())
-    inst.SoundEmitter:PlaySound("dontstarve/rain/thunder_close")
-
-    inst:Remove()
-end
-
-local function StartFX(proxy)
-    TheWorld:PushEvent("screenflash", .5)
-
-    local pos = Vector3(proxy.Transform:GetWorldPosition())
-    PlayLightningAnim(pos)
-
-    --Dedicated server does not need to spawn the local fx
-    --(except lightning anim since it affects lighting)
-    if TheNet:IsDedicated() then
-        return
-    end
-
+    local pos = Vector3(lighting.Transform:GetWorldPosition())
     local pos0 = Vector3(TheFocalPoint.Transform:GetWorldPosition())
    	local diff = pos - pos0
     local distsq = diff:LengthSq()
+
+	local k = math.max(0, math.min(1, distsq / LIGHTNING_MAX_DIST_SQ))
+	local intensity = math.min(1, k * 1.1 * (k - 2) + 1.1)
+	if intensity <= 0 then
+		return
+	end
+
     local minsounddist = 10
     local normpos = pos
    	if distsq > minsounddist * minsounddist then
@@ -64,23 +29,57 @@ local function StartFX(proxy)
    	    normpos = pos0 + normdiff
     end
 
-    if ThePlayer ~= nil then
-        ThePlayer:ShakeCamera(CAMERASHAKE.FULL, .7, .02, .5, proxy, 40)
-    end
-    PlayThunderSound(normpos)
+    local inst = CreateEntity()
+
+    --[[Non-networked entity]]
+
+    inst.entity:AddTransform()
+    inst.entity:AddSoundEmitter()
+
+    inst.Transform:SetPosition(normpos:Get())
+    inst.SoundEmitter:PlaySound("dontstarve/rain/thunder_close", nil, intensity, true)
+
+    inst:Remove()
+end
+
+local function StartFX(inst)
+	for i, v in ipairs(AllPlayers) do
+		local distSq = v:GetDistanceSqToInst(inst)
+		local k = math.max(0, math.min(1, distSq / LIGHTNING_MAX_DIST_SQ))
+		local intensity = -(k-1)*(k-1)*(k-1)				--k * 0.8 * (k - 2) + 0.8
+
+		--print("StartFX", k, intensity)
+		if intensity > 0 then
+			v:ScreenFlash(intensity <= 0.05 and 0.05 or intensity)
+			v:ShakeCamera(CAMERASHAKE.FULL, .7, .02, intensity / 3)
+		end
+	end
 end
 
 local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
+    inst.entity:AddAnimState()
     inst.entity:AddNetwork()
+    inst.entity:AddSoundEmitter()
+
+    inst.Transform:SetScale(2, 2, 2)
+
+    inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+    inst.AnimState:SetLightOverride(1)
+    inst.AnimState:SetBank("lightning")
+    inst.AnimState:SetBuild("lightning")
+    inst.AnimState:PlayAnimation("anim")
+
+    inst.SoundEmitter:PlaySound("dontstarve/rain/thunder_close", nil, nil, true)
 
     inst:AddTag("FX")
 
-    --Delay one frame so that we are positioned properly before starting the effect
-    --or in case we are about to be removed
-    inst:DoTaskInTime(0, StartFX)
+    --Dedicated server does not need to spawn the local sfx
+    if not TheNet:IsDedicated() then
+		inst:DoTaskInTime(0, PlayThunderSound)
+	end
 
     inst.entity:SetPristine()
 
@@ -88,11 +87,43 @@ local function fn()
         return inst
     end
 
+	inst:DoTaskInTime(0, StartFX) -- so we can use the position to affect the screen flash
+
     inst.entity:SetCanSleep(false)
     inst.persists = false
-    inst:DoTaskInTime(1, inst.Remove)
+    inst:DoTaskInTime(.5, inst.Remove)
 
     return inst
 end
 
-return Prefab("lightning", fn, assets)
+local function thunderfn()
+    local inst = CreateEntity()
+
+    -- V2C: This could ostensibly be a non-networked entity,
+    -- but it's lighter than the lightning and spawns in place of it,
+    -- and would require effort at the spawn site to be client-only.
+    -- So, for the sake of brevity, it's just a copy without an anim state.
+
+    inst.entity:AddTransform()
+    inst.entity:AddNetwork()
+
+    if not TheNet:IsDedicated() then
+        inst:DoTaskInTime(0, PlayThunderSound)
+    end
+
+    inst.entity:SetPristine()
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst:DoTaskInTime(0, StartFX) -- so we can use the position to affect the screen flash
+
+    inst.entity:SetCanSleep(false)
+    inst.persists = false
+    inst:DoTaskInTime(.5, inst.Remove)
+
+    return inst
+end
+
+return Prefab("lightning", fn, assets),
+        Prefab("thunder", thunderfn)

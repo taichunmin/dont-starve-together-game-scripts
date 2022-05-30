@@ -118,7 +118,7 @@ local function emit_smoke_fn(effect, sphere_emitter)
    )
 end
 
-local function emit_fire_fn(effect, sphere_emitter)            
+local function emit_fire_fn(effect, sphere_emitter)
     local vx, vy, vz = .01 * UnitRand(), 0, .01 * UnitRand()
     local lifetime = FIRE_MAX_LIFETIME * (.9 + UnitRand() * .1)
     local px, py, pz = sphere_emitter()
@@ -133,7 +133,7 @@ local function emit_fire_fn(effect, sphere_emitter)
     )
 end
 
-local function emit_ember_fn(effect, sphere_emitter)            
+local function emit_ember_fn(effect, sphere_emitter)
     local vx, vy, vz = .02 * UnitRand(), .08 + .03 * UnitRand(), .02 * UnitRand()
     local lifetime = EMBER_MAX_LIFETIME * (0.9 + UnitRand() * .1)
     local px, py, pz = sphere_emitter()

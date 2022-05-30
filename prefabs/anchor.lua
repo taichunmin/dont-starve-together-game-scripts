@@ -12,11 +12,7 @@ local item_assets =
 local prefabs =
 {
     "collapse_small",
-}
-
-local item_prefabs =
-{
-    "anchor",
+	"anchor_item", -- deprecated but kept for existing worlds and mods
 }
 
 local function on_hammered(inst, hammerer)
@@ -30,6 +26,11 @@ local function on_hammered(inst, hammerer)
 		inst.components.anchor:SetIsAnchorLowered(false)
 	end
 
+	local boat = inst:GetCurrentPlatform()
+	if boat ~= nil then
+		boat:PushEvent("spawnnewboatleak", { pt = inst:GetPosition(), leak_size = "med_leak", playsoundfx = true })
+	end
+
     inst:Remove()
 end
 
@@ -40,6 +41,20 @@ end
 local function onburnt(inst)
     inst.SoundEmitter:KillSound("mooring")
     inst.sg:Stop()
+end
+
+local function onbuilt(inst)
+    inst.SoundEmitter:PlaySound("turnoftides/common/together/boat/anchor/place")
+    inst.AnimState:PlayAnimation("place")
+    inst.AnimState:PushAnimation("idle")
+end
+
+local function onanchorlowered(inst)
+	local boat = inst.components.anchor ~= nil and inst.components.anchor.boat or nil
+	if boat ~= nil then
+		ShakeAllCamerasOnPlatform(CAMERASHAKE.VERTICAL, 0.3, 0.03, 0.12, boat)
+	end
+	inst.SoundEmitter:PlaySound("turnoftides/common/together/boat/anchor/ocean_hit")
 end
 
 local function onsave(inst, data)
@@ -56,7 +71,7 @@ local function onload(inst, data)
 end
 
 local function fn()
-    
+
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -77,9 +92,14 @@ local function fn()
 
     MakeMediumBurnable(inst, nil, nil, true)
 	inst:ListenForEvent("onburnt", onburnt)
-    MakeMediumPropagator(inst)
+	MakeMediumPropagator(inst)
 
-    inst:AddComponent("anchor")
+	inst:AddComponent("anchor")
+
+	inst:AddComponent("boatdrag")
+	inst.components.boatdrag.drag = TUNING.BOAT.ANCHOR.BASIC.ANCHOR_DRAG
+	inst.components.boatdrag.max_velocity_mod = TUNING.BOAT.ANCHOR.BASIC.MAX_VELOCITY_MOD
+	inst.components.boatdrag.sailforcemodifier = TUNING.BOAT.ANCHOR.BASIC.SAILFORCEDRAG
 
     inst:AddComponent("hauntable")
     inst:AddComponent("inspectable")
@@ -94,6 +114,16 @@ local function fn()
     inst.components.workable:SetWorkLeft(3)
     inst.components.workable:SetOnFinishCallback(on_hammered)
     inst.components.workable:SetOnWorkCallback(onhit)
+
+	inst:ListenForEvent("onbuilt", onbuilt)
+	inst:ListenForEvent("anchor_lowered", onanchorlowered)
+
+    inst:DoTaskInTime(0,function()
+        local pt = Vector3(inst.Transform:GetWorldPosition())
+        if TheWorld.Map:IsVisualGroundAtPoint(pt.x,pt.y,pt.z) then
+            inst.AnimState:Hide("fx")
+        end
+    end)
 
 	inst.OnSave = onsave
     inst.OnLoad = onload
@@ -113,46 +143,6 @@ local function ondeploy(inst, pt, deployer)
     end
 end
 
-local function anchor_itemfn()
-    local inst = CreateEntity()
-
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddNetwork()
-
-    inst:AddTag("boat_accessory")
-
-    MakeInventoryPhysics(inst)
-
-    inst.AnimState:SetBank("seafarer_anchor")
-    inst.AnimState:SetBuild("seafarer_anchor")
-    inst.AnimState:PlayAnimation("idle")
-
-    inst.entity:SetPristine()
-    if not TheWorld.ismastersim then
-        return inst
-    end
-
-    MakeSmallBurnable(inst)
-    MakeSmallPropagator(inst)
-
-    inst:AddComponent("inspectable")
-    inst.components.inspectable.nameoverride = "anchor"
-
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
-
-    inst:AddComponent("deployable")
-    inst.components.deployable.ondeploy = ondeploy
-
-    inst:AddComponent("fuel")
-    inst.components.fuel.fuelvalue = TUNING.LARGE_FUEL
-
-    MakeHauntableLaunch(inst)
-
-    return inst
-end
-
 return Prefab("anchor", fn, assets, prefabs),
-       Prefab("anchor_item", anchor_itemfn, item_assets, item_prefabs),
+       MakeDeployableKitItem("anchor_item", "anchor", "seafarer_anchor", "seafarer_anchor", "idle", item_assets, nil, {"boat_accessory"}, {fuelvalue = TUNING.LARGE_FUEL}),
        MakePlacer("anchor_item_placer", "boat_anchor", "boat_anchor", "idle")

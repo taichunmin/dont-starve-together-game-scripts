@@ -2,7 +2,7 @@ require("stategraphs/commonstates")
 
 -- Lavae doesn't want to change his target to attackers.
 local function onattackedfn(inst, data)
-	if inst.components.health and not inst.components.health:IsDead() and 
+	if inst.components.health and not inst.components.health:IsDead() and
 	(not inst.sg:HasStateTag("busy") or inst.sg:HasStateTag("frozen")) then
 		inst.sg:GoToState("hit")
 	end
@@ -120,18 +120,18 @@ local states =
 
 		timeline =
 		{
-			TimeEvent(16*FRAMES, function(inst) 
+			TimeEvent(16*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/jump")
-				inst.Physics:SetMotorVelOverride(20,0,0) 
+				inst.Physics:SetMotorVelOverride(20,0,0)
 			end),
 			TimeEvent(21*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/attack")
 				inst.components.combat:DoAttack()
 
 			end),
-			TimeEvent(23*FRAMES, function(inst)                     
+			TimeEvent(23*FRAMES, function(inst)
 				inst.Physics:ClearMotorVelOverride()
-				inst.components.locomotor:Stop() 
+				inst.components.locomotor:Stop()
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/land")
 				PlayFootstep(inst)
 			end),
@@ -155,16 +155,16 @@ local states =
 
 		timeline =
 		{
-			TimeEvent(6*FRAMES, function(inst) 
+			TimeEvent(6*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/jump")
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/taunt")
 			end),
-			TimeEvent(17*FRAMES, function(inst) 
+			TimeEvent(17*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/land")
 			end),
 		},
 
-		events = 
+		events =
 		{
 			EventHandler("animover", function(inst) inst:PerformBufferedAction() end),
 		},
@@ -182,17 +182,17 @@ local states =
 
 		timeline =
 		{
-			TimeEvent(6*FRAMES, function(inst) 
+			TimeEvent(6*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/jump")
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/taunt")
 			end),
-			TimeEvent(17*FRAMES, function(inst) 
+			TimeEvent(17*FRAMES, function(inst)
 				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/land")
 			end),
 		},
 
 
-		events = 
+		events =
 		{
 			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
 		},
@@ -207,7 +207,7 @@ local states =
 			inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/land")
 		end,
 
-		events = 
+		events =
 		{
 			EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
 		}
@@ -225,7 +225,7 @@ local states =
 		events =
 		{
 			EventHandler("animover", function(inst) inst.sg:GoToState("walk") end),
-		},		
+		},
 	},
 
 	State{
@@ -282,7 +282,7 @@ local states =
 			inst.AnimState:PlayAnimation("death")
 			if inst.components.lootdropper then
     			inst.components.lootdropper:SetChanceLootTable(inst.NormalLootTable or 'lavae_lava')
-            	inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))  
+            	inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         		inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/death")
 			end
 		end,
@@ -291,7 +291,7 @@ local states =
     State{
         name = "frozen",
         tags = {"busy", "frozen"},
-        
+
         onenter = function(inst)
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
@@ -300,33 +300,35 @@ local states =
             inst.SoundEmitter:PlaySound("dontstarve/common/freezecreature")
         	inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/frozen")
         	inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/sizzle_snow")
+            -- Tell clients to no longer target this entity because it will die when it thaws.
+            inst.replica.health:SetIsDead(true)
         end,
-        
+
         events =
-        {   
+        {
             EventHandler("unfreeze", function(inst)	inst.components.health:Kill() end ),
-            EventHandler("onthaw", function(inst) inst.sg:GoToState("thaw") end ),        
+            EventHandler("onthaw", function(inst) inst.sg:GoToState("thaw") end ),
         },
     },
 
     State{
         name = "thaw",
         tags = {"busy", "thawing"},
-        
-        onenter = function(inst) 
+
+        onenter = function(inst)
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
             end
             inst.AnimState:PlayAnimation("frozen_loop_pst", true)
             inst.SoundEmitter:PlaySound("dontstarve/common/freezethaw", "thawing")
         end,
-        
+
         onexit = function(inst)
             inst.SoundEmitter:KillSound("thawing")
         end,
 
         events =
-        {   
+        {
             EventHandler("unfreeze", function(inst) inst.components.health:Kill() end),
         },
     },
@@ -334,8 +336,8 @@ local states =
     State{
         name = "thaw_break",
         tags = {"busy"},
-        
-        onenter = function(inst) 
+
+        onenter = function(inst)
             if inst.components.locomotor then
                 inst.components.locomotor:StopMoving()
             end
@@ -359,14 +361,14 @@ local states =
             inst.AnimState:PlayAnimation("nuzzle")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/nuzzle")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/sizzle")
-            
+
 		end,
 
 		events =
 		{
-			EventHandler("animover", function(inst) 
+			EventHandler("animover", function(inst)
 				inst:PerformBufferedAction()
-				inst.sg:GoToState("idle") 
+				inst.sg:GoToState("idle")
 			end)
 		},
 	},
@@ -475,7 +477,7 @@ local states =
             inst.AnimState:PushAnimation("eat_pst", false)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/happy_voice")
 		end,
-		
+
 		timeline =
 		{
 			TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/lavae/eat") end),

@@ -58,7 +58,7 @@ local QuagmireBook = Class(Widget, function(self, parent, secondary_left_menu, s
 	        self.last_selected = tab
 			tab:Select()
 			tab:MoveToFront()
-			if self.panel ~= nil then 
+			if self.panel ~= nil then
 				self.panel:Kill()
 			end
 			self.panel = self.root:AddChild(data.build_panel_fn())
@@ -75,7 +75,7 @@ local QuagmireBook = Class(Widget, function(self, parent, secondary_left_menu, s
 
 		return tab
 	end
-	
+
 	self.tabs = {}
 
 	table.insert(self.tabs, tab_root:AddChild(MakeTab(button_data[1], 1)))
@@ -85,7 +85,7 @@ local QuagmireBook = Class(Widget, function(self, parent, secondary_left_menu, s
 
 	-----
 	self.last_selected = self.tabs[1]
-	self.last_selected:Select()	
+	self.last_selected:Select()
 	self.last_selected:MoveToFront()
 	self.panel = self.root:AddChild(RecipeBookWidget(parent, season))
 	if TheWorld ~= nil then

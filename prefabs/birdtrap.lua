@@ -7,6 +7,8 @@ local assets =
     Asset("ANIM", "anim/robin_build.zip"),
     Asset("ANIM", "anim/robin_winter_build.zip"),
     Asset("ANIM", "anim/canary_build.zip"),
+    Asset("ANIM", "anim/bird_mutant_build.zip"),
+    Asset("ANIM", "anim/bird_mutant_spitter_build.zip"),
 
     Asset("SCRIPT", "scripts/prefabs/wortox_soul_common.lua"),
 
@@ -20,12 +22,14 @@ local prefabs =
     "robin",
     "robin_winter",
     "canary",
+    "bird_mutant",
+    "bird_mutant_spitter",
 }
 
 --this should be redone as a periodic test, probably, so that we can control the expected return explicitly
 local function CatchOffScreen(inst)
     inst._sleeptask = nil
-    if not inst:IsInLimbo() and inst.components.trap ~= nil and inst.components.trap:IsBaited() and math.random() < .5 then
+    if not inst:IsInLimbo() and inst.components.trap ~= nil and inst.components.trap:IsBaited() and math.random() < 0.5 then
         local birdspawner = TheWorld.components.birdspawner
         if birdspawner ~= nil then
             local pos = inst:GetPosition()

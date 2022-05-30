@@ -108,12 +108,53 @@ function Eater:SetPrefersEatingTag(tag)
     end
 end
 
+function Eater:SetStrongStomach(is_strong)
+    if is_strong then
+        self.inst:AddTag("strongstomach")
+        self.strongstomach = true
+    else
+        if self.inst:HasTag("strongstomach") then
+            self.inst:RemoveTag("strongstomach")
+        end
+
+        self.strongstomach = false
+    end
+end
+
+function Eater:SetCanEatRawMeat(can_eat)
+    if can_eat then
+        self.inst:AddTag("eatsrawmeat")
+        self.eatsrawmeat = true
+    else
+        if self.inst:HasTag("eatsrawmeat") then
+            self.inst:RemoveTag("eatsrawmeat")
+        end
+
+        self.eatsrawmeat = false
+    end
+end
+
+function Eater:SetIgnoresSpoilage(ignores)
+    if ignores then
+        self.inst:AddTag("ignoresspoilage")
+        self.ignoresspoilage = true
+    else
+        if self.inst:HasTag("ignoresspoilage") then
+            self.inst:RemoveTag("ignoresspoilage")
+        end
+
+        self.ignoresspoilage = false
+    end
+end
+
 function Eater:SetOnEatFn(fn)
     self.oneatfn = fn
 end
 
 function Eater:DoFoodEffects(food)
-    return not (self.strongstomach and food:HasTag("monstermeat"))
+    return not ((self.strongstomach and food:HasTag("monstermeat")) or
+                (self.eatsrawmeat and food:HasTag("rawmeat")) or 
+                (self.inst.components.foodaffinity and self.inst.components.foodaffinity:HasPrefabAffinity(food)))
 end
 
 function Eater:GetEdibleTags()
@@ -141,41 +182,66 @@ end
 function Eater:Eat(food, feeder)
     feeder = feeder or self.inst
     -- This used to be CanEat. The reason for two checks is to that special diet characters (e.g.
-    -- wigfrid) can TRY to eat all foods (they get the actions for it) but upon actually put it in 
+    -- wigfrid) can TRY to eat all foods (they get the actions for it) but upon actually put it in
     -- their mouth, they bail and "spit it out" so to speak.
     if self:PrefersToEat(food) then
         local stack_mult = self.eatwholestack and food.components.stackable ~= nil and food.components.stackable:StackSize() or 1
         local base_mult = self.inst.components.foodmemory ~= nil and self.inst.components.foodmemory:GetFoodMultiplier(food.prefab) or 1
 
+		local health_delta = 0
+		local hunger_delta = 0
+		local sanity_delta = 0
+
         if self.inst.components.health ~= nil and
             (food.components.edible.healthvalue >= 0 or self:DoFoodEffects(food)) then
-            local delta = food.components.edible:GetHealth(self.inst) * base_mult * self.healthabsorption
-            if delta ~= 0 then
-                self.inst.components.health:DoDelta(delta * stack_mult, nil, food.prefab)
-            end
+            health_delta = food.components.edible:GetHealth(self.inst) * base_mult * self.healthabsorption
+
+            --local delta = food.components.edible:GetHealth(self.inst) * base_mult 
+			--delta = delta * FunctionOrValue(self.healthabsorption, self.inst, delta, food, feeder)
+            --if delta ~= 0 then
+            --    self.inst.components.health:DoDelta(delta * stack_mult, nil, food.prefab)
+            --end
+
         end
 
         if self.inst.components.hunger ~= nil then
-            local delta = food.components.edible:GetHunger(self.inst) * base_mult * self.hungerabsorption
-            if delta ~= 0 then
-                self.inst.components.hunger:DoDelta(delta * stack_mult)
-            end
+            hunger_delta = food.components.edible:GetHunger(self.inst) * base_mult * self.hungerabsorption
+
+            --local delta = food.components.edible:GetHunger(self.inst) * base_mult
+			--delta = delta * FunctionOrValue(self.hungerabsorption, self.inst, delta, food, feeder)
+            --if delta ~= 0 then
+            --    self.inst.components.hunger:DoDelta(delta * stack_mult)
+            --end
         end
 
         if self.inst.components.sanity ~= nil and
             (food.components.edible.sanityvalue >= 0 or self:DoFoodEffects(food)) then
-            local delta = food.components.edible:GetSanity(self.inst) * base_mult * self.sanityabsorption
-            if delta ~= 0 then
-                self.inst.components.sanity:DoDelta(delta * stack_mult)
-            end
+            sanity_delta = food.components.edible:GetSanity(self.inst) * base_mult * self.sanityabsorption
+
+            --local delta = food.components.edible:GetSanity(self.inst) * base_mult
+			--delta = delta * FunctionOrValue(self.sanityabsorption, self.inst, delta, food, feeder)
+            --if delta ~= 0 then
+            --    self.inst.components.sanity:DoDelta(delta * stack_mult)
+            --end
+        end
+
+		if self.custom_stats_mod_fn ~= nil then
+			health_delta, hunger_delta, sanity_delta = self.custom_stats_mod_fn(self.inst, health_delta, hunger_delta, sanity_delta, food, feeder)
+		end
+
+        if health_delta ~= 0 then
+            self.inst.components.health:DoDelta(health_delta * stack_mult, nil, food.prefab)
+        end
+        if hunger_delta ~= 0 then
+            self.inst.components.hunger:DoDelta(hunger_delta * stack_mult)
+        end
+        if sanity_delta ~= 0 then
+            self.inst.components.sanity:DoDelta(sanity_delta * stack_mult)
         end
 
         if feeder ~= self.inst and self.inst.components.inventoryitem ~= nil then
             local owner = self.inst.components.inventoryitem:GetGrandOwner()
-            if owner ~= nil and
-                (   owner == feeder
-                    or (owner.components.container ~= nil and
-                        owner.components.container.opener == feeder)    ) then
+            if owner ~= nil and (owner == feeder or (owner.components.container ~= nil and owner.components.container:IsOpenedBy(feeder))) then
                 feeder:PushEvent("feedincontainer")
             end
         end

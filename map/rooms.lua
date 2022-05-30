@@ -94,7 +94,7 @@ require("map/rooms/forest/DLCrooms")
 ------------------------------------------------------------------------------------
 AddRoom("Exit", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
-					value = GROUND.FOREST, 
+					value = GROUND.FOREST,
 					contents =  {
 					                countprefabs= {
 					                	teleportato_base = 1,
@@ -111,7 +111,7 @@ AddRoom("Exit", {
 ------------------------------------------------------------------------------------
 AddRoom("Blank", {
 					colour={r=1.0,g=1.0,b=1.0,a=0.1},
-					value = GROUND.IMPASSABLE, 
+					value = GROUND.IMPASSABLE,
                     type = NODE_TYPE.Blank,
 					contents =  {
 					            }

@@ -120,7 +120,7 @@ local function CreateBase(isnew)
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
     inst.AnimState:SetSortOrder(3)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     if isnew then
         inst.AnimState:PlayAnimation("sporecloud_base_pre")
@@ -289,7 +289,7 @@ local function TryPerish(item)
         if owner == nil or
             (   owner.components.container ~= nil and
                 not owner.components.container:IsOpen() and
-                owner:HasTag("chest")   ) then
+                owner:HasTag("structure")   ) then
             --in limbo but not inventory or container?
             --or in a closed chest
             return
@@ -298,9 +298,11 @@ local function TryPerish(item)
     item.components.perishable:ReducePercent(TUNING.TOADSTOOL_SPORECLOUD_ROT)
 end
 
+local SPOIL_CANT_TAGS = { "small_livestock" }
+local SPOIL_ONEOF_TAGS = { "fresh", "stale", "spoiled" }
 local function DoAreaSpoil(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, inst.components.aura.radius, nil, { "small_livestock" }, { "fresh", "stale", "spoiled" })
+    local ents = TheSim:FindEntities(x, y, z, inst.components.aura.radius, nil, SPOIL_CANT_TAGS, SPOIL_ONEOF_TAGS)
     for i, v in ipairs(ents) do
         TryPerish(v)
     end

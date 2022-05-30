@@ -9,6 +9,34 @@ end
 local function FinalOffset3(inst)
     inst.AnimState:SetFinalOffset(3)
 end
+
+local function FinalOffsetNegative1(inst)
+    inst.AnimState:SetFinalOffset(-1)
+end
+
+
+local function GroundOrientation(inst)
+    inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
+    inst.AnimState:SetLayer(LAYER_BACKGROUND)
+end
+
+local function Bloom(inst)
+    inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+    inst.AnimState:SetFinalOffset(1)
+end
+
+local function BloomOrange(inst)
+    inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+--    inst.AnimState:SetMultColour(204/255,131/255,57/255,1)
+    inst.AnimState:SetMultColour(219/255,168/255,117/255,1)
+    inst.AnimState:SetFinalOffset(1)
+end
+
+local function OceanTreeLeafFxFallUpdate(inst)
+    local x, y, z = inst.Transform:GetWorldPosition()
+    inst.Transform:SetPosition(x, y - inst.fall_speed * FRAMES, z)
+end
+
 local fx =
 {
     {
@@ -44,6 +72,23 @@ local fx =
         bank = "splash",
         build = "splash",
         anim = "splash",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = FinalOffset1,
+    },
+    {
+        name = "ink_splash",
+        bank = "squid_watershoot",
+        build = "squid_watershoot",
+        anim = "splash",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = FinalOffset1,
+    },
+    {
+        name = "bile_splash",
+        bank = "bird_bileshoot",
+        build = "bird_bileshoot",
+        anim = "splash",
+        sound = "moonstorm/creatures/mutated_robin/bile_shoot_splash",
         fn = FinalOffset1,
     },
     {
@@ -60,6 +105,20 @@ local fx =
         build = "waterballoon",
         anim = "used",
         sound = "dontstarve/creatures/pengull/splash",
+    },
+    {
+        name = "balloon_pop_body",
+        bank = "balloon_pop",
+        build = "balloon_pop",
+        anim = "pop_low",
+        fn = FinalOffset1,
+    },
+    {
+        name = "balloon_pop_head",
+        bank = "balloon_pop",
+        build = "balloon_pop",
+        anim = "pop_high",
+        fn = FinalOffset1,
     },
     {
         name = "spat_splat_fx",
@@ -86,18 +145,41 @@ local fx =
         anim = "low",
     },
     {
-        name = "spat_splash_fx_melted", 
-        bank = "spat_splash", 
-        build = "spat_splash", 
+        name = "spat_splash_fx_melted",
+        bank = "spat_splash",
+        build = "spat_splash",
         anim = "melted",
     },
     {
-        name = "splash_water",
-        bank = "splash_water",
-        build = "splash_water",
-        sound = "turnoftides/common/together/water/splash/small",
+        name = "icing_splat_fx",
+        bank = "warg_gingerbread_splat",
+        build = "warg_gingerbread_splat",
         anim = "idle",
-    },    
+    },
+    {
+        name = "icing_splash_fx_full",
+        bank = "warg_gingerbread_splash",
+        build = "warg_gingerbread_splash",
+        anim = "full",
+    },
+    {
+        name = "icing_splash_fx_med",
+        bank = "warg_gingerbread_splash",
+        build = "warg_gingerbread_splash",
+        anim = "med",
+    },
+    {
+        name = "icing_splash_fx_low",
+        bank = "warg_gingerbread_splash",
+        build = "warg_gingerbread_splash",
+        anim = "low",
+    },
+    {
+        name = "icing_splash_fx_melted",
+        bank = "warg_gingerbread_splash",
+        build = "warg_gingerbread_splash",
+        anim = "melted",
+    },
     {
         name = "small_puff",
         bank = "small_puff",
@@ -135,6 +217,29 @@ local fx =
         end,
     },
     {
+        name = "shadow_puff",
+        bank = "sand_puff",
+        build = "sand_puff",
+        anim = "forage_out",
+        sound = "dontstarve/common/deathpoof",
+        tint = Vector3(0, 0, 0),
+        tintalpha = .5,
+        fn = function(inst)
+            inst.AnimState:SetFinalOffset(2)
+        end,
+    },
+    {
+        name = "shadow_puff_solid",
+        bank = "sand_puff",
+        build = "sand_puff",
+        anim = "forage_out",
+        sound = "dontstarve/common/deathpoof",
+        tint = Vector3(0, 0, 0),
+        fn = function(inst)
+            inst.AnimState:SetFinalOffset(2)
+        end,
+    },
+    {
         name = "shadow_puff_large_front",
         bank = "sand_puff",
         build = "sand_puff",
@@ -161,10 +266,19 @@ local fx =
         end,
     },
     {
-        name = "splash_ocean",
+        name = "dirt_puff",
+        bank = "small_puff",
+        build = "smoke_puff_small",
+        anim = "puff",
+        fn = FinalOffset1,
+        --sound = "dontstarve/common/deathpoof",
+    },
+    {
+        name = "splash_ocean", -- this is for the old ocean
         bank = "splash",
         build = "splash_ocean",
         anim = "idle",
+        sound = "turnoftides/common/together/water/splash/bird",
     },
     {
         name = "maxwell_smoke",
@@ -422,6 +536,7 @@ local fx =
         build = "puff_spawning",
         anim = "tiny",
         sound = "dontstarve/common/spawn/spawnportal_spawnplayer",
+        fn = FinalOffset1,
     },
     {
         name = "spawn_fx_small",
@@ -429,6 +544,7 @@ local fx =
         build = "puff_spawning",
         anim = "small",
         sound = "dontstarve/common/spawn/spawnportal_spawnplayer",
+        fn = FinalOffset1,
     },
     {
         name = "spawn_fx_medium",
@@ -436,6 +552,16 @@ local fx =
         build = "puff_spawning",
         anim = "medium",
         sound = "dontstarve/common/spawn/spawnportal_spawnplayer",
+        fn = FinalOffset1,
+    },
+    {
+        name = "spawn_fx_medium_static",
+        bank = "spawn_fx",
+        build = "puff_spawning",
+        anim = "medium",
+        sound = "dontstarve/common/spawn/spawnportal_spawnplayer",
+        fn = FinalOffset1,
+        update_while_paused = true
     },
     --[[{
         name = "spawn_fx_large",
@@ -773,6 +899,75 @@ local fx =
         sound = "dontstarve_DLC001/characters/wathgrithr/valhalla",
         sounddelay = .2,
     },
+
+
+    {
+        name = "battlesong_attach",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "attach",
+    },
+    {
+        name = "battlesong_loop",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_trebleclef",
+    },
+    {
+        name = "battlesong_detach",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "detach",
+    },
+
+    {
+        name = "battlesong_durability_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_durability",
+    },
+    {
+        name = "battlesong_healthgain_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_healthgain",
+    },
+    {
+        name = "battlesong_sanitygain_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_sanitygain",
+    },
+    {
+        name = "battlesong_sanityaura_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_sanityaura",
+    },
+    {
+        name = "battlesong_fireresistance_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "fx_fireresistance",
+    },
+    {
+        name = "battlesong_instant_electric_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "quote_electric",
+    },
+    {
+        name = "battlesong_instant_taunt_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "quote_taunt",
+    },
+    {
+        name = "battlesong_instant_panic_fx",
+        bank = "fx_wathgrithr_buff",
+        build = "fx_wathgrithr_buff",
+        anim = "quote_panic",
+    },
     {
         name = "lucy_ground_transform_fx",
         bank = "lucy_axe_fx",
@@ -850,6 +1045,129 @@ local fx =
         anim = "transform",
         --#TODO: this one
         sound = "dontstarve/ghost/ghost_haunt",
+    },
+    {
+        name = "ghostflower_spirit1_fx",
+        bank = "ghostflower",
+        build = "ghostflower",
+        anim = "fx1",
+        sound = "dontstarve/characters/wendy/small_ghost/wisp",
+    },
+    {
+        name = "ghostflower_spirit2_fx",
+        bank = "ghostflower",
+        build = "ghostflower",
+        anim = "fx1",
+        sound = "dontstarve/characters/wendy/small_ghost/wisp",
+
+    },
+    {
+        name = "ghostlyelixir_slowregen_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_regen",
+        sound = "dontstarve/characters/wendy/abigail/buff/gen",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_fastregen_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_heal",
+        sound = "dontstarve/characters/wendy/abigail/buff/gen",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_shield_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_shield",
+        sound = "dontstarve/characters/wendy/abigail/buff/shield",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_attack_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_attack",
+        sound = "dontstarve/characters/wendy/abigail/buff/attack",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_speed_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_speed",
+        sound = "dontstarve/characters/wendy/abigail/buff/speed",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_retaliation_fx",
+        bank = "abigail_vial_fx",
+        build = "abigail_vial_fx",
+        anim = "buff_retaliation",
+        sound = "dontstarve/characters/wendy/abigail/buff/retaliation",
+        fn = FinalOffset3,
+    },
+    {
+        name = "ghostlyelixir_slowregen_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_regen_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    },
+    {
+        name = "ghostlyelixir_fastregen_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_heal_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    },
+    {
+        name = "ghostlyelixir_shield_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_shield_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    },
+    {
+        name = "ghostlyelixir_attack_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_attack_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    },
+    {
+        name = "ghostlyelixir_speed_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_speed_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    },
+    {
+        name = "ghostlyelixir_retaliation_dripfx",
+        bank = "abigail_buff_drip",
+        build = "abigail_vial_fx",
+        anim = "abigail_buff_drip",
+        fn = function(inst)
+	        inst.AnimState:OverrideSymbol("fx_swap", "abigail_vial_fx", "fx_retaliation_02")
+		    inst.AnimState:SetFinalOffset(3)
+		end,
     },
     {
         name = "disease_puff",
@@ -934,9 +1252,57 @@ local fx =
         anim = "unwrap",
     },
     {
+        name = "redpouch_yotc_unwrap",
+        bank = "redpouch",
+        build = "redpouch",
+        anim = "unwrap",
+    },
+    {
+        name = "redpouch_yotb_unwrap",
+        bank = "redpouch",
+        build = "redpouch",
+        anim = "unwrap",
+    },
+    {
+        name = "redpouch_yot_catcoon_unwrap",
+        bank = "redpouch",
+        build = "redpouch",
+        anim = "unwrap",
+    },
+    {
+        name = "yotc_seedpacket_unwrap",
+        bank = "bundle",
+        build = "bundle",
+        anim = "unwrap",
+    },
+    {
+        name = "yotc_seedpacket_rare_unwrap",
+        bank = "bundle",
+        build = "bundle",
+        anim = "unwrap",
+    },
+    {
+        name = "carnival_seedpacket_unwrap",
+        bank = "bundle",
+        build = "bundle",
+        anim = "unwrap",
+    },
+    {
         name = "wetpouch_unwrap",
         bank = "wetpouch",
         build = "wetpouch",
+        anim = "unwrap",
+    },
+    {
+        name = "hermit_bundle_unwrap",
+        bank = "hermit_bundle",
+        build = "hermit_bundle",
+        anim = "unwrap",
+    },
+    {
+        name = "hermit_bundle_shells_unwrap",
+        bank = "hermit_bundle",
+        build = "hermit_bundle",
         anim = "unwrap",
     },
     {
@@ -948,7 +1314,7 @@ local fx =
     {
         name = "quagmire_crate_unwrap",
         bank = "quagmire_crate",
-        build = "quagmire_crate", 
+        build = "quagmire_crate",
         anim = "unwrap",
     },
     {
@@ -1114,6 +1480,15 @@ local fx =
         fn = FinalOffset3,
     },
     {
+        name = "halloween_moonpuff",
+        bank = "fx_moon_tea",
+        build = "moon_tea_fx",
+        anim = "puff",
+        bloom = true,
+        sound = "dontstarve/common/fireAddFuel",
+        fn = FinalOffset3,
+    },
+    {
         name = "mudpuddle_splash",
         bank = "mudsplash",
         build = "mudsplash",
@@ -1143,7 +1518,13 @@ local fx =
     {
         name = "boat_mast_sink_fx",
         bank = "mast_01",
-        build = "boat_mast2",
+        build = "boat_mast2_wip",
+        anim = "sink",
+    },
+    {
+        name = "boat_malbatross_mast_sink_fx",
+        bank = "mast_malbatross",
+        build = "boat_mast_malbatross_build",
         anim = "sink",
     },
     {
@@ -1158,6 +1539,71 @@ local fx =
         build = "splash_water_drop",
         anim = "idle_sink",
         fn = function(inst) inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT) end,
+        sound = "turnoftides/common/together/water/splash/small",
+    },
+    {
+        name = "ocean_splash_med1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+			inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "ocean_splash_med2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary2",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+			inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "ocean_splash_small1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary_small",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+			inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "ocean_splash_small2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "stationary_small2",
+        sound = "turnoftides/common/together/water/splash/bird",
+        fn = function(inst)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+			inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "ocean_splash_ripple1",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "no_splash",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+        end,
+    },
+    {
+        name = "ocean_splash_ripple2",
+        bank = "splash_weregoose_fx",
+        build = "splash_water_drop",
+        anim = "no_splash2",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+        end,
     },
     {
         name = "washashore_puddle_fx",
@@ -1187,6 +1633,743 @@ local fx =
         bank = "round_puff_fx",
         build = "round_puff_fx",
         anim = "puff_hi",
+    },
+	{
+		name = "wood_splinter_jump",
+		bank = "cookiecutter_fx",
+		build = "cookiecutter_fx",
+		anim = "wood_splinter_jump",
+	},
+	{
+		name = "wood_splinter_drill",
+		bank = "cookiecutter_fx",
+		build = "cookiecutter_fx",
+		anim = "wood_splinter_drill",
+	},
+
+    {
+        name = "splash_green_small",
+        bank = "pond_splash_fx",
+        build = "pond_splash_fx",
+        anim = "pond_splash",
+        sound = "turnoftides/common/together/water/splash/small",
+        fn = FinalOffset1,
+    },
+    {
+        name = "splash_green",
+        bank = "pond_splash_fx",
+        build = "pond_splash_fx",
+        anim = "pond_splash",
+        sound = "turnoftides/common/together/water/splash/medium",
+        fn = function(inst) inst.Transform:SetScale(2,2,2) inst.AnimState:SetFinalOffset(1) end,
+    },
+    {
+        name = "splash_green_large",
+        bank = "pond_splash_fx",
+        build = "pond_splash_fx",
+        anim = "pond_splash",
+        sound = "turnoftides/common/together/water/splash/large",
+        fn = function(inst) inst.Transform:SetScale(4,4,4) inst.AnimState:SetFinalOffset(1) end,
+    },
+--[[  There is art for these. They are just not used anywhere
+    {
+        name = "splash_teal",
+        bank = "pond_splash_fx",
+        build = "pond_splash_fx",
+        anim = "cave_splash",
+    },
+    {
+        name = "splash_black",
+        bank = "pond_splash_fx",
+        build = "pond_splash_fx",
+        anim = "swamp_splash",
+    },
+    ]]
+    {
+        name = "merm_king_splash",
+        bank = "merm_king_splash",
+        build = "merm_king_splash",
+        anim = "merm_king_splash",
+        fn = FinalOffset1,
+    },
+    {
+        name = "merm_splash",
+        bank = "merm_splash",
+        build = "merm_splash",
+        anim = "merm_splash",
+        fn = FinalOffset1,
+    },
+    {
+        name = "merm_spawn_fx",
+        bank = "merm_spawn_fx",
+        build = "merm_spawn_fx",
+        anim = "splash",
+        fn = FinalOffset1,
+    },
+    {
+        name = "ink_puddle_land",
+        bank = "squid_puddle",
+        build = "squid_puddle",
+        anim = "puddle_dry",
+        fn = GroundOrientation,
+    },
+    {
+        name = "ink_puddle_water",
+        bank = "squid_puddle",
+        build = "squid_puddle",
+        anim = "puddle_wet",
+        fn = GroundOrientation,
+    },
+
+    {
+        name = "bile_puddle_land",
+        bank = "squid_puddle",
+        build = "bird_puddle",
+        anim = "puddle_dry",
+        fn = GroundOrientation,
+    },
+    {
+        name = "bile_puddle_water",
+        bank = "squid_puddle",
+        build = "bird_puddle",
+        anim = "puddle_wet",
+        fn = GroundOrientation,
+    },
+
+    {
+        name = "flotsam_puddle",
+        bank = "flotsam",
+        build = "flotsam",
+        anim = "puddle",
+        sound = "dontstarve/creatures/monkey/poopsplat",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_WORLD_BACKGROUND)
+			inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
+        end,
+    },
+    {
+        name = "flotsam_break",
+        bank = "flotsam",
+        build = "flotsam",
+        anim = "break",
+    },
+    {
+        name = "winters_feast_depletefood",
+        bank = "winters_feast_table_fx",
+        build = "winters_feast_table_fx",
+        anim = "1",
+		bloom = true,
+        fn = function(inst)
+			inst.AnimState:SetLightOverride(1)
+            inst.AnimState:PlayAnimation(math.random(1, 5))
+            inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "winters_feast_food_depleted",
+        bank = "winters_feast_table_fx",
+        build = "winters_feast_table_fx",
+        anim = "burst",
+        --sound = ,
+        fn = function(inst)
+            inst.AnimState:SetLightOverride(1)
+            inst.AnimState:SetFinalOffset(3)
+        end,
+    },
+    {
+        name = "miniboatlantern_loseballoon",
+        bank = "lantern_boat",
+        build = "yotc_lantern_boat",
+        anim = "balloon_fly",
+        fn = function(inst)
+            inst.Transform:SetSixFaced()
+        end,
+    },
+
+    {
+        name = "crab_king_bubble1",
+        bank = "Bubble_fx",
+        build ="crab_king_bubble_fx",
+        anim = "bubbles_1",
+        fn = FinalOffset1,
+    },
+    {
+        name = "crab_king_bubble2",
+        bank = "Bubble_fx",
+        build ="crab_king_bubble_fx",
+        anim = "bubbles_2",
+        fn = FinalOffset1,
+    },
+    {
+        name = "crab_king_bubble3",
+        bank = "Bubble_fx",
+        build ="crab_king_bubble_fx",
+        anim = "bubbles_3",
+        fn = FinalOffset1,
+    },
+    {
+        name = "crab_king_waterspout",
+        bank = "Bubble_fx",
+        build ="crab_king_bubble_fx",
+        anim = "waterspout",
+        sound = "hookline_2/creatures/boss/crabking/waterspout",
+        fn = FinalOffset1,
+    },
+    {
+        name = "crab_king_shine",
+        bank = "crab_king_shine",
+        build ="crab_king_shine",
+        anim = "shine",
+        fn = Bloom,
+    },
+    {
+        name = "crab_king_icefx",
+        bank = "deer_ice_flakes",
+        build ="deer_ice_flakes",
+        anim = "idle",
+        fn = Bloom,
+    },
+    {
+        name = "crabking_ring_fx",
+        bank = "crabking_ring_fx",
+        build ="crabking_ring_fx",
+        anim = "idle",
+        fn = GroundOrientation,
+    },
+    {
+        name = "mushroomsprout_glow",
+        bank = "mushroomsprout_glow",
+        build ="mushroomsprout_glow",
+        anim = "mushroomsprout_glow",
+        fn = FinalOffset1,
+    },
+    {
+        name = "messagebottle_break_fx",
+        bank = "bottle",
+        build ="bottle",
+        anim = "break",
+        sound = "dontstarve/creatures/monkey/poopsplat",
+    },
+    {
+        name = "messagebottle_bob_fx",
+        bank = "bottle",
+        build ="bottle",
+        anim = "bob",
+    },
+    {
+        name = "singingshell_creature_rockfx",
+        bank = "singingshell_creature_rockfx",
+        build ="singingshell_creature_rockfx",
+        anim = "idle",
+    },
+    {
+        name = "singingshell_creature_woodfx",
+        bank = "singingshell_creature_woodfx",
+        build ="singingshell_creature_woodfx",
+        anim = "idle",
+    },
+    {
+        name = "shadowhand_fx",
+        bank = "shadowhand_fx",
+        build ="shadowhand_fx",
+        anim = "idle",
+    },
+    {
+        name = "waterstreak_burst",
+        bank = "waterstreak",
+        build = "waterstreak",
+        anim = "used",
+        sixfaced = true,
+        sound = "turnoftides/common/together/water/splash/small",
+    },
+    {
+        name = "waterplant_burr_burst",
+        bank = "barnacle_burr",
+        build = "barnacle_burr",
+        anim = "used",
+        sound = "dangerous_sea/creatures/water_plant/burr_burst",
+    },
+    {
+        name = "waterplant_destroy",
+        bank = "collapse",
+        build = "structure_collapse_fx",
+        anim = "collapse_small",
+        sound = "dangerous_sea/creatures/water_plant/grow",
+    },
+    {
+        name = "mastupgrade_lightningrod_fx",
+        bank = "mastupgrade_lightningrod_fx",
+        build = "mastupgrade_lightningrod_fx",
+        anim = "idle",
+    },
+    {
+        name = "shadow_teleport_in",
+        bank = "shadow_teleport",
+        build = "shadow_teleport",
+        anim = "portal_in",
+        fn = GroundOrientation,
+    },
+    {
+        name = "shadow_teleport_out",
+        bank = "shadow_teleport",
+        build = "shadow_teleport",
+        anim = "portal_out",
+        fn = GroundOrientation,
+    },
+    {
+        name = "spore_moon_coughout",
+        bank = "spore_moon",
+        build = "mushroom_spore_moon",
+        anim = "pre_cough_out",
+    },
+    {
+        name = "archive_lockbox_player_fx",
+        bank = "archive_lockbox_player_fx",
+        build = "archive_lockbox_player_fx",
+        anim = "activation",
+        fn = FinalOffset1,
+    },
+    {
+        name = "moon_altar_link_fx",
+        bank = "moon_altar_link_fx",
+        build ="moon_altar_link_fx",
+        anim = "fx1",
+        fn = function(inst)
+            local rand = math.random()
+            if rand < 0.33 then
+                inst.AnimState:PlayAnimation("fx2")
+            elseif rand < 0.67 then
+                inst.AnimState:PlayAnimation("fx3")
+            end
+        end
+    },
+    {
+        name = "farm_plant_happy",
+        bank = "farm_plant_happiness",
+        build = "farm_plant_happiness",
+        anim = "happy",
+        fn = FinalOffset1,
+    },
+    {
+        name = "farm_plant_unhappy",
+        bank = "farm_plant_happiness",
+        build = "farm_plant_happiness",
+        anim = "unhappy",
+        fn = FinalOffset1,
+    },
+    {
+        name = "yotb_confetti",
+        bank = "beefalo_fx",
+        build = "beefalo_fx",
+        anim = "transform",
+    },
+    {
+        name = "carnival_confetti_fx",
+        bank = "carnival_confetti",
+        build = "carnival_confetti",
+        anim = "win",
+        fn = FinalOffset1,
+        sound = "summerevent/cannon/fire1",
+    },
+    {
+        name = "carnival_sparkle_fx",
+        bank = "carnival_sparkle",
+        build = "carnival_sparkle",
+        anim = "sparkle",
+        fn = FinalOffset1,
+        sound = "summerevent/cannon/fire2",
+    },
+    {
+        name = "carnival_streamer_fx",
+        bank = "carnival_streamer",
+        build = "carnival_streamer",
+        anim = "streamer",
+        fn = FinalOffset1,
+        sound = "summerevent/cannon/fire3",
+    },
+    {
+        name = "carnival_unwrap_fx",
+        bank = "carnival_unwrap",
+        build = "carnival_unwrap",
+        anim = "unwrap",
+        fn = FinalOffset1,
+    },
+    {
+        name = "alterguardian_spike_breakfx",
+        bank = "alterguardian_spike",
+        build = "alterguardian_spike",
+        anim = "spike_pst",
+    },
+    {
+        name = "alterguardian_spintrail_fx",
+        bank = "alterguardian_sinkhole",
+        build = "alterguardian_sinkhole",
+        anim = "pre",
+        animqueue = true,
+        fn = function(inst)
+            GroundOrientation(inst)
+            inst.Transform:SetEightFaced()
+
+            inst.AnimState:PushAnimation("idle", true)
+            inst:DoTaskInTime(60*FRAMES, function(i)
+                ErodeAway(i, 60*FRAMES)
+            end)
+        end,
+    },
+    {
+        name = "moon_device_break_stage2",
+        bank = "moon_device_break",
+        build = "moon_device_break",
+        anim = "stage2_break",
+        fn = function(inst)
+            inst.Transform:SetEightFaced()
+        end,
+    },
+    {
+        name = "moon_device_break_stage3",
+        bank = "moon_device_break",
+        build = "moon_device_break",
+        anim = "stage3_break",
+    },
+    {
+        name = "moonstorm_glass_ground_fx",
+        bank = "moonglass_charged",
+        build = "moonglass_charged_tile",
+        anim = "explosion",
+        fn = GroundOrientation,
+    },
+    {
+        name = "moonstorm_glass_fx",
+        bank = "moonglass_charged",
+        build = "moonglass_charged_tile",
+        anim = "crack_fx",
+    },
+    {
+        name = "moonstorm_spark_shock_fx",
+        bank = "shock_fx",
+        build = "shock_fx",
+        anim = "weremoose_shock",
+        sound = "moonstorm/common/moonstorm/spark_attack",
+        eightfaced = true,
+        autorotate = true,
+        fn = FinalOffset1,
+    },
+    {
+        name = "alterguardian_phase1fallfx",
+        bank = "alterguardian_spawn_death",
+        build = "alterguardian_spawn_death",
+        anim = "fall_pre",
+    },
+    {
+        name = "moon_geyser_explode",
+        bank = "moon_altar_geyser",
+        build = "moon_geyser",
+        anim = "explode",
+    },
+    {
+        name = "moonpulse_fx",
+        bank = "moon_altar_geyser",
+        build = "moon_geyser",
+        anim = "moonpulse",
+        fn = function(inst)
+            inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+        end,
+    },
+    {
+        name = "moonpulse2_fx",
+        bank = "moon_altar_geyser",
+        build = "moon_geyser",
+        anim = "moonpulse2",
+        fn = function(inst)
+            inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+        end,
+    },
+    {
+        name = "alterguardian_phase3trappst",
+        bank = "alterguardian_meteor",
+        build = "alterguardian_meteor",
+        anim = "meteor_pst",
+        sound = "turnoftides/common/together/moon_glass/mine",
+    },
+
+    {
+        name = "oldager_become_younger_front_fx",
+        bank = "wanda_time_fx",
+        build = "wanda_time_fx",
+        anim = "younger_top",
+        nofaced = true,
+        fn = FinalOffset1,
+    },
+    {
+        name = "oldager_become_younger_back_fx",
+        bank = "wanda_time_fx",
+        build = "wanda_time_fx",
+        anim = "younger_bottom",
+        nofaced = true,
+        fn = FinalOffsetNegative1,
+    },
+    {
+        name = "oldager_become_older_fx",
+        bank = "wanda_time_fx",
+        build = "wanda_time_fx",
+        anim = "older",
+        nofaced = true,
+        fn = FinalOffset1,
+    },
+
+    {
+        name = "oldager_become_younger_front_fx_mount",
+        bank = "wanda_time_fx_mount",
+        build = "wanda_time_fx_mount",
+        anim = "younger_top",
+        nofaced = true,
+        fn = FinalOffset1,
+    },
+    {
+        name = "oldager_become_younger_back_fx_mount",
+        bank = "wanda_time_fx_mount",
+        build = "wanda_time_fx_mount",
+        anim = "younger_bottom",
+        nofaced = true,
+        fn = FinalOffsetNegative1,
+    },
+    {
+        name = "oldager_become_older_fx_mount",
+        bank = "wanda_time_fx_mount",
+        build = "wanda_time_fx_mount",
+        anim = "older",
+        nofaced = true,
+        fn = FinalOffset1,
+    },
+
+    {
+        name = "wanda_attack_pocketwatch_old_fx",
+        bank = "pocketwatch_weapon_fx",
+        build = "pocketwatch_weapon_fx",
+        anim = function() return "idle_big_"..math.random(3) end,
+        sound = "wanda2/characters/wanda/watch/weapon/shadow_hit_old",
+        fn = FinalOffset1,
+    },
+    {
+        name = "wanda_attack_pocketwatch_normal_fx",
+        bank = "pocketwatch_weapon_fx",
+        build = "pocketwatch_weapon_fx",
+        anim = function() return "idle_med_"..math.random(3) end,
+        sound = "wanda2/characters/wanda/watch/weapon/nightmare_FX",
+        fn = FinalOffset1,
+    },
+    {
+        name = "wanda_attack_shadowweapon_old_fx",
+        bank = "pocketwatch_weapon_fx",
+        build = "pocketwatch_weapon_fx",
+        anim = function() return "idle_big_"..math.random(3) end,
+        sound = "wanda2/characters/wanda/watch/weapon/shadow_hit",
+        fn = function(inst)
+			inst.AnimState:Hide("white")
+			inst.AnimState:SetFinalOffset(1)
+		end,
+    },
+    {
+        name = "wanda_attack_shadowweapon_normal_fx",
+        bank = "pocketwatch_weapon_fx",
+        build = "pocketwatch_weapon_fx",
+        anim = function() return "idle_med_"..math.random(3) end,
+        sound = "wanda2/characters/wanda/watch/weapon/nightmare_FX",
+        fn = FinalOffset1,
+    },
+
+	{
+        name = "pocketwatch_heal_fx",
+        bank = "pocketwatch_cast_fx",
+        build = "pocketwatch_casting_fx",
+        anim = "pocketwatch_heal_fx", --NOTE: 16 blank frames at the start for audio syncing
+        --sound = "dontstarve/common/lava_arena/portal_player",
+        fn = FinalOffset1,
+        bloom = true,
+    },
+	{
+        name = "pocketwatch_heal_fx_mount",
+        bank = "pocketwatch_casting_fx_mount",
+        build = "pocketwatch_casting_fx_mount",
+        anim = "pocketwatch_heal_fx", --NOTE: 16 blank frames at the start for audio syncing
+        --sound = "dontstarve/common/lava_arena/portal_player",
+        fn = FinalOffset1,
+        bloom = true,
+    },
+
+	{
+        name = "pocketwatch_ground_fx",
+        bank = "pocketwatch_cast_fx",
+        build = "pocketwatch_casting_fx",
+        anim = "pocketwatch_ground", --NOTE: 16 blank frames at the start for audio syncing
+        --sound = "dontstarve/common/lava_arena/portal_player",
+        fn = GroundOrientation,
+        bloom = true,
+    },
+
+    {
+        name = "spider_mutate_fx",
+        bank = "mutate_fx",
+        build = "mutate_fx",
+        anim = "mutate",
+        nofaced = true,
+    },
+
+    {
+        name = "spider_heal_fx",
+        bank = "heal_fx",
+        build = "spider_heal_fx",
+        anim = "heal",
+    },
+
+    {
+        name = "spider_heal_target_fx",
+        bank = "heal_fx",
+        build = "spider_heal_fx",
+        anim = "heal_buff",
+    },
+
+    {
+        name = "spider_heal_ground_fx",
+        bank = "heal_fx",
+        build = "spider_heal_fx",
+        anim = "heal_aoe",
+        fn = GroundOrientation,
+    },
+
+    {
+        name = "treegrowthsolution_use_fx",
+        bank = "treegrowthsolution",
+        build = "treegrowthsolution",
+        anim = "use",
+        sound = "waterlogged1/common/use_figjam",
+    },
+    {
+        name = "oceantree_leaf_fx_fall",
+        bank = "oceantree_leaf_fx",
+        build = "oceantree_leaf_fx",
+        anim = "fall",
+        fn = function(inst)
+            local scale = 1 + 0.3 * math.random()
+            inst.Transform:SetScale(scale, scale, scale)
+            inst.fall_speed = 2.75 + 3.5 * math.random()
+            inst:DoPeriodicTask(FRAMES, OceanTreeLeafFxFallUpdate)
+        end,
+    },
+    {
+        name = "oceantree_leaf_fx_chop",
+        bank = "oceantree_leaf_fx",
+        build = "oceantree_leaf_fx",
+        anim = "chop",
+    },
+    {
+        name = "boss_ripple_fx",
+        bank = "malbatross_ripple",
+        build = "malbatross_ripple",
+        anim = "idle",
+        fn = function(inst)
+            inst.AnimState:SetLayer(LAYER_BELOW_GROUND)
+            inst.AnimState:SetSortOrder(ANIM_SORT_ORDER_BELOW_GROUND.BOAT_TRAIL)
+            inst.AnimState:SetOceanBlendParams(TUNING.OCEAN_SHADER.EFFECT_TINT_AMOUNT)
+        end,
+    },
+    {
+        name = "wolfgang_mighty_fx",
+        bank = "fx_wolfgang",
+        build = "fx_wolfgang",
+        anim = "idle",
+        nofaced = true,
+        fn = FinalOffsetNegative1,
+    },    
+    {
+        name = "mighty_gym_bell_fail_fx",
+        bank = "mighty_gym",
+        build = "mighty_gym",
+        anim = "gym_bell_fx",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1,0,0,1)
+            inst.AnimState:SetFinalOffset(1)
+        end,
+    },  
+    {
+        name = "mighty_gym_bell_perfect_fx",
+        bank = "mighty_gym",
+        build = "mighty_gym",
+        anim = "gym_bell_fx",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1,1,1,1)
+            inst.AnimState:SetFinalOffset(1)
+        end,
+    },  
+    {
+        name = "mighty_gym_bell_succeed_fx",
+        bank = "mighty_gym",
+        build = "mighty_gym",
+        anim = "gym_bell_fx",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1,1,0,1)
+            inst.AnimState:SetFinalOffset(1)
+        end,
+    },
+
+    {
+        name = "minotaur_blood1",
+        bank = "rook_rhino_blood_fx",
+        build = "rook_rhino_blood_fx",
+        anim = "blood1",
+        sound = "ancientguardian_rework/minotaur2/blood_splurt_small",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1, 1, 1, .5)
+            inst.Transform:SetTwoFaced()
+        end,
+    },
+
+    {
+        name = "minotaur_blood2",
+        bank = "rook_rhino_blood_fx",
+        build = "rook_rhino_blood_fx",
+        anim = "blood2",
+        sound = "ancientguardian_rework/minotaur2/blood_splurt_small",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1, 1, 1, .5)
+            inst.Transform:SetTwoFaced()
+        end,
+    },
+
+    {
+        name = "minotaur_blood3",
+        bank = "rook_rhino_blood_fx",
+        build = "rook_rhino_blood_fx",
+        anim = "blood3",
+        sound = "ancientguardian_rework/minotaur2/blood_splurt_small",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:SetMultColour(1, 1, 1, .5)
+            inst.Transform:SetTwoFaced()
+        end,
+    },
+
+    {
+        name = "wx78_heat_steam",
+        bank = "wx_fx",
+        build = "wx_fx",
+        anim = "steam",
+    },
+    {
+        name = "wx78_musicbox_fx",
+        bank = "wx_fx",
+        build = "wx_fx",
+        anim = "music1",
+        nofaced = true,
+        fn = function(inst)
+            inst.AnimState:PlayAnimation("music"..math.random(1, 4))
+            inst.AnimState:SetFinalOffset(1)
+        end,
     },
 }
 
@@ -1222,6 +2405,22 @@ for j = 0, 3, 3 do
             fn = FinalOffset2,
         })
     end
+end
+
+local shot_types = {"rocks", "gold", "marble", "thulecite", "freeze", "slow", "poop", "trinket_1"}
+for _, shot_type in ipairs(shot_types) do
+    table.insert(fx, {
+        name = "slingshotammo_hitfx_"..shot_type,
+        bank = "slingshotammo",
+        build = "slingshotammo",
+        anim = "used",
+        fn = function(inst)
+			if shot_type ~= "rocks" then
+		        inst.AnimState:OverrideSymbol("rock", "slingshotammo", shot_type)
+			end
+		    inst.AnimState:SetFinalOffset(3)
+		end,
+    })
 end
 
 FinalOffset1 = nil

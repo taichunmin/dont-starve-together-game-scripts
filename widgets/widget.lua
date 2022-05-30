@@ -5,6 +5,9 @@ local Widget = Class(function(self, name)
     self.name = name
 
     self.inst = CreateEntity()
+    --if your widget does something that is based on gameplay, use these over the default, so that pausing freezes the effect.
+    self.inst.DoSimPeriodicTask = self.inst.DoPeriodicTask
+    self.inst.DoSimTaskInTime = self.inst.DoTaskInTime
     self.inst.widget = self
 	self.inst.name = name
 
@@ -16,6 +19,8 @@ local Widget = Class(function(self, name)
 
     self.inst:AddComponent("uianim")
 
+    self:UpdateWhilePaused(true)
+
     self.enabled = true
     self.shown = true
     self.focus = false
@@ -25,6 +30,18 @@ local Widget = Class(function(self, name)
     self.focus_flow = {}
     self.focus_flow_args = {}
 end)
+
+function Widget:UpdateWhilePaused(update_while_paused)
+    if update_while_paused then
+        --widgets run all their tasks on StaticUpdate instead of Update so pausing the server doesn't pause widget tasks.
+        self.inst.DoPeriodicTask = self.inst.DoStaticPeriodicTask
+        self.inst.DoTaskInTime = self.inst.DoStaticTaskInTime
+    else
+        self.inst.DoPeriodicTask = self.inst.DoSimPeriodicTask
+        self.inst.DoTaskInTime = self.inst.DoSimTaskInTime
+    end
+    self.inst.components.uianim:UpdateWhilePaused(update_while_paused)
+end
 
 function Widget:IsDeepestFocus()
     if self.focus then
@@ -61,8 +78,7 @@ function Widget:OnFocusMove(dir, down)
     end
 
     if down and self.focus_flow[dir] then
-        local dest = self.focus_flow[dir]
-        if dest and type(dest) == "function" then dest = dest() end
+        local dest = FunctionOrValue(self.focus_flow[dir], self)
 
         -- Can we pass the focus down the chain if we are disabled/hidden?
         if dest and dest:IsVisible() and dest.enabled then
@@ -139,6 +155,12 @@ function Widget:IsEditing()
     return false
 end
 
+function Widget:CancelScaleTo(run_complete_fn)
+    if self.inst.components.uianim ~= nil then
+        self.inst.components.uianim:CancelScaleTo(run_complete_fn)
+    end
+end
+
 function Widget:ScaleTo(from, to, time, fn)
     if not self.inst.components.uianim then
         self.inst:AddComponent("uianim")
@@ -172,13 +194,18 @@ function Widget:RotateTo(from, to, time, fn, infinite)
     self.inst.components.uianim:RotateTo(from, to, time, fn, infinite)
 end
 
+function Widget:CancelTintTo(run_complete_fn)
+    if self.inst.components.uianim ~= nil then
+        self.inst.components.uianim:CancelTintTo(run_complete_fn)
+    end
+end
+
 function Widget:TintTo(from, to, time, fn)
     if not self.inst.components.uianim then
         self.inst:AddComponent("uianim")
     end
     self.inst.components.uianim:TintTo(from, to, time, fn)
 end
-
 
 function Widget:ForceStartWallUpdating()
     if IsConsole() then
@@ -215,6 +242,21 @@ function Widget:GetParent()
     return self.parent
 end
 
+function Widget:GetParentScreen()
+    --check for a cached version
+    if self.parent_screen then
+        return self.parent_screen
+    end
+
+    local parent = self.parent
+    while( not parent.is_screen )
+    do
+        parent = parent:GetParent()
+    end
+    self.parent_screen = parent
+    return self.parent_screen
+end
+
 function Widget:GetChildren()
     return self.children
 end
@@ -249,7 +291,7 @@ function Widget:KillAllChildren()
         self:RemoveChild(k)
         k:Kill()
     end
-    
+
     self:ClearHoverText()
 end
 
@@ -266,14 +308,16 @@ end
 
 function Widget:Hide()
     self.inst.entity:Hide(false)
+    local was_visible = self.shown == true
     self.shown = false
-    self:OnHide()
+    self:OnHide(was_visible)
 end
 
 function Widget:Show()
     self.inst.entity:Show(false)
+    local was_hidden = self.shown == false
     self.shown = true
-    self:OnShow()
+    self:OnShow(was_hidden)
 end
 
 function Widget:Kill()
@@ -293,6 +337,10 @@ end
 
 function Widget:GetPosition()
     return Vector3(self.inst.UITransform:GetLocalPosition())
+end
+
+function Widget:GetPositionXYZ()
+    return self.inst.UITransform:GetLocalPosition()
 end
 
 function Widget:GetWorldScale()
@@ -348,6 +396,13 @@ function Widget:HookCallback(event, fn)
     self.inst:ListenForEvent(event, fn)
 end
 
+function Widget:UnhookCallback(event)
+    if self.callbacks[event] then
+        self.inst:RemoveEventCallback(event, self.callbacks[event])
+        self.callbacks[event] = nil
+    end
+end
+
 function Widget:SetVAnchor(anchor)
     self.inst.UITransform:SetVAnchor(anchor)
 end
@@ -356,10 +411,10 @@ function Widget:SetHAnchor(anchor)
     self.inst.UITransform:SetHAnchor(anchor)
 end
 
-function Widget:OnShow()
+function Widget:OnShow(was_hidden)
 end
 
-function Widget:OnHide()
+function Widget:OnHide(was_visible)
 end
 
 function Widget:SetTooltip(str)
@@ -414,7 +469,7 @@ function Widget:GetTooltipPos()
             end
         end
         return self.tooltip_pos
-    end 
+    end
 end
 
 function Widget:StartUpdating()
@@ -437,43 +492,6 @@ end
         end
     end
 end--]]
-
--- Draws a section of data describing this widget to the current debug UI
--- window.
---
--- See imgui.h ( https://github.com/ocornut/imgui/blob/master/imgui.h#L112 )
--- for the API. Not all functions are available. Some type formats differ
--- (ImVec must be unpacked). Nonconst pointers are additional return values.
---
--- See imgui_demo.lua for usage examples.
-function Widget:DebugDraw_AddSection(dbui, panel)
-    dbui.Text(string.format("Widget: '%s'", tostring(self)))
-    dbui.Indent() do
-        local in_x,in_y = self:GetPosition():Get()
-        -- These step values are reversed because it's much more comfortable
-        -- get where you want with low precision and then dial it in with high
-        -- precision.
-        local step, step_fast = 10, 1
-        local has_modified_x, out_x = dbui.InputFloat("x position", in_x, step, step_fast)
-        local has_modified_y, out_y = dbui.InputFloat("y position", in_y, step, step_fast)
-        if has_modified_x or has_modified_y then
-            self:UpdatePosition(out_x,out_y)
-        end
-
-        local scale = self:GetScale()
-        -- Scale animates and often modifies other axes, so use awkward InputFloat3
-        -- to discourage editing.
-        local changed,x,y,z = dbui.InputFloat3("scale", scale.x, scale.y, scale.z)
-        if changed then
-            self:SetScale(x,y,z)
-        end
-        changed,x = dbui.DragFloat("uniform scale", scale.x, 0, 5, 0.1, "%.3f")
-        if changed then
-            self:SetScale(x)
-        end
-    end
-    dbui.Unindent()
-end
 
 function Widget:SetFadeAlpha(alpha, skipChildren)
     if not self.can_fade_alpha then return end
@@ -548,6 +566,8 @@ end
 
 function Widget:ClearFocusDirs()
     self.focus_flow = {}
+	self.focus_flow_args = {}
+	self.next_in_tab_order = nil
 end
 
 function Widget:SetFocusChangeDir(dir, widget, ...)
@@ -628,16 +648,9 @@ end
 
 function Widget:SetFocus()
   --  print ("SET FOCUS ", self)
-    if self.focus_forward and type(self.focus_forward) == "function" then
-        local widg = self.focus_forward()
-		if widg ~= nil then
-	        widg:SetFocus()
-		    return
-		else
-			print ("Warning: Widget:SetFocus called on '"..tostring(self).. "' failled to find widget to focus_forward to.")
-		end
-    elseif self.focus_forward then
-        self.focus_forward:SetFocus()
+    local focus_forward = FunctionOrValue(self.focus_forward)
+    if focus_forward then
+        focus_forward:SetFocus()
         return
     end
 
@@ -692,39 +705,38 @@ function Widget:SetHoverText(text, params)
                 params = {}
             end
 
-            self.hovertext_root = Widget("hovertext_root")
-            self.hovertext_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
-            
-            if params.bg == nil or params.bg == true then
+			if params.attach_to_parent ~= nil then
+				self.hovertext_root = params.attach_to_parent:AddChild(Widget("hovertext_root"))
+			else
+			    self.hovertext_root = Widget("hovertext_root")
+				self.hovertext_root.global_widget = true
+				self.hovertext_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
+			end
+			self.hovertext_root:Hide()
+
+            if params.bg ~= false then
                 self.hovertext_bg = self.hovertext_root:AddChild(Image(params.bg_atlas or "images/frontend.xml", params.bg_texture or "scribble_black.tex"))
                 self.hovertext_bg:SetTint(1,1,1,.8)
-                self.hovertext_bg:Hide()
                 self.hovertext_bg:SetClickable(false)
             end
 
-            
-            if not self.hovertext then
-                self.hovertext = self.hovertext_root:AddChild(Text(params.font or NEWFONT_OUTLINE, params.font_size or 22, text))
-                self.hovertext:SetClickable(false)
-                self.hovertext:SetScale(1.1,1.1)
+			self.hovertext = self.hovertext_root:AddChild(Text(params.font or NEWFONT_OUTLINE, params.font_size or 22, text))
+            self.hovertext:SetClickable(false)
+            self.hovertext:SetScale(1.1,1.1)
 
-                if params.region_h ~= nil or params.region_w ~= nil then 
-                    self.hovertext:SetRegionSize(params.region_w or 1000, params.region_h or 40)
-                end
-
-                if params.wordwrap ~= nil then 
-                    --print("Enabling word wrap", params.wordwrap)
-                    self.hovertext:EnableWordWrap(params.wordwrap)
-                end
-            else
-                self.hovertext:SetString(text)
+            if params.region_h ~= nil or params.region_w ~= nil then
+                self.hovertext:SetRegionSize(params.region_w or 1000, params.region_h or 40)
             end
+
+            if params.wordwrap ~= nil then
+                --print("Enabling word wrap", params.wordwrap)
+                self.hovertext:EnableWordWrap(params.wordwrap)
+            end
+
             if params.colour then
                 self.hovertext:SetColour(params.colour)
             end
-            self.hovertext:Hide()
 
-            
             if params.bg == nil or params.bg == true then
                 local w, h = self.hovertext:GetRegionSize()
                 self.hovertext_bg:SetSize(w*1.5, h*2.0)
@@ -739,36 +751,40 @@ function Widget:SetHoverText(text, params)
 
                 self.hover.OnGainFocus = function()
                     local world_pos = self:GetWorldPosition()
-                    self.hovertext:Show()
                     local x_pos = world_pos.x + (params.offset_x or 0)
                     local y_pos = world_pos.y + (params.offset_y or 26)
                     self.hovertext_root:SetPosition(x_pos, y_pos)
-                    if self.hovertext_bg then
-                        self.hovertext_bg:Show()
-                    end
+                    self.hovertext_root:Show()
                 end
                 self.hover.OnLoseFocus = function()
-                    self.hovertext:Hide()
-                    if self.hovertext_bg then self.hovertext_bg:Hide() end
+                    self.hovertext_root:Hide()
                 end
             else
                 self._OnGainFocus = self.OnGainFocus --save these fns so we can undo the hovertext on focus when clearing the text
                 self._OnLoseFocus = self.OnLoseFocus
 
                 self.OnGainFocus = function()
-                    local world_pos = self:GetWorldPosition()
-                    self.hovertext:Show()
-                    local x_pos = world_pos.x + (params.offset_x or 0)
-                    local y_pos = world_pos.y + (params.offset_y or 26)
-                    self.hovertext_root:SetPosition(x_pos, y_pos)
-                    if self.hovertext_bg then
-                        self.hovertext_bg:Show()
-                    end
+					if params.attach_to_parent ~= nil then
+						local world_pos = self:GetWorldPosition() - params.attach_to_parent:GetWorldPosition()
+						local parent_scale = params.attach_to_parent:GetScale()
+
+						local x_pos = world_pos.x / parent_scale.x + (params.offset_x or 0)
+						local y_pos = world_pos.y / parent_scale.y + (params.offset_y or 26)
+						self.hovertext_root:SetPosition(x_pos, y_pos)
+
+						self.hovertext_root:MoveToFront()
+					else
+						local world_pos = self:GetWorldPosition()
+						local x_pos = world_pos.x + (params.offset_x or 0)
+						local y_pos = world_pos.y + (params.offset_y or 26)
+						self.hovertext_root:SetPosition(x_pos, y_pos)
+					end
+					self.hovertext_root:Show()
+
                     self._OnGainFocus( self )
                 end
                 self.OnLoseFocus = function()
-                    self.hovertext:Hide()
-                    if self.hovertext_bg then self.hovertext_bg:Hide() end
+                    self.hovertext_root:Hide()
                     self._OnLoseFocus( self )
                 end
             end
@@ -790,26 +806,20 @@ function Widget:ClearHoverText()
     if self.hovertext_root ~= nil then
         self.hovertext_root:Kill()
         self.hovertext_root = nil
+        self.hovertext = nil
+        self.hovertext_bg = nil
+
+        if self._OnGainFocus then
+            self.OnGainFocus = self._OnGainFocus
+            self.OnLoseFocus = self._OnLoseFocus
+
+			self._OnGainFocus = nil
+			self._OnLoseFocus = nil
+        end
     end
     if self.hover ~= nil then
         self.hover:Kill()
         self.hover = nil
-    end
-
-    if self.hovertext_bg ~= nil then
-        self.hovertext_bg:Kill()
-        self.hovertext_bg = nil
-    end
-
-    if self.hovertext ~= nil then
-        self.hovertext:Kill()
-        self.hovertext = nil
-        
-        --unhook the hover text focus functions
-        if self._OnGainFocus then
-            self.OnGainFocus = self._OnGainFocus
-            self.OnLoseFocus = self._OnLoseFocus
-        end
     end
 end
 

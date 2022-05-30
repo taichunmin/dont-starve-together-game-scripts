@@ -76,8 +76,10 @@ local function fn()
     MakeHauntableLaunch(inst)
 
     inst.beattask = nil
+    inst.skin_switched = ondropped
     ondropped(inst)
 
+    inst.DefaultPlayBeatAnimation = PlayBeatAnimation --for resetting after reskin
     inst.PlayBeatAnimation = PlayBeatAnimation
 
     return inst

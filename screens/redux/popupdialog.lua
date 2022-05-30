@@ -66,7 +66,7 @@ local PopupDialogScreen = Class(Screen, function(self, title, text, buttons, spa
     if self.dialog.body then
         self.dialog.body:SetColour(self.style.text.colour)
     end
-  
+
 	self.buttons = buttons or {}
     self.oncontrol_fn, self.gethelptext_fn = TEMPLATES.ControllerFunctionsFromButtons(self.buttons)
 

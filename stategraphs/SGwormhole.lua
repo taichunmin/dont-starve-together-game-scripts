@@ -50,7 +50,7 @@ local states=
 			end),
 		},
 	},
-		
+
 	State{
 		name = "closing",
 		tags = {"busy"},

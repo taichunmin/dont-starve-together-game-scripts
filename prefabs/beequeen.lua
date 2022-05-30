@@ -16,6 +16,7 @@ local prefabs =
     "stinger",
     "hivehat",
     "bundlewrap_blueprint",
+	"chesspiece_beequeen_sketch",
 }
 
 SetSharedLootTable('beequeen',
@@ -36,6 +37,7 @@ SetSharedLootTable('beequeen',
     {'stinger',          1.00},
     {'hivehat',          1.00},
     {'bundlewrap_blueprint', 1.00},
+	{'chesspiece_beequeen_sketch', 1.00},
 })
 
 --------------------------------------------------------------------------
@@ -177,6 +179,10 @@ end
 local function KeepTargetFn(inst, target)
     return inst.components.combat:CanTarget(target)
         and target:GetDistanceSqToPoint(inst.components.knownlocations:GetLocation("spawnpoint")) < TUNING.BEEQUEEN_DEAGGRO_DIST * TUNING.BEEQUEEN_DEAGGRO_DIST
+end
+
+local function bonus_damage_via_allergy(inst, target, damage, weapon)
+    return (target:HasTag("allergictobees") and TUNING.BEE_ALLERGY_EXTRADAMAGE) or 0
 end
 
 local function OnAttacked(inst, data)
@@ -390,7 +396,7 @@ local function fn()
     inst.components.inspectable:RecordViews()
 
     inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetChanceLootTable('beequeen') 
+    inst.components.lootdropper:SetChanceLootTable('beequeen')
 
     inst:AddComponent("sleeper")
     inst.components.sleeper:SetResistance(4)
@@ -422,6 +428,7 @@ local function fn()
     inst.components.combat:SetKeepTargetFunction(KeepTargetFn)
     inst.components.combat.battlecryenabled = false
     inst.components.combat.hiteffectsymbol = "hive_body"
+    inst.components.combat.bonusdamagefn = bonus_damage_via_allergy
 
     inst:AddComponent("explosiveresist")
 

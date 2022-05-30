@@ -7,6 +7,8 @@ local Text = require "widgets/text"
 local Widget = require "widgets/widget"
 local SkinPresetsPopup = require "screens/redux/skinpresetspopup"
 
+local KitcoonPuppet = require "widgets/kitcoonpuppet"
+
 local TEMPLATES = require("widgets/redux/templates")
 
 local WardrobeScreen = Class(Screen, function(self, user_profile, character)
@@ -25,10 +27,18 @@ local WardrobeScreen = Class(Screen, function(self, user_profile, character)
 end)
 
 function WardrobeScreen:_DoInit()
+    self.letterbox = self:AddChild(TEMPLATES.old.ForegroundLetterbox())
+
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())	
+    self.bg = self.root:AddChild(TEMPLATES.BrightMenuBackground())
 
     self.title = self.root:AddChild(TEMPLATES.ScreenTitle(STRINGS.UI.WARDROBESCREEN.TITLE, ""))
+
+    self.kit_puppet = self.root:AddChild(KitcoonPuppet( Profile, nil, {
+        { x = -380, y = 170, scale = 0.75 },
+        { x = -300, y = -315, scale = 0.75 },
+        { x = 580, y = -315, scale = 0.75 },
+    } ))
 
     self.doodad_count = self.root:AddChild(TEMPLATES.DoodadCounter(TheInventory:GetCurrencyAmount()))
 	self.doodad_count:SetPosition(-550, 215)
@@ -114,7 +124,7 @@ function WardrobeScreen:_DoInit()
 		))
 		self.cyclebutton:SetPosition(-260, 270)
 		self.cyclebutton:SetScale(0.77)
-        
+
 
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
                 function()
@@ -209,7 +219,7 @@ function WardrobeScreen:_MakeMenu(subscreener)
     }
 
     self:_UpdateMenu(self.selected_skins)
-    
+
     self.menu = self.root:AddChild(TEMPLATES.StandardMenu(menu_items, 65, nil, nil, false))
     return self.menu
 end
@@ -219,7 +229,7 @@ function WardrobeScreen:_CloseScreen()
 
     TheFrontEnd:FadeBack()
 end
-			
+
 function WardrobeScreen:_SaveLoadout()
     self.user_profile:SetSkinsForCharacter(self.currentcharacter, self.selected_skins)
 end
@@ -228,11 +238,11 @@ function WardrobeScreen:_LoadSkinPresetsScreen()
     TheFrontEnd:PushScreen( SkinPresetsPopup( self.user_profile, self.currentcharacter, self.selected_skins, function(skins) self:ApplySkinPresets(skins) end ) )
 end
 
-function WardrobeScreen:ApplySkinPresets(skins) 
+function WardrobeScreen:ApplySkinPresets(skins)
     if skins.base == nil then
         skins.base = self.currentcharacter.."_none"
     end
-    
+
     if skins.body == nil then
         skins.body = "body_default1"
     end
@@ -248,13 +258,13 @@ function WardrobeScreen:ApplySkinPresets(skins)
     if skins.feet == nil then
         skins.feet = "feet_default1"
     end
-    
+
     self.selected_skins = shallowcopy(skins)
     self.preview_skins = shallowcopy(skins)
 
     ValidateItemsLocal(self.currentcharacter, self.selected_skins)
     ValidatePreviewItems(self.currentcharacter, self.preview_skins)
-    
+
     for _,screen in pairs(self.subscreener.sub_screens) do
         screen:ClearSelection() --we need to clear the selection, so that the refresh will apply without re-selection of previously selected items overriding
     end
@@ -371,7 +381,7 @@ function WardrobeScreen:_SetPortrait()
 	local skin = self.preview_skins.base
 
     local found_name = SetHeroNameTexture_Gold(self.heroname, herocharacter)
-    if found_name then 
+    if found_name then
         self.heroname:Show()
     else
         self.heroname:Hide()
@@ -385,7 +395,7 @@ function WardrobeScreen:_SetPortrait()
 
     self.characterquote:SetMultilineTruncatedString(STRINGS.SKIN_QUOTES[skin] or STRINGS.CHARACTER_QUOTES[herocharacter] or "",
         3, --maxlines
-        300, --maxwidth, 
+        300, --maxwidth,
         55, --maxcharsperline,
         true, --ellipses,
         false --shrink_to_fit
@@ -404,6 +414,18 @@ function WardrobeScreen:OnBecomeActive()
             DisplayCharacterUnownedPopup( self.currentcharacter, self.subscreener)
         end
         self.did_once = true
+    end
+
+    if self.kit_puppet then
+        self.kit_puppet:Enable()
+    end
+end
+
+function WardrobeScreen:OnBecomeInactive()
+    self._base.OnBecomeInactive(self)
+
+    if self.kit_puppet then
+        self.kit_puppet:Disable()
     end
 end
 

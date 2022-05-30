@@ -2,8 +2,8 @@ local Widget = require "widgets/widget"
 
 Video = Class(Widget, function(self)
     Widget._ctor(self, "Video")
-    
-    self.inst.entity:AddVideoWidget()    
+
+    self.inst.entity:AddVideoWidget()
 end)
 
 function Video:__tostring()
@@ -41,7 +41,7 @@ end
 
 function Video:SetFadeAlpha(a, skipChildren)
 	if not self.can_fade_alpha then return end
-	
+
     self.inst.VideoWidget:SetTint(self.tint[1], self.tint[2], self.tint[3], self.tint[4] * a)
     Widget.SetFadeAlpha( self, a, skipChildren )
 end

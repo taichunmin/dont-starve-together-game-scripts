@@ -10,6 +10,7 @@ local Text = require "widgets/text"
 local TextEdit = require "widgets/textedit"
 local TrueScrollList = require "widgets/truescrolllist"
 local UIAnim = require "widgets/uianim"
+local Button = require "widgets/button"
 local Widget = require "widgets/widget"
 
 require("constants")
@@ -85,12 +86,12 @@ end
 
 function TEMPLATES.LeftSideBarBackground()
 	local bg = ReduxBackground("dark_right")
-	
+
 	local sidebar_root = bg:AddChild(Widget("sidebar_root"))
     sidebar_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
     sidebar_root:SetVAnchor(ANCHOR_MIDDLE)
     sidebar_root:SetHAnchor(ANCHOR_MIDDLE)
-	
+
 	local sidebar = sidebar_root:AddChild(Image("images/bg_redux_dark_sidebar.xml", "dark_sidebar.tex"))
     sidebar:SetCanFadeAlpha(false)
     sidebar:SetVRegPoint(ANCHOR_MIDDLE)
@@ -115,7 +116,7 @@ function TEMPLATES._CreateBackgroundPlate(image)
     plate:SetScale(RESOLUTION_X / w)
 
 	root.image = image
-	
+
     return root
 end
 
@@ -179,6 +180,38 @@ function TEMPLATES.ClayWargAnim()
     anim:SetPosition(-20, 0)
     anim:GetAnimState():PlayAnimation("loop", true)
     return anim
+end
+
+----------------
+----------------
+--  VERSION   --
+----------------
+----------------
+function TEMPLATES.GetBuildString()
+	local version_str = BRANCH == "dev" and "Internal"
+						or BRANCH == "staging" and "Preview"
+						or STRINGS.UI.MAINSCREEN.DST_UPDATENAME
+
+	return version_str.." v"..APP_VERSION.." ("..(APP_ARCHITECTURE == "x32" and "32-bit" or APP_ARCHITECTURE == "x64" and "64-bit" or "??-bit")..")"
+end
+
+function TEMPLATES.AddBuildString(parent_widget, config)
+	config = config or {}
+    local version = parent_widget:AddChild(Text(config.font or BODYTEXTFONT, config.size or 21))
+    version:SetPosition( config.x or 0, config.y or 0 )
+	if config.colour then
+	    version:SetColour(unpack(config.colour))
+	else
+	    version:SetColour(config.r or .8, config.g or .8, config.b or .8, config.a or 1)
+	end
+	if config.align ~= nil then
+	    version:SetHAlign(config.align)
+	end
+	if config.w ~= nil and config.h ~= nil then
+		version:SetRegionSize(config.w, config.h)
+	end
+    version:SetString(TEMPLATES.GetBuildString())
+	return version
 end
 
 
@@ -267,7 +300,20 @@ end
 --
 -- Assumes the button's parent is a Menu.
 -- Put a bunch of these into a StandardMenu.
-function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
+function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget, style, text_size)
+	local image_scale = {0.6, 0.6}
+	local image_offset = {-10,1}
+	local text_region_width = 250
+	local text_offset_x = 0
+	if style then
+		if "wide" == style then
+			image_scale = {0.75, 0.6}
+			image_offset = {15,1}
+			text_region_width = 300
+			text_offset_x = 25
+		end
+	end
+
     local btn = ImageButton(
         "images/global_redux.xml",
         "blank.tex", -- never used, hidden
@@ -275,8 +321,8 @@ function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
         nil,
         nil,
         "menu_selected.tex",
-        {0.6},
-        {-10,1})
+        image_scale,
+        image_offset)
     btn.scale_on_focus = false
     btn:UseFocusOverlay("menu_focus.tex")
     btn:SetImageNormalColour(1,1,1,0) -- we don't want anything shown for normal.
@@ -288,16 +334,18 @@ function TEMPLATES.MenuButton(text, onclick, tooltip_text, tooltip_widget)
     btn:SetTextFocusColour(UICOLOURS.WHITE)
     btn:SetTextSelectedColour(UICOLOURS.GOLD_FOCUS)
     btn:SetText(text, true)
-    btn.text:SetRegionSize(250,40)
+    btn.text:SetRegionSize(text_region_width,40)
+	btn.text:SetPosition(text_offset_x,0)
     btn.text:SetHAlign(ANCHOR_LEFT)
-    btn.text_shadow:SetRegionSize(250,40)
+    btn.text_shadow:SetRegionSize(text_region_width,40)
+	btn.text_shadow:SetPosition(text_offset_x,0)
     btn.text_shadow:SetHAlign(ANCHOR_LEFT)
-    btn:SetTextSize(25)
+    btn:SetTextSize(text_size or 25)
 
     btn.bg = btn:AddChild(Image("images/ui.xml", "blank.tex"))
     local w,h = btn.text:GetRegionSize()
-    btn.bg:ScaleToSize(250, h+15)
-    btn.bg:SetPosition(-10,1)
+    btn.bg:ScaleToSize(text_region_width, h+15)
+    btn.bg:SetPosition(-10 + text_offset_x,1)
 
     btn.ongainfocus = function(is_enabled)
         if tooltip_widget ~= nil then
@@ -326,29 +374,29 @@ function TEMPLATES.TwoLineMenuButton(text, onclick, tooltip_text, tooltip_widget
         "menu_wardrobe_selection.tex",
         {0.6},
         {-10,1})
-    
+
     btn:UseFocusOverlay("menu_wardrobe_focus.tex")
     btn:SetTextSize(22)
     btn.text:SetPosition(20,10)
     btn.text:SetRegionSize(205,24)
     -- We're messing with the shadow and not maintaining it, so kill it.
     btn.text_shadow:Kill()
-    
+
     btn.secondary_text = btn:AddChild( Text(NEWFONT, 20) )
     btn.secondary_text:SetHAlign(ANCHOR_LEFT)
     btn.secondary_text:SetRegionSize(205,24)
     btn.secondary_text:SetPosition(20,-10)
-    
+
     btn.onselect = function()
         btn.secondary_text:Show()
         btn.text:SetPosition(20,10)
     end
-    
+
     btn.onunselect = function()
         btn.secondary_text:Hide()
         btn.text:SetPosition(20,0)
     end
-    
+
     btn.SetSecondaryText = function(self, second_text)
         self.secondary_text:SetString(second_text or "")
     end
@@ -459,7 +507,7 @@ function TEMPLATES.BackButton(onclick, txt, shadow_offset, scale)
 
 		local w,h = btn.text:GetRegionSize()
 		btn.bg:ScaleToSize(w+50, h+15)
-		
+
 		local function ConfigureText(text_widget, x, offset)
 			-- Make text region large and fixed position so it aligns against image.
 			-- Offset to align region to image.
@@ -718,7 +766,7 @@ function TEMPLATES.ListItemBackground_Static(row_width, row_height)
 end
 
 -- A widget that displays info about a mod. To be used in scroll lists etc.
-function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
+function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox, onclick_setfavorite)
     local opt = Widget("option")
 
     local item_width,item_height = 340, 90
@@ -740,13 +788,19 @@ function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
     opt.checkbox:SetOnClick(onclick_checkbox)
     opt.checkbox:SetHelpTextMessage("") -- button nested in a button doesn't need extra helptext
 
+    opt.setfavorite = opt.backing:AddChild(ImageButton())
+    opt.setfavorite:SetPosition(100, -22, 0)
+    opt.setfavorite:SetOnClick(onclick_setfavorite)
+    opt.setfavorite:SetHelpTextMessage("") -- button nested in a button doesn't need extra helptext
+    opt.setfavorite.scale_on_focus = false
+
     opt.image = opt.backing:AddChild(Image())
     opt.image:SetPosition(-120,0,0)
     opt.image:SetClickable(false)
 
     opt.out_of_date_image = opt.backing:AddChild(Image("images/frontend.xml", "circle_red.tex"))
     opt.out_of_date_image:SetScale(.65)
-    opt.out_of_date_image:SetPosition(65, -22)
+    opt.out_of_date_image:SetPosition(25, -22)
     opt.out_of_date_image:SetClickable(false)
     opt.out_of_date_image.icon = opt.out_of_date_image:AddChild(Image("images/button_icons.xml", "update.tex"))
     opt.out_of_date_image.icon:SetPosition(-1,0)
@@ -755,7 +809,7 @@ function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
 
     opt.configurable_image = opt.backing:AddChild(Image("images/button_icons.xml", "configure_mod.tex"))
     opt.configurable_image:SetScale(.1)
-    opt.configurable_image:SetPosition(100, -20)
+    opt.configurable_image:SetPosition(60, -20)
     opt.configurable_image:SetClickable(false)
     opt.configurable_image:Hide()
 
@@ -778,7 +832,7 @@ function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
             opt.status:SetString(STRINGS.UI.MODSSCREEN.STATUS.DISABLED_MANUAL)
         else
             -- We should probably never hit this line.
-            opt.status:SetString(modname)
+            --opt.status:SetString(modname)
         end
     end
 
@@ -817,7 +871,15 @@ function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
         end
     end
 
-    opt.SetMod = function(_, modname, modinfo, modstatus, isenabled)
+    opt.SetModFavorited = function(_, should_favorite)
+        if should_favorite then
+            opt.setfavorite:SetTextures("images/global_redux.xml", "star_checked.tex", nil, "star_uncheck.tex", nil, nil, {0.75,0.75}, {0, 0})
+        else
+            opt.setfavorite:SetTextures("images/global_redux.xml", "star_uncheck.tex", nil, "star_checked.tex", nil, nil, {0.75,0.75}, {0, 0})
+        end
+    end
+
+    opt.SetMod = function(_, modname, modinfo, modstatus, isenabled, isfavorited)
         if modinfo and modinfo.icon_atlas and modinfo.icon then
             opt.image:SetTexture(modinfo.icon_atlas, modinfo.icon)
         else
@@ -835,6 +897,7 @@ function TEMPLATES.ModListItem(onclick_btn, onclick_checkbox)
 
         opt:SetModStatus(modstatus)
         opt:SetModEnabled(isenabled)
+        opt:SetModFavorited(isfavorited)
     end
 
     opt:SetModReadOnly(false) -- sets up some initial values
@@ -886,7 +949,7 @@ function TEMPLATES.DoodadCounter(number_of_doodads)
     doodad._CountFn = function(self)
         if self.num_display_doodads ~= self.num_doodads then
             local step = (self.num_doodads - self.num_display_doodads)/24
-            
+
             if self.num_doodads > self.num_display_doodads then
                 step = math.ceil(step)
             else
@@ -895,7 +958,7 @@ function TEMPLATES.DoodadCounter(number_of_doodads)
 
             self.num_display_doodads = self.num_display_doodads + step
 
-            self.inst:DoTaskInTime(FRAMES, function() 
+            self.inst:DoTaskInTime(FRAMES, function()
                 self:_CountFn()
             end)
         end
@@ -923,6 +986,38 @@ function TEMPLATES.DoodadCounter(number_of_doodads)
     return doodad
 end
 
+function TEMPLATES.KleiPointsCounter(number_of_points)
+    local points = Button("KleiPointsCounter")
+    points.image = points:AddChild(UIAnim())
+    points.image:GetAnimState():SetBank("kleipoints")
+    points.image:GetAnimState():SetBuild("kleipoints")
+    points.image:GetAnimState():PlayAnimation("idle", true)
+
+	points.points_count = points:AddChild(Text(CHATFONT_OUTLINE, 35, nil, UICOLOURS.WHITE))
+    points.points_count:SetPosition(0, -60)
+    points.points_count:SetRegionSize(120, 43)
+    points.points_count:SetHAlign(ANCHOR_MIDDLE)
+
+    points.SetCount = function(self, new_count)
+        self.points_count:SetString("x"..new_count)
+        if new_count == 0 then
+            self:Hide()
+        else
+            self:Show()
+        end
+    end
+
+    points:SetCount(number_of_points)
+
+    points:SetOnClick(
+        function()
+            TheFrontEnd:GetAccountManager():VisitAccountPage("rewards")
+        end
+    )
+
+    return points
+end
+
 function TEMPLATES.BoltCounter(number_of_bolts)
     local bolt = Widget("BoltCounter")
     bolt.image = bolt:AddChild(UIAnim())
@@ -933,13 +1028,13 @@ function TEMPLATES.BoltCounter(number_of_bolts)
 
 	bolt.bolt_count = bolt:AddChild(Text(CHATFONT_OUTLINE, 35, nil, UICOLOURS.WHITE))
     bolt.bolt_count:SetPosition(0, -60)
-    bolt.bolt_count:SetRegionSize(120, 43)
+    bolt.bolt_count:SetRegionSize(200, 43)
     bolt.bolt_count:SetHAlign(ANCHOR_MIDDLE)
 
     bolt._CountFn = function(self)
         if self.num_display_bolts ~= self.num_bolts then
             local step = (self.num_bolts - self.num_display_bolts)/24
-            
+
             if self.num_bolts > self.num_display_bolts then
                 step = math.ceil(step)
             else
@@ -948,7 +1043,7 @@ function TEMPLATES.BoltCounter(number_of_bolts)
 
             self.num_display_bolts = self.num_display_bolts + step
 
-            self.inst:DoTaskInTime(FRAMES, function() 
+            self.inst:DoTaskInTime(FRAMES, function()
                 self:_CountFn()
             end)
         end
@@ -1007,7 +1102,7 @@ function TEMPLATES.StandardSingleLineTextEntry(fieldtext, width_field, height, f
         local controller_id = TheInput:GetControllerID()
         local t = {}
         if not self.textbox.editing and not self.textbox.focus then
-            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.HELP.CHANGE_TEXT)   
+            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.HELP.CHANGE_TEXT)
         end
         return table.concat(t, "  ")
     end
@@ -1034,7 +1129,7 @@ function TEMPLATES.LabelTextbox(labeltext, fieldtext, width_label, width_field, 
 end
 
 -- Spinner with a label beside it
-function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinner, height, spacing, font, font_size, horiz_offset, onchanged_fn, colour)
+function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinner, height, spacing, font, font_size, horiz_offset, onchanged_fn, colour, tooltip_text)
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
@@ -1055,11 +1150,13 @@ function TEMPLATES.LabelSpinner(labeltext, spinnerdata, width_label, width_spinn
 
     wdg.focus_forward = wdg.spinner
 
+    wdg.tooltip_text = tooltip_text
+
     return wdg
 end
 
 -- Spinner of numbers with a label beside it
-function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_spinner, height, spacing, font, font_size, horiz_offset)
+function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_spinner, height, spacing, font, font_size, horiz_offset, tooltip_text)
     width_label = width_label or 220
     width_spinner = width_spinner or 150
     height = height or 40
@@ -1080,6 +1177,8 @@ function TEMPLATES.LabelNumericSpinner(labeltext, min, max, width_label, width_s
     wdg.spinner:SetTextColour(UICOLOURS.GOLD)
 
     wdg.focus_forward = wdg.spinner
+
+    wdg.tooltip_text = tooltip_text
 
     return wdg
 end
@@ -1104,7 +1203,7 @@ function TEMPLATES.LabelButton(onclick, labeltext, buttontext, width_label, widt
 end
 
 -- checkbox button with a label beside it
-function TEMPLATES.OptionsLabelCheckbox(onclick, labeltext, checked, width_label, width_button, height, checkbox_size, spacing, font, font_size, horiz_offset)
+function TEMPLATES.OptionsLabelCheckbox(onclick, labeltext, checked, width_label, width_button, height, checkbox_size, spacing, font, font_size, horiz_offset, tooltip_text)
     local offset = horiz_offset or 0
     local total_width = width_label + width_button + spacing
     local wdg = Widget("labelbutton")
@@ -1117,6 +1216,8 @@ function TEMPLATES.OptionsLabelCheckbox(onclick, labeltext, checked, width_label
     wdg.button:SetPosition((total_width/2)-(width_button/2) + offset, 0)
 
     wdg.focus_forward = wdg.button
+
+    wdg.tooltip_text = tooltip_text
 
     return wdg
 end
@@ -1212,7 +1313,7 @@ function TEMPLATES.CharacterSpinner(onchanged_fn, puppet, user_profile)
 end
 
 function TEMPLATES.ChatFlairBadge()
-    local flair = Widget("chat falir badge")
+    local flair = Widget("chat flair badge")
 
     flair.bg = flair:AddChild(Image())
     flair.bg:SetScale(0.8)
@@ -1220,7 +1321,7 @@ function TEMPLATES.ChatFlairBadge()
     flair.flair_img = flair:AddChild(Image(GetProfileFlairAtlasAndTex()))
     flair.flair_img:SetScale(.55)
     flair.flair_img:SetPosition(0, 31)
-    
+
     flair.SetFestivalBackground = function(self, festival_key)
         festival_key = festival_key or "none"
         self.bg:SetTexture("images/profileflair.xml", "playericon_bg_".. festival_key ..".tex", "playericon_bg_none.tex")
@@ -1239,10 +1340,7 @@ function TEMPLATES.ChatFlairBadge()
             if profileflair == "default" then
                 profileflair = nil
             end
-            self:Show()
             self.flair_img:SetTexture(GetProfileFlairAtlasAndTex(profileflair))
-        else
-            self:Hide()
         end
     end
 
@@ -1259,10 +1357,94 @@ function TEMPLATES.ChatFlairBadge()
             self:Hide()
         end
     end
-    
+
     flair:SetScale(0.5)
 
+    flair.GetSize = function(self)
+        return self.flair_img:GetScaledSize()
+    end
+
     return flair
+end
+
+function TEMPLATES.AnnouncementBadge()
+    local announcement = Widget("chat announcement badge")
+
+    announcement.bg = announcement:AddChild(Image("images/button_icons.xml", "circle.tex"))
+    announcement.bg:SetScale(1.35)
+    announcement.bg:SetPosition(0,27)
+
+    announcement.announcement_img = announcement:AddChild(Image("images/button_icons.xml", "announcement.tex"))
+    announcement.announcement_img:SetScale(1.35)
+    announcement.announcement_img:SetPosition(0, 31)
+
+    announcement:Hide()
+    announcement:SetClickable(false)
+
+    --Setup custom widget functions
+    announcement.SetAnnouncement = function(self, announcement)
+        self.announcement = announcement
+
+        if announcement then
+            local icon_info = ANNOUNCEMENT_ICONS[announcement]
+            self.announcement_img:SetTexture(icon_info.atlas or "images/button_icons.xml", icon_info.texture or "announcement.tex")
+        end
+    end
+
+    announcement.GetAnnouncement = function(self)
+        return self.announcement
+    end
+
+    announcement.SetAlpha = function(self, a)
+        if a > 0.01 and self.announcement then
+            self:Show()
+            self.bg:SetTint(1,1,1, a)
+            self.announcement_img:SetTint(1,1,1, a)
+        else
+            self:Hide()
+        end
+    end
+
+    announcement:SetScale(0.5)
+
+    announcement.GetSize = function(self)
+        return self.announcement_img:GetScaledSize()
+    end
+
+    return announcement
+end
+
+function TEMPLATES.SystemMessageBadge()
+    local systemmessage = Widget("chat system message badge")
+
+    systemmessage.bg = systemmessage:AddChild(Image("images/servericons.xml", "bg_brown.tex"))
+    systemmessage.bg:SetScale(0.22)
+    systemmessage.bg:SetPosition(0,31)
+
+    systemmessage.systemmessage_img = systemmessage:AddChild(Image("images/servericons.xml", "dedicated.tex"))
+    systemmessage.systemmessage_img:SetScale(0.19)
+    systemmessage.systemmessage_img:SetPosition(0, 31)
+
+    systemmessage:Hide()
+    systemmessage:SetClickable(false)
+
+    systemmessage.SetAlpha = function(self, a)
+        if a > 0.01 then
+            self:Show()
+            self.bg:SetTint(1,1,1, a)
+            self.systemmessage_img:SetTint(1,1,1, a)
+        else
+            self:Hide()
+        end
+    end
+
+    systemmessage:SetScale(0.5)
+
+    systemmessage.GetSize = function(self)
+        return self.systemmessage_img:GetScaledSize()
+    end
+
+    return systemmessage
 end
 
 function TEMPLATES.RankBadge()
@@ -1288,7 +1470,7 @@ function TEMPLATES.RankBadge()
         if not IsAnyFestivalEventActive() then
             rank_value = nil
         end
-        
+
         if not hide_hover_text and IsItemId(profileflair) then
             rank.flair:SetHoverText( GetSkinName(profileflair), { font = UIFONT, offset_x = 0, offset_y = 40, colour = GetColorForItem(profileflair) } )
         else
@@ -1340,7 +1522,7 @@ function TEMPLATES.UserProgress(onclick)
     progress.bar:GetAnimState():SetPercent("fill_progress", 0)
     progress.bar:SetPosition(30, -45)
     --progress.bar:SetScale(0.8)
-	
+
     progress.rank = progress:AddChild(TEMPLATES.RankBadge())
     progress.rank:SetPosition(135,-45)
 
@@ -1372,7 +1554,7 @@ function TEMPLATES.LargeScissorProgressBar(name)
 
     local frame = bar:AddChild(Image("images/global_redux.xml", "progressbar_wxplarge_frame.tex"))
     frame:SetPosition(-2, 0)
-   
+
     local fill = bar:AddChild(Image("images/global_redux.xml", "progressbar_wxplarge_fill.tex"))
 	local width, hieght = fill:GetSize()
     fill:SetScissor(-width*.5,-hieght*.5, math.max(0, width), math.max(0, hieght))
@@ -1380,7 +1562,7 @@ function TEMPLATES.LargeScissorProgressBar(name)
 	    fill:SetScissor(-width*.5,-hieght*.5, math.max(0, width * percent), math.max(0, hieght))
 	end
 
-	return bar	
+	return bar
 end
 
 function TEMPLATES.WxpBar()
@@ -1395,10 +1577,10 @@ function TEMPLATES.WxpBar()
     wxpbar.nextrank:SetPosition(345, -15)
     wxpbar.nextrank:SetScale(1)
     wxpbar.nextrank.num:SetSize(30)
-    
+
     local bar = wxpbar:AddChild(TEMPLATES.LargeScissorProgressBar())
     bar:SetPosition(0, 0)
-    
+
     local font_size = 25
 
 	local xp_cur_title = wxpbar:AddChild(Text(HEADERFONT, 16, STRINGS.UI.WXPLOBBYPANEL.WXP_CURRENT_XP, UICOLOURS.HIGHLIGHT_GOLD))
@@ -1439,9 +1621,9 @@ function TEMPLATES.WxpBar()
     wxpbar.SetRank = function(w_self, rank, next_level_xp, profileflair)
         w_self.rank:SetRank(profileflair, rank)
         w_self.nextrank:SetRank(rank + 1)
-        w_self.nextlevelxp_text:SetString(next_level_xp) 
+        w_self.nextlevelxp_text:SetString(next_level_xp)
     end
-    
+
     return wxpbar
 end
 
@@ -1531,7 +1713,7 @@ function TEMPLATES.CurlyWindow(sizeX, sizeY, title_text, bottom_buttons, button_
 
         -- Does text need to be smaller than 30 for JapaneseOnPS4()?
         w.actions = bottom:AddChild(Menu(bottom_buttons, button_spacing, true, style, nil, 30))
-        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height) 
+        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height)
 
         w.focus_forward = w.actions
     end
@@ -1600,7 +1782,7 @@ function TEMPLATES.RectangleWindow(sizeX, sizeY, title_text, bottom_buttons, but
 
         -- Does text need to be smaller than 30 for JapaneseOnPS4()?
         w.actions = w.bottom:AddChild(Menu(bottom_buttons, button_spacing, true, style, nil, 30))
-        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height) 
+        w.actions:SetPosition(-(button_spacing*(#bottom_buttons-1))/2, button_height)
 
         w.focus_forward = w.actions
     end
@@ -1688,7 +1870,7 @@ function TEMPLATES.ControllerFunctionsFromButtons(buttons)
             return false
         -- Hitting Esc fires both Pause and Cancel, so we can only handle pause
         -- when coming from gamepads.
-        elseif control ~= CONTROL_PAUSE or TheInput:ControllerAttached() then 
+        elseif control ~= CONTROL_PAUSE or TheInput:ControllerAttached() then
             for i,v in ipairs(buttons) do
                 if control == v.controller_control then
                     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -1716,12 +1898,12 @@ function TEMPLATES.ControllerFunctionsFromButtons(buttons)
 end
 
 function TEMPLATES.ScrollingGrid(items, opts)
-    local peek_height = opts.widget_height * 0.25 -- how much of row to see at the bottom.
+    local peek_height = opts.peek_height or (opts.widget_height * 0.25) -- how much of row to see at the bottom.
     if opts.peek_percent then
         -- Caller can force a peek height if they will add items to the list or
         -- have hidden empty widgets.
         peek_height = opts.widget_height * opts.peek_percent
-    elseif #items < math.floor(opts.num_visible_rows) * opts.num_columns then
+    elseif not opts.force_peek and #items < math.floor(opts.num_visible_rows) * opts.num_columns then
         -- No peek if we won't scroll.
         -- This won't work if we later update the items in the grid. Would be
         -- nice if TrueScrollList could handle this but I think we'd need to
@@ -1758,7 +1940,7 @@ function TEMPLATES.ScrollingGrid(items, opts)
         -- percent of a row height. 1 ensures that scrolling to the bottom puts
         -- a fully-displayed widget at the top. 0.75 prevents the next (empty)
         -- row from being visible.
-        local end_offset = 0.75
+        local end_offset = opts.end_offset or 0.75
         if opts.allow_bottom_empty_row then
             end_offset = 1
         end
@@ -1824,7 +2006,105 @@ function TEMPLATES.ReduxForeground()
     return fg
 end
 
+-- for making static health/hunger/sanity for using in the lobby
+function TEMPLATES.MakeUIStatusBadge(_status_name, c)
+	local status = Widget(_status_name.."_status")
 
+	status.status_icon = status:AddChild(Image())
+	status.status_icon:SetTexture("images/global_redux.xml", "status_".._status_name..".tex")
+	status.status_icon:SetScale(.55)
 
+	status.status_image = status:AddChild(Image("images/global_redux.xml", "value_gold.tex"))
+	status.status_image:SetScale(.66)
+	status.status_image:SetPosition(0, -33)
+
+	status.status_value = status:AddChild(Text(HEADERFONT, 20, "", UICOLOURS.BLACK))
+	status.status_value:SetPosition(0, -34)
+
+	status.ChangeCharacter = function(self, character)
+		local status_name = TUNING.CHARACTER_DETAILS_OVERRIDE[character.."_".._status_name] or _status_name
+
+		status.status_icon:SetTexture("images/global_redux.xml", "status_"..status_name..".tex")
+
+		local v = tostring(TUNING[string.upper(character.."_"..status_name)] or STRINGS.CHARACTER_DETAILS.STAT_UNKNOW)
+		status.status_value:SetString(v)
+	end
+
+	if c ~= nil then
+		status:ChangeCharacter(c)
+	end
+
+	return status
+end
+
+function TEMPLATES.MakeStartingInventoryWidget(c, left_align)
+	local root = Widget("starting_inv_root")
+
+    local title = root:AddChild(Text(HEADERFONT, 25, STRINGS.CHARACTER_DETAILS.STARTING_ITEMS_TITLE, UICOLOURS.GOLD_UNIMPORTANT))
+    local title_w, title_h = title:GetRegionSize()
+	title:SetPosition(left_align and title_w/2 or 0, -title_h/2)
+	title:SetHAlign(left_align and ANCHOR_LEFT or ANCHOR_MIDDLE)
+
+	root._invitems = root:AddChild(Widget("items_root"))
+
+	root.ChangeCharacter = function(self, character)
+		character = string.upper(character)
+		self._invitems:KillAllChildren()
+
+		local inv_item_list = (TUNING.GAMEMODE_STARTING_ITEMS[TheNet:GetServerGameMode()] or TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT)[character]
+		if inv_item_list ~= nil and #inv_item_list > 0 then
+			local inv_items, item_count = {}, {}
+			for _, v in ipairs(inv_item_list) do
+				if item_count[v] == nil then
+					item_count[v] = 1
+					table.insert(inv_items, v)
+				else
+					item_count[v] = item_count[v] + 1
+				end
+			end
+
+			local scale = 0.85
+			local spacing = 5
+			local slot_width, total_width, x
+
+			for i, item in ipairs(inv_items) do
+				local slot = root._invitems:AddChild(Image("images/hud.xml", "inv_slot.tex"))
+
+				local override_item_image = TUNING.STARTING_ITEM_IMAGE_OVERRIDE[item]
+                local atlas = override_item_image ~= nil and override_item_image.atlas or GetInventoryItemAtlas(item..".tex", true)
+                if atlas ~= nil then
+				    local image = override_item_image ~= nil and override_item_image.image or (item..".tex")
+                    slot:AddChild(Image(atlas, image)):SetScale(0.9)
+                end
+				slot:SetScale(scale)
+				if slot_width == nil then
+					slot_width = 68 * scale
+					total_width = (slot_width * #inv_items + spacing * (#inv_items - 1))
+					x = left_align and (slot_width/2) or (-total_width/2 + slot_width/2)
+				end
+				slot:SetPosition(x, -(title_h + spacing + slot_width/2))
+
+				if item_count[item] > 1 then
+					--local label = slot:AddChild(Text(NUMBERFONT, 32, tostring(item_count[item])))
+					--label:SetPosition(1, 15)
+				end
+
+				x = x + slot_width + spacing
+			end
+		else
+			-- no gear
+			local label = root._invitems:AddChild(Text(HEADERFONT, 21, STRINGS.CHARACTER_DETAILS.STARTING_ITEMS_NONE, UICOLOURS.GREY))
+		    local w = label:GetRegionSize()
+			label:SetPosition(left_align and (title_w/2 - (title_w/2 - w/2)) or 1, -35)
+			label:SetHAlign(left_align and ANCHOR_LEFT or ANCHOR_MIDDLE)
+		end
+	end
+
+	if c ~= nil then
+		root:ChangeCharacter(c)
+	end
+
+	return root
+end
 
 return TEMPLATES

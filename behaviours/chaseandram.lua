@@ -9,7 +9,7 @@ ChaseAndRam = Class(BehaviourNode, function(self, inst, max_chase_time, give_up_
 
     -- we need to store this function as a key to use to remove itself later
     self.onattackfn = function(inst, data)
-        self:OnAttackOther(data.target) 
+        self:OnAttackOther(data.target)
     end
 
     self.inst:ListenForEvent("onattackother", self.onattackfn)
@@ -97,7 +97,7 @@ function ChaseAndRam:Visit()
             end
 
             if self.inst.sg ~= nil and not self.inst.sg:HasStateTag("atk_pre") and combat:TryAttack() then
-                -- If you're not still in the telegraphing stage then try to attack. 
+                -- If you're not still in the telegraphing stage then try to attack.
                 self.inst:RemoveTag("ChaseAndRam")
             elseif self.startruntime == nil then
                 self.startruntime = GetTime()

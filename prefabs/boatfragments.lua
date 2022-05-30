@@ -6,7 +6,7 @@ local assets =
 
 local prefabs =
 {
-    
+
 }
 
 
@@ -47,6 +47,11 @@ local function fn(suffix, radius)
         return inst
     end
 
+	inst:AddComponent("edible")
+    inst.components.edible.foodtype = FOODTYPE.WOOD
+    inst.components.edible.healthvalue = 0
+    inst.components.edible.hungervalue = 0
+
     MakeLargeBurnable(inst)
     MakeLargePropagator(inst)
 
@@ -70,4 +75,4 @@ return --Prefab("boatfragment01", function() return fn("01", 0.5) end, assets, p
        Prefab("boatfragment03", function() return fn("03", 0.5) end, assets, prefabs),
        Prefab("boatfragment04", function() return fn("04", 0.5) end, assets, prefabs),
        Prefab("boatfragment05", function() return fn("05", 0.5) end, assets, prefabs)
-       
+

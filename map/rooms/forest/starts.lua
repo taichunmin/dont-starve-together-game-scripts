@@ -5,7 +5,7 @@ AddRoom("BurntForestStart", {
 					contents =  {
 									countprefabs= {
 										firepit=1,
-									},	
+									},
 									distributepercent = 0.6,
 									distributeprefabs= {
 										evergreen = function() return 3 + math.random(4) end,

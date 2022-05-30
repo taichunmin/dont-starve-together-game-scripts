@@ -54,7 +54,7 @@ function UIAnimButton:OnControl(control, down)
             end
 
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-            
+
             self.down = true
             if self.whiledown then
                 self:StartUpdating()
@@ -78,7 +78,7 @@ end
 
 function UIAnimButton:OnEnable()
     UIAnimButton._base.OnEnable(self)
-    if self.focus then 
+    if self.focus then
         self:OnGainFocus()
     else
         self:OnLoseFocus()
@@ -126,7 +126,10 @@ function UIAnimButton:SetLoop(animation_name, loop)
     if animation_name and loop then
         self.loops[animation_name] = loop
     end
-    -- TODO: maybe we should check if an animation is already playing and start looping it. Maybe.
+
+    if self.animstate:IsCurrentAnimation(animation_name) then
+        self.animstate:PlayAnimation(animation_name, loop)
+    end
 end
 
 -- This was made with a very specific reason in mind (check EnableClick on giftitemtoast.lua),
@@ -143,7 +146,7 @@ function UIAnimButton:PushIdleAnim(idle_anim)
 end
 
 function UIAnimButton:SetIdleAnim(idle_anim, loop)
-    
+
     if not idle_anim then return end
 
     self:SetLoop(idle_anim, loop)
@@ -160,45 +163,45 @@ function UIAnimButton:SetFocusAnim(focus_anim, loop)
 
     self:SetLoop(focus_anim, loop)
     self.focusanimation = focus_anim
-    
+
     if self.focus and not self.selected and not self.animstate:IsCurrentAnimation(self.focusanimation) then
         self.animstate:PlayAnimation(self.focusanimation, self.loops[focus_anim])
     end
 end
 
 function UIAnimButton:SetDisabledAnim(disabled_anim, loop)
-    
-    if not disabled_anim then return end    
+
+    if not disabled_anim then return end
 
     self:SetLoop(disabled_anim, loop)
     self.disabledanimation = disabled_anim
-    
+
     if not self:IsEnabled() and not self.animstate:IsCurrentAnimation(self.disabledanimation) then
-       self.animstate:PlayAnimation(self.disabledanimation, self.loops[disabled_anim]) 
+       self.animstate:PlayAnimation(self.disabledanimation, self.loops[disabled_anim])
     end
 end
 
 function UIAnimButton:SetDownAnim(down_anim, loop)
-    
+
     if not down_anim then return end
 
     self:SetLoop(down_anim, loop)
     self.downanimation = down_anim
-    
+
     if self.down and self:IsEnabled() and not self.animstate:IsCurrentAnimation(self.downanimation) then
         self.animstate:PlayAnimation(self.downanimation, self.loops[down_anim])
     end
 end
 
 function UIAnimButton:SetSelectedAnim(selected_anim, loop)
-    
+
     if not selected_anim then return end
 
     self:SetLoop(selected_anim, loop)
     self.selectedanimation = selected_anim
 
     if self.selected and not self.animstate:IsCurrentAnimation(self.selectedanimation) then
-        self.animstate:PlayAnimation(self.selectedanimation, self.loops[selected_anim]) 
+        self.animstate:PlayAnimation(self.selectedanimation, self.loops[selected_anim])
     end
 end
 

@@ -34,25 +34,25 @@ local OptionsScreen = Class(Screen, function(self, in_game)
 	if IsDLCInstalled(REIGN_OF_GIANTS) then
 		self.options.wathgrithrfont = Profile:IsWathgrithrFontEnabled()
 	end
-	
+
 	self.working = deepcopy( self.options )
-	
-	
+
+
 	self.bg = self:AddChild(Image("images/bg_plain.xml", "bg.tex"))
     TintBackground(self.bg)
-    
+
     self.bg:SetVRegPoint(ANCHOR_MIDDLE)
     self.bg:SetHRegPoint(ANCHOR_MIDDLE)
     self.bg:SetVAnchor(ANCHOR_MIDDLE)
     self.bg:SetHAnchor(ANCHOR_MIDDLE)
     self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
-    
+
 	self.root = self:AddChild(Widget("ROOT"))
     self.root:SetVAnchor(ANCHOR_MIDDLE)
     self.root:SetHAnchor(ANCHOR_MIDDLE)
     self.root:SetPosition(0,15,0)
     self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
-    
+
 	local shield = self.root:AddChild( Image( "images/fepanels.xml", "panel_controls.tex" ) )
 	shield:SetPosition( 0,-20,0 )
 
@@ -63,18 +63,18 @@ local OptionsScreen = Class(Screen, function(self, in_game)
 
 	if IsDLCInstalled(REIGN_OF_GIANTS) then
 		if JapaneseOnPS4() then
-	        shield:SetScale(1.4, 0.85, 1.0)	
+	        shield:SetScale(1.4, 0.85, 1.0)
 	    else
-	        shield:SetScale(1.3, 0.85, 1.0)	
+	        shield:SetScale(1.3, 0.85, 1.0)
 	    end
 		self.title:SetPosition(0, 150, 0)
 		self.grid:InitSize(2, 5, 400, -70)
 		self.grid:SetPosition(-230, 70, 0)
 	else
 		if JapaneseOnPS4() then
-	        shield:SetScale(1.4, 0.75, 1.0)	
+	        shield:SetScale(1.4, 0.75, 1.0)
 	    else
-	        shield:SetScale(1.2, 0.75, 1.0)	
+	        shield:SetScale(1.2, 0.75, 1.0)
 	    end
 		self.title:SetPosition(0, 120, 0)
 		self.grid:InitSize(2, 5, 400, -70)
@@ -91,7 +91,7 @@ end)
 
 function OptionsScreen:OnControl(control, down)
     if OptionsScreen._base.OnControl(self, control, down) then return true end
-    
+
     if not down then
 	    if control == CONTROL_CANCEL then
 			if self:IsDirty() then
@@ -109,31 +109,31 @@ function OptionsScreen:OnControl(control, down)
 end
 
 function OptionsScreen:Back()
-	TheFrontEnd:PopScreen()					
+	TheFrontEnd:PopScreen()
 end
 
 function OptionsScreen:ConfirmRevert()
 
 	TheFrontEnd:PushScreen(
 		PopupDialogScreen( STRINGS.UI.OPTIONS.BACKTITLE, STRINGS.UI.OPTIONS.BACKBODY,
-		  { 
-		  	{ 
-		  		text = STRINGS.UI.OPTIONS.YES, 
+		  {
+		  	{
+		  		text = STRINGS.UI.OPTIONS.YES,
 		  		cb = function()
 					self:RevertChanges()
 					TheFrontEnd:PopScreen()
 				end
 			},
-			
-			{ 
-				text = STRINGS.UI.OPTIONS.NO, 
+
+			{
+				text = STRINGS.UI.OPTIONS.NO,
 				cb = function()
-					TheFrontEnd:PopScreen()					
+					TheFrontEnd:PopScreen()
 				end
 			}
 		  }
 		)
-	)		
+	)
 end
 
 
@@ -164,8 +164,8 @@ function OptionsScreen:Save(cb)
 	Profile:SetVibrationEnabled( self.options.vibration )
 	Profile:SetAutosaveEnabled( self.options.autosave )
 	if IsDLCInstalled(REIGN_OF_GIANTS) then Profile:SetWathgrithrFontEnabled( self.options.wathgrithrfont ) end
-	
-	Profile:Save( function() if cb then cb() end end)	
+
+	Profile:Save( function() if cb then cb() end end)
 end
 
 
@@ -178,34 +178,34 @@ end
 function OptionsScreen:IsDirty()
 	for k,v in pairs(self.working) do
 		if v ~= self.options[k] then
-			return true	
+			return true
 		end
 	end
 	return false
 end
 
 function OptionsScreen:ConfirmApply( )
-	
+
 	TheFrontEnd:PushScreen(
 		PopupDialogScreen( STRINGS.UI.OPTIONS.ACCEPTTITLE, STRINGS.UI.OPTIONS.ACCEPTBODY,
-		  { 
-		  	{ 
-		  		text = STRINGS.UI.OPTIONS.ACCEPT, 
+		  {
+		  	{
+		  		text = STRINGS.UI.OPTIONS.ACCEPT,
 		  		cb = function()
 					self:Apply()
 					self:Save(function() TheFrontEnd:PopScreen() self:Back() end)
 				end
 			},
-			
-			{ 
-				text = STRINGS.UI.OPTIONS.CANCEL, 
+
+			{
+				text = STRINGS.UI.OPTIONS.CANCEL,
 				cb = function()
-					TheFrontEnd:PopScreen()					
+					TheFrontEnd:PopScreen()
 				end
 			}
 		  }
 		)
-	)	
+	)
 end
 
 
@@ -229,7 +229,7 @@ end
 function OptionsScreen:Close()
 	--TheFrontEnd:DoFadeIn(2)
 	TheFrontEnd:PopScreen()
-end	
+end
 
 
 function OptionsScreen:CreateSpinnerGroup( text, spinner )
@@ -240,10 +240,10 @@ function OptionsScreen:CreateSpinnerGroup( text, spinner )
 	label:SetPosition( -label_width/2, -5, 0 )
 	label:SetRegionSize( label_width, 50 )
 	label:SetHAlign( ANCHOR_RIGHT )
-	
+
 	group:AddChild( spinner )
 	spinner:SetPosition( 100, 0, 0 )
-	
+
 	--pass focus down to the spinner
 	group.focus_forward = spinner
 	return group
@@ -254,7 +254,7 @@ function OptionsScreen:DoInit()
 
 
 	local this = self
-		
+
 	self.fxVolume = NumericSpinner( 0, 10 )
 	self.fxVolume.text:SetSize(40)
 	self.fxVolume.text:SetPosition(0, -4, 0)
@@ -281,7 +281,7 @@ function OptionsScreen:DoInit()
 			this.working.ambientvolume = data
 			this:ApplyVolume()
 		end
-		
+
 	self.hudSize = NumericSpinner( 0, 10 )
 	self.hudSize.text:SetSize(40)
 	self.hudSize.text:SetPosition(0, -4, 0)
@@ -290,7 +290,7 @@ function OptionsScreen:DoInit()
 			this.working.hudSize = data
 			this:Apply()
 		end
-			
+
 	self.vibrationSpinner = Spinner( enableDisableOptions )
 	self.vibrationSpinner.text:SetSize(40)
 	self.vibrationSpinner.text:SetPosition(0, -4, 0)
@@ -308,7 +308,7 @@ function OptionsScreen:DoInit()
 			this.working.screenshake = data
 			--this:Apply()
 		end
-			
+
 	self.autosaveSpinner = Spinner( enableDisableOptions )
 	self.autosaveSpinner.text:SetSize(40)
 	self.autosaveSpinner.text:SetPosition(0, -4, 0)
@@ -328,10 +328,10 @@ function OptionsScreen:DoInit()
 				--this:Apply()
 			end
 	end
-		
+
 	local left_spinners = {}
 	local right_spinners = {}
-	
+
 	if IsDLCInstalled(REIGN_OF_GIANTS) then
 		table.insert( left_spinners, { STRINGS.UI.OPTIONS.FX, self.fxVolume } )
 		table.insert( left_spinners, { STRINGS.UI.OPTIONS.MUSIC, self.musicVolume } )
@@ -351,13 +351,13 @@ function OptionsScreen:DoInit()
 		table.insert( right_spinners, { STRINGS.UI.OPTIONS.AUTOSAVE, self.autosaveSpinner} )
 	end
 
-    
+
     self.display_area = self.root:AddChild(Widget("DisplayArea"))
-    
+
 	self.display_area_label = self.display_area:AddChild(Text(TITLEFONT, 40))
     self.display_area_label:SetString(STRINGS.UI.OPTIONS.DISPLAY_AREA_LABEL)
     self.display_area_label:SetPosition(-50, -5, 0)
-    
+
 	self.display_area_button = self.display_area:AddChild(ImageButton())
     self.display_area_button:SetText(STRINGS.UI.OPTIONS.DISPLAY_AREA_BUTTON)
     self.display_area_button.text:SetColour(0,0,0,1)
@@ -368,13 +368,13 @@ function OptionsScreen:DoInit()
     self.display_area.focus_forward = self.display_area_button
 
 	for k,v in ipairs(left_spinners) do
-		self.grid:AddItem(self:CreateSpinnerGroup(v[1], v[2]), 1, k)	
+		self.grid:AddItem(self:CreateSpinnerGroup(v[1], v[2]), 1, k)
 	end
 
 	for k,v in ipairs(right_spinners) do
-		self.grid:AddItem(self:CreateSpinnerGroup(v[1], v[2]), 2, k)	
+		self.grid:AddItem(self:CreateSpinnerGroup(v[1], v[2]), 2, k)
 	end
-	
+
 	self.grid:AddItem(self.display_area, 2, self.grid:GetRowsInCol(2) + 1)
 
 end
@@ -388,13 +388,13 @@ local function EnabledOptionsIndex( enabled )
 end
 
 function OptionsScreen:InitializeSpinners()
-	
+
 	local spinners = { fxvolume = self.fxVolume, musicvolume = self.musicVolume, ambientvolume = self.ambientVolume }
 	for key, spinner in pairs( spinners ) do
 		local volume = self.working[ key ] or 7
 		spinner:SetSelectedIndex( math.floor( volume + 0.5 ) )
 	end
-	
+
 	self.hudSize:SetSelectedIndex( self.working.hudSize or 5)
 	self.vibrationSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.vibration ) )
 	self.autosaveSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.autosave) )

@@ -83,41 +83,41 @@ local ControlsScreen = Class(Screen, function(self, in_game)
 	Screen._ctor(self, "ControlsScreen")
 	self.in_game = in_game
 
-	
+
 	self.bg = self:AddChild(Image("images/bg_plain.xml", "bg.tex"))
     TintBackground(self.bg)
-    
+
     self.bg:SetVRegPoint(ANCHOR_MIDDLE)
     self.bg:SetHRegPoint(ANCHOR_MIDDLE)
     self.bg:SetVAnchor(ANCHOR_MIDDLE)
     self.bg:SetHAnchor(ANCHOR_MIDDLE)
     self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
-    
+
 	self.root = self:AddChild(Widget("ROOT"))
     self.root:SetVAnchor(ANCHOR_MIDDLE)
     self.root:SetHAnchor(ANCHOR_MIDDLE)
     self.root:SetPosition(-25,0,0)
     self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
-    
+
     self.layouts = {}
     self.layouts[DEVICE_DUALSHOCK4] = self:PopulateLayout(DEVICE_DUALSHOCK4)
     self.layouts[DEVICE_DUALSHOCK4]:Hide()
     self.layouts[DEVICE_VITA] = self:PopulateLayout(DEVICE_VITA)
     self.layouts[DEVICE_VITA]:Hide()
-    
+
     local device = TheInputProxy:GetInputDeviceType(0)
     self.device = device
-    self.layouts[device]:Show()        
+    self.layouts[device]:Show()
 
 end)
 
 function ControlsScreen:PopulateLayout(device)
 
     local layout = self.root:AddChild(Widget("layout"))
-    
+
     local image = layout:AddChild( Image( "images/ps4_controllers.xml", CONTROLLER_IMAGES[device] ) )
     image:SetPosition( 12,0,0 )
-    
+
     for _, v in pairs(LABELS[device]) do
         local label
         if JapaneseOnPS4() then
@@ -134,13 +134,13 @@ function ControlsScreen:PopulateLayout(device)
             label:SetPosition(v.x + LABEL_WIDTH/2, v.y, 0)
         end
     end
-    
+
     return layout
 end
 
 function ControlsScreen:OnUpdate(dt)
-    local device = TheInputProxy:GetInputDeviceType(0)   
-    if self.device ~= device then    
+    local device = TheInputProxy:GetInputDeviceType(0)
+    if self.device ~= device then
         self.layouts[self.device]:Hide()
         self.device = device
         self.layouts[device]:Show()
@@ -149,7 +149,7 @@ end
 
 function ControlsScreen:OnControl(control, down)
     if ControlsScreen._base.OnControl(self, control, down) then return true end
-    
+
     if not down and control == CONTROL_CANCEL then
     	self:Close()
     end
@@ -158,7 +158,7 @@ end
 function ControlsScreen:Close()
 	--TheFrontEnd:DoFadeIn(2)
 	TheFrontEnd:PopScreen()
-end	
+end
 
 function ControlsScreen:GetHelpText()
     local t = {}

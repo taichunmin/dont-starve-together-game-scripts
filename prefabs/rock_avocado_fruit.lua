@@ -43,7 +43,7 @@ local rock_fruit_prefabs = {
 }
 
 local function on_mine(inst, miner, workleft, workdone)
-    local num_fruits_worked = math.clamp(workdone / TUNING.ROCK_FRUIT_MINES, 1, TUNING.ROCK_FRUIT_LOOT.MAX_SPAWNS)
+    local num_fruits_worked = math.clamp(math.ceil(workdone / TUNING.ROCK_FRUIT_MINES), 1, TUNING.ROCK_FRUIT_LOOT.MAX_SPAWNS)
     num_fruits_worked = math.min(num_fruits_worked, inst.components.stackable:StackSize())
 
     if inst.components.stackable:StackSize() > num_fruits_worked then

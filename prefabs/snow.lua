@@ -1,5 +1,6 @@
 local TEXTURE = "fx/snow.tex"
-local WINTER_TEXTURE = "fx/wintersnow.tex"
+local WINTER_TEXTURE_OLD = "fx/wintersnow.tex"
+local WINTER_TEXTURE = "fx/wintersnow_cane.tex"
 
 local SHADER = "shaders/vfx_particle.ksh"
 
@@ -10,6 +11,7 @@ local WINTER_SCALE_ENVELOPE_NAME = "wintersnowscaleenvelope"
 local assets =
 {
     Asset("IMAGE", TEXTURE),
+    Asset("IMAGE", WINTER_TEXTURE_OLD),
     Asset("IMAGE", WINTER_TEXTURE),
     Asset("SHADER", SHADER),
 }
@@ -25,7 +27,8 @@ local function InitEnvelope()
         COLOUR_ENVELOPE_NAME,
         {
             { 0, IntColour(255, 255, 255, 200) },
-            { 1, IntColour(255, 255, 255, 200) },
+            { 0.9, IntColour(255, 255, 255, 200) },
+            { 1, IntColour(255, 255, 255, 0) },
         }
    )
 
@@ -53,8 +56,8 @@ end
 
 --------------------------------------------------------------------------
 
-local MAX_LIFETIME = 7
-local MIN_LIFETIME = 4
+local MAX_LIFETIME = 7.5
+local MIN_LIFETIME = 4.5
 
 --------------------------------------------------------------------------
 
@@ -97,13 +100,16 @@ local function fn()
         local px, py, pz = emitter_shape()
 
         if use_uv_offset then
-            local uv_offset = math.random(0, 3) * .25
 
-            effect:AddParticleUV(
+            local angle = math.random() * 360
+            local uv_offset = math.random(0, 7) * .125
+            local ang_vel = UnitRand() * 4.0
+            effect:AddRotatingParticleUV(
                 0,
                 lifetime,           -- lifetime
                 px, py, pz,         -- position
                 vx, vy, vz,         -- velocity
+                angle, ang_vel,     -- angle, angular_velocity
                 uv_offset, 0        -- uv offset
             )
         else
@@ -123,20 +129,23 @@ local function fn()
             if IsSpecialEventActive(SPECIAL_EVENTS.WINTERS_FEAST) then
                 effect:SetRenderResources(0, WINTER_TEXTURE, SHADER)
                 effect:SetScaleEnvelope(0, WINTER_SCALE_ENVELOPE_NAME)
-                effect:SetUVFrameSize(0, .25, 1)
+                effect:SetUVFrameSize(0, .125, 1)
+                effect:SetRotationStatus(0, true)
                 use_uv_offset = true
                 particle_mult = 2
+                effect:SetAcceleration(0, -1, -9.80, 1)
+                effect:SetDragCoefficient(0, .85)
             else
                 effect:SetRenderResources(0, TEXTURE, SHADER)
                 effect:SetScaleEnvelope(0, SCALE_ENVELOPE_NAME)
+                effect:SetAcceleration(0, -1, -9.80, 1)
+                effect:SetDragCoefficient(0, .8)
             end
             effect:SetMaxNumParticles(0, 4800)
             effect:SetMaxLifetime(0, MAX_LIFETIME)
             effect:SetColourEnvelope(0, COLOUR_ENVELOPE_NAME)
             effect:SetBlendMode(0, BLENDMODE.Premultiplied)
             effect:SetSortOrder(0, 3)
-            effect:SetAcceleration(0, -1, -9.80, 1)
-            effect:SetDragCoefficient(0, .8)
             effect:EnableDepthTest(0, true)
         end
 

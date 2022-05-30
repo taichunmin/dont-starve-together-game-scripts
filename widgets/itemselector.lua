@@ -11,26 +11,26 @@ local DEBUG_MODE = BRANCH == "dev"
 
 local NUM_ROWS = 4
 local NUM_ITEMS_PER_ROW = 4
-	
+
 local ItemSelector = Class(Widget, function(self, parent, owner, profile)
     self.owner = owner
 	self.parent = parent
     self.profile = profile
     Widget._ctor(self, "ItemSelector")
-   
+
     self.root = self:AddChild(Widget("ItemSelectorRoot"))
-	
+
     -- Title banner
     self.title_group = self.root:AddChild(Widget("Title"))
     self.title_group:SetPosition(25, 255)
-   
+
     self.banner = self.title_group:AddChild(Image("images/tradescreen.xml", "banner0_small.tex"))
     self.banner:SetScale(.38)
     self.banner:SetPosition(-40, 27)
     self.title = self.title_group:AddChild(Text(BUTTONFONT, 35, STRINGS.UI.TRADESCREEN.SELECT_TITLE, BLACK))
     self.title:SetPosition(-35, 25)
     self.title:SetRotation(-17)
-	
+
     self:BuildInventoryList()
 
     self.focus_forward = self.scroll_list
@@ -46,7 +46,7 @@ function ItemSelector:BuildInventoryList()
     self.inventory_list:SetPosition( -18, 65)
 
 	self.show_hover_text = true --shows the hover text on the paged list
-	
+
 	self.scroll_list = self.inventory_list:AddChild( TrueScrollList(
 			{screen = self},
 			SkinGridListConstructor,
@@ -61,7 +61,7 @@ end
 function ItemSelector:UpdateData( selections, filters_list )
     self.full_skins_list = GetInventorySkinsList( true )
     self.skins_list = ApplyFilters( self.full_skins_list, filters_list )
-	
+
 	--Remove selected items from the list so we can't select them twice
 	local k = 1
 	while k <= #self.skins_list do
@@ -72,11 +72,11 @@ function ItemSelector:UpdateData( selections, filters_list )
     			-- Remove this thing from the list, and skip the rest of the skins_list
     			table.remove(self.skins_list, k)
     			removed = true
-    			
+
     			break
     		end
     	end
-    	
+
     	if not removed then
     		k = k + 1
     	end
@@ -110,8 +110,8 @@ end
 function ItemSelector:NumItemsLikeThis(item_name)
 	local count = 0
 
-	for k,v in ipairs(self.full_skins_list) do 
-		if v.item == item_name then 
+	for k,v in ipairs(self.full_skins_list) do
+		if v.item == item_name then
 			count = count + 1
 		end
 	end

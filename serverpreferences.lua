@@ -1,5 +1,8 @@
+local Stats = require("stats")
+
 ServerPreferences = Class(function(self)
-    self.persistdata = {} 
+    self.persistdata = {}
+	self.profanityservers = {}
 
     self.dirty = true
 end)
@@ -10,49 +13,80 @@ function ServerPreferences:Reset()
 	self:Save()
 end
 
-local function MakeServerID(server_data)
+local function GetServerNameAndDescription(server_data)
+	local name, desc
 	if server_data == nil then
-		server_data = {name = TheNet:GetServerName()}
+		name = TheNet:GetServerName()
+		desc = tostring(TheNet:GetServerDescription())
 	elseif type(server_data) == "string" then
-		server_data = {name = server_data}
+		name = server_data
+		desc = ""
+	else
+		name = server_data.name
+		desc = tostring(server_data.description)
+	end
+	return name, desc
+end
+
+local function MakeServerID(server_data)
+	local name
+	if server_data == nil then
+		name = TheNet:GetServerName()
+	elseif type(server_data) == "string" then
+		name = server_data
+	else
+		name = server_data.name
 	end
 
-	return "ID_"..tostring(smallhash(tostring(server_data.name)))
+	return "ID_"..tostring(smallhash(tostring(name)))
 end
 
 function ServerPreferences:ToggleNameAndDescriptionFilter(server_data)
 	local server_id = MakeServerID(server_data)
-	local hide = self.persistdata[server_id] == nil or not self.persistdata[server_id].hidename
-	if hide then
-		if self.persistdata[server_id] == nil then
-			self.persistdata[server_id] = {}
-			self.persistdata[server_id].lastseen = os.time()
-		end
 
-		self.persistdata[server_id].hidename = true
-		self.dirty = true
+	if self.profanityservers[server_id] ~= nil then
+		self.profanityservers[server_id] = not self.profanityservers[server_id]
 	else
-		if self.persistdata[server_id] ~= nil and self.persistdata[server_id].hidename then
-			self.persistdata[server_id].hidename = nil
-
-			if GetTableSize(self.persistdata[server_id].hidename) <= 1 then -- 1 for lastseen
-				self.persistdata[server_id] = nil
+		local hide = self.persistdata[server_id] == nil or not self.persistdata[server_id].hidename
+		if hide then
+			if self.persistdata[server_id] == nil then
+				self.persistdata[server_id] = {}
+				self.persistdata[server_id].lastseen = os.time()
 			end
 
+			self.persistdata[server_id].hidename = true
 			self.dirty = true
-		end
-	end
+		else
+			if self.persistdata[server_id] ~= nil and self.persistdata[server_id].hidename then
+				self.persistdata[server_id].hidename = nil
 
-	self:Save()
+				if GetTableSize(self.persistdata[server_id].hidename) <= 1 then -- 1 for lastseen
+					self.persistdata[server_id] = nil
+				end
+
+				self.dirty = true
+			end
+		end
+
+		local data = {}
+		data.target, data.status = GetServerNameAndDescription(server_data)
+		data.victory = hide
+		Stats.PushMetricsEvent("toggleservernamefilter", TheNet:GetUserID(), data)
+
+		self:Save()
+	end
 end
 
 function ServerPreferences:IsNameAndDescriptionHidden(server_data)
 	local server_id = MakeServerID(server_data)
-	return self.persistdata[server_id] ~= nil and self.persistdata[server_id].hidename
+	if server_data == nil then
+		ServerPreferences:UpdateProfanityFilteredServer()
+	end
+	return (self.persistdata[server_id] ~= nil and self.persistdata[server_id].hidename)
+		or self.profanityservers[server_id]
 end
 
 function ServerPreferences:RefreshLastSeen(server_list)
-
 	local time = os.time()
 	local dirty = false
 	for _, server in ipairs(server_list) do
@@ -64,6 +98,41 @@ function ServerPreferences:RefreshLastSeen(server_list)
 	end
 
 	self:Save()
+end
+
+function ServerPreferences:ClearProfanityFilteredServers()
+	self.profanityservers = {}
+end
+
+function ServerPreferences:UpdateProfanityFilteredServers(servers)
+	if Profile:GetProfanityFilterServerNamesEnabled() then
+		local local_user_id = TheNet:GetUserID()
+		for i, server in ipairs(servers) do
+			local server_id = MakeServerID(server)
+			if self.profanityservers[server_id] == nil and (ProfanityFilter:HasProfanity(server.name) or ProfanityFilter:HasProfanity(server.description)) then
+				self.profanityservers[server_id] = not server.owner
+			end
+		end
+	end
+end
+
+function ServerPreferences:UpdateProfanityFilteredServer(server)
+	if Profile:GetProfanityFilterServerNamesEnabled() then
+		local local_user_id = TheNet:GetUserID()
+		if server ~= nil then
+			local server_id = MakeServerID(server)
+			if self.profanityservers[server_id] == nil and (ProfanityFilter:HasProfanity(server.name) or ProfanityFilter:HasProfanity(server.description)) then
+				self.profanityservers[server_id] = not server.owner
+			end
+		else
+			local name = TheNet:GetServerName()
+			local server_id = MakeServerID(name)
+			if self.profanityservers[server_id] == nil and (ProfanityFilter:HasProfanity(name) or ProfanityFilter:HasProfanity(TheNet:GetServerDescription())) then
+				self.profanityservers[server_id] = not TheNet:GetIsServerOwner(local_user_id)
+			end
+		end
+
+	end
 end
 
 ----------------------------
@@ -96,10 +165,10 @@ end
 
 function ServerPreferences:Load(callback)
     TheSim:GetPersistentString(self:GetSaveName(),
-        function(load_success, str) 
+        function(load_success, str)
         	-- Can ignore the successfulness cause we check the string
 			self:OnLoad( str, callback )
-        end, false)    
+        end, false)
 end
 
 function ServerPreferences:OnLoad(str, callback)

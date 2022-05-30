@@ -27,8 +27,8 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
 	skeleton_data.hand_skin = ""
 	skeleton_data.legs_skin = ""
 	skeleton_data.feet_skin = ""
-	
-	
+
+
     self.dressup = self.proot:AddChild(DressupPanel(self, profile, skeleton_data))
     self.dressup:SetPosition(0, 30)
     self.dressup:SetCurrentCharacter(self.owner_scarecrow.prefab)
@@ -38,7 +38,7 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
 
     local offline = not TheNet:IsOnlineMode()
 
-    if offline then 
+    if offline then
     	buttons = {{text = STRINGS.UI.POPUPDIALOG.OK, cb = function() self:Close(false) end}}
     else
     	buttons = {	{text = STRINGS.UI.WARDROBE_POPUP.CANCEL, cb = function() self:Cancel() end},
@@ -47,12 +47,12 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
     end
 
     self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-    self.menu:SetPosition(-104, -280, 0) 
+    self.menu:SetPosition(-104, -280, 0)
 
-    if offline then 
+    if offline then
 		self.menu:SetPosition(0, -280, 0)
     end
-   
+
 	self.default_focus = self.menu
 
 	self.dressup:ReverseFocus()
@@ -61,9 +61,12 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
 	TheCamera:PushScreenHOffset(self, SCREEN_OFFSET)
 
     self:DoFocusHookups()
+
+    SetAutopaused(true)
 end)
 
 function ScarecrowClothingPopupScreen:OnDestroy()
+    SetAutopaused(false)
 	TheCamera:PopScreenHOffset(self)
     self._base.OnDestroy(self)
 end
@@ -82,17 +85,17 @@ end
 
 function ScarecrowClothingPopupScreen:OnControl(control, down)
     if ScarecrowClothingPopupScreen._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
+
+    if control == CONTROL_CANCEL and not down then
         self:Cancel()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
     end
-    
+
     if down then
 	 	if control == CONTROL_PREVVALUE then  -- r-stick left
 	    	self.dressup:ScrollBack(control)
-			return true 
+			return true
 		elseif control == CONTROL_NEXTVALUE then -- r-stick right
 			self.dressup:ScrollFwd(control)
 			return true
@@ -118,17 +121,13 @@ end
 function ScarecrowClothingPopupScreen:Close(apply_skins)
 	-- Gets the current skin names (and sets them as the character default)
 	local skins = self.dressup:GetSkinsForGameStart()
-    
+
     local data = {}
     if TheNet:IsOnlineMode() and apply_skins then
 		data = skins
     end
 
-    if not TheWorld.ismastersim then
-        SendRPCToServer(RPC.CloseWardrobe, data.base, data.body, data.hand, data.legs, data.feet)
-    else
-        self.doer:PushEvent("ms_closewardrobe", data)
-    end
+    POPUPS.WARDROBE:Close(self.doer, data.base, data.body, data.hand, data.legs, data.feet)
 
     self.dressup:OnClose()
     TheFrontEnd:PopScreen(self)

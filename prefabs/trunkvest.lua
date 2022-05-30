@@ -47,6 +47,8 @@ local function create_common(bankandbuild, iswaterproofer)
         return inst
     end
 
+    inst:AddComponent("tradable")
+
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")

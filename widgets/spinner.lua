@@ -50,11 +50,14 @@ local default_height = 40
 local Spinner = Class(Widget, function( self, options, width, height, textinfo, editable, atlas, textures, lean, textwidth, textheight)
     Widget._ctor(self, "SPINNER")
 
-    
+
     self.width = width or default_width
     self.height = height or default_height
 
     self.lean = lean
+
+	self.control_prev = CONTROL_PREVVALUE
+	self.control_next = CONTROL_NEXTVALUE
 
     self.atlas = atlas or spinner_atlas
     if self.lean then
@@ -186,7 +189,7 @@ function Spinner:OnFocusMove(dir, down)
 			self:UpdateBG()
 		end
 	end
-	
+
 end
 
 function Spinner:OnGainFocus()
@@ -199,33 +202,40 @@ function Spinner:GetHelpText()
 
 	local t = {}
 	if self.leftimage.enabled then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PREVVALUE, false, false) .. " " .. STRINGS.UI.HELP.PREVVALUE)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, self.control_prev, false, false) .. " " .. STRINGS.UI.HELP.PREVVALUE)
 	end
 
 	if self.rightimage.enabled then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_NEXTVALUE, false, false) .. " " .. STRINGS.UI.HELP.NEXTVALUE)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, self.control_next, false, false) .. " " .. STRINGS.UI.HELP.NEXTVALUE)
 	end
-	
+
 	return table.concat(t, "  ")
 end
 
--- This function allows display of hint text next to the arrow buttons 
+-- This function allows display of hint text next to the arrow buttons
 -- TODO: only tested with XBOX one controller. Test with other controller types to make sure there's room for the symbols.
-function Spinner:AddControllerHints()
-	if TheInput:ControllerAttached() then 
-		local w = self.rightimage:GetSize() * self.arrow_scale
+function Spinner:AddControllerHints(control_prev, control_next, mute_negative_sound)
+	self.control_prev = control_prev or self.control_prev
+	self.control_next = control_next or self.control_next
+	self.mute_negative_sound = mute_negative_sound
 
-		self.left_hint = self:AddChild( Text( BODYTEXTFONT, 26 ) )
-		self.left_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PREVVALUE))
-		self.left_hint:SetPosition( -self.width/2 + w/2 + 32, 0, 0 )
+	local w = self.rightimage:GetSize() * self.arrow_scale
 
-		self.right_hint = self:AddChild( Text( BODYTEXTFONT, 26 ) )
-		self.right_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_NEXTVALUE))
-		self.right_hint:SetPosition( self.width/2 - w/2 - 27, 0, 0 )
-		
+	self.left_hint = self:AddChild( Text( BODYTEXTFONT, 26 ) )
+	self.left_hint:SetPosition( -self.width/2 + w/2 + 32, 0, 0 )
 
-		self.hints_enabled = true
+	self.right_hint = self:AddChild( Text( BODYTEXTFONT, 26 ) )
+	self.right_hint:SetPosition( self.width/2 - w/2 - 27, 0, 0 )
+
+	if TheInput:ControllerAttached() then
+		self.right_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), self.control_next))
+		self.left_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), self.control_prev))
+	else
+		self.left_hint:Hide()
+		self.right_hint:Hide()
 	end
+
+	self.hints_enabled = true
 end
 
 
@@ -239,10 +249,10 @@ function Spinner:OnControl(control, down)
 	if Spinner._base.OnControl(self, control, down) then return true end
 
 	if down then
-		if control == CONTROL_PREVVALUE then
+		if control == self.control_prev then
 			self:Prev()
 			return true
-		elseif control == CONTROL_NEXTVALUE then
+		elseif control == self.control_next then
 			self:Next()
 			return true
 		end
@@ -276,7 +286,7 @@ function Spinner:OnControl(control, down)
 end
 
 function Spinner:UpdateBG()
-	if self.changing then 
+	if self.changing then
 		if self.lean then
 			self.background:SetTint(1,1,1,1)
 		else
@@ -293,6 +303,31 @@ function Spinner:UpdateBG()
 			self.background:SetTint(1,1,1,0)
 		else
 			self.background:SetImages(self.atlas, self.textures.bg_end, self.textures.bg_middle)
+		end
+	end
+	if self.changing and self.changing_scale then
+		if self.lean then
+			self.background:ScaleToSize(unpack(self.changing_scale))
+		else
+			self.background:Flow(self.changing_scale[1], self.changing_scale[2], true)
+		end
+	elseif self.focus and self.focus_scale then
+		if self.lean then
+			self.background:ScaleToSize(unpack(self.focus_scale))
+		else
+			self.background:Flow(self.focus_scale[1], self.focus_scale[2], true)
+		end
+	elseif self.scale then
+		if self.lean then
+			self.background:ScaleToSize(unpack(self.scale))
+		else
+			self.background:Flow(self.scale[1], self.scale[2], true)
+		end
+	else
+		if self.lean then
+			self.background:ScaleToSize(self.width, self.height)
+		else
+			self.background:Flow(self.width, self.height, true)
 		end
 	end
 end
@@ -315,7 +350,7 @@ function Spinner:Disable()
 	self.leftimage:Disable()
 	self.rightimage:Disable()
 
-	if self.hints_enabled then 
+	if self.hints_enabled then
 		self.left_hint:Hide()
 		self.right_hint:Hide()
 	end
@@ -371,7 +406,7 @@ function Spinner:Next(noclicksound)
 		self:OnNext()
 		self:SetSelectedIndex(newSelection)
 		self:Changed(oldSelection)
-	else
+	elseif not self.mute_negative_sound then
 		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
 	end
 end
@@ -396,7 +431,7 @@ function Spinner:Prev(noclicksound)
 		self:OnPrev()
 		self:SetSelectedIndex(newSelection)
 		self:Changed(oldSelection)
-	else
+	elseif not self.mute_negative_sound then
 		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
 	end
 end
@@ -410,7 +445,7 @@ function Spinner:GetSelectedIndex()
 end
 
 function Spinner:GetSelectedText()
-	if self.options[self.selectedIndex] and self.options[self.selectedIndex].text then 
+	if self.options[self.selectedIndex] and self.options[self.selectedIndex].text then
 		return self.options[ self.selectedIndex ].text, self.options[self.selectedIndex].colour
 	else
 		return ""
@@ -428,31 +463,34 @@ end
 function Spinner:SetSelectedIndex( idx )
 	self.updating = true
 	self.selectedIndex = math.max(self:MinIndex(), math.min(self:MaxIndex(), idx))
-	
-	local selected_text, selected_colour = self:GetSelectedText()	
+
+	local selected_text, selected_colour = self:GetSelectedText()
 	self:UpdateText( selected_text )
-	if selected_colour then 
+	if selected_colour then
 		self:SetTextColour( unpack(selected_colour) )
 	else
 		self:SetTextColour( unpack(self.textcolour) )
 	end
 
-	if self.options[ self.selectedIndex ] ~= nil then 
+	if self.options[ self.selectedIndex ] ~= nil then
 		local selected_image = self:GetSelectedImage()
 		if selected_image ~= nil then
 			self.fgimage:SetTexture( unpack(selected_image) )
 		end
 	end
-	
+
 	self:UpdateState()
 	self.updating = false
 end
 
-function Spinner:SetSelected( data )
-	
+function Spinner:SetSelected(data)
 	for k,v in pairs(self.options) do
 		if v.data == data then
-			self:SetSelectedIndex(k)			
+			local oldSelection = self.selectedIndex
+			self:SetSelectedIndex(k)
+			if self.selectedIndex ~= oldSelection then
+				self:Changed(oldSelection)
+			end
 			return
 		end
 	end
@@ -460,12 +498,16 @@ end
 
 function Spinner:UpdateText( msg )
 	local _msg = tostring(msg) --Bogus data in spinners was using numbers as strings. The previous function here, SetString handled that, but SetTruncatedString does not.
-	
-	local width = self.textsize.width-45 --offset for space for the spinner buttons
+
+	local width = self.textsize.width - 50 --offset for space for the spinner buttons
 	local chars = width / 4 --Note(Peter): 4 is roughly the right size of a miniumum character, no guarantees!
 
 	if chars > 5 and width > 10 then --Note(Peter): Quick hack fix to address tiny spinners in mods.
-		self.text:SetTruncatedString(_msg, width, chars, true)
+		if self.auto_shrink_text then
+			self.text:SetMultilineTruncatedString(_msg, 1, width, nil, nil, true)
+		else
+			self.text:SetTruncatedString(_msg, width, chars, true)
+		end
 	else
 		self.text:SetString(_msg)
 	end
@@ -511,26 +553,42 @@ function Spinner:SetWrapEnabled(enable)
 	self:UpdateState()
 end
 
+function Spinner:RefreshControllers(controller_mode)
+	if controller_mode and self.hints_enabled then
+		self.left_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), self.control_prev))
+		self.right_hint:SetString(TheInput:GetLocalizedControl(TheInput:GetControllerID(), self.control_next))
+		self:UpdateState()
+	else
+		self.left_hint:Hide()
+		self.right_hint:Hide()
+	end
+end
+
 function Spinner:UpdateState()
 	if self.enabled then
 		self.leftimage:Enable()
 		self.rightimage:Enable()
 
-		if self.hints_enabled then 
-			self.left_hint:Show()
-			self.right_hint:Show()
+		if self.hints_enabled then
+			if TheInput:ControllerAttached() then
+				self.left_hint:Show()
+				self.right_hint:Show()
+			else
+				self.left_hint:Hide()
+				self.right_hint:Hide()
+			end
 		end
 
 		if not self.enableWrap then
 			if self.selectedIndex == self:MinIndex() then
 				self.leftimage:Disable()
-				if self.hints_enabled then 
+				if self.hints_enabled then
 					self.left_hint:Hide()
 				end
 			end
 			if self.selectedIndex == self:MaxIndex() then
 				self.rightimage:Disable()
-				if self.hints_enabled then 
+				if self.hints_enabled then
 					self.right_hint:Hide()
 				end
 			end
@@ -539,7 +597,7 @@ function Spinner:UpdateState()
 		self.leftimage:Disable()
 		self.rightimage:Disable()
 
-		if self.hints_enabled then 
+		if self.hints_enabled then
 			self.left_hint:Hide()
 			self.right_hint:Hide()
 		end

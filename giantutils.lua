@@ -5,9 +5,9 @@ local WANDER_AWAY_DIST = 100
 function GetWanderAwayPoint(pt)
     local theta = math.random() * 2 * PI
     local radius = WANDER_AWAY_DIST
-    
+
     local ground = TheWorld
-    
+
     -- Walk the circle trying to find a valid spawn point
     local steps = 12
     for i = 1, 12 do

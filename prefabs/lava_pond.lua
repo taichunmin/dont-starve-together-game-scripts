@@ -165,9 +165,10 @@ local function fn()
 
     inst:AddTag("lava")
     inst:AddTag("antlion_sinkhole_blocker")
-
+    inst:AddTag("birdblocker")
     --cooker (from cooker component) added to pristine state for optimization
     inst:AddTag("cooker")
+
 
     inst.Light:Enable(true)
     inst.Light:SetRadius(1.5)

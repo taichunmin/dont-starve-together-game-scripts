@@ -4,20 +4,9 @@ local assets =
     Asset("ANIM", "anim/boat_plank_build.zip"),
 }
 
-local item_assets =
-{
-    Asset("ANIM", "anim/boat_plank.zip"),
-    Asset("INV_IMAGE", "anchor_item")
-}
-
 local prefabs =
 {
     "collapse_small",
-}
-
-local item_prefabs =
-{
-
 }
 
 local function on_hammered(inst, hammerer)
@@ -33,7 +22,7 @@ local function on_hammered(inst, hammerer)
 end
 
 local function fn()
-    
+
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -45,7 +34,7 @@ local function fn()
     inst:SetStateGraph("SGwalkingplank")
 
     inst.AnimState:SetBank("plank")
-    inst.AnimState:SetBuild("boat_plank_build")  
+    inst.AnimState:SetBuild("boat_plank_build")
     inst.AnimState:SetSortOrder(ANIM_SORT_ORDER.OCEAN_BOAT)
     inst.AnimState:SetFinalOffset(2)
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
@@ -53,6 +42,8 @@ local function fn()
 
     -- from walkingplank component
     inst:AddTag("walkingplank")
+
+    inst:AddTag("ignorewalkableplatforms") -- because it is a child of the boat
 
     inst.entity:SetPristine()
 
@@ -69,12 +60,6 @@ local function fn()
 
     -- The loot that this drops is generated from the uncraftable recipe; see recipes.lua for the items.
     inst:AddComponent("lootdropper")
-    --[[
-    inst:AddComponent("workable")
-    inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
-    inst.components.workable:SetWorkLeft(3)
-    inst.components.workable:SetOnFinishCallback(on_hammered)
-    ]]--
 
     return inst
 end
@@ -91,46 +76,5 @@ local function ondeploy(inst, pt, deployer)
     end
 end
 
-local function itemfn()
-    local inst = CreateEntity()
 
-    inst.entity:AddTransform()
-    inst.entity:AddAnimState()
-    inst.entity:AddNetwork()
-
-    inst:AddTag("boat_accessory")
-
-    MakeInventoryPhysics(inst)
-
-    inst.AnimState:SetBank("seafarer_anchor")
-    inst.AnimState:SetBuild("seafarer_anchor")
-    inst.AnimState:PlayAnimation("idle")
-
-    inst.entity:SetPristine()
-    if not TheWorld.ismastersim then
-        return inst
-    end
-
-    MakeSmallBurnable(inst)
-    MakeSmallPropagator(inst)
-
-    inst:AddComponent("inspectable")
-    inst.components.inspectable.nameoverride = "anchor"
-
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
-
-    inst:AddComponent("deployable")
-    inst.components.deployable.ondeploy = ondeploy
-
-    inst:AddComponent("fuel")
-    inst.components.fuel.fuelvalue = TUNING.LARGE_FUEL
-
-    MakeHauntableLaunch(inst)
-
-    return inst
-end
-
-return Prefab("walkingplank", fn, assets, prefabs),
-       Prefab("walkingplank_item", itemfn, item_assets, item_prefabs),
-       MakePlacer("walkingplank_item_placer", "boat_anchor", "boat_anchor", "idle")
+return Prefab("walkingplank", fn, assets, prefabs)

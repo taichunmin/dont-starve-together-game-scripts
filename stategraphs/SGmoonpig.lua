@@ -130,7 +130,7 @@ local states =
         name = "run_start",
         tags = { "moving", "running", "canrotate" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.components.locomotor:RunForward()
             inst.AnimState:PlayAnimation("were_run_pre")
         end,
@@ -174,7 +174,7 @@ local states =
         end,
 
         events =
-        {   
+        {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
     },
@@ -187,6 +187,7 @@ local states =
             inst.SoundEmitter:PlaySound("dontstarve/creatures/werepig/hurt")
             inst.AnimState:PlayAnimation("hit")
             inst.Physics:Stop()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         events =

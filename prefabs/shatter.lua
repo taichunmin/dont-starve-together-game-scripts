@@ -28,7 +28,7 @@ local function PlayShatterAnim(proxy)
 
     inst.AnimState:SetBank("frozen_shatter")
     inst.AnimState:SetBuild("frozen_shatter")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.SoundEmitter:PlaySound("dontstarve/common/break_iceblock")
 

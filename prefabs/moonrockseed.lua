@@ -20,9 +20,12 @@ local prefabs_icon =
     "globalmapicon",
 }
 
+local UPGRADED_LIGHT_RADIUS = 2.5
+
 local function updatelight(inst)
     inst._light = inst._light < inst._targetlight and math.min(inst._targetlight, inst._light + .04) or math.max(inst._targetlight, inst._light - .02)
     inst.AnimState:SetLightOverride(inst._light)
+	inst.Light:SetRadius(UPGRADED_LIGHT_RADIUS * inst._light / inst._targetlight)
     if inst._light == inst._targetlight then
         inst._task:Cancel()
         inst._task = nil
@@ -39,6 +42,7 @@ local function fadelight(inst, target, instant)
             end
             inst._light = target
             inst.AnimState:SetLightOverride(target)
+			inst.Light:SetRadius(UPGRADED_LIGHT_RADIUS)
         elseif inst._task == nil then
             inst._task = inst:DoPeriodicTask(FRAMES, updatelight)
         end
@@ -99,6 +103,9 @@ local function onturnon(inst)
     canceldropsounds(inst)
     inst.AnimState:PlayAnimation("proximity_pre")
     inst.AnimState:PushAnimation("proximity_loop", true)
+	if inst._upgraded then
+		inst.Light:Enable(true)
+	end
     fadelight(inst, .15, false)
     if not inst.SoundEmitter:PlayingSound("idlesound") then
         inst.SoundEmitter:PlaySound("dontstarve/common/together/celestial_orb/idle_LP", "idlesound")
@@ -108,6 +115,8 @@ end
 local function onturnoff(inst)
     canceldropsounds(inst)
     inst.SoundEmitter:KillSound("idlesound")
+	inst.Light:Enable(false)
+	inst.Light:SetRadius(0)
     if not inst.components.inventoryitem:IsHeld() then
         inst.AnimState:PlayAnimation("proximity_pst")
         inst.AnimState:PushAnimation("idle", false)
@@ -187,7 +196,7 @@ local function OnFX(inst)
         fx.AnimState:SetBank("moonrock_seed")
         fx.AnimState:SetBuild("moonrock_seed")
         fx.AnimState:PlayAnimation("use")
-        fx.AnimState:SetFinalOffset(-1)
+        fx.AnimState:SetFinalOffset(3)
 
         fx:ListenForEvent("animover", fx.Remove)
     end
@@ -208,12 +217,33 @@ local function OnRemoveEntity(inst)
     end
 end
 
+local function ondropped(inst)
+	inst.Light:Enable(false)
+end
+
+local function DoUpgrade(inst)
+	inst._upgraded = true
+    inst.components.prototyper.trees = TUNING.PROTOTYPER_TREES.MOONORB_UPGRADED
+end
+
+local function OnSave(inst, data)
+    data._upgraded = inst._upgraded
+end
+
+local function OnLoad(inst, data)
+    if data ~= nil and data._upgraded ~= nil then
+		inst:DoUpgrade()
+    end
+end
+
+
 local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
+    inst.entity:AddLight()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
@@ -226,6 +256,12 @@ local function fn()
     inst:AddTag("nonpotatable")
 
     inst._fx = net_event(inst.GUID, "moonrockseed._fx")
+
+    inst.Light:SetFalloff(1.15)
+    inst.Light:SetIntensity(.7)
+    inst.Light:SetRadius(0)
+    inst.Light:SetColour(150 / 255, 180 / 255, 200 / 255)
+    inst.Light:Enable(false)
 
     if not TheNet:IsDedicated() then
         inst:ListenForEvent("moonrockseed._fx", OnFX)
@@ -256,6 +292,7 @@ local function fn()
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem.nobounce = true
     inst.components.inventoryitem:SetSinks(true)
+    inst.components.inventoryitem:SetOnDroppedFn(ondropped)
 
     inst:AddComponent("prototyper")
     inst.components.prototyper.onturnon = onturnon
@@ -272,6 +309,11 @@ local function fn()
 
     inst.OnSpawned = OnSpawned
     inst.OnRemoveEntity = OnRemoveEntity
+
+	inst.DoUpgrade = DoUpgrade
+
+	inst.OnSave = OnSave
+	inst.OnLoad = OnLoad
 
     return inst
 end

@@ -1,42 +1,59 @@
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local ScrollableList = require "widgets/scrollablelist"
+local LobbyChatLine = require "widgets/redux/lobbychatline"
 
 require("constants")
 
 local MAX_MESSAGES = 20
 
 
-local LobbyChatQueue = Class(Widget, function(self, owner, chatbox, onReceiveNewMessage, nextWidget)
+local LobbyChatQueue = Class(Widget, function(self, chatbox, onReceiveNewMessage, nextWidget)
     Widget._ctor(self, "LobbyChatQueue")
 
-    self.owner = owner
-
-    self.list_items = {}
-
-    self.chat_name_font = CHATFONT
-    self.chat_name_size = 20
-    self.chat_msg_font = CHATFONT
-    self.chat_msg_size = 20
-
     self.chatbox = chatbox
-
     self.new_message_fn = onReceiveNewMessage
-
     self.nextWidget = nextWidget
 
-    -- MessageConstructor
-    self.line_xpos = -85
-    self.username_maxwidth = 120
-    self.username_padding = 3
-    self.line_maxwidth = 235
-    self.line_maxchars = 50
-    self.multiline_maxrows = 8
-    self.multiline_indent = 10
+    self.list_widgets = {}
 
-    self:StartUpdating()
+    self.message_count = 0
+
+    self.chat_font = CHATFONT
+    self.chat_size = 20
+
+    self.chat_listener = function(chat_message)
+        self:PushMessage(chat_message)
+    end
+
+    ChatHistory:AddChatHistoryListener(self.chat_listener)
+
+    self:Rebuild()
 end)
 
+function LobbyChatQueue:Rebuild()
+    for i, v in ipairs(self.list_widgets) do
+        v:Kill()
+    end
+
+    self.list_widgets = {}
+
+    for i = ChatHistory.MAX_CHAT_HISTORY, 1, -1 do
+        local chat_message = ChatHistory:GetChatMessageAtIndex(i)
+        if chat_message then
+            self:PushMessage(chat_message, true)
+        end
+    end
+end
+
+function LobbyChatQueue:Kill()
+    LobbyChatQueue._base.Kill(self)
+    ChatHistory:RemoveChatHistoryListener(self.chat_listener)
+	self.chat_listener = nil
+end
+
+--[[
+--leaving for posterity, would be broken with the changes to the UI.
 function LobbyChatQueue:DebugDraw_AddSection(dbui, panel)
     LobbyChatQueue._base.DebugDraw_AddSection(self, dbui, panel)
     local DebugPickers = require("dbui_no_package/debug_pickers")
@@ -86,79 +103,15 @@ function LobbyChatQueue:DebugDraw_AddSection(dbui, panel)
     end
     dbui.Unindent()
 end
+--]]
 
-function LobbyChatQueue:GetChatAlpha( current_time, chat_time )
-    return 1
-end
-
-function LobbyChatQueue:OnUpdate()
-end
-
---For ease of overriding in mods
-function LobbyChatQueue:GetDisplayName(name, prefab)
-    return name ~= "" and name or STRINGS.UI.SERVERADMINSCREEN.UNKNOWN_USER_NAME
-end
-
-function LobbyChatQueue:_MessageConstructor(data)
-    local group = Widget("lobbychat-group")
-    local username = data.username:match("^[^\n\v\f\r]*") or ""
-    group.user_widget = group:AddChild(Text(self.chat_name_font, self.chat_name_size, nil, data.colour))
-    group.user_widget:SetTruncatedString(username..":", self.username_maxwidth, 30, "..:")
-
-    local username_width = group.user_widget:GetRegionSize()
-    group.user_widget:SetPosition(self.line_xpos + username_width * .5, 0)
-
-    group.message = group:AddChild(Text(self.chat_msg_font, self.chat_msg_size, nil, UICOLOURS.EGGSHELL))
-    group.message:SetMultilineTruncatedString(data.message, self.multiline_maxrows, { self.line_maxwidth - username_width - self.username_padding, self.line_maxwidth - self.multiline_indent }, self.line_maxchars, true)
-
-    local lines = group.message:GetString():split("\n")
-    group.message:SetString(lines[1])
-
-    local message_width = group.message:GetRegionSize()
-    group.message:SetPosition(self.line_xpos + username_width + self.username_padding + message_width * .5, 0)
-
-    local list = { group }
-
-    for i = 2, #lines do
-        group = Widget("lobbychat-continuation")
-
-        group.message = group:AddChild(Text(self.chat_msg_font, self.chat_msg_size, nil, UICOLOURS.EGGSHELL))
-        group.message:SetString(lines[i])
-
-        message_width = group.message:GetRegionSize()
-        group.message:SetPosition(self.line_xpos + self.multiline_indent + message_width * .5, 0)
-
-        table.insert(list, group)
-    end
-
-    return list
-end
-
-function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
-    self.list_items[#self.list_items + 1] =
-    {
-        message = message,
-        colour = colour,
-        username = self:GetDisplayName(name, prefab),
-    }
-
-    local startidx = math.max(1, (#self.list_items - MAX_MESSAGES) + 1) -- older messages are dropped
-    local list_widgets = {}
-    for k,v in pairs(self.list_items) do 
-        if k >= startidx then 
-            local list = self:_MessageConstructor(v)
-            for k2,v2 in pairs(list) do 
-                table.insert(list_widgets, v2)
-            end
-        end
-    end
-
+function LobbyChatQueue:PushMessage(chat_message, silent)
     if not self.scroll_list then
-        self.scroll_list = self:AddChild(ScrollableList(list_widgets, -- items
+        self.scroll_list = self:AddChild(ScrollableList(self.list_widgets, -- items
                 175,                                                  -- listwidth
                 280,                                                  -- listheight
                 20,                                                   -- itemheight
-                10,                                                   -- itempadding
+                0,                                                   -- itempadding
                 nil,                                                  -- updatefn
                 nil,                                                  -- widgetstoupdate
                 nil,                                                  -- widgetXOffset
@@ -170,32 +123,62 @@ function LobbyChatQueue:OnMessageReceived(name, prefab, message, colour)
                 "GOLD"                                                -- scrollbar_style
             ))
 
+        self.scroll_list:SetScissor(-180, -147.5, 360, 295)
         self.scroll_list:SetPosition(100, -45)
-    else
-        self.scroll_list:SetList(list_widgets)
+
+        self:DoFocusHookups()
+    end
+
+    local lobby_chat_line = self.scroll_list:AddChild(LobbyChatLine(self.chat_font, chat_message.type, chat_message.message, chat_message.m_colour, chat_message.sender, chat_message.s_colour, chat_message.icondata))
+    table.insert(self.list_widgets, lobby_chat_line)
+
+    for i = 1, lobby_chat_line:GetExtraLineCount() do
+        lobby_chat_line:IncrementShowCount()
+        local continuation = self.scroll_list:AddChild(Widget("LobbyChatLine-continuation"))
+        continuation.fake_message = true
+        continuation.OnShow = function(_, was_hidden)
+            if was_hidden then
+                lobby_chat_line:IncrementShowCount()
+            end
+        end
+        continuation.OnHide = function(_, was_visible)
+            if was_visible then
+                lobby_chat_line:DecrementShowCount()
+            end
+        end
+        table.insert(self.list_widgets, continuation)
+    end
+
+    self.message_count = self.message_count + 1
+
+    while self.message_count > ChatHistory.MAX_CHAT_HISTORY do
+        table.remove(self.list_widgets, 1):Kill()
+        while self.list_widgets[1].fake_message do
+            table.remove(self.list_widgets, 1):Kill()
+        end
+
+        self.message_count = self.message_count - 1
+    end
+
+    local is_at_end = self.scroll_list:IsAtEnd()
+
+    self.scroll_list:SetList(self.list_widgets, true, nil, true)
+
+    if is_at_end then
         self.scroll_list:ScrollToEnd()
     end
 
-    if self.new_message_fn then
+    if not silent and self.new_message_fn then
         self.new_message_fn()
     end
-
-    self:DoFocusHookups()
 end
 
 function LobbyChatQueue:DoFocusHookups()
-    if self.scroll_list then 
+    if self.scroll_list then
         self.default_focus = self.scroll_list
         self.scroll_list:SetFocusChangeDir(MOVE_RIGHT, self.nextWidget)
     else
         self:SetFocusChangeDir(MOVE_RIGHT, self.nextWidget)
-    end
-
-end
-
-function LobbyChatQueue:ScrollToEnd()
-    if self.scroll_list then
-        self.scroll_list:ScrollToEnd()
     end
 end
 
@@ -220,11 +203,11 @@ function LobbyChatQueue:GetHelpText()
     local t = {}
 
     if self.scroll_list and self.scroll_list.scroll_bar and self.scroll_list.scroll_bar:IsVisible() then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)   
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK, false, false).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD, false, false).. " " .. STRINGS.UI.HELP.SCROLL)
     end
 
     if self.chatbox then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.LOBBYSCREEN.CHAT)   
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. STRINGS.UI.LOBBYSCREEN.CHAT)
     end
 
     return table.concat(t, "  ")

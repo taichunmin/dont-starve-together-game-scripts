@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
     ActionHandler(ACTIONS.GOHOME, "action"),
 }
@@ -41,8 +41,7 @@ local events =
 
 local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle" },
 
@@ -65,8 +64,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "spawn",
         tags = { "busy", "hidden", "noattack" },
 
@@ -88,8 +86,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "ground_idle",
         tags = { "idle", "hidden", "noattack" },
 
@@ -106,8 +103,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "enter",
         tags = { "busy", "hidden", "noattack" },
 
@@ -129,8 +125,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "exit_pre",
         tags = { "busy", "hidden", "noattack", "exit" },
 
@@ -148,8 +143,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "exit",
         tags = { "busy", "hidden", "noattack", "exit" },
 
@@ -176,8 +170,7 @@ local states =
         },
     },
 
-    State
-    {
+    State{
         name = "attack_leap",
         tags = { "attack", "canrotate", "busy", "jumping" },
 

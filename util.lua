@@ -20,9 +20,9 @@ end
 function DebugSpawn(prefab)
     if TheSim ~= nil and TheInput ~= nil then
         TheSim:LoadPrefabs({ prefab })
-        if Prefabs[prefab] ~= nil and not Prefabs[prefab].is_skin then
+        if Prefabs[prefab] ~= nil and not Prefabs[prefab].is_skin and Prefabs[prefab].fn then
 			local inst = SpawnPrefab(prefab)
-			if inst ~= nil then
+			if inst ~= nil and inst.Transform then
 				inst.Transform:SetPosition(ConsoleWorldPosition():Get())
 				return inst
 			end
@@ -112,7 +112,7 @@ end
 function string.rfind(s, pattern, init, plain)
     local matches = s:findall(pattern, init, plain)
     if #matches > 0 then
-        return table.unpack(matches[#matches])
+        return unpack(matches[#matches])
     end
     return nil
 end
@@ -133,7 +133,7 @@ end
 
 function table.contains(table, element)
     if table == nil then return false end
-    
+
     for _, value in pairs(table) do
         if value == element then
           return true
@@ -167,11 +167,11 @@ end
 function table.reverse(tab)
     local size = #tab
     local newTable = {}
- 
+
     for i,v in ipairs(tab) do
         newTable[size-i+1] = v
     end
- 
+
     return newTable
 end
 
@@ -186,8 +186,7 @@ end
 function table.removearrayvalue(t, lookup_value)
     for i, v in ipairs(t) do
         if v == lookup_value then
-            table.remove(t, i)
-            return v
+            return table.remove(t, i)
         end
     end
 end
@@ -282,7 +281,7 @@ end
 -- This is actually GetRandomItemWithKey
 function GetRandomItemWithIndex(choices)
     local choice = math.random(GetTableSize(choices)) -1
-    
+
     local idx = nil
     local item = nil
 
@@ -316,12 +315,23 @@ function PickSomeWithDups(num, choices)
     local ret = {}
     for i=1,num do
         local choice = math.random(#l_choices)
-        table.insert(ret, l_choices[choice])       
+        table.insert(ret, l_choices[choice])
     end
     return ret
 end
 
--- concatenate two array-style tables
+-- Appends array-style tables to the first one passed in
+function ConcatArrays(ret, ...)
+	for i,array in ipairs({...}) do
+		for j,val in ipairs(array) do
+			table.insert(ret, val)
+		end
+	end
+	return ret
+end
+
+
+-- concatenate two or more array-style tables
 function JoinArrays(...)
 	local ret = {}
 	for i,array in ipairs({...}) do
@@ -498,7 +508,7 @@ end
 
 function GetRandomKey(choices)
  	local choice = math.random(GetTableSize(choices)) -1
- 	
+
  	local picked = nil
  	for k,v in pairs(choices) do
  		picked = k
@@ -525,7 +535,7 @@ function distsq(v1, v2, v3, v4)
 
     assert(v1, "Something is wrong: v1 is nil stale component reference?")
     assert(v2, "Something is wrong: v2 is nil stale component reference?")
-    
+
     --special case for 2dvects passed in as numbers
     if v4 and v3 and v2 and v1 then
         local dx = v1-v3
@@ -541,48 +551,80 @@ end
 
 local memoizedFilePaths = {}
 
--- look in package loaders to find the file from the root directories
--- this will look first in the mods and then in the data directory
-function resolvefilepath( filepath, force_path_search )
-    if memoizedFilePaths[filepath] then
-        return memoizedFilePaths[filepath]
-    end
-    local resolved = softresolvefilepath(filepath, force_path_search)
-    assert(resolved ~= nil, "Could not find an asset matching "..filepath.." in any of the search paths.")
-    memoizedFilePaths[filepath] = resolved
-   return resolved
+function GetMemoizedFilePaths()
+    return ZipAndEncodeSaveData(memoizedFilePaths)
+end
+function SetMemoizedFilePaths(memoized_file_paths)
+    memoizedFilePaths = DecodeAndUnzipSaveData(memoized_file_paths)
 end
 
-function softresolvefilepath(filepath, force_path_search)
+-- look in package loaders to find the file from the root directories
+-- this will look first in the mods and then in the data directory
+local function softresolvefilepath_internal(filepath, force_path_search, search_first_path)
     force_path_search = force_path_search or false
 
 	if IsConsole() and not force_path_search then
 		return filepath -- it's already absolute, so just send it back
 	end
 
-	-- on PC platforms, search all the possible paths
+	--on PC platforms, search all the possible paths
 
-	-- mod folders don't have "data" in them, so we strip that off if necessary. It will
-	-- be added back on as one of the search paths.
-	local filepath = string.gsub(filepath, "^/", "")
+	--mod folders don't have "data" in them, so we strip that off if necessary. It will
+	--be added back on as one of the search paths.
+	filepath = string.gsub(filepath, "^/", "")
 
-	local searchpaths = package.path
-    for path in string.gmatch(searchpaths, "([^;]+)") do
-        local filename = string.gsub(path, "scripts\\%?%.lua", filepath) -- why is this not string.gsub(path, "%?", modulepath) like in worldgen_main.lua?!?
-        filename = string.gsub(filename, "\\", "/")
-		--print("looking for: "..filename.." ("..filepath..")")
-		if not kleifileexists or kleifileexists(filename) then
-			--print("found it! "..filename)
+    --sometimes from context we can know the most likely path for an asset, this can result in less time spent searching the tons of mod search paths.
+    if search_first_path then
+        local filename = search_first_path..filepath
+        if kleifileexists(filename) then
             return filename
         end
     end
-	-- as a last resort see if the file is an already correct path (incase this asset has already been processed)
-	if not kleifileexists or kleifileexists(filepath) then
-		--print("found it in it's actual path! "..filepath)
+
+	local searchpaths = package.assetpath
+    for i, pathdata in ipairs_reverse(searchpaths) do
+        local filename = string.gsub(pathdata.path..filepath, "\\", "/")
+        if kleifileexists(filename, pathdata.manifest, filepath) then
+            return filename
+        end
+    end
+
+	--as a last resort see if the file is an already correct path (incase this asset has already been processed)
+	if kleifileexists(filepath) then
 		return filepath
 	end
 
 	return nil
+end
+
+local function resolvefilepath_internal(filepath, force_path_search, search_first_path)
+    local resolved = softresolvefilepath_internal(filepath, force_path_search, search_first_path)
+    memoizedFilePaths[filepath] = resolved
+    return resolved
+end
+
+--like resolvefilepath, but without the crash if it fails.
+function resolvefilepath_soft(filepath, force_path_search, search_first_path)
+    if memoizedFilePaths[filepath] then
+        return memoizedFilePaths[filepath]
+    end
+    return resolvefilepath_internal(filepath, force_path_search, search_first_path)
+end
+
+function resolvefilepath(filepath, force_path_search, search_first_path)
+    if memoizedFilePaths[filepath] then
+        return memoizedFilePaths[filepath]
+    end
+    local resolved = resolvefilepath_internal(filepath, force_path_search, search_first_path)
+    assert(resolved ~= nil, "Could not find an asset matching "..filepath.." in any of the search paths.")
+    return resolved
+end
+
+function softresolvefilepath(filepath, force_path_search, search_first_path)
+    if memoizedFilePaths[filepath] then
+        return memoizedFilePaths[filepath]
+    end
+    return softresolvefilepath_internal(filepath, force_path_search, search_first_path)
 end
 
 -------------------------MEMREPORT
@@ -625,7 +667,7 @@ local function count_all(f)
 end
 
 function isnan(x) return x ~= x end
-math.inf = 1/0 
+math.inf = 1/0
 function isinf(x) return x == math.inf or x == -math.inf end
 function isbadnumber(x) return isinf(x) or isnan(x) end
 
@@ -638,11 +680,11 @@ local function type_count()
 	count_all(enumerate)
 	return counts
 end
-   
+
 function mem_report()
     local tmp = {}
-    
-    for k,v in pairs(type_count()) do 
+
+    for k,v in pairs(type_count()) do
         table.insert(tmp, {num=v, name=k})
     end
     table.sort(tmp, function(a,b) return a.num > b.num end)
@@ -650,7 +692,7 @@ function mem_report()
     for k,v in ipairs(tmp) do
         table.insert(tmp2, tostring(v.num).."\t"..tostring(v.name))
     end
-    
+
     print (table.concat(tmp2,"\n"))
 end
 
@@ -669,22 +711,48 @@ function weighted_random_choice(choices)
     end
 
     local threshold = math.random() * weighted_total(choices)
-    
+
     local last_choice
     for choice, weight in pairs(choices) do
         threshold = threshold - weight
         if threshold <= 0 then return choice end
         last_choice = choice
     end
-    
+
     return last_choice
 end
- 
 
- 
+function weighted_random_choices(choices, num_choices)
+
+    local function weighted_total(choices)
+        local total = 0
+        for choice, weight in pairs(choices) do
+            total = total + weight
+        end
+        return total
+    end
+
+	local picks = {}
+	for i = 1, num_choices do
+	    local pick
+	    local threshold = math.random() * weighted_total(choices)
+		for choice, weight in pairs(choices) do
+			threshold = threshold - weight
+			pick = choice
+			if threshold <= 0 then 
+				break
+			end
+		end
+
+		table.insert(picks, pick)
+	end
+	
+    return picks
+end
+
  function PrintTable(tab)
     local str = {}
-    
+
     local function internal(tab, str, indent)
         for k,v in pairs(tab) do
             if type(v) == "table" then
@@ -695,7 +763,7 @@ end
             end
         end
     end
-    
+
     internal(tab, str, '')
     return table.concat(str, '')
 end
@@ -705,7 +773,7 @@ end
 local env = {  -- add functions you know are safe here
     loadstring=loadstring -- functions can get serialized to text, this is required to turn them back into functions
  }
- 
+
 
 function RunInEnvironment(fn, fnenv)
 	setfenv(fn, fnenv)
@@ -737,7 +805,33 @@ function RunInSandboxSafe(untrusted_code, error_handler)
 	return xpcall(untrusted_function, error_handler or function() end)
 end
 
-function GetTickForTime(target_time) 
+--same as above, but catches infinite loops
+function RunInSandboxSafeCatchInfiniteLoops(untrusted_code, error_handler)
+    if DEBUGGER_ENABLED then
+        --The debugger makes use of debug.sethook, so it conflicts with this function
+        --We'll rely on the debugger to catch infinite loops instead, so in this case, just fallback
+        return RunInSandboxSafe(untrusted_code, error_handler)
+    end
+
+	if untrusted_code:byte(1) == 27 then return nil, "binary bytecode prohibited" end
+	local untrusted_function, message = loadstring(untrusted_code)
+	if not untrusted_function then return nil, message end
+	setfenv(untrusted_function, {} )
+
+    local co = coroutine.create(function()
+        coroutine.yield(xpcall(untrusted_function, error_handler or function() end))
+    end)
+    debug.sethook(co, function() error("infinite loop detected") end, "", 20000)
+    --clear out all entries to the metatable of string, since that can be accessed even by doing local string = "" string.whatever()
+    local string_backup = deepcopy(string)
+    cleartable(string)
+    local result = {coroutine.resume(co)}
+    shallowcopy(string_backup, string)
+    debug.sethook(co)
+    return unpack(result, 2)
+end
+
+function GetTickForTime(target_time)
 	return math.floor( target_time/GetTickTime() )
 end
 
@@ -745,6 +839,7 @@ function GetTimeForTick(target_tick)
 	return target_tick*GetTickTime()
 end
 
+--only works for tasks created from scheduler, not from staticScheduler
 function GetTaskRemaining(task)
     return (task == nil and -1)
         or (task:NextTime() == nil and -1)
@@ -786,15 +881,15 @@ end
 
 function TrackedAssert(tracking_data, function_ptr, function_data)
 	--print("TrackedAssert", tracking_data, function_ptr, function_data)
-	_G['tracked_assert'] = function(pass, reason)		
-							--print("Tracked:Assert", tracking_data, pass, reason)	 								
+	_G['tracked_assert'] = function(pass, reason)
+							--print("Tracked:Assert", tracking_data, pass, reason)
 			 				assert(pass, tracking_data.." --> "..reason)
 			 			end
-			 							
+
 	local result = function_ptr( function_data )
-					
+
 	_G['tracked_assert'] = _G.assert
-	
+
 	return result
 end
 
@@ -830,6 +925,14 @@ function shallowcopy(orig, dest)
     return copy
 end
 
+function cleartable(object)
+    if type(object) == "table" then
+        for k, v in pairs(object) do
+            object[k] = nil
+        end
+    end
+end
+
 -- if next(table) == nil, then the table is empty
 function IsTableEmpty(t)
     -- https://stackoverflow.com/a/1252776/79125
@@ -845,7 +948,7 @@ function fastdump(value)
 
 	local function printtable(in_table)
 		table.insert(items, "{")
-		
+
 		for k,v in pairs(in_table) do
 			local t = type(v)
 			local comma = true
@@ -882,7 +985,7 @@ function fastdump(value)
 				table.insert(items, ",")
 			end
 		end
-		
+
 		table.insert(items, "}")
 		collectgarbage("step")
 	end
@@ -948,7 +1051,7 @@ function RingBuffer:Get(index)
         return nil
     end
 
-    local pos = (self.pos-self.entries) + index 
+    local pos = (self.pos-self.entries) + index
     if pos < 1 then
         pos = pos + self.entries
     end
@@ -985,7 +1088,7 @@ end
 -- pt is in world space, walkable_platform is optional, if nil, the constructor will search for a platform at pt.
 -- GetPosition() will return nil if a platform was being tracked but no longer exists.
 DynamicPosition = Class(function(self, pt, walkable_platform)
-	if pt ~= nil then		
+	if pt ~= nil then
 		self.walkable_platform = walkable_platform or TheWorld.Map:GetPlatformAtPoint(pt.x, pt.z)
 		if self.walkable_platform ~= nil then
 			self.local_pt = pt - self.walkable_platform:GetPosition()
@@ -1001,7 +1104,7 @@ end
 
 function DynamicPosition:__tostring()
 	local pt = self:GetPosition()
-    return pt ~= nil 
+    return pt ~= nil
 		and string.format("%2.2f, %2.2f on %s", pt.x, pt.z, tostring(self.walkable_platform))
         or "nil"
 end
@@ -1137,6 +1240,15 @@ function LinkedList:Iterator()
     }
 end
 
+function table.count( t, value )
+    local count = 0
+    for k,v in pairs(t) do
+        if value == nil or v == value then
+            count = count + 1
+        end
+    end
+    return count
+end
 
 function table.setfield(Table,Name,Value)
 
@@ -1203,6 +1315,27 @@ function table.getfield(Table,Name)
     return Table
 end
 
+function table.typecheckedgetfield(Table, Type, ...)
+    if type(Table) ~= "table" then return end
+
+    local Names = {...}
+    local Names_Count = #Names
+    for i, Name in ipairs(Names) do
+        if i == Names_Count then
+            if Type == nil or type(Table[Name]) == Type then
+                return Table[Name]
+            end
+            return
+        else
+            if type(Table[Name]) == "table" then
+                Table = Table[Name]
+            else
+                return
+            end
+        end
+    end
+end
+
 function table.findfield(Table,Name)
     local indx = ""
 
@@ -1264,7 +1397,15 @@ function DumpMem()
 end
 
 function checkbit(x, b)
-    return x % (b + b) >= b
+    return bit.band(x, b) > 0
+end
+
+function setbit(x, b)
+    return bit.bor(x, b)
+end
+
+function clearbit(x, b)
+    return bit.bxor(bit.bor(x, b), b)
 end
 
 -- Width is the total width of the region we are interested in, in radians.
@@ -1281,9 +1422,9 @@ function IsWithinAngle(position, forward, width, testPos)
 	local testAngle = math.acos(testVec:Dot(forward))
 
 	-- Return true if testAngle is <= +/- .5*width
-	if math.abs(testAngle) <= .5*math.abs(width) then 
+	if math.abs(testAngle) <= .5*math.abs(width) then
 		return true
-	else 
+	else
 		return false
 	end
 end
@@ -1363,13 +1504,13 @@ function CalcDiminishingReturns(current, basedelta)
     return current + dcharge
 end
 
-function Dist2dSq(p1, p2) 
+function Dist2dSq(p1, p2)
 	local dx = p1.x - p2.x
 	local dy = p1.y - p2.y
 	return dx*dx + dy*dy
 end
 
-function DistPointToSegmentXYSq(p, v1, v2) 
+function DistPointToSegmentXYSq(p, v1, v2)
 	local l2 = Dist2dSq(v1, v2)
 	if (l2 == 0) then
 		return Dist2dSq(p, v1)
@@ -1430,3 +1571,121 @@ function orderedPairs(t)
     -- in order
     return orderedNext, t, nil
 end
+
+--Zachary: add a lua 5.2 feature, metatables for pairs ipairs and next
+function metanext(t, k, ...)
+    local m = debug.getmetatable(t)
+    local n = m and m.__next or next
+    return n(t, k, ...)
+end
+
+function metapairs(t, ...)
+    local m = debug.getmetatable(t)
+    local p = m and m.__pairs or pairs
+    return p(t, ...)
+end
+
+function metaipairs(t, ...)
+    local m = debug.getmetatable(t)
+    local i = m and m.__ipairs or ipairs
+    return i(t, ...)
+end
+
+function metarawset(t, k, v)
+    local mt = getmetatable(t)
+    mt._[k] = v
+end
+
+function metarawget(t, k)
+    local mt = getmetatable(t)
+    return mt._[k] or mt.c[k]
+end
+
+function ZipAndEncodeString(data)
+	return TheSim:ZipAndEncodeString(DataDumper(data, nil, true))
+end
+
+function ZipAndEncodeSaveData(data)
+	return {str = ZipAndEncodeString(data)}
+end
+
+function DecodeAndUnzipString(str)
+    if type(str) == "string" then
+        local success, savedata = RunInSandbox(TheSim:DecodeAndUnzipString(str))
+        if success then
+            return savedata
+        else
+            return {}
+        end
+    end
+end
+
+function DecodeAndUnzipSaveData(data)
+    return DecodeAndUnzipString(data and data.str or nil)
+end
+
+function FunctionOrValue(func_or_val, ...)
+    if type(func_or_val) == "function" then
+        return func_or_val(...)
+    end
+    return func_or_val
+end
+
+function ApplyLocalWordFilter(text, text_filter_context, net_id)
+	if text_filter_context == TEXT_FILTER_CTX_CHAT											-- we are only filtering chat at the moment
+		and Profile:GetProfanityFilterChatEnabled() 
+		then
+
+		text = TheSim:ApplyLocalWordFilter(text, text_filter_context, net_id) or text
+	end
+
+	return text
+end
+
+--jcheng taken from griftlands
+--START--
+function rawstring( t )
+    if type(t) == "table" then
+        local mt = getmetatable( t )
+        if mt then
+            -- Seriously, is there any better way to bypass the tostring metamethod?
+            setmetatable( t, nil )
+            local s = tostring( t )
+            setmetatable( t, mt )
+            return s
+        end
+    end
+
+    return tostring(t)
+end
+
+local function StringSort( a, b )
+    if type(a) == "number" and type(b) == "number" then
+        return a < b
+    else
+        return tostring(a) < tostring(b)
+    end
+end
+
+local function SortedKeysIter( state, i )
+    i = next( state.sorted_keys, i )
+    if i then
+        local key = state.sorted_keys[ i ]
+        return i, key, state.t[ key ]
+    end
+end
+
+function sorted_pairs( t, fn )
+    local sorted_keys = {}
+    for k, v in pairs(t) do
+        table.insert( sorted_keys, k )
+    end
+    table.sort( sorted_keys, fn or StringSort )
+    return SortedKeysIter, { sorted_keys = sorted_keys, t = t }
+end
+
+function generic_error( err )
+    return tostring(err).."\n"..debugstack()
+end
+
+--END--

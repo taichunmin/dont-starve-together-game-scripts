@@ -79,7 +79,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle_pst")
     inst.AnimState:SetTime(6 * FRAMES)
     inst.AnimState:SetScale(SCALE, SCALE)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
 

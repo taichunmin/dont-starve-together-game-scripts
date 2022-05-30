@@ -16,7 +16,7 @@ local function OnDestroy(inst)
 --Stop any event listeners here.
 end
 
-return 
+return
 {
 	OnCreate = OnCreate,
 	OnLoad = OnLoad,

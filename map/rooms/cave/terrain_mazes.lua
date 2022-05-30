@@ -1,13 +1,13 @@
 
 AddRoom("LabyrinthGuarden", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
-					value = GROUND.BRICK, 
+					value = GROUND.BRICK,
 					tags = {"LabyrinthEntrance"},
 					contents =  {
-									countstaticlayouts = 
+									countstaticlayouts =
 									{
 										["WalledGarden"] = 1,
-									},          
+									},
 					        	},
 					})
 
@@ -27,11 +27,11 @@ AddRoom("BGLabyrinth", {
 					})
 AddRoom("BGMaze", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
-					value = GROUND.MUD, 
+					value = GROUND.MUD,
 					tags = {"Maze"},
 					contents =  {
 									distributepercent = 0.15,
-					                distributeprefabs= 
+					                distributeprefabs=
 					                {
 					                	lichen = .001,
 					                	cave_fern = .0015,

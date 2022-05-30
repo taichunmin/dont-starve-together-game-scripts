@@ -1,10 +1,10 @@
 local function FindGraves(inst)
-    local pt = Vector3(inst.Transform:GetWorldPosition())   
+    local pt = Vector3(inst.Transform:GetWorldPosition())
     local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 20)
     local grave_mounds = {}
     for k,v in pairs(ents) do
         if v and v:HasTag("grave") and v.mound then
-            grave_mounds[v.mound] = v.mound           
+            grave_mounds[v.mound] = v.mound
         end
     end
     return grave_mounds
@@ -41,9 +41,9 @@ local function OnGraveDug(inst, mound, scenariorunner, data)
 	end
 
 	inst.moundlist[mound] = nil
-	if not next(inst.moundlist) then		
+	if not next(inst.moundlist) then
 		SpawnGhostsOnGraves(FindGraves(inst), scenariorunner, player)
-	end	
+	end
 end
 
 local function OnLoad(inst, scenariorunner)

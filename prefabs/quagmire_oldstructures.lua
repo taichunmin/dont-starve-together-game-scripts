@@ -100,7 +100,7 @@ end
 
 
 local function MakeStrcuture(name, anim, add_decor)
-	local function fn() 
+	local function fn()
 		return common_fn(anim, add_decor)
 	end
 

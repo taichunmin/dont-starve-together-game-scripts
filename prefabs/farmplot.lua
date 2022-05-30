@@ -125,7 +125,7 @@ local decor_defs =
             },
 
             { farmrocktall = { { right + 0.5, 0, rock_front + 0.195 }, } },
-            
+
             { farmrockflat = {
                     { right + 0.0, 0, rock_front - 0.0 },
                     { right + 1.8, 0, rock_front + 0.22 },
@@ -134,7 +134,7 @@ local decor_defs =
 
             -- back row
             { farmrockflat = {
-                    
+
                     { left - 1.3, 0, back - 0.19 },
                 }
             },
@@ -169,7 +169,7 @@ local decor_defs =
 
 local burntdecor_defs =
 {
-    [2] = { 
+    [2] = {
             { burntstick = {
                         { left - 0.9, 0, back },
                         { right, 0, front },

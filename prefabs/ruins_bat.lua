@@ -35,7 +35,7 @@ local function NoHoles(pt)
 end
 
 local function onattack(inst, owner, target)
-    if math.random() < .2 then
+    if math.random() < 0.2 then
         local pt
         if target ~= nil and target:IsValid() then
             pt = target:GetPosition()
@@ -100,7 +100,7 @@ local function fn()
     inst:AddComponent("equippable")
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
-    inst.components.equippable.walkspeedmult = 1.1
+    inst.components.equippable.walkspeedmult = TUNING.RUINS_BAT_SPEED_MULT
 
     MakeHauntableLaunch(inst)
 

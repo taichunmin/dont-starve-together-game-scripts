@@ -92,7 +92,7 @@ local function commonfn(anim)
     local color = 0.5 + math.random() * 0.5
     inst.AnimState:SetMultColour(color, color, color, 1)
 
-    inst:AddComponent("lootdropper") 
+    inst:AddComponent("lootdropper")
 
     inst:AddComponent("inspectable")
 

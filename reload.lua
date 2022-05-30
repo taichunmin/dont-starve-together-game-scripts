@@ -6,7 +6,7 @@
 --	print("TryReload",name)
 --	local f, err= loadfile(name..".lua")
 --	if not f then
---		print(err)	
+--		print(err)
 --		return false
 --	end
 --	return true
@@ -29,29 +29,29 @@ function hotswap(modname)
   local updated = {}
 
   local function update(old, new)
-    if updated[old] then return end 
+    if updated[old] then return end
     updated[old] = true
     local oldmt, newmt = getmetatable(old), getmetatable(new)
-    if oldmt and newmt then 
+    if oldmt and newmt then
 	if oldmt ~= newmt then
 		InvalidatedTables[new] = true
-		update(oldmt, newmt) 
+		update(oldmt, newmt)
 	end
-    end	
+    end
     -- remove functions that were undefined in the new version
     for k, v in pairs(old) do
 	if type(v)=='function' then
 	   if new and new[k]==nil then
-		old[k] = nil	
+		old[k] = nil
 	   end
         end
     end
     -- remap the table, store the changed functions so we can monkeypatch derived classes
     if new then
          for k, v in pairs(new) do
-            if type(v) == "table" then 
-                update(old[k], v) 
-            else 
+            if type(v) == "table" then
+                update(old[k], v)
+            else
                 old[k] = v    -- copy the function over from new to old. So old is now useless
             end
         end
@@ -63,7 +63,7 @@ function hotswap(modname)
     for k, v in pairs(_G) do _G[k] = oldglobal[k] end
     err = e
   end
-  
+
 
 
   local ok, oldmod = pcall(require, modname)
@@ -74,16 +74,16 @@ function hotswap(modname)
     local newmod = require(modname)
     if type(oldmod) == "table" then update(oldmod, newmod) end
     for k, v in pairs(oldglobal) do
-      if v ~= _G[k] and type(v) == "table" then 
+      if v ~= _G[k] and type(v) == "table" then
         update(v, _G[k])
         _G[k] = v
       end
     end
   end, onerror)
   package.loaded[modname] = oldmod
-   if err then  
+   if err then
      print("hotswap : error",err)
-     return nil, err 
+     return nil, err
    end
    print("success")
 
@@ -135,11 +135,11 @@ function MonkeyPatchClasses()
         -- oh crap, if it was changed in the baseclass it won't be scrubbed.
 	-- keep a pointer to the original function it replaces?
 	for i,v in pairs(ClassRegistry) do
-		ScrubClass(i,v)	
+		ScrubClass(i,v)
 	end
 	-- Reconstruct the class table bottom up. If a derived class has an already existing entry and it's different then it must be the most recent one
 	for i,v in pairs(ClassRegistry) do
-		MonkeyPatchClass(i)	
+		MonkeyPatchClass(i)
 	end
 
 end
@@ -162,17 +162,17 @@ function DoReload()
 		--print(index, i,v,time)
 		index = index + 1
 	end
-	
+
 	local backup_package_path = package.path
 
 	local files = modifiedFiles
-	for i=1,#files do 
+	for i=1,#files do
 		local filename = files[i] --line --"screens/mainscreen"
 		print("HotSwapping : ",filename)
 		-- in order to qualify it must either contain /scripts/ or start with scripts/
 		local s1,e1 = string.find(filename,"scripts/",1,true)
 		local s2,e2 = string.find(filename,"/scripts/",1,true)
-		if s1 == 1 or s2 then		
+		if s1 == 1 or s2 then
 			if s1==1 then
 				filename = filename:sub(e1+1)
 			elseif s2 then

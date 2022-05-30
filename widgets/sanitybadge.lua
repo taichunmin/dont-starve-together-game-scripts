@@ -11,7 +11,7 @@ local function OnGhostDeactivated(inst)
 end
 
 local SanityBadge = Class(Badge, function(self, owner)
-    Badge._ctor(self, nil, owner, SANITY_TINT, "status_sanity")
+    Badge._ctor(self, nil, owner, SANITY_TINT, "status_sanity", nil, nil, true)
 
     self.sanitymode = SANITY_MODE_INSANITY
 
@@ -19,9 +19,11 @@ local SanityBadge = Class(Badge, function(self, owner)
     self.topperanim:GetAnimState():SetBank("status_meter")
     self.topperanim:GetAnimState():SetBuild("status_meter")
     self.topperanim:GetAnimState():PlayAnimation("anim")
+    self.topperanim:GetAnimState():AnimateWhilePaused(false)
     self.topperanim:GetAnimState():SetMultColour(0, 0, 0, 1)
     self.topperanim:SetScale(1, -1, 1)
     self.topperanim:SetClickable(false)
+    self.topperanim:GetAnimState():SetPercent("anim", 1)
 
     self.circleframe:GetAnimState():Hide("frame")
     self.circleframe2 = self.underNumber:AddChild(UIAnim())
@@ -30,17 +32,20 @@ local SanityBadge = Class(Badge, function(self, owner)
     self.circleframe2:GetAnimState():OverrideSymbol("frame_circle", "status_meter", "frame_circle")
     self.circleframe2:GetAnimState():Hide("FX")
     self.circleframe2:GetAnimState():PlayAnimation("frame")
+    self.circleframe2:GetAnimState():AnimateWhilePaused(false)
 
     self.sanityarrow = self.underNumber:AddChild(UIAnim())
     self.sanityarrow:GetAnimState():SetBank("sanity_arrow")
     self.sanityarrow:GetAnimState():SetBuild("sanity_arrow")
     self.sanityarrow:GetAnimState():PlayAnimation("neutral")
+    self.sanityarrow:GetAnimState():AnimateWhilePaused(false)
     self.sanityarrow:SetClickable(false)
 
     self.ghostanim = self.underNumber:AddChild(UIAnim())
     self.ghostanim:GetAnimState():SetBank("status_sanity")
     self.ghostanim:GetAnimState():SetBuild("status_sanity")
     self.ghostanim:GetAnimState():PlayAnimation("ghost_deactivate")
+    self.ghostanim:GetAnimState():AnimateWhilePaused(false)
     self.ghostanim:Hide()
     self.ghostanim:SetClickable(false)
     self.ghostanim.inst:ListenForEvent("animover", OnGhostDeactivated)
@@ -147,6 +152,8 @@ local RATE_SCALE_ANIM =
 }
 
 function SanityBadge:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     local sanity = self.owner.replica.sanity
     local anim = "neutral"
     local ghost = false

@@ -8,14 +8,20 @@ end
 
 local function onmaxhealth(self, maxhealth)
     self.inst.replica.health:SetMax(maxhealth)
-    self.inst.replica.health:SetIsFull((self.currenthealth or maxhealth) >= maxhealth)
+    local repairable = self.inst.components.repairable
+    if repairable then
+        repairable:SetHealthRepairable((self.currenthealth or maxhealth) < maxhealth)
+    end
     onpercent(self)
 end
 
 local function oncurrenthealth(self, currenthealth)
     self.inst.replica.health:SetCurrent(currenthealth)
     self.inst.replica.health:SetIsDead(currenthealth <= 0)
-    self.inst.replica.health:SetIsFull(currenthealth >= self.maxhealth)
+    local repairable = self.inst.components.repairable
+    if repairable then
+        repairable:SetHealthRepairable(currenthealth < self.maxhealth)
+    end
     onpercent(self)
 end
 
@@ -40,7 +46,7 @@ local function oncanheal(self, canheal)
 end
 
 local function oninvincible(self, invincible)
-    if CHEATS_ENABLED then -- use this to visualize godmode on the client
+    if CHEATS_ENABLED then --use this to visualize godmode on the client
         if invincible then
             self.inst:AddTag("invincible")
         else
@@ -116,16 +122,21 @@ function Health:OnSave()
     {
         health = self.currenthealth,
         penalty = self.penalty > 0 and self.penalty or nil,
+		maxhealth = self.save_maxhealth and self.maxhealth or nil
     }
 end
 
 function Health:OnLoad(data)
+	if data.maxhealth ~= nil then
+		self.maxhealth = data.maxhealth
+	end
+
     local haspenalty = data.penalty ~= nil and data.penalty > 0 and data.penalty < 1
     if haspenalty then
         self:SetPenalty(data.penalty)
     end
 
-    if data.invincible ~= nil then 
+    if data.invincible ~= nil then
         self.invincible = data.invincible
     end
     if data.health ~= nil then
@@ -149,7 +160,7 @@ end
 function Health:DoFireDamage(amount, doer, instant)
     --V2C: "not instant" generally means that we are burning or being set on fire at the same time
     local mult = self:GetFireDamageScale()
-    if not self.invincible and (not instant or mult > 0) then
+    if not self:IsInvincible() and (not instant or mult > 0) then
         local time = GetTime()
         if not self.takingfiredamage then
             self.takingfiredamage = true
@@ -256,8 +267,10 @@ function Health:StopRegen()
 end
 
 function Health:SetPenalty(penalty)
-    --Penalty should never be less than 0% or ever above 75%.
-    self.penalty = math.clamp(penalty, 0, TUNING.MAXIMUM_HEALTH_PENALTY)
+	if not self.disable_penalty then
+		--Penalty should never be less than 0% or ever above 75%.
+		self.penalty = math.clamp(penalty, 0, TUNING.MAXIMUM_HEALTH_PENALTY)
+	end
 end
 
 function Health:DeltaPenalty(delta)
@@ -273,8 +286,12 @@ function Health:GetPercent()
     return self.currenthealth / self.maxhealth
 end
 
+function Health:GetPercentWithPenalty()
+    return self.currenthealth / self:GetMaxWithPenalty()
+end
+
 function Health:IsInvincible()
-    return self.invincible
+    return self.invincible or (self.inst.sg and self.inst.sg:HasStateTag("temp_invincible"))
 end
 
 function Health:GetDebugString()
@@ -364,7 +381,7 @@ end
 function Health:DoDelta(amount, overtime, cause, ignore_invincible, afflicter, ignore_absorb)
     if self.redirect ~= nil and self.redirect(self.inst, amount, overtime, cause, ignore_invincible, afflicter, ignore_absorb) then
         return 0
-    elseif not ignore_invincible and (self.invincible or self.inst.is_teleporting) then
+    elseif not ignore_invincible and (self:IsInvincible() or self.inst.is_teleporting) then
         return 0
     elseif amount < 0 and not ignore_absorb then
         amount = amount * math.clamp(1 - (self.playerabsorb ~= 0 and afflicter ~= nil and afflicter:HasTag("player") and self.playerabsorb + self.absorb or self.absorb), 0, 1) * math.clamp(1 - self.externalabsorbmodifiers:Get(), 0, 1)
@@ -372,12 +389,12 @@ function Health:DoDelta(amount, overtime, cause, ignore_invincible, afflicter, i
 
     local old_percent = self:GetPercent()
     self:SetVal(self.currenthealth + amount, cause, afflicter)
-    local new_percent = self:GetPercent()
 
     self.inst:PushEvent("healthdelta", { oldpercent = old_percent, newpercent = self:GetPercent(), overtime = overtime, cause = cause, afflicter = afflicter, amount = amount })
 
     if self.ondelta ~= nil then
-        self.ondelta(self.inst, old_percent, self:GetPercent())
+        -- Re-call GetPercent on the slight chance that "healthdelta" changed it.
+        self.ondelta(self.inst, old_percent, self:GetPercent(), overtime, cause, afflicter, amount)
     end
     return amount
 end

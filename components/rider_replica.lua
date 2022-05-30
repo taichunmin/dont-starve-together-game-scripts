@@ -48,19 +48,84 @@ function Rider:DetachClassified()
 end
 
 --------------------------------------------------------------------------
+local function GetPickupAction(inst, target)
+    if target:HasTag("smolder") then
+        return ACTIONS.SMOTHER
+    elseif target:HasTag("trapsprung") then
+        return ACTIONS.CHECKTRAP
+    end
 
+    local is_inventory = (target.replica.inventoryitem ~= nil and target.replica.inventoryitem:CanBePickedUp())
+            or (target.components.inventoryitem ~= nil and target.components.canbepickedup)
+
+    if is_inventory
+            and not (target:HasTag("heavy") or target:HasTag("fire") or target:HasTag("catchable") or target:HasTag("spider")) then
+        return (inst.components.playercontroller:HasItemSlots() or target.replica.equippable ~= nil or target.components.equippable ~= nil) and ACTIONS.PICKUP or nil
+    elseif target:HasTag("pickable") and not target:HasTag("fire") then
+        return ACTIONS.PICK
+    else
+        return nil
+    end
+end
+
+local TARGET_MUST_TAGS = { "catchable" }
 local TARGET_EXCLUDE_TAGS = { "FX", "NOCLICK", "DECOR", "INLIMBO" }
+local PICKUP_TAGS =
+{
+    "_inventoryitem",
+    "pickable",
+    "donecooking",
+    "readyforharvest",
+    "notreadyforharvest",
+    "harvestable",
+    "trapsprung",
+    "minesprung",
+    "dried",
+    "inactive",
+    "smolder",
+    "saddled",
+    "brushable",
+    "tapped_harvestable",
+}
+local PICKUP_TARGET_EXCLUDE_TAGS = { "catchable", "mineactive", "intense" }
 local function ActionButtonOverride(inst, force_target)
     --catching
     if inst:HasTag("cancatch") and not inst.components.playercontroller:IsDoingOrWorking() then
         if force_target == nil then
-            local target = FindEntity(inst, 10, nil, { "catchable" }, TARGET_EXCLUDE_TAGS)
+            local target = FindEntity(inst, 10, nil, TARGET_MUST_TAGS, TARGET_EXCLUDE_TAGS)
             if CanEntitySeeTarget(inst, target) then
                 return BufferedAction(inst, target, ACTIONS.CATCH)
             end
         elseif inst:GetDistanceSqToInst(force_target) <= 100 and
             force_target:HasTag("catchable") then
             return BufferedAction(inst, force_target, ACTIONS.CATCH)
+        end
+    end
+
+    --miscellaneous actions
+    if force_target == nil then
+        local x, y, z = inst.Transform:GetWorldPosition()
+        local ents = TheSim:FindEntities(
+            x, y, z,
+            inst.components.playercontroller.directwalking and 3 or 6,
+            nil,
+            PICKUP_TARGET_EXCLUDE_TAGS,
+            PICKUP_TAGS
+        )
+        for _, v in ipairs(ents) do
+            if v ~= inst and v.entity:IsVisible() and CanEntitySeeTarget(inst, v) then
+                local action = GetPickupAction(inst, v)
+
+                if action ~= nil then
+                    return BufferedAction(inst, v, action)
+                end
+            end
+        end
+    elseif inst:GetDistanceSqToInst(force_target) <= (inst.components.playercontroller.directwalking and 9 or 36) then
+        local action = GetPickupAction(inst, force_target)
+
+        if action ~= nil then
+            return BufferedAction(inst, force_target, action)
         end
     end
 end

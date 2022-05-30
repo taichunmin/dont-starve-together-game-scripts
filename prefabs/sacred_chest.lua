@@ -39,7 +39,7 @@ local function CheckOffering(items)
 			return k
 		end
 	end
-		
+
 	return nil
 end
 
@@ -57,7 +57,7 @@ local function UnlockChest(inst, param, doer)
 				doer.components.talker:Say(GetString(doer, "ANNOUNCE_SACREDCHEST_NO"))
 			end
 		elseif param == 3 then
-			inst.AnimState:PlayAnimation("open") 
+			inst.AnimState:PlayAnimation("open")
 		    inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
 			SpawnPrefab("statue_transition").Transform:SetPosition(inst.Transform:GetWorldPosition())
 			SpawnPrefab("statue_transition_2").Transform:SetPosition(inst.Transform:GetWorldPosition())
@@ -72,10 +72,10 @@ local function UnlockChest(inst, param, doer)
 				TheNet:Announce(STRINGS.UI.HUD.REPORT_RESULT_ANNOUCEMENT)
 			end)
 		else
-			inst.AnimState:PlayAnimation("open") 
+			inst.AnimState:PlayAnimation("open")
 		    inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
-			inst:DoTaskInTime(.2, function() 
-				inst.components.container:DropEverything() 
+			inst:DoTaskInTime(.2, function()
+				inst.components.container:DropEverything()
 				inst:DoTaskInTime(0.2, function()
 					inst.AnimState:PlayAnimation("close")
 				    inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_close")
@@ -99,17 +99,17 @@ local function LockChest(inst)
 	inst.lockstarttime = GetTime()
 	inst.AnimState:PlayAnimation("hit", true)
     inst.SoundEmitter:PlaySound("dontstarve/common/together/sacred_chest/shake_LP", "loop")
-end 
+end
 
-local function onopen(inst) 
+local function onopen(inst)
     inst.AnimState:PlayAnimation("open")
     inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
-end 
+end
 
 local function DoNetworkOffering(inst, doer)
 	if (not TheNet:IsOnlineMode()) or
 		(not inst.components.container:IsFull()) or
-		doer == nil or 
+		doer == nil or
 		not doer:IsValid() then
 	    inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_close")
 		return
@@ -154,18 +154,18 @@ local function DoLocalOffering(inst, doer)
 			return true
 		end
 	end
-	
+
 	return false
 end
 
 local function OnLocalOffering(inst)
-	inst.AnimState:PlayAnimation("open") 
+	inst.AnimState:PlayAnimation("open")
     inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
     inst.components.timer:StartTimer("localoffering_pst", 0.2)
 end
 
 local function OnLocalOfferingPst(inst)
-	inst.components.container:DropEverything() 
+	inst.components.container:DropEverything()
 	inst:DoTaskInTime(0.2, function()
 		inst.AnimState:PlayAnimation("close")
 	    inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_close")
@@ -188,7 +188,7 @@ local function OnTimerDone(inst, data)
 		elseif data.name == "localoffering_pst" then
 			OnLocalOfferingPst(inst)
 		end
-		
+
 	end
 end
 
@@ -236,7 +236,9 @@ local function fn()
     inst.components.container:WidgetSetup("sacred_chest")
     inst.components.container.onopenfn = onopen
     inst.components.container.onclosefn = onclose
-		
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
+
     inst:AddComponent("hauntable")
     inst.components.hauntable.cooldown = TUNING.HAUNT_COOLDOWN_SMALL
 

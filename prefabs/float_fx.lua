@@ -37,7 +37,7 @@ local function common_fn(is_front)
     if not TheWorld.ismastersim then
         return inst
     end
-       
+
     return inst
 end
 

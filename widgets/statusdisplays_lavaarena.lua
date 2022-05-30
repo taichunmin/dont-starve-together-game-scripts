@@ -36,6 +36,7 @@ end
 
 local StatusDisplays = Class(Widget, function(self, owner)
     Widget._ctor(self, "Status")
+    self:UpdateWhilePaused(false)
     self.owner = owner
 
     self:SetPosition(-115 + 16, 59)
@@ -74,6 +75,7 @@ function StatusDisplays:AddPet()
     self.pet_heart.arrow:GetAnimState():SetBank("sanity_arrow")
     self.pet_heart.arrow:GetAnimState():SetBuild("sanity_arrow")
     self.pet_heart.arrow:GetAnimState():PlayAnimation("neutral")
+    self.pet_heart.arrow:GetAnimState():AnimateWhilePaused(false)
     self.pet_heart.arrow:SetScale(0.75)
 end
 
@@ -176,6 +178,8 @@ function StatusDisplays:HealthDelta(data)
 end
 
 function StatusDisplays:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
+
     if self.queuedhealthmax > self.healthmax then
         self.heart:PulseGreen()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/health_up")

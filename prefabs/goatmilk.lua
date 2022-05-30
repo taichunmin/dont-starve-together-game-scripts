@@ -37,6 +37,8 @@ local function fn()
     inst.components.edible.sanityvalue = TUNING.SANITY_SMALL
     -- inst.components.edible.foodtype = "MEAT"
 
+    inst:AddComponent("tradable")
+
     inst:AddComponent("perishable")
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
     inst.components.perishable:StartPerishing()

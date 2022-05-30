@@ -60,7 +60,7 @@ end
 local function onhammered(inst, worker)
     inst.components.lootdropper:DropLoot()
     dropitems(inst)
-    
+
     local fx = SpawnPrefab("collapse_small")
     fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
     fx:SetMaterial("wood")
@@ -336,7 +336,7 @@ local function fn()
     MakeSnowCovered(inst)
     MakeMediumPropagator(inst)
 
-    inst.OnSave = onsave 
+    inst.OnSave = onsave
     inst.OnLoad = onload
 
     inst.CreateItem = CreateItem

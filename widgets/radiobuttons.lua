@@ -1,7 +1,6 @@
 require "fonts"
 local Widget = require "widgets/widget"
 local TextButton = require "widgets/textbutton"
-local ThreeSlice = require "widgets/threeslice"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
 

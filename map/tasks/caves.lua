@@ -1,5 +1,4 @@
 
-
 ------------------------------------------------------------
 -- One of every room
 ------------------------------------------------------------
@@ -259,21 +258,31 @@ AddTask("GreenForest",{
 -- Blue Forest
 AddTask("BlueForest",{
     locks={ LOCKS.CAVE, LOCKS.TIER2 },
-    keys_given={ KEYS.CAVE, KEYS.TIER3, KEYS.BLUE, KEYS.ENTRANCE_INNER },
+    keys_given={ KEYS.TIER3, KEYS.MOONMUSH, KEYS.ENTRANCE_INNER },
     room_choices={
-        ["BlueMushForest"] = 3,
+        ["BlueMushForest"] = 1,
         ["BlueMushMeadow"] = 2,
         ["BlueSpiderForest"] = 1,
         ["DropperDesolation"] = 1,
-        ["PitRoom"] = 2,
     },
-    background_room="BGBlueMush",
+    entrance_room = {"PitRoom"},
+    background_room="BGBlueMush", -- same layout as BlueMushForest
     room_bg=GROUND.FUNGUS,
     colour={r=0.5,g=0.5,b=1.0,a=0.9},
 })
 
--- Ruins
--- TODO
+AddTask("MoonCaveForest",{
+    locks={ LOCKS.MOONMUSH },
+    keys_given={ KEYS.ARCHIVE },
+    room_tags = { "lunacyarea", "MushGnomeSpawnArea" },
+    room_choices={
+        ["MoonMushForest"] = 3,
+		["MoonMushForest_entrance"] = 1,
+    },
+    background_room="MoonMushForest",
+    room_bg=GROUND.FUNGUSMOON,
+    colour={r=0.3,g=0.3,b=0.3,a=0.9},
+})
 
 -- Spillagmite Caverns
 AddTask("SpillagmiteCaverns",{

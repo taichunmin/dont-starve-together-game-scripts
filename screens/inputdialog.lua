@@ -37,7 +37,7 @@ local InputDialogScreen = Class(Screen, function(self, title, buttons, modal, st
             end
         end
     end
-        
+
     self.proot = self:AddChild(Widget("ROOT"))
     self.proot:SetScaleMode(SCALEMODE_PROPORTIONAL)
     if modal then
@@ -56,7 +56,7 @@ local InputDialogScreen = Class(Screen, function(self, title, buttons, modal, st
     self.bg.fill:SetScale(.78, .48)
     self.bg.fill:SetPosition(8, 12)
 
-	--title	
+	--title
     self.title = self.proot:AddChild(Text(BUTTONFONT, 50))
     self.title:SetPosition(0, 50, 0)
     self.title:SetColour(0,0,0,1)
@@ -70,7 +70,7 @@ local InputDialogScreen = Class(Screen, function(self, title, buttons, modal, st
     self.edit_text_bg:SetTexture( "images/textboxes.xml", "textbox2_grey.tex" )
     self.edit_text_bg:SetPosition( 8, -20, 0 )
     self.edit_text_bg:ScaleToSize( 460, 40 )
-	
+
 	self.edit_text = self.proot:AddChild( TextEdit( NEWFONT, 25, "" ) )
 	self.edit_text:SetPosition( 10, -20, 0 )
 	self.edit_text:SetRegionSize( 430, 40 )
@@ -78,11 +78,11 @@ local InputDialogScreen = Class(Screen, function(self, title, buttons, modal, st
 	self.edit_text:SetFocusedImage( self.edit_text_bg, "images/textboxes.xml", "textbox2_grey.tex", "textbox2_gold.tex", "textbox2_gold_greyfill.tex" )
 	self.edit_text:SetTextLengthLimit( STRING_MAX_LENGTH )
     self.edit_text:SetForceEdit(true)
-	
+
     local spacing = 200
 
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -95, 0) 
+	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -95, 0)
     for i,v in pairs(self.menu.items) do
         v:SetScale(.7)
         v.image:SetScale(.6, .8)
@@ -127,7 +127,7 @@ function InputDialogScreen:OnControl(control, down)
         self.edit_text:OnControl(control, down)
        	return true
     end
-    
+
     -- gjans: This makes it so that if the text box loses focus and you click
     -- on the bg, it presses accept. Kind of weird behaviour. I'm guessing
     -- something like it is needed for controllers, but it's not exaaaactly
@@ -155,7 +155,7 @@ function InputDialogScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
 	if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
 	return table.concat(t, "  ")
 end

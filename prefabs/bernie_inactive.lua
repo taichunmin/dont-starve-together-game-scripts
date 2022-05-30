@@ -4,6 +4,7 @@ local assets =
     Asset("ANIM", "anim/bernie.zip"),
     Asset("ANIM", "anim/bernie_build.zip"),
     Asset("INV_IMAGE", "bernie_dead"),
+	Asset("MINIMAP_IMAGE", "bernie"),
 }
 
 local prefabs =
@@ -225,6 +226,7 @@ local function fn()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddDynamicShadow()
+    inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
@@ -234,6 +236,8 @@ local function fn()
     inst.AnimState:SetBank("bernie")
     inst.AnimState:SetBuild("bernie_build")
     inst.AnimState:PlayAnimation("inactive")
+
+    inst.MiniMapEntity:SetIcon("bernie.png")
 
     inst:AddTag("nopunch")
 

@@ -3,11 +3,11 @@ local assets =
     Asset("ANIM", "anim/torso_hawaiian.zip"),
 }
 
-local function onequip(inst, owner) 
+local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol("swap_body", "torso_hawaiian", "swap_body")
 end
 
-local function onunequip(inst, owner) 
+local function onunequip(inst, owner)
     owner.AnimState:ClearOverrideSymbol("swap_body")
 end
 

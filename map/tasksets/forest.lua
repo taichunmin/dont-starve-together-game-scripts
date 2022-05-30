@@ -12,7 +12,7 @@ AddTaskSet("default", {
 			"Badlands",
 			"For a nice walk",
 			"Lightning Bluff",
-			
+
 			-- meteor island
 			"MoonIsland_IslandShards",
 			"MoonIsland_Beach",
@@ -36,6 +36,13 @@ AddTaskSet("default", {
         valid_start_tasks = {
             "Make a pick",
         },
+		required_prefabs = {
+			"gravestone",
+			"sculpture_rook",
+			"sculpture_bishop",
+			"sculpture_knight",
+            "terrariumchest",
+		},
 		set_pieces = {
 			["ResurrectionStone"] = { count = 2, tasks={"Make a pick", "Dig that rock", "Great Plains", "Squeltch", "Beeeees!", "Speak to the king", "Forest hunters", "Badlands" } },
 			["WormholeGrass"] = { count = 8, tasks={"Make a pick", "Dig that rock", "Great Plains", "Squeltch", "Beeeees!", "Speak to the king", "Forest hunters", "Befriend the pigs", "For a nice walk", "Kill the spiders", "Killer bees!", "Make a Beehat", "The hunters", "Magic meadow", "Frogs and bugs", "Badlands"} },
@@ -45,18 +52,20 @@ AddTaskSet("default", {
 			["MoonAltarRockIdol"] = { count = 1, tasks={"MoonIsland_Mine"} },
 			["MoonAltarRockSeed"] = { count = 1, tasks={"MoonIsland_Mine"} },
             ["BathbombedHotspring"] = {count = 1, tasks={"MoonIsland_Baths"}},
+            ["MoonFissures"] = {count = 1, tasks={"MoonIsland_Fissures","MoonIsland_Mine","MoonIsland_Forest"}},
 		},
 		ocean_prefill_setpieces = {
-			--["AbandonedWarf1"] = {count = 2},
-			--["AbandonedWarf2"] = {count = 1},
-			--["AbandonedWarf3"] = {count = 1},
+			["BrinePool1"] = {count = 4}, -- todo: make this scale based on world gen size
+			["BrinePool2"] = {count = 2}, -- todo: make this scale based on world gen size
+			["BrinePool3"] = {count = 2}, -- todo: make this scale based on world gen size
+			["Waterlogged1"] = {count = 3}, -- todo: make this scale based on world gen size
 		},
 
 		ocean_population = {
-			"OceanCoastal", 
+            "OceanCoastalShore",
+			"OceanCoastal",
 			"OceanSwell",
 			"OceanRough",
-			"OceanReef",
 			"OceanHazardous",
 		},
 		-- ocean_population_setpieces =
@@ -89,7 +98,13 @@ AddTaskSet("classic", {
 		},
         valid_start_tasks = {
             "Make a pick",
+			"sculpture_rook",
+			"sculpture_bishop",
+			"sculpture_knight",
         },
+		required_prefabs = {
+			"gravestone",
+		},
 		set_pieces = {
 			["ResurrectionStone"] = { count=2, tasks={"Make a pick", "Dig that rock", "Great Plains", "Squeltch", "Beeeees!", "Speak to the king", "Forest hunters" } },
 			["WormholeGrass"] = { count=8, tasks={"Make a pick", "Dig that rock", "Great Plains", "Squeltch", "Beeeees!", "Speak to the king", "Forest hunters", "Befriend the pigs", "For a nice walk", "Kill the spiders", "Killer bees!", "Make a Beehat", "The hunters", "Magic meadow", "Frogs and bugs" } },

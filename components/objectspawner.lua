@@ -34,8 +34,8 @@ function ObjectSpawner:TakeOwnership(obj)
     end
 end
 
-function ObjectSpawner:SpawnObject(obj)
-    obj = SpawnPrefab(obj)
+function ObjectSpawner:SpawnObject(obj, linked_skinname, skin_id)
+    obj = SpawnPrefab(obj, linked_skinname, skin_id)
     self:TakeOwnership(obj)
     return obj
 end

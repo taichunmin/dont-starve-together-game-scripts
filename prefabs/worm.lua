@@ -79,6 +79,9 @@ local function IsAlive(guy)
     return guy.components.health ~= nil and not guy.components.health:IsDead()
 end
 
+local RETARGET_MUST_TAGS = { "_combat", "_health" }
+local RETARGET_CANT_TAGS = { "prey", "worm", "INLIMBO" }
+local RETARGET_ONEOF_TAGS = { "character", "monster", "animal" }
 local function retargetfn(inst)
     --Don't search for targets when you're luring. Targets will come to you.
     return not inst.sg:HasStateTag("lure")
@@ -86,9 +89,9 @@ local function retargetfn(inst)
                 inst,
                 TUNING.WORM_TARGET_DIST,
                 IsAlive,
-                { "_combat", "_health" }, -- see entityscript.lua
-                { "prey", "worm", "INLIMBO" },
-                { "character", "monster", "animal" }
+                RETARGET_MUST_TAGS, -- see entityscript.lua
+                RETARGET_CANT_TAGS,
+                RETARGET_ONEOF_TAGS
             )
         or nil
 end
@@ -138,13 +141,17 @@ local function getstatus(inst)
         or "WORM"
 end
 
+local LUSH_MUST_TAGS = { "pickable" }
+local LUSH_CANT_TAGS = { "INLIMBO" }
+
 local function areaislush(x, y, z)
-    return #TheSim:FindEntities(x, y, z, 7, { "pickable" }, { "INLIMBO" }) >= 3
+    return #TheSim:FindEntities(x, y, z, 7, LUSH_MUST_TAGS, LUSH_CANT_TAGS) >= 3
 end
 
+local WORM_TAGS = { "worm" }
 local function notclaimed(x, y, z)
     --(1 because this will always find yourself)
-    return #TheSim:FindEntities(x, y, z, 30, { "worm" }) <= 1
+    return #TheSim:FindEntities(x, y, z, 30, WORM_TAGS) <= 1
 end
 
 local function LookForHome(inst)
@@ -319,7 +326,7 @@ local function fn()
 end
 
 local function onruinsrespawn(inst)
-	inst.sg:GoToState("lure_enter") 
+	inst.sg:GoToState("lure_enter")
 end
 
 return Prefab("worm", fn, assets, prefabs),

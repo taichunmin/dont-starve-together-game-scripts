@@ -89,12 +89,13 @@ local function IsExothermic(guy)
     return guy.components.burnable ~= nil and guy.components.burnable:HasExothermicHeat()
 end
 
+local FIRE_MUST_TAGS = { "campfire", "fire" }
 function Hatchable:OnUpdate(dt)
     if self.delay then
         return
     end
 
-    local has_heater = FindEntity(self.inst, TUNING.HATCH_CAMPFIRE_RADIUS, IsExothermic, { "campfire", "fire" }) ~= nil
+    local has_heater = FindEntity(self.inst, TUNING.HATCH_CAMPFIRE_RADIUS, IsExothermic, FIRE_MUST_TAGS) ~= nil
     local wants_heater = self:GetHeaterPref()
 
     self.toohot = false
@@ -150,7 +151,7 @@ end
 
 function Hatchable:OnSave()
     --print("Hatchable:OnSave")
-    local data = 
+    local data =
     {
         state = self.state,
         progress = self.progress,

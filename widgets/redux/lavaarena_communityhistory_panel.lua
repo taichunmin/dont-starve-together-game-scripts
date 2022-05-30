@@ -86,7 +86,7 @@ local function MakeDetailsEntry(item)
 		icon:SetScale((item.style == "item" and 0.8) or (item.style == "boss" and 0.5) or 0.6)
 		icon:SetPosition(-detail_width / 2 + detail_height / 2 + 5, 0)
 	else
-		local str = STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.UNLOCKED_TITLE[string.upper(item.id)] or STRINGS.NAMES[string.upper(item.id)] 
+		local str = STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.UNLOCKED_TITLE[string.upper(item.id)] or STRINGS.NAMES[string.upper(item.id)]
 		local title = w:AddChild(Text(HEADERFONT, 18, str or STRINGS.UI.LAVAARENA_COMMUNITY_UNLOCKS.UNKNOWN, UICOLOURS.BROWN_DARK))
 		title:SetPosition(20, 16)
 
@@ -117,7 +117,7 @@ function CommunityProgress:BuildDetailsPanel()
 		local y = math.floor((i-1) / 2) * -(detail_height + spacing_y)
 		detail:SetPosition(x, y)
 	end
-	
+
 	return w
 end
 

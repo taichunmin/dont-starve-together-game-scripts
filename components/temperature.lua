@@ -9,8 +9,15 @@ local function oncurrent(self, current)
     end
 end
 
-local function onsheltered(inst, sheltered)
-    inst.components.temperature.sheltered = sheltered
+local function onsheltered(inst, data)
+    if type(data) == "table" then
+        inst.components.temperature.sheltered = data.sheltered
+        if data.level then
+            inst.components.temperature.sheltered_level = data.level
+        end
+    else
+        inst.components.temperature.sheltered = data
+    end
 end
 
 local Temperature = Class(function(self, inst)
@@ -41,6 +48,7 @@ local Temperature = Class(function(self, inst)
     self.rate = 0
 
     self.sheltered = false
+    self.sheltered_level = 1
     self.inst:ListenForEvent("sheltered", onsheltered)
 
     self:OnUpdate(0)
@@ -60,6 +68,14 @@ function Temperature:SetOverheatHurtRate(rate)
 end
 
 function Temperature:DoDelta(delta)
+    local winterInsulation,summerInsulation = self:GetInsulation()
+
+    if delta > 0 then
+        delta = delta * (TUNING.SEG_TIME / (TUNING.SEG_TIME + summerInsulation))
+    else
+        delta = delta * (TUNING.SEG_TIME / (TUNING.SEG_TIME + winterInsulation))
+    end
+
     self:SetTemperature(self.current + delta)
 end
 
@@ -160,7 +176,8 @@ function Temperature:SetTemperature(value)
 end
 
 function Temperature:GetDebugString()
-    return string.format("%2.2fC at %2.2f (delta: %2.2f) (modifiers: %2.2f)", self.current, self.rate, self.delta, self.totalmodifiers)
+	local winter, summer = self:GetInsulation()
+    return string.format("%2.2fC at %2.2f (delta: %2.2f) (modifiers: %2.2f) (insulation: %d, %d)", self.current, self.rate, self.delta, self.totalmodifiers, winter, summer)
 end
 
 function Temperature:IsFreezing()
@@ -212,7 +229,7 @@ function Temperature:GetInsulation()
         for k, v in pairs(self.inst.components.inventory.equipslots) do
             if v.components.insulator ~= nil then
                 local insulationValue, insulationType = v.components.insulator:GetInsulation()
-                
+
                 if insulationType == SEASONS.WINTER then
                     winterInsulation = winterInsulation + insulationValue
                 elseif insulationType == SEASONS.SUMMER then
@@ -247,6 +264,8 @@ function Temperature:GetMoisturePenalty()
     return self.inst.components.moisture ~= nil and -Lerp(0, self.maxmoisturepenalty, self.inst.components.moisture:GetMoisturePercent()) or 0
 end
 
+local UPDATE_SPAWNLIGHT_ONEOF_TAGS = { "HASHEATER", "spawnlight" }
+local UPDATE_NOSPAWNLIGHT_MUST_TAGS = { "HASHEATER" }
 function Temperature:OnUpdate(dt, applyhealthdelta)
     self.externalheaterpower = 0
     self.delta = 0
@@ -254,7 +273,7 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
 
     if self.settemp ~= nil or
         self.inst.is_teleporting or
-        (self.inst.components.health ~= nil and self.inst.components.health.invincible) then
+        (self.inst.components.health ~= nil and self.inst.components.health:IsInvincible()) then
         return
     end
 
@@ -273,8 +292,8 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
         -- Prepare to figure out the temperature where we are standing
         local x, y, z = self.inst.Transform:GetWorldPosition()
         local ents = self.usespawnlight and
-            TheSim:FindEntities(x, y, z, ZERO_DISTANCE, nil, self.ignoreheatertags, { "HASHEATER", "spawnlight" }) or
-            TheSim:FindEntities(x, y, z, ZERO_DISTANCE, { "HASHEATER" }, self.ignoreheatertags)
+            TheSim:FindEntities(x, y, z, ZERO_DISTANCE, nil, self.ignoreheatertags, UPDATE_SPAWNLIGHT_ONEOF_TAGS) or
+            TheSim:FindEntities(x, y, z, ZERO_DISTANCE, UPDATE_NOSPAWNLIGHT_MUST_TAGS, self.ignoreheatertags)
         if self.usespawnlight and #ents > 0 then
             for i, v in ipairs(ents) do
                 if v.components.heater == nil and v:HasTag("spawnlight") then
@@ -286,6 +305,11 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
         end
 
         --print(ambient_temperature, "ambient_temperature")
+        if self.sheltered_level > 1 then
+            ambient_temperature = math.min(ambient_temperature,  self.overheattemp - 5)
+        end
+
+        ambient_temperature = ambient_temperature
         self.delta = (ambient_temperature + self.totalmodifiers + self:GetMoisturePenalty()) - self.current
         --print(self.delta + self.current, "initial target")
 
@@ -344,7 +368,7 @@ function Temperature:OnUpdate(dt, applyhealthdelta)
 
         --print(self.delta + self.current, "after shelter")
 
-        for i, v in ipairs(ents) do 
+        for i, v in ipairs(ents) do
             if v ~= self.inst and
                 not v:IsInLimbo() and
                 v.components.heater ~= nil and

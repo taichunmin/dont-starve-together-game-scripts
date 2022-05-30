@@ -18,7 +18,7 @@ local STRUCTURE_DIST = 20
 local HASSLER_SPAWN_DIST = 40
 local HASSLER_KILLED_DELAY_MULT = 6
 local STRUCTURES_PER_SPAWN = 4
-
+local DEERCLOPS_TIMERNAME = "deerclops_timetoattack"
 
 --------------------------------------------------------------------------
 --[[ Public Member Variables ]]
@@ -30,16 +30,20 @@ self.inst = inst
 --[[ Private Member Variables ]]
 --------------------------------------------------------------------------
 local _warning = false
-local _timetoattack = nil
 local _warnduration = 60
 local _timetonextwarningsound = 0
 local _announcewarningsoundinterval = 4
-	
-local _attacksperwinter = 4
-local _attackduringoffseason = false
+
+local _worldsettingstimer = TheWorld.components.worldsettingstimer
+
+local _attackdelay = nil
+local _attacksperseason = TUNING.DEERCLOPS_ATTACKS_PER_SEASON
+local _attackoffseason = TUNING.DEERCLOPS_ATTACKS_OFF_SEASON
 local _targetplayer = nil
 local _activehassler = nil
 local _storedhassler = nil
+
+local _timetoattack
 
 local _activeplayers = {}
 
@@ -48,20 +52,21 @@ local _activeplayers = {}
 --------------------------------------------------------------------------
 
 local function AllowedToAttack()
-	--print("Deerclopsspawner allowed to attack?", TheWorld.state.cycles, _attackduringoffseason, TheWorld.state.season)
+	--print("Deerclopsspawner allowed to attack?", #_activeplayers, TheWorld.state.cycles, _attackoffseason, TheWorld.state.season)
     return  #_activeplayers > 0 and
-            TheWorld.state.cycles > TUNING.NO_BOSS_TIME and  
-                (_attackduringoffseason or
+            TheWorld.state.cycles > TUNING.NO_BOSS_TIME and
+                (_attackoffseason or
                 TheWorld.state.season == "winter")
 end
 
 local function IsEligible(player)
 	local area = player.components.areaaware
 	return TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())
-			and area:GetCurrentArea() ~= nil 
+			and area:GetCurrentArea() ~= nil
 			and not area:CurrentlyInTag("nohasslers")
 end
 
+local ATTACK_MUST_TAGS = {"structure"}
 local function PickAttackTarget()
     _targetplayer = nil
     if #_activeplayers == 0 then
@@ -82,11 +87,11 @@ local function PickAttackTarget()
 	local numStructures = 0
 	local loopCount = 0
 	local player = nil
-	while (numStructures <  STRUCTURES_PER_SPAWN) and (loopCount < (#playerlist + 3)) do 
+	while (numStructures <  STRUCTURES_PER_SPAWN) and (loopCount < (#playerlist + 3)) do
 		player = playerlist[1 + (loopCount % #playerlist)]
 
 		local x,y,z = player.Transform:GetWorldPosition()
-		local ents = TheSim:FindEntities(x,y,z, STRUCTURE_DIST, {"structure"}) 
+		local ents = TheSim:FindEntities(x,y,z, STRUCTURE_DIST, ATTACK_MUST_TAGS)
 
 		--print("Deerclopsspawner loop", #ents, loopCount, player)
 		numStructures = #ents
@@ -100,28 +105,22 @@ local function PauseAttacks()
 	_targetplayer = nil
     _warning = false
     self.inst:StopUpdatingComponent(self)
+    _worldsettingstimer:PauseTimer(DEERCLOPS_TIMERNAME, true)
 end
 
 local function ResetAttacks()
-    _timetoattack = nil
+    _worldsettingstimer:StopTimer(DEERCLOPS_TIMERNAME)
     PauseAttacks()
 end
 
 local function TryStartAttacks(killed)
     if AllowedToAttack() then
-        if _activehassler == nil and _attacksperwinter > 0 and _timetoattack == nil then
-            -- Shorten the time used for winter to account for the time deerclops spends stomping around
-            -- Then add one to _attacksperwinter to shift the attacks so the last attack isn't right when the season changes to spring
-            local attackdelay = (TheWorld.state.winterlength - 1) * TUNING.TOTAL_DAY_TIME / (_attacksperwinter + 1) 
-            if killed == true then
-                attackdelay = attackdelay * HASSLER_KILLED_DELAY_MULT
-            end
-            -- Remove randomization in case that shifts it too far
-            --local attackrandom = 0.1*attackdelay
-            _timetoattack = GetRandomWithVariance(attackdelay, 0)
-            --print("got time to attack", _timetoattack, attackdelay, attackrandom)
+        if _activehassler == nil and _attacksperseason > 0 and _worldsettingstimer:GetTimeLeft(DEERCLOPS_TIMERNAME) == nil then
+            local attackdelay = killed == true and _attackdelay * HASSLER_KILLED_DELAY_MULT or _attackdelay
+            _worldsettingstimer:StartTimer(DEERCLOPS_TIMERNAME, attackdelay)
         end
 
+        _worldsettingstimer:ResumeTimer(DEERCLOPS_TIMERNAME)
         self.inst:StartUpdatingComponent(self)
         self:StopWatchingWorldState("cycles", TryStartAttacks)
         self.inst.watchingcycles = nil
@@ -135,9 +134,13 @@ local function TryStartAttacks(killed)
 end
 
 local function TargetLost()
-    if _timetoattack == nil or (_timetoattack < _warnduration and _warning) then
+    local timetoattack = _worldsettingstimer:GetTimeLeft(DEERCLOPS_TIMERNAME)
+    if timetoattack == nil then
         _warning = false
-        _timetoattack = _warnduration + 1
+        _worldsettingstimer:StartTimer(DEERCLOPS_TIMERNAME, _warnduration + 1)
+    elseif (timetoattack < _warnduration and _warning) then
+        _warning = false
+        _worldsettingstimer:SetTimeLeft(DEERCLOPS_TIMERNAME, _warnduration + 1)
     end
 
     PickAttackTarget()
@@ -158,6 +161,7 @@ local function GetSpawnPoint(pt)
     end
 end
 
+local STRUCTURE_TAGS = {"structure"}
 local function ReleaseHassler(targetPlayer)
     assert(targetPlayer)
 
@@ -177,7 +181,7 @@ local function ReleaseHassler(targetPlayer)
 
         if hassler ~= nil then
             hassler.Physics:Teleport(spawn_pt:Get())
-            local target = GetClosestInstWithTag("structure", targetPlayer, 40)
+            local target = GetClosestInstWithTag(STRUCTURE_TAGS, targetPlayer, 40)
             if target ~= nil then
                 hassler.components.knownlocations:RememberLocation("targetbase", target:GetPosition())
             end
@@ -238,24 +242,45 @@ local function OnHasslerKilled(src, hassler)
 	TryStartAttacks(true)
 end
 
+local function OnDeerclopsTimerDone(src, data)
+    _warning = false
+    if _targetplayer == nil then
+        PickAttackTarget() -- In case a long update skipped the warning or something
+    end
+    if _targetplayer ~= nil then
+        _activehassler = ReleaseHassler(_targetplayer)
+        ResetAttacks()
+    else
+        TargetLost()
+    end
+end
+
 --------------------------------------------------------------------------
 --[[ Public member functions ]]
 --------------------------------------------------------------------------
 
 function self:SetAttacksPerWinter(attacks)
-    _attacksperwinter = attacks
+    --depreciated
 end
 
 function self:OverrideAttacksPerSeason(name, num)
-	if name == "DEERCLOPS" then
-		_attacksperwinter = num
-	end
+    --depreciated
 end
 
 function self:OverrideAttackDuringOffSeason(name, bool)
-	if name == "DEERCLOPS" then
-		_attackduringoffseason = bool
-	end
+    --depreciated
+end
+
+function self:OnPostInit()
+    -- Shorten the time used for winter to account for the time deerclops spends stomping around
+    -- Then add one to _attacksperseason to shift the attacks so the last attack isn't right when the season changes to spring
+    _attackdelay = (TheWorld.state.winterlength - 1) * TUNING.TOTAL_DAY_TIME / (_attacksperseason + 1)
+    _worldsettingstimer:AddTimer(DEERCLOPS_TIMERNAME, _attackdelay, TUNING.SPAWN_DEERCLOPS, OnDeerclopsTimerDone)
+
+    if _timetoattack then
+        _worldsettingstimer:StartTimer(DEERCLOPS_TIMERNAME, math.min(_timetoattack, _attackdelay))
+    end
+    TryStartAttacks()
 end
 
 local function _DoWarningSpeech(player)
@@ -263,7 +288,7 @@ local function _DoWarningSpeech(player)
 end
 
 function self:DoWarningSpeech(_targetplayer)
-    for i, v in ipairs(_activeplayers) do 
+    for i, v in ipairs(_activeplayers) do
         if v == _targetplayer or v:IsNear(_targetplayer, HASSLER_SPAWN_DIST * 2) then
             v:DoTaskInTime(math.random() * 2, _DoWarningSpeech)
         end
@@ -273,36 +298,21 @@ end
 function self:DoWarningSound(_targetplayer)
     --Players near _targetplayer will hear the warning sound from the
     --same direction and volume offset from their own local positions
+    local timetoattack = _worldsettingstimer:GetTimeLeft(DEERCLOPS_TIMERNAME)
     SpawnPrefab("deerclopswarning_lvl"..
-        (((_timetoattack == nil or
-        _timetoattack < 30) and "4") or
-        (_timetoattack < 60 and "3") or
-        (_timetoattack < 90 and "2") or
-                                "1")
+        (((timetoattack == nil or timetoattack < 30) and "4") or (timetoattack < 60 and "3") or (timetoattack < 90 and "2") or "1")
     ).Transform:SetPosition(_targetplayer.Transform:GetWorldPosition())
 end
 
 function self:OnUpdate(dt)
-	--print("in OnUpdate", _timetoattack, _targetplayer, _activehassler)
-    if not _timetoattack or _activehassler ~= nil then
+    local timetoattack = _worldsettingstimer:GetTimeLeft(DEERCLOPS_TIMERNAME)
+    if _activehassler ~= nil or not timetoattack then
         ResetAttacks()
         return
     end
-	_timetoattack = _timetoattack - dt
-	if _timetoattack <= 0 then
-		_warning = false
-		_timetoattack = nil
-		if _targetplayer == nil then
-			PickAttackTarget() -- In case a long update skipped the warning or something
-		end
-        if _targetplayer ~= nil then
-            _activehassler = ReleaseHassler(_targetplayer)
-            ResetAttacks()
-        else
-            TargetLost()
-        end
-	else
-		if not _warning and _timetoattack < _warnduration then
+
+    if not _warning then
+        if timetoattack > 0 and timetoattack < _warnduration then
 			-- let's pick a random player here
 			PickAttackTarget()
 			if not _targetplayer then
@@ -311,11 +321,9 @@ function self:OnUpdate(dt)
 			end
 			_warning = true
 			_timetonextwarningsound = 0
-		end
-	end
-
-	if _warning then
-		_timetonextwarningsound	= _timetonextwarningsound - dt
+        end
+    else
+        _timetonextwarningsound	= _timetonextwarningsound - dt
 
 		if _timetonextwarningsound <= 0 then
 	        if _targetplayer == nil then
@@ -331,7 +339,7 @@ function self:OnUpdate(dt)
 				self:DoWarningSpeech(_targetplayer)
 			end
 
-            _timetonextwarningsound = _timetoattack < 30 and 10 + math.random(1) or 15 + math.random(4)
+            _timetonextwarningsound = timetoattack < 30 and 10 + math.random(1) or 15 + math.random(4)
 			self:DoWarningSound(_targetplayer)
 		end
 	end
@@ -349,7 +357,6 @@ function self:OnSave()
 	local data =
 	{
 		warning = _warning,
-		timetoattack = _timetoattack,
 		storedhassler = _storedhassler,
 	}
 
@@ -364,8 +371,12 @@ end
 
 function self:OnLoad(data)
 	_warning = data.warning or false
-	_timetoattack = data.timetoattack
-	_storedhassler = data.storedhassler
+    _storedhassler = data.storedhassler
+
+    --retrofit old timer to new system
+    if data.timetoattack then
+        _timetoattack = data.timetoattack
+    end
 end
 
 function self:LoadPostPass(newents, savedata)
@@ -380,13 +391,14 @@ end
 --------------------------------------------------------------------------
 
 function self:GetDebugString()
+    local timetoattack = _worldsettingstimer:GetTimeLeft(DEERCLOPS_TIMERNAME)
 	local s = ""
-	if not _timetoattack then
+	if not timetoattack then
 	    s = s .. "DORMANT <no time>"
 	elseif self.inst.updatecomponents[self] == nil then
-		s = s .. "DORMANT ".._timetoattack
-	elseif _timetoattack > 0 then
-		s = s .. string.format("%s Deerclops is coming for %s in %2.2f", _warning and "WARNING" or "WAITING", tostring(_targetplayer) or "<nil>", _timetoattack)
+		s = s .. "DORMANT "..timetoattack
+	elseif timetoattack > 0 then
+		s = s .. string.format("%s Deerclops is coming for %s in %2.2f", _warning and "WARNING" or "WAITING", tostring(_targetplayer) or "<nil>", timetoattack)
 	else
 		s = s .. string.format("ATTACKING!!!")
 	end
@@ -396,7 +408,12 @@ function self:GetDebugString()
 end
 
 function self:SummonMonster(player)
-	_timetoattack = 10
+    if _worldsettingstimer:ActiveTimerExists(DEERCLOPS_TIMERNAME) then
+        _worldsettingstimer:SetTimeLeft(DEERCLOPS_TIMERNAME, 10)
+        _worldsettingstimer:ResumeTimer(DEERCLOPS_TIMERNAME)
+    else
+        _worldsettingstimer:StartTimer(DEERCLOPS_TIMERNAME, 10)
+    end
 	self.inst:StartUpdatingComponent(self)
 end
 
@@ -413,9 +430,5 @@ self:WatchWorldState("season", OnSeasonChange)
 self.inst:ListenForEvent("hasslerremoved", OnHasslerRemoved, TheWorld)
 self.inst:ListenForEvent("hasslerkilled", OnHasslerKilled, TheWorld)
 self.inst:ListenForEvent("storehassler", OnStoreHassler, TheWorld)
-
-function self:OnPostInit()
-    TryStartAttacks()
-end
 
 end)

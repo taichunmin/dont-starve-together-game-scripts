@@ -88,7 +88,7 @@ function DeerBrain:OnStart()
     local solomentality = PriorityNode(
     {
         WhileNode(function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
-        WhileNode(function() return self.inst.components.combat:HasTarget() end, "Flee", 
+        WhileNode(function() return self.inst.components.combat:HasTarget() end, "Flee",
             PriorityNode{
                 AttackWall(self.inst),
                 RunAway(self.inst, {fn=function(guy) return self.inst.components.combat:TargetIs(guy) end, tags={"player"}}, TUNING.DEER_ATTACKER_REMEMBER_DIST, TUNING.DEER_ATTACKER_REMEMBER_DIST),
@@ -99,7 +99,7 @@ function DeerBrain:OnStart()
         BrainCommon.AnchorToSaltlick(self.inst),
         --Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("nonherdhome") end, GetWanderDistFn),
         Wander(self.inst),
-        
+
     })
 
     local herdmentality = PriorityNode(

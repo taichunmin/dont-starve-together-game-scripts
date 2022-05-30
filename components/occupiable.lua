@@ -122,7 +122,7 @@ function Occupiable:OnSave()
     {
         occupant = self.occupant ~= nil and self.occupant:IsValid() and self.occupant:GetSaveRecord() or nil,
     }
-end   
+end
 
 function Occupiable:OnLoad(data, newents)
     if data.occupant ~= nil then

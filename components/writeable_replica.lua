@@ -90,7 +90,7 @@ function Writeable:Write(doer, text)
     if self.inst.components.writeable ~= nil then
         self.inst.components.writeable:Write(doer, text)
     elseif self.classified ~= nil and doer == ThePlayer
-        and (text == nil or text:utf8len() <= MAX_WRITEABLE_LENGTH) then
+        and (text == nil or text:utf8len() <= (writeables.GetLayout(self.inst.prefab).maxcharacters or MAX_WRITEABLE_LENGTH)) then
         SendRPCToServer(RPC.SetWriteableText, self.inst, text)
     end
 end

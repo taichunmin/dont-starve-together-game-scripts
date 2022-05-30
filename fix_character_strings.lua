@@ -14,15 +14,15 @@ local function alphatable(in_table, indent)
 		if type(k) == "number" then
 			key = "["..key.."]"
 		end
-		
+
 		if type(v) == "string" then
 			table.insert(items, string.format("%s%s = %q,", inner_indentstr, key, v))
 		elseif type(v) == "table" then
 			local str = alphatable(v, indent + 1)
 			table.insert(items, string.format("%s%s =\n%s,", inner_indentstr, key, str))
 		end
-		
-		
+
+
 	end
 	table.sort(items)
 	table.insert(items, 1, indentstr.."{")
@@ -34,7 +34,7 @@ end
 if file_in then
 
 	local str = alphatable(require(file_in))
-	str = "return " .. str 
+	str = "return " .. str
 	local file = io.open(file_out, "w")
 	file:write(str)
 	file:close()

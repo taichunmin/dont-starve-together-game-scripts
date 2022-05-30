@@ -23,7 +23,7 @@ local BabyBeefaloBrain = Class(Brain, function(self, inst)
 end)
 
 function BabyBeefaloBrain:OnStart()
-    
+
     local root = PriorityNode(
     {
     	WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
@@ -37,9 +37,9 @@ function BabyBeefaloBrain:OnStart()
                             end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
         Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("herd") end, WANDER_DIST)
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
-    
+
 end
 
 return BabyBeefaloBrain

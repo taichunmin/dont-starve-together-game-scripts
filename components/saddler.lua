@@ -21,9 +21,10 @@ nil,
     speedmult = onspeedmult,
 })
 
-function Saddler:SetSwaps(build, symbol)
+function Saddler:SetSwaps(build, symbol, skin_guid)
     self.swapbuild = build
     self.swapsymbol = symbol
+    self.skin_guid = skin_guid
 end
 
 function Saddler:SetBonusDamage(damage)

@@ -28,19 +28,50 @@ function Networking_SlashCmd(guid, userid, cmd)
 end
 
 function Networking_Announcement(message, colour, announce_type)
-    if ThePlayer ~= nil and ThePlayer.HUD ~= nil and ThePlayer.HUD.eventannouncer.inst:IsValid() then
-        ThePlayer.HUD.eventannouncer:ShowNewAnnouncement(message, colour, announce_type)
+    if message then
+        colour = colour or {1, 1, 1, 1}
+        if not announce_type or announce_type == "" then
+            announce_type = "default"
+        end
+        ChatHistory:OnAnnouncement(message, colour, announce_type)
+    end
+end
+
+function Networking_SkinAnnouncement(user_name, user_colour, skin_name)
+    if user_name and user_colour and skin_name then
+        ChatHistory:OnSkinAnnouncement(user_name, user_colour, skin_name)
     end
 end
 
 function Networking_SystemMessage(message)
-    if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
-        ThePlayer.HUD.controls.networkchatqueue:DisplaySystemMessage(message)
+    if message then
+        ChatHistory:OnSystemMessage(message)
+    end
+end
+
+function Networking_Say(guid, userid, name, prefab, message, colour, whisper, isemote, user_vanity)
+    if message ~= nil and message:utf8len() > MAX_CHAT_INPUT_LENGTH then
+        return
+    end
+
+	local netid = TheNet:GetNetIdForUser(userid)
+
+    local entity = Ents[guid]
+    if not isemote and entity ~= nil and entity.components.talker ~= nil then
+        entity.components.talker:Say(not entity:HasTag("mime") and message or "", nil, nil, nil, true, colour, TEXT_FILTER_CTX_CHAT, netid)
+    end
+
+    if message then
+        ChatHistory:OnSay(guid, userid, netid, name, prefab, message, colour, whisper, isemote, user_vanity)
     end
 end
 
 function Networking_ModOutOfDateAnnouncement(mod)
-    Networking_Announcement(string.format(STRINGS.MODS.VERSIONING.OUT_OF_DATE, mod), nil, "mod")
+    if IsRail() then
+        Networking_Announcement(string.format(STRINGS.MODS.VERSIONING.OUT_OF_DATE_RAIL, mod), nil, "mod")
+    else
+        Networking_Announcement(string.format(STRINGS.MODS.VERSIONING.OUT_OF_DATE, mod), nil, "mod")
+    end
 end
 
 function Networking_DeathAnnouncement(message, colour)
@@ -100,55 +131,14 @@ function Networking_VoteAnnouncement(commandid, targetname, passed)
     end
 end
 
-function Networking_SkinAnnouncement(user_name, user_colour, skin_name)
-    if ThePlayer ~= nil and ThePlayer.HUD ~= nil and ThePlayer.HUD.eventannouncer.inst:IsValid() then
-        ThePlayer.HUD.eventannouncer:ShowSkinAnnouncement(user_name, user_colour, skin_name)
-    end
-end
-
 function Networking_RollAnnouncement(userid, name, prefab, colour, rolls, max)
-    local hud = ThePlayer ~= nil and ThePlayer.HUD or nil
-    if hud ~= nil then
-        name = hud.controls.networkchatqueue:GetDisplayName(name, prefab)
-        Networking_Announcement(string.format(STRINGS.UI.NOTIFICATION.DICEROLLED, name, table.concat(rolls, ", "), max), colour, "dice_roll")
-    end
+    Networking_Announcement(string.format(STRINGS.UI.NOTIFICATION.DICEROLLED, ChatHistory:GetDisplayName(name, prefab), table.concat(rolls, ", "), max), colour, "dice_roll")
 end
 
-function Networking_Say(guid, userid, name, prefab, message, colour, whisper, isemote, user_vanity)
-    if message ~= nil and message:utf8len() > MAX_CHAT_INPUT_LENGTH then
-        return
-    end
-    local entity = Ents[guid]
-    if not isemote and entity ~= nil and entity.components.talker ~= nil then
-        entity.components.talker:Say(not entity:HasTag("mime") and message or "", nil, nil, nil, true, colour)
-    end
-    if message ~= nil then
-        if not (whisper or isemote) then
-            local screen = TheFrontEnd:GetActiveScreen()
-            if screen ~= nil and screen.ReceiveChatMessage then
-                screen:ReceiveChatMessage(name, prefab, message, colour, whisper)
-            end
-        end
-        local hud = ThePlayer ~= nil and ThePlayer.HUD or nil
-        if hud ~= nil
-            and (not whisper
-                or (entity ~= nil
-                    and (hud:HasTargetIndicator(entity) or
-                        entity.entity:FrustumCheck()))) then
-            if isemote then
-                hud.controls.networkchatqueue:DisplayEmoteMessage(name, prefab, message, colour, whisper)
-            else
-                local profileflair = GetRemotePlayerVanityItem(user_vanity or {}, "profileflair")
-                hud.controls.networkchatqueue:OnMessageReceived(name, prefab, message, colour, whisper, profileflair)
-            end
-        end
-    end
-end
-
-function Networking_Talk(guid, message)
+function Networking_Talk(guid, message, duration, text_filter_context, original_author)
     local entity = Ents[guid]
     if entity ~= nil and entity.components.talker ~= nil then
-        entity.components.talker:Say(message, nil, nil, nil, true)
+        entity.components.talker:Say(message, duration, nil, nil, true, nil, text_filter_context, original_author)
     end
 end
 
@@ -230,22 +220,22 @@ function ValidateSpawnPrefabRequest(user_id, prefab_name, skin_base, clothing_bo
     end
 
     if clothing_body ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_body) and IsClothingItem(clothing_body) then
-        validated_clothing_body = clothing_body 
+        validated_clothing_body = clothing_body
     end
     if clothing_hand ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_hand) and IsClothingItem(clothing_hand) then
-        validated_clothing_hand = clothing_hand 
+        validated_clothing_hand = clothing_hand
     end
     if clothing_legs ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_legs) and IsClothingItem(clothing_legs) then
-        validated_clothing_legs = clothing_legs 
+        validated_clothing_legs = clothing_legs
     end
     if clothing_feet ~= "" and TheInventory:CheckClientOwnership(user_id, clothing_feet) and IsClothingItem(clothing_feet) then
-        validated_clothing_feet = clothing_feet 
+        validated_clothing_feet = clothing_feet
     end
-	
+
     return validated_prefab, validated_skin_base, validated_clothing_body, validated_clothing_hand, validated_clothing_legs, validated_clothing_feet
 end
 
-function SpawnNewPlayerOnServerFromSim(player_guid, skin_base, clothing_body, clothing_hand, clothing_legs, clothing_feet)
+function SpawnNewPlayerOnServerFromSim(player_guid, skin_base, clothing_body, clothing_hand, clothing_legs, clothing_feet, starting_item_skins)
     local player = Ents[player_guid]
     if player ~= nil then
         local skinner = player.components.skinner
@@ -257,7 +247,7 @@ function SpawnNewPlayerOnServerFromSim(player_guid, skin_base, clothing_body, cl
         skinner:SetSkinMode("normal_skin")
 
         if player.OnNewSpawn ~= nil then
-            player:OnNewSpawn()
+            player:OnNewSpawn(starting_item_skins)
             player.OnNewSpawn = nil
         end
         TheWorld.components.playerspawner:SpawnAtNextLocation(TheWorld, player)
@@ -276,7 +266,17 @@ function SerializeUserSession(player, isnewspawn)
         --we don't care about references for player saves
         local playerinfo--[[, refs]] = player:GetSaveRecord()
         local data = DataDumper(playerinfo, nil, BRANCH ~= "dev")
-        TheNet:SerializeUserSession(player.userid, data, isnewspawn == true, player.player_classified ~= nil and player.player_classified.entity or nil)
+
+        local metadataStr = ""
+
+        if TheNet:GetIsServer() then
+            local metadata = {
+                character = player.prefab,
+            }
+            metadataStr = DataDumper(metadata, nil, BRANCH ~= "dev")
+        end
+
+        TheNet:SerializeUserSession(player.userid, data, isnewspawn == true, player.player_classified ~= nil and player.player_classified.entity or nil, metadataStr)
     end
 end
 
@@ -286,8 +286,8 @@ function DeleteUserSession(player)
     end
 end
 
-function SerializeWorldSession(data, session_identifier, callback)
-    TheNet:SerializeWorldSession(data, session_identifier, ENCODE_SAVES, callback)
+function SerializeWorldSession(data, session_identifier, callback, metadataStr)
+    TheNet:SerializeWorldSession(data, session_identifier, ENCODE_SAVES, callback, metadataStr or "")
 end
 
 function ReportAction( userid, items, item_counts, users, cb )
@@ -340,7 +340,7 @@ function DownloadMods( server_listing )
         local modinfo = KnownModIndex:GetModInfo(mod_name)
         if not modinfo.client_only_mod then
             if server_listing_contains( server_listing.mods_description, mod_name ) then
-                --we found it, so leave the mod enabled 
+                --we found it, so leave the mod enabled
             else
                 --this mod is required by all clients but the server doesn't have it enabled or it's a server mod, so locally disable it temporarily.
                 --print("Temp disabling ",mod_name)
@@ -372,7 +372,7 @@ function DownloadMods( server_listing )
             if mod.all_clients_require_mod then
                 if not KnownModIndex:DoesModExist( mod.mod_name, mod.version ) then
                     print("Failed to find mod "..mod.mod_name.." v:"..mod.version )
-                    
+
                     have_required_mods = false
                     local can_dl_mod = TheSim:QueueDownloadTempMod(mod.mod_name, mod.version)
                     if not can_dl_mod then
@@ -391,7 +391,7 @@ function DownloadMods( server_listing )
             TheNet:ServerModsDownloadCompleted(true, "", "")
         else
             if needed_mods_in_workshop then
-                TheSim:StartDownloadTempMods( 
+                TheSim:StartDownloadTempMods(
                     function( success, msg )
                         if success then
                             --downloading of mods succeeded, now double check if the right versions exists, if it doesn't then we downloaded the wrong version
@@ -402,7 +402,7 @@ function DownloadMods( server_listing )
                                 if mod.all_clients_require_mod then
                                     if not KnownModIndex:DoesModExist( mod.mod_name, mod.version, mod.version_compatible ) then
                                         all_mods_good = false
-                                        mod_with_invalid_version = mod                                      
+                                        mod_with_invalid_version = mod
                                     end
                                 end
                             end
@@ -424,16 +424,24 @@ function DownloadMods( server_listing )
                                 TheNet:ServerModsDownloadCompleted(false, version_mismatch_msg, "SERVER_MODS_WORKSHOP_VERSION_MISMATCH" )
                             end
                         else
+                            local sku = ""
+                            if IsRail() then
+                                sku = "_RAIL"
+                            end
                             if msg == "Access to mod denied" then
-                                TheNet:ServerModsDownloadCompleted(false, msg, "SERVER_MODS_WORKSHOP_ACCESS_DENIED")                                
+                                TheNet:ServerModsDownloadCompleted(false, msg, "SERVER_MODS_WORKSHOP_ACCESS_DENIED"..sku)
                             else
-                                TheNet:ServerModsDownloadCompleted(false, msg, "SERVER_MODS_WORKSHOP_FAILURE")
+                                TheNet:ServerModsDownloadCompleted(false, msg, "SERVER_MODS_WORKSHOP_FAILURE"..sku)
                             end
                         end
                     end
                 )
             else
-                TheNet:ServerModsDownloadCompleted(false, "You don't have the required mods to play on this server and they don't exist on the Workshop. You will need to download them manually.", "SERVER_MODS_NOT_ON_WORKSHOP" )
+                local error = "SERVER_MODS_NOT_ON_WORKSHOP"
+                if IsRail() then
+                    error = "SERVER_MODS_NOT_ON_WORKSHOP_RAIL"
+                end
+                TheNet:ServerModsDownloadCompleted(false, "You don't have the required mods to play on this server and they don't exist on the Workshop. You will need to download them manually.", error )
             end
         end
     else
@@ -470,10 +478,10 @@ function JoinServer(server_listing, optional_password_override)
     local function after_mod_warning()
         if server_listing.has_password and (optional_password_override == "" or optional_password_override == nil) then
             local password_prompt_screen
-            password_prompt_screen = InputDialogScreen( STRINGS.UI.SERVERLISTINGSCREEN.PASSWORDREQUIRED, 
+            password_prompt_screen = InputDialogScreen( STRINGS.UI.SERVERLISTINGSCREEN.PASSWORDREQUIRED,
                                             {
                                                 {
-                                                    text = STRINGS.UI.SERVERLISTINGSCREEN.OK,
+                                                    text = STRINGS.UI.SERVERLISTINGSCREEN.JOIN,
                                                     cb = function()
                                                         TheFrontEnd:PopScreen()
                                                         send_response( password_prompt_screen:GetActualString() )
@@ -491,7 +499,7 @@ function JoinServer(server_listing, optional_password_override)
             password_prompt_screen.edit_text.OnTextEntered = function()
                 if password_prompt_screen:GetActualString() ~= "" then
                     TheFrontEnd:PopScreen()
-                    send_response( password_prompt_screen:GetActualString() ) 
+                    send_response( password_prompt_screen:GetActualString() )
                 else
                     password_prompt_screen.edit_text:SetEditing(true)
                 end
@@ -499,7 +507,7 @@ function JoinServer(server_listing, optional_password_override)
             if not Profile:GetShowPasswordEnabled() then
                 password_prompt_screen.edit_text:SetPassword(true)
             end
-            TheFrontEnd:PushScreen(password_prompt_screen)  
+            TheFrontEnd:PushScreen(password_prompt_screen)
             password_prompt_screen.edit_text:SetForceEdit(true)
             password_prompt_screen.edit_text:OnControl(CONTROL_ACCEPT, false)
         else
@@ -520,7 +528,7 @@ function JoinServer(server_listing, optional_password_override)
 			local imageW, imageH = checkbox:GetSize()
 			text:SetVAlign(ANCHOR_LEFT)
 			text:SetColour(0,0,0,1)
-			local checkbox_x = -textW/2 - (imageW*2) 
+			local checkbox_x = -textW/2 - (imageW*2)
 			local region = 600
 			checkbox:SetPosition(checkbox_x, 0)
 			text:SetRegionSize(region,50)
@@ -571,20 +579,20 @@ function JoinServer(server_listing, optional_password_override)
 			mod_warning.dialog.actions.items[1]:SetPosition(305,55,0)
 			mod_warning.dialog.actions.items[2]:SetPosition(105,-10,0)
             mod_warning.dialog.actions.items[3]:SetPosition(355,-10,0)
-            
+
 			TheFrontEnd:PushScreen( mod_warning )
 		else
 			after_mod_warning()
 		end
 	end
-	
+
 	if server_listing.client_mods_disabled and
 		not IsMigrating() and
 		(server_listing.dedicated or not server_listing.owner) and
 		AreAnyClientModsEnabled() then
-		
+
 		local client_mod_msg = PopupDialogScreen(STRINGS.UI.SERVERLISTINGSCREEN.CLIENT_MODS_DISABLED_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.CLIENT_MODS_DISABLED_BODY,
-			{{ text=STRINGS.UI.SERVERLISTINGSCREEN.CONTINUE, cb = function() 
+			{{ text=STRINGS.UI.SERVERLISTINGSCREEN.CONTINUE, cb = function()
 						TheFrontEnd:PopScreen()
 						after_client_mod_message()
 			end }})
@@ -593,7 +601,7 @@ function JoinServer(server_listing, optional_password_override)
 	else
 		after_client_mod_message()
 	end
-	
+
 end
 
 function MigrateToServer(serverIp, serverPort, serverPassword, serverNetId)
@@ -668,7 +676,7 @@ end
 local function DoReset()
     StartNextInstance({
         reset_action = RESET_ACTION.LOAD_SLOT,
-        save_slot = SaveGameIndex:GetCurrentSaveSlot()
+        save_slot = ShardGameIndex:GetSlot()
     })
 end
 
@@ -676,8 +684,7 @@ function WorldResetFromSim()
     if TheWorld ~= nil and TheWorld.ismastersim then
         print("Received world reset request")
         TheWorld:PushEvent("ms_worldreset")
-        SaveGameIndex:DeleteSlot(
-            SaveGameIndex:GetCurrentSaveSlot(),
+        ShardGameIndex:Delete(
             DoReset,
             true -- true causes world gen options to be preserved
         )
@@ -723,8 +730,8 @@ function UpdateServerTagsString()
         table.insert(tagsTable, STRINGS.TAGS.CLAN)
     end
 
-    local worldoptions = SaveGameIndex:GetSlotGenOptions()
-    local worlddata = worldoptions ~= nil and worldoptions[1] or nil
+    local worldoptions = ShardGameIndex:GetGenOptions()
+    local worlddata = worldoptions or nil
     if worlddata ~= nil and worlddata.location ~= nil then
         local locationtag = STRINGS.TAGS.LOCATION[string.upper(worlddata.location)]
         if locationtag ~= nil then
@@ -737,11 +744,11 @@ end
 
 function UpdateServerWorldGenDataString()
     local clusteroptions = {}
-    local worldoptions = SaveGameIndex:GetSlotGenOptions()
-    table.insert(clusteroptions, worldoptions ~= nil and worldoptions[1] or {})
+    local worldoptions = deepcopy(ShardGameIndex:GetGenOptions())
+    table.insert(clusteroptions, worldoptions or {})
 
     if TheShard:IsMaster() then
-        -- Merge slave worldgen data
+        -- Merge secondary shard worldgen data
         for k, v in pairs(Shard_GetConnectedShards()) do
             if v.world ~= nil and v.world[1] ~= nil then
                 table.insert(clusteroptions, v.world[1])
@@ -749,7 +756,7 @@ function UpdateServerWorldGenDataString()
         end
     end
 
-    local customise = require"map/customise"
+    local Customize = require"map/customize"
     for i,world in ipairs(clusteroptions) do
         if world.overrides == nil then
             -- gjans: I'm not sure how we got this far without crashing, but this isn't the right time to crash.
@@ -757,7 +764,7 @@ function UpdateServerWorldGenDataString()
         else
             for option,value in pairs(world.overrides) do
                 -- we can aggressively prune these for network purposes, as the only use after this is the server info screen.
-                if value == "default" or not customise.ValidateOption(option, value, world.location) then
+                if value == "default" or not Customize.ValidateOption(option, value, world.location) then
                     world.overrides[option] = nil
                 end
             end
@@ -781,7 +788,7 @@ function GetDefaultServerData()
         game_mode = TheNet:GetDefaultGameMode(),
         online_mode = TheNet:IsOnlineMode(),
         encode_user_path = TheNet:GetDefaultEncodeUserPath(),
-        use_cluster_path = true,
+        use_legacy_session_path = nil,
         max_players = TheNet:GetDefaultMaxPlayers(),
         name = TheNet:GetDefaultServerName(),
         password = TheNet:GetDefaultServerPassword(),
@@ -811,7 +818,7 @@ function StartDedicatedServer()
         --V2C: From now on, we want to actually write data into
         --     a slot before initiating LOAD_SLOT action on it!
 
-        local slot = SaveGameIndex:GetCurrentSaveSlot()
+        local slot = ShardGameIndex:GetSlot()
         local serverdata = GetDefaultServerData()
 
         local function onsaved()
@@ -820,18 +827,18 @@ function StartDedicatedServer()
             StartNextInstance({ reset_action = RESET_ACTION.LOAD_SLOT, save_slot = slot })
         end
 
-        if SaveGameIndex:IsSlotEmpty(slot) then
-            SaveGameIndex:StartSurvivalMode(slot, nil, serverdata, onsaved)
+        if ShardGameIndex:IsEmpty() then
+            ShardGameIndex:SetServerShardData(nil, serverdata, onsaved)
         else
             if TheNet:GetServerIsClientHosted() then
-                local slot_server_data = SaveGameIndex:GetSlotServerData(slot)
+                local slot_server_data = ShardGameIndex:GetServerData(slot)
                 --V2C: new flags added, with backward compatibility
-                if not serverdata.encode_user_path and slot_server_data ~= nil and slot_server_data.encode_user_path then
+                if not serverdata.encode_user_path and slot_server_data.encode_user_path then
                     serverdata.encode_user_path = TheNet:TryDefaultEncodeUserPath()
                 end
-                serverdata.use_cluster_path = slot_server_data ~= nil and slot_server_data.use_cluster_path
+                serverdata.use_legacy_session_path = slot_server_data.use_legacy_session_path
             end
-            SaveGameIndex:UpdateServerData(slot, serverdata, onsaved)
+            ShardGameIndex:SetServerShardData(nil, serverdata, onsaved)
         end
     end
 end
@@ -854,7 +861,7 @@ function CalcQuickJoinServerScore(server)
 		and (server.ping > 0 and server.ping < 200)							-- filter out bad pings
 	then
 		local score = 0
-		
+
 		if server.friend_playing then										score = score + 10		end
 		if server._has_character_on_server then								score = score + 4		end
 		if server.current_players >= 3 then									score = score + 3		end
@@ -863,10 +870,10 @@ function CalcQuickJoinServerScore(server)
 		if server.season ~= nil and server.season == SEASONS.AUTUMN then	score = score + 2		end
 
 		if server.current_players == 0 then									score = score - 1		end
-		
+
 		return score
 	end
-	
+
 	return -1
 end
 

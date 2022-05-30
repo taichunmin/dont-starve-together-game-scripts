@@ -29,7 +29,7 @@ local OnCountdownUpdate = _ismastershard and function(src, data)
 end or nil
 
 local OnCountdownDirty = not _ismastershard and function()
-    _world:PushEvent("slave_worldresetupdate", { countdown = _countdown:value() })
+    _world:PushEvent("secondary_worldresetupdate", { countdown = _countdown:value() })
 end or nil
 
 --------------------------------------------------------------------------

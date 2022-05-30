@@ -27,7 +27,7 @@ local function fn()
     inst.AnimState:SetBuild("coldfire_fire")
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
     inst.AnimState:SetRayTestOnBB(true)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
 

@@ -13,13 +13,16 @@ local Widget = require "widgets/widget"
 
 local DEBUG_MODE = BRANCH == "dev"
 local CONSOLE_HISTORY = {}
+local CONSOLE_LOCALREMOTE_HISTORY = {}
 
 local ConsoleScreen = Class(Screen, function(self)
 	Screen._ctor(self, "ConsoleScreen")
     self.runtask = nil
 	self:DoInit()
-	
+
 	self.ctrl_pasting = false
+
+	SetConsoleAutopaused(true)
 end)
 
 function ConsoleScreen:OnBecomeActive()
@@ -41,10 +44,16 @@ function ConsoleScreen:OnBecomeInactive()
     end
 end
 
+function ConsoleScreen:OnDestroy()
+	SetConsoleAutopaused(false)
+
+	ConsoleScreen._base.OnDestroy(self)
+end
+
 function ConsoleScreen:OnControl(control, down)
 	if self.runtask ~= nil or ConsoleScreen._base.OnControl(self, control, down) then return true end
 
-	if not down and (control == CONTROL_CANCEL or control == CONTROL_OPEN_DEBUG_CONSOLE) then 
+	if not down and (control == CONTROL_CANCEL or control == CONTROL_OPEN_DEBUG_CONSOLE) then
 		self:Close()
 		return true
 	end
@@ -61,7 +70,7 @@ function ConsoleScreen:ToggleRemoteExecute(force)
         elseif force == false then
             self.toggle_remote_execute = false
         end
-        
+
         if self.toggle_remote_execute then
         	self.console_remote_execute:SetString(STRINGS.UI.CONSOLESCREEN.REMOTEEXECUTE)
         	self.console_remote_execute:SetColour(0.7,0.7,1,1)
@@ -83,10 +92,10 @@ function ConsoleScreen:OnRawKey(key, down)
 	if down then return end
 
 	if self.runtask ~= nil then return true end
-	if ConsoleScreen._base.OnRawKey(self, key, down) then 
-		return true 
+	if ConsoleScreen._base.OnRawKey(self, key, down) then
+		return true
 	end
-	
+
 	return self:OnRawKeyHandler(key, down)
 end
 
@@ -96,7 +105,7 @@ function ConsoleScreen:OnRawKeyHandler(key, down)
 	end
 
 	if down then return end
-	
+
 	if key == KEY_UP then
 		local len = #CONSOLE_HISTORY
 		if len > 0 then
@@ -106,6 +115,7 @@ function ConsoleScreen:OnRawKeyHandler(key, down)
 				self.history_idx = len
 			end
 			self.console_edit:SetString( CONSOLE_HISTORY[ self.history_idx ] )
+			self:ToggleRemoteExecute( CONSOLE_LOCALREMOTE_HISTORY[self.history_idx] )
 		end
 	elseif key == KEY_DOWN then
 		local len = #CONSOLE_HISTORY
@@ -113,9 +123,11 @@ function ConsoleScreen:OnRawKeyHandler(key, down)
 			if self.history_idx ~= nil then
 				if self.history_idx == len then
 					self.console_edit:SetString( "" )
+					self:ToggleRemoteExecute( true )
 				else
 					self.history_idx = math.min( len, self.history_idx + 1 )
 					self.console_edit:SetString( CONSOLE_HISTORY[ self.history_idx ] )
+					self:ToggleRemoteExecute( CONSOLE_LOCALREMOTE_HISTORY[self.history_idx] )
 				end
 			end
 		end
@@ -134,11 +146,12 @@ function ConsoleScreen:Run()
 	local fnstr = self.console_edit:GetString()
 
     SuUsedAdd("console_used")
-	
+
 	if fnstr ~= "" then
 		table.insert( CONSOLE_HISTORY, fnstr )
+		table.insert( CONSOLE_LOCALREMOTE_HISTORY, self.toggle_remote_execute )
 	end
-	
+
 	if self.toggle_remote_execute then
         local x, y, z = TheSim:ProjectScreenPos(TheSim:GetPosition())
 		TheNet:SendRemoteExecute(fnstr, x, z)
@@ -150,7 +163,7 @@ end
 function ConsoleScreen:Close()
 	--SetPause(false)
 	TheInput:EnableDebugToggle(true)
-	TheFrontEnd:PopScreen(self)	
+	TheFrontEnd:PopScreen(self)
 	TheFrontEnd:HideConsoleLog()
 end
 
@@ -166,7 +179,7 @@ end
 function ConsoleScreen:OnTextEntered()
     if self.runtask ~= nil then
         self.runtask:Cancel()
-    end
+	end
     self.runtask = self.inst:DoTaskInTime(0, DoRun, self)
 end
 
@@ -174,9 +187,19 @@ function GetConsoleHistory()
     return CONSOLE_HISTORY
 end
 
+function GetConsoleLocalRemoteHistory()
+    return CONSOLE_LOCALREMOTE_HISTORY
+end
+
 function SetConsoleHistory(history)
     if type(history) == "table" and type(history[1]) == "string" then
         CONSOLE_HISTORY = history
+    end
+end
+
+function SetConsoleLocalRemoteHistory(history)
+    if type(history) == "table" and type(history[1]) == "boolean" then
+        CONSOLE_LOCALREMOTE_HISTORY = history
     end
 end
 
@@ -188,7 +211,7 @@ function ConsoleScreen:DoInit()
 	local fontsize = 30
 	local edit_width = 900
 	local edit_bg_padding = 100
-	
+
 	self.edit_width   = edit_width
 	self.label_height = label_height
 
@@ -199,7 +222,7 @@ function ConsoleScreen:DoInit()
     --self.root:SetMaxPropUpscale(MAX_HUD_SCALE)
 	self.root = self.root:AddChild(Widget(""))
 	self.root:SetPosition(0,100,0)
-	
+
     self.edit_bg = self.root:AddChild( Image() )
 	self.edit_bg:SetTexture( "images/textboxes.xml", "textbox_long.tex" )
 	self.edit_bg:SetPosition( 0, 0 )
@@ -216,7 +239,7 @@ function ConsoleScreen:DoInit()
 	self.console_edit = self.root:AddChild( TextEdit( DEFAULTFONT, fontsize, "" ) )
 	self.console_edit.edit_text_color = {1,1,1,1}
 	self.console_edit.idle_text_color = {1,1,1,1}
-	self.console_edit:SetEditCursorColour(1,1,1,1) 
+	self.console_edit:SetEditCursorColour(1,1,1,1)
 	self.console_edit:SetPosition( -4,0,0)
 	self.console_edit:SetRegionSize( edit_width, label_height )
 	self.console_edit:SetHAlign(ANCHOR_LEFT)
@@ -237,8 +260,8 @@ function ConsoleScreen:DoInit()
 
 	self.console_edit:EnableWordPrediction({width = 1000, mode=Profile:GetConsoleAutocompleteMode()})
 	self.console_edit:AddWordPredictionDictionary({words = prefab_names, delim = '"', postfix='"', skip_pre_delim_check=true})
-	self.console_edit:AddWordPredictionDictionary({words = prefab_names, delim = "'", postfix='"', skip_pre_delim_check=true})
-	local prediction_command = {"spawn", "save", "gonext", "give", "mat", "list", "findnext", "countprefabs", "selectnear", "removeall", "shutdown", "regenerateworld", "reset", "despawn", "godmode", "supergodmode", "armor", "makeboat", "makeboatspiral", "autoteleportplayers", "gatherplayers", "dumpentities" }
+	self.console_edit:AddWordPredictionDictionary({words = prefab_names, delim = "'", postfix="'", skip_pre_delim_check=true})
+	local prediction_command = {"setmightiness", "spawn", "save", "gonext", "give", "mat", "list", "findnext", "countprefabs", "selectnear", "removeall", "shutdown", "regenerateworld", "reset", "despawn", "godmode", "supergodmode", "armor", "makeboat", "makeboatspiral", "autoteleportplayers", "gatherplayers", "dumpentities", "freecrafting", "selectnext", "sounddebug" }
 	self.console_edit:AddWordPredictionDictionary({words = prediction_command, delim = "c_", num_chars = 0})
 
 	self.console_edit:SetForceEdit(true)
@@ -249,8 +272,9 @@ function ConsoleScreen:DoInit()
 	self.console_edit.validrawkeys[KEY_RCTRL] = true
 	self.console_edit.validrawkeys[KEY_UP] = true
 	self.console_edit.validrawkeys[KEY_DOWN] = true
+	self.console_edit.validrawkeys[KEY_V] = true
 	self.toggle_remote_execute = false
-		
+
 end
 
 return ConsoleScreen

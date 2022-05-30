@@ -55,10 +55,12 @@ local function OnEntityWake(inst)
     inst.nextrattletime = nil
 end
 
+local TARGET_CANT_TAGS = { "insect", "playerghost" }
+local TARGET_ONEOF_TAGS = { "character", "animal", "monster" }
 local function SpawnBees(inst, target)
     inst.SoundEmitter:PlaySound("dontstarve/bee/beemine_explo")
     if target == nil or not target:IsValid() then
-        target = FindEntity(inst, 25, nil, nil, { "insect", "playerghost" }, { "character", "animal", "monster" })
+        target = FindEntity(inst, 25, nil, nil, TARGET_CANT_TAGS, TARGET_ONEOF_TAGS)
     end
     if target ~= nil then
         for i = 1, TUNING.BEEMINE_BEES do

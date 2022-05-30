@@ -36,7 +36,7 @@ local events =
     CommonHandlers.OnSleepEx(),
     CommonHandlers.OnWakeEx(),
     CommonHandlers.OnFreeze(),
-    CommonHandlers.OnAttacked(),
+    CommonHandlers.OnAttacked(TUNING.DEER_HIT_RECOVERY, TUNING.DEER_MAX_STUN_LOCKS),
     CommonHandlers.OnDeath(),
     EventHandler("doattack", function(inst, data)
         if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
@@ -226,7 +226,7 @@ local states =
             inst:ShowAntler()
         end,
     },
-    
+
     State{
         name = "knockoffantler",
         tags = { "busy" },

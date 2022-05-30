@@ -36,9 +36,9 @@ local BugReportScreen = Class(Screen, function(self)
     panel_frame:SetPosition(8, -5)
     panel_frame:SetScale(0.69, 0.75)
 
-    self.title  = panel_bg_frame:AddChild(Text(BUTTONFONT, 
-                                               fontsize, 
-                                               STRINGS.UI.BUGREPORTSCREEN.DESCRIPTION_LABEL, 
+    self.title  = panel_bg_frame:AddChild(Text(BUTTONFONT,
+                                               fontsize,
+                                               STRINGS.UI.BUGREPORTSCREEN.DESCRIPTION_LABEL,
                                                {0, 0, 0, 1}))
     self.title:SetPosition(-110, 250)
     self.title:SetRegionSize(600, 60)
@@ -102,10 +102,10 @@ function BugReportScreen:FileBugReport()
     local result_dialog = PopupDialogScreen(
         title, message,
         {
-            {text=STRINGS.UI.POPUPDIALOG.OK, cb = function() 
-                TheFrontEnd:PopScreen() 
+            {text=STRINGS.UI.POPUPDIALOG.OK, cb = function()
+                TheFrontEnd:PopScreen()
                 if success then
-                    TheFrontEnd:PopScreen() 
+                    TheFrontEnd:PopScreen()
                 end
             end},
         }

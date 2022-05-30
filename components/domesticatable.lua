@@ -121,8 +121,10 @@ local function UpdateDomestication(inst, self)
     if self.domestication_triggerfn(inst) then
         self.lastdomesticationgain = GetTime()
         DoDeltaDomestication(self, TUNING.BEEFALO_DOMESTICATION_GAIN_DOMESTICATION * DECAY_TASK_PERIOD)
-    elseif not self.domesticationdecaypaused then
-        DoDeltaDomestication(self, CalculateLoss(GetTime(), self.lastdomesticationgain) * DECAY_TASK_PERIOD)
+    elseif self.domesticationdecaypaused then
+        self.lastdomesticationgain = self.lastdomesticationgain + DECAY_TASK_PERIOD
+    else
+        DoDeltaDomestication(self, CalculateLoss(GetTime(), self.lastdomesticationgain))
     end
 
     self:CheckForChanges()
@@ -172,6 +174,13 @@ end
 function Domesticatable:SetDomesticated(domesticated)
     self.domesticated = domesticated
     self:Validate()
+    if domesticated then
+        self.inst:AddTag("domesticated")
+    else
+        if self.inst:HasTag("domesticated") then
+            self.inst:RemoveTag("domesticated")
+        end
+    end
 end
 
 function Domesticatable:IsDomesticated()
@@ -202,7 +211,7 @@ function Domesticatable:OnSave()
     }
 end
 
-function Domesticatable:OnLoad(data)
+function Domesticatable:OnLoad(data, newents)
     if data ~= nil then
         self.domestication = data.domestication or self.domestication
         self.tendencies = data.tendencies or self.tendencies
@@ -214,7 +223,7 @@ function Domesticatable:OnLoad(data)
         self:SetMinObedience(data.minobedience or 0)
         --V2C: see above comment in OnSave
         if self.inst.components.rideable ~= nil then
-            self.inst.components.rideable:OnLoadDomesticatable(data.rideable)
+            self.inst.components.rideable:OnLoadDomesticatable(data.rideable, newents)
         end
     end
     self:CheckAndStartTask()

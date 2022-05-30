@@ -7,13 +7,23 @@ local assets =
 local function onsprungleak(inst)
 	if inst.components.inspectable == nil then
 		inst:AddComponent("inspectable")
+
+        inst:AddComponent("hauntable")
+        inst.components.hauntable.cooldown = TUNING.HAUNT_COOLDOWN_SMALL
+        inst.components.hauntable.hauntvalue = TUNING.HAUNT_TINY
 	end
+
+	inst:RemoveTag("NOBLOCK")
 end
 
 local function onrepairedleak(inst)
 	if inst.components.inspectable ~= nil then
 		inst:RemoveComponent("inspectable")
+
+        inst:RemoveComponent("hauntable")
 	end
+
+	inst:AddTag("NOBLOCK")
 end
 
 local function fn()
@@ -28,17 +38,19 @@ local function fn()
     inst.AnimState:SetBank("boat_leak")
     inst.AnimState:SetBuild("boat_leak_build")
 
-    inst.entity:SetPristine()    
+    inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
 
+	inst.persists = false
+
     inst:AddComponent("boatleak")
 	inst.components.boatleak.onsprungleak = onsprungleak
 	inst.components.boatleak.onrepairedleak = onrepairedleak
 
-	inst:AddComponent("inspectable")
+    inst:AddComponent("lootdropper")
 
     return inst
 end

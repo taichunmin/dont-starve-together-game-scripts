@@ -69,30 +69,40 @@ function Debuffable:GetDebuff(name)
     return debuff ~= nil and debuff.inst or nil
 end
 
-local function RegisterDebuff(self, name, ent)
+local function RegisterDebuff(self, name, ent, data)
     if ent.components.debuff ~= nil then
         self.debuffs[name] =
         {
             inst = ent,
-            onremove = function() self.debuffs[name] = nil end,
+            onremove = function(debuff)
+							self.debuffs[name] = nil
+							if self.ondebuffremoved ~= nil then
+								self.ondebuffremoved(self.inst, name, debuff)
+							end
+						end,
         }
         self.inst:ListenForEvent("onremove", self.debuffs[name].onremove, ent)
         ent.persists = false
-        ent.components.debuff:AttachTo(name, self.inst, self.followsymbol, self.followoffset)
+        ent.components.debuff:AttachTo(name, self.inst, self.followsymbol, self.followoffset, data)
+		if self.ondebuffadded ~= nil then
+			self.ondebuffadded(self.inst, name, ent, data)
+		end
     else
         ent:Remove()
     end
 end
 
-function Debuffable:AddDebuff(name, prefab)
+function Debuffable:AddDebuff(name, prefab, data)
     if self.enable then
 		if self.debuffs[name] == nil then
 			local ent = SpawnPrefab(prefab)
 			if ent ~= nil then
-				RegisterDebuff(self, name, ent)
+				RegisterDebuff(self, name, ent, data)
 			end
+			return ent
 		else
-			self.debuffs[name].inst.components.debuff:Extend(self.followsymbol, self.followoffset)
+			self.debuffs[name].inst.components.debuff:Extend(self.followsymbol, self.followoffset, data)
+			return self.debuffs[name].inst
 		end
     end
 end
@@ -102,6 +112,9 @@ function Debuffable:RemoveDebuff(name)
     if debuff ~= nil then
         self.debuffs[name] = nil
         self.inst:RemoveEventCallback("onremove", debuff.onremove, debuff.inst)
+		if self.ondebuffremoved ~= nil then
+			self.ondebuffremoved(self.inst, name, debuff.inst)
+		end
         if debuff.inst.components.debuff ~= nil then
             debuff.inst.components.debuff:OnDetach()
         else
@@ -120,7 +133,7 @@ function Debuffable:OnSave()
         local saved--[[, refs]] = v.inst:GetSaveRecord()
         data[k] = saved
     end
-    return { debuffs = data }
+    return { debuffs = data, add_component_if_missing = true }
 end
 
 function Debuffable:OnLoad(data)
@@ -138,11 +151,11 @@ end
 
 function Debuffable:GetDebugString()
 	local str = "Num Buffs: " .. tostring(GetTableSize(self.debuffs))
-	
+
     for k, v in pairs(self.debuffs) do
 		str = str .. "\n  " .. tostring(v.inst.prefab)
 	end
-		
+
 	return str
 end
 

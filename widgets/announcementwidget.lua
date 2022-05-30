@@ -6,7 +6,7 @@ local function GetIconX(w)
     return w ~= nil and -.5 * w - 25 or -25
 end
 
---base class for imagebuttons and animbuttons. 
+--base class for imagebuttons and animbuttons.
 local AnnouncementWidget = Class(Widget, function(self, font, size, colour)
     Widget._ctor(self, "AnnouncementWidget")
 
@@ -72,7 +72,7 @@ function AnnouncementWidget:SetTextColour(r,g,b,a)
     else
         colour = r
     end
-    
+
     self.colour = colour
 
     self.text:SetColour(colour)
@@ -106,7 +106,7 @@ function AnnouncementWidget:SetAlpha(alpha)
     local current_colour = self.colour
     current_colour[4] = alpha
     self.text:SetColour(current_colour)
-    
+
     self.colour = current_colour
 
     self.icon:SetTint(1, 1, 1, alpha)
@@ -120,7 +120,7 @@ end
 
 function AnnouncementWidget:CopyInfo(announcement_info)
     if not announcement_info then return end
-    
+
     local announcement = announcement_info:GetText()
     local announce_type = announcement_info.announce_type
     local colour = announcement_info.colour

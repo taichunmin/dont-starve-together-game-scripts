@@ -13,7 +13,7 @@ local Countdown = Class(Widget, function(self, owner)
     self.daysuntilanim:GetAnimState():SetBuild("build_status")
     self.daysuntilanim:GetAnimState():SetBank("build_status")
     self.daysuntilanim:SetPosition(150, 128, 0)
-    
+
     self.daysuntiltext = self:AddChild(Text(NUMBERFONT, 30))
     self.daysuntiltext:SetPosition(135, 45, 0)
 	self.daysuntiltext:SetRegionSize( 220, 50 )
@@ -34,11 +34,11 @@ function Countdown:ShouldShowCountdown(date)
 	local now = os.time() - get_timezone()
 	local update_time = os.time(date) - klei_tz
 	local build_time = TheSim:GetBuildDate()
-	
+
 	local days_until 		= ((((update_time - now) / 60) / 60) / 24)
 	local days_since 		= ((((now - build_time) / 60) / 60) / 24)
 	local build_update_diff = ((((build_time - update_time) / 60) / 60) / 24)
-	
+
 	local should_show = false
 	if days_until <= 14 and math.ceil(days_until) >= -1 and build_update_diff < 0 then -- Show upcoming/imminent build for 2 weeks
 		should_show = true
@@ -56,9 +56,9 @@ end
 
 function Countdown:SetDisplay(days_until, days_since, build_update_diff)
 	if not days_until and not days_since then return end
-	if days_until and days_since then	
+	if days_until and days_since then
 		if days_until >= 1 then
-			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTUPDATEDAYS, math.ceil(days_until)) 
+			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTUPDATEDAYS, math.ceil(days_until))
 			self.daysuntilanim:GetAnimState():PlayAnimation("about", true)
 		end
 		if days_until < 1 and days_until >= -1 and build_update_diff < 0 then
@@ -69,14 +69,14 @@ function Countdown:SetDisplay(days_until, days_since, build_update_diff)
 			self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.FRESHBUILD)
 			self.daysuntilanim:GetAnimState():PlayAnimation("fresh", true)
 		end
-		
+
 		self.daysuntiltext:SetString(self.days_until_string)
 	end
 end
 
 -- local function GetDaysToUpdate()
 --     local local_tz = get_timezone()
-    
+
 --     --It would be nice to pull this from server?
 --     local update_times =
 -- 		{
@@ -87,12 +87,12 @@ end
 -- 			os.time{year=2015, day=14, month=3, hour=13} - klei_tz,
 -- 		}
 --     table.sort(update_times)
-    
+
 --     local build_time = TheSim:GetBuildDate()
-    
+
 --     local last_build = build_time
 --     local now = os.time() - local_tz
-    
+
 --     for k,v in ipairs(update_times) do
 -- 		if v > build_time then
 -- 			local seconds = v - now
@@ -104,7 +104,7 @@ end
 -- end
 
 -- function Countdown:DoInit( )
-	
+
 --     local button_spacing = 50
 --     local signup_text_size =  40
 
@@ -117,11 +117,11 @@ end
 		-- else
 		-- 	self.days_since_string = string.format(STRINGS.UI.MAINSCREEN.LASTBUILDDAYS, days_since)
 		-- end
-		
+
 		-- if days_until < 2 then
 		-- 	self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTBUILDIMMINENT)
 		-- else
-		-- 	self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTUPDATEDAYS, days_until) 
+		-- 	self.days_until_string = string.format(STRINGS.UI.MAINSCREEN.NEXTUPDATEDAYS, days_until)
 		-- end
 
 		-- if days_until < 2 then
@@ -131,14 +131,14 @@ end
 		-- else
 		-- 	self.daysuntilanim:GetAnimState():PlayAnimation("about", true)
 		-- end
-		
+
 		-- self.daysuntiltext:SetString( self.days_until_string)
-	    
-		-- self.daysuntilanim:SetMouseOver(function() 
+
+		-- self.daysuntilanim:SetMouseOver(function()
 		-- 		self.daysuntiltext:SetString( self.days_since_string)
 		-- 	end)
 
-		-- self.daysuntilanim:SetMouseOut(function() 
+		-- self.daysuntilanim:SetMouseOut(function()
 		-- 		self.daysuntiltext:SetString( self.days_until_string)
 		-- 	end)
 -- 	else

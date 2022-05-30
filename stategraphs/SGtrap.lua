@@ -71,6 +71,9 @@ local states =
         name = "sprung",
         onenter = function(inst, target)
             inst.AnimState:PlayAnimation("trap_pre")
+			if inst.components.inventoryitem ~= nil then
+				inst.components.inventoryitem.canbepickedup = false
+			end
         end,
 
         events =
@@ -81,6 +84,12 @@ local states =
                 inst.sg:GoToState(inst.components.trap.lootprefabs ~= nil and "full" or "empty")
             end),
         },
+
+		onexit = function(inst)
+			if inst.components.inventoryitem ~= nil then
+				inst.components.inventoryitem.canbepickedup = true
+			end
+		end,
     },
 }
 

@@ -41,7 +41,7 @@ end
 local function onbuilt(inst)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:PushAnimation("idle", false)
-    
+
     inst.SoundEmitter:PlaySound("dontstarve/common/together/succulent_craft")
 end
 
@@ -85,8 +85,8 @@ local function fn()
 	inst:DoTaskInTime(0, SetupPlant)
 
     --------SaveLoad
-    inst.OnSave = onsave 
-    inst.OnLoad = onload 
+    inst.OnSave = onsave
+    inst.OnLoad = onload
 
     return inst
 end

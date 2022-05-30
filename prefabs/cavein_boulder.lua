@@ -18,7 +18,10 @@ local prefabs =
     "flint",
     "rock_break_fx",
     "cavein_dust_low",
-    "cavein_dust_high",
+	"cavein_dust_high",
+
+	"underwater_salvageable",
+	"splash_green",
 }
 
 SetSharedLootTable("cavein_boulder",
@@ -53,6 +56,9 @@ local function SetIconEnabled(inst, enable)
     end
 end
 
+local DISABLEICON_MUST_TAGS = { "caveindebris" }
+local DISABLEICON_CANT_TAGS = { "INLIMBO" }
+
 local function UpdateIcon(inst)
     if inst._inittask ~= nil then
         inst._inittask:Cancel()
@@ -66,7 +72,7 @@ local function UpdateIcon(inst)
         SetIconEnabled(inst, false)
     else
         local x, y, z = inst.Transform:GetWorldPosition()
-        for i, v in ipairs(TheSim:FindEntities(x, 0, z, MINIMAP_RADIUS, { "caveindebris" }, { "INLIMBO" })) do
+        for i, v in ipairs(TheSim:FindEntities(x, 0, z, MINIMAP_RADIUS, DISABLEICON_MUST_TAGS, DISABLEICON_CANT_TAGS)) do
             if v ~= inst and v._iconpos ~= nil and v.prefab == inst.prefab then
                 SetIconEnabled(inst, false)
                 return
@@ -78,7 +84,7 @@ end
 
 local function OnRemoveIcon(inst)
     if inst._iconpos ~= nil then
-        local ents = TheSim:FindEntities(inst._iconpos.x, 0, inst._iconpos.z, MINIMAP_RADIUS, { "caveindebris" }, { "INLIMBO" })
+        local ents = TheSim:FindEntities(inst._iconpos.x, 0, inst._iconpos.z, MINIMAP_RADIUS, DISABLEICON_MUST_TAGS, DISABLEICON_CANT_TAGS)
         SetIconEnabled(inst, false)
         for i, v in ipairs(ents) do
             if v ~= inst and v._iconpos == nil and v.prefab == inst.prefab then
@@ -197,20 +203,33 @@ end
 
 local function OnUnequip(inst, owner)
     owner.AnimState:ClearOverrideSymbol("swap_body")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
 local function OnEquip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_body", "swap_cavein_boulder", "swap_body"..tostring(inst.variation or ""))
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "swap_body"..tostring(inst.variation or ""))
+    else
+        owner.AnimState:OverrideSymbol("swap_body", "swap_cavein_boulder", "swap_body"..tostring(inst.variation or ""))
+    end
 end
 
-local function SetVariation(inst, variation)
-    if variation <= 1 or variation > NUM_VARIATIONS then
+local function SetVariation(inst, variation, force)
+    if variation ~= nil and (variation <= 1 or variation > NUM_VARIATIONS) then
         variation = nil
     end
-    if inst.variation ~= variation then
-        inst.variation = variation
-        if variation ~= nil then
-            inst.AnimState:OverrideSymbol("swap_boulder", "swap_cavein_boulder", "swap_boulder"..tostring(variation))
+    if force or inst.variation ~= variation then
+		inst.variation = variation
+
+		if variation ~= nil then
+			local new_symbol = "swap_boulder"..tostring(variation)
+			inst.AnimState:OverrideSymbol("swap_boulder", "swap_cavein_boulder", new_symbol)
+			inst.components.symbolswapdata:SetData("swap_cavein_boulder", new_symbol)
         else
             inst.AnimState:ClearOverrideSymbol("swap_boulder")
         end
@@ -280,7 +299,12 @@ local function OnSave(inst, data)
 end
 
 local function OnPreLoad(inst, data)
-    SetVariation(inst, math.floor(data ~= nil and data.variation or 1))
+    local variation = math.floor(data ~= nil and data.variation or 1)
+    if inst.skinname ~= nil then
+        inst.variation = variation
+    else
+        SetVariation(inst, variation)
+    end
     SetRaised(inst, data ~= nil and data.raised)
     SetFormed(inst, data ~= nil and (data.formed or data.raised))
     if data ~= nil and not inst.raised and data.fallx ~= nil and data.fallz ~= nil then
@@ -376,6 +400,9 @@ local function MakeDuoFormation()
     }
 end
 ]]
+
+local FORMATION_MUST_TAGS = { "boulder", "heavy" }
+local FORMATION_CANT_TAGS = { "INLIMBO" }
 local function CreateFormation(boulders)
     local x, z = 0, 0
     for i, v in ipairs(boulders) do
@@ -415,7 +442,7 @@ local function CreateFormation(boulders)
     for i, v in ipairs(boulders) do
         if v.formed then
             local x1, y1, z1 = v.Transform:GetWorldPosition()
-            for i2, v2 in ipairs(TheSim:FindEntities(x1, 0, z1, OVERLAP_RADIUS, { "boulder", "heavy" }, { "INLIMBO" })) do
+            for i2, v2 in ipairs(TheSim:FindEntities(x1, 0, z1, OVERLAP_RADIUS, FORMATION_MUST_TAGS, FORMATION_CANT_TAGS)) do
                 if not (v2.formed or (v2.components.heavyobstaclephysics ~= nil and v2.components.heavyobstaclephysics:IsFalling())) then
                     v2:Remove()
                 end
@@ -426,7 +453,7 @@ end
 
 local function TryFormationAt(x, y, z)
     local boulders = {}
-    local ents = TheSim:FindEntities(x, 0, z, FORMATION_RADIUS, { "boulder", "heavy" }, { "INLIMBO" })
+    local ents = TheSim:FindEntities(x, 0, z, FORMATION_RADIUS, FORMATION_MUST_TAGS, FORMATION_CANT_TAGS)
     for i, v in ipairs(ents) do
         if v.prefab == "cavein_boulder" and
             not (v.formed or
@@ -478,7 +505,7 @@ local function OnStopFalling(inst)
             local fx = SpawnPrefab("cavein_dust_low")
             fx.Transform:SetPosition(x, 0, z)
             fx:PlaySoundFX()
-            for i, v in ipairs(TheSim:FindEntities(x, 0, z, OVERLAP_RADIUS, { "boulder", "heavy" }, { "INLIMBO" })) do
+            for i, v in ipairs(TheSim:FindEntities(x, 0, z, OVERLAP_RADIUS, FORMATION_MUST_TAGS, FORMATION_CANT_TAGS)) do
                 if v.formed then
                     inst:Remove()
                     return
@@ -585,7 +612,11 @@ local function fn()
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.MINE)
     inst.components.workable:SetWorkLeft(TUNING.CAVEIN_BOULDER_MINE)
-    inst.components.workable:SetOnFinishCallback(OnWorked)
+	inst.components.workable:SetOnFinishCallback(OnWorked)
+
+	inst:AddComponent("submersible")
+	inst:AddComponent("symbolswapdata")
+	inst.components.symbolswapdata:SetData("swap_cavein_boulder", "swap_boulder")
 
     MakeHauntableWork(inst)
 
@@ -594,6 +625,7 @@ local function fn()
     inst.OnLoadPostPass = OnLoadPostPass
 
     SetVariation(inst, math.random(NUM_VARIATIONS))
+    inst.SetVariation = SetVariation
 
     inst:ListenForEvent("onremove", OnRemoveFromScene)
     inst:ListenForEvent("enterlimbo", OnRemoveFromScene)

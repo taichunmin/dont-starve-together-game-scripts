@@ -5,7 +5,7 @@ local TornadoBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
 end)
 
-local wanderTimes = 
+local wanderTimes =
 {
     minwalktime = .25,
     randwalktime = .25,
@@ -14,7 +14,7 @@ local wanderTimes =
 }
 
 function TornadoBrain:OnStart()
-    local root = 
+    local root =
     PriorityNode(
     {
         Leash(self.inst, function() return self.inst.components.knownlocations:GetLocation("target") end, 3, 1, true),

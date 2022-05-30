@@ -4,8 +4,8 @@ local Text = require "widgets/text"
 local Widget = require "widgets/widget"
 
 
-local item_width = 800
-local item_height = 105
+local item_width = 900
+local item_height = 65
 
 local SnapshotTab = Class(Widget, function(self, cb)
     Widget._ctor(self, "SnapshotTab")
@@ -16,7 +16,7 @@ local SnapshotTab = Class(Widget, function(self, cb)
     self.session_id = nil
     self.online_mode = nil
     self.multi_level = nil
-    self.use_cluster_path = nil
+    self.use_legacy_session_path = nil
     self.cb = cb
 
     self.snapshots = nil
@@ -32,6 +32,8 @@ function SnapshotTab:RefreshSnapshots()
     if self.snapshots == nil then
         return
     end
+
+    --Fill with empty options if we don't have enough saved
     local widgets_per_view = self.snapshot_scroll_list.visible_rows
     local has_scrollbar = #self.snapshots > widgets_per_view
     if not has_scrollbar and #self.snapshots < widgets_per_view then
@@ -57,20 +59,16 @@ function SnapshotTab:MakeSnapshotsMenu()
         widget.btn.move_on_click = true
         widget.focus_forward = widget.btn
 
-        widget.day = widget.btn:AddChild(Text(NEWFONT, 35))
-        widget.day:SetColour(UICOLOURS.GOLD)
-        widget.day:SetString(STRINGS.UI.SERVERADMINSCREEN.EMPTY_SLOT)
-        widget.day:SetPosition(0, 0, 0)
-        widget.day:SetHAlign(ANCHOR_MIDDLE)
-        widget.day:SetVAlign(ANCHOR_MIDDLE)
+        widget.day_and_season = widget.btn:AddChild(Text(NEWFONT, 34))
+        widget.day_and_season:SetColour(UICOLOURS.GOLD)
+        widget.day_and_season:SetString(STRINGS.UI.SERVERADMINSCREEN.EMPTY_SLOT)
+        widget.day_and_season:SetPosition(0, 0, 0)
+        widget.day_and_season:SetHAlign(ANCHOR_MIDDLE)
+        widget.day_and_season:SetVAlign(ANCHOR_MIDDLE)
 
-        widget.season = widget.btn:AddChild(Text(NEWFONT, 28))
-        widget.season:SetColour(UICOLOURS.GOLD)
-        widget.season:SetString("")
-        widget.season:SetPosition(0, 18, 0)
-        widget.season:SetHAlign(ANCHOR_MIDDLE)
-        widget.season:SetVAlign(ANCHOR_MIDDLE)
-
+        widget.ongainfocusfn = function(is_btn_enabled)
+            self.snapshot_scroll_list:OnWidgetFocus(widget)
+        end
 
         return widget
     end
@@ -89,30 +87,27 @@ function SnapshotTab:MakeSnapshotsMenu()
                 day_text = STRINGS.UI.SERVERADMINSCREEN.DAY_UNKNOWN
             end
 
-            widget.day:SetString(day_text)
+
             if data.world_season ~= nil then
-                widget.season:SetString(data.world_season)
-                widget.season:Show()
-                widget.day:SetPosition(0, -15, 0)
-            else
-                widget.season:Hide()
-                widget.day:SetPosition(0, 0, 0)
+                day_text = day_text .. " - " .. data.world_season
             end
+
+            widget.day_and_season:SetString(day_text)
             widget.empty = false
 
         elseif data.empty then
-            widget.day:SetString(STRINGS.UI.SERVERADMINSCREEN.EMPTY_SLOT)
-            widget.day:SetPosition(0, 0, 0)
-            widget.season:SetString("")
-            widget.season:Hide()
+            widget.day_and_season:SetString(STRINGS.UI.SERVERADMINSCREEN.EMPTY_SLOT)
+            widget.day_and_season:SetPosition(0, 0, 0)
             widget.empty = true
         end
     end
 
     self.snapshot_page_scroll_root = self.snapshot_page:AddChild(Widget("scroll_root"))
 
+    local extra_rows = 0
+
     self.snapshot_scroll_list = self.snapshot_page_scroll_root:AddChild(TEMPLATES.ScrollingGrid(
-            self.snapshots, 
+            self.snapshots,
             {
                 scroll_context = {
                 },
@@ -125,6 +120,7 @@ function SnapshotTab:MakeSnapshotsMenu()
                 scrollbar_offset = 20,
                 scrollbar_height_offset = -60,
                 peek_percent = 0.25,
+                extra_rows = extra_rows,
             }
         ))
 
@@ -137,23 +133,23 @@ function SnapshotTab:OnClickSnapshot(snapshot_num)
     end
 
     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-    
+
     local day_text_header = ""
     if self.snapshots[snapshot_num].world_day ~= nil then
         day_text_header = subfmt(STRINGS.UI.SERVERADMINSCREEN.HEADER_DAY, {day_count = self.snapshots[snapshot_num].world_day} )
     else
         day_text_header = STRINGS.UI.SERVERADMINSCREEN.HEADER_DAY_UNKNOWN
     end
-    
+
     local popup = PopupDialogScreen(day_text_header, STRINGS.UI.SERVERADMINSCREEN.RESTORE_SNAPSHOT_BODY, {
         {
             text = STRINGS.UI.SERVERADMINSCREEN.YES,
             cb = function()
                 local truncate_to_id = self.snapshots[snapshot_num].snapshot_id
                 if truncate_to_id ~= nil and truncate_to_id > 0 then
-                    if self.multi_level or self.use_cluster_path then
+                    if self.multi_level or not self.use_legacy_session_path then
                         TheNet:TruncateSnapshotsInClusterSlot(self.save_slot, "Master", self.session_id, truncate_to_id)
-                        --slaves will auto-truncate to synchornize at startup
+                        --secondary shards will auto-truncate to synchornize at startup
                     else
                         TheNet:TruncateSnapshots(self.session_id, truncate_to_id)
                     end
@@ -176,15 +172,13 @@ function SnapshotTab:OnClickSnapshot(snapshot_num)
     TheFrontEnd:PushScreen(popup)
 end
 
-function SnapshotTab:ListSnapshots(force)
+function SnapshotTab:ListSnapshots()
     if self.save_slot == nil or self.session_id == nil then
         self.snapshots = {}
-    elseif not force and self.slotsnaps[self.save_slot] ~= nil then
-        self.snapshots = deepcopy(self.slotsnaps[self.save_slot])
     else
         self.snapshots = {}
         local snapshot_infos, has_more
-        if self.multi_level or self.use_cluster_path then
+        if self.multi_level or not self.use_legacy_session_path then
             snapshot_infos, has_more = TheNet:ListSnapshotsInClusterSlot(self.save_slot, "Master", self.session_id, self.online_mode, 10)
         else
             snapshot_infos, has_more = TheNet:ListSnapshots(self.session_id, self.online_mode, 10)
@@ -193,24 +187,23 @@ function SnapshotTab:ListSnapshots(force)
             if v.snapshot_id ~= nil then
                 local info = { snapshot_id = v.snapshot_id }
                 if v.world_file ~= nil then
-                    local function onreadworldfile(success, str)
-                        if success and str ~= nil and #str > 0 then
-                            local success, savedata = RunInSandbox(str)
-                            if success and savedata ~= nil and GetTableSize(savedata) > 0 then
-                                local worlddata = savedata.world_network ~= nil and savedata.world_network.persistdata or nil
-                                if worlddata ~= nil then
-                                    if worlddata.clock ~= nil then
-                                        info.world_day = (worlddata.clock.cycles or 0) + 1
+                    local function onreadmetafile(success, str, slot, shard, file)
+                        if success then
+                            if str ~= nil and #str > 0 then
+                                local success, metadata = RunInSandbox(str)
+                                if success and metadata ~= nil and GetTableSize(metadata) > 0 then
+                                    if metadata.clock ~= nil then
+                                        info.world_day = (metadata.clock.cycles or 0) + 1
                                     end
 
-                                    if worlddata.seasons ~= nil and worlddata.seasons.season ~= nil then
-                                        info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.SEASONS[string.upper(worlddata.seasons.season)]
+                                    if metadata.seasons ~= nil and metadata.seasons.season ~= nil then
+                                        info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.SEASONS[string.upper(metadata.seasons.season)]
                                         if info.world_season ~= nil and
-                                            worlddata.seasons.elapseddaysinseason ~= nil and
-                                            worlddata.seasons.remainingdaysinseason ~= nil then
-                                            if worlddata.seasons.remainingdaysinseason * 3 <= worlddata.seasons.elapseddaysinseason then
+                                            metadata.seasons.elapseddaysinseason ~= nil and
+                                            metadata.seasons.remainingdaysinseason ~= nil then
+                                            if metadata.seasons.remainingdaysinseason * 3 <= metadata.seasons.elapseddaysinseason then
                                                 info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_1..info.world_season..STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_2
-                                            elseif worlddata.seasons.elapseddaysinseason * 3 <= worlddata.seasons.remainingdaysinseason then
+                                            elseif metadata.seasons.elapseddaysinseason * 3 <= metadata.seasons.remainingdaysinseason then
                                                 info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_1..info.world_season..STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_2
                                             end
                                         end
@@ -219,12 +212,53 @@ function SnapshotTab:ListSnapshots(force)
                                     info.world_day = 1
                                 end
                             end
+                        else
+                            local function onreadworldfile(success, str)
+                                if success and str ~= nil and #str > 0 then
+                                    local success, savedata = RunInSandbox(str)
+                                    if success and savedata ~= nil and GetTableSize(savedata) > 0 then
+                                        local worlddata = savedata.world_network ~= nil and savedata.world_network.persistdata or nil
+                                        if worlddata ~= nil then
+
+                                            if worlddata.clock ~= nil then
+                                                info.world_day = (worlddata.clock.cycles or 0) + 1
+                                            end
+
+                                            if worlddata.seasons ~= nil and worlddata.seasons.season ~= nil then
+                                                info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.SEASONS[string.upper(worlddata.seasons.season)]
+                                                if info.world_season ~= nil and
+                                                    worlddata.seasons.elapseddaysinseason ~= nil and
+                                                    worlddata.seasons.remainingdaysinseason ~= nil then
+                                                    if worlddata.seasons.remainingdaysinseason * 3 <= worlddata.seasons.elapseddaysinseason then
+                                                        info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_1..info.world_season..STRINGS.UI.SERVERLISTINGSCREEN.LATE_SEASON_2
+                                                    elseif worlddata.seasons.elapseddaysinseason * 3 <= worlddata.seasons.remainingdaysinseason then
+                                                        info.world_season = STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_1..info.world_season..STRINGS.UI.SERVERLISTINGSCREEN.EARLY_SEASON_2
+                                                    end
+                                                end
+                                            end
+                                        else
+                                            info.world_day = 1
+                                        end
+                                    end
+                                end
+                            end
+
+                            if slot and shard then
+                                TheSim:GetPersistentStringInClusterSlot(slot, shard, file, onreadworldfile)
+                            else
+                                TheSim:GetPersistentString(file, onreadworldfile)
+                            end
                         end
                     end
-                    if self.multi_level or self.use_cluster_path then
-                        TheSim:GetPersistentStringInClusterSlot(self.save_slot, "Master", v.world_file, onreadworldfile)
+
+                    if self.multi_level or not self.use_legacy_session_path then
+                        TheSim:GetPersistentStringInClusterSlot(self.save_slot, "Master", v.world_file..".meta", function(success, str)
+                            onreadmetafile(success, str, self.save_slot, "Master", v.world_file)
+                        end)
                     else
-                        TheSim:GetPersistentString(v.world_file, onreadworldfile)
+                        TheSim:GetPersistentString(v.world_file..".meta", function(success, str)
+                            onreadmetafile(success, str, nil, nil, v.world_file)
+                        end)
                     end
                 end
                 table.insert(self.snapshots, info)
@@ -237,32 +271,20 @@ function SnapshotTab:ListSnapshots(force)
     end
 end
 
-function SnapshotTab:SetSaveSlot(save_slot, prev_slot, fromDelete)
-    if not fromDelete and
-        (   save_slot == self.save_slot or
-            save_slot == prev_slot or
-            save_slot == nil or
-            prev_slot == nil    ) then
-        return
-    end
+function SnapshotTab:UpdateSaveSlot(save_slot)
+    self.save_slot = save_slot
+end
 
+function SnapshotTab:SetDataForSlot(save_slot)
     self.save_slot = save_slot
 
-    if prev_slot ~= nil and prev_slot > 0 then
-        -- remember snapshots
-        self.slotsnaps[prev_slot] =
-            not SaveGameIndex:IsSlotEmpty(prev_slot)
-            and deepcopy(self.snapshots)
-            or nil
-    end
-
-    local server_data = SaveGameIndex:GetSlotServerData(save_slot)
-    self.session_id = SaveGameIndex:GetSlotSession(save_slot)
+    local server_data = ShardSaveGameIndex:GetSlotServerData(save_slot)
+    self.session_id = ShardSaveGameIndex:GetSlotSession(save_slot, "Master")
     self.online_mode = server_data.online_mode ~= false
-    self.multi_level = SaveGameIndex:IsSlotMultiLevel(save_slot)
-    self.use_cluster_path = server_data.use_cluster_path == true
+    self.multi_level = ShardSaveGameIndex:IsSlotMultiLevel(save_slot)
+    self.use_legacy_session_path = server_data.use_legacy_session_path == true
 
-    self:ListSnapshots(fromDelete)
+    self:ListSnapshots()
     self:RefreshSnapshots()
 end
 

@@ -11,10 +11,10 @@ local EMERGE_MAX2 = EMERGE_MAX*EMERGE_MAX
 
 local events =
 {
-    EventHandler("attacked", function(inst) 
+    EventHandler("attacked", function(inst)
         if not (inst.components.health:IsDead() or
                 inst.sg:HasStateTag("hit") or
-                inst.sg:HasStateTag("attack")) then 
+                inst.sg:HasStateTag("attack")) then
             inst.sg:GoToState("hit")
         end
     end),
@@ -193,11 +193,9 @@ local states =
             inst.AnimState:SetDeltaTimeMultiplier(GetRandomWithVariance(.8, .2))
         end,
 
-        events =
+        timeline=
         {
-            EventHandler("animover", function(inst)
-                inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_splat")
-            end),
+            TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_splat_arm") end),
         },
     },
 

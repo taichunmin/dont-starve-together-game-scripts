@@ -1,10 +1,14 @@
+require("worldsettingsutil")
+
 local prefabs =
 {
     "dragonfly",
 }
 
-local function OnKilled(inst)
-    inst.components.timer:StartTimer("regen_dragonfly", TUNING.DRAGONFLY_RESPAWN_TIME)
+local DRAGONFLY_SPAWNTIMER = "regen_dragonfly"
+
+local function StartSpawning(inst)
+    inst.components.worldsettingstimer:StartTimer(DRAGONFLY_SPAWNTIMER, TUNING.DRAGONFLY_RESPAWN_TIME)
 end
 
 local function GenerateNewDragon(inst)
@@ -13,7 +17,7 @@ local function GenerateNewDragon(inst)
 end
 
 local function ontimerdone(inst, data)
-    if data.name == "regen_dragonfly" then
+    if data.name == DRAGONFLY_SPAWNTIMER then
         GenerateNewDragon(inst)
     end
 end
@@ -59,6 +63,22 @@ local function OnDragonflyEngaged(inst, data)
     end
 end
 
+--retrofit old timers
+local function OnPreLoad(inst, data)
+    WorldSettings_Timer_PreLoad(inst, data, DRAGONFLY_SPAWNTIMER, TUNING.DRAGONFLY_RESPAWN_TIME)
+    WorldSettings_Timer_PreLoad_Fix(inst, data, DRAGONFLY_SPAWNTIMER, 1)
+    if data and data.childspawner and data.childspawner.timetonextspawn then
+        data.childspawner.timetonextspawn = math.min(data.childspawner.timetonextspawn, TUNING.DRAGONFLY_SPAWN_TIME)
+    end
+end
+
+local function OnLoadPostPass(inst, newents, data)
+    if inst.components.childspawner:CountChildrenOutside() + inst.components.childspawner.childreninside == 0 and
+    not inst.components.worldsettingstimer:ActiveTimerExists(DRAGONFLY_SPAWNTIMER) then
+        StartSpawning(inst)
+    end
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -71,12 +91,16 @@ local function fn()
     inst.components.childspawner.childname = "dragonfly"
     inst.components.childspawner:SetMaxChildren(1)
     inst.components.childspawner:SetSpawnPeriod(TUNING.DRAGONFLY_SPAWN_TIME, 0)
-    inst.components.childspawner.onchildkilledfn = OnKilled
+    inst.components.childspawner.onchildkilledfn = StartSpawning
+    if not TUNING.SPAWN_DRAGONFLY then
+        inst.components.childspawner.childreninside = 0
+    end
     inst.components.childspawner:StartSpawning()
     inst.components.childspawner:StopRegen()
     inst.components.childspawner:SetSpawnedFn(onspawned)
 
-    inst:AddComponent("timer")
+    inst:AddComponent("worldsettingstimer")
+    inst.components.worldsettingstimer:AddTimer(DRAGONFLY_SPAWNTIMER, TUNING.DRAGONFLY_RESPAWN_TIME, TUNING.SPAWN_DRAGONFLY)
     inst:ListenForEvent("timerdone", ontimerdone)
 
     inst.ponds = {}
@@ -84,6 +108,9 @@ local function fn()
 
     inst:ListenForEvent("dragonflyengaged", OnDragonflyEngaged)
     inst._onremovedragonfly = function(dragonfly) Disengage(inst, dragonfly) end
+
+    inst.OnPreLoad = OnPreLoad
+    inst.OnLoadPostPass = OnLoadPostPass
 
     local function onremovepond(pond)
         inst.ponds[pond] = nil

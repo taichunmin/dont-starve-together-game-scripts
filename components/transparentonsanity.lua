@@ -22,6 +22,8 @@ local TransparentOnSanity = Class(function(self, inst)
 
     PushAlpha(self, 0, .4)
     inst:StartUpdatingComponent(self)
+
+    self.inst.AnimState:UsePointFiltering(true)
 end)
 
 function TransparentOnSanity:OnUpdate(dt)
@@ -44,6 +46,10 @@ function TransparentOnSanity:OnUpdate(dt)
             math.min(self.target_alpha, self.alpha + dt)
         PushAlpha(self, self.alpha, self.most_alpha)
     end
+end
+
+function TransparentOnSanity:GetDebugString()
+	return "alpha = "..self.alpha
 end
 
 return TransparentOnSanity

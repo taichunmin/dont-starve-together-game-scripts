@@ -6,7 +6,7 @@ local events =
         inst.sg:GoToState(inst.sg:HasStateTag("vine") and "deathvine" or "death")
     end),
 
-    EventHandler("attacked", function(inst) 
+    EventHandler("attacked", function(inst)
         if not inst.components.health:IsDead() then
             inst.sg:GoToState(
                 (not inst.sg:HasStateTag("hiding") and "hitout") or

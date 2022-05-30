@@ -16,12 +16,15 @@ local function CanSteal(item)
         and not item:IsNearPlayer(TOOCLOSE)
 end
 
+local STEAL_MUST_TAGS = { "_inventoryitem" }
+local STEAL_CANT_TAGS = { "INLIMBO", "catchable", "fire", "irreplaceable", "heavy", "prey", "bird", "outofreach", "_container" }
+
 local function StealAction(inst)
     if not inst.components.inventory:IsFull() then
         local target = FindEntity(inst, SEE_DIST,
             CanSteal,
-            { "_inventoryitem" }, --see entityreplica.lua
-            { "INLIMBO", "catchable", "fire", "irreplaceable", "heavy", "prey", "bird", "outofreach", "_container" })
+            STEAL_MUST_TAGS, --see entityreplica.lua
+            STEAL_CANT_TAGS)
         return target ~= nil
             and BufferedAction(inst, target, ACTIONS.PICKUP)
             or nil
@@ -36,9 +39,10 @@ local function CanHammer(item)
         and item:IsOnValidGround()      -- NOTE: If Krampus learns to hop on boats or travel over water, this should change to include water.
 end
 
+local EMPTYCHEST_MUST_TAGS = { "structure", "_container", "HAMMER_workable" }
 local function EmptyChest(inst)
     if not inst.components.inventory:IsFull() then
-        local target = FindEntity(inst, SEE_DIST, CanHammer, { "structure", "_container", "HAMMER_workable" })
+        local target = FindEntity(inst, SEE_DIST, CanHammer, EMPTYCHEST_MUST_TAGS)
         return target ~= nil
             and BufferedAction(inst, target, ACTIONS.HAMMER)
             or nil
@@ -100,7 +104,7 @@ function KrampusBrain:OnStart()
             stealnode),
 
         RunAway(self.inst, "player", MIN_RUNAWAY, MAX_RUNAWAY),
-        Follow(self.inst, function() return self.mytarget end, MIN_FOLLOW, MED_FOLLOW, MAX_FOLLOW), 
+        Follow(self.inst, function() return self.mytarget end, MIN_FOLLOW, MED_FOLLOW, MAX_FOLLOW),
         Wander(self.inst, function() local player = self.mytarget if player then return Vector3(player.Transform:GetWorldPosition()) end end, 20)
     }, 2)
 

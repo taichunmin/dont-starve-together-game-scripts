@@ -31,9 +31,9 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
 	self.config = KnownModIndex:LoadModConfigurationOptions(modname, client_config)
 
 	self.client_config = client_config
-	
+
 	self.options = {}
-	
+
 	if self.config and type(self.config) == "table" then
 		for i,v in ipairs(self.config) do
 			-- Only show the option if it matches our format exactly
@@ -53,7 +53,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
     self.black:SetVAnchor(ANCHOR_MIDDLE)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
-	self.black:SetTint(0,0,0,.75)	
+	self.black:SetTint(0,0,0,.75)
 
     self.root = self:AddChild(Widget("ROOT"))
     self.root:SetVAnchor(ANCHOR_MIDDLE)
@@ -81,7 +81,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
     end
 
 	self.option_offset = 0
-    self.optionspanel = self.root:AddChild(Widget("optionspanel"))	
+    self.optionspanel = self.root:AddChild(Widget("optionspanel"))
     self.optionspanel:SetPosition(0,-20)
 
 	self.dirty = false
@@ -101,16 +101,16 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
 				table.insert(spin_options, {text=v.description, data=v.data})
 				spin_options_hover[v.data] = v.hover
 			end
-			
+
 			local opt = Widget("option"..idx)
-			
+
 			local spinner_height = 40
 			local spinner_width = 170
 			opt.spinner = opt:AddChild(Spinner( spin_options, spinner_width, nil, {font=NEWFONT, size=25}, nil, nil, nil, true, 100, nil))
 			opt.spinner:SetTextColour(0,0,0,1)
 			local default_value = self.options[idx].value
 			if default_value == nil then default_value = self.options[idx].default end
-			
+
 			opt.spinner.OnChanged =
 				function( _, data )
 					self.options[idx].value = data
@@ -138,7 +138,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
 			opt.focus_forward = opt.spinner
 
 			opt.id = idx
-			
+
 			table.insert(self.optionwidgets, opt)
 			i = i + 1
 		end
@@ -157,7 +157,7 @@ local ModConfigurationScreen = Class(Screen, function(self, modname, client_conf
 
 	self.default_focus = self.optionwidgets[1]
 	self:HookupFocusMoves()
-	
+
 	self.options_scroll_list:SetList(self.optionwidgets)
 	if self.options_scroll_list.scroll_bar_line:IsVisible() then
 		self.options_scroll_list:SetPosition(0, 0)
@@ -187,7 +187,7 @@ function ModConfigurationScreen:ResetToDefaultValues()
 	end
 
 	if not self:IsDefaultSettings() then
-		self:ConfirmRevert(function() 
+		self:ConfirmRevert(function()
 			TheFrontEnd:PopScreen()
 			self:MakeDirty()
 			reset()
@@ -198,7 +198,7 @@ end
 function ModConfigurationScreen:Apply()
 	if self:IsDirty() then
 		local settings = self:CollectSettings()
-		KnownModIndex:SaveConfigurationOptions(function() 
+		KnownModIndex:SaveConfigurationOptions(function()
 			self:MakeDirty(false)
 		    TheFrontEnd:PopScreen()
 		end, self.modname, settings, self.client_config)
@@ -211,20 +211,20 @@ end
 function ModConfigurationScreen:ConfirmRevert(callback)
 	TheFrontEnd:PushScreen(
 		PopupDialogScreen( STRINGS.UI.MODSSCREEN.BACKTITLE, STRINGS.UI.MODSSCREEN.BACKBODY,
-		  { 
-		  	{ 
-		  		text = STRINGS.UI.MODSSCREEN.YES, 
+		  {
+		  	{
+		  		text = STRINGS.UI.MODSSCREEN.YES,
 		  		cb = callback or function() TheFrontEnd:PopScreen() end
 			},
-			{ 
-				text = STRINGS.UI.MODSSCREEN.NO, 
+			{
+				text = STRINGS.UI.MODSSCREEN.NO,
 				cb = function()
-					TheFrontEnd:PopScreen()					
+					TheFrontEnd:PopScreen()
 				end
 			}
 		  }
 		)
-	)		
+	)
 end
 
 function ModConfigurationScreen:Cancel()
@@ -266,7 +266,7 @@ end
 
 function ModConfigurationScreen:OnControl(control, down)
     if ModConfigurationScreen._base.OnControl(self, control, down) then return true end
-    
+
     if not down then
 	    if control == CONTROL_CANCEL then
 			self:Cancel()
@@ -277,14 +277,14 @@ function ModConfigurationScreen:OnControl(control, down)
 			return true
 		else
     		return false
-    	end 
+    	end
 
     	return true
 	end
 end
 
 function ModConfigurationScreen:HookupFocusMoves()
-	
+
 end
 
 function ModConfigurationScreen:GetHelpText()

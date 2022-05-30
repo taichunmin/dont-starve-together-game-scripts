@@ -57,7 +57,7 @@ local WorldGenScreen = Class(Screen, function(self, profile, cb, world_gen_data,
 		self.worldgentext:SetPosition(0, 200, 0)
 		self.worldgentext:SetColour(unpack(PORTAL_TEXT_COLOUR))
 
-		if world_gen_data and world_gen_data.level_data and world_gen_data.level_data[1] and world_gen_data.level_data[1].location == "cave" then
+		if world_gen_data and world_gen_data.level_data and world_gen_data.level_data and world_gen_data.level_data.location == "cave" then
 			self.bg:SetTint(unpack(BGCOLOURS.PURPLE))
 			self.worldanim:GetAnimState():SetBuild("generating_cave")
 			self.worldanim:GetAnimState():SetBank("generating_cave")
@@ -91,15 +91,9 @@ local WorldGenScreen = Class(Screen, function(self, profile, cb, world_gen_data,
 
 	self.total_time = 0
 	self.cb = cb
-	
+
     if TheNet:GetIsServer() then
         assert(world_gen_data.profile_data ~= nil and world_gen_data.level_data ~= nil, "Worldgen must be started with a complete profile and level description.")
-
-        -- The saveindex may contain descriptions for multiple levels (e.g. for a shard master)
-        -- but we always generate the first description (which will either be the master server
-        -- options, or the options stomped in by worldgenoverride.lua -- see GetWorldgenOverride
-        -- usage in saveindex.lua)
-        assert(world_gen_data.level_data[1] ~= nil, "Level data must contain information for the first world.")
 
         local DLCEnabledTable = {}
         for i,v in pairs(DLC_LIST) do
@@ -147,7 +141,7 @@ function WorldGenScreen:OnUpdate(dt)
                 self.cb(self.worlddata)
             elseif self.total_time > 0 --[[ MIN_GEN_TIME ]]and self.cb then
                 self.done = false
-                --TheFrontEnd:Fade(FADE_OUT, 1, function() 
+                --TheFrontEnd:Fade(FADE_OUT, 1, function()
                     self.cb(self.worlddata)
                 --end, nil, nil, "white")
             end

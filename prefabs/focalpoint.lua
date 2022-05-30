@@ -5,7 +5,7 @@ end
 
 local function AttachToEntity(inst, entity)
     inst.entity:SetParent(entity)
-    inst.components.focalpoint:Reset()
+    inst.components.focalpoint:RemoveAllFocusSources()
 end
 
 local function fn()

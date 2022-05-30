@@ -83,9 +83,11 @@ function Trap:GetDebugString()
         end
     end
 
-    local souls = self.numsouls or self.starvednumsouls
-    if souls ~= nil then
-        str = str.." Souls:"..souls
+    if self.numsouls ~= nil then
+        str = str.." Souls:"..self.numsouls
+    end
+    if self.starvednumsouls ~= nil then
+        str = str.." Starved Souls:"..self.starvednumsouls
     end
 
     return str
@@ -95,7 +97,7 @@ function Trap:SetOnBaitedFn(fn)
     self.onbaited = fn
 end
 
-function Trap:IsFree() 
+function Trap:IsFree()
     return self.bait == nil
 end
 
@@ -159,9 +161,10 @@ local function CheckTrappable(guy)
     return guy.components.health == nil or not guy.components.health:IsDead()
 end
 
+local TRAP_NO_TAGS = { "INLIMBO", "untrappable" }
 function Trap:OnUpdate(dt)
     if self.isset then
-        local guy = FindEntity(self.inst, self.range, CheckTrappable, { self.targettag }, { "INLIMBO", "untrappable" })
+        local guy = FindEntity(self.inst, self.range, CheckTrappable, { self.targettag }, TRAP_NO_TAGS)
         if guy ~= nil then
             self.target = guy
             self:StopUpdating()
@@ -208,7 +211,7 @@ function Trap:StartStarvation()
         self.target.components.perishable ~= nil and
         self.target.components.perishable.perishremainingtime or
         TUNING.TOTAL_DAY_TIME * 2
-    
+
     self.starvedlootprefabs =
         self.target.components.lootdropper ~= nil and
         self.target.components.lootdropper:GenerateLoot() or
@@ -227,6 +230,7 @@ for k, v in pairs(FOODTYPE) do
     table.insert(BAIT_TAGS, "edible_"..v)
 end
 
+local INLIMBO_TAGS = { "INLIMBO" }
 function Trap:DoSpring()
     self:StopUpdating()
     if self.target ~= nil and not self.target:IsValid() then
@@ -241,10 +245,13 @@ function Trap:DoSpring()
 
         if self.target.components.inventoryitem ~= nil and self.target.components.inventoryitem.trappable then
             self.lootprefabs = { self.target.prefab }
+            if self.target.settrapdata then
+                self.lootdata = self.target.settrapdata(self.target)
+            end
             self.numsouls = nil
             self.starvednumsouls = wortox_soul_common.HasSoul(self.target) and wortox_soul_common.GetNumSouls(self.target) or nil
-        else
-            self.lootprefabs = self.target.components.lootdropper ~= nil and self.target.components.lootdropper.trappable and self.target.components.lootdropper:GenerateLoot() or nil
+        elseif self.target.components.lootdropper ~= nil and self.target.components.lootdropper.trappable then
+            self.lootprefabs = self.target.components.lootdropper:GenerateLoot() or nil
             self.numsouls = wortox_soul_common.HasSoul(self.target) and wortox_soul_common.GetNumSouls(self.target) or nil
             self.starvednumsouls = nil
         end
@@ -272,7 +279,7 @@ function Trap:DoSpring()
     elseif self.target ~= nil then
         local ismole = self.target:HasTag("mole")
         local x, y, z = self.inst.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x, y, z, 2, nil, { "INLIMBO" }, BAIT_TAGS)
+        local ents = TheSim:FindEntities(x, y, z, 2, nil, INLIMBO_TAGS, BAIT_TAGS)
         for i, v in ipairs(ents) do
             if v.components.bait ~= nil
                 and (ismole and v:HasTag("molebait") or
@@ -324,12 +331,20 @@ function Trap:Harvest(doer)
                     if loot.components.perishable ~= nil then
                         loot.components.perishable:LongUpdate(timeintrap)
                     end
+                    if loot.getcarratfromtrap then
+                        loot.getcarratfromtrap(loot,self.lootdata)
+                        self.lootdata = nil
+                    end
                 end
             end
         end
 
         if self.numsouls ~= nil then
-            doer:PushEvent("harvesttrapsouls", { numsouls = self.numsouls, pos = pos })
+			if doer ~= nil then
+	            doer:PushEvent("harvesttrapsouls", { numsouls = self.numsouls, pos = pos })
+			else
+	            TheWorld:PushEvent("starvedtrapsouls", { numsouls = self.numsouls, trap = self.inst })
+			end
         end
 
         if self.inst:IsValid() then
@@ -395,6 +410,7 @@ function Trap:OnSave()
         souls = self.numsouls,
         starvedsouls = self.starvednumsouls,
         starvedloot = self.starvedlootprefabs,
+        lootdata = self.lootdata,
     },
     {
         self.bait ~= nil and self.bait.GUID or nil,
@@ -418,6 +434,8 @@ function Trap:OnLoad(data)
         (type(data.starvedloot) == "string" and { data.starvedloot }) or
         (type(data.starvedloot) == "table" and data.starvedloot) or
         { "spoiled_food" }
+
+    self.lootdata = data and data.lootdata
 
     if self.isset then
         self:StartUpdate()

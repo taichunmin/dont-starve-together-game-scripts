@@ -167,11 +167,13 @@ local function StealFoodAction(inst) --Look for things to take food from (EatFoo
     end
 end
 
+local BEEHIVE_TAGS = { "beehive" }
+
 local function AttackHiveAction(inst)
-    local hive = FindEntity(inst, SEE_STRUCTURE_DIST, function(guy) 
+    local hive = FindEntity(inst, SEE_STRUCTURE_DIST, function(guy)
             return inst.components.combat:CanTarget(guy) and guy:IsOnValidGround()
         end,
-        { "beehive" })
+        BEEHIVE_TAGS)
     return hive ~= nil and BufferedAction(inst, hive, ACTIONS.ATTACK) or nil
 end
 

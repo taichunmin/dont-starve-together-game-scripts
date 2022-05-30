@@ -9,7 +9,7 @@ local events =
 {
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
-    CommonHandlers.OnAttacked(true),
+    CommonHandlers.OnAttacked(),
     CommonHandlers.OnDeath(),
     CommonHandlers.OnLocomote(false,true),
     EventHandler("locomote",
@@ -29,7 +29,7 @@ local events =
                         inst.sg:GoToState("idle")
                     elseif is_moving then
                         inst.sg:GoToState(is_running and "run_stop" or "walk_stop")
-                    else 
+                    else
                         inst.sg:GoToState("idle")
                     end
                 end
@@ -216,7 +216,7 @@ local states=
         timeline=
         {
             TimeEvent(5*FRAMES, function(inst)
-                inst.SoundEmitter:PlaySound("dontstarve/creatures/together/grass_gekko/tail_regrow") 
+                inst.SoundEmitter:PlaySound("dontstarve/creatures/together/grass_gekko/tail_regrow")
             end),
         },
     },

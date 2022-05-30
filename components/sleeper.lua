@@ -24,6 +24,7 @@ local Sleeper = Class(function(self, inst)
     self.sleepiness = 0
     self.wearofftime = 10
     self.hibernate = false
+    self.watchlight = false
 
     --these are for diminishing returns (mainly bosses), so nil for default
     --self.diminishingreturns = false
@@ -72,7 +73,7 @@ end
 
 function StandardSleepChecks(inst)
     return not (inst.components.homeseeker ~= nil and
-                inst.components.homeseeker.home ~= nil and
+            inst.components.homeseeker.home ~= nil and
                 inst.components.homeseeker.home:IsValid() and
                 inst:IsNear(inst.components.homeseeker.home, 40))
         and not (inst.components.combat ~= nil and inst.components.combat.target ~= nil)
@@ -91,19 +92,22 @@ function StandardWakeChecks(inst)
 end
 
 function DefaultSleepTest(inst)
+    local watchlight = inst.LightWatcher ~= nil or (inst.components.sleeper and inst.components.sleeper.watchlight)
     return StandardSleepChecks(inst)
             -- sleep in the overworld at night
         and (not TheWorld:HasTag("cave") and TheWorld.state.isnight
             -- in caves, sleep at night if we have a lightwatcher and are in the dark
-            or (TheWorld:HasTag("cave") and inst.LightWatcher and (not inst.LightWatcher:IsInLight() or TheWorld.state.iscavenight)))
+            or (TheWorld:HasTag("cave") and TheWorld.state.iscavenight and (not watchlight or not inst:IsInLight())))
 end
 
 function DefaultWakeTest(inst)
+    local watchlight = inst.LightWatcher ~= nil or (inst.components.sleeper and inst.components.sleeper.watchlight)
+
     return StandardWakeChecks(inst)
-        -- in caves, wake if it's not night and we've got a light shining on us
-        or (TheWorld:HasTag("cave") and not TheWorld.state.iscavenight and inst.LightWatcher and inst.LightWatcher:GetTimeInLight() > TUNING.CAVE_LIGHT_WAKE_TIME)
         -- wake when it's not night
-        or not TheWorld.state.isnight
+        or (not TheWorld:HasTag("cave") and not TheWorld.state.isnight)
+        -- in caves, wake if it's not night and we've got a light shining on us
+        or (TheWorld:HasTag("cave") and not TheWorld.state.iscavenight and (not watchlight or inst:IsInLight()))
 end
 
 function NocturnalSleepTest(inst)

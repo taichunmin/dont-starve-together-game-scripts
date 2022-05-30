@@ -55,7 +55,7 @@ local function OnCreate(inst, scenariorunner)
     chestfunctions.AddChestItems(inst, loot)
 end
 
-local function OnLoad(inst, scenariorunner) 
+local function OnLoad(inst, scenariorunner)
     chestfunctions.InitializeChestTrap(inst, scenariorunner, triggertrap)
 end
 

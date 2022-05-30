@@ -74,7 +74,7 @@ local Spatbrain = Class(Brain, function(self, inst)
 end)
 
 function Spatbrain:OnStart()
-    
+
     local root = PriorityNode(
     {
         WhileNode( function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
@@ -94,7 +94,7 @@ function Spatbrain:OnStart()
         --     ChaseAndAttack(self.inst, MAX_CHASE_TIME) }),
         Wander(self.inst)
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

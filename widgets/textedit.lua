@@ -1,3 +1,8 @@
+
+if IsSteamDeck() then
+	return require "widgets/textedit_steamdeck"
+end
+
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local WordPredictionWidget = require "widgets/wordpredictionwidget"
@@ -18,6 +23,7 @@ local TextEdit = Class(Text, function(self, font, size, text, colour)
     self.force_edit = false
     self.pasting = false
     self.pass_controls_to_screen = {}
+	self.ignore_controls = {}
 
     self.idle_text_color = {0,0,0,1}
     self.edit_text_color = {0,0,0,1}--{1,1,1,1}
@@ -95,7 +101,7 @@ function TextEdit:SetEditing(editing)
         self:DoSelectedImage()
         TheInput:EnableDebugToggle(false)
         --#srosen this is where we should push whatever text input widget we have for controllers
-        -- we probably don't want to set the focus and whatnot here if controller attached: 
+        -- we probably don't want to set the focus and whatnot here if controller attached:
         -- it screws with textboxes that are child widgets in scroll lists (and on the lobby screen)
         -- instead, we should go into "edit mode" by pushing a modal screen, rather than giving this thing focus and gobbling input
         --if TheInput:ControllerAttached() then
@@ -126,12 +132,12 @@ function TextEdit:SetEditing(editing)
         if self.force_edit then
             TheFrontEnd:SetForceProcessTextInput(false, self)
         end
-        
+
         if self.prediction_widget ~= nil then
 			self.prediction_widget:Dismiss()
 		end
 	end
-	
+
 	-- Update the enable_accept_control flag
 	self:SetAllowNewline(self.allow_newline)
 
@@ -250,7 +256,7 @@ end
 function TextEdit:OnStopForceProcessTextInput()
     if self.editing then
         self:SetEditing(false)
-        
+
         if self.OnStopForceEdit ~= nil then
 			self.OnStopForceEdit(self)
         end
@@ -324,11 +330,20 @@ function TextEdit:SetPassControlToScreen(control, pass)
     self.pass_controls_to_screen[control] = pass or nil
 end
 
+function TextEdit:SetIgnoreControl(control, ignore)
+    self.ignore_controls[control] = ignore or nil
+end
+
 function TextEdit:OnControl(control, down)
+    if not self:IsEnabled() then return end
 	if self.editing and self.prediction_widget ~= nil and self.prediction_widget:OnControl(control, down) then
 		return true
 	end
-	
+
+	if self.ignore_controls[control] then
+		return false
+	end
+
     if TextEdit._base.OnControl(self, control, down) then return true end
 
     --gobble up extra controls
@@ -352,13 +367,8 @@ function TextEdit:OnControl(control, down)
             return not self.pass_controls_to_screen[control]
         end
     end
-    
-    return false
-end
 
-function TextEdit:OnDestroy()
-    Self:SetEditing(false)
-    TheInput:EnableDebugToggle(true)
+    return false
 end
 
 function TextEdit:OnFocusMove(dir, down)
@@ -390,6 +400,7 @@ function TextEdit:OnLoseFocus()
 end
 
 function TextEdit:DoHoverImage()
+    if not self:IsEnabled() then return end
     if self.focusedtex then
         self.focusimage:SetTexture(self.atlas, self.focusedtex)
         self.focusimage:SetTint(self.hover_tint[1],self.hover_tint[2],self.hover_tint[3],self.hover_tint[4])
@@ -533,7 +544,7 @@ function TextEdit:GetHelpText()
         end
 
         if self.apply_helptext ~= "" then
-            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. self.apply_helptext)   
+            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT, false, false ) .. " " .. self.apply_helptext)
         end
     else
         if self.edit_helptext ~= "" then
@@ -545,7 +556,7 @@ function TextEdit:GetHelpText()
 end
 
 function TextEdit:EnableWordPrediction(layout, dictionary)
-	if layout.mode ~= "disabled" then 
+	if layout.mode ~= "disabled" then
 		if self.prediction_widget == nil then
 			self.prediction_widget = self:AddChild(WordPredictionWidget(self, layout.width, layout.mode))
 			local sx, sy = self:GetRegionSize()
@@ -574,8 +585,14 @@ function TextEdit:ApplyWordPrediction(prediction_index)
 			return true
 		end
 	end
-	
+
 	return false
+end
+
+function TextEdit:Disable()
+    TextEdit._base.Disable(self)
+    self:SetEditing(false)
+    self:DoIdleImage()
 end
 
 -- Ghostly text in the text field that indicates what content goes in the text

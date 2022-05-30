@@ -32,7 +32,7 @@ function Combat:AttachClassified(classified)
     self.classified = classified
     self.ondetachclassified = function() self:DetachClassified() end
     self.inst:ListenForEvent("onremove", self.ondetachclassified, classified)
-    self._laststartattacktime = 0
+    self._laststartattacktime = nil
 end
 
 function Combat:DetachClassified()
@@ -136,8 +136,17 @@ function Combat:CancelAttack()
     if self.inst.components.combat ~= nil then
         self.inst.components.combat:CancelAttack()
     elseif self.classified ~= nil then
-        self._laststartattacktime = 0
+        self._laststartattacktime = nil
     end
+end
+
+function Combat:InCooldown()
+    if self.inst.components.combat ~= nil then
+        return self.inst.components.combat:InCooldown()
+    elseif self.classified ~= nil then
+        return self._laststartattacktime ~= nil and self._laststartattacktime + self.classified.minattackperiod:value() > GetTime()
+    end
+    return false
 end
 
 function Combat:CanAttack(target)
@@ -147,8 +156,7 @@ function Combat:CanAttack(target)
         if not self:IsValidTarget(target) then
             return false, true
         elseif not self.classified.canattack:value()
-            or (self._laststartattacktime ~= nil and
-                GetTime() - self._laststartattacktime < self.classified.minattackperiod:value())
+            or self:InCooldown()
             or (self.inst.sg ~= nil and
                 self.inst.sg:HasStateTag("busy") or
                 self.inst:HasTag("busy"))
@@ -176,12 +184,55 @@ function Combat:CanAttack(target)
     end
 end
 
+function Combat:LocomotorCanAttack(reached_dest, target)
+    if self.inst.components.combat ~= nil then
+        return self.inst.components.combat:LocomotorCanAttack(reached_dest, target)
+    elseif self.classified ~= nil then
+        if not self:IsValidTarget(target) then
+            return false, true, false
+        end
+
+        local range = math.max(0, target:GetPhysicsRadius(0) + self:GetAttackRangeWithWeapon() - .5)
+        reached_dest = reached_dest or distsq(target:GetPosition(), self.inst:GetPosition()) <= range * range
+
+        local valid = self.classified.canattack:value()
+            and (   self.inst.sg == nil or
+                    not self.inst.sg:HasStateTag("busy") or
+                    self.inst.sg:HasStateTag("hit")
+                )
+            and not (   -- gjans: Some specific logic so the birchnutter doesn't attack it's spawn with it's AOE
+                        -- This could possibly be made more generic so that "things" don't attack other things in their "group" or something
+                        self.inst:HasTag("birchnutroot") and
+                        (   target:HasTag("birchnutroot") or
+                            target:HasTag("birchnut") or
+                            target:HasTag("birchnutdrake")
+                        )
+                    )
+
+        if range > 2 and self.inst:HasTag("player") then
+            local weapon = self:GetWeapon()
+            local is_ranged_weapon = weapon ~= nil and (weapon:HasTag("projectile") or weapon:HasTag("rangedweapon"))
+
+            if not is_ranged_weapon then
+                local currentpos = self.inst:GetPosition()
+                local voidtest = currentpos + ((target:GetPosition() - currentpos):Normalize() * (self:GetAttackRangeWithWeapon() / 2))
+                if TheWorld.Map:IsNotValidGroundAtPoint(voidtest:Get()) and not TheWorld.Map:IsNotValidGroundAtPoint(target.Transform:GetWorldPosition()) then
+                    reached_dest = false
+                end
+            end
+        end
+
+        return reached_dest, not valid, self:InCooldown()
+    else
+        return reached_dest, true, false
+    end
+end
+
 function Combat:CanExtinguishTarget(target, weapon)
     if self.inst.components.combat ~= nil then
         return self.inst.components.combat:CanExtinguishTarget(target, weapon)
     end
-    return weapon ~= nil
-        and weapon:HasTag("extinguisher")
+    return (weapon ~= nil and weapon:HasTag("extinguisher") or self.inst:HasTag("extinguisher"))
         and (target:HasTag("smolder") or target:HasTag("fire"))
 end
 
@@ -252,18 +303,23 @@ function Combat:IsValidTarget(target)
     return self:CanExtinguishTarget(target, weapon)
         or self:CanLightTarget(target, weapon)
         or (target.replica.combat ~= nil and
-            target.replica.health ~= nil and
-            not target.replica.health:IsDead() and
+            not IsEntityDead(target, true) and
+            not target:HasTag("spawnprotection") and
             not (target:HasTag("shadow") and self.inst.replica.sanity == nil and not self.inst:HasTag("crazy")) and
             not (target:HasTag("playerghost") and (self.inst.replica.sanity == nil or self.inst.replica.sanity:IsSane()) and not self.inst:HasTag("crazy")) and
             -- gjans: Some specific logic so the birchnutter doesn't attack it's spawn with it's AOE
             -- This could possibly be made more generic so that "things" don't attack other things in their "group" or something
-            (not self.inst:HasTag("birchnutroot") or not (target:HasTag("birchnutroot") or target:HasTag("birchnut") or target:HasTag("birchnutdrake"))) and 
+            (not self.inst:HasTag("birchnutroot") or not (target:HasTag("birchnutroot") or target:HasTag("birchnut") or target:HasTag("birchnutdrake"))) and
             (TheNet:GetPVPEnabled() or not (self.inst:HasTag("player") and target:HasTag("player")) or (weapon ~= nil and weapon:HasTag("propweapon"))) and
             target:GetPosition().y <= self._attackrange:value())
 end
 
 function Combat:CanTarget(target)
+
+    local rider = self.inst.replica.rider
+    local weapon = self:GetWeapon()
+    local is_ranged_weapon = weapon ~= nil and (weapon:HasTag("projectile") or weapon:HasTag("rangedweapon"))
+
     return self:IsValidTarget(target)
         and not (self._ispanic:value()
                 or target:HasTag("INLIMBO")
@@ -272,6 +328,7 @@ function Combat:CanTarget(target)
                 or target:HasTag("debugnoattack"))
         and (target.replica.combat == nil
             or target.replica.combat:CanBeAttacked(self.inst))
+        and (rider == nil or (not rider:IsRiding() or (not rider:GetMount():HasTag("peacefulmount") or is_ranged_weapon)))
 end
 
 function Combat:IsAlly(guy)
@@ -299,6 +356,30 @@ function Combat:IsAlly(guy)
                 )
             )
 end
+
+function Combat:TargetHasFriendlyLeader(target)
+    local leader = self.inst.replica.follower ~= nil and self.inst.replica.follower:GetLeader()
+    if leader ~= nil then
+        local target_leader = target.replica.follower ~= nil and target.replica.follower:GetLeader() or nil
+
+        if target_leader and target_leader.replica.inventoryitem then
+            target_leader = target_leader.entity:GetParent() --.replica.inventoryitem:GetGrandOwner()
+            -- Don't attack followers if their follow object has no owner
+            if target_leader == nil then
+                return true
+            end
+        end
+
+        local PVP_enabled = TheNet:GetPVPEnabled()
+
+        return leader == target
+				or (target_leader ~= nil and (target_leader == leader or (target_leader:HasTag("player") and not PVP_enabled)))
+				or (target:HasTag("domesticated") and not PVP_enabled)
+    end
+
+    return false
+end
+
 
 function Combat:CanBeAttacked(attacker)
     if self.inst:HasTag("playerghost") or

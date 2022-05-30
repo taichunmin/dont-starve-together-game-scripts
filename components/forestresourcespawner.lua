@@ -97,6 +97,8 @@ local function DoPrefabRenew(x, z, ents, renewable_set, max)
     end
 end
 
+local RENEW_CANT_TAGS = { "INLIMBO" }
+local RENEW_ONEOF_TAGS = { "renewable", "grassgekko" }
 local function DoRenew()
     local targeti = math.min(math.floor(easing.inQuint(math.random(), 1, #_spawnpts, 1)), #_spawnpts)
     local target = _spawnpts[targeti]
@@ -105,7 +107,7 @@ local function DoRenew()
 
     local x, y, z = target.Transform:GetWorldPosition()
     if not IsAnyPlayerInRange(x, y, z, MIN_PLAYER_DISTANCE) then
-        local ents = TheSim:FindEntities(x, y, z, RENEW_RADIUS, nil, { "INLIMBO" }, { "renewable", "grassgekko" })
+        local ents = TheSim:FindEntities(x, y, z, RENEW_RADIUS, nil, RENEW_CANT_TAGS, RENEW_ONEOF_TAGS)
         for i, v in ipairs(RENEWABLES) do
             DoPrefabRenew(x, z, ents, v, 3)
         end

@@ -5,7 +5,7 @@ local assets =
 
 local function onSleep(inst)
 	inst:Remove()
-end 
+end
 
 local function SetAnim(inst)
 	local ex, ey, ez = inst.Transform:GetWorldPosition()

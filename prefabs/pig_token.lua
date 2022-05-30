@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("pig_token")
     inst.AnimState:PlayAnimation("idle")
 
+	MakeInventoryFloatable(inst, "med", nil, 0.71)
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
@@ -34,7 +36,6 @@ local function fn()
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem:SetSinks(true)
 
     MakeHauntableLaunch(inst)
 

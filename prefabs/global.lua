@@ -5,12 +5,92 @@ local assets =
     Asset("FILE", "sound/DLC_music.fsb"),
     Asset("SOUNDPACKAGE", "sound/turnoftides.fev"),
     Asset("FILE", "sound/turnoftides.fsb"),
+    Asset("SOUNDPACKAGE", "sound/saltydog.fev"),
+    Asset("FILE", "sound/saltydog.fsb"),
+    Asset("SOUNDPACKAGE", "sound/hookline.fev"),
+    Asset("FILE", "sound/hookline.fsb"),
+    Asset("SOUNDPACKAGE", "sound/hookline_2.fev"),
+    Asset("FILE", "sound/hookline_2.fsb"),
 
+    Asset("SOUNDPACKAGE", "sound/wes.fev"),
+    Asset("FILE", "sound/wes.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/grotto.fev"),
+    Asset("FILE", "sound/grotto_sfx.fsb"),
+    Asset("FILE", "sound/grotto_amb.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/moonstorm.fev"),
+    Asset("FILE", "sound/moonstorm.fsb"),
+    Asset("FILE", "sound/moonstorm.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/dangerous_sea.fev"),
+    Asset("FILE", "sound/dangerous_sea.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/yotc_2020.fev"),
+    Asset("FILE", "sound/yotc_2020.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/farming.fev"),
+    Asset("FILE", "sound/farming.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/yotb_2021.fev"),
+    Asset("FILE", "sound/yotb_2021.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/wintersfeast2019.fev"),
+    Asset("FILE", "sound/wintersfeast2019.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/summerevent.fev"),
+    Asset("FILE", "sound/summerevent.fsb"),
+    Asset("FILE", "sound/summerevent_music.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/webber2.fev"),
+    Asset("FILE", "sound/webber2.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/webber1.fev"),
+    Asset("FILE", "sound/webber1.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/waterlogged2.fev"),
+    Asset("FILE", "sound/waterlogged2.fsb"),
+    Asset("FILE", "sound/waterlogged2_amb.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/waterlogged1.fev"),
+    Asset("FILE", "sound/waterlogged1.fsb"),
+    Asset("FILE", "sound/waterlogged1_amb.fsb"),
+    
+
+    Asset("SOUNDPACKAGE", "sound/wanda2.fev"),
+    Asset("FILE", "sound/wanda2.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/wanda1.fev"),
+    Asset("FILE", "sound/wanda1.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/terraria1.fev"),
+    Asset("FILE", "sound/terraria1.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/wolfgang2.fev"),
+    Asset("FILE", "sound/wolfgang2.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/wolfgang1.fev"),
+    Asset("FILE", "sound/wolfgang1.fsb"),
+    
+    Asset("SOUNDPACKAGE", "sound/yotc_2022_2.fev"),
+    Asset("FILE", "sound/yotc_2022_2.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/yotc_2022_1.fev"),
+    Asset("FILE", "sound/yotc_2022_1.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/ancientguardian_rework.fev"),
+    Asset("FILE", "sound/ancientguardian_rework.fsb"),
+
+    Asset("SOUNDPACKAGE", "sound/WX_rework.fev"),
+    Asset("FILE", "sound/WX_rework.fsb"),
+    
     Asset("FILE", "sound/wilton.fsb"),         -- Legacy sound that can be used in mods
     Asset("FILE", "sound/winnie.fsb"),         -- Legacy sound that can be used in mods
     Asset("FILE", "sound/wallace.fsb"),        -- Legacy sound that can be used in mods
     Asset("FILE", "sound/woodrow.fsb"),        -- Legacy sound that can be used in mods
     Asset("FILE", "sound/stuff.fsb"),          -- Legacy sound that can be used in mods
+
+    Asset("FILE", "klump/strings/unused.txt"),         -- Make the klump zip not empty.
 
 
     -- Legacy for modders to view. These files are now dynamically loaded.
@@ -43,8 +123,6 @@ local assets =
     Asset("PKGREF", "anim/woodie.zip"),
     Asset("PKGREF", "anim/wx78.zip"),
 
-
-
     Asset("ATLAS", "images/global.xml"),
     Asset("IMAGE", "images/global.tex"),
     Asset("IMAGE", "images/visited.tex"),
@@ -56,13 +134,15 @@ local assets =
 
     Asset("IMAGE", "images/shadow.tex"),
     Asset("IMAGE", "images/erosion.tex"),
+    Asset("IMAGE", "images/erosion_holo.tex"),
     Asset("IMAGE", "images/circle.tex"),
     Asset("IMAGE", "images/square.tex"),
     Asset("IMAGE", "images/trans.tex"),
+    Asset("IMAGE", "images/tree.tex"),
 
     Asset("DYNAMIC_ATLAS", "images/fepanels.xml"),
     Asset("PKGREF", "images/fepanels.tex"),
-    
+
     --item explorer stuff in and out of game
     Asset("ANIM", "anim/bolt_of_cloth.zip"),
     Asset("ANIM", "anim/spool.zip"),
@@ -110,6 +190,16 @@ local assets =
     Asset("ATLAS", "images/quagmire_recipebook.xml"),
     Asset("IMAGE", "images/quagmire_recipebook.tex"),
 
+    Asset("ATLAS", "images/plantregistry.xml"),
+    Asset("IMAGE", "images/plantregistry.tex"),
+
+    Asset("ATLAS", "images/crafting_menu.xml"),
+    Asset("IMAGE", "images/crafting_menu.tex"),
+    Asset("ATLAS", "images/crafting_menu_icons.xml"),
+    Asset("IMAGE", "images/crafting_menu_icons.tex"),
+    Asset("ATLAS", "images/crafting_menu_avatars.xml"),
+    Asset("IMAGE", "images/crafting_menu_avatars.tex"),
+
     Asset("DYNAMIC_ATLAS", "images/options.xml"),
     Asset("PKGREF", "images/options.tex"),
     Asset("DYNAMIC_ATLAS", "images/options_bg.xml"),
@@ -124,7 +214,7 @@ local assets =
     Asset("IMAGE", "images/bg_spiral.tex"),
     Asset("ATLAS", "images/bg_vignette.xml"),
     Asset("IMAGE", "images/bg_vignette.tex"),
-    Asset("ANIM", "anim/sail_over.zip"),
+    --Asset("ANIM", "anim/sail_over.zip"), --unused
     Asset("ANIM", "anim/paddle_over.zip"),
 
 
@@ -167,13 +257,15 @@ local assets =
     --TODO(YOG): Why does this get unloaded a the wrong time if we load it as part of the forest prefab?
     Asset("IMAGE", "images/overlays_lunacy.tex"),
 
+    Asset("ATLAS", "images/overlays_moonstorm.xml"),
+    Asset("IMAGE", "images/overlays_moonstorm.tex"),
+
     Asset("IMAGE", "images/colour_cubes/identity_colourcube.tex"),
 
     Asset("SHADER", "shaders/anim.ksh"),
     Asset("SHADER", "shaders/anim_fade.ksh"),
     Asset("SHADER", "shaders/anim_bloom.ksh"),
-    Asset("SHADER", "shaders/blurh.ksh"),
-    Asset("SHADER", "shaders/blurv.ksh"),
+    Asset("SHADER", "shaders/anim_holo.ksh"),
     Asset("SHADER", "shaders/creep.ksh"),
     Asset("SHADER", "shaders/debug_line.ksh"),
     Asset("SHADER", "shaders/debug_tri.ksh"),
@@ -206,31 +298,37 @@ local assets =
     Asset("SHADER", "shaders/ui_yuv.ksh"),
     Asset("SHADER", "shaders/swipe_fade.ksh"),
     Asset("SHADER", "shaders/ui_anim.ksh"),
+    Asset("SHADER", "shaders/ui_anim_holo.ksh"),
+    Asset("SHADER", "shaders/ui_anim_cc.ksh"),
+	Asset("SHADER", "shaders/shade.ksh"),
+
+    Asset("SHADER", "shaders/blurh.ksh"),
+    Asset("SHADER", "shaders/blurv.ksh"),
     Asset("SHADER", "shaders/combine_colour_cubes.ksh"),
-	Asset("SHADER", "shaders/zoomblur.ksh"),
     Asset("SHADER", "shaders/postprocess_none.ksh"),
-    Asset("SHADER", "shaders/postprocess.ksh"),    
-    Asset("SHADER", "shaders/postprocessbloom.ksh"),
-    Asset("SHADER", "shaders/postprocessdistort.ksh"),
-    Asset("SHADER", "shaders/postprocessbloomdistort.ksh"),
-    Asset("SHADER", "shaders/postprocesslunacy.ksh"),
-    Asset("SHADER", "shaders/postprocessbloomlunacy.ksh"),
-    Asset("SHADER", "shaders/postprocessdistortlunacy.ksh"),
-    Asset("SHADER", "shaders/postprocessbloomdistortlunacy.ksh"),    
-	Asset("SHADER", "shaders/blendoceantexture.ksh"),  
+    Asset("SHADER", "shaders/postprocess_bloom.ksh"),
+    Asset("SHADER", "shaders/postprocess_colourcube.ksh"),
+    Asset("SHADER", "shaders/postprocess_distort.ksh"),
+    Asset("SHADER", "shaders/postprocess_lunacy.ksh"),
+    Asset("SHADER", "shaders/postprocess_moonpulse.ksh"),
+    Asset("SHADER", "shaders/postprocess_moonpulsegrading.ksh"),
+    Asset("SHADER", "shaders/postprocess_zoomblur.ksh"),
+
+	Asset("SHADER", "shaders/blendoceantexture.ksh"),
     Asset("SHADER", "shaders/waterfall2.ksh"),
 
     Asset("SHADER", "shaders/waves.ksh"),
     Asset("SHADER", "shaders/overheat.ksh"),
+    Asset("SHADER", "shaders/moonstorm.ksh", 1), --1 to indicate do a fallback if needed
+    Asset("PKGREF", "shaders/moonstorm_fallback.ksh" ),
+    Asset("SHADER", "shaders/moonstorm_goggles.ksh", 1), --1 to indicate do a fallback if needed
+    Asset("PKGREF", "shaders/moonstorm_goggles_fallback.ksh" ),
 
-    Asset("SHADER", "shaders/anim.ksh"),
-    Asset("SHADER", "shaders/anim_bloom.ksh"),
-    Asset("SHADER", "shaders/anim_fade.ksh"),
     Asset("SHADER", "shaders/anim_haunted.ksh"),
     Asset("SHADER", "shaders/anim_fade_haunted.ksh"),
     Asset("SHADER", "shaders/anim_bloom_haunted.ksh"),
     Asset("SHADER", "shaders/minimapblend.ksh"),
-    
+
     --common UI elements that we will always need
     Asset("ATLAS", "images/ui.xml"),
     Asset("IMAGE", "images/ui.tex"),
@@ -243,8 +341,9 @@ local assets =
     Asset("ANIM", "anim/generating_world.zip"),
     Asset("ANIM", "anim/generating_forest.zip"),
     Asset("ANIM", "anim/generating_cave.zip"),
-    Asset("ANIM", "anim/creepy_hands.zip"),    
+    Asset("ANIM", "anim/creepy_hands.zip"),
     Asset("ANIM", "anim/saving_indicator.zip"),
+    Asset("ANIM", "anim/cookbook_newrecipe.zip"),
 
     Asset("ANIM", "anim/skingift_popup.zip"),
     Asset("ATLAS", "images/giftpopup.xml"),
@@ -258,12 +357,19 @@ local assets =
     Asset("ATLAS", "images/inventoryimages2.xml"),
     Asset("IMAGE", "images/inventoryimages2.tex"),
 
+    Asset("ATLAS", "images/hud.xml"),
+    Asset("IMAGE", "images/hud.tex"),
+    Asset("ATLAS", "images/hud2.xml"),
+    Asset("IMAGE", "images/hud2.tex"),
+
     --oft-used panel bgs
     Asset("DYNAMIC_ATLAS", "images/globalpanels2.xml"),
     Asset("PKGREF", "images/globalpanels2.tex"),
 
     Asset("ATLAS", "images/button_icons.xml"),
     Asset("IMAGE", "images/button_icons.tex"),
+    Asset("ATLAS", "images/button_icons2.xml"),
+    Asset("IMAGE", "images/button_icons2.tex"),
 
     Asset("ATLAS", "images/avatars.xml"),
     Asset("IMAGE", "images/avatars.tex"),
@@ -271,12 +377,27 @@ local assets =
     Asset("ATLAS", "images/profileflair.xml"),
     Asset("IMAGE", "images/profileflair.tex"),
 
+    Asset("ATLAS", "images/servericons.xml"),
+    Asset("IMAGE", "images/servericons.tex"),
+
+    -- Loading screen
+    Asset("ATLAS", "images/loading_screen.xml"),
+    Asset("IMAGE", "images/loading_screen.tex"),
+    Asset("ATLAS", "images/loading_screen_icons.xml"),
+    Asset("IMAGE", "images/loading_screen_icons.tex"),
+
     --Wardrobe previewing
     Asset("ANIM", "anim/player_ghost_withhat.zip"),
     Asset("ANIM", "anim/werebeaver_basic.zip"),
     Asset("ANIM", "anim/weremoose_basic.zip"),
     Asset("ANIM", "anim/weregoose_basic.zip"),
+    Asset("ANIM", "anim/player_basic.zip"),
     Asset("ANIM", "anim/player_idles.zip"),
+    Asset("ANIM", "anim/player_idles_walter.zip"),
+    Asset("ANIM", "anim/player_idles_ui.zip"),
+    Asset("ANIM", "anim/player_idles_wolfgang.zip"),
+    Asset("ANIM", "anim/player_idles_wolfgang_skinny.zip"),
+    Asset("ANIM", "anim/player_idles_wolfgang_mighty.zip"),
 
     Asset("DYNAMIC_ANIM", "anim/dynamic/body_default1.zip"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/hand_default1.zip"),
@@ -287,10 +408,27 @@ local assets =
     Asset("PKGREF", "anim/dynamic/legs_default1.dyn"),
     Asset("PKGREF", "anim/dynamic/feet_default1.dyn"),
 
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beef_body_default1.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beef_horn_default1.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beef_head_default1.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beef_tail_default1.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beef_feet_default1.zip"),
+    Asset("PKGREF", "anim/dynamic/beef_body_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/beef_horn_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/beef_head_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/beef_tail_default1.dyn"),
+    Asset("PKGREF", "anim/dynamic/beef_feet_default1.dyn"),
+
+
+    Asset("ANIM", "anim/beard.zip"),
+    Asset("ANIM", "anim/beard_silk.zip"),
+    Asset("DYNAMIC_ANIM", "anim/dynamic/beard_default1.zip"),
+    Asset("PKGREF", "anim/dynamic/beard_default1.dyn"),
+
     Asset("DYNAMIC_ANIM", "anim/dynamic/previous_skin.zip"),
     Asset("PKGREF", "anim/dynamic/previous_skin.dyn"),
     Asset("DYNAMIC_ANIM", "anim/dynamic/random_skin.zip"),
-    Asset("PKGREF", "anim/dynamic/random_skin.dyn"),   
+    Asset("PKGREF", "anim/dynamic/random_skin.dyn"),
 }
 
 require "fonts"
@@ -310,7 +448,7 @@ for _,char in ipairs(official_characters) do
 
     table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_gold_"..char..".xml"))
     table.insert(assets, Asset("PKGREF", "images/names_gold_"..char..".tex"))
-    
+
     table.insert(assets, Asset("DYNAMIC_ATLAS", "images/names_gold_cn_"..char..".xml"))
     table.insert(assets, Asset("PKGREF", "images/names_gold_cn_"..char..".tex"))
 
@@ -322,6 +460,21 @@ end
 --Skin assets
 for _, skin_asset in pairs(require("skin_assets")) do
     table.insert(assets, skin_asset)
+end
+
+--random player face for new anim character button
+table.insert(assets, Asset("DYNAMIC_ANIM", "anim/dynamic/random.zip"))
+table.insert(assets, Asset("PKGREF", "anim/dynamic/random.dyn"))
+
+-- cookbook HD images
+local cooking = require("cooking")
+for _, recipe_cat in pairs(cooking.cookbook_recipes) do
+	for _, data in pairs(recipe_cat) do
+        if not cooking.IsModCookerFood(data.name) then
+            table.insert(assets, Asset("DYNAMIC_ATLAS", "images/cookbook_"..data.name..".xml"))
+            table.insert(assets, Asset("PKGREF", "images/cookbook_"..data.name..".tex"))
+        end
+	end
 end
 
 if QUAGMIRE_USE_KLUMP then

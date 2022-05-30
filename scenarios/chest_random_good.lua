@@ -3,7 +3,7 @@ chestfunctions = require("scenarios/chestfunctions")
 
 local function GetLoot()
 
-	local items = 
+	local items =
 	{
 		{
 			item = "magic_blueprint",
@@ -23,7 +23,7 @@ local function GetLoot()
 		{
 			item = "rocks",
 			count = math.random(10, 20),
-		},	
+		},
 		{
 			item = "goldnugget",
 			count = math.random(10, 20),
@@ -67,7 +67,7 @@ local function GetLoot()
 		{
 			item = "tophat",
 			initfn = function(inst) inst.components.fueled:InitializeFuelLevel(TUNING.TOPHAT_PERISHTIME*(.5 + math.random()*.25)) end
-		},		
+		},
 		{
 			item = "spear",
 			initfn = function(inst) inst.components.finiteuses:SetUses(math.random( math.floor(TUNING.SPEAR_USES * .25), TUNING.SPEAR_USES)) end
@@ -89,16 +89,16 @@ local function GetLoot()
 		{
 			item = "boomerang",
 		},
-	}	
-	
+	}
+
 	local loottable = {}
-	
+
 	for k = 1, math.random(6,9) do
 		local idx = math.random(#items)
 		table.insert(loottable, items[idx])
 		table.remove(items, idx)
-	end	
-			
+	end
+
 	return loottable
 end
 
@@ -106,7 +106,7 @@ local function OnCreate(inst, scenariorunner)
 	chestfunctions.AddChestItems(inst, GetLoot())
 end
 
-return 
+return
 {
 	OnCreate = OnCreate
 }

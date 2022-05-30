@@ -4,18 +4,18 @@ local Text = require "widgets/text"
 local ImageButton = require "widgets/imagebutton"
 local ScrollableList = require "widgets/scrollablelist"
 
--- A dropdown list widget. When closed, it is a box containing a text string and a down arrow button. When the button is clicked, it opens to 
+-- A dropdown list widget. When closed, it is a box containing a text string and a down arrow button. When the button is clicked, it opens to
 -- show a scrollable list of text strings.
--- 
+--
 -- Size parameters may be nil.
 -- The start text is shown in the closed box before any selections have been made.
 -- Items is a list of text strings to display in the list.
 
--- allowMultipleSelections controls the mode of this dropdown. 
+-- allowMultipleSelections controls the mode of this dropdown.
 -- If this flag is false, then clicking on an item in the list will close the list and change the text in the box to the text of the item.
--- If this flag is true, clicking on an item in the list will select it (and onselectfn will be called), but the list remains open. Selected items 
--- have a gold diamond to their left. Any number of items may be selected. The list does not close until the arrow button is clicked again, and 
--- the text in the box does not change. 
+-- If this flag is true, clicking on an item in the list will select it (and onselectfn will be called), but the list remains open. Selected items
+-- have a gold diamond to their left. Any number of items may be selected. The list does not close until the arrow button is clicked again, and
+-- the text in the box does not change.
 
 -- onselectfn is called whenever an item in the list is selected, and gets the text of that item as its parameter.
 
@@ -34,12 +34,12 @@ local DropDown = Class(Widget, function(self, size_x, size_y, start_text, items,
 
 	self.fixed_root = self:AddChild(Widget("root"))
 
-  
+
     -- add background + scroll list for dropdown
     -- each item in scroll list textbox
 	-- text should be gold like nav bar buttons
 
-	
+
 	self.drop_list = self.fixed_root:AddChild(Widget("drop-list"))
 
 	self.drop_list.list_length = math.min(#items, 5)
@@ -56,28 +56,28 @@ local DropDown = Class(Widget, function(self, size_x, size_y, start_text, items,
 	--print("Size", self.drop_list.width, self.drop_list.height)
 
 	self.list_widgets = {}
-	for i = 1, self.drop_list.list_length do 
+	for i = 1, self.drop_list.list_length do
 		local widget = self:BuildListWidget(items[i], size_x, size_y)
 		table.insert(self.list_widgets, widget)
 	end
 
 	self.items_data = {}
-	for i = 1, #items do 
+	for i = 1, #items do
 		self.items_data[i] = { text = items[i], isselected = false}
 	end
 
 	local padding = 3
 	self.drop_list.list = self.drop_list.list_root:AddChild(ScrollableList(self.items_data, size_x/2, (size_y+padding)*self.drop_list.list_length, size_y, padding,
-																			function(widget, data, index) 
-																				--print("got", widget, data, index) 
+																			function(widget, data, index)
+																				--print("got", widget, data, index)
 																				widget.text:SetString(data.text)
 																				widget.index = index
-																				if data.isselected then 
+																				if data.isselected then
 																					widget.Select()
-																				else 
+																				else
 																					widget.Unselect()
-																				end 
-																			end, 
+																				end
+																			end,
 																			self.list_widgets))
 	self.drop_list.list:LayOutStaticWidgets()
 	self.drop_list.list:SetPosition(size_x*(20/150), 0, 0)
@@ -120,40 +120,40 @@ function DropDown:BuildListWidget(text, size_x, size_y)
     widget.image:ScaleToSize(2*size_x/3, size_y)
     widget.image:SetPosition(30, 0)
 
-    -- selected items in scroll list should have a gold diamond like the nav buttons 
+    -- selected items in scroll list should have a gold diamond like the nav buttons
 	widget.selected = widget:AddChild(Image("images/frontend.xml", "nav_cursor.tex"))
 	widget.selected:SetScale(.67)
 	widget.selected:SetPosition(-0.5*size_x + (size_x*55/150), 0)
 	widget.selected:Hide()
-	
+
 	widget.text = widget:AddChild(Text(UIFONT, 22, text, GOLD))
 	widget.text:SetPosition(30, 0)
 
 	widget.OnControl = function(this, control, down)
 		--print("Got oncontrol", control)
-		if self.allowMultipleSelections then 
+		if self.allowMultipleSelections then
 	    	if control == CONTROL_ACCEPT and down then
-		    	if not widget.isselected then 
+		    	if not widget.isselected then
 		    		widget.Select() -- Do this FIRST in case SetSelection needs to change it
 		    		--print("Selected", widget.text:GetString())
-		   			self:SetSelection(widget.text:GetString())     
+		   			self:SetSelection(widget.text:GetString())
 		   		else
 		   			widget.Unselect()
 		   			--print("Clearing selection")
 		   			self:ClearSelection(widget.text:GetString())
-		   			
-		   			if self.onunselectfn then 
+
+		   			if self.onunselectfn then
 		   				self.onunselectfn(widget.text:GetString())
 		   			end
 		   		end
 		   	end
 	    else
-	    	-- For the single selection case, we must use the up event rather than the down because otherwise the up event is caught by 
+	    	-- For the single selection case, we must use the up event rather than the down because otherwise the up event is caught by
 	    	-- whatever is under the mouse when the dropdown closes.
-	    	if control == CONTROL_ACCEPT and not down then 
+	    	if control == CONTROL_ACCEPT and not down then
 		   		self:ClearAllSelections()
 		   		widget.Select()
-		   		self:SetSelection(widget.text:GetString()) 
+		   		self:SetSelection(widget.text:GetString())
 		   	end
 		end
 	end
@@ -165,7 +165,7 @@ function DropDown:BuildListWidget(text, size_x, size_y)
 
 	widget.OnLoseFocus = function()
 		--print("onlosefocus")
-		if not widget.isselected then 
+		if not widget.isselected then
 			widget.selected:Hide()
 		end
 	end
@@ -187,11 +187,11 @@ function DropDown:BuildListWidget(text, size_x, size_y)
 end
 
 function DropDown:ClearAllSelections()
-	for i = 1, #self.list_widgets do 
+	for i = 1, #self.list_widgets do
 		self.list_widgets[i].Unselect()
 	end
 
-	for i = 1, #self.items_data do 
+	for i = 1, #self.items_data do
 		self.items_data[i].isselected = false
 	end
 end
@@ -201,21 +201,21 @@ function DropDown:ClearSelection(text)
 end
 
 function DropDown:SetSelection(text)
-	
+
 	-- Should be able to select more than one thing
 
 	-- If selecting multiple items is allowed, then don't close the list when something is selected
-	-- But if only one is allowed, then auto-close the list 
+	-- But if only one is allowed, then auto-close the list
 
 	-- Call onselectfn when an item is selected
 
-	if not self.allowMultipleSelections then 
+	if not self.allowMultipleSelections then
 		self.selection_box.text:SetString(text)
 
 		self:Close()
 	end
 
-	if self.onselectfn then 
+	if self.onselectfn then
 		self.onselectfn(text)
 	end
 end
@@ -229,7 +229,7 @@ function DropDown:SetScale(value)
 end
 
 
-function DropDown:Open() 
+function DropDown:Open()
 	if not self.isopen then
 		self.isopen = true
 		self.down_arrow:Hide()

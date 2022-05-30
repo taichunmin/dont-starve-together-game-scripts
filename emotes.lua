@@ -65,6 +65,40 @@ local EMOTES =
         aliases = { "strut", "strikepose" },
         data = { anim = "emote_strikepose", zoom = true, soundoverride = "pose", mounted = true },
     },
+
+    ["toast"] = {
+        aliases = { "toasting", "cheers" },
+        data = { anim = { "emote_pre_toast", "emote_loop_toast" }, mounted = true, soundoverride = "pose", loop = true, fx = false, sounddelay = 0.55, },
+    },
+
+    ["pet"] = {
+        aliases = { "pat" },
+        data = {
+            anim = { "pet_small" },
+            mounted = true,
+            mountonly = true,
+            mountsound = "curious",
+            mountsounddelay = 25 * FRAMES,
+            soundoverride = "pose",
+            sounddelay = 11 * FRAMES,
+            fx = false,
+        },
+    },
+
+    ["bigpet"] = {
+        aliases = { "bigpat" },
+        data = {
+            anim = { "pet_big" },
+            mounted = true,
+            mountonly = true,
+            mountsound = "curious",
+            mountsounddelay = 25 * FRAMES,
+            soundoverride = "pose",
+            sounddelay = 11 * FRAMES,
+            fx = false,
+            zoom = true,
+        },
+    },
 }
 
 local function CreateEmoteCommand(emotedef)

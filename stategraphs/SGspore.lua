@@ -47,7 +47,7 @@ local states=
 
         timeline =
         {
-            TimeEvent(45*FRAMES, function(inst) 
+            TimeEvent(45*FRAMES, function(inst)
                 inst.Light:Enable(false)
                 inst.DynamicShadow:Enable(false)
             end),
@@ -58,6 +58,7 @@ local states=
             EventHandler("animover", function(inst) inst:Remove() end)
         },
     },
+
     State{
         name = "idle",
         tags = {"idle", "canrotate"},
@@ -91,7 +92,7 @@ local states=
         events=
         {
             EventHandler("animover", function(inst)
-				inst.sg:GoToState("land_idle")
+                inst.sg:GoToState("land_idle")
             end),
         },
     },
@@ -116,7 +117,7 @@ local states=
 
         timeline =
         {
-            TimeEvent(14*FRAMES, function(inst) 
+            TimeEvent(14*FRAMES, function(inst)
                 inst.Light:Enable(true)
                 inst.DynamicShadow:Enable(true)
                 inst.SoundEmitter:PlaySound("dontstarve/cave/mushtree_tall_spore_land")

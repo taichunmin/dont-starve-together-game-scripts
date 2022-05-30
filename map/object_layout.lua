@@ -4,36 +4,36 @@ require("constants")
 
 local StaticLayout = function(items, args)
 	local positions = {}
-	
+
 	for current_prefab, pos_list in pairs(items) do
 		for i, pos in pairs(pos_list) do
 			-- Note! The third position in the list can hold arbitrary save data for that prefab.
 			table.insert(positions, {prefab=current_prefab, x=pos.x, y=pos.y, properties=pos.properties})
 		end
 	end
-	
+
 	return positions
 end
 
 local TranslateFunction = function(items, fn, args)
 	local positions = {}
-	
+
 	local count = 0
 	for current_prefab, it_count in pairs(items) do
 		count = count + it_count
 	end
-	
+
 	local pp = fn(count, args)
-	
+
 	local pp_cnt = 1
 	for current_prefab, it_count in pairs(items) do
 		for i=1, it_count do
 			table.insert(positions, {prefab=current_prefab, x= pp[pp_cnt].x, y=pp[pp_cnt].y})
-			
+
 			pp_cnt = pp_cnt + 1
 		end
 	end
-	
+
 	return positions
 end
 
@@ -47,18 +47,18 @@ end
 
 
 local GetGridPositions = function(num, args)
-	
+
 	if args == nil then
 		args = {width=3}
 	end
-	
+
 	local positions = {}
 	local height = math.ceil(num / args.width) --args.height or args.width
-	
+
 	for i = 1, num do
 		table.insert(positions, {x=(-args.width/2.0)+(i % args.width), y=(-height/2.0)+math.floor(i / args.width)})
 	end
-	
+
 	return positions
 end
 
@@ -67,7 +67,7 @@ local GetRectangleEdgePositions = function(num, args)
 	if args == nil then
 		args = {width=3, height=3}
 	end
-	
+
 	local total_edge_length = args.width*2+args.height*2
 	local dist_per_item = total_edge_length/num
 	local positions = {}
@@ -82,7 +82,7 @@ local GetRectangleEdgePositions = function(num, args)
 	   			table.insert(positions, {x=args.width/2.0, y=-args.height/2.0+current_pos})
 			else
 				current_pos = current_pos - args.height
-				
+
 			   	if current_pos < args.width then
 			   		table.insert(positions, {x=args.width/2.0-current_pos, y=args.height/2.0})
 				else
@@ -92,7 +92,7 @@ local GetRectangleEdgePositions = function(num, args)
 			end
 		end
 	end
-	
+
 	return positions
 end
 
@@ -117,17 +117,17 @@ local LAYOUT_FUNCTIONS =
 
 
 local function MinBoundingBox(items)
-	local extents = {xmin=1000000, ymin=1000000, xmax=-1000000, ymax=-1000000}	
+	local extents = {xmin=1000000, ymin=1000000, xmax=-1000000, ymax=-1000000}
 
 	for k,pos in pairs(items) do
-	
+
 		if pos[1] < extents.xmin then
 			extents.xmin = pos[1]
 		end
 		if pos[1] > extents.xmax then
 			extents.xmax = pos[1]
 		end
-		
+
 		if pos[2] < extents.ymin then
 			extents.ymin = pos[2]
 		end
@@ -135,7 +135,7 @@ local function MinBoundingBox(items)
 			extents.ymax = pos[2]
 		end
 	end
-	
+
 	return extents
 end
 
@@ -150,9 +150,9 @@ local function LayoutForDefinition(name, choices)
 	local maze_rooms = require("map/maze_layouts")
 
 	local layout = {}
-	
-	if objs.Layouts[name] == nil and traps.Layouts[name] == nil 
-		and pois.Layouts[name] == nil and protres.Layouts[name] == nil  
+
+	if objs.Layouts[name] == nil and traps.Layouts[name] == nil
+		and pois.Layouts[name] == nil and protres.Layouts[name] == nil
 		and boons.Layouts[name] == nil and maze_rooms.Layouts[name] == nil then
 		print("No layout available for", name)
 		return
@@ -171,7 +171,7 @@ local function LayoutForDefinition(name, choices)
 			else
 				layout = deepcopy(GetRandomItem(maze_rooms.AllLayouts)[name])
 			end
-		else 
+		else
 			layout = deepcopy(pois.Layouts[name])
 		end
 
@@ -196,16 +196,27 @@ local function ConvertLayoutToEntitylist(layout)
 
 					if area_contents ~= nil then
 						for i,r_prefab in ipairs(area_contents) do
+
 							local x, y = 0, 0
+							local properties = current_prefab_data.properties
+
 							if type(r_prefab) == "table" then
 								x = r_prefab.x
 								y = r_prefab.y
+
+								if r_prefab.properties ~= nil then
+									if properties and type(properties) == "table" and #properties > 0 then
+										properties = JoinArrays(properties, r_prefab.properties)
+									else
+										properties = r_prefab.properties
+									end
+								end
 								r_prefab = r_prefab.prefab
 							else
 								x = (current_prefab_data.x-current_prefab_data.width/2.0) + (math.random()*current_prefab_data.width)
 								y = (current_prefab_data.y-current_prefab_data.height/2.0) + (math.random()*current_prefab_data.height)
+								properties = current_prefab_data.properties
 							end
-							local properties = current_prefab_data.properties
 							if to_add[r_prefab] == nil then
 								to_add[r_prefab] = {}
 							end
@@ -215,7 +226,7 @@ local function ConvertLayoutToEntitylist(layout)
 				end
 			end
 		end
-		
+
 		for prefab_name,instances in pairs(to_add) do
 		    if layout.layout[prefab_name] == nil then
 		        layout.layout[prefab_name] = {}
@@ -224,7 +235,7 @@ local function ConvertLayoutToEntitylist(layout)
 		        table.insert(layout.layout[prefab_name], instance)
 		    end
         end
-        
+
 		-- all areas populated now, so remove the areas.
 		for k,v in pairs(layout.areas) do
 			layout.layout[k] = nil
@@ -232,36 +243,36 @@ local function ConvertLayoutToEntitylist(layout)
 	end
 
 	if layout.defs ~= nil then
-	
+
 		-- for each layout item that appears in defs, replace with one of the choices from defs
-		
+
 		if layout.layout ~= nil then
 			for current_prefab,v in pairs(layout.layout) do
 				if layout.defs[current_prefab] ~= nil then
 					local idx = math.random(1, #layout.defs[current_prefab])
-					
+
 					layout.layout[layout.defs[current_prefab][idx]] = v
 					layout.layout[current_prefab] = nil
 				end
 			end
 		end
-		
+
 		if layout.count ~= nil then
 			for current_prefab,v in pairs(layout.count) do
 				if layout.defs[current_prefab] ~= nil then
 					local idx = math.random(1, #layout.defs[current_prefab])
-					
+
 					layout.count[layout.defs[current_prefab][idx]] = v
 					layout.count[current_prefab] = nil
 				end
 			end
 		end
 	end
-	
+
 	if layout.scale == nil then
 		layout.scale = 1.0
 	end
-	
+
 	local all_items = {}
 
 	if layout.layout ~= nil then
@@ -285,7 +296,7 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 	assert(layout~=nil)
 	assert(prefabs~=nil)
 	assert(add_entity~=nil)
-	
+
 	world = world or WorldSim
 
 	-- Calculate min bounding box
@@ -293,22 +304,22 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 	for i, val in ipairs(prefabs) do
 		table.insert(item_positions, {val.x, val.y})
 	end
-		
+
 	local extents = MinBoundingBox(item_positions)
-		
+
 	-- Get the size of the area to reserve
 	local e_width = (extents.xmax - extents.xmin)/2.0
 	local e_height = (extents.ymax - extents.ymin)/2.0
-		 
+
 	local size = e_width
 	if size < e_height then
 		size = e_height
 	end
-		
+
 	size = layout.scale * size
 	local flip_x = -1
 	local flip_y = 1
-	local switch_xy = false	
+	local switch_xy = false
 
 	if layout.disable_transform == nil or layout.disable_transform == false then
 		switch_xy = GetRandomItem({true,false})--translate[1]
@@ -319,13 +330,13 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 	-- If we specify a rotation then use that instead
 	if layout.force_rotation ~= nil then
 		--print(node_id, layout, layout.force_rotation)
-		local translations = { 
-								[LAYOUT_ROTATION.NORTH]={false,	-1,	1}, 
-								[LAYOUT_ROTATION.EAST]= {true,	 1, 1}, 
-								[LAYOUT_ROTATION.SOUTH]={false,  1,	-1}, 
-								[LAYOUT_ROTATION.WEST]=	{true,	-1,	-1} 
+		local translations = {
+								[LAYOUT_ROTATION.NORTH]={false,	-1,	1},
+								[LAYOUT_ROTATION.EAST]= {true,	 1, 1},
+								[LAYOUT_ROTATION.SOUTH]={false,  1,	-1},
+								[LAYOUT_ROTATION.WEST]=	{true,	-1,	-1}
 							 }
-							 
+
 		switch_xy  = translations[layout.force_rotation][1]
 		flip_x = translations[layout.force_rotation][2]
 		flip_y = translations[layout.force_rotation][3]
@@ -343,12 +354,12 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 			for row = 1, size do
 				local rw = row
 				local clmn = column
-				
+
 				if switch_xy == true then
 					rw = column
 					clmn = row
 				end
-				
+
 				if flip_x == -1 then
 					clmn = size - (clmn-1)
 				end
@@ -360,7 +371,7 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 				if layout.ground[rw][clmn] ~= 0 then
 					if position ~= nil then
 						world:SetTile(position[1] + column, position[2] + row, layout.ground_types[layout.ground[rw][clmn]], 1)
-					else 
+					else
 						table.insert(tiles, layout.ground_types[layout.ground[rw][clmn]])
 					end
 				else
@@ -392,27 +403,27 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 
 
 	-- place objects however you like within the reserved loc
-	--print ("RESERVED", rcx,rcy, flip_x, flip_y)	
-	
-	if rcx ~= nil then		
+	--print ("RESERVED", rcx,rcy, flip_x, flip_y)
+
+	if rcx ~= nil then
 		-- ReserveSpace gives us the bottom left tile, but we orient objects around the center(to ease rotation)
 		rcx = rcx + size + (position == nil and -0.5 or 0.5)
 		rcy = rcy + size + (position == nil and -0.5 or 0.5)
-	
+
 		for idx=1, #prefabs do
 			local x = prefabs[idx].x * flip_x
-			local y = prefabs[idx].y * flip_y 
-			
+			local y = prefabs[idx].y * flip_y
+
 			if switch_xy == true then
-				x = prefabs[idx].y * flip_y 
+				x = prefabs[idx].y * flip_y
 				y = prefabs[idx].x * flip_x
 			end
-			
+
 			if prefabs[idx].properties ~= nil then
 				if prefabs[idx].properties.data ~= nil and prefabs[idx].properties.data.savedrotation ~= nil then
 					local rot = prefabs[idx].properties.data.savedrotation.rotation or 0
 					local dir = Vector3(math.cos(rot / RADIANS), 0, -math.sin(rot / RADIANS))
-					
+
 					dir.x = dir.x * flip_x
 					dir.z = dir.z * flip_y
 					if switch_xy then
@@ -420,16 +431,16 @@ local function ReserveAndPlaceLayout(node_id, layout, prefabs, add_entity, posit
 					end
 
 					rot = math.floor(math.atan2(-dir.z, dir.x) / DEGREES + 0.5)
-					
+
 					prefabs[idx].properties.data.savedrotation.rotation = rot
 				end
 			end
-			
+
 			local points_x = rcx + x * layout.scale
 			local points_y = rcy + y * layout.scale
-				
-			--print ("add_entity", prefabs[idx].prefab, points_x, points_y )	
-			
+
+			--print ("add_entity", prefabs[idx].prefab, points_x, points_y )
+
 			add_entity.fn(prefabs[idx].prefab, {points_x}, {points_y}, 1, add_entity.args.entitiesOut, add_entity.args.width, add_entity.args.height, add_entity.args.debug_prefab_list, prefabs[idx].properties, false)
 		end
 	else
@@ -454,9 +465,9 @@ local function Place(position, item, addEntity, choices, world)
 end
 
 return {
-		ConvertLayoutToEntitylist = ConvertLayoutToEntitylist, 
-		LayoutForDefinition = LayoutForDefinition, 
-		ReserveAndPlaceLayout = ReserveAndPlaceLayout, 
+		ConvertLayoutToEntitylist = ConvertLayoutToEntitylist,
+		LayoutForDefinition = LayoutForDefinition,
+		ReserveAndPlaceLayout = ReserveAndPlaceLayout,
 		Convert = Convert,
 		Place = Place,
 	}

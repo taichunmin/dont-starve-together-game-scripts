@@ -12,8 +12,7 @@ end
 function EntityTracker:GetDebugString()
     local str = "\n"
     for k, v in pairs(self.entities) do
-        str = str.."    --"..k.."\n"
-        str = str..string.format("      --entity: %s \n", tostring(v.inst))
+        str = str.."    --"..k..": "..tostring(v.inst).."\n"
     end
     return str
 end

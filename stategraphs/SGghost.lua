@@ -18,7 +18,7 @@ local events =
     EventHandler("startaura", startaura),
     EventHandler("stopaura", stopaura),
     EventHandler("attacked", function(inst)
-        if not (inst.sg:HasStateTag("jumping") or inst.components.health:IsDead()) then
+        if not (inst.sg:HasStateTag("jumping") or inst.components.health:IsDead()) and not CommonHandlers.HitRecoveryDelay(inst) then
             inst.sg:GoToState("hit")
         end
     end),
@@ -51,8 +51,7 @@ end
 
 local states =
 {
-    State
-    {
+    State{
         name = "idle",
         tags = { "idle", "canrotate", "canslide" },
 
@@ -65,8 +64,7 @@ local states =
         end,
     },
 
-    State
-    {
+    State{
         name = "appear",
 
         onenter = function(inst)
@@ -96,6 +94,7 @@ local states =
             inst.SoundEmitter:PlaySound(inst:HasTag("girl") and "dontstarve/ghost/ghost_girl_howl" or "dontstarve/ghost/ghost_howl")
             inst.AnimState:PlayAnimation("hit")
             inst.Physics:Stop()
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         events =
@@ -134,6 +133,7 @@ local states =
 
     State{
         name = "dissipate",
+        tags = { "busy", "noattack", "nointerrupt" },
 
         onenter = function(inst)
             inst.Physics:Stop()
@@ -228,7 +228,7 @@ local states =
             inst.SoundEmitter:PlaySound(inst:HasTag("girl") and "dontstarve/ghost/ghost_girl_howl" or "dontstarve/ghost/ghost_howl")
 
             inst.components.health:SetInvincible(true)
-            inst.components.aura:Enable(false)
+            inst.components.aura:Enable(true)
         end,
 
         events =

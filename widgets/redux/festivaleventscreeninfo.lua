@@ -23,7 +23,7 @@ local FestivalEventScreenInfo = Class(Widget, function(self, atlas, image, str, 
 	self.button:SetScale(0.5, 0.5)
 	self.button:SetPosition(0, -130)
 
-	if self.button ~= nil then 
+	if self.button ~= nil then
 		self.focus_forward = self.button
 	end
 end)

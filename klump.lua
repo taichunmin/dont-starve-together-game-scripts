@@ -1,5 +1,5 @@
 local LOAD_UPFRONT_MODE = false
-    
+
 local loaded_klumps = {}
 
 function LoadAccessibleKlumpFiles(minimal_load)
@@ -30,7 +30,7 @@ function LoadAccessibleKlumpFiles(minimal_load)
                 end
 
                 local cipher = Profile:GetKlumpCipher(klump_file)
-                if cipher ~= nil then   
+                if cipher ~= nil then
                     load_count = load_count + 1
                     if is_strings then
                         LoadKlumpString( klump_file, cipher, true )
@@ -79,15 +79,15 @@ function ApplyKlumpToStringTable(string_id, json_str)
         if i ~= nil then
             last_table = s
             last_key = i
-            
+
             if s[i] == nil then
                 last_table[i] = {}
             end
-            s = s[i]            
+            s = s[i]
         end
     end
 
-    local locale_code = LOC.GetLocaleCode()    
+    local locale_code = LOC.GetLocaleCode()
     if locale_code == "zhr" then
         locale_code = "zh"
     elseif locale_code == "mex" then

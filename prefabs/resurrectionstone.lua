@@ -64,10 +64,11 @@ local function HasPhysics(obj)
     return obj.Physics ~= nil
 end
 
+local CHANGED_CANT_TAGS = { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost", "ghost", "flying" }
 local function OnCharged(inst)
     if inst.AnimState:IsCurrentAnimation("idle_off") then
         local x, y, z = inst.Transform:GetWorldPosition()
-        if FindEntity(inst, inst:GetPhysicsRadius(0), HasPhysics, nil, { "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost", "ghost", "flying" }) ~= nil then
+        if FindEntity(inst, inst:GetPhysicsRadius(0), HasPhysics, nil, CHANGED_CANT_TAGS) ~= nil then
             --Something is on top of us
             --Reschedule regenration...
             inst.components.cooldown:StartCharging(math.random(5, 8))
@@ -154,7 +155,7 @@ local function CreateLight(parent)
 
     inst.AnimState:SetBank("resurrection_stone_fx")
     inst.AnimState:SetBuild("resurrection_stone_fx")
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     inst.AnimState:SetLightOverride(1)
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 

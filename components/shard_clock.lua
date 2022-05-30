@@ -95,7 +95,7 @@ local OnClockDirty = not _ismastershard and function()
     for i, v in ipairs(_segs) do
         table.insert(data.segs, v:value())
     end
-    _world:PushEvent("slave_clockupdate", data)
+    _world:PushEvent("secondary_clockupdate", data)
 end or nil
 
 --------------------------------------------------------------------------

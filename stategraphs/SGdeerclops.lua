@@ -36,27 +36,77 @@ local function SetLightColour(inst, val)
     end
 end
 
+local AREAATTACK_MUST_TAGS = { "_combat" }
+local AREA_EXCLUDE_TAGS = { "INLIMBO", "notarget", "noattack", "flight", "invisible", "playerghost" }
+local ICESPAWNTIME =  0.25
+    
 local function DoSpawnIceSpike(inst, x, z)
     SpawnPrefab("icespike_fx_"..tostring(math.random(1, 4))).Transform:SetPosition(x, 0, z)
+
+    local ents = TheSim:FindEntities(x,0,z,1.5,AREAATTACK_MUST_TAGS,AREA_EXCLUDE_TAGS)
+    if #ents > 0 then
+        for i,ent in ipairs(ents)do
+            if ent ~= inst then
+                if not inst._icespikeshit_targets[ent.GUID] and inst.components.combat:CanTarget(ent) and not ent.deerclopsattacked then
+					inst.components.combat:DoAttack(ent)
+					inst._icespikeshit = true
+	                inst._icespikeshit_targets[ent.GUID] = true
+                end
+                ent.deerclopsattacked = true
+                ent:DoTaskInTime(ICESPAWNTIME +0.03,function() ent.deerclopsattacked = nil end)
+            end
+        end
+    end
+end
+
+local function CheckForIceSpikesMiss(inst)
+	if inst._icespikeshit_task ~= nil then
+		inst._icespikeshit_task:Cancel()
+		inst._icespikeshit_task = nil
+	end
+
+	if not inst._icespikeshit then
+        inst:PushEvent("onmissother") -- for ChaseAndAttack
+	end
 end
 
 local function SpawnIceFx(inst, target)
-    if target == nil or not target:IsValid() then
-        return
-    end
-    local numFX = math.random(15, 20)
+	inst._icespikeshit_targets = {}
+
+	local AOEarc = 35
+
     local x, y, z = inst.Transform:GetWorldPosition()
-    local x1, y1, z1 = target.Transform:GetWorldPosition()
-    local dx, dz = x1 - x, z1 - z
-    local dist = dx * dx + dz * dz
-    if dist > 0 then
-        dist = math.sqrt(dist)
-        dx, dz = dx / dist, dz / dist
+    local angle = inst.Transform:GetRotation()
+
+    local num = 3
+    for i=1,num do
+        local newarc = 180 - AOEarc
+        local theta =  inst.Transform:GetRotation()*DEGREES
+        local radius = TUNING.DEERCLOPS_ATTACK_RANGE - ( (TUNING.DEERCLOPS_ATTACK_RANGE/num)*i )
+        local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
+        inst:DoTaskInTime(math.random() * .25, DoSpawnIceSpike, x+offset.x, z+offset.z)
     end
-    for i = 1, numFX do
-        local offset = GetRandomMinMax(dist * .25, dist)
-        inst:DoTaskInTime(math.random() * .25, DoSpawnIceSpike, x + dx * offset + GetRandomWithVariance(0, 3), z + dz * offset + GetRandomWithVariance(0, 3))
+
+    for i=math.random(12,17),1,-1 do
+        local theta =  ( angle + math.random(AOEarc *2) - AOEarc ) * DEGREES
+        local radius = TUNING.DEERCLOPS_ATTACK_RANGE * math.sqrt(math.random())
+        local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
+        inst:DoTaskInTime(math.random() * ICESPAWNTIME, DoSpawnIceSpike, x+offset.x, z+offset.z)
     end
+
+    for i=math.random(5,8),1,-1 do
+        local newarc = 180 - AOEarc
+        local theta =  ( angle -180 + math.random(newarc *2) - newarc ) * DEGREES
+        local radius = 2 * math.random() +1
+        local offset = Vector3(radius * math.cos( theta ), 0, -radius * math.sin( theta ))
+        inst:DoTaskInTime(math.random() * ICESPAWNTIME, DoSpawnIceSpike, x+offset.x, z+offset.z)
+    end 
+
+	inst._icespikeshit = false
+	if inst._icespikeshit_task ~= nil then
+		inst._icespikeshit_task:Cancel()
+	end
+	inst._icespikeshit_task = inst:DoTaskInTime(ICESPAWNTIME + FRAMES, CheckForIceSpikesMiss)
 end
 
 local function SpawnLaser(inst)
@@ -417,7 +467,8 @@ CommonStates.AddCombatStates(states,
         TimeEvent(29 * FRAMES, function(inst) SpawnIceFx(inst, inst.components.combat.target) end),
         TimeEvent(35 * FRAMES, function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/creatures/deerclops/swipe")
-            inst.components.combat:DoAttack(inst.sg.statemem.target)
+            -- THE ATTACK DAMAGE COMES FROM THE DEERCLOPS SMALL ICE SPICE FX NOW.
+            --inst.components.combat:DoAttack(inst.sg.statemem.target)
             if inst.bufferedaction ~= nil and inst.bufferedaction.action == ACTIONS.HAMMER then
                 local target = inst.bufferedaction.target
                 inst:ClearBufferedAction()

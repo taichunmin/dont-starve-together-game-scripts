@@ -6,7 +6,7 @@ local events=
     EventHandler("death", function(inst) inst.sg:GoToState("death") end),
     CommonHandlers.OnFreeze(),
     EventHandler("newcombattarget", function(inst,data)
-            
+
             if inst.sg:HasStateTag("idle") and data.target then
                 inst.sg:GoToState("taunt")
             end
@@ -66,7 +66,7 @@ local states=
 
         onexit = StopRumbleSound,
     },
-   
+
     State{
         name = "idle",
         tags = {"idle", "invisible"},
@@ -75,18 +75,18 @@ local states=
             inst.sg:SetTimeout(GetRandomWithVariance(10, 5) )
             inst.SoundEmitter:KillAllSounds()
         end,
-                
+
         ontimeout = function(inst)
 			inst.sg:GoToState("rumble")
         end,
     },
-    
+
     State{
         name = "taunt",
         tags = {"taunting"},
         onenter = function(inst)
             StartRumbleSound(inst, 0)
-            
+
             inst.AnimState:PlayAnimation("breach_pre")
             inst.AnimState:PushAnimation("breach_loop", true)
         end,
@@ -102,7 +102,7 @@ local states=
         end,
         onexit = StopRumbleSound,
     },
-    
+
     State{
         name ="attack_pre",
         tags = {"attack"},
@@ -125,15 +125,15 @@ local states=
         },
         onexit = StopRumbleSound,
     },
-    
-    State{ 
+
+    State{
         name = "attack",
         tags = {"attack"},
         onenter = function(inst)
             inst.AnimState:PlayAnimation("atk_loop")
             inst.AnimState:PushAnimation("atk_idle", false)
         end,
-        
+
         timeline=
         {
             TimeEvent(2*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_attack") end),
@@ -142,21 +142,21 @@ local states=
             TimeEvent(17*FRAMES, function(inst) inst.components.combat:DoAttack() end),
             TimeEvent(18*FRAMES, function(inst) inst.sg:RemoveStateTag("attack") end),
         },
-        
+
         events=
         {
-            EventHandler("animqueueover", function(inst) 
+            EventHandler("animqueueover", function(inst)
                 inst.sg.statemem.keeprumblesound = true
                 if inst.components.combat.target then
-                    inst.sg:GoToState("attack") 
+                    inst.sg:GoToState("attack")
                 else
-                    inst.sg:GoToState("attack_post") 
+                    inst.sg:GoToState("attack_post")
                 end
             end),
         },
         onexit = StopRumbleSound,
     },
-    
+
     State{
         name ="attack_post",
         onenter = function(inst)
@@ -169,48 +169,45 @@ local states=
         },
         onexit = StopRumbleSound,
     },
-    
-    
+
+
 	State{
         name = "death",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_death_VO")
             inst.AnimState:PlayAnimation("death")
-            RemovePhysicsColliders(inst)            
-            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))            
+            RemovePhysicsColliders(inst)
+            inst.components.lootdropper:DropLoot(Vector3(inst.Transform:GetWorldPosition()))
         end,
-        
-        
-        events =
+
+        timeline=
         {
-            EventHandler("animover", function(inst) 
-				inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_splat")
-			end ),
-        },        
+            TimeEvent(20*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_splat") end),
+        },
     },
-    
-        
+
+
     State{
         name = "hit",
         tags = {"busy", "hit"},
-        
+
         onenter = function(inst)
             --inst.SoundEmitter:PlaySound("dontstarve/pig/grunt")
             inst.AnimState:PlayAnimation("hit")
             inst.SoundEmitter:PlaySound("dontstarve/tentacle/tentacle_hurt_VO")
         end,
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("attack") end),
         },
-        
-    },    
-    
+
+    },
+
 }
 CommonStates.AddFrozenStates(states)
-    
+
 return StateGraph("tentacle", states, events, "idle")
 

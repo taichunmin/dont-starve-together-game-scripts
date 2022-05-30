@@ -7,14 +7,14 @@ local Any = {
 ------------------------------------------------------------------------------------------------------
 	["WoodBoon"] = StaticLayout.Get("map/static_layouts/small_boon", {
 			areas = {
-				item_area = function() 
+				item_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return {"candybag", "halloweencandy_1", "halloweencandy_2", "trinket_4"}
 					else
-						return PickSome(1, {"shovel","axe"})							
+						return PickSome(1, {"shovel","axe"})
 					end
 				end,
-				resource_area = function() 
+				resource_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return PickSomeWithDups(math.random(2,4), {"trinket_4", "trinket_13"})
 					else
@@ -25,11 +25,11 @@ local Any = {
 		}),
 	["RockBoon"] = StaticLayout.Get("map/static_layouts/small_boon", {
 			areas = {
-				item_area = function() 
+				item_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return JoinArrays({"pumpkin_lantern"}, PickSomeWithDups(math.random(1,2), {"trinket_4", "trinket_13"}))
 					else
-						return PickSome(1, {"pickaxe","pickaxe","pickaxe","pickaxe","pickaxe","pickaxe","rock1", "rock2","gunpowder"})							
+						return PickSome(1, {"pickaxe","pickaxe","pickaxe","pickaxe","pickaxe","pickaxe","rock1", "rock2","gunpowder"})
 					end
 				end,
 				resource_area = function()
@@ -50,7 +50,7 @@ local Any = {
 						return PickSome(1, {"torch", "trap"})
 					end
 				end,
-				resource_area = function() 
+				resource_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return PickSomeWithDups(math.random(2,4), {"torch", "halloweencandy_8", "trinket_9", "trinket_9", "trinket_9"})
 					else
@@ -61,14 +61,14 @@ local Any = {
 		}),
 	["TwigsBoon"] = StaticLayout.Get("map/static_layouts/small_boon", {
 			areas = {
-				item_area = function() 
+				item_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return {"trinket_4", "candybag", "trinket_9", "skeleton", "skeleton", "skeleton"}
 					else
-						return  nil 
+						return  nil
 					end
-				end,							
-				resource_area = function() 
+				end,
+				resource_area = function()
 					if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 						return {"trinket_13", "trinket_9", "trinket_9", "halloweencandy_7", "skeleton", "skeleton"}
 					else

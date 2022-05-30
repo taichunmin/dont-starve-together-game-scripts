@@ -14,7 +14,7 @@ require "map/room_functions"
 AddRoom("WetWilds", {
     colour={r=0.3,g=0.2,b=0.1,a=0.3},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = 0.25,
         distributeprefabs=
@@ -125,7 +125,7 @@ AddRoom("LichenLand", {
 bgwilds = {
     colour={r=0.3,g=0.2,b=0.1,a=0.3},
     value = GROUND.MUD,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         countprefabs=
         {
@@ -416,7 +416,6 @@ bgsacred = {
 AddRoom("BGSacred", bgsacred)
 AddRoom("BGSacredRoom", Roomify(bgsacred))
 
-
 ---------------------------------------------
 -- Altar
 -- Altar, statues, thulecite walls, pillars, sacred_chest
@@ -501,7 +500,7 @@ AddRoom("RuinedGuarden", {
             ["WalledGarden"] = 1,
         },
         countprefabs= {
-            
+
             flower_cave = function () return 5 + math.random(3) end,
             gravestone = function () return 4 + math.random(4) end,
             mound = function () return 4 + math.random(4) end
@@ -541,6 +540,40 @@ AddRoom("AtriumMazeRooms",  { -- layout contents determined by maze
     internal_type = NODE_INTERNAL_CONNECTION_TYPE.EdgeCentroid,
 })
 
+--Archive Maze
+AddRoom("ArchiveMazeEntrance", {
+    colour={r=0.1,g=0.1,b=0.8,a=0.9},
+    value = GROUND.FUNGUSMOON,
+    tags = {"MazeEntrance", "RoadPoison", "lunacyarea"},
+    contents =  {
+        countstaticlayouts =
+        {
+            ["GrottoPoolSmall"] = 1,
+        },
+        distributepercent = 0.6,
+        distributeprefabs =
+        {
+            mushtree_moon = 0.05,
+
+            lightflier_flower = 0.005,
+
+            cavelightmoon = 0.003,
+            cavelightmoon_small = 0.003,
+            cavelightmoon_tiny = 0.003,
+
+            moonglass_stalactite1 = 0.007,
+            moonglass_stalactite2 = 0.007,
+            moonglass_stalactite3 = 0.007,
+        },
+    }
+})
+
+AddRoom("ArchiveMazeRooms",  { -- layout contents determined by maze
+    colour={r=0.3,g=0.2,b=0.1,a=0.3},
+    value = GROUND.FAKE_GROUND,
+    tags = {"ForceDisconnected", "Maze", "RoadPoison"},
+    internal_type = NODE_INTERNAL_CONNECTION_TYPE.EdgeCentroid,
+})
 
 ---------------------------------------------
 -- Expedition

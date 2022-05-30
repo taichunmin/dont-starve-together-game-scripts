@@ -21,11 +21,11 @@ local function fn()
 
     inst.AnimState:SetBank("antchovies")
     inst.AnimState:SetBuild("water_antchovies")
-    inst.AnimState:SetLayer(LAYER_BACKGROUND)    
-    inst.AnimState:SetSortOrder(1)    
-    inst.AnimState:SetMultColour(0.4,0.4,0.4,1) 
+    inst.AnimState:SetLayer(LAYER_BACKGROUND)
+    inst.AnimState:SetSortOrder(1)
+    inst.AnimState:SetMultColour(0.4,0.4,0.4,1)
 
-    inst.entity:SetPristine()    
+    inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst

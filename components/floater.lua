@@ -27,7 +27,8 @@ local Floater = Class(function(self, inst)
     self.float_index = 1
     self.swap_data = nil
     self.showing_effect = false
-    self.bob_percent = 1    
+    self.bob_percent = 1
+    self.splash = true
 
     self._is_landed = net_bool(inst.GUID, "floater._is_landed", "landeddirty")
 end)
@@ -76,6 +77,10 @@ function Floater:SetBankSwapOnFloat(should_bank_swap, float_index, swap_data)
     self.swap_data = swap_data
 end
 
+function Floater:SetSwapData(swap_data)
+    self.swap_data = swap_data
+end
+
 function Floater:ShouldShowEffect()
 	local pos_x, pos_y, pos_z = self.inst.Transform:GetWorldPosition()
 
@@ -99,38 +104,48 @@ function Floater:IsFloating()
     return self.showing_effect
 end
 
+function Floater:SwitchToFloatAnim()
+    if self.do_bank_swap then
+        if self.float_index < 0 then
+            self.inst.AnimState:SetBankAndPlayAnimation("floating_item", "left")
+        else
+            self.inst.AnimState:SetBankAndPlayAnimation("floating_item", "right")
+        end
+        self.inst.AnimState:SetTime(math.abs(self.float_index) * FRAMES)
+        self.inst.AnimState:Pause()
+
+        if self.swap_data ~= nil then
+            local symbol = self.swap_data.sym_name or self.swap_data.sym_build
+            local skin_build = self.inst:GetSkinBuild()
+            if skin_build ~= nil then
+                self.inst.AnimState:OverrideItemSkinSymbol("swap_spear", skin_build, symbol, self.inst.GUID, self.swap_data.sym_build)
+            else
+                self.inst.AnimState:OverrideSymbol("swap_spear", self.swap_data.sym_build, symbol)
+            end
+        end
+    end
+end
+
+
 function Floater:OnLandedServer()
     if not self.showing_effect and self:ShouldShowEffect() then
         -- If something lands in a place where the water effect should be shown, and it has an inventory component,
         -- update the inventory component to represent the associated wetness.
         -- Don't apply the wetness to something held by someone, though.
-        if self.inst.components.inventoryitem ~= nil and not self.inst.components.inventoryitem:IsHeld() then
-            self.inst.components.inventoryitem:AddMoisture(TUNING.OCEAN.WETNESS)
+        if self.inst.components.inventoryitem ~= nil and not self.inst.components.inventoryitem:IsHeld() and not self.inst:HasTag("likewateroffducksback") then
+            self.inst.components.inventoryitem:AddMoisture(TUNING.OCEAN_WETNESS)
+        end
+
+        if self.splash and (not self.inst.components.inventoryitem or not self.inst.components.inventoryitem:IsHeld()) then
+            local splash = SpawnPrefab("splash")
+            splash.Transform:SetPosition(self.inst.Transform:GetWorldPosition())
         end
 
         self.inst:PushEvent("floater_startfloating")
         self._is_landed:set(true)
         self.showing_effect = true
 
-        if self.do_bank_swap then
-            if self.float_index < 0 then
-                self.inst.AnimState:SetBankAndPlayAnimation("floating_item", "left")
-            else
-                self.inst.AnimState:SetBankAndPlayAnimation("floating_item", "right")
-            end
-            self.inst.AnimState:SetTime(math.abs(self.float_index) * FRAMES)
-            self.inst.AnimState:Pause()
-
-            if self.swap_data ~= nil then
-                local symbol = self.swap_data.sym_name or self.swap_data.sym_build
-                local skin_build = self.inst:GetSkinBuild()
-                if skin_build ~= nil then
-                    self.inst.AnimState:OverrideItemSkinSymbol("swap_spear", skin_build, symbol, self.inst.GUID, self.swap_data.sym_build)
-                else
-                    self.inst.AnimState:OverrideSymbol("swap_spear", self.swap_data.sym_build, symbol)
-                end
-            end
-        end
+        self:SwitchToFloatAnim()
     end
 end
 
@@ -149,6 +164,19 @@ function Floater:OnLandedClient()
     end
 
     self.inst.AnimState:SetFloatParams(-0.05, 1.0, self.bob_percent)
+
+end
+
+function Floater:SwitchToDefaultAnim(force_switch)
+    if self.do_bank_swap or force_switch then
+        local bank = self.swap_data ~= nil and self.swap_data.bank or self.inst.prefab
+        local anim = self.swap_data ~= nil and self.swap_data.anim or "idle"
+        self.inst.AnimState:SetBankAndPlayAnimation(bank, anim)
+
+        if self.swap_data ~= nil then
+            self.inst.AnimState:ClearOverrideSymbol("swap_spear")
+        end
+    end
 end
 
 function Floater:OnNoLongerLandedServer()
@@ -157,15 +185,7 @@ function Floater:OnNoLongerLandedServer()
         self._is_landed:set(false)
         self.showing_effect = false
 
-        if self.do_bank_swap then
-            local bank = self.swap_data ~= nil and self.swap_data.bank or self.inst.prefab
-            local anim = self.swap_data ~= nil and self.swap_data.anim or "idle"
-            self.inst.AnimState:SetBankAndPlayAnimation(bank, anim)
-
-            if self.swap_data ~= nil then
-                self.inst.AnimState:ClearOverrideSymbol("swap_spear")
-            end
-        end
+        self:SwitchToDefaultAnim()
     end
 end
 

@@ -3,9 +3,9 @@
 -- msgctxt is set to the "path" in the table structure which is guaranteed unique
 -- versus the string values (msgid) which are not.
 --
--- Expanded to support v1 and v2 format in event user needs help converting a 
+-- Expanded to support v1 and v2 format in event user needs help converting a
 -- strings.lua based translation. Must use a mod to load the translated strings.lua
--- file into a seperate environment and then pass the alternate strings table to 
+-- file into a seperate environment and then pass the alternate strings table to
 -- CreateStringsPOT along with the actual global strings table for use as a lookup table.
 --
 
@@ -35,7 +35,7 @@ local STRINGS_LOOKUP = {}
 
 -- Strings beginning with these special bytes will be ignored during pot file generation
 -- See note about DST UTF-8 encoding in strings.lua
-STRING_RESERVED_LEAD_BYTES = 
+STRING_RESERVED_LEAD_BYTES =
 {
     238,
     239,
@@ -46,7 +46,7 @@ STRING_RESERVED_LEAD_BYTES =
 --
 
 local function PrintStringTableV1( base, tbl, file )
-	
+
 	for k,v in pairs(tbl) do
 		local path = base.."."..k
 		if type(v) == "table" then
@@ -55,12 +55,12 @@ local function PrintStringTableV1( base, tbl, file )
 			local str = string.gsub(v, "\n", "\\n")
 			str = string.gsub(str, "\r", "\\r")
 			str = string.gsub(str, "\"", "\\\"")
-			
+
 			if msgids[str] then
 				print("duplicate msgid found: "..str.." (skipping...)")
 			else
 				msgids[str] = true
-				
+
 				file:write("#. "..path)
 				file:write("\n")
 				file:write("#: "..path)
@@ -75,13 +75,13 @@ local function PrintStringTableV1( base, tbl, file )
 end
 
 function PrintTranslatedStringTableV1( base_dta, tbl_dta, lkp_var, file )
-	
+
 	for k,v in pairs(tbl_dta) do
 		local path = base_dta.."."..k
 		if type(v) == "table" then
 			PrintTranslatedStringTableV1(path, v, lkp_var, file)
 		else
-			
+
 			local idstr = LookupIdValue(lkp_var, path)
 			if idstr then
 				idstr = string.gsub(idstr, "\n", "\\n")
@@ -115,7 +115,7 @@ function PrintTranslatedStringTableV1( base_dta, tbl_dta, lkp_var, file )
 end
 
 
-local function IsValidString( str )    
+local function IsValidString( str )
     if 0 < string.len(str) then
         local lead_byte = string.byte( str, 1, 1)
         for i, reserved_bytes in pairs(STRING_RESERVED_LEAD_BYTES) do
@@ -138,7 +138,7 @@ local function PrintStringTableV2( base, tbl, file )
 	if file then
 		output_strings = {}
 	end
-	
+
 	for k,v in pairs(tbl) do
 		local path = base.."."..k
 		if type(v) == "table" then
@@ -158,7 +158,7 @@ local function PrintStringTableV2( base, tbl, file )
 
 		end
 	end
-	
+
 	if file then
 		table.sort(output_strings, function(a,b) return a.path < b.path end )
 		for _,v in pairs(output_strings) do
@@ -180,7 +180,7 @@ local function PrintTranslatedStringTableV2( base, tbl_dta, lkp_var, file )
 		if type(v) == "table" then
 			PrintTranslatedStringTableV2(path, v, lkp_var, file)
 		else
-			
+
 			local idstr = LookupIdValue(lkp_var, path)
 			if idstr then
 				idstr = string.gsub(idstr, "\n", "\\n")
@@ -294,7 +294,7 @@ end
 
 
 -- *** INSTRUCTIONS ***
--- To generate strings for the main game: 
+-- To generate strings for the main game:
 -- 1. Open cmd and navigate to the DontStarve\data\scripts folder
 -- 2. Enter "..\..\tools\LUA\lua.exe createstringspo.lua" (without quotes) into the cmd line and press return
 

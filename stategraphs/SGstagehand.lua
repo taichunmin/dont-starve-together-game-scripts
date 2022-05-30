@@ -188,7 +188,7 @@ local states =
 
         events =
         {
-            EventHandler("animover", function(inst) 
+            EventHandler("animover", function(inst)
                 if inst.AnimState:AnimDone() then
                     inst.sg.mem.is_hiding = false
                     inst:ChangePhysics(true)

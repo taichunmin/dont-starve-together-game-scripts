@@ -82,7 +82,8 @@ local function fn()
 
     inst.foleysound = "dontstarve/movement/foley/backpack"
 
-    MakeInventoryFloatable(inst, "small", 0.2)
+    local swap_data = {bank = "backpack1", anim = "anim"}
+    MakeInventoryFloatable(inst, "small", 0.2, nil, nil, nil, swap_data)
 
     inst.entity:SetPristine()
 
@@ -102,6 +103,8 @@ local function fn()
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("backpack")
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
 
     MakeSmallBurnable(inst)
     MakeSmallPropagator(inst)

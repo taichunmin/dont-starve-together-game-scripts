@@ -15,6 +15,7 @@ local function StartWarning(self, duration)
     self._warningtask = self.inst:DoTaskInTime(duration or GetRandomWithVariance(TUNING.DISEASE_WARNING_TIME, TUNING.DISEASE_WARNING_TIME_VARIANCE), OnWarningOver, self)
 end
 
+local DISEASEABLE_TAGS = { "diseaseable" }
 local function OnDelayOver(inst, self, StartDelay)
     if math.random() >= TUNING.DISEASE_CHANCE then
         --Disease failed; schedule long retry
@@ -32,12 +33,12 @@ local function OnDelayOver(inst, self, StartDelay)
         --Restart delays on stuff in range of spreading, so that this round
         --of disease can be stopped by quickly removing the diseased entity
         local x, y, z = inst.Transform:GetWorldPosition()
-        local ents = TheSim:FindEntities(x, y, z, TUNING.DISEASE_SPREAD_RADIUS, { "diseaseable" })
+        local ents = TheSim:FindEntities(x, y, z, TUNING.DISEASE_SPREAD_RADIUS, DISEASEABLE_TAGS)
         if #ents > 1 then --1 becaues it includes ourself
-            local ents2 = TheSim:FindEntities(x, y, z, 2 * TUNING.DISEASE_SPREAD_RADIUS, { "diseaseable" })
+            local ents2 = TheSim:FindEntities(x, y, z, 2 * TUNING.DISEASE_SPREAD_RADIUS, DISEASEABLE_TAGS)
             if #ents2 > #ents then
                 ents = ents2
-                ents2 = TheSim:FindEntities(x, y, z, 3 * TUNING.DISEASE_SPREAD_RADIUS, { "diseaseable" })
+                ents2 = TheSim:FindEntities(x, y, z, 3 * TUNING.DISEASE_SPREAD_RADIUS, DISEASEABLE_TAGS)
                 if #ents2 > #ents then
                     ents = ents2
                 end
@@ -112,10 +113,11 @@ function Diseaseable:SetDiseasedFn(fn)
     self.onDiseasedFn = fn
 end
 
+local DISEASED_TAGS = { "diseased" }
 local function DoFX(inst, self)
     local loops = 0
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, 8, { "diseased" })
+    local ents = TheSim:FindEntities(x, y, z, 8, DISEASED_TAGS)
     local num = 1
     local time = GetTime()
     for i, v in ipairs(ents) do
@@ -163,13 +165,14 @@ function Diseaseable:Disease()
     end
 end
 
+local SPREAD_MUST_TAGS = { "diseaseable" }
 function Diseaseable:Spread()
     if self.diseased then
         if self._spreadtask ~= nil then
             self._spreadtask:Cancel()
             self._spreadtask = nil
         end
-        local ent = FindEntity(self.inst, TUNING.DISEASE_SPREAD_RADIUS, nil, { "diseaseable" })
+        local ent = FindEntity(self.inst, TUNING.DISEASE_SPREAD_RADIUS, nil, SPREAD_MUST_TAGS)
         if ent ~= nil then
             ent.components.diseaseable:Disease()
             ScheduleSpread(self)
@@ -177,9 +180,10 @@ function Diseaseable:Spread()
     end
 end
 
+local RESTARTSPREAD_MUST_TAGS = { "diseased" }
 function Diseaseable:RestartNearbySpread()
     local x, y, z = self.inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.DISEASE_SPREAD_RADIUS, { "diseased" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.DISEASE_SPREAD_RADIUS, RESTARTSPREAD_MUST_TAGS)
     for i, v in ipairs(ents) do
         if v.components.diseaseable._spreadtask ~= nil then
             v.components.diseaseable._spreadtask:Cancel()

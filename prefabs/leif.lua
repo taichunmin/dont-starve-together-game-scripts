@@ -14,7 +14,7 @@ local assets =
 local prefabs =
 {
     "meat",
-    "log", 
+    "log",
     "character_fire",
     "livinglog",
 }

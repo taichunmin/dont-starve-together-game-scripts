@@ -19,7 +19,7 @@ local firelevels =
 {
     {anim="loop_small", pre="pre_small", pst="post_small", sound="dontstarve/common/campfire", radius=2, intensity=.6, falloff=.7, colour = {197/255,197/255,170/255}, soundintensity=1},
     {anim="loop_med", pre="pre_med", pst="post_med",  sound="dontstarve/common/treefire", radius=3, intensity=.75, falloff=.5, colour = {255/255,255/255,192/255}, soundintensity=1},
-    {anim="loop_large", pre="pre_large", pst="post_large",  sound="dontstarve/common/forestfire", radius=4, intensity=.8, falloff=.33, colour = {197/255,197/255,170/255}, soundintensity=1},        
+    {anim="loop_large", pre="pre_large", pst="post_large",  sound="dontstarve/common/forestfire", radius=4, intensity=.8, falloff=.33, colour = {197/255,197/255,170/255}, soundintensity=1},
 }
 
 local function fn()
@@ -34,7 +34,7 @@ local function fn()
     inst.AnimState:SetBuild("fire_large_character")
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
     inst.AnimState:SetRayTestOnBB(true)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(FINALOFFSET_MAX)
 
     inst:AddTag("FX")
 

@@ -33,6 +33,10 @@ local Stewer = Class(function(self, inst)
     --self.keepspoilage = false --default refreshes spoilage by half, set to true will not
     self.cooktimemult = 1
 
+	-- these are used for the cook book
+	self.chef_id = nil
+	self.ingredient_prefabs = nil
+
     --"readytocook" means it's CLOSED and FULL
     --This tag is used for gathering scene actions only
     --The widget cook button doesn't check this tag,
@@ -72,7 +76,7 @@ local function dostew(inst, self)
     self.task = nil
     self.targettime = nil
     self.spoiltime = nil
-    
+
     if self.ondonecooking ~= nil then
         self.ondonecooking(inst)
     end
@@ -82,7 +86,8 @@ local function dostew(inst, self)
             self.onspoil(inst)
         end
     elseif self.product ~= nil then
-        local prep_perishtime = cooking.GetRecipe(inst.prefab, self.product).perishtime or 0
+        local recipe = cooking.GetRecipe(inst.prefab, self.product)
+        local prep_perishtime = (recipe ~= nil and (recipe.cookpot_perishtime or recipe.perishtime)) or 0
         if prep_perishtime > 0 then
 			local prod_spoil = self.product_spoilage or 1
 			self.spoiltime = prep_perishtime * prod_spoil
@@ -122,8 +127,11 @@ function Stewer:GetRecipeForProduct()
 	return self.product ~= nil and cooking.GetRecipe(self.inst.prefab, self.product) or nil
 end
 
-function Stewer:StartCooking()
+function Stewer:StartCooking(doer)
     if self.targettime == nil and self.inst.components.container ~= nil then
+		self.chef_id = (doer ~= nil and doer.player_classified ~= nil) and doer.userid
+		self.ingredient_prefabs = {}
+
         self.done = nil
         self.spoiltime = nil
 
@@ -131,13 +139,12 @@ function Stewer:StartCooking()
             self.onstartcooking(self.inst)
         end
 
-		local ings = {}
 		for k, v in pairs (self.inst.components.container.slots) do
-			table.insert(ings, v.prefab)
+			table.insert(self.ingredient_prefabs, v.prefab)
 		end
 
         local cooktime = 1
-        self.product, cooktime = cooking.CalculateRecipe(self.inst.prefab, ings)
+        self.product, cooktime = cooking.CalculateRecipe(self.inst.prefab, self.ingredient_prefabs)
         local productperishtime = cooking.GetRecipe(self.inst.prefab, self.product).perishtime or 0
 
         if productperishtime > 0 then
@@ -202,11 +209,17 @@ function Stewer:OnSave()
         product_spoilage = self.product_spoilage,
         spoiltime = self.spoiltime,
         remainingtime = remainingtime > 0 and remainingtime or nil,
+
+		chef_id = self.chef_id,
+		ingredient_prefabs = self.ingredient_prefabs,
     }
 end
 
 function Stewer:OnLoad(data)
     if data.product ~= nil then
+		self.chef_id = data.chef_id
+		self.ingredient_prefabs = data.ingredient_prefabs
+
         self.done = data.done or nil
         self.product = data.product
         self.product_spoilage = data.product_spoilage
@@ -269,12 +282,16 @@ function Stewer:Harvest(harvester)
         if self.product ~= nil then
             local loot = SpawnPrefab(self.product)
             if loot ~= nil then
+				if harvester ~= nil and self.chef_id == harvester.userid then
+					harvester:PushEvent("learncookbookrecipe", {product = self.product, ingredients = self.ingredient_prefabs})
+				end
+
 				local recipe = cooking.GetRecipe(self.inst.prefab, self.product)
 				local stacksize = recipe and recipe.stacksize or 1
 				if stacksize > 1 then
 					loot.components.stackable:SetStackSize(stacksize)
 				end
-            
+
                 if self.spoiltime ~= nil and loot.components.perishable ~= nil then
                     local spoilpercent = self:GetTimeToSpoil() / self.spoiltime
                     loot.components.perishable:SetPercent(self.product_spoilage * spoilpercent)
@@ -298,7 +315,7 @@ function Stewer:Harvest(harvester)
         self.spoiltime = nil
         self.product_spoilage = nil
 
-        if self.inst.components.container ~= nil then      
+        if self.inst.components.container ~= nil then
             self.inst.components.container.canbeopened = true
         end
 
@@ -314,7 +331,7 @@ function Stewer:LongUpdate(dt)
         if self.targettime - dt > GetTime() then
             self.targettime = self.targettime - dt
             self.task = self.inst:DoTaskInTime(self.targettime - GetTime(), dostew, self)
-            dt = 0            
+            dt = 0
         else
             dt = dt - self.targettime + GetTime()
             dostew(self.inst, self)

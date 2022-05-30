@@ -9,18 +9,18 @@ local dirs =
 {
     N=0, S=180,
     NE=45, E=90, SE=135,
-    NW=-45, W=-90, SW=-135, 
+    NW=-45, W=-90, SW=-135,
 }
 
 local haunted_dirs =
 {
     N=180, S=0,
     NE=-135, E=-90, SE=-45,
-    NW=135, W=90, SW=45, 
+    NW=135, W=90, SW=45,
 }
 
 local function GetStatus(inst, viewer)
-    local heading = TheCamera:GetHeading()--inst.Transform:GetRotation() 
+    local heading = TheCamera:GetHeading()--inst.Transform:GetRotation()
     local dir, closest_diff = nil, nil
 
     if inst.components.hauntable and inst.components.hauntable.haunted then

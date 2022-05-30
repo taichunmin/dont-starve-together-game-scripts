@@ -55,7 +55,7 @@ AddRoom("Badlands", {
 									},
 					            }
 					})
-					
+
 AddRoom("DragonflyArena", {
 					colour={r=0.3,g=0.2,b=0.1,a=0.3},
 					value = GROUND.DIRT_NOISE,
@@ -110,7 +110,7 @@ AddRoom("BuzzardyBadlands", {
 AddRoom("BGDeciduous", {
 					colour={r=.1,g=.8,b=.1,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_2"},
 					contents =  {
 					                countprefabs= {
 					                    pumpkin = function () return IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) and (0 + math.random(3)) or 0 end,
@@ -130,7 +130,7 @@ AddRoom("BGDeciduous", {
 
 										sapling=1,
 					                    twiggytree=0.4,
-										grass=0.03,								
+										grass=0.03,
 
 										flower=0.75,
 
@@ -151,7 +151,7 @@ AddRoom("BGDeciduous", {
 AddRoom("DeepDeciduous", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_1"},
 					contents =  {
 					                countprefabs =
 					                {
@@ -182,9 +182,13 @@ AddRoom("DeepDeciduous", {
 AddRoom("MagicalDeciduous", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_2"},
+                    required_prefabs = {"statueglommer"},
 					contents =  {
-
+					                countprefabs =
+					                {
+					                    catcoonden = 1,
+					                },
 									countstaticlayouts={
 										["DeciduousPond"] = 1,
 									},
@@ -195,8 +199,6 @@ AddRoom("MagicalDeciduous", {
 					                    grass = .03,
 					                    sapling=1,
 					                    twiggytree=0.4,
-					                    berrybush=1,
-					                    berrybush_juicy = 0.05,
 
 					                    red_mushroom = 2,
 					                    blue_mushroom = 2,
@@ -217,7 +219,7 @@ AddRoom("MagicalDeciduous", {
 AddRoom("DeciduousMole", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_1"},
 					contents =  {
 					                distributepercent = .3,
 					                distributeprefabs=
@@ -244,7 +246,7 @@ AddRoom("DeciduousMole", {
 AddRoom("MolesvilleDeciduous", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_2"},
 					contents =  {
 					                distributepercent = .3,
 					                distributeprefabs=
@@ -270,7 +272,7 @@ AddRoom("MolesvilleDeciduous", {
 AddRoom("DeciduousClearing", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.DECIDUOUS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_1"},
 					contents =  {
 									countstaticlayouts={["MushroomRingLarge"]=function()
 																				if math.random(0,1000) > 985 then
@@ -303,7 +305,7 @@ AddRoom("DeciduousClearing", {
 AddRoom("PondyGrass", {
 					colour={r=0,g=.9,b=0,a=.50},
 					value = GROUND.GRASS,
-					tags = {"ExitPiece", "Chester_Eyebone"},
+					tags = {"ExitPiece", "Chester_Eyebone","Astral_2"},
 					contents =  {
 					                distributepercent = .2,
 					                distributeprefabs=

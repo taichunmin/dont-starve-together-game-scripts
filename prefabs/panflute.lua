@@ -1,7 +1,6 @@
 local assets =
 {
     Asset("ANIM", "anim/pan_flute.zip"),
-    Asset("ANIM", "anim/pan_flute_water.zip"),
 }
 
 local function HearPanFlute(inst, musician, instrument)
@@ -14,7 +13,9 @@ local function HearPanFlute(inst, musician, instrument)
         if mount ~= nil then
             mount:PushEvent("ridersleep", { sleepiness = 10, sleeptime = TUNING.PANFLUTE_SLEEPTIME })
         end
-        if inst.components.sleeper ~= nil then
+		if inst.components.farmplanttendable ~= nil then
+			inst.components.farmplanttendable:TendTo(musician)
+        elseif inst.components.sleeper ~= nil then
             inst.components.sleeper:AddSleepiness(10, TUNING.PANFLUTE_SLEEPTIME)
         elseif inst.components.grogginess ~= nil then
             inst.components.grogginess:AddGrogginess(10, TUNING.PANFLUTE_SLEEPTIME)
@@ -43,7 +44,6 @@ local function fn()
     inst:AddTag("tool")
 
     MakeInventoryFloatable(inst, "small", 0.05, 0.8)
-    inst.AnimState:AddOverrideBuild("pan_flute_water")
 
     inst.entity:SetPristine()
 

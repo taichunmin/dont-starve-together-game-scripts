@@ -38,7 +38,7 @@ end
 
 function WorldWind:OnUpdate(dt)
 
-	if not self.inst then 
+	if not self.inst then
 		self:Stop()
 		return
 	end

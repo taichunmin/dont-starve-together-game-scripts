@@ -31,6 +31,11 @@ local function DisableLight(inst)
     inst.Light:Enable(false)
 end
 
+local DAMAGE_CANT_TAGS = { "playerghost", "INLIMBO", --[["NOCLICK",]] "DECOR", "INLIMBO" }
+local DAMAGE_ONEOF_TAGS = { "_combat", "pickable", "NPC_workable", "CHOP_workable", "HAMMER_workable", "MINE_workable", "DIG_workable" }
+local LAUNCH_MUST_TAGS = { "_inventoryitem" }
+local LAUNCH_CANT_TAGS = { "locomotor", "INLIMBO" }
+
 local function DoDamage(inst, targets, skiptoss)
     inst.task = nil
 
@@ -53,7 +58,7 @@ local function DoDamage(inst, targets, skiptoss)
     end
 
     inst.components.combat.ignorehitrange = true
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, nil, { "playerghost", "INLIMBO", --[["NOCLICK",]] "DECOR", "INLIMBO" }, { "_combat", "pickable", "NPC_workable", "CHOP_workable", "HAMMER_workable", "MINE_workable", "DIG_workable" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, nil, DAMAGE_CANT_TAGS, DAMAGE_ONEOF_TAGS)) do
         if not targets[v] and v:IsValid() and not v:IsInLimbo() and not (v.components.health ~= nil and v.components.health:IsDead()) then
             local vradius = v:GetPhysicsRadius(.5)
             local range = RADIUS + vradius
@@ -131,7 +136,7 @@ local function DoDamage(inst, targets, skiptoss)
         end
     end
     inst.components.combat.ignorehitrange = false
-    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, { "_inventoryitem" }, { "locomotor", "INLIMBO" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, 0, z, RADIUS + 3, LAUNCH_MUST_TAGS, LAUNCH_CANT_TAGS)) do
         if not skiptoss[v] then
             local range = RADIUS + v:GetPhysicsRadius(.5)
             if v:GetDistanceSqToPoint(x, y, z) < range * range then

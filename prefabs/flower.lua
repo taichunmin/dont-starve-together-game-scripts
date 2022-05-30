@@ -11,8 +11,6 @@ local prefabs =
     "planted_flower",
 }
 
-local DAYLIGHT_SEARCH_RANGE = 30
-
 local names = {"f1","f2","f3","f4","f5","f6","f7","f8","f9","f10"}
 local ROSE_NAME = "rose"
 local ROSE_CHANCE = 0.01
@@ -60,8 +58,6 @@ local function onpickedfn(inst, picker)
         TheWorld:PushEvent("beginregrowth", inst)
     end
 
-    inst:Remove()
-
     TheWorld:PushEvent("plantkilled", { doer = picker, pos = pos }) --this event is pushed in other places too
 end
 
@@ -73,9 +69,10 @@ local function testfortransformonload(inst)
     return TheWorld.state.isfullmoon
 end
 
+local FINDLIGHT_MUST_TAGS = { "daylight", "lightsource" }
 local function DieInDarkness(inst)
     local x,y,z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x,0,z, DAYLIGHT_SEARCH_RANGE, { "daylight", "lightsource" })
+    local ents = TheSim:FindEntities(x,0,z, TUNING.DAYLIGHT_SEARCH_RANGE, FINDLIGHT_MUST_TAGS)
     for i,v in ipairs(ents) do
         local lightrad = v.Light:GetCalculatedRadius() * .7
         if v:GetDistanceSqToPoint(x,y,z) < lightrad * lightrad then
@@ -129,6 +126,7 @@ local function fn()
     inst.components.pickable.picksound = "dontstarve/wilson/pickup_plants"
     inst.components.pickable:SetUp("petals", 10)
     inst.components.pickable.onpickedfn = onpickedfn
+	inst.components.pickable.remove_when_picked = true
     inst.components.pickable.quickpick = true
     inst.components.pickable.wildfirestarter = true
 
@@ -142,6 +140,9 @@ local function fn()
     inst.components.burnable:SetOnBurntFn(OnBurnt)
 
     MakeSmallPropagator(inst)
+
+	inst:AddComponent("halloweenmoonmutable")
+	inst.components.halloweenmoonmutable:SetPrefabMutated("moonbutterfly_sapling")
 
     if TheWorld:HasTag("cave") then
         inst:WatchWorldState("iscaveday", OnIsCaveDay)

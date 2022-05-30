@@ -68,8 +68,8 @@ local function fn()
     MakeHauntableWork(inst)
 
     --------SaveLoad
-    inst.OnSave = onsave 
-    inst.OnLoad = onload 
+    inst.OnSave = onsave
+    inst.OnLoad = onload
 
     return inst
 end

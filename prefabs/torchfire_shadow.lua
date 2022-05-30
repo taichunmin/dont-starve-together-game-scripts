@@ -101,7 +101,7 @@ local SMOKE_MAX_LIFETIME = 1.1
 local FIRE_MAX_LIFETIME = .9
 local HAND_MAX_LIFETIME = 1.7
 
-local function emit_fire_fn(effect, sphere_emitter)            
+local function emit_fire_fn(effect, sphere_emitter)
     local vx, vy, vz = .005 * UnitRand(), 0, .0005 * UnitRand()
     local lifetime = FIRE_MAX_LIFETIME * (.9 + UnitRand() * .1)
     local px, py, pz = sphere_emitter()
@@ -241,7 +241,7 @@ local function common_postinit(inst)
             smoke_num_particles_to_emit = smoke_num_particles_to_emit - 1
         end
         smoke_num_particles_to_emit = smoke_num_particles_to_emit + smoke_particles_per_tick
-        
+
         --HAND
         while hand_num_particles_to_emit > 1 do
             emit_hand_fn(effect, sphere_emitter)

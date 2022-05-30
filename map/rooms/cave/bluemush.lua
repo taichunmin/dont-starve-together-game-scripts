@@ -120,6 +120,63 @@ local bgbluemush = {
         },
     }
 }
+
 AddRoom("BGBlueMush", bgbluemush)
 AddRoom("BGBlueMushRoom", Roomify(bgbluemush))
 
+AddRoom("MoonMushForest", {
+    colour={r=0.1,g=0.1,b=0.8,a=0.9},
+    value = GROUND.FUNGUSMOON,
+    tags = {},
+    random_node_entrance_weight = 0,
+    contents =  {
+        countstaticlayouts =
+        {
+            ["GrottoPoolBig"] = 1,
+            ["GrottoPoolSmall"] = 4,
+        },
+        countprefabs =
+        {
+            mushgnome_spawner = 1,
+        },
+        distributepercent = 0.35,
+        distributeprefabs =
+        {
+            mushtree_moon = 0.075,
+
+            lightflier_flower = 0.02,
+
+            cavelightmoon = 0.003,
+            cavelightmoon_small = 0.003,
+            cavelightmoon_tiny = 0.003,
+
+            moonglass_stalactite1 = 0.007,
+            moonglass_stalactite2 = 0.007,
+            moonglass_stalactite3 = 0.007,
+        },
+    }
+})
+
+AddRoom("MoonMushForest_entrance", {
+    colour={r=0.1,g=0.1,b=0.8,a=0.9},
+    value = GROUND.FUNGUSMOON_NOISE,
+    tags = {"GrottoWarEntrance"},
+	random_node_exit_weight = 0,
+    contents =  {
+		distributepercent = 0.20,
+        distributeprefabs =
+        {
+			-- mushroom only
+			mushtree_tall =	0.30,
+            flower_cave = 0.10,
+
+			-- moon only
+            mushtree_moon = 0.40,
+            lightflier_flower = 0.01,
+
+			-- anywhere
+            cavelightmoon_small = 0.003,
+            cavelightmoon_tiny = 0.003,
+        },
+    }
+})

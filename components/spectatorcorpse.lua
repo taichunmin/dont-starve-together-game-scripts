@@ -96,7 +96,7 @@ function SpectatorCorpse:OnUpdate()
         local rangesq = self.maxrange * self.maxrange
         local target = nil
         for i, v in ipairs(AllPlayers) do
-            if v ~= self.inst and not (v.replica.health:IsDead() or v:HasTag("playerghost")) and v.entity:IsVisible() then
+            if v ~= self.inst and not IsEntityDeadOrGhost(v) and v.entity:IsVisible() then
                 local distsq = v:GetDistanceSqToPoint(x, y, z)
                 if v == self.lasttarget then
                     distsq = math.sqrt(distsq) - 4 -- priority for last target

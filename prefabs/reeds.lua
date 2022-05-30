@@ -25,6 +25,11 @@ local function makeemptyfn(inst)
     inst.AnimState:PlayAnimation("picked")
 end
 
+local function OnBurnt(inst)
+	TheWorld:PushEvent("beginregrowth", inst)
+    DefaultBurntFn(inst)
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -37,6 +42,7 @@ local function fn()
     inst.MiniMapEntity:SetIcon("reeds.png")
 
     inst:AddTag("plant")
+	inst:AddTag("silviculture") -- for silviculture book
 
     inst.AnimState:SetBank("grass")
     inst.AnimState:SetBuild("reeds")
@@ -58,19 +64,19 @@ local function fn()
     inst.components.pickable.onregenfn = onregenfn
     inst.components.pickable.onpickedfn = onpickedfn
     inst.components.pickable.makeemptyfn = makeemptyfn
-    inst.components.pickable.SetRegenTime = 120
 
     inst:AddComponent("inspectable")
 
-    ---------------------        
+    ---------------------
     inst:AddComponent("fuel")
     inst.components.fuel.fuelvalue = TUNING.SMALL_FUEL
 
     MakeSmallBurnable(inst, TUNING.SMALL_FUEL)
+    inst.components.burnable:SetOnBurntFn(OnBurnt)
     MakeSmallPropagator(inst)
     MakeNoGrowInWinter(inst)
     MakeHauntableIgnite(inst)
-    ---------------------   
+    ---------------------
 
     return inst
 end

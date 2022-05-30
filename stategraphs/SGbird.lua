@@ -40,6 +40,9 @@ local events =
     EventHandler("trapped", function(inst)
         inst.sg:GoToState("trapped")
     end),
+    EventHandler("stunbomb", function(inst)
+        inst.sg:GoToState("stunned")
+    end),
 }
 
 local states =
@@ -81,7 +84,7 @@ local states =
     State{
         name = "death",
         tags = { "busy" },
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("death")
             inst.Physics:Stop()
@@ -147,9 +150,10 @@ local states =
 
     State{
         name = "glide",
-        tags = { "idle", "flight" },
+        tags = { "idle", "flight", "notarget" },
 
         onenter = function(inst)
+			inst:AddTag("NOCLICK")
             if not inst.AnimState:IsCurrentAnimation("glide") then
                 inst.AnimState:PlayAnimation("glide", true)
             end
@@ -164,7 +168,7 @@ local states =
             if y < 2 then
                 inst.Physics:SetMotorVel(0, 0, 0)
             end
-            if y <= .1 then
+            if y <= 0.1 then
                 inst.Physics:Stop()
                 inst.Physics:Teleport(x, 0, z)
                 inst.AnimState:PlayAnimation("land")
@@ -179,6 +183,10 @@ local states =
         ontimeout = function(inst)
             inst.sg:GoToState("glide")
         end,
+
+		onexit = function(inst)
+			inst:RemoveTag("NOCLICK")
+		end,
     },
 
     State{
@@ -221,9 +229,11 @@ local states =
 
     State{
         name = "flyaway",
-        tags = { "flight", "busy" },
+        tags = { "flight", "busy", "notarget" },
 
         onenter = function(inst)
+			inst:AddTag("NOCLICK")
+
             if inst.components.floater ~= nil then
                 inst:PushEvent("on_no_longer_landed")
             end
@@ -234,7 +244,7 @@ local states =
             inst.DynamicShadow:Enable(false)
             inst.SoundEmitter:PlaySound(inst.sounds.takeoff)
 
-            if inst.components.periodicspawner ~= nil and math.random() <= TUNING.CROW_LEAVINGS_CHANCE then
+            if inst.components.periodicspawner ~= nil and math.random() <= TUNING.BIRD_LEAVINGS_CHANCE then
                 inst.components.periodicspawner:TrySpawn()
             end
 
@@ -257,13 +267,17 @@ local states =
                 inst:Remove()
             end),
         },
+
+		onexit = function(inst)
+			inst:RemoveTag("NOCLICK")
+		end,
     },
 
     State{
         name = "hop",
         tags = { "moving", "canrotate", "hopping" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.AnimState:PlayAnimation("hop")
             inst.Physics:SetMotorVel(5, 0, 0)
         end,
@@ -305,7 +319,7 @@ local states =
         events =
         {
             EventHandler("animover", function(inst)
-                inst.sg:GoToState(inst.components.burnable ~= nil and inst.components.burnable:IsBurning() and "distress_pre" or "idle")
+                inst.sg:GoToState(inst.components.burnable ~= nil and inst.components.burnable:IsBurning() and "distress_pre" or "flyaway")
             end),
         },
     },
@@ -352,7 +366,7 @@ local states =
         name = "stunned",
         tags = { "busy" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("stunned_loop", true)
             inst.sg:SetTimeout(GetRandomWithVariance(6, 2))

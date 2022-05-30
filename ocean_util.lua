@@ -1,4 +1,5 @@
 
+
 function IsOceanTile(tile)
 	return tile >= GROUND.OCEAN_START and tile <= GROUND.OCEAN_END
 end
@@ -9,56 +10,54 @@ function IsLandTile(tile)
         tile ~= GROUND.INVALID
 end
 
-function SpawnWaves(inst, numWaves, totalAngle, waveSpeed, wavePrefab, initialOffset, idleTime, instantActive, random_angle)
-	wavePrefab = wavePrefab or "rogue_wave"
-	totalAngle = math.clamp(totalAngle, 1, 360)
+local WAVE_SPAWN_DISTANCE = 1.5
+function SpawnAttackWaves(position, rotation, spawn_radius, numWaves, totalAngle, waveSpeed, wavePrefab, idleTime, instantActive)
+    wavePrefab = wavePrefab or "wave_med"
+    waveSpeed = waveSpeed or 6
+    idleTime = idleTime or 5
+    totalAngle = (numWaves == 1 and 0) or
+            (totalAngle and (totalAngle % 361)) or
+            360
 
-    local pos = inst:GetPosition()
-    local startAngle = (random_angle and math.random(-180, 180)) or inst.Transform:GetRotation()
-    local anglePerWave = totalAngle/(numWaves - 1)
+    local anglePerWave = (totalAngle == 0 and 0) or
+            (totalAngle == 360 and totalAngle/numWaves) or
+            totalAngle/(numWaves - 1)
 
-	if totalAngle == 360 then
-		anglePerWave = totalAngle/numWaves
-	end
+    local startAngle = rotation or math.random(-180, 180)
+    local total_rad = (spawn_radius or 0.0) + WAVE_SPAWN_DISTANCE
 
-    --[[
-    local debug_offset = Vector3(2 * math.cos(startAngle*DEGREES), 0, -2 * math.sin(startAngle*DEGREES)):Normalize()
-    inst.components.debugger:SetOrigin("debugy", pos.x, pos.z)
-    local debugpos = pos + (debug_offset * 2)
-    inst.components.debugger:SetTarget("debugy", debugpos.x, debugpos.z)
-    inst.components.debugger:SetColour("debugy", 1, 0, 0, 1)
-	--]]
-
+    local wave_spawned = false
     for i = 0, numWaves - 1 do
-        local wave = SpawnPrefab(wavePrefab)
-
         local angle = (startAngle - (totalAngle/2)) + (i * anglePerWave)
-        local rad = initialOffset or (inst.Physics and inst.Physics:GetRadius()) or 0.0
-        local total_rad = rad + wave.Physics:GetRadius() + 0.1
-        local offset = Vector3(math.cos(angle*DEGREES),0, -math.sin(angle*DEGREES)):Normalize()
-        local wavepos = pos + (offset * total_rad)
+        local offset_direction = Vector3(math.cos(angle*DEGREES), 0, -math.sin(angle*DEGREES)):Normalize()
+        local wavepos = position + (offset_direction * total_rad)
 
-        if inst:GetIsOnWater(wavepos:Get()) then
-	        wave.Transform:SetPosition(wavepos:Get())
+        if not TheWorld.Map:IsPassableAtPoint(wavepos:Get()) then
+            wave_spawned = true
 
-	        local speed = waveSpeed or 6
-	        wave.Transform:SetRotation(angle)
-	        wave.Physics:SetMotorVel(speed, 0, 0)
-	        wave.idle_time = idleTime or 5
+            local wave = SpawnPrefab(wavePrefab)
+            wave.Transform:SetPosition(wavepos:Get())
+            wave.Transform:SetRotation(angle)
+            if type(waveSpeed) == "table" then
+                wave.Physics:SetMotorVel(waveSpeed[1], waveSpeed[2], waveSpeed[3])
+            else
+                wave.Physics:SetMotorVel(waveSpeed, 0, 0)
+            end
+            wave.idle_time = idleTime
 
-	        if instantActive then
-	        	wave.sg:GoToState("idle")
-	        end
-
-	        if wave.soundtidal then
-	        	wave.SoundEmitter:PlaySound("dontstarve_DLC002/common/rogue_waves/"..wave.soundtidal)
-	        end
-        else
-        	wave:Remove()
+            if instantActive then
+                wave.sg:GoToState((idleTime > 0 and "instant_rise") or "lower")
+            end
         end
     end
+
+    -- Let our caller know if we actually spawned at least 1 wave.
+    return wave_spawned
 end
 
+function SpawnAttackWave(position, rotation, waveSpeed, wavePrefab, idleTime, instantActive)
+    return SpawnAttackWaves(position, rotation, nil, 1, nil, waveSpeed, wavePrefab, idleTime, instantActive)
+end
 
 function FindLandBetweenPoints(p0x, p0y, p1x, p1y)
 	local map = TheWorld.Map
@@ -80,7 +79,7 @@ function FindLandBetweenPoints(p0x, p0y, p1x, p1y)
         if math.abs(e1) < math.abs(e2) then
             p0x = p0x + ix
             e = e1
-		else 
+		else
             p0y = p0y + iy
             e = e2
         end
@@ -98,7 +97,7 @@ function FindRandomPointOnShoreFromOcean(x, y, z)
 		end
 	end
 	table.sort(nodes, function(a, b) return a.distsq < b.distsq end)
-	
+
 	local num_rooms_to_pick = 4
 
 	local closest = {}
@@ -136,7 +135,9 @@ function LandFlyingCreature(creature)
     creature:RemoveTag("flying")
     creature:PushEvent("on_landed")
     if creature.Physics ~= nil then
-        creature.Physics:CollidesWith(COLLISION.LIMITS)
+        if TheWorld.has_ocean then
+            creature.Physics:CollidesWith(COLLISION.LIMITS)
+        end
         creature.Physics:ClearCollidesWith(COLLISION.FLYERS)
     end
 end
@@ -145,7 +146,9 @@ function RaiseFlyingCreature(creature)
     creature:AddTag("flying")
     creature:PushEvent("on_no_longer_landed")
     if creature.Physics ~= nil then
-        creature.Physics:ClearCollidesWith(COLLISION.LIMITS)
+        if TheWorld.has_ocean then
+            creature.Physics:ClearCollidesWith(COLLISION.LIMITS)
+        end
         creature.Physics:CollidesWith(COLLISION.FLYERS)
     end
 end
@@ -202,4 +205,23 @@ function CanProbablyReachTargetFromShore(inst, target, max_distance)
     local tx, ty, tz = target.Transform:GetWorldPosition()
     local normx, normz = VecUtil_Normalize(myx - tx, myz - tz)
     return TheWorld.Map:IsAboveGroundAtPoint(tx + normx * max_distance, ty, tz + normz * max_distance)
+end
+
+function TintByOceanTile(inst)
+    local GroundTiles = require("worldtiledefs")
+    inst:DoTaskInTime(0,function(inst)
+        local pos = inst:GetPosition()
+        local tile = TheWorld.Map:GetTileAtPoint(pos.x, pos.y, pos.z)
+        local tile_info = GetTileInfo(tile)
+        if tile_info then
+            local color = tile_info.wavetint
+            if color then
+                inst.AnimState:SetMultColour(color[1],color[2],color[3],1)
+            end
+
+        else
+            -- if it can't tint. it's not on water. Remove it.
+            inst:Remove()
+        end
+    end)
 end

@@ -9,7 +9,7 @@ local SCREEN_OFFSET = -.285 * RESOLUTION_X
 
 local CharacterLoadoutPopupScreen = Class(Screen, function(self, profile, character)
 	Screen._ctor(self, "CharacterLoadoutPopupScreen")
-	
+
 	self.profile = profile
 
     --darken everything behind the dialog
@@ -37,15 +37,15 @@ local CharacterLoadoutPopupScreen = Class(Screen, function(self, profile, charac
     self:SetPortrait()
 
     local spacing = 225
-    local buttons = {{text = STRINGS.UI.WARDROBE_POPUP.CANCEL, cb = function() self:Cancel() end}, 
+    local buttons = {{text = STRINGS.UI.WARDROBE_POPUP.CANCEL, cb = function() self:Cancel() end},
                      {text = STRINGS.UI.WARDROBE_POPUP.RESET, cb = function() self:Reset() end},
                      {text = STRINGS.UI.WARDROBE_POPUP.SET, cb = function() self:Close() end},
                   }
 
     self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-    self.menu:SetPosition(-230, -280, 0) 
+    self.menu:SetPosition(-230, -280, 0)
 
-   
+
 	self.default_focus = self.menu
 
 	self.dressup:ReverseFocus()
@@ -70,16 +70,6 @@ function CharacterLoadoutPopupScreen:DoFocusHookups()
     self.dressup:SetFocusChangeDir(MOVE_DOWN, self.menu)
 end
 
-function CharacterLoadoutPopupScreen:OnControl(control, down)
-    if CharacterLoadoutPopupScreen._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
-        self:Cancel()
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        return true
-    end
-end
-
 function CharacterLoadoutPopupScreen:Cancel()
 	self:Reset()
 	self:Close()
@@ -101,11 +91,11 @@ end
 function CharacterLoadoutPopupScreen:SetPortrait()
 	local herocharacter = self.dressup.currentcharacter
 	local name = self.dressup:GetBaseSkin()
-	
+
 	if name and name ~= "" then
 		self.heroportrait:SetTexture("bigportraits/"..name..".xml", name.."_oval.tex", herocharacter.."_none.tex")
 	else
-		if softresolvefilepath("bigportraits/"..herocharacter.."_none.xml") then 
+		if softresolvefilepath("bigportraits/"..herocharacter.."_none.xml") then
 			self.heroportrait:SetTexture("bigportraits/"..herocharacter.."_none.xml", herocharacter.."_none_oval.tex")
 		else
 			--Note(Peter): this isn't used in the FE anymore. Legacy from shared in-game code.
@@ -125,10 +115,16 @@ end
 function CharacterLoadoutPopupScreen:OnControl(control, down)
 	if CharacterLoadoutPopupScreen._base.OnControl(self, control, down) then return true end
 
+    if control == CONTROL_CANCEL and not down then
+        self:Cancel()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        return true
+    end
+
    	if down then
 	 	if control == CONTROL_PREVVALUE then  -- r-stick left
 	    	self.dressup:ScrollBack(control)
-			return true 
+			return true
 		elseif control == CONTROL_NEXTVALUE then -- r-stick right
 			self.dressup:ScrollFwd(control)
 			return true

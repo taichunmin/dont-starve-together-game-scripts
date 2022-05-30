@@ -1,10 +1,10 @@
 require "prefabutil"
 
-local function Default_PlayAnimation(inst, anim, loop)
+function Default_PlayAnimation(inst, anim, loop)
     inst.AnimState:PlayAnimation(anim, loop)
 end
 
-local function Default_PushAnimation(inst, anim, loop)
+function Default_PushAnimation(inst, anim, loop)
     inst.AnimState:PushAnimation(anim, loop)
 end
 
@@ -52,7 +52,7 @@ end
 
 local function onturnoff(inst)
     if inst._activetask == nil and not inst:HasTag("burnt") then
-        inst:_PushAnimation("idle", false)
+		inst:_PlayAnimation("idle", false)
         inst.SoundEmitter:KillSound("idlesound")
         inst.SoundEmitter:KillSound("loop")
     end
@@ -161,13 +161,13 @@ local function createmachine(level, name, soundprefix, techtree, giftsound)
         inst:_PlayAnimation("place")
         inst:_PushAnimation("idle", false)
         inst.SoundEmitter:PlaySound("dontstarve/common/researchmachine_"..soundprefix.."_place")
-        
+
 		if name == "researchlab" then
 	        AwardPlayerAchievement("build_researchlab", data.builder)
 	    elseif name == "researchlab2" then
 	        AwardPlayerAchievement("build_researchlab2", data.builder)
 	    end
-        
+
     end
 
     local function fn()

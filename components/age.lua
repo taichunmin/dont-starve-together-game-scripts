@@ -13,7 +13,7 @@ local function syncage(inst, self)
 			AwardPlayerAchievement( "survive_70", inst)
 		end
 		NotifyPlayerProgress("days", cur_age,  inst)
-		NotifyPlayerPresence(SaveGameIndex:GetGameMode(SaveGameIndex:GetCurrentSaveSlot()), 1, cur_age, inst)
+		NotifyPlayerPresence(ShardGameIndex:GetGameMode(), 1, cur_age, inst)
 	end
     inst.Network:SetPlayerAge(self:GetDisplayAgeInDays())
 end

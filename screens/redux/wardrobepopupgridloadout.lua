@@ -42,7 +42,7 @@ local GridWardrobePopupScreen = Class(Screen, function(self, owner_player, profi
     self.root:SetPosition(-RESOLUTION_X/2, -RESOLUTION_Y/2, 0)
 
 	local bg = self.proot:AddChild(Image("images/bg_redux_wardrobe_bg.xml", "wardrobe_bg.tex"))
-	bg:SetScale(.8) 
+	bg:SetScale(.8)
 	bg:SetPosition(-200, 0)
 	bg:SetTint(1, 1, 1, .76)
 
@@ -71,7 +71,7 @@ local GridWardrobePopupScreen = Class(Screen, function(self, owner_player, profi
 
 	local starting_skintype = GetSkinModeFromBuild(self.owner_player)
 
-	self.loadout = self.proot:AddChild(LoadoutSelect(profile, self.owner_player.prefab, starting_skintype))
+	self.loadout = self.proot:AddChild(LoadoutSelect(profile, self.owner_player.prefab, starting_skintype, true))
 	self.loadout:SetDefaultMenuOption()
 
 
@@ -90,15 +90,23 @@ local GridWardrobePopupScreen = Class(Screen, function(self, owner_player, profi
 
 	self.loadout:SetPosition(-306, 0)
 	self.menu:SetPosition(493, -260, 0)
-   
+
 	self.default_focus = self.loadout
 
     TheCamera:PushScreenHOffset(self, SCREEN_OFFSET)
 
     self:DoFocusHookups()
+
+    SetAutopaused(true)
 end)
 
+function GridWardrobePopupScreen:OffsetServerPausedWidget(serverpausewidget)
+	serverpausewidget:SetOffset(-650,0)
+end
+
 function GridWardrobePopupScreen:OnDestroy()
+    SetAutopaused(false)
+
     TheCamera:PushScreenHOffset(self, SCREEN_OFFSET)
     self._base.OnDestroy(self)
 
@@ -135,7 +143,7 @@ function GridWardrobePopupScreen:GetTimestamp()
 	local timestamp = 0
 
 	for k,v in ipairs(templist) do
-		if v.modified_time > timestamp then 
+		if v.modified_time > timestamp then
 			timestamp = v.modified_time
 		end
 	end
@@ -150,8 +158,8 @@ end
 
 function GridWardrobePopupScreen:OnControl(control, down)
     if GridWardrobePopupScreen._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
+
+    if control == CONTROL_CANCEL and not down then
         self:Cancel()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
@@ -169,7 +177,7 @@ end
 
 function GridWardrobePopupScreen:Close()
 	local skins = self.loadout.selected_skins
-	
+
     local data = {}
     if TheNet:IsOnlineMode() then
 		data = skins
@@ -181,11 +189,7 @@ function GridWardrobePopupScreen:Close()
 	if not IsValidClothing( data.legs ) or not TheInventory:CheckOwnership(data["legs"]) then data.legs = "" end
 	if not IsValidClothing( data.feet ) or not TheInventory:CheckOwnership(data["feet"]) then data.feet = "" end
 
-    if not TheWorld.ismastersim then
-        SendRPCToServer(RPC.CloseWardrobe, data.base, data.body, data.hand, data.legs, data.feet)
-    elseif self.owner_player ~= nil then
-        self.owner_player:PushEvent("ms_closewardrobe", data)
-    end
+    POPUPS.WARDROBE:Close(self.owner_player, data.base, data.body, data.hand, data.legs, data.feet)
 
 	self.timestamp = self:GetTimestamp()
 	self.profile:SetCollectionTimestamp(self.timestamp)

@@ -1,6 +1,6 @@
 require("stategraphs/commonstates")
 
-local actionhandlers = 
+local actionhandlers =
 {
 }
 
@@ -18,7 +18,7 @@ local events=
 local states=
 {
      State{
-        
+
         name = "idle",
         tags = {"idle", "canrotate"},
         onenter = function(inst, playanim)
@@ -30,34 +30,34 @@ local states=
                 inst.AnimState:PlayAnimation("idle_loop", true)
             end
         end,
-        
-        timeline = 
+
+        timeline =
         {
 		    TimeEvent(21*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/idle") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
     },
-    
+
    State{
         name = "taunt",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("taunt")
             inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/voice")
         end,
-        
-        timeline = 
+
+        timeline =
         {
 		    TimeEvent(10*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/pawground") end ),
 		    TimeEvent(28*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/pawground") end ),
         },
-        
+
         events=
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
@@ -66,7 +66,7 @@ local states=
 
     State{  name = "ruinsrespawn",
         tags = {"busy"},
-        
+
         onenter = function(inst)
             inst.AnimState:PlayAnimation("spawn")
 	        inst.components.sleeper.isasleep = true
@@ -77,7 +77,7 @@ local states=
         {
     		TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/bounce") end ),
         },
-        
+
         events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("sleeping") end),
@@ -87,13 +87,13 @@ local states=
 
 CommonStates.AddWalkStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 	    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
     },
 	walktimeline = {
 		    TimeEvent(0*FRAMES, function(inst) inst.Physics:Stop() end ),
-            TimeEvent(7*FRAMES, function(inst) 
+            TimeEvent(7*FRAMES, function(inst)
                 inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/bounce")
                 inst.components.locomotor:WalkForward()
             end ),
@@ -106,11 +106,11 @@ CommonStates.AddWalkStates(states,
 
 CommonStates.AddSleepStates(states,
 {
-    starttimeline = 
+    starttimeline =
     {
 		TimeEvent(11*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/liedown") end ),
     },
-    
+
 	sleeptimeline = {
         TimeEvent(18*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/sleep") end),
 	},
@@ -118,16 +118,16 @@ CommonStates.AddSleepStates(states,
 
 CommonStates.AddCombatStates(states,
 {
-    attacktimeline = 
+    attacktimeline =
     {
         TimeEvent(15*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/attack") end),
         TimeEvent(17*FRAMES, function(inst) inst.components.combat:DoAttack() end),
     },
-    hittimeline = 
+    hittimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/hurt") end),
     },
-    deathtimeline = 
+    deathtimeline =
     {
         TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/knight"..inst.kind.."/death") end),
     },
@@ -135,6 +135,6 @@ CommonStates.AddCombatStates(states,
 
 CommonStates.AddFrozenStates(states)
 
-    
+
 return StateGraph("knight", states, events, "idle", actionhandlers)
 

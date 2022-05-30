@@ -10,7 +10,6 @@ local prefabs =
 {
     "rock_avocado_fruit",
     "dug_rock_avocado_bush",
-    "disease_puff",
     "twigs",
 }
 
@@ -56,11 +55,7 @@ local function grow_to_stage2(inst)
 end
 
 local function set_stage3(inst)
-    if inst.components.diseaseable ~= nil and inst.components.diseaseable:IsDiseased() then
-        inst.components.pickable:ChangeProduct("spoiled_food")
-    else
-        inst.components.pickable:ChangeProduct("rock_avocado_fruit")
-    end
+    inst.components.pickable:ChangeProduct("rock_avocado_fruit")
 
     inst.components.pickable:Regen()
 
@@ -144,22 +139,8 @@ local function on_ignite(inst)
     -- Function empty; we make a custom function just to bypass the persists = false portion of the default ignite function.
 end
 
-local function spawndiseasepuff(inst)
-    SpawnPrefab("disease_puff").Transform:SetPosition(inst.Transform:GetWorldPosition())
-end
-
 local function on_dug_up(inst, digger)
     local withered = inst.components.witherable ~= nil and inst.components.witherable:IsWithered()
-    local diseased = inst.components.diseaseable ~= nil and inst.components.diseaseable:IsDiseased()
-
-    if diseased then
-        spawndiseasepuff(inst)
-    elseif inst.components.diseaseable ~= nil and inst.components.diseaseable:IsBecomingDiseased() then
-        spawndiseasepuff(inst)
-        if digger ~= nil then
-            digger:PushEvent("digdiseasing")
-        end
-    end
 
     if withered or inst.components.pickable:IsBarren() then
         -- If we're withered, digging us up just drops twigs
@@ -174,12 +155,7 @@ local function on_dug_up(inst, digger)
             inst.components.lootdropper:SpawnLootPrefab("rock_avocado_fruit")
         end
 
-        if diseased then
-            inst.components.lootdropper:SpawnLootPrefab("twigs")
-            inst.components.lootdropper:SpawnLootPrefab("twigs")
-        else
-            inst.components.lootdropper:SpawnLootPrefab("dug_rock_avocado_bush")
-        end
+        inst.components.lootdropper:SpawnLootPrefab("dug_rock_avocado_bush")
     end
 
     -- This actual bush is now no longer needed.
@@ -202,17 +178,6 @@ local function onpickedfn(inst, picker)
         inst.components.growable.magicgrowable = false
     else
         inst.AnimState:PushAnimation("idle1", false)
-    end
-
-    if inst.components.diseaseable ~= nil then
-        if inst.components.diseaseable:IsDiseased() then
-            spawndiseasepuff(inst)
-        elseif inst.components.diseaseable:IsBecomingDiseased() then
-            spawndiseasepuff(inst)
-            if picker ~= nil then
-                picker:PushEvent("pickdiseasing")
-            end
-        end
     end
 end
 
@@ -247,46 +212,13 @@ local function makebarrenfn(inst, wasempty)
     end
 end
 
-local function setdiseasebuild(inst)
-    inst.AnimState:SetBuild("rock_avocado_diseased_build")
-end
-
-local function ondiseasedfn(inst)
-    if inst.components.growable.stage == 3 then
-        inst.components.pickable:ChangeProduct("spoiled_food")
-    end
-
-    if POPULATING then
-        setdiseasebuild(inst)
-    else
-        inst:DoTaskInTime(23 * FRAMES, spawndiseasepuff)
-        inst:DoTaskInTime(27 * FRAMES, setdiseasebuild)
-    end
-end
-
-local function makediseaseable(inst)
-    if inst.components.diseaseable == nil then
-        inst:AddComponent("diseaseable")
-        inst.components.diseaseable:SetDiseasedFn(ondiseasedfn)
-    end
-end
-
 local function ontransplantfn(inst)
     inst.components.pickable:MakeBarren()
-    makediseaseable(inst)
-    inst.components.diseaseable:RestartNearbySpread()
 end
 
 local function on_save(inst, data)
     if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
         data.burning = true
-    end
-end
-
-local function on_pre_load(inst, data)
-    -- Ensure that, if we loaded in a diseseable state, we have the diseaseable component before the component loads occur.
-    if data ~= nil and (data.pickable ~= nil and data.pickable.transplanted or data.diseaseable ~= nil) then
-        makediseaseable(inst)
     end
 end
 
@@ -378,7 +310,6 @@ local function rock_avocado_bush()
     inst.components.growable:StartGrowing()
 
     inst.OnSave = on_save
-    inst.OnPreLoad = on_pre_load
     inst.OnLoad = on_load
 
     MakeSnowCovered(inst)

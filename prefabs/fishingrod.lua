@@ -2,7 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/fishingrod.zip"),
     Asset("ANIM", "anim/swap_fishingrod.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function onequip (inst, owner)
@@ -42,6 +41,8 @@ local function fn()
 
     --fishingrod (from fishingrod component) added to pristine state for optimization
     inst:AddTag("fishingrod")
+
+	inst:AddTag("allow_action_on_impassable")
 
     if TheNet:GetServerGameMode() ~= "quagmire" then
         --weapon (from weapon component) added to pristine state for optimization

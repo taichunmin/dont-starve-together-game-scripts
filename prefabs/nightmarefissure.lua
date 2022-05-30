@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local upperLightColour = { 239/255, 194/255, 194/255 }
 local lowerLightColour = { 1, 1, 1 }
 local MAX_LIGHT_ON_FRAME = 15
@@ -190,7 +192,11 @@ local function OnEntityWake(inst)
     end
 end
 
-local function Make(name, build, lightcolour, fxname)
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.NIGHTMARELIGHT_RELEASE_TIME, TUNING.NIGHTMARELIGHT_REGEN_TIME)
+end
+
+local function Make(name, build, lightcolour, fxname, masterinit)
     local assets =
     {
         Asset("ANIM", "anim/"..build..".zip"),
@@ -246,9 +252,14 @@ local function Make(name, build, lightcolour, fxname)
         inst.fx.entity:SetParent(inst.entity)
 
         inst:AddComponent("childspawner")
-        inst.components.childspawner:SetRegenPeriod(5)
-        inst.components.childspawner:SetSpawnPeriod(30)
-        inst.components.childspawner:SetMaxChildren(1)
+        inst.components.childspawner:SetRegenPeriod(TUNING.NIGHTMARELIGHT_RELEASE_TIME)
+        inst.components.childspawner:SetSpawnPeriod(TUNING.NIGHTMARELIGHT_REGEN_TIME)
+        inst.components.childspawner:SetMaxChildren(TUNING.NIGHTMAREFISSURE_MAXCHILDREN)
+        WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.NIGHTMARELIGHT_RELEASE_TIME, TUNING.NIGHTMAREFISSURE_ENABLED)
+        WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.NIGHTMARELIGHT_REGEN_TIME, TUNING.NIGHTMAREFISSURE_ENABLED)
+        if not TUNING.NIGHTMAREFISSURE_ENABLED then
+            inst.components.childspawner.childreninside = 0
+        end
         inst.components.childspawner.childname = "crawlingnightmare"
         inst.components.childspawner:SetRareChild("nightmarebeak", .35)
 
@@ -258,11 +269,30 @@ local function Make(name, build, lightcolour, fxname)
         inst.OnEntityWake = OnEntityWake
         inst.OnEntitySleep = OnEntitySleep
 
+		if masterinit ~= nil then
+			masterinit(inst)
+		end
+
+        inst.OnPreLoad = OnPreLoad
+
         return inst
     end
 
     return Prefab(name, fn, assets, prefabs)
 end
 
+local function grottowar_onchildspawned(inst, child)
+	if child.components.knownlocations ~= nil then
+		child.components.knownlocations:RememberLocation("war_home", inst.components.knownlocations:GetLocation("war_home"))
+	end
+end
+
+local function grottowar_masterinit(inst)
+	inst:AddComponent("knownlocations")
+	inst.components.childspawner:SetSpawnedFn(grottowar_onchildspawned)
+end
+
 return Make("fissure", "nightmare_crack_upper", upperLightColour, "upper_nightmarefissurefx"),
-    Make("fissure_lower", "nightmare_crack_ruins", lowerLightColour, "nightmarefissurefx")
+    Make("fissure_lower", "nightmare_crack_ruins", lowerLightColour, "nightmarefissurefx"),
+    Make("fissure_grottowar", "fissure_grottowar", upperLightColour, "fissure_grottowarfx", grottowar_masterinit)
+

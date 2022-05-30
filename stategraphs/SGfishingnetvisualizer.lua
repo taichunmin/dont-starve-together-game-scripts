@@ -5,8 +5,7 @@ local events =
 
 local states =
 {
-    State
-    {
+    State{
         name = "casting",
         onenter = function(inst)
             inst.AnimState:PlayAnimation("throw_pre", false)
@@ -15,24 +14,23 @@ local states =
 
         events =
         {
-            EventHandler("play_throw_pst", function(inst) 
-                inst.AnimState:PlayAnimation("throw_pst", false) 
+            EventHandler("play_throw_pst", function(inst)
+                inst.AnimState:PlayAnimation("throw_pst", false)
                 end),
             EventHandler("begin_opening", function(inst) inst.sg:GoToState("opening") end),
-        },  
+        },
 
         onupdate = function(inst, dt)
             inst.components.fishingnetvisualizer:UpdateWhenMovingToTarget(dt)
-        end,     
-         
+        end,
+
     },
 
-    State
-    {
+    State{
         name = "opening",
 
         onenter = function(inst)
-            inst.components.fishingnetvisualizer:BeginOpening()   
+            inst.components.fishingnetvisualizer:BeginOpening()
 
             local my_x, my_y, my_z = inst.Transform:GetWorldPosition()
             local splash_fx = SpawnPrefab("fishingnetvisualizerfx")
@@ -44,7 +42,7 @@ local states =
         {
             TimeEvent(0 * FRAMES, function(inst)
                 local splash_fx = SpawnPrefab("fishingnetvisualizerfx")
-                splash_fx.Transform:SetPosition(inst.Transform:GetWorldPosition())                
+                splash_fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
             end),
         },
         ]]--
@@ -52,20 +50,19 @@ local states =
         events =
         {
             EventHandler("animover", function(inst) inst.sg:GoToState("retrieving") end),
-        }, 
+        },
 
         onupdate = function(inst, dt)
             inst.components.fishingnetvisualizer:UpdateWhenOpening(dt)
-        end,    
-    },    
+        end,
+    },
 
-    State
-    {
+    State{
         name = "retrieving",
         onenter = function(inst)
             inst.components.fishingnetvisualizer:BeginRetrieving()
             inst:FacePoint(inst.components.fishingnetvisualizer.thrower.Transform:GetWorldPosition())
-            inst.AnimState:PlayAnimation("pull_loop", true)            
+            inst.AnimState:PlayAnimation("pull_loop", true)
         end,
 
         onupdate = function(inst, dt)
@@ -75,16 +72,15 @@ local states =
         events =
         {
             EventHandler("begin_final_pickup", function(inst) inst.sg:GoToState("final_pickup") end),
-        },         
-    },  
+        },
+    },
 
-    State
-    {
+    State{
         name = "final_pickup",
         onenter = function(inst)
             inst.components.fishingnetvisualizer:BeginFinalPickup()
         end,
-    },       
+    },
 }
 
 return StateGraph("fishingnetvisualizer", states, events, "casting")

@@ -20,21 +20,21 @@ local brain = require "brains/brightmare_gestaltbrain"
 
 local function SetHeadAlpha(inst, a)
 	if inst.blobhead then
-		inst.blobhead.AnimState:SetMultColour(a, a, a, a) 
+		inst.blobhead.AnimState:SetMultColour(a, a, a, a)
 	end
 end
 
-local function CalcSanityAura(inst, observer)
-	return TUNING.SANITYAURA_MED
-end
-
-local function Client_CalcSanityForTranserency(inst, observer)
+local function Client_CalcSanityForTransparency(inst, observer)
 	if inst.components.inspectable ~= nil then
-		return TUNING.GESTALT.COMBAT_TRANSPERENCY
+		return TUNING.GESTALT_COMBAT_TRANSPERENCY
 	end
 
-	local x = (observer ~= nil and observer.replica.sanity ~= nil) and (observer.replica.sanity:GetPercentWithPenalty() - TUNING.GESTALT.MIN_SANITY_TO_SPAWN) / (1 - TUNING.GESTALT.MIN_SANITY_TO_SPAWN) or 0
+	local x = (observer ~= nil and observer.replica.sanity ~= nil) and (observer.replica.sanity:GetPercentWithPenalty() - TUNING.GESTALT_MIN_SANITY_TO_SPAWN) / (1 - TUNING.GESTALT_MIN_SANITY_TO_SPAWN) or 0
 	return math.min(0.5, 0.4*x*x*x + 0.3)
+end
+
+local function FindRelocatePoint(inst)
+	return TheWorld.components.brightmarespawner:FindRelocatePoint(inst) or nil
 end
 
 local function SetTrackingTarget(inst, target, behaviour_level)
@@ -61,12 +61,30 @@ local function UpdateBestTrackingTarget(inst)
 end
 
 local function Retarget(inst)
-	return (inst.tracking_target ~= nil 
-				and not inst.components.combat:InCooldown() 
-				and inst:IsNear(inst.tracking_target, TUNING.GESTALT.AGGRESSIVE_RANGE)
-				and not (inst.tracking_target.sg:HasStateTag("knockout") or inst.tracking_target.sg:HasStateTag("sleeping") or inst.tracking_target.sg:HasStateTag("bedroll") or inst.tracking_target.sg:HasStateTag("tent") or inst.tracking_target.sg:HasStateTag("waking"))
-           ) and inst.tracking_target 
-			or nil
+    -- If we don't have a tracking target, are in combat cooldown, or are too far away, no target.
+    if inst.tracking_target == nil
+            or inst.components.combat:InCooldown()
+            or not inst:IsNear(inst.tracking_target, TUNING.GESTALT_AGGRESSIVE_RANGE) then
+        return nil
+    end
+
+    -- If our potential target is sleeping, don't target them.
+    local sleeping = inst.tracking_target.sg:HasStateTag("knockout")
+        or inst.tracking_target.sg:HasStateTag("sleeping")
+        or inst.tracking_target.sg:HasStateTag("bedroll")
+        or inst.tracking_target.sg:HasStateTag("tent")
+        or inst.tracking_target.sg:HasStateTag("waking")
+    if sleeping then
+        return nil
+    end
+
+    -- If our potential target has a gestalt item, don't target them.
+    local target_inventory = inst.tracking_target.components.inventory
+    if target_inventory ~= nil and target_inventory:EquipHasTag("gestaltprotection") then
+        return nil
+    end
+
+    return inst.tracking_target
 end
 
 local function OnNewCombatTarget(inst, data)
@@ -120,9 +138,8 @@ local function fn()
 		inst.blobhead = SpawnPrefab("gestalt_head")
 		inst.blobhead.entity:SetParent(inst.entity) --prevent 1st frame sleep on clients
 		inst.blobhead.Follower:FollowSymbol(inst.GUID, "head_fx", 0, 0, 0)
-	
+
 		inst.blobhead.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-		inst.blobhead:DoPeriodicTask(0, function(head) head.Transform:SetRotation(inst.Transform:GetRotation()) end)
 
 	    inst.highlightchildren = { inst.blobhead }
 
@@ -131,7 +148,7 @@ local function fn()
 		inst.components.transparentonsanity.most_alpha = .2
 		inst.components.transparentonsanity.osc_amp = .05
 		inst.components.transparentonsanity.osc_speed = 5.25 + math.random() * 0.5
-		inst.components.transparentonsanity.calc_percent_fn = Client_CalcSanityForTranserency
+		inst.components.transparentonsanity.calc_percent_fn = Client_CalcSanityForTransparency
 		inst.components.transparentonsanity.onalphachangedfn = SetHeadAlpha
 		inst.components.transparentonsanity:OnUpdate(0)
 	end
@@ -146,27 +163,29 @@ local function fn()
 
 	inst.tracking_target = nil
 	inst.behaviour_level = 1
+	inst.FindRelocatePoint = FindRelocatePoint
 	inst.SetTrackingTarget = SetTrackingTarget
 	inst:DoPeriodicTask(0.1, UpdateBestTrackingTarget, 0)
 
     inst:AddComponent("sanityaura")
-	inst.components.sanityaura.aurafn = CalcSanityAura
+	inst.components.sanityaura.aura = TUNING.SANITYAURA_MED
 
     inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
-    inst.components.locomotor.walkspeed = TUNING.GESTALT.WALK_SPEED
-    inst.components.locomotor.runspeed = TUNING.GESTALT.WALK_SPEED
+    inst.components.locomotor.walkspeed = TUNING.GESTALT_WALK_SPEED
+    inst.components.locomotor.runspeed = TUNING.GESTALT_WALK_SPEED
     inst.components.locomotor:EnableGroundSpeedMultiplier(false)
     inst.components.locomotor:SetTriggersCreep(false)
+    inst.components.locomotor.pathcaps = { ignorecreep = true }
 
 	inst:AddComponent("combat")
 	inst.components.combat:SetDefaultDamage(0)
-	inst.components.combat:SetAttackPeriod(TUNING.GESTALT.ATTACK_COOLDOWN)
-	inst.components.combat:SetRange(TUNING.GESTALT.ATTACK_RANGE)
+	inst.components.combat:SetAttackPeriod(TUNING.GESTALT_ATTACK_COOLDOWN)
+	inst.components.combat:SetRange(TUNING.GESTALT_ATTACK_RANGE)
     inst.components.combat:SetRetargetFunction(1, Retarget)
 	inst:ListenForEvent("newcombattarget", OnNewCombatTarget)
 	inst:ListenForEvent("droppedtarget", OnNoCombatTarget)
 	inst:ListenForEvent("losttarget", OnNoCombatTarget)
-	
+
     inst:SetStateGraph("SGbrightmare_gestalt")
     inst:SetBrain(brain)
 
@@ -198,7 +217,7 @@ local function gestalt_trail_fn()
 		inst.components.transparentonsanity.most_alpha = .2
 		inst.components.transparentonsanity.osc_amp = .05
 		inst.components.transparentonsanity.osc_speed = 5.25 + math.random() * 0.5
-		inst.components.transparentonsanity.calc_percent_fn = Client_CalcSanityForTranserency
+		inst.components.transparentonsanity.calc_percent_fn = Client_CalcSanityForTransparency
 		inst.components.transparentonsanity:OnUpdate(0)
 	end
 

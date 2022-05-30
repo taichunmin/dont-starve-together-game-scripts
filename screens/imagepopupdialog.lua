@@ -35,18 +35,18 @@ local ImagePopupDialogScreen = Class(PopupDialogScreen, function(self, title, wi
 
     local widget_container = self.proot:AddChild(Widget("container"))
 
-    local width = (widget_width + spacing) * #widgets + spacing 
+    local width = (widget_width + spacing) * #widgets + spacing
 
     --print("Got ", widget_width or "nil", spacing or "nil", width or "nil", #widgets or "nil")
 
 
-    for i=1, #widgets do 
+    for i=1, #widgets do
         local widg = widget_container:AddChild(widgets[i])
         widg:SetPosition(spacing + ((i-1)*widget_width), 0)
         --print("Position is ", spacing + ((i-1)*widget_width))
     end
 
-    
+
     widget_container:SetPosition(-.5*(#widgets) * widget_width + .5*widget_width, -40)
 
     --print("Width is ", width, -.5*width)

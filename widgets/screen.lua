@@ -45,9 +45,9 @@ function Screen:AddEventHandler(event, fn)
 	if not self.handlers[event] then
 		self.handlers[event] = {}
 	end
-	
+
 	self.handlers[event][fn] = true
-	
+
 	return fn
 end
 

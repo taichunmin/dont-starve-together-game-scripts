@@ -7,6 +7,6 @@ AddRoom("BeefalowPlain", {
 					                distributeprefabs= {
 					                    grass = .01,
 					                    beefalo = 0.02,
-					                } 
+					                }
 					            }
 					})

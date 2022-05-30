@@ -52,7 +52,7 @@ local function make_turf(tile, data)
         end
 
         inst:AddComponent("stackable")
-        inst.components.stackable.maxsize = TUNING.STACK_SIZE_LARGEITEM
+        inst.components.stackable.maxsize = TUNING.STACK_SIZE_MEDITEM
 
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
@@ -60,7 +60,7 @@ local function make_turf(tile, data)
         inst:AddComponent("bait")
 
         inst:AddComponent("fuel")
-        inst.components.fuel.fuelvalue = TUNING.MED_FUEL
+        inst.components.fuel.fuelvalue = TUNING.TINY_FUEL
         MakeMediumBurnable(inst, TUNING.MED_BURNTIME)
         MakeSmallPropagator(inst)
         MakeHauntableLaunchAndIgnite(inst)

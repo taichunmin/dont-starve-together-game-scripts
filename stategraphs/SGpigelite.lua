@@ -7,6 +7,10 @@ local GOLD_DIVE_RANGE = GOLD_DIVE_RANGE_CLAMPED + .1 --with error
 local POSING_MASS = 5000
 local DEFAULT_MASS = 50
 
+local DOAOEATTACK_TARGET_MUST_HAVE = { "_combat" }
+local DOAOEATTACK_TARGET_CANT_HAVE = { "flying", "shadow", "ghost", "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost" }
+local ENDPOSE_PRE_TARGET_MUST_TAGS = { "pigelite" }
+
 local function IsMinigameItem(inst)
     return inst:HasTag("minigameitem")
 end
@@ -90,7 +94,7 @@ local function DoAOEAttack(inst, dist, radius)
     local cosangle = math.cos(angle)
     local x = x0 + dist * sinangle
     local z = z0 + dist * cosangle
-    for i, v in ipairs(TheSim:FindEntities(x, y0, z, radius + 3, { "_combat" }, { "flying", "shadow", "ghost", "FX", "NOCLICK", "DECOR", "INLIMBO", "playerghost" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y0, z, radius + 3, DOAOEATTACK_TARGET_MUST_HAVE, DOAOEATTACK_TARGET_CANT_HAVE)) do
         if v:IsValid() and not v:IsInLimbo() and
             not (v.components.health ~= nil and v.components.health:IsDead()) then
             local range = radius + v:GetPhysicsRadius(.5)
@@ -675,7 +679,7 @@ local states =
             end
 
             local x, y, z = inst.Transform:GetWorldPosition()
-            for i ,v in ipairs(TheSim:FindEntities(x, y, z, 6, { "pigelite" })) do
+            for i ,v in ipairs(TheSim:FindEntities(x, y, z, 6, ENDPOSE_PRE_TARGET_MUST_TAGS)) do
                 if v.sg.mem.postchatter then
                     inst.SoundEmitter:PlaySound("dontstarve/pig/attack")
                     return

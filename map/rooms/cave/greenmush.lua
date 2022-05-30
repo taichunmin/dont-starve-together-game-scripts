@@ -10,7 +10,7 @@ require "map/room_functions"
 AddRoom("GreenMushForest", {
     colour={r=0.1,g=0.8,b=0.1,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .35,
         distributeprefabs=
@@ -34,7 +34,7 @@ AddRoom("GreenMushForest", {
 AddRoom("GreenMushPonds", {
     colour={r=0.1,g=0.8,b=0.3,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .3,
         distributeprefabs=
@@ -59,7 +59,7 @@ AddRoom("GreenMushPonds", {
 AddRoom("GreenMushSinkhole", {
     colour={r=0.1,g=0.8,b=0.3,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         countstaticlayouts={
             ["EvergreenSinkhole"]=1,
@@ -95,7 +95,7 @@ AddRoom("GreenMushSinkhole", {
 AddRoom("GreenMushMeadow", {
     colour={r=0.1,g=0.8,b=0.3,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .25,
         distributeprefabs=
@@ -118,7 +118,7 @@ AddRoom("GreenMushMeadow", {
 AddRoom("GreenMushRabbits", {
     colour={r=0.1,g=0.8,b=0.3,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         countstaticlayouts={
             ["RabbitTown"]=1,
@@ -154,7 +154,7 @@ AddRoom("GreenMushRabbits", {
 AddRoom("GreenMushNoise", {
     colour={r=.36,g=.32,b=.38,a=.50},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     custom_tiles={
         GeneratorFunction = RUNCA.GeneratorFunction,
         data = {iterations=8, seed_mode=CA_SEED_MODE.SEED_RANDOM, num_random_points=2,
@@ -188,7 +188,7 @@ AddRoom("GreenMushNoise", {
 local bggreenmush = {
     colour={r=0.1,g=0.8,b=0.1,a=0.9},
     value = GROUND.FUNGUSGREEN,
-    tags = {"Hutch_Fishbowl"},    
+    tags = {"Hutch_Fishbowl"},
     contents =  {
         distributepercent = .25,
         distributeprefabs=

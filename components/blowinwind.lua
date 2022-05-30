@@ -72,7 +72,7 @@ function BlowInWind:Stop()
 end
 
 function BlowInWind:ChangeDirection(ang, vel)
-	if ang then 
+	if ang then
 		self.windAngle = ang
 		self.windVector = Vector3(math.cos(ang), 0, math.sin(ang)):GetNormalized()
 	end
@@ -104,8 +104,8 @@ function BlowInWind:GetDebugString()
 end
 
 function BlowInWind:OnUpdate(dt)
-	
-	if not self.inst then 
+
+	if not self.inst then
 		self:Stop()
 		return
 	end
@@ -125,7 +125,7 @@ function BlowInWind:OnUpdate(dt)
 	-- Do some variation on the speed if velocity is a reasonable amount
 	if self.velocity:Length() >= .5 then
 		self.speedVarTime = self.speedVarTime + dt
-		if self.speedVarTime > SPEED_VAR_PERIOD then 
+		if self.speedVarTime > SPEED_VAR_PERIOD then
 			self.speedVarTime = 0
 			self.speedVarPeriod = GetRandomWithVariance(SPEED_VAR_PERIOD, SPEED_VAR_PERIOD_VARIANCE)
 		end

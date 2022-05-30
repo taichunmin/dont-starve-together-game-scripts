@@ -56,7 +56,7 @@ local WaitingForPlayers = Class(Widget, function(self, owner, max_players)
 			widget:Refresh()
 
 			UserCommands.RunUserCommand("playerreadytostart", {ready="true"}, TheNet:GetClientTableForUser(TheNet:GetUserID()))
-			widget.timeout_task = widget.inst:DoTaskInTime(5, function() 
+			widget.timeout_task = widget.inst:DoTaskInTime(5, function()
 				widget.checked = TheWorld.net ~= nil and TheWorld.net.components.worldcharacterselectlobby:IsPlayerReadyToStart(TheNet:GetUserID()) or false
 				widget:Enable()
 				widget:Refresh()
@@ -66,7 +66,7 @@ local WaitingForPlayers = Class(Widget, function(self, owner, max_players)
 
 	local playerready_checkbox = self:AddChild(TEMPLATES.LabelCheckbox(playerready_checkbox_onclicked, false, ""))
 	playerready_checkbox.votestart_warned = false
-	playerready_checkbox.RecenterCheckbox = function() 
+	playerready_checkbox.RecenterCheckbox = function()
 		local text_width = playerready_checkbox.text:GetRegionSize()
 	    playerready_checkbox.text:SetPosition(playerready_checkbox._text_offset + text_width/2, 0)
 		playerready_checkbox:SetPosition(-text_width/2, -314)
@@ -93,9 +93,9 @@ local WaitingForPlayers = Class(Widget, function(self, owner, max_players)
     spawndelaytext:SetPosition(0, -290)
     spawndelaytext:SetColour(UICOLOURS.GOLD)
     spawndelaytext:Hide()
-	
+
 	self:RefreshPlayersReady()
-	
+
 	self.inst:ListenForEvent("player_ready_to_start_dirty", function() self:RefreshPlayersReady() end, TheWorld.net)
 
 	self.inst:ListenForEvent("lobbyplayerspawndelay", function(world, data)
@@ -113,7 +113,7 @@ local WaitingForPlayers = Class(Widget, function(self, owner, max_players)
 		end
 
 	end, TheWorld)
-    
+
 end)
 
 function WaitingForPlayers:IsServerFull()
@@ -141,7 +141,7 @@ function WaitingForPlayers:GetPlayerTable()
 		table.sort(ClientObjs, function(a, b) return (a.userid == local_user_id) and (b.userid ~= local_user_id) end)
 	end
 
-    return ClientObjs 
+    return ClientObjs
 end
 
 local function UpdatePlayerListing(widget, data)
@@ -252,7 +252,7 @@ function WaitingForPlayers:GetHelpText()
 		end
 		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. str)
 	end
-	
+
     return table.concat(t, "  ")
 end
 

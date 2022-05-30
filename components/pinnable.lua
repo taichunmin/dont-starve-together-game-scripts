@@ -93,8 +93,9 @@ end
 
 function Pinnable:SpawnShatterFX(ratio)
     local ratio = self:RemainingRatio()
-    local index = math.clamp(math.floor(#splashprefabs*ratio)+1, 1, #splashprefabs)
-    local fx = SpawnPrefab(splashprefabs[index])
+	local splash_fx = self.splashfxlist or splashprefabs
+    local index = math.clamp(math.floor(#splash_fx*ratio)+1, 1, #splash_fx)
+    local fx = SpawnPrefab(splash_fx[index])
     if fx ~= nil then
         self.inst:AddChild(fx)
     end
@@ -117,7 +118,7 @@ function Pinnable:StartWearingOff(wearofftime)
     self.wearofftask = self.inst:DoTaskInTime(mintime, WearOff, self)
 end
 
-function Pinnable:Stick()
+function Pinnable:Stick(goo_build, splashfxlist)
     if self.canbepinned and self.inst.entity:IsVisible() and (self.inst.components.health == nil or not self.inst.components.health:IsDead()) then
         local prevState = self.stuck
         self.stuck = true
@@ -135,6 +136,8 @@ function Pinnable:Stick()
         end
 
         if self.stuck ~= prevState then
+			self.goo_build = goo_build
+			self.splashfxlist = splashfxlist
             self.attacks_since_pinned = 0
             self.last_stuck_time = GetTime()
             self:UpdateStuckStatus()
@@ -152,7 +155,7 @@ function Pinnable:UpdateStuckStatus()
             self:Unstick()
         else
             local index = math.clamp(math.floor(#pinsymbols*remaining)+1, 1, #pinsymbols)
-            self.inst.AnimState:OverrideSymbol("swap_goo", "goo", pinsymbols[index])
+            self.inst.AnimState:OverrideSymbol("swap_goo", self.goo_build or "goo", pinsymbols[index])
 
             self:StartWearingOff(remaining)
         end

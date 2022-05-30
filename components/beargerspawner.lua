@@ -3,9 +3,8 @@
 --------------------------------------------------------------------------
 local easing = require("easing")
 
-
 --------------------------------------------------------------------------
---[[ BaseHassler class definition ]]
+--[[ BeargerSpawner class definition ]]
 --------------------------------------------------------------------------
 return Class(function(self, inst)
 
@@ -16,7 +15,7 @@ assert(TheWorld.ismastersim, "Beargerspawner should not exist on client")
 --------------------------------------------------------------------------
 
 local HASSLER_SPAWN_DIST = 40
-local HASSLER_KILLED_DELAY_MULT = 4
+local BEARGER_TIMERNAME = "bearger_timetospawn"
 
 --------------------------------------------------------------------------
 --[[ Public Member Variables ]]
@@ -28,16 +27,19 @@ self.inst = inst
 --[[ Private Member Variables ]]
 --------------------------------------------------------------------------
 local _warning = false
-local _timetospawn = nil
+local _spawndelay = nil
 local _warnduration = 60
 local _timetonextwarningsound = 0
 local _announcewarningsoundinterval = 4
 
-local _targetNum = 0
-local _firstBeargerSpawnChance = 1
-local _secondBeargerSpawnChance = 0
+local _worldsettingstimer = TheWorld.components.worldsettingstimer
+
+local _numToSpawn = 0
+local _beargerchances = TUNING.BEARGER_CHANCES
 
 local _numSpawned = 0
+
+local _timetospawn
 
 local _targetplayer = nil
 local _activehasslers = {}
@@ -50,21 +52,17 @@ local _lastBeargerKillDay = nil
 --------------------------------------------------------------------------
 
 local function CanSpawnBearger()
-	--print("TheWorld state.isautumn", TheWorld.state.isautumn)
-	--print("No boss time?", TheWorld.state.cycles, TUNING.NO_BOSS_TIME)
-	--print("numspawned", _numSpawned, _targetNum)
-	--print("lastkillday", _lastBeargerKillDay)
-	return (TheWorld.state.isautumn == true) and
-	 		TheWorld.state.cycles > TUNING.NO_BOSS_TIME and 
-	 		(_numSpawned < _targetNum or 
-			(not _lastBeargerKillDay or ((TheWorld.state.cycles - _lastBeargerKillDay) > TUNING.NO_BOSS_TIME)))
+	return TheWorld.state.isautumn and
+	 		TheWorld.state.cycles > TUNING.NO_BOSS_TIME and
+			 _numSpawned < _numToSpawn and
+			 (_lastBeargerKillDay == nil or TheWorld.state.cycles - _lastBeargerKillDay > TUNING.NO_BOSS_TIME)
 end
 
 local function IsEligible(player)
 	local area = player.components.areaaware
 	return player:IsValid()
 			and TheWorld.Map:IsVisualGroundAtPoint(player.Transform:GetWorldPosition())
-			and area:GetCurrentArea() ~= nil 
+			and area:GetCurrentArea() ~= nil
 			and not area:CurrentlyInTag("nohasslers")
 end
 
@@ -88,7 +86,6 @@ local function PickPlayer()
 	table.remove(_activeplayers, playeri)
 	table.insert(_activeplayers, player)
 	_targetplayer = player
-	--print("Picked player ", _targetplayer)
 end
 
 local function GetSpawnPoint(pt)
@@ -103,13 +100,28 @@ local function GetSpawnPoint(pt)
     end
 end
 
+local function GetActiveHasslerCount()
+	return GetTableSize(_activehasslers)
+end
+
+local function SpawnBearger()
+	local spawndelay = .25 * TheWorld.state.remainingdaysinseason * TUNING.TOTAL_DAY_TIME / _numToSpawn
+	local spawnrandom = .25 * spawndelay
+	local timetospawn = TheWorld.components.worldsettingstimer:GetTimeLeft(BEARGER_TIMERNAME)
+	if timetospawn == nil then
+		timetospawn = _worldsettingstimer:StartTimer(BEARGER_TIMERNAME, GetRandomWithVariance(spawndelay, spawnrandom))
+	elseif timetospawn > spawndelay + spawnrandom then
+		timetospawn = _worldsettingstimer:SetTimeLeft(BEARGER_TIMERNAME, GetRandomWithVariance(spawndelay, spawnrandom))
+		timetospawn = _worldsettingstimer:ResumeTimer(BEARGER_TIMERNAME)
+	end
+
+	self.inst:StartUpdatingComponent(self)
+end
+
 local function ReleaseHassler(targetPlayer)
     assert(targetPlayer)
-    --print("Releasing hassler!", targetPlayer)
 
-    self.inst:StopUpdatingComponent(self)
-
-    if _numSpawned >= _targetNum then 
+    if _numSpawned >= _numToSpawn then
         print("Not spawning bearger - already at maximum number")
         return nil
     end
@@ -117,27 +129,22 @@ local function ReleaseHassler(targetPlayer)
     local spawn_pt = GetSpawnPoint(targetPlayer:GetPosition())
     if spawn_pt ~= nil then
         local hassler = SpawnPrefab("bearger")
-        hassler.Physics:Teleport(spawn_pt:Get())
-        _numSpawned = _numSpawned + 1
+		hassler.Physics:Teleport(spawn_pt:Get())
+
+		_numSpawned = _numSpawned + 1
+		_activehasslers[hassler] = true
+
+		if CanSpawnBearger() then
+			SpawnBearger()
+		else
+			self.inst:StopUpdatingComponent(self)
+			_worldsettingstimer:PauseTimer(BEARGER_TIMERNAME, true)
+		end
+
         return hassler
     end
 
     print("Not spawning bearger - can't find spawn point")
-end
-
-local function SpawnBearger()
-    if _numSpawned < _targetNum and TheWorld.state.isautumn and TheWorld.state.cycles > TUNING.NO_BOSS_TIME then
-        local spawndelay = .25 * TheWorld.state.remainingdaysinseason * TUNING.TOTAL_DAY_TIME / _targetNum
-        local spawnrandom = .25 * spawndelay
-        if _timetospawn == nil or _timetospawn > spawndelay + spawnrandom then
-            _timetospawn = GetRandomWithVariance(spawndelay, spawnrandom)
-        end
-        --print("Spawning Bearger ", _timetospawn)
-        self.inst:StartUpdatingComponent(self)
-    else
-        _timetospawn = nil
-        self.inst:StopUpdatingComponent(self)
-    end
 end
 
 --------------------------------------------------------------------------
@@ -145,44 +152,28 @@ end
 --------------------------------------------------------------------------
 
 local function OnSeasonTick(src, data)
-	-- If bearger gets killed and bearger isn't set to lots, _lastBeargerKillDay will be set
-	-- In this case, we need to not respawn until the following autumn, so let's make sure that 
-	-- a fairly large number of days has passed since the kill. 
-	--print("BeargerSpawner got isautumn event", _lastBeargerKillDay or "nil", TheWorld.state.cycles)
-
-	if data.season == "autumn" and (not _lastBeargerKillDay or ((TheWorld.state.cycles - _lastBeargerKillDay) > TUNING.NO_BOSS_TIME)) then
-		_targetNum = 0
-		local chance = math.random()
-		--print("Spawning first bearger?", chance, _firstBeargerSpawnChance)
-		if chance < _firstBeargerSpawnChance then 
-			_targetNum = _targetNum + 1
-		end
-
-		chance = math.random()
-		--print("Spawning second bearger?", chance, _secondBeargerSpawnChance)
-		if _targetNum > 0 and chance < _secondBeargerSpawnChance then 
-			_targetNum = _targetNum + 1
-		end
-
-		--print("OnAutumn chose target number ", _targetNum )
-		local numActive = 0
-		for i,v in pairs(_activehasslers) do
-			if v ~= nil then 
-				numActive = numActive + 1
+	if data.season == "autumn" and TheWorld.state.cycles > TUNING.NO_BOSS_TIME then
+		--update bearger spawn chances if one of these conditions is true:
+		--its the first day of autumn
+		--its been TUNING.NO_BOSS_TIME since the last bearger kill
+		--its the first day after the TUNING.NO_BOSS_TIME grace period.
+		if data.elapseddaysinseason == 0 or (_lastBeargerKillDay and TheWorld.state.cycles - _lastBeargerKillDay > TUNING.NO_BOSS_TIME) or TheWorld.state.cycles == TUNING.NO_BOSS_TIME + 1 then
+			_numToSpawn = 0
+			for i, chance in ipairs(_beargerchances) do
+				if math.random() < chance then
+					_numToSpawn = _numToSpawn + 1
+				end
+			end
+			_numSpawned = GetActiveHasslerCount()
+			if CanSpawnBearger() then
+				SpawnBearger()
 			end
 		end
-
-		_numSpawned = numActive
-		if numActive >= _targetNum then 
-			_targetNum = numActive
-		end
-
-		-- if _numSpawned is less than _targetNum, then allow spawning
-		if _numSpawned < _targetNum then 
-			SpawnBearger()
-		end
-	--else 
-		--print("BeargerSpawner got end autumn")
+	elseif data.elapseddaysinseason == 0 then
+		_numToSpawn = 0
+		_numSpawned = GetActiveHasslerCount()
+		self.inst:StopUpdatingComponent(self)
+		_worldsettingstimer:PauseTimer(BEARGER_TIMERNAME, true)
 	end
 end
 
@@ -193,6 +184,11 @@ local function OnPlayerJoined(src,player)
         end
     end
     table.insert(_activeplayers, player)
+
+    if CanSpawnBearger() then
+        _worldsettingstimer:ResumeTimer(BEARGER_TIMERNAME)
+        self.inst:StartUpdatingComponent(self)
+    end
 end
 
 local function OnPlayerLeft(src,player)
@@ -200,8 +196,14 @@ local function OnPlayerLeft(src,player)
     for i, v in ipairs(_activeplayers) do
         if v == player then
             table.remove(_activeplayers, i)
-            if player == _targetplayer then 
+            if player == _targetplayer then
             	_targetplayer = nil
+            end
+
+            PickPlayer()
+            if _targetplayer == nil then
+                self.inst:StopUpdatingComponent(self)
+                _worldsettingstimer:PauseTimer(BEARGER_TIMERNAME, true)
             end
             return
         end
@@ -209,27 +211,31 @@ local function OnPlayerLeft(src,player)
 end
 
 local function OnHasslerRemoved(src, hassler)
-	--print("Bearger removed", hassler)
 	_activehasslers[hassler] = nil
 end
 
 
 local function OnHasslerKilled(src, hassler)
-	--print("Bearger killed", hassler)
 	_activehasslers[hassler] = nil
-	_timetospawn = nil
-	_targetplayer = nil
 
+	_worldsettingstimer:StopTimer(BEARGER_TIMERNAME)
 
-	-- If WorldSettings has Bearger = Lots, then let Beargers respawn immediately after being killed instead 
-	-- of waiting for the following autumn
-	if (_firstBeargerSpawnChance >= 1 and _secondBeargerSpawnChance >= 1) then 
-		--print("Bearger settings were lots, respawning immediately")
-		_numSpawned = _numSpawned - 1
-		SpawnBearger()
-	else
-		_lastBeargerKillDay = TheWorld.state.cycles
-		--print("Kill day is", _lastBeargerKillDay)
+	--don't remove from numSpawned, as that could cause repeated cycles of bearger spawning, instead numSpawned will get clobbered the next time we re-roll bearger spawn chances.
+	--numSpawned = numSpawned - 1
+
+	_lastBeargerKillDay = TheWorld.state.cycles
+end
+
+local function OnBeargerTimerDone(src, data)
+	_warning = false
+
+	--pick a new player just in case we don't have one
+	if _targetplayer == nil then
+		PickPlayer()
+	end
+
+	if _targetplayer ~= nil then
+		ReleaseHassler(_targetplayer)
 	end
 end
 
@@ -238,11 +244,24 @@ end
 --------------------------------------------------------------------------
 
 function self:SetSecondBeargerChance(chance)
-	_secondBeargerSpawnChance = chance
+	--depreciated
 end
 
 function self:SetFirstBeargerChance(chance)
-	_firstBeargerSpawnChance = chance
+	--depreciated
+end
+
+function self:OnPostInit()
+	local totalbeargerchance = 0
+	for i, v in ipairs(_beargerchances) do
+		totalbeargerchance = totalbeargerchance + v
+	end
+	_spawndelay = 0.25 * TheWorld.state.autumnlength * TUNING.TOTAL_DAY_TIME / totalbeargerchance
+    _worldsettingstimer:AddTimer(BEARGER_TIMERNAME, _spawndelay, TUNING.SPAWN_BEARGER, OnBeargerTimerDone)
+
+	if _timetospawn then
+		_worldsettingstimer:StartTimer(BEARGER_TIMERNAME, math.min(_timetospawn, _spawndelay))
+	end
 end
 
 local function _DoWarningSpeech(player)
@@ -251,7 +270,7 @@ local function _DoWarningSpeech(player)
 end
 
 function self:DoWarningSpeech(_targetplayer)
-    for i, v in ipairs(_activeplayers) do 
+    for i, v in ipairs(_activeplayers) do
         if v == _targetplayer or v:IsNear(_targetplayer, HASSLER_SPAWN_DIST * 2) then
             v:DoTaskInTime(math.random() * 2, _DoWarningSpeech)
         end
@@ -261,49 +280,29 @@ end
 function self:DoWarningSound(_targetplayer)
     --Players near _targetplayer will hear the warning sound from the
     --same direction and volume offset from their own local positions
+    local timetospawn = _worldsettingstimer:GetTimeLeft(BEARGER_TIMERNAME)
     SpawnPrefab("beargerwarning_lvl"..
-        (((_timetospawn == nil or
-        _timetospawn < 30) and "4") or
-        (_timetospawn < 60 and "3") or
-        (_timetospawn < 90 and "2") or
-                               "1")
+        (((timetospawn == nil or timetospawn < 30) and "4") or (timetospawn < 60 and "3") or (timetospawn < 90 and "2") or "1")
     ).Transform:SetPosition(_targetplayer.Transform:GetWorldPosition())
 end
 
 
 function self:OnUpdate(dt)
-	--print("BeargerSpawner time to spawn is ", _timetospawn or "nil", _numSpawned or "0", _targetNum or "0")
-    if _timetospawn ~= nil then 
-		_timetospawn = _timetospawn - dt
-		if _timetospawn <= 0 then
-			_warning = false
-			_timetospawn = nil
-			if _targetplayer == nil then
-				PickPlayer() -- In case a long update skipped the warning or something
-			end
-			--print("TimeToSpawn: ", _timetospawn, _targetplayer)
-	        if _targetplayer ~= nil then
-	        	local hassler = ReleaseHassler(_targetplayer)
-	        	if hassler then 
-	            	_activehasslers[hassler] = true
-	            end
-	        end
-		else
-			if not _warning and _timetospawn < _warnduration then
-				-- let's pick a random player here
+    local timetospawn = _worldsettingstimer:GetTimeLeft(BEARGER_TIMERNAME)
+	if timetospawn then
+		if not _warning then
+			_timetonextwarningsound = 0
+			if timetospawn > 0 and timetospawn < _warnduration then
 				PickPlayer()
-				--print("Bearger warning player", _targetplayer)
 				if not _targetplayer then
 					return
 				end
-				_warning = true
-				_timetonextwarningsound = 0
-			end
-		end
-		--print("_warning is ", _warning, " and _timetospawn is ", _timetospawn, " and _warnduration is ", _warnduration)
 
-		if _warning then
+				_warning = true
+			end
+		else
 			_timetonextwarningsound	= _timetonextwarningsound - dt
+
 			if _timetonextwarningsound <= 0 then
 		        if _targetplayer == nil then
 		        	PickPlayer()
@@ -317,14 +316,16 @@ function self:OnUpdate(dt)
 					self:DoWarningSpeech(_targetplayer)
 				end
 
-                _timetonextwarningsound = _timetospawn < 30 and 10 + math.random(1) or 15 + math.random(4)
+                _timetonextwarningsound = timetospawn < 30 and 10 + math.random(1) or 15 + math.random(4)
 				self:DoWarningSound(_targetplayer)
 			end
 		end
-	elseif CanSpawnBearger() then 
-		--print("BeargerSpawner OnUpdate spawning bearger")
+	elseif CanSpawnBearger() then
 		SpawnBearger()
-	end
+	else
+		self.inst:StopUpdatingComponent(self)
+		_worldsettingstimer:PauseTimer(BEARGER_TIMERNAME, true)
+    end
 end
 
 function self:LongUpdate(dt)
@@ -339,8 +340,7 @@ function self:OnSave()
 	local data =
 	{
 		warning = _warning,
-		timetospawn = _timetospawn,
-		targetnum = _targetNum,
+		numToSpawn = _numToSpawn,
 		lastKillDay = _lastBeargerKillDay,
 		numSpawned = _numSpawned,
 	}
@@ -349,7 +349,7 @@ function self:OnSave()
 
 	data.activehasslers = {}
 
-	for k,v in pairs(_activehasslers) do 
+	for k,v in pairs(_activehasslers) do
 		if k ~= nil then
 			table.insert(data.activehasslers, k.GUID)
 			table.insert(ents, k.GUID)
@@ -361,32 +361,33 @@ end
 
 function self:OnLoad(data)
 	_warning = data.warning or false
-	_timetospawn = data.timetospawn
-	_targetNum = data.targetnum or 0
+	_numToSpawn = data.numToSpawn or data.targetnum or 0
 	_lastBeargerKillDay = data.lastKillDay
 	_numSpawned = data.numSpawned or 0
 
-	--print("Bearger OnLoad", _targetNum or "nil", _timetospawn or "nil", _numSpawned or "nil", _lastBeargerKillDay or "nil")
 	self.inst:StopUpdatingComponent(self)
+	_worldsettingstimer:PauseTimer(BEARGER_TIMERNAME, true)
 
+    --retrofit old timer to new system
+    if data.timetospawn then
+        _timetospawn = data.timetospawn
+    end
 end
 
 function self:LoadPostPass(newents, savedata)
 	if savedata.activehasslers ~= nil then
-		for k,v in pairs(savedata.activehasslers) do 
-			if newents[v] ~= nil then 
+		for k,v in pairs(savedata.activehasslers) do
+			if newents[v] ~= nil then
 				_activehasslers[newents[v].entity] = true
 			end
 		end
 	end
 
-	--print("BeargerSpawner LoadPostPass")
-
-
 	if CanSpawnBearger() then
+		_worldsettingstimer:ResumeTimer(BEARGER_TIMERNAME)
 		self.inst:StartUpdatingComponent(self)
 	end
-	
+
 end
 
 
@@ -395,26 +396,28 @@ end
 --------------------------------------------------------------------------
 
 function self:GetDebugString()
+    local timetospawn = _worldsettingstimer:GetTimeLeft(BEARGER_TIMERNAME)
 	local s = ""
-	if not _timetospawn then
+	if not timetospawn then
 	    s = s .. "DORMANT <no time>"
 	elseif self.inst.updatecomponents[self] == nil then
-		s = s .. "DORMANT ".._timetospawn
-	elseif _timetospawn > 0 then
-		s = s .. string.format("%s Bearger is coming in %2.2f (next warning in %2.2f), target number: %d, current number: %d", _warning and "WARNING" or "WAITING", _timetospawn, _timetonextwarningsound, _targetNum, _numSpawned)
+		s = s .. "DORMANT "..timetospawn
+	elseif timetospawn > 0 then
+		s = s .. string.format("%s Bearger is coming in %2.2f (next warning in %2.2f), target number: %d, current number: %d", _warning and "WARNING" or "WAITING", timetospawn, _timetonextwarningsound, _numToSpawn, _numSpawned)
 	else
 		s = s .. string.format("SPAWNING!!!")
 	end
-	local numActive = 0
-	for k,v in pairs(_activehasslers) do 
-		numActive = numActive + 1
-	end
-	s = s .. string.format(" active: %s", numActive)
+	s = s .. string.format(" active: %s", GetActiveHasslerCount())
 	return s
 end
 
 function self:SummonMonster(player)
-	_timetospawn = 10
+    if _worldsettingstimer:ActiveTimerExists(BEARGER_TIMERNAME) then
+        _worldsettingstimer:SetTimeLeft(BEARGER_TIMERNAME, 10)
+		_worldsettingstimer:ResumeTimer(BEARGER_TIMERNAME)
+    else
+        _worldsettingstimer:StartTimer(BEARGER_TIMERNAME, 10)
+    end
 	self.inst:StartUpdatingComponent(self)
 end
 
@@ -430,5 +433,6 @@ self.inst:ListenForEvent("ms_playerleft", OnPlayerLeft, TheWorld)
 self.inst:ListenForEvent("seasontick", OnSeasonTick, TheWorld)
 self.inst:ListenForEvent("beargerremoved", OnHasslerRemoved, TheWorld)
 self.inst:ListenForEvent("beargerkilled", OnHasslerKilled, TheWorld)
+
 
 end)

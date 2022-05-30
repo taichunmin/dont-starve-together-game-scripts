@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local prefabs =
 {
     "bee",
@@ -83,7 +85,7 @@ local function OnKilled(inst)
     inst.components.lootdropper:DropLoot(inst:GetPosition())
 end
 
-local function OnHit(inst, attacker, damage) 
+local function OnHit(inst, attacker, damage)
     if inst.components.childspawner ~= nil then
         inst.components.childspawner:ReleaseAllChildren(attacker, "killerbee")
     end
@@ -97,17 +99,20 @@ end
 local function SeasonalSpawnChanges(inst, season)
     if inst.components.childspawner ~= nil then
         if season == SEASONS.SPRING then
-            inst.components.childspawner:SetRegenPeriod(TUNING.BEEBOX_REGEN_TIME / TUNING.SPRING_COMBAT_MOD)
-            inst.components.childspawner:SetSpawnPeriod(TUNING.BEEBOX_RELEASE_TIME / TUNING.SPRING_COMBAT_MOD)
-            inst.components.childspawner:SetMaxChildren(TUNING.BEEBOX_BEES * TUNING.SPRING_COMBAT_MOD)
+            inst.components.childspawner:SetRegenPeriod(TUNING.BEEHIVE_REGEN_TIME / TUNING.SPRING_COMBAT_MOD)
+            inst.components.childspawner:SetSpawnPeriod(TUNING.BEEHIVE_RELEASE_TIME / TUNING.SPRING_COMBAT_MOD)
+            inst.components.childspawner:SetMaxChildren(TUNING.BEEHIVE_BEES * TUNING.SPRING_COMBAT_MOD)
         else
-            inst.components.childspawner:SetRegenPeriod(TUNING.BEEBOX_REGEN_TIME)
-            inst.components.childspawner:SetSpawnPeriod(TUNING.BEEBOX_RELEASE_TIME)
-            inst.components.childspawner:SetMaxChildren(TUNING.BEEBOX_BEES)
+            inst.components.childspawner:SetRegenPeriod(TUNING.BEEHIVE_REGEN_TIME)
+            inst.components.childspawner:SetSpawnPeriod(TUNING.BEEHIVE_RELEASE_TIME)
+            inst.components.childspawner:SetMaxChildren(TUNING.BEEHIVE_BEES)
         end
     end
 end
 
+local HAUNTTARGET_MUST_TAGS = { "_combat" }
+local HAUNTTARGET_CANT_TAGS = { "insect", "playerghost", "INLIMBO" }
+local HAUNTTARGET_ONEOF_TAGS = { "character", "animal", "monster" }
 local function OnHaunt(inst)
     if inst.components.childspawner == nil or
         not inst.components.childspawner:CanSpawn() or
@@ -121,9 +126,9 @@ local function OnHaunt(inst)
         function(guy)
             return inst.components.combat:CanTarget(guy)
         end,
-        { "_combat" }, --See entityreplica.lua (re: "_combat" tag)
-        { "insect", "playerghost", "INLIMBO" },
-        { "character", "animal", "monster" }
+        HAUNTTARGET_MUST_TAGS, --See entityreplica.lua (re: "_combat" tag)
+        HAUNTTARGET_CANT_TAGS,
+        HAUNTTARGET_ONEOF_TAGS
     )
 
     if target ~= nil then
@@ -136,6 +141,10 @@ end
 local function OnInit(inst)
     inst:WatchWorldState("isday", OnIsDay)
     OnIsDay(inst, TheWorld.state.isday)
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.BEEHIVE_RELEASE_TIME, TUNING.BEEHIVE_REGEN_TIME)
 end
 
 local function fn()
@@ -156,7 +165,7 @@ local function fn()
     inst.AnimState:PlayAnimation("cocoon_small", true)
 
     inst:AddTag("structure")
-    inst:AddTag("chewable") -- by werebeaver
+    inst:AddTag("beaverchewable") -- by werebeaver
     inst:AddTag("hive")
     inst:AddTag("beehive")
 
@@ -179,8 +188,14 @@ local function fn()
     inst:WatchWorldState("season", SeasonalSpawnChanges)
     inst.components.childspawner.emergencychildname = "bee"
     inst.components.childspawner.emergencychildrenperplayer = 1
+    inst.components.childspawner.canemergencyspawn = TUNING.BEEHIVE_ENABLED
     inst.components.childspawner:SetMaxEmergencyChildren(TUNING.BEEHIVE_EMERGENCY_BEES)
     inst.components.childspawner:SetEmergencyRadius(TUNING.BEEHIVE_EMERGENCY_RADIUS)
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.BEEHIVE_RELEASE_TIME, TUNING.BEEHIVE_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.BEEHIVE_REGEN_TIME, TUNING.BEEHIVE_ENABLED)
+    if not TUNING.BEEHIVE_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
 
     inst:DoTaskInTime(0, OnInit)
 
@@ -214,6 +229,8 @@ local function fn()
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
     ---------------------
+
+    inst.OnPreLoad = OnPreLoad
 
     inst:AddComponent("inspectable")
     inst.OnEntitySleep = OnEntitySleep

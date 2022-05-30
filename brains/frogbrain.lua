@@ -12,8 +12,8 @@ local MAX_CHASE_DIST = 7
 local MAX_CHASE_TIME = 8
 
 local function GoHomeAction(inst)
-    if inst.components.homeseeker and 
-       inst.components.homeseeker.home and 
+    if inst.components.homeseeker and
+       inst.components.homeseeker.home and
        inst.components.homeseeker.home:IsValid() then
         return BufferedAction(inst, inst.components.homeseeker.home, ACTIONS.GOHOME)
     end
@@ -39,9 +39,9 @@ function FrogBrain:OnStart()
 			Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, MAX_WANDER_DIST)),
 		StandStill(self.inst, function() return self.inst.sg:HasStateTag("idle") end, nil),
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
-    
+
 end
 
 return FrogBrain

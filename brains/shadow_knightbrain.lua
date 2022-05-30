@@ -26,7 +26,7 @@ local function KeepFaceTargetFn(inst, target)
         and inst:IsNear(target, KEEP_FACE_DIST)
 end
 
-function Shadow_KnightBrain:OnStart()	
+function Shadow_KnightBrain:OnStart()
     local root = PriorityNode(
     {
 		WhileNode(function() return self.inst.components.combat.target == nil or not self.inst.components.combat:InCooldown() end, "AttackMomentarily",
@@ -43,7 +43,7 @@ function Shadow_KnightBrain:OnStart()
             Wander(self.inst),
         },
     }, .25)
-    
+
     self.bt = BT(self.inst, root)
 end
 

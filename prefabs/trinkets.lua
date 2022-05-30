@@ -67,8 +67,31 @@ local SMALLFLOATS =
     [45]    = {0.9, 0.05},
 }
 
+local OCEANFISHING_BOBBER =
+{
+	[8] = {tuning = TUNING.OCEANFISHING_TACKLE.BOBBER_PLUG, projectile_prefab = "oceanfishingbobber_plug_projectile"},
+}
+
+local OCEANFISHING_LURE =
+{
+	[17] = { build = "oceanfishing_lure_spoon", symbol = "spork", lure_data = TUNING.OCEANFISHING_LURE.SPOON_SPORK, },
+}
+
+local EXTRA_DATA = {}
+for i = 1, NUM_TRINKETS do
+	table.insert(EXTRA_DATA, {})
+end
+EXTRA_DATA[1] = { slingshotammo = true }
+
+
 local function MakeTrinket(num)
-    local prefabs = TRADEFOR[num]
+    local prefabs = TRADEFOR[num] or {}
+	if OCEANFISHING_BOBBER[num] ~= nil and OCEANFISHING_BOBBER[num].projectile_prefab ~= nil then
+		table.insert(prefabs, OCEANFISHING_BOBBER[num].projectile_prefab)
+	end
+	if EXTRA_DATA[num].slingshotammo then
+		table.insert(prefabs, "trinket_"..tostring(num).."_proj")
+	end
 
     local function fn()
         local inst = CreateEntity()
@@ -87,6 +110,19 @@ local function MakeTrinket(num)
         inst:AddTag("molebait")
         inst:AddTag("cattoy")
 
+		if OCEANFISHING_BOBBER[num] ~= nil then
+			inst:AddTag("oceanfishing_bobber")
+		end
+
+		if OCEANFISHING_LURE[num] ~= nil then
+			inst:AddTag("oceanfishing_lure")
+		end
+
+		if EXTRA_DATA[num].slingshotammo then
+			inst:AddTag("slingshotammo")
+			inst:AddTag("reloaditem_ammo")
+		end
+
         MakeInventoryFloatable(inst)
 
         inst.entity:SetPristine()
@@ -94,6 +130,10 @@ local function MakeTrinket(num)
         if not TheWorld.ismastersim then
             return inst
         end
+
+		if EXTRA_DATA[num].slingshotammo then
+			inst:AddComponent("reloaditem")
+		end
 
         inst:AddComponent("inspectable")
         inst:AddComponent("stackable")
@@ -109,7 +149,7 @@ local function MakeTrinket(num)
         inst:AddComponent("tradable")
         inst.components.tradable.goldvalue = TUNING.GOLD_VALUES.TRINKETS[num] or 3
         inst.components.tradable.tradefor = TRADEFOR[num]
-        
+
 		if num >= HALLOWEDNIGHTS_TINKET_START and num <= HALLOWEDNIGHTS_TINKET_END then
 	        if IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) then
 				inst.components.tradable.halloweencandyvalue = 5
@@ -120,6 +160,15 @@ local function MakeTrinket(num)
         MakeHauntableLaunchAndSmash(inst)
 
         inst:AddComponent("bait")
+
+		if OCEANFISHING_BOBBER[num] ~= nil then
+			inst:AddComponent("oceanfishingtackle")
+			inst.components.oceanfishingtackle:SetCastingData(OCEANFISHING_BOBBER[num].tuning, OCEANFISHING_BOBBER[num].projectile_prefab)
+		end
+		if 	OCEANFISHING_LURE[num] ~= nil then
+			inst:AddComponent("oceanfishingtackle")
+			inst.components.oceanfishingtackle:SetupLure(OCEANFISHING_LURE[num])
+		end
 
         return inst
     end

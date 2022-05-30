@@ -89,6 +89,7 @@ function Timer:ResumeTimer(name)
     self.timers[name].paused = false
     self.timers[name].timer = self.inst:DoTaskInTime(self.timers[name].timeleft, OnTimerDone, self, name)
     self.timers[name].end_time = GetTime() + self.timers[name].timeleft
+	return true
 end
 
 function Timer:GetTimeLeft(name)

@@ -33,7 +33,7 @@ local function OnIsSaneDirty(inst)
     if self ~= nil then
         if self._oldissane ~= self._issane:value() then
             inst:PushEvent(not self._oldissane and "gosane"
-							or self._oldisinsanitymode and "goinsane" 
+							or self._oldisinsanitymode and "goinsane"
 							or "goenlightened")
             self._oldissane = not self._oldissane
         end

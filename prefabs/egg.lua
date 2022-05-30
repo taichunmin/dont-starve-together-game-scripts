@@ -1,6 +1,7 @@
 local assets =
 {
     Asset("ANIM", "anim/bird_eggs.zip"),
+	Asset("SCRIPT", "scripts/prefabs/fertilizer_nutrient_defs.lua"),
 }
 
 local prefabs =
@@ -13,6 +14,13 @@ local cooked_prefabs =
 {
     "spoiled_food",
 }
+
+local rotten_prefabs =
+{
+    "gridplacer_farmablesoil",
+}
+
+local FERTILIZER_DEFS = require("prefabs/fertilizer_nutrient_defs").FERTILIZER_DEFS
 
 local function commonfn(anim, cookable)
     local inst = CreateEntity()
@@ -110,6 +118,14 @@ local function cookedfn()
     return inst
 end
 
+local function GetFertilizerKey(inst)
+    return inst.prefab
+end
+
+local function fertilizerresearchfn(inst)
+    return inst:GetFertilizerKey()
+end
+
 local function rottenfn()
     local inst = CreateEntity()
 
@@ -127,6 +143,11 @@ local function rottenfn()
     inst:AddTag("cattoy")
 
     MakeInventoryFloatable(inst, "small", 0.25)
+    MakeDeployableFertilizerPristine(inst)
+
+    inst:AddTag("fertilizerresearchable")
+
+    inst.GetFertilizerKey = GetFertilizerKey
 
     inst.entity:SetPristine()
 
@@ -134,10 +155,14 @@ local function rottenfn()
         return inst
     end
 
+    inst:AddComponent("fertilizerresearchable")
+    inst.components.fertilizerresearchable:SetResearchFn(fertilizerresearchfn)
+
     inst:AddComponent("fertilizer")
     inst.components.fertilizer.fertilizervalue = TUNING.SPOILEDFOOD_FERTILIZE
     inst.components.fertilizer.soil_cycles = TUNING.SPOILEDFOOD_SOILCYCLES
     inst.components.fertilizer.withered_cycles = TUNING.SPOILEDFOOD_WITHEREDCYCLES
+    inst.components.fertilizer:SetNutrients(FERTILIZER_DEFS.rottenegg.nutrients)
 
     inst:AddComponent("inspectable")
     inst:AddComponent("inventoryitem")
@@ -150,7 +175,10 @@ local function rottenfn()
     MakeSmallBurnable(inst, TUNING.SMALL_BURNTIME)
     MakeSmallPropagator(inst)
 
+    MakeDeployableFertilizer(inst)
     MakeHauntableLaunchAndIgnite(inst)
+
+    inst:AddComponent("tradable")
 
     inst:AddComponent("edible")
     inst.components.edible.healthvalue = TUNING.SPOILED_HEALTH
@@ -161,4 +189,4 @@ end
 
 return Prefab("bird_egg", defaultfn, assets, prefabs),
     Prefab("bird_egg_cooked", cookedfn, assets, cooked_prefabs),
-    Prefab("rottenegg", rottenfn, assets)
+    Prefab("rottenegg", rottenfn, assets, rotten_prefabs)

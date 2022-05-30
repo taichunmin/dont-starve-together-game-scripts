@@ -29,7 +29,7 @@ function FocalPoint:StartFocusSource(source, id, target, minrange, maxrange, pri
         local params = sourcetbl[id]
         if params == nil then
             sourcetbl[id] = { target = target or source, source = source, id = id, minrange = minrange, maxrange = maxrange, priority = priority, updater = updater }
-        else            
+        else
             params.target = target or source
 			params.source = source
             params.id = id
@@ -60,6 +60,15 @@ function FocalPoint:StopFocusSource(source, id)
 	if self.current_focus ~= nil and self.current_focus.source == source and (id == nil or self.current_focus.id == id) then
 		self:Reset(true)
 	end
+end
+
+function FocalPoint:RemoveAllFocusSources(no_snap)
+	for source, sourcetbl in pairs(self.targets) do
+		for id, params in pairs(sourcetbl) do
+			self:StopFocusSource(source, id)
+		end
+	end
+	self:Reset(no_snap)
 end
 
 -- deprecated, kept for backward compatibility

@@ -5,7 +5,7 @@ local assets =
     Asset("ANIM", "anim/armor_ruins.zip"),
 }
 
-local function OnBlocked(owner) 
+local function OnBlocked(owner)
     owner.SoundEmitter:PlaySound("dontstarve/wilson/hit_armour")
 end
 
@@ -21,10 +21,10 @@ local function onequip(inst, owner)
     inst:ListenForEvent("blocked", OnBlocked, owner)
 end
 
-local function onunequip(inst, owner) 
+local function onunequip(inst, owner)
     owner.AnimState:ClearOverrideSymbol("swap_body")
     inst:RemoveEventCallback("blocked", OnBlocked, owner)
-    
+
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
         owner:PushEvent("unequipskinneditem", inst:GetSkinName())
@@ -49,7 +49,8 @@ local function fn()
 
     inst.foleysound = "dontstarve/movement/foley/metalarmour"
 
-    MakeInventoryFloatable(inst, "small", 0.2, 0.80)
+    local swap_data = {bank = "armor_ruins", anim = "anim"}
+    MakeInventoryFloatable(inst, "small", 0.2, 0.80, nil, nil, swap_data)
 
     inst.entity:SetPristine()
 
@@ -67,6 +68,7 @@ local function fn()
     inst:AddComponent("equippable")
     inst.components.equippable.equipslot = EQUIPSLOTS.BODY
     inst.components.equippable.dapperness = TUNING.DAPPERNESS_MED
+    inst.components.equippable.is_magic_dapperness = true
 
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)

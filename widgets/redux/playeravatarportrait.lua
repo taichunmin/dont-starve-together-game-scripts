@@ -28,7 +28,7 @@ local PlayerAvatarPortrait = Class(Widget, function(self)
     self.rank:SetPosition(-65, 20)
     self.rank:SetScale(0.6)
     self.should_show_rank_badge = true
-        
+
     if self:_ShouldHideRankBadge() then
         self:HideVanityItems()
 	end

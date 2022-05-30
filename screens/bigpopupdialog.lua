@@ -21,8 +21,8 @@ local BigPopupDialogScreen = Class(Screen, function(self, title, text, buttons, 
     self.black:SetVAnchor(ANCHOR_MIDDLE)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
-	self.black:SetTint(0,0,0,.75)	
-    
+	self.black:SetTint(0,0,0,.75)
+
 	self.proot = self:AddChild(Widget("ROOT"))
     self.proot:SetVAnchor(ANCHOR_MIDDLE)
     self.proot:SetHAnchor(ANCHOR_MIDDLE)
@@ -34,8 +34,8 @@ local BigPopupDialogScreen = Class(Screen, function(self, title, text, buttons, 
     self.bg.fill = self.proot:AddChild(Image("images/fepanel_fills.xml", "panel_fill_tiny.tex"))
     self.bg.fill:SetScale(.92, .68)
     self.bg.fill:SetPosition(8, 12)
-    
-	--title	
+
+	--title
     self.title = self.proot:AddChild(Text(BUTTONFONT, 50))
     self.title:SetPosition(0, 135, 0)
     self.title:SetString(title)
@@ -57,17 +57,17 @@ local BigPopupDialogScreen = Class(Screen, function(self, title, text, buttons, 
         self.text:SetRegionSize(500, 200)
     end
     self.text:SetColour(0,0,0,1)
-	
+
 	--create the menu itself
 	local button_w = 200
 	local space_between = 20
 	local spacing = button_w + space_between
-	
-	
+
+
     local spacing = 200
 
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -140, 0) 
+	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -140, 0)
 	self.buttons = buttons
 	self.default_focus = self.menu
 end)
@@ -85,8 +85,8 @@ function BigPopupDialogScreen:OnUpdate( dt )
 end
 
 function BigPopupDialogScreen:OnControl(control, down)
-    if BigPopupDialogScreen._base.OnControl(self,control, down) then 
-        return true 
+    if BigPopupDialogScreen._base.OnControl(self,control, down) then
+        return true
     end
 end
 

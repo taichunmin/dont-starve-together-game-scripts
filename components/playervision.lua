@@ -53,6 +53,12 @@ local function OnEquipChanged(inst)
             inst:PushEvent("gogglevision", { enabled = self.gogglevision })
         end
     end
+    if self.nutrientsvision == not inst.replica.inventory:EquipHasTag("nutrientsvision") then
+        self.nutrientsvision = not self.nutrientsvision
+        if not self.forcenutrientsvision and self.inst == ThePlayer then
+            TheWorld:PushEvent("nutrientsvision", { enabled = self.nutrientsvision })
+        end
+    end
 end
 
 local function OnInit(inst, self)
@@ -84,6 +90,8 @@ local PlayerVision = Class(function(self, inst)
     self.forcenightvision = false
     self.gogglevision = false
     self.forcegogglevision = false
+    self.nutrientsvision = false
+    self.forcenutrientsvision = false
     self.overridecctable = nil
     self.currentcctable = nil
     self.currentccphasefn = nil
@@ -108,6 +116,10 @@ function PlayerVision:HasGoggleVision()
     return self.gogglevision or self.forcegogglevision
 end
 
+function PlayerVision:HasNutrientsVision()
+    return self.nutrientsvision or self.forcenutrientsvision
+end
+
 function PlayerVision:GetCCPhaseFn()
     return self.currentccphasefn
 end
@@ -124,7 +136,7 @@ function PlayerVision:UpdateCCTable()
         or (self.nightmarevision and NIGHTMARE_COLORCUBES)
         or nil
 
-    local ccphasefn = 
+    local ccphasefn =
         (cctable == NIGHTVISION_COLOURCUBES and NIGHTVISION_PHASEFN)
         or (cctable == NIGHTMARE_COLORCUBES and NIGHTMARE_PHASEFN)
         or nil
@@ -168,6 +180,15 @@ function PlayerVision:ForceGoggleVision(force)
         self.forcegogglevision = force == true
         if not self.gogglevision then
             self.inst:PushEvent("gogglevision", { enabled = self.forcegogglevision })
+        end
+    end
+end
+
+function PlayerVision:ForceNutrientVision(force)
+    if not self.forcenutrientsvision ~= not force then
+        self.forcenutrientsvision = force == true
+        if not self.nutrientsvision and self.inst == ThePlayer then
+            TheWorld:PushEvent("nutrientsvision", { enabled = self.forcenutrientsvision })
         end
     end
 end

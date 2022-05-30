@@ -31,13 +31,14 @@ local function tree_burnt(inst)
     inst:Remove()
 end
 
+local SPIDERDEN_TAGS = { "spiderden" }
 local function workcallback(inst, worker, workleft)
     if not (worker ~= nil and worker:HasTag("playerghost")) then
         inst.SoundEmitter:PlaySound("dontstarve/wilson/use_axe_mushroom")
     end
 
     local pos = inst:GetPosition()
-    for i, den in ipairs(TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS, { "spiderden" })) do
+    for i, den in ipairs(TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.MUSHTREE_WEBBED_SPIDER_RADIUS, SPIDERDEN_TAGS)) do
         den:PushEvent("creepactivate", { target = worker })
     end
     if workleft <= 0 then

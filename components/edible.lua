@@ -6,12 +6,13 @@ local function oncheckbadfood(self)
     end
 end
 
-local function onfoodtype(self, foodtype, old_foodtype)
+local function onfoodtype(self, new_foodtype, old_foodtype)
     if old_foodtype ~= nil then
         self.inst:RemoveTag("edible_"..old_foodtype)
     end
-    if foodtype ~= nil then
-        self.inst:AddTag("edible_"..foodtype)
+    if new_foodtype ~= nil then
+		assert(self.foodtype ~= self.secondaryfoodtype, "Edible component: The main and secondary food types cannot be set to the same value.")
+        self.inst:AddTag("edible_"..new_foodtype)
     end
 end
 
@@ -21,6 +22,7 @@ local Edible = Class(function(self, inst)
     self.hungervalue = 10
     self.sanityvalue = 0
     self.foodtype = FOODTYPE.GENERIC
+    self.secondaryfoodtype = nil
     self.oneaten = nil
     self.degrades_with_spoilage = true
     self.gethealthfn = nil
@@ -40,17 +42,13 @@ local Edible = Class(function(self, inst)
     self.spoiled_health = TUNING.SPOILED_FOOD_HEALTH
 
     self.spice = nil
-
-    if inst.prefab == "berries" then
-        --hack for smallbird; berries are actually part of veggie
-        inst:AddTag("edible_"..FOODTYPE.BERRY)
-    end
 end,
 nil,
 {
     healthvalue = oncheckbadfood,
     sanityvalue = oncheckbadfood,
     foodtype = onfoodtype,
+    secondaryfoodtype = onfoodtype,
 })
 
 function Edible:OnRemoveFromEntity()
@@ -58,6 +56,10 @@ function Edible:OnRemoveFromEntity()
     if self.foodtype ~= nil then
         self.inst:RemoveTag("edible_"..self.foodtype)
     end
+    if self.secondaryfoodtype ~= nil then
+        self.inst:RemoveTag("edible_"..self.secondaryfoodtype)
+    end
+
     self.inst:RemoveTag("edible_"..FOODTYPE.BERRY)
 end
 
@@ -98,6 +100,13 @@ function Edible:GetHunger(eater)
         end
     end
 
+    if eater ~= nil and eater.components.foodaffinity ~= nil then
+        local affinity_bonus = eater.components.foodaffinity:GetAffinity(self.inst)
+        if affinity_bonus ~= nil then
+            multiplier = multiplier * affinity_bonus
+        end
+    end
+
     return multiplier * self.hungervalue
 end
 
@@ -121,7 +130,7 @@ function Edible:GetHealth(eater)
         multiplier = multiplier + TUNING.SPICE_MULTIPLIERS[spice_source].HEALTH
     end
 
-    return multiplier * healthvalue 
+    return multiplier * healthvalue
 end
 
 function Edible:GetDebugString()

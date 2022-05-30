@@ -89,21 +89,21 @@ end
 function EmailSignupScreen:Save()
 	local email = self.email_edit:GetString()
 	print ("EmailSignupScreen:Save()", email)
-	
+
 	local bmonth = self.monthSpinner:GetSelectedIndex()
 	local bday = self.daySpinner:GetSelectedIndex()
 	local byear = self.yearSpinner:GetSelectedIndex()
-	
+
 	if not self:IsValidEmail(email) then
 		TheFrontEnd:PushScreen(
-			
+
 			PopupDialogScreen( STRINGS.UI.EMAILSCREEN.INVALIDEMAILTITLE, STRINGS.UI.EMAILSCREEN.INVALIDEMAIL,
 			  { { text = STRINGS.UI.EMAILSCREEN.OK, cb = function() TheFrontEnd:PopScreen() end } }
 			  )
 		)
 		return false
 	end
-	
+
 	if not self:IsValidBirthdate(bday, bmonth, byear) then
 		TheFrontEnd:PushScreen(
 			PopupDialogScreen( STRINGS.UI.EMAILSCREEN.INVALIDDATETITLE, STRINGS.UI.EMAILSCREEN.INVALIDDATE,
@@ -112,7 +112,7 @@ function EmailSignupScreen:Save()
 		)
 		return false
 	end
-	
+
 
 	self.submitscreen = PopupDialogScreen( STRINGS.UI.EMAILSCREEN.SIGNUPSUBMITTITLE, STRINGS.UI.EMAILSCREEN.SIGNUPSUBMIT,
 		  { { text = STRINGS.UI.EMAILSCREEN.CANCEL, cb = function(...) self:OnSubmitCancel(...) end } } )
@@ -120,7 +120,7 @@ function EmailSignupScreen:Save()
 
 	local birth_date = byear .. "-" .. bmonth .. "-" .. bday
 	print ("Birthday:", birth_date)
-	
+
 	local query = GAME_SERVER.."/email/subscribe/" .. email
 
 	TheSim:QueryServer(
@@ -129,7 +129,7 @@ function EmailSignupScreen:Save()
 		"POST",
 		json.encode({
 			birthday = birth_date,
-		}) 
+		})
 	)
 	return true
 end
@@ -195,7 +195,7 @@ function EmailSignupScreen:DoInit()
 
 	local edit_width = 315
 	local edit_bg_padding = 60
-	
+
 	self.bday_message = self.root:AddChild( Text( CHATFONT, 24,  STRINGS.UI.EMAILSCREEN.BIRTHDAYREASON ) )
 	self.bday_message:SetColour(UICOLOURS.GOLD_UNIMPORTANT)
 	self.bday_message:SetPosition(0, -80)
@@ -235,12 +235,12 @@ function EmailSignupScreen:DoInit()
 		{ text = STRINGS.UI.EMAILSCREEN.OCT, days = 31},
 		{ text = STRINGS.UI.EMAILSCREEN.NOV, days = 30},
 		{ text = STRINGS.UI.EMAILSCREEN.DEC, days = 31},
-	}	
+	}
 
 	self.spinners = self.root:AddChild(Widget("spinners"))
-	
+
 	self.monthSpinner = self.spinners:AddChild(TEMPLATES.StandardSpinner( months, 130, nil, nil, nil, nil, nil, true, nil, nil, .7, .7 ))
-	self.monthSpinner.OnChanged = 
+	self.monthSpinner.OnChanged =
 		function( _, data )
 			local monthName = self.monthSpinner:GetSelectedText()
 			local maxDay = 31
@@ -272,25 +272,25 @@ function EmailSignupScreen:DoInit()
 	table.insert( spinners, { 110, self.yearSpinner, tonumber(os.date("%Y")), 4 } )
 
 	self:AddSpinners( spinners )
--]]	
-	
+-]]
+
 	self.monthSpinner:SetWrapEnabled(true)
 	self.daySpinner:SetWrapEnabled(true)
 	self.yearSpinner:SetWrapEnabled(false)
-	
+
 	--[[
 	local month_edit_w = 20 + edit_bg_padding
 	local day_edit_w = 20 + edit_bg_padding
 	local year_edit_w = 50 + edit_bg_padding
-	
 
-	local bday_fields = { 
+
+	local bday_fields = {
 		{ name=STRINGS.UI.EMAILSCREEN.MONTH, width=30 },
 		{ name=STRINGS.UI.EMAILSCREEN.DAY, width=30 },
 		{ name=STRINGS.UI.EMAILSCREEN.YEAR, width=50 },
 	}
 	--]]
-	
+
 	self.dialog:SetFocusChangeDir(MOVE_UP, self.monthSpinner)
 	self.monthSpinner:SetFocusChangeDir(MOVE_RIGHT, self.daySpinner)
 	self.daySpinner:SetFocusChangeDir(MOVE_RIGHT, self.yearSpinner)
@@ -302,7 +302,7 @@ function EmailSignupScreen:DoInit()
 	self.monthSpinner:SetFocusChangeDir(MOVE_DOWN, self.dialog)
 	self.daySpinner:SetFocusChangeDir(MOVE_DOWN, self.dialog)
 	self.yearSpinner:SetFocusChangeDir(MOVE_DOWN, self.dialog)
-	self.email_edit_widg:SetFocusChangeDir(MOVE_DOWN, self.monthSpinner)	
+	self.email_edit_widg:SetFocusChangeDir(MOVE_DOWN, self.monthSpinner)
 
 	self.default_focus = self.dialog
 

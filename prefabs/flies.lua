@@ -49,7 +49,7 @@ local function fn()
     inst.AnimState:PlayAnimation("swarm_pre")
 
     inst:AddTag("NOCLICK")
-    inst:AddTag("FX")
+    inst:AddTag("DECOR")
 
     inst.entity:SetPristine()
 

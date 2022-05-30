@@ -10,8 +10,8 @@ local function GiveTarget(inst, data)
         if data.owner then inst.owner = data.owner end
         if data.target then inst.target = data.target end
         if data.targetangle then inst.targetangle = data.targetangle end
-        if data.targetpos and inst.targetangle then 
-            inst.targetpos = data.targetpos 
+        if data.targetpos and inst.targetangle then
+            inst.targetpos = data.targetpos
             inst.dist_to_cover = math.sqrt(distsq(inst:GetPosition(), inst.targetpos))
             inst.origin = inst:GetPosition()
             inst.vector = Vector3(math.cos(inst.targetangle) * inst.dist_to_cover, 0, -math.sin(inst.targetangle) * inst.dist_to_cover)

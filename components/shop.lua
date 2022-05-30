@@ -16,13 +16,13 @@ function Shop:DeliverItems(items)
 	assert(items)
 	local x, y, z = self.inst.Transform:GetWorldPosition()
 	local physcsPT = Vector3(x, y, z) + Vector3(0,4.5,0)
-	
+
 	-- loop through and create objects
 	for k,prefab in pairs(items) do
 		print('Spawning', prefab)
 		local item = SpawnPrefab(prefab)
 		if item then
-			if item.Physics then                
+			if item.Physics then
 				item.Transform:SetPosition(physcsPT:Get())
 				local angle = 0
 				local sp = math.random()*6+3

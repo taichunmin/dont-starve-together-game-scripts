@@ -2,7 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/ham_bat.zip"),
     Asset("ANIM", "anim/swap_ham_bat.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function UpdateDamage(inst)
@@ -26,7 +25,7 @@ local function onequip(inst, owner)
     else
         owner.AnimState:OverrideSymbol("swap_object", "swap_ham_bat", "swap_ham_bat")
     end
-    
+
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -78,6 +77,9 @@ local function fn()
     inst.components.weapon:SetDamage(TUNING.HAMBAT_DAMAGE)
     inst.components.weapon:SetOnAttack(UpdateDamage)
 
+    inst:AddComponent("forcecompostable")
+    inst.components.forcecompostable.green = true
+
     inst.OnLoad = OnLoad
 
     -------
@@ -102,4 +104,4 @@ local function fn()
     return inst
 end
 
-return Prefab( "hambat", fn, assets) 
+return Prefab( "hambat", fn, assets)

@@ -97,7 +97,7 @@ local function GetVoteDialogData(commandhash, targetuserid, starteruserid)
             }
 
             if targetuserid ~= nil and targetuserid ~= "" then
-                for i, v in ipairs(TheNet:GetClientTable()) do
+                for i, v in ipairs(TheNet:GetClientTable() or {}) do
                     if v.userid == targetuserid and (v.performance == nil or TheNet:GetServerIsClientHosted()) then
                         _dialogdata.targetclient = v
                         break
@@ -106,7 +106,7 @@ local function GetVoteDialogData(commandhash, targetuserid, starteruserid)
             end
 
             if starteruserid ~= nil and starteruserid ~= "" then
-                for i, v in ipairs(TheNet:GetClientTable()) do
+                for i, v in ipairs(TheNet:GetClientTable() or {}) do
                     if v.userid == starteruserid and (v.performance == nil or TheNet:GetServerIsClientHosted()) then
                         _dialogdata.starterclient = v
                         break
@@ -325,24 +325,33 @@ local OnStartVote = _ismastershard and function(src, data)
     elseif data.starteruserid ~= nil and _squelched[data.starteruserid] ~= nil then
         print("Squelched user ("..data.starteruserid..") attempted to start a vote")
     else
-        local newdata = GetVoteDialogData(data.commandhash, data.targetuserid, data.starteruserid)
-        if newdata ~= nil then
-            _countdown:set(math.min(255, newdata.votetimeout or TUNING.VOTE_TIMEOUT_DEFAULT))
-            _commandid:set(data.commandhash)
-            _targetuserid:set(data.targetuserid or "")
-            _starteruserid:set(data.starteruserid or "")
-            _syncperiod = _countdown:value() > 10 and SYNC_PERIOD_SLOW or SYNC_PERIOD_FAST
-            _resultdelay = nil
-            _votesdirty = false
-            _voterdata = {}
-            _targetname = UserToName(data.targetuserid)
-            for i, v in ipairs(TheNet:GetClientTable()) do
-                if v.performance == nil or TheNet:GetServerIsClientHosted() then
-                    _voterdata[v.userid] = not newdata.cantargetself and v.userid == data.targetuserid and CANNOT_VOTE or VOTE_PENDING
-                end
-            end
-            PushMasterVoterData()
-        end
+		local starterclient = TheNet:GetClientTableForUser(data.starteruserid)
+		local canstartvote, reason
+		if starterclient ~= nil then
+			canstartvote, reason = UserCommands.CanUserStartVote(data.commandhash, starterclient, data.targetuserid)
+		end
+		if not canstartvote then
+			print("Blocked user ("..data.starteruserid..") from starting a vote due to: " .. (reason ~= nil and STRINGS.UI.PLAYERSTATUSSCREEN.VOTECANNOTSTART[reason] or "unknown"))
+		else
+			local newdata = GetVoteDialogData(data.commandhash, data.targetuserid, data.starteruserid)
+			if newdata ~= nil then
+				_countdown:set(math.min(255, newdata.votetimeout or TUNING.VOTE_TIMEOUT_DEFAULT))
+				_commandid:set(data.commandhash)
+				_targetuserid:set(data.targetuserid or "")
+				_starteruserid:set(data.starteruserid or "")
+				_syncperiod = _countdown:value() > 10 and SYNC_PERIOD_SLOW or SYNC_PERIOD_FAST
+				_resultdelay = nil
+				_votesdirty = false
+				_voterdata = {}
+				_targetname = UserToName(data.targetuserid)
+				for i, v in ipairs(TheNet:GetClientTable() or {}) do
+					if v.performance == nil or TheNet:GetServerIsClientHosted() then
+						_voterdata[v.userid] = not newdata.cantargetself and v.userid == data.targetuserid and CANNOT_VOTE or VOTE_PENDING
+					end
+				end
+				PushMasterVoterData()
+			end
+		end
     end
 end or nil
 
@@ -466,10 +475,10 @@ if _ismastersim then
     else
         _squelched = nil
 
-        --Register slave shard events
-        inst:ListenForEvent("slave_worldvoterupdate", OnWorldVoterUpdate, _world)
-        inst:ListenForEvent("slave_worldvotersquelchedupdate", OnWorldVoterSquelchedUpdate, _world)
-        inst:ListenForEvent("slave_worldvoterenabled", OnWorldVoterEnabled, _world)
+        --Register secondary shard events
+        inst:ListenForEvent("secondary_worldvoterupdate", OnWorldVoterUpdate, _world)
+        inst:ListenForEvent("secondary_worldvotersquelchedupdate", OnWorldVoterSquelchedUpdate, _world)
+        inst:ListenForEvent("secondary_worldvoterenabled", OnWorldVoterEnabled, _world)
     end
 else
     inst:ListenForEvent("votecountsdirty", UpdateVoteCounts)

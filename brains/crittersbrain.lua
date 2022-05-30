@@ -40,7 +40,7 @@ local function LoveOwner(inst)
     local owner = GetOwner(inst)
     return owner ~= nil
         and not owner:HasTag("playerghost")
-        and (GetTime() - (inst.sg.mem.prevnuzzletime or 0) > TUNING.CRITTER_NUZZLE_DELAY) 
+        and (GetTime() - (inst.sg.mem.prevnuzzletime or 0) > TUNING.CRITTER_NUZZLE_DELAY)
         and math.random() < 0.05
         and BufferedAction(inst, owner, ACTIONS.NUZZLE)
         or nil
@@ -48,9 +48,16 @@ end
 
 -------------------------------------------------------------------------------
 --  Play With Other Critters
-
+local PLAYMATE_NO_TAGS = {"busy"}
 local function PlayWithPlaymate(self)
-    self.inst:PushEvent("critterplayful", {target=self.playfultarget})
+    self.inst:PushEvent("start_playwithplaymate", {target=self.playfultarget})
+end
+
+local function TargetCanPlay(self, target, owner, max_dist_from_owner, is_flier)
+	return (target.IsPlayful == nil or target:IsPlayful()) 
+			and target:IsNear(owner, max_dist_from_owner) 
+			and (is_flier or target:IsOnPassablePoint())
+			and (target.components.sleeper == nil or not target.components.sleeper:IsAsleep())
 end
 
 local function FindPlaymate(self)
@@ -58,24 +65,24 @@ local function FindPlaymate(self)
 
     local is_playful = self.inst.components.crittertraits:IsDominantTrait("playful")
     local max_dist_from_owner = is_playful and MAX_DOMINANTTRAIT_PLAYFUL_KEEP_DIST_FROM_OWNER or MAX_PLAYFUL_KEEP_DIST_FROM_OWNER
+    local is_flier = self.inst:HasTag("flying")
 
     local can_play = self.inst:IsPlayful() and self.inst:IsNear(owner, max_dist_from_owner)
 
     -- Try to keep the current playmate
-    if self.playfultarget ~= nil and self.playfultarget:IsValid() and can_play then
+    if self.playfultarget ~= nil and self.playfultarget:IsValid() and can_play and TargetCanPlay(self, self.playfultarget, owner, max_dist_from_owner, is_flier) then
         return true
     end
 
     local find_dist = is_playful and MAX_DOMINANTTRAIT_PLAYFUL_FIND_DIST or MAX_PLAYFUL_FIND_DIST
 
     -- Find a new playmate
-    local we_fly = self.inst:HasTag("flying")
     self.playfultarget = can_play and
         not owner.components.locomotor:WantsToMoveForward() and
-        FindEntity(self.inst, find_dist, 
+        FindEntity(self.inst, find_dist,
             function(v)
-                return (v.IsPlayful == nil or v:IsPlayful()) and v:IsNear(owner, max_dist_from_owner) and (we_fly or v:IsOnPassablePoint())
-            end, nil, nil, self.inst.playmatetags)
+                return TargetCanPlay(self, v, owner, max_dist_from_owner, is_flier)
+            end, nil, PLAYMATE_NO_TAGS, self.inst.playmatetags)
         or nil
 
     return self.playfultarget ~= nil
@@ -112,7 +119,7 @@ local function _avoidtargetfn(self, target)
     -- Are owner and target both in any combat?
     local t = GetTime()
     return  (   (owner_combat:IsRecentTarget(target) or target_combat:HasTarget()) and
-                math.max(owner_combat.laststartattacktime, owner_combat.lastdoattacktime or 0) + COMBAT_TIMEOUT > t
+                math.max(owner_combat.laststartattacktime or 0, owner_combat.lastdoattacktime or 0) + COMBAT_TIMEOUT > t
             ) or
             (   owner_combat.lastattacker == target and
                 owner_combat:GetLastAttackedTime() + COMBAT_TIMEOUT > t
@@ -154,6 +161,23 @@ local function ValidateCombatAvoidance(self)
     return true
 end
 
+--- Minigames
+local function WatchingMinigame(inst)
+	return (inst.components.follower.leader ~= nil and inst.components.follower.leader.components.minigame_participator ~= nil) and inst.components.follower.leader.components.minigame_participator:GetMinigame() or nil
+end
+local function WatchingMinigame_MinDist(inst)
+	local minigame = WatchingMinigame(inst)
+	return minigame ~= nil and minigame.components.minigame.watchdist_min or 0
+end
+local function WatchingMinigame_TargetDist(inst)
+	local minigame = WatchingMinigame(inst)
+	return minigame ~= nil and minigame.components.minigame.watchdist_target or 0
+end
+local function WatchingMinigame_MaxDist(inst)
+	local minigame = WatchingMinigame(inst)
+	return minigame ~= nil and minigame.components.minigame.watchdist_max or 0
+end
+
 -------------------------------------------------------------------------------
 --  Brain
 
@@ -162,18 +186,23 @@ local CritterBrain = Class(Brain, function(self, inst)
 end)
 
 function CritterBrain:OnStart()
-    local root =
-    PriorityNode({
+	local watch_game = WhileNode( function() return WatchingMinigame(self.inst) end, "Watching Game",
+        PriorityNode{
+				Follow(self.inst, WatchingMinigame, WatchingMinigame_MinDist, WatchingMinigame_TargetDist, WatchingMinigame_MaxDist),
+				RunAway(self.inst, "minigame_participator", 5, 7),
+				FaceEntity(self.inst, WatchingMinigame, WatchingMinigame ),
+        }, 0.1)
+
+    local root = PriorityNode({
         WhileNode( function() return self.inst.components.follower.leader end, "Has Owner",
             PriorityNode{
+				watch_game,
                 -- Combat Avoidance
                 PriorityNode{
                     RunAway(self.inst, {tags={"_combat", "_health"}, notags={"wall", "INLIMBO"}, fn=CombatAvoidanceFindEntityCheck(self)}, COMBAT_TOO_CLOSE_DIST, COMBAT_SAFE_TO_WATCH_FROM_DIST),
                     WhileNode( function() return ValidateCombatAvoidance(self) end, "Is Near Combat",
-                        FaceEntity(self.inst, GetOwner, KeepFaceTargetFn)
-                        ),
+                        FaceEntity(self.inst, GetOwner, KeepFaceTargetFn)),
                 },
-
                 WhileNode(function() return FindPlaymate(self) end, "Playful",
                     SequenceNode{
                         WaitNode(6),

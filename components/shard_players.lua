@@ -20,9 +20,9 @@ local _localPlayerTable = {}
 local _localPlayers = 0
 local _localGhosts = 0
 local _localDirty = true
-local _slavePlayers = 0
-local _slaveGhosts = 0
-local _slaveDirty = true
+local _secondaryShardPlayers = 0
+local _secondaryShardGhosts = 0
+local _secondaryShardDirty = true
 local _task = nil
 
 --Network
@@ -47,21 +47,21 @@ local UpdatePlayerCounts = _ismastershard and function()
         _localDirty = false
     end
 
-    if _slaveDirty then
-        _slavePlayers, _slaveGhosts = TheShard:GetSlavePlayerCounts(USERFLAGS.IS_GHOST)
-        _slaveDirty = false
+    if _secondaryShardDirty then
+        _secondaryShardPlayers, _secondaryShardGhosts = TheShard:GetSecondaryShardPlayerCounts(USERFLAGS.IS_GHOST)
+        _secondaryShardDirty = false
     end
 
-    _numPlayers:set(_localPlayers + _slavePlayers)
-    _numGhosts:set(_localGhosts + _slaveGhosts)
+    _numPlayers:set(_localPlayers + _secondaryShardPlayers)
+    _numGhosts:set(_localGhosts + _secondaryShardGhosts)
 end or nil
 
 --------------------------------------------------------------------------
 --[[ Private event listeners ]]
 --------------------------------------------------------------------------
 
-local OnSlavePlayersChanged = _ismastershard and function()
-    _slaveDirty = true
+local OnSecondaryShardPlayersChanged = _ismastershard and function()
+    _secondaryShardDirty = true
     if _task == nil then
         _task = inst:DoTaskInTime(0, UpdatePlayerCounts)
     end
@@ -79,7 +79,7 @@ local OnPlayerSpawn = _ismastershard and function(src, player)
         _localPlayerTable[player] = true
         inst:ListenForEvent("ms_becameghost", OnLocalPlayersChanged, player)
         inst:ListenForEvent("ms_respawnedfromghost", OnLocalPlayersChanged, player)
-        _slaveDirty = true --cuz we might just be swapping from local to slave status
+        _secondaryShardDirty = true --cuz we might just be swapping from local to secondary status
         OnLocalPlayersChanged()
     end
 end or nil
@@ -89,7 +89,7 @@ local OnPlayerLeft = _ismastershard and function(src, player)
         _localPlayerTable[player] = nil
         inst:RemoveEventCallback("ms_becameghost", OnLocalPlayersChanged, player)
         inst:RemoveEventCallback("ms_respawnedfromghost", OnLocalPlayersChanged, player)
-        _slaveDirty = true --cuz we might just be swapping from local to slave status
+        _secondaryShardDirty = true --cuz we might just be swapping from local to secondary status
         OnLocalPlayersChanged()
     end
 end or nil
@@ -109,7 +109,7 @@ end
 
 if _ismastershard then
     --Register master shard events
-    inst:ListenForEvent("master_slaveplayerschanged", OnSlavePlayersChanged, _world)
+    inst:ListenForEvent("master_secondaryplayerschanged", OnSecondaryShardPlayersChanged, _world)
     inst:ListenForEvent("ms_playerspawn", OnPlayerSpawn, _world)
     inst:ListenForEvent("ms_playerleft", OnPlayerLeft, _world)
 

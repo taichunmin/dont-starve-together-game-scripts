@@ -73,8 +73,22 @@ end
 local function doreset()
     StartNextInstance({
         reset_action = RESET_ACTION.LOAD_SLOT,
-        save_slot = SaveGameIndex:GetCurrentSaveSlot()
+        save_slot = ShardGameIndex:GetSlot()
     })
+end
+
+function c_mermking()
+    c_spawn("mermthrone")
+    c_spawn("mermking")
+end
+
+function c_mermthrone()
+    c_spawn("mermthrone_construction")
+    c_give("kelp", 20)
+    c_give("beefalowool", 15)
+    c_give("pigskin", 10)
+    c_give("carrot", 4)
+    c_spawn("merm")
 end
 
 -- * Roll back *count* number of saves (default 1)
@@ -89,6 +103,11 @@ end
 
 -- Restart the server to the last save file (same as c_rollback(0))
 function c_reset()
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_reset()")
+        return
+    end
+
     if not InGamePlay() then
         StartNextInstance()
     elseif TheWorld ~= nil and TheWorld.ismastersim then
@@ -100,13 +119,13 @@ end
 -- NOTE: It is not recommended to use this instead of c_regenerateworld,
 --       unless you need to regenerate only one shard in a cluster
 function c_regenerateshard(wipesettings)
-    local shouldpreserve = true
-    if wipesettings ~= nil then
-        shouldpreserve = not wipesettings
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_regenerateshard()")
+        return
     end
+    local shouldpreserve = not wipesettings
     if TheWorld ~= nil and TheWorld.ismastersim then
-        SaveGameIndex:DeleteSlot(
-            SaveGameIndex:GetCurrentSaveSlot(),
+        ShardGameIndex:Delete(
             doreset,
             shouldpreserve
         )
@@ -116,12 +135,23 @@ end
 -- Permanently delete all game worlds in a server cluster, regenerates new worlds afterwards
 -- NOTE: This will not work properly for any shard that is offline or in a loading state
 function c_regenerateworld()
+
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_regenerateworld()")
+        return
+    end
+
     if TheWorld ~= nil and TheWorld.ismastersim then
         TheNet:SendWorldResetRequestToServer()
     end
 end
 
 function c_save()
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_save()")
+        return
+    end
+
     if TheWorld ~= nil and TheWorld.ismastersim then
         TheWorld:PushEvent("ms_save")
     end
@@ -129,6 +159,11 @@ end
 
 -- Shutdown the application, optionally close with out saving (saves by default)
 function c_shutdown(save)
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_shutdown()")
+        return
+    end
+
     print("c_shutdown", save)
     if save == false or TheWorld == nil then
         Shutdown()
@@ -137,7 +172,7 @@ function c_shutdown(save)
             v:OnDespawn()
         end
         TheSystemService:EnableStorage(true)
-        SaveGameIndex:SaveCurrent(Shutdown, true)
+        ShardGameIndex:SaveCurrent(Shutdown, true)
     else
         SerializeUserSession(ThePlayer)
         Shutdown()
@@ -160,7 +195,7 @@ function c_spawn(prefab, count, dontselect)
 
     for i = 1, count do
         inst = DebugSpawn(prefab)
-        if inst.components.skinner ~= nil and IsRestrictedCharacter(prefab) then
+        if inst and inst.components.skinner ~= nil and IsRestrictedCharacter(prefab) then
             inst.components.skinner:SetSkinMode("normal_skin")
         end
     end
@@ -188,11 +223,16 @@ end
 
 -- Despawn a player, returning to character select screen
 function c_despawn(player)
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_despawn()")
+        return
+    end
+
     if TheWorld ~= nil and TheWorld.ismastersim then
         --V2C: need to avoid targeting c_spawned player entities
         --player = ListingOrConsolePlayer(player)
         if type(player) == "string" or type(player) == "number" then
-            player = UserToPlayer(input)
+            player = UserToPlayer(player)
         end
         if player == nil then
             player = c_sel() ~= nil and c_sel():HasTag("player") and c_sel() or nil
@@ -221,7 +261,7 @@ end
 function c_listplayers()
     local isdedicated = not TheNet:GetServerIsClientHosted()
     local index = 1
-    for i, v in ipairs(TheNet:GetClientTable()) do
+    for i, v in ipairs(TheNet:GetClientTable() or {}) do
         if not isdedicated or v.performance == nil then
             print(string.format("%s[%d] (%s) %s <%s>", v.admin and "*" or " ", index, v.userid, v.name, v.prefab))
             index = index + 1
@@ -294,8 +334,13 @@ end
 
 -- Some helper shortcut functions
 function c_freecrafting()
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_freecrafting()")
+        return
+    end
+
     local player = ConsoleCommandPlayer()
-	player.components.builder:GiveAllRecipes() 
+	player.components.builder:GiveAllRecipes()
 	player:PushEvent("techlevelchange")
 end
 
@@ -311,6 +356,14 @@ function c_sel_health()
         end
     else
         print("Gah! Need to select something to access it's components!")
+    end
+end
+
+function c_setinspiration(n)
+    local player = ConsoleCommandPlayer()
+    if player ~= nil and player.components.singinginspiration ~= nil and not player:HasTag("playerghost") then
+        SuUsed("c_setinspiration", true)
+        player.components.singinginspiration:SetPercent(math.min(n, 1))
     end
 end
 
@@ -343,6 +396,20 @@ function c_sethunger(n)
     if player ~= nil and player.components.hunger ~= nil and not player:HasTag("playerghost") then
         SuUsed("c_sethunger", true)
         player.components.hunger:SetPercent(math.min(n, 1))
+    end
+end
+
+function c_setmightiness(n)
+    local player = ConsoleCommandPlayer()
+    if player ~= nil and player.components.mightiness then
+        player.components.mightiness:SetPercent(n)
+    end
+end
+
+function c_addelectricity(n)
+    local player = ConsoleCommandPlayer()
+    if player ~= nil and player.components.upgrademoduleowner ~= nil then
+        player.components.upgrademoduleowner:AddCharge(n)
     end
 end
 
@@ -393,9 +460,11 @@ function c_give(prefab, count, dontselect)
     prefab = string.lower(prefab)
 
     if MainCharacter ~= nil then
+        local first_inst = nil
         for i = 1, count or 1 do
             local inst = DebugSpawn(prefab)
             if inst ~= nil then
+                if first_inst == nil then first_inst = inst end
                 print("giving ", inst)
                 MainCharacter.components.inventory:GiveItem(inst)
                 if not dontselect then
@@ -404,7 +473,23 @@ function c_give(prefab, count, dontselect)
                 SuUsed("c_give_"..inst.prefab)
             end
         end
+        return first_inst
     end
+end
+
+-- Receives a prefab and gives the player all ingredients to craft that prefab
+-- Nothing happens if there's no recipe
+function c_giveingredients(prefab)
+    local recipe = AllRecipes[prefab]
+    if recipe == nil then
+        print ("No recipe found for prefab ", prefab)
+        return
+    end
+
+    for i, v in ipairs(recipe.ingredients) do
+        c_give(v.type, v.amount)
+    end
+
 end
 
 function c_mat(recname)
@@ -539,7 +624,7 @@ local lastfound = -1
 local lastprefab = nil
 function c_findnext(prefab, radius, inst)
     if type(inst) == "string" or type(inst) == "number" then
-        inst = UserToPlayer(input)
+        inst = UserToPlayer(inst)
         if inst == nil then
             return
         end
@@ -600,6 +685,12 @@ function c_findnext(prefab, radius, inst)
 end
 
 function c_godmode(player)
+
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_godmode()")
+        return
+    end
+
     player = ListingOrConsolePlayer(player)
     if player ~= nil then
         SuUsed("c_godmode", true)
@@ -620,6 +711,11 @@ function c_godmode(player)
 end
 
 function c_supergodmode(player)
+    if TheWorld ~= nil and not TheWorld.ismastersim then
+        c_remote("c_supergodmode()")
+        return
+    end
+
     player = ListingOrConsolePlayer(player)
     if player ~= nil then
         SuUsed("c_supergodmode", true)
@@ -642,10 +738,10 @@ end
 
 function c_armor(player)
     player = ListingOrConsolePlayer(player)
-    if player ~= nil then
-        SuUsed("c_armor", true)
-        player.components.health:SetAbsorptionAmount(1)
-        print("Enabled full absorption on " .. tostring(player.userid))
+    if player ~= nil and player.components.health ~= nil then
+		SuUsed("c_armor", true)
+		player.components.health:SetAbsorptionAmount(1)
+		print("Enabled full absorption on " .. tostring(player.userid))
 	end
 end
 
@@ -668,7 +764,7 @@ function c_find(prefab, radius, inst)
     local ents = TheSim:FindEntities(x,y,z, radius)
     for k,v in pairs(ents) do
         if v ~= inst and v.prefab == prefab then
-            if not founddistsq or inst:GetDistanceSqToInst(v) < founddistsq then 
+            if not founddistsq or inst:GetDistanceSqToInst(v) < founddistsq then
                 found = v
                 founddistsq = inst:GetDistanceSqToInst(v)
             end
@@ -830,7 +926,7 @@ end
 
 function c_summondeerclops()
     local player = ConsoleCommandPlayer()
-    if player then 
+    if player then
         TheWorld.components.deerclopsspawner:SummonMonster(player)
     end
 end
@@ -838,8 +934,16 @@ end
 function c_summonbearger()
     local player = ConsoleCommandPlayer()
     print("Summoning bearger for player ", player)
-    if player then 
+    if player then
         TheWorld.components.beargerspawner:SummonMonster(player)
+    end
+end
+
+function c_summonmalbatross()
+    local player = ConsoleCommandPlayer()
+    if player then
+        print("Summoning malbatross at the fish shoal nearest to", player)
+        TheWorld.components.malbatrossspawner:Summon(player)
     end
 end
 
@@ -864,7 +968,7 @@ function c_groundtype()
     local index, table = ConsoleCommandPlayer():GetCurrentTileType()
     print("Ground type is ", index)
 
-    for k,v in pairs(table) do 
+    for k,v in pairs(table) do
         print(k,v)
     end
 end
@@ -1005,12 +1109,50 @@ function c_removeallwithtags(...)
     print("removed",count)
 end
 
+function c_emptyworld()
+    for k,ent in pairs(Ents) do
+        if ent.widget == nil 
+			and not ent.isplayer 
+			and ent.entity:GetParent() == nil
+			and ent.Network ~= nil
+			and not ent:HasTag("CLASSIFIED") 
+			and not ent:HasTag("INLIMBO") 
+			then
+
+            ent:Remove()
+        end
+    end
+end
+
 function c_netstats()
     local stats = TheNet:GetNetworkStatistics()
     if not stats then print("No Netstats yet") end
 
     for k,v in pairs(stats) do
         print(k.." -> "..tostring(v))
+    end
+end
+
+function c_remove(entity)
+    local mouseentity = entity ~= nil and entity or TheInput:GetWorldEntityUnderMouse()
+
+    if TheWorld == nil or mouseentity == nil then
+        return
+    end    
+
+    if mouseentity ~= ConsoleCommandPlayer() then
+        if mouseentity.components.health then
+            mouseentity.components.health:Kill()
+        elseif mouseentity.Remove then
+            mouseentity:Remove()
+        end
+    end
+end
+
+function c_removeat(x, y, z)
+    local ents = TheSim:FindEntities(x,y,z, 1)
+    for i, ent in ipairs(ents) do
+        c_remove(ent)
     end
 end
 
@@ -1080,6 +1222,21 @@ function c_goadventuring(player)
     end
 end
 
+function c_startinggear(player)
+    player = ListingOrConsolePlayer(player)
+    if player ~= nil then
+        c_select(player)
+        player.components.inventory:Equip( c_spawn("flowerhat", nil, true) )
+        c_give("berries", 10, true)
+        c_give("smallmeat", 5, true)
+        c_give("cutgrass", 40, true)
+        c_give("twigs", 40, true)
+        c_give("log", 40, true)
+        c_give("rocks", 40, true)
+        c_give("flint", 20, true)
+        c_give("goldnugget", 10, true)
+    end
+end
 function c_sounddebug()
     if not package.loaded["debugsounds"] then
         require "debugsounds"
@@ -1162,12 +1319,19 @@ end
 
 function c_repeatlastcommand()
     local history = GetConsoleHistory()
+    local localremotehistory = GetConsoleLocalRemoteHistory()
     if #history > 0 then
         if history[#history] == "c_repeatlastcommand()" then
             -- top command is this one, so we want the second last command
             history[#history] = nil
+            localremotehistory[#localremotehistory] = nil
         end
-        ExecuteConsoleCommand(history[#history])
+
+        if localremotehistory[#localremotehistory] then
+            ConsoleRemote("%s", {history[#history]})
+        else
+            ExecuteConsoleCommand(history[#history])
+        end
     end
 end
 
@@ -1202,9 +1366,10 @@ function c_makeboat()
 	inst.Transform:SetPosition(x + 2.25, y, z + 2.25)
 
 	inst = SpawnPrefab("oar")
-	inst.Transform:SetPosition(x, y, z - 3.25)
+	inst.Transform:SetPosition(x + 1, y, z - 2)
 	inst = SpawnPrefab("oar_driftwood")
 	inst.Transform:SetPosition(x + 1, y, z - 1.25)
+
 
 	inst = SpawnPrefab("mast_item")
 	inst.Transform:SetPosition(x - 1, y, z + 1.25)
@@ -1214,7 +1379,62 @@ function c_makeboat()
 
 	inst = SpawnPrefab("lantern")
 	inst.Transform:SetPosition(x - 3.25, y, z)
-	
+
+	inst = SpawnPrefab("oceanfishingrod")
+	inst.Transform:SetPosition(x - 3.25, y, z + 1.25)
+
+end
+
+function c_makecrabboat()
+    local x, y, z = ConsoleWorldPosition():Get()
+
+    local inst = SpawnPrefab("boat")
+    inst.Transform:SetPosition(x, y, z)
+
+    inst = SpawnPrefab("oar")
+    inst.Transform:SetPosition(x + 1, y, z - 2)
+
+    inst = SpawnPrefab("oar_driftwood")
+    inst.Transform:SetPosition(x + 1, y, z - 1.25)
+
+    inst = SpawnPrefab("hambat")
+    inst.Transform:SetPosition(x + 1, y, z - 0.8)
+    inst = SpawnPrefab("hambat")
+    inst.Transform:SetPosition(x + 1, y, z - 0.8)
+
+    inst = SpawnPrefab("boatpatch")
+    inst.Transform:SetPosition(x, y, z + 1.25)
+    inst.components.stackable:SetStackSize(20)
+
+    inst = SpawnPrefab("boards")
+    inst.Transform:SetPosition(x+1, y, z + 1.25)
+    inst.components.stackable:SetStackSize(10)
+
+
+
+
+    inst = SpawnPrefab("lantern")
+    inst.Transform:SetPosition(x - 3, y, z)
+
+    inst = SpawnPrefab("redgem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+    inst = SpawnPrefab("orangegem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+    inst = SpawnPrefab("yellowgem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+    inst = SpawnPrefab("greengem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+    inst = SpawnPrefab("bluegem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+    inst = SpawnPrefab("purplegem")
+    inst.Transform:SetPosition(x - 3.25, y, z)
+    inst.components.stackable:SetStackSize(9)
+
 end
 
 function c_makeboatspiral()
@@ -1235,8 +1455,8 @@ function c_makeboatspiral()
         meat_dried = {5, 5, 5},
         boatpatch = 3,
         torch = 4,
-        log = {20, 20}, 
-        boards = {10, 10}, 
+        log = {20, 20},
+        boards = {10, 10},
 		lantern = 1,
         goldnugget = {5,5},
         rocks = {20,20},
@@ -1250,7 +1470,7 @@ function c_makeboatspiral()
     for prefab, stacks in pairs(items) do
 		stacks = type(stacks) == "table" and stacks or {stacks}
 		for _, count in pairs(stacks) do
-			for i = 1, count, 1 do            
+			for i = 1, count, 1 do
 				local inst = DebugSpawn(prefab)
 				if inst ~= nil then
 
@@ -1292,7 +1512,7 @@ function c_dumpentities()
 	local first = true
 
 	local total = 0
-    for k,v in pairs(Ents) do        
+    for k,v in pairs(Ents) do
         local name = v.prefab or (v.widget and v.widget.name) or v.name
 
         if(type(name) == "table") then
@@ -1304,7 +1524,7 @@ function c_dumpentities()
 			name = "NONAME"
 		end
         local count = ent_counts[name]
-        if count == nil then 
+        if count == nil then
             count = 1
         else
             count = count + 1
@@ -1321,10 +1541,306 @@ function c_dumpentities()
 
     table.sort(sorted_ent_counts, function(a,b) return a[2] > b[2] end )
 
-	
+
     print("Entity, Count")
     for k,v in ipairs(sorted_ent_counts) do
         print(v[1] .. ",", v[2])
     end
 	print("Total: ", total)
+end
+
+-- ========================================
+-- Singing Shell song scripts
+
+local note_to_semitone = {}
+note_to_semitone["C"] = 1
+note_to_semitone["C#"] = 2
+note_to_semitone["D"] = 3
+note_to_semitone["D#"] = 4
+note_to_semitone["E"] = 5
+note_to_semitone["F"] = 6
+note_to_semitone["F#"] = 7
+note_to_semitone["G"] = 8
+note_to_semitone["G#"] = 9
+note_to_semitone["A"] = 10
+note_to_semitone["A#"] = 11
+note_to_semitone["B"] = 12
+
+local function NoteToSemitone(note)
+    --print("note to semitone table:", note_to_semitone[string.upper(string.sub(note, 1, -2))])
+	return tonumber(string.sub(note, -1)) * 12 + note_to_semitone[string.upper(string.sub(note, 1, -2))]
+end
+
+function c_shellsfromtable(song, startpos, placementfn, spacing_multiplier, out_of_range_mode)
+
+    -- Example file: notetable_dsmaintheme
+
+    song = song or require("notetable_dsmaintheme")
+
+	if song == nil or type(song) ~= "table" then
+		print("Error: Invalid 'notes' table")
+		return false, "INVALID_NOTES_TABLE"
+	end
+
+	--
+
+	local semitone_shell_start =
+	{
+		-- Semitone of lowest note of each shell
+		singingshell_octave3 = 37,
+		singingshell_octave4 = 49, -- middle C
+		singingshell_octave5 = 61,
+    }
+
+    local allowed_semitone_range = { lower = 37, upper = 72 }
+
+	local semitone_to_shell = {}
+	for i = 1, 36 do
+		table.insert(semitone_to_shell, "")
+	end
+	for i = 37, 48 do
+		table.insert(semitone_to_shell, "singingshell_octave3")
+	end
+	for i = 49, 60 do
+		table.insert(semitone_to_shell, "singingshell_octave4")
+	end
+	for i = 61, 72 do
+		table.insert(semitone_to_shell, "singingshell_octave5")
+	end
+
+    --
+
+    if out_of_range_mode ~= "AUTO_TRANSPOSE" and out_of_range_mode ~= "OMIT" and out_of_range_mode ~= "TRUNCATE" and out_of_range_mode ~= "TERMINATE" then
+        out_of_range_mode = "AUTO_TRANSPOSE"
+    end
+
+    --
+
+    startpos = startpos or ConsoleWorldPosition()
+
+	placementfn = placementfn or function(currentpos, multiplier)
+		-- Default placementfn spawns shells in a straight line along world x
+		return Vector3( currentpos.x - 1 * multiplier, 0, currentpos.z)
+	end
+
+	spacing_multiplier = spacing_multiplier or 1
+
+    --
+
+    local shells_to_spawn = {}
+
+	local spawning_pos = startpos
+    local spawned_shells = {}
+
+    local lowest_semitone = allowed_semitone_range.upper
+    local highest_semitone = allowed_semitone_range.lower
+
+	for i, notes in ipairs(song) do
+		local applied_spawning_pos
+
+		if notes.t == nil then
+			spawning_pos = placementfn(spawning_pos, spacing_multiplier)
+			applied_spawning_pos = spawning_pos
+		else
+			applied_spawning_pos = placementfn(spawning_pos, notes.t * spacing_multiplier)
+		end
+
+		if type(notes) ~= "table" then
+			notes = { notes }
+		end
+
+		for _, note in ipairs(notes) do
+			local sx = applied_spawning_pos.x
+			local sy = applied_spawning_pos.y or 0
+			local sz = applied_spawning_pos.z
+
+			local semitone
+
+			if type(note) == "string" then
+				if tonumber(note) < 0 then
+					semitone = -1
+				else
+					semitone = NoteToSemitone(note)
+				end
+			else
+				-- Assume type is number
+				semitone = note
+            end
+
+            if semitone >= 0 then
+                lowest_semitone = math.min(semitone, lowest_semitone)
+                highest_semitone = math.max(semitone, highest_semitone)
+
+                table.insert(shells_to_spawn, {
+                    semitone = semitone,
+                    position = Vector3(sx, sy, sz),
+                })
+			end
+		end
+    end
+
+    --
+
+    local function CleanupShells(shells)
+        for i, v in ipairs(shells) do
+            v:Remove()
+        end
+    end
+
+    local function SpawnShell(prefab, shell_data, semitones_to_raise)
+        local shell = SpawnPrefab(prefab)
+        shell.Transform:SetPosition(shell_data.position.x, shell_data.position.y, shell_data.position.z)
+        shell.components.cyclable:SetStep(semitones_to_raise + 1, nil, true)
+
+        return shell
+    end
+
+    local song_semitone_range = highest_semitone - lowest_semitone
+
+    if out_of_range_mode == "AUTO_TRANSPOSE" then
+        if song_semitone_range < allowed_semitone_range.upper - allowed_semitone_range.lower then
+            local auto_transposition_steps = 0
+
+            if lowest_semitone < allowed_semitone_range.lower then
+                auto_transposition_steps = allowed_semitone_range.lower - lowest_semitone
+            elseif highest_semitone > allowed_semitone_range.upper then
+                auto_transposition_steps = -(highest_semitone - allowed_semitone_range.upper)
+            end
+
+            for i, shell_data in ipairs(shells_to_spawn) do
+
+                local transposed_semitone = shell_data.semitone + auto_transposition_steps
+
+                local shell_prefab = semitone_to_shell[transposed_semitone]
+
+                if shell_prefab == nil or shell_prefab == "" then
+                    print("Error: Auto-transposition failed for semitone "..shell_data.semitone.." at index "..i..".\nRemoving all spawned shell instances.")
+
+                    CleanupShells(spawned_shells)
+                    return nil
+                else
+                    table.insert(spawned_shells, SpawnShell(shell_prefab, shell_data, transposed_semitone - semitone_shell_start[shell_prefab]))
+                end
+            end
+        else
+            print("Error: Auto-transposition failed: Tonal range of song data is greater than 3 octaves")
+
+            return nil
+        end
+    elseif out_of_range_mode == "OMIT" then
+        for i, shell_data in ipairs(shells_to_spawn) do
+            local shell_prefab = semitone_to_shell[shell_data.semitone]
+
+            if shell_prefab ~= nil and shell_prefab ~= "" then
+                table.insert(spawned_shells, SpawnShell(shell_prefab, shell_data, shell_data.semitone - semitone_shell_start[shell_prefab]))
+            else
+                print("Warning: Omitting shell at index "..i.." semitone "..shell_data.semitone..".\nSemitone outside shell tonal range 37(C3) - 72(B5).")
+            end
+        end
+    elseif out_of_range_mode == "TRUNCATE" then
+        for i, shell_data in ipairs(shells_to_spawn) do
+            local shell_prefab = semitone_to_shell[shell_data.semitone]
+
+            if shell_prefab ~= nil and shell_prefab ~= "" then
+                table.insert(spawned_shells, SpawnShell(shell_prefab, shell_data, shell_data.semitone - semitone_shell_start[shell_prefab]))
+            else
+                print("Discontinuing shell spawning at index "..i..".\nSemitone "..shell_data.semitone.." outside shell tonal range 37(C3) - 72(B5).")
+
+                return spawned_shells
+            end
+        end
+    else
+        -- else out_of_range_mode == "TERMINATE"
+        for i, shell_data in ipairs(shells_to_spawn) do
+            local shell_prefab = semitone_to_shell[shell_data.semitone]
+
+            if shell_prefab ~= nil and shell_prefab ~= "" then
+                table.insert(spawned_shells, SpawnShell(shell_prefab, shell_data, shell_data.semitone - semitone_shell_start[shell_prefab]))
+            else
+                print("Terminating shell spawning at index "..i..".\nSemitone "..shell_data.semitone.." outside shell tonal range 37(C3) - 72(B5).\nRemoving all spawned shell instances.")
+
+                CleanupShells(spawned_shells)
+                return nil
+            end
+        end
+    end
+
+	return spawned_shells
+end
+
+function c_guitartab(songdata, overrides, dont_spawn_shells)
+
+    -- Example file: guitartab_dsmaintheme.lua
+
+	if overrides == nil or type(overrides) ~= "table" then
+		overrides = {}
+    end
+
+    songdata = songdata == nil and "guitartab_dsmaintheme" or songdata
+
+	if type(songdata) == "string" then
+		songdata = require(songdata)
+	elseif type(songdata) ~= "table" then
+		print("Error: Invalid file name/table")
+		return false, "INVALID_SONGDATA"
+	end
+
+	local tab = songdata.tab
+	if tab == nil then
+		print("Error: No 'tab' table found in file")
+		return false, "NO_TABLATURE_FOUND"
+	end
+
+	--
+
+	-- Fallback to standard tuning:									E2, A2, D3, G3, B3, E4
+	local tuning = overrides.tuning or songdata.tuning or		{	29,	34,	39,	44,	48,	53	}
+	local transposition = overrides.transposition or songdata.transposition or 0
+
+	local song = {}
+
+	for beat_ind, beat in ipairs(songdata.tab) do
+		local transcribed_beat = {}
+		beat = type(beat) ~= "table" and { -1, -1, -1, -1, -1, -1 } or beat
+
+		for string_ind, fret in ipairs(beat) do
+			if fret >= 0 then
+				table.insert(transcribed_beat, tuning[string_ind] + fret + transposition)
+			end
+			transcribed_beat.t = beat.t
+		end
+
+		table.insert(song, transcribed_beat)
+	end
+
+	local ret = { songtable = song }
+
+	if not dont_spawn_shells then
+		ret.shells_spawned = c_shellsfromtable(song, overrides.startpos,
+			overrides.placementfn,
+			overrides.spacing_multiplier or songdata.spacing_multiplier or 1)
+	end
+
+	return ret
+end
+
+-- ========================================
+
+
+
+-- Nuke any controller mappings, for when people get in a hairy situation with a controller mapping that is totally busted.
+function ResetControllersAndQuitGame()
+    print("ResetControllersAndQuitGame requested")
+    if not InGamePlay() then
+	-- Nuke any controller configurations from our profile
+	-- and clear the setting in the ini file
+	TheSim:SetSetting("misc", "controller_popup", tostring(nil))
+	Profile:SetValue("controller_popup",nil)
+	Profile:SetValue("controls",{})
+	Profile:Save()
+	-- And quit the game, we want a restart
+	RequestShutdown()
+    else
+	print("ResetControllersAndQuitGame can only be called from the frontend")
+    end
 end

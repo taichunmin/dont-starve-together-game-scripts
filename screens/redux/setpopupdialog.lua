@@ -21,7 +21,7 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 	Screen._ctor(self, "SetPopupDialog")
 
 	self.set_item_type = set_item_type
-	
+
 	--darken everything behind the dialog
     self.black = self:AddChild(TEMPLATES.BackgroundTint())
 
@@ -50,8 +50,8 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
     self.horizontal_line = self.content_root:AddChild(Image("images/ui.xml", "line_horizontal_6.tex"))
 	self.horizontal_line:SetScale( 1, 0.55)
 	self.horizontal_line:SetPosition( 5, 96, 0)
-	
-	
+
+
 	self.num_sets = #SKIN_SET_ITEMS[self.set_item_type]
 	if self.num_sets > 1 then
 		local set_data = {}
@@ -67,11 +67,11 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 			self.current_set = selected_data.set
 			self:RefreshDisplay()
 		end)
-    
+
 		self.set_selector = self.content_root:AddChild(setselector)
 		self.set_selector:SetPosition(0, 60)
 	end
-    
+
 	local item_y = 58
 	self.max_num_items = 0
 	for _,item_set in pairs(SKIN_SET_ITEMS[self.set_item_type]) do
@@ -79,20 +79,19 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 	end
 	local steps = MAX_ITEMS - self.max_num_items
 	item_y = item_y - (steps * LINE_HEIGHT/2)
-	
+
 	self.input_item_imagetext = {}
-	
+
 	for i = 1,self.max_num_items do
 		self.input_item_imagetext[i] = self.content_root:AddChild(TEMPLATES.old.ItemImageText("body", "body_default1", ITEM_SCALE, FONT, FONT_SIZE, "", NEED_COLOUR, TEXT_WIDTH, TEXT_OFFSET))
         self.input_item_imagetext[i]:SetPosition(IMAGE_X, item_y)
 		self.input_item_imagetext[i].check:SetPosition(-61, 0)
 		self.input_item_imagetext[i].check:SetScale(.15)
-    	i = i + 1
     	item_y = item_y - LINE_HEIGHT
     end
     self.current_set = 1
     self:RefreshDisplay()
-	
+
     self.reward_horizontal_line = self.content_root:AddChild(Image("images/ui.xml", "line_horizontal_6.tex"))
 	self.reward_horizontal_line:SetScale( 1, 0.55)
 	self.reward_horizontal_line:SetPosition( 5, -155, 0)
@@ -105,19 +104,19 @@ local SetPopupDialog = Class(Screen, function(self, set_item_type)
 	self.reward = self.content_root:AddChild(TEMPLATES.old.ItemImageText("body", "body_default1", ITEM_SCALE, FONT, FONT_SIZE, "", color, TEXT_WIDTH, TEXT_OFFSET))
 	self.reward:SetPosition(IMAGE_X, -193, 0)
 	self.reward.text:SetString(GetSkinName(self.set_item_type))
-	
+
 	self.reward_txt = self.content_root:AddChild(Text(BUTTONFONT, 30))
 	self.reward_txt:SetHAlign(ANCHOR_RIGHT)
 	self.reward_txt:SetRegionSize(200, 100)
 	self.reward_txt:SetPosition(-183, -195, 0)
-	
+
     self.reward_txt:SetColour(color)
 	self.reward_txt:SetString(STRINGS.UI.SETPOPUP.REWARD)
-	
+
 	local reward_type = GetTypeForItem(self.set_item_type)
 	self.reward.icon:SetItem(reward_type, self.set_item_type, nil, nil)
 	self.reward.icon:SetItemRarity(GetRarityForItem(self.set_item_type))
-	
+
 
 	self.default_focus = self.dialog
 end)
@@ -129,7 +128,7 @@ function SetPopupDialog:RefreshDisplay()
 	local i = 1
 	for _,input_item_type in pairs(SKIN_SET_ITEMS[self.set_item_type][self.current_set]) do
 		self.input_item_imagetext[i]:Show()
-		
+
 		if TheInventory:CheckOwnership(input_item_type) then
 			self.input_item_imagetext[i].text:SetColour(OWNED_COLOUR)
     		self.input_item_imagetext[i].check:Show()
@@ -137,13 +136,13 @@ function SetPopupDialog:RefreshDisplay()
 			self.input_item_imagetext[i].text:SetColour(NEED_COLOUR)
     		self.input_item_imagetext[i].check:Hide()
 		end
-		
+
 		self.input_item_imagetext[i].text:SetString(GetSkinName(input_item_type))
-		
+
 		local type = GetTypeForItem(input_item_type)
 		self.input_item_imagetext[i].icon:SetItem(type, input_item_type, nil, nil)
 		self.input_item_imagetext[i].icon:SetItemRarity(GetRarityForItem(input_item_type))
-		
+
     	i = i + 1
     end
 end
@@ -172,11 +171,11 @@ end
 function SetPopupDialog:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
-    
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     if self.num_sets > 1 then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK) .. " " .. STRINGS.UI.SETPOPUP.PREV_SET)	
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD) .. " " .. STRINGS.UI.SETPOPUP.NEXT_SET)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLBACK) .. " " .. STRINGS.UI.SETPOPUP.PREV_SET)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_SCROLLFWD) .. " " .. STRINGS.UI.SETPOPUP.NEXT_SET)
     end
 	return table.concat(t, "  ")
 end

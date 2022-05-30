@@ -1,5 +1,5 @@
 PlayerDeaths = Class(function(self)
-    self.persistdata = {} 
+    self.persistdata = {}
     -- self.totals = {days_survived = 0, deaths = 0}
 
     self.dirty = true
@@ -44,7 +44,7 @@ function PlayerDeaths:Sort(field)
 			sort_function =  function(a,b) return (a[field] or "") < (b[field] or "") end
 		else
 			sort_function =  function(a,b) return (a[field] or 0) > (b[field] or 0) end
-		end			
+		end
 	end
 	table.sort( self.persistdata, sort_function )
 end
@@ -76,10 +76,10 @@ end
 
 function PlayerDeaths:Load(callback)
     TheSim:GetPersistentString(self:GetSaveName(),
-        function(load_success, str) 
+        function(load_success, str)
         	-- Can ignore the successfulness cause we check the string
 			self:Set( str, callback )
-        end, false)    
+        end, false)
 end
 
 function PlayerDeaths:Set(str, callback)

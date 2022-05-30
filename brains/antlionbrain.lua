@@ -12,7 +12,7 @@ end
 
 local function ShouldEatRocksHighPrio(inst)
     return inst.components.health:IsHurt()
-        and (   inst.components.timer:TimerExists("wall_cd") and
+        and (   inst.components.worldsettingstimer:ActiveTimerExists("wall_cd") and
                 inst.components.combat:GetLastAttackedTime() + 6 < GetTime()
             )
 end

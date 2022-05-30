@@ -22,6 +22,10 @@ function Vector3:__div( rhs )
     return Vector3( self.x / rhs, self.y / rhs, self.z / rhs)
 end
 
+function Vector3:__unm()
+    return Vector3(-self.x, -self.y, -self.z)
+end
+
 function Vector3:Dot( rhs )
     return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 end
@@ -33,7 +37,7 @@ function Vector3:Cross( rhs )
 end
 
 function Vector3:__tostring()
-    return string.format("(%2.2f, %2.2f, %2.2f)", self.x, self.y, self.z) 
+    return string.format("(%2.2f, %2.2f, %2.2f)", self.x, self.y, self.z)
 end
 
 function Vector3:__eq( rhs )
@@ -70,6 +74,11 @@ function Vector3:GetNormalized()
     return self / self:Length()
 end
 
+function Vector3:GetNormalizedAndLength()
+    local len = self:Length()
+    return (len > 0 and self / len) or self, len
+end
+
 function Vector3:Get()
     return self.x, self.y, self.z
 end
@@ -82,7 +91,7 @@ function ToVector3(obj,y,z)
     if not obj then
         return
     end
-    if obj.IsVector3 then  -- note: specifically not a function call! 
+    if obj.IsVector3 then  -- note: specifically not a function call!
         return obj
     end
     if type(obj) == "table" then

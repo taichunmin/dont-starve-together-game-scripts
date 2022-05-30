@@ -26,7 +26,7 @@ local ItemTile = Class(Widget, function(self, invitem)
     end
 
     if self.item:HasTag("show_spoiled") or self:HasSpoilage() then
-        self.bg = self:AddChild(Image(HUD_ATLAS, "inv_slot_spoiled.tex"))
+            self.bg = self:AddChild(Image(HUD_ATLAS, "inv_slot_spoiled.tex"))
         self.bg:SetClickable(false)
     end
 
@@ -36,6 +36,7 @@ local ItemTile = Class(Widget, function(self, invitem)
         self.spoilage = self:AddChild(UIAnim())
         self.spoilage:GetAnimState():SetBank("spoiled_meter")
         self.spoilage:GetAnimState():SetBuild("spoiled_meter")
+        self.spoilage:GetAnimState():AnimateWhilePaused(false)
         self.spoilage:SetClickable(false)
     end
 
@@ -43,6 +44,7 @@ local ItemTile = Class(Widget, function(self, invitem)
     self.wetness:GetAnimState():SetBank("wet_meter")
     self.wetness:GetAnimState():SetBuild("wet_meter")
     self.wetness:GetAnimState():PlayAnimation("idle")
+    self.wetness:GetAnimState():AnimateWhilePaused(false)
     self.wetness:Hide()
     self.wetness:SetClickable(false)
 
@@ -53,6 +55,7 @@ local ItemTile = Class(Widget, function(self, invitem)
         self.rechargeframe:GetAnimState():SetBank("recharge_meter")
         self.rechargeframe:GetAnimState():SetBuild("recharge_meter")
         self.rechargeframe:GetAnimState():PlayAnimation("frame")
+        self.rechargeframe:GetAnimState():AnimateWhilePaused(false)
     end
 
     if self.item.inv_image_bg ~= nil then
@@ -73,6 +76,7 @@ local ItemTile = Class(Widget, function(self, invitem)
         self.recharge = self:AddChild(UIAnim())
         self.recharge:GetAnimState():SetBank("recharge_meter")
         self.recharge:GetAnimState():SetBuild("recharge_meter")
+        self.recharge:GetAnimState():AnimateWhilePaused(false)
         self.recharge:SetClickable(false)
     end
 
@@ -88,7 +92,26 @@ local ItemTile = Class(Widget, function(self, invitem)
             end
             self.image:SetTexture(invitem.replica.inventoryitem:GetAtlas(), invitem.replica.inventoryitem:GetImage())
         end, invitem)
-
+    if invitem:HasClientSideInventoryImageOverrides() then
+        self.inst:ListenForEvent("clientsideinventoryflagschanged",
+            function(player)
+                if invitem and invitem.replica.inventoryitem then
+                    self.image:SetTexture(invitem.replica.inventoryitem:GetAtlas(), invitem.replica.inventoryitem:GetImage())
+                end
+            end, ThePlayer)
+    end
+	self.inst:ListenForEvent("inventoryitem_updatetooltip",
+		function(invitem)
+			if self.focus and not TheInput:ControllerAttached() then
+				self:UpdateTooltip()
+			end
+		end, invitem)
+        self.inst:ListenForEvent("inventoryitem_updatespecifictooltip",
+            function(player, data)
+                if self.focus and not TheInput:ControllerAttached() and invitem.prefab == data.prefab then
+                    self:UpdateTooltip()
+                end
+            end, ThePlayer)
     self.inst:ListenForEvent("stacksizechange",
         function(invitem, data)
             if invitem.replica.stackable ~= nil then
@@ -280,32 +303,35 @@ function ItemTile:GetDescriptionString()
             if not (self.item.replica.equippable ~= nil and self.item.replica.equippable:IsEquipped()) then
                 --self.namedisp:SetHAlign(ANCHOR_LEFT)
                 if TheInput:IsControlPressed(CONTROL_FORCE_INSPECT) then
-                    str = str.."\n"..STRINGS.LMB..": "..STRINGS.INSPECTMOD
+                    str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PRIMARY)..": "..STRINGS.INSPECTMOD
                 elseif TheInput:IsControlPressed(CONTROL_FORCE_TRADE) and not self.item.replica.inventoryitem:CanOnlyGoInPocket() then
                     if next(player.replica.inventory:GetOpenContainers()) ~= nil then
-                        str = str.."\n"..STRINGS.LMB..": "..((TheInput:IsControlPressed(CONTROL_FORCE_STACK) and self.item.replica.stackable ~= nil) and (STRINGS.STACKMOD.." "..STRINGS.TRADEMOD) or STRINGS.TRADEMOD)
+                        str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PRIMARY)..": "..((TheInput:IsControlPressed(CONTROL_FORCE_STACK) and self.item.replica.stackable ~= nil) and (STRINGS.STACKMOD.." "..STRINGS.TRADEMOD) or STRINGS.TRADEMOD)
                     end
                 elseif TheInput:IsControlPressed(CONTROL_FORCE_STACK) and self.item.replica.stackable ~= nil then
-                    str = str.."\n"..STRINGS.LMB..": "..STRINGS.STACKMOD
+                    str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PRIMARY)..": "..STRINGS.STACKMOD
                 end
             end
 
             local actions = actionpicker:GetInventoryActions(self.item)
             if #actions > 0 then
-                str = str.."\n"..STRINGS.RMB..": "..actions[1]:GetActionString()
+                str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_SECONDARY)..": "..actions[1]:GetActionString()
             end
         elseif active_item:IsValid() then
             if not (self.item.replica.equippable ~= nil and self.item.replica.equippable:IsEquipped()) then
-                if active_item.replica.stackable ~= nil and active_item.prefab == self.item.prefab and active_item.skinname == self.item.skinname then
-                    str = str.."\n"..STRINGS.LMB..": "..STRINGS.UI.HUD.PUT
+                if active_item.replica.stackable ~= nil and active_item.prefab == self.item.prefab and active_item.AnimState:GetSkinBuild() == self.item.AnimState:GetSkinBuild() then --active_item.skinname == self.item.skinname (this does not work on clients, so we're going to use the AnimState hack instead)
+                    str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PRIMARY)..": "..STRINGS.UI.HUD.PUT
                 else
-                    str = str.."\n"..STRINGS.LMB..": "..STRINGS.UI.HUD.SWAP
+                    str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_PRIMARY)..": "..STRINGS.UI.HUD.SWAP
                 end
             end
 
+            --no RMB hint for quickdrop while holding an item, as that might be confusing since players would think its the item they are holding.
+            --the mod never had the hint, and people discovered it just fine, so this should also be fine -Zachary
+
             local actions = actionpicker:GetUseItemActions(self.item, active_item, true)
             if #actions > 0 then
-                str = str.."\n"..STRINGS.RMB..": "..actions[1]:GetActionString()
+                str = str.."\n"..TheInput:GetLocalizedControl(TheInput:GetControllerID(), CONTROL_SECONDARY)..": "..actions[1]:GetActionString()
             end
         end
     end
@@ -369,26 +395,29 @@ function ItemTile:SetPercent(percent)
 end
 
 function ItemTile:SetChargePercent(percent)
+	local prev_precent = self.rechargepct
     self.rechargepct = percent
-    if percent < 1 then
-        self.recharge:GetAnimState():SetPercent("recharge", percent)
-        if not self.rechargeframe.shown then
-            self.rechargeframe:Show()
-        end
-        if percent >= .9999 then
-            self:StopUpdating()
-        elseif self.rechargetime < math.huge then
-            self:StartUpdating()
-        end
-    else
-        if not self.recharge:GetAnimState():IsCurrentAnimation("frame_pst") then
-            self.recharge:GetAnimState():PlayAnimation("frame_pst")
-        end
-        if self.rechargeframe.shown then
-            self.rechargeframe:Hide()
-        end
-        self:StopUpdating()
-    end
+	if self.recharge.shown then
+		if percent < 1 then
+			self.recharge:GetAnimState():SetPercent("recharge", percent)
+			if not self.rechargeframe.shown then
+				self.rechargeframe:Show()
+			end
+			if percent >= 0.9999 then
+				self:StopUpdating()
+			elseif self.rechargetime < math.huge then
+				self:StartUpdating()
+			end
+		else
+			if prev_precent < 1 and not self.recharge:GetAnimState():IsCurrentAnimation("frame_pst") then
+				self.recharge:GetAnimState():PlayAnimation("frame_pst")
+			end
+			if self.rechargeframe.shown then
+				self.rechargeframe:Hide()
+			end
+			self:StopUpdating()
+		end
+	end
 end
 
 function ItemTile:SetChargeTime(t)
@@ -412,7 +441,7 @@ function ItemTile:CancelDrag()
         self.spoilage:Show()
     end
 
-    self.image:SetClickable(true) 
+    self.image:SetClickable(true)
 end
 --]]
 
@@ -428,8 +457,9 @@ function ItemTile:StartDrag()
         end
         if self.recharge ~= nil then
             self.recharge:Hide()
-            self.rechargeframe:Hide()
-        end
+			self.rechargeframe:Hide()
+			self:StopUpdating()
+		end
         self.image:SetClickable(false)
     end
 end
@@ -454,6 +484,7 @@ function ItemTile:HasSpoilage()
 end
 
 function ItemTile:OnUpdate(dt)
+    if TheNet:IsServerPaused() then return end
     self:SetChargePercent(self.rechargetime > 0 and self.rechargepct + dt / self.rechargetime or .9999)
 end
 

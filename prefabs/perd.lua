@@ -44,10 +44,11 @@ end
 --[[ For special event ]]
 --------------------------------------------------------------------------
 
+local PERD_TAGS = { "perd" }
 local function OnAttacked(inst)
     local tochain = {}
     local x, y, z = inst.Transform:GetWorldPosition()
-    for i, v in ipairs(TheSim:FindEntities(x, y, z, 14, { "perd" })) do
+    for i, v in ipairs(TheSim:FindEntities(x, y, z, 14, PERD_TAGS)) do
         if v.seekshrine then
             v.seekshrine = nil
             inst:RemoveEventCallback("attacked", OnAttacked)

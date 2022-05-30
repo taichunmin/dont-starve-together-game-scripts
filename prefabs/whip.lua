@@ -5,8 +5,15 @@ local assets =
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_object", "swap_whip", "swap_whip")
-    owner.AnimState:OverrideSymbol("whipline", "swap_whip", "whipline")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_whip", inst.GUID, "swap_whip")
+        owner.AnimState:OverrideItemSkinSymbol("whipline", skin_build, "whipline", inst.GUID, "swap_whip")
+    else
+        owner.AnimState:OverrideSymbol("swap_object", "swap_whip", "swap_whip")
+        owner.AnimState:OverrideSymbol("whipline", "swap_whip", "whipline")
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -14,11 +21,18 @@ end
 local function onunequip(inst, owner)
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+    end
 end
 
+
+local CRACK_MUST_TAGS = { "_combat" }
+local CRACK_CANT_TAGS = { "player", "epic", "shadow", "shadowminion", "shadowchesspiece" }
 local function supercrack(inst)
     local x,y,z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x,y,z, TUNING.WHIP_SUPERCRACK_RANGE, { "_combat" }, { "player", "epic", "shadow", "shadowminion", "shadowchesspiece" })
+    local ents = TheSim:FindEntities(x,y,z, TUNING.WHIP_SUPERCRACK_RANGE, CRACK_MUST_TAGS, CRACK_CANT_TAGS)
     for i,v in ipairs(ents) do
         if v.components.combat:HasTarget() then
             v.components.combat:DropTarget()
@@ -61,11 +75,11 @@ local function onattack(inst, attacker, target)
         if math.random() < chance then
             snap.Transform:SetScale(3, 3, 3)
             if target.SoundEmitter ~= nil then
-                target.SoundEmitter:PlaySound("dontstarve/common/whip_large")
+                target.SoundEmitter:PlaySound(inst.skin_sound_large or "dontstarve/common/whip_large")
             end
             inst:DoTaskInTime(0, supercrack)
         elseif target.SoundEmitter ~= nil then
-            target.SoundEmitter:PlaySound("dontstarve/common/whip_small")
+            target.SoundEmitter:PlaySound(inst.skin_sound_small or "dontstarve/common/whip_small")
         end
     end
 end

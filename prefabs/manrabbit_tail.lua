@@ -35,7 +35,7 @@ local function fn()
     MakeSmallPropagator(inst)
     MakeHauntableLaunchAndIgnite(inst)
 
-    inst:AddComponent("tradable")    
+    inst:AddComponent("tradable")
     inst.components.tradable.goldvalue = TUNING.GOLD_VALUES.MEAT * 2
 
     inst:AddComponent("inventoryitem")

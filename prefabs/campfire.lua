@@ -98,16 +98,6 @@ local function OnHaunt(inst)
     return false
 end
 
-local function OnSave(inst, data)
-	data._has_debuffable = inst.components.debuffable ~= nil 
-end
-
-local function OnPreLoad(inst, data)
-	if data ~= nil and data._has_debuffable then
-		inst:AddComponent("debuffable")
-	end
-end
-
 local function fn()
     local inst = CreateEntity()
 
@@ -128,6 +118,9 @@ local function fn()
 
     --cooker (from cooker component) added to pristine state for optimization
     inst:AddTag("cooker")
+
+	-- for storytellingprop component
+	inst:AddTag("storytellingprop")
 
     inst.entity:SetPristine()
 
@@ -164,6 +157,9 @@ local function fn()
     inst.components.fueled:InitializeFuelLevel(TUNING.CAMPFIRE_FUEL_START)
 
     -----------------------------
+    inst:AddComponent("storytellingprop")
+
+    -----------------------------
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = getstatus
@@ -177,9 +173,6 @@ local function fn()
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_SMALL)
     inst.components.hauntable.cooldown = TUNING.HAUNT_COOLDOWN_HUGE
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
-
-	inst.OnSave = OnSave
-	inst.OnPreLoad = OnPreLoad
 
     return inst
 end

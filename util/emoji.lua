@@ -26,9 +26,9 @@ end
 local function GetWordPredictionDictionary()
     local words, emoji_translator = GetAllowedEmojiNames(TheNet:GetUserID())
 	local data = {
-		words = words, 
-		delim = ":", 
-		postfix = ":", 
+		words = words,
+		delim = ":",
+		postfix = ":",
 	}
 	data.GetDisplayString = function(word) return emoji_translator[word] .. " " .. data.delim .. word .. data.postfix end
     return data

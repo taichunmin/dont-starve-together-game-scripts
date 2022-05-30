@@ -12,14 +12,14 @@ function BoatTrailMover:Setup(dir_x, dir_z, velocity, acceleration)
     self.velocity = velocity
     self.acceleration = acceleration
 
-    self.inst.Transform:SetRotation(-rudder_angle + 90)        
+    self.inst.Transform:SetRotation(-rudder_angle + 90)
 
     self.inst:StartUpdatingComponent(self)
 end
 
 function BoatTrailMover:OnUpdate(dt)
 	self.track_boat_time = self.track_boat_time - dt
-    
+
     self.velocity = self.velocity + dt * self.acceleration
 
     local x, y, z = self.inst.Transform:GetWorldPosition()

@@ -1,7 +1,7 @@
 local DistanceTracker = Class(function(self, inst)
 	self.previous_pos = nil
 	self.inst = inst
-    inst:StartUpdatingComponent(self)    
+    inst:StartUpdatingComponent(self)
 end)
 
 function DistanceTracker:OnUpdate(dt)

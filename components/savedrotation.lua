@@ -7,8 +7,9 @@ function SavedRotation:OnSave()
     return rot ~= 0 and { rotation = rot } or nil
 end
 
-function SavedRotation:OnLoad(data)
-    self.inst.Transform:SetRotation(data.rotation or 0)
+function SavedRotation:LoadPostPass(newents, data)
+    --this only affects the rotation of platform followers, not the translation.
+    self.inst.Transform:LoadRotation(data.rotation or 0)
 end
 
 return SavedRotation

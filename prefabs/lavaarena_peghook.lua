@@ -103,7 +103,7 @@ local function CreateTail()
     inst.AnimState:SetBuild("gooball_fx")
     inst.AnimState:PlayAnimation("disappear")
     inst.AnimState:SetMultColour(.2, 1, 0, 1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:ListenForEvent("animover", inst.Remove)
 
@@ -195,7 +195,7 @@ local function spitfxfn()
     inst.AnimState:SetBuild("gooball_fx")
     inst.AnimState:PlayAnimation("smallblast")
     inst.AnimState:SetMultColour(.2, 1, 0, 1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst.Transform:SetTwoFaced()
 
@@ -228,7 +228,7 @@ local function hitfxfn()
     inst.AnimState:SetBuild("gooball_fx")
     inst.AnimState:PlayAnimation("blast")
     inst.AnimState:SetMultColour(.2, 1, 0, 1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")

@@ -5,9 +5,11 @@ local assets =
     Asset("ANIM", "anim/salt_lick.zip"),
 }
 
+local SALTLICKER_MUST_TAGS = { "saltlicker" }
+local SALTLICKER_CANT_TAGS = { "INLIMBO" }
 local function AlertNearbyCritters(inst)
     local x,y,z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x,y,z, TUNING.SALTLICK_CHECK_DIST, { "saltlicker" }, { "INLIMBO" })
+    local ents = TheSim:FindEntities(x,y,z, TUNING.SALTLICK_CHECK_DIST, SALTLICKER_MUST_TAGS, SALTLICKER_CANT_TAGS)
     for i,ent in ipairs(ents) do
         ent:PushEvent("saltlick_placed", { inst = inst })
     end

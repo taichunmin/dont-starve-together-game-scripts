@@ -16,17 +16,17 @@ local function TestForVictory(user, data)
 	return data.outcome.won
 end
 
-local Lavaarena_Achievements = 
+local Lavaarena_Achievements =
 {
     {
         category = "encore",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "encore_boarons",
                 wxp = XWP_LEVEL2,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					if data.round == 2 then -- called on start of round
 						local statstracker = TheWorld.components.lavaarenamvpstatstracker
 						if statstracker:GetStatTotal("player_damagetaken") < 800 then
@@ -39,7 +39,7 @@ local Lavaarena_Achievements =
             {
                 achievementid = "encore_boarons_hard",
                 wxp = XWP_LEVEL2_5,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					if data.round == 2 then  -- called on start of round
 						local statstracker = TheWorld.components.lavaarenamvpstatstracker
 						if statstracker:GetStatTotal("player_damagetaken") < 600 then
@@ -55,7 +55,7 @@ local Lavaarena_Achievements =
                 shared_progress_fn = function(data, shared_scratchpad)
 					shared_scratchpad.encore_turtillus = (shared_scratchpad.encore_turtillus or 0) + 1
                 end,
-                testfn = function(user, data, scratchpad, shared_scratchpad) 
+                testfn = function(user, data, scratchpad, shared_scratchpad)
 					return data.round == 3 and (shared_scratchpad.encore_turtillus == nil or shared_scratchpad.encore_turtillus <= 3)
 				end,
             },
@@ -65,7 +65,7 @@ local Lavaarena_Achievements =
                 shared_progress_fn = function(data, shared_scratchpad)
 					shared_scratchpad.encore_turtillus_hard_failed = true
                 end,
-                testfn = function(user, data, scratchpad, shared_scratchpad) 
+                testfn = function(user, data, scratchpad, shared_scratchpad)
 					return data.round == 3 and shared_scratchpad.encore_turtillus_hard_failed ~= true
 				end,
             },
@@ -75,14 +75,14 @@ local Lavaarena_Achievements =
                 shared_progress_fn = function(data, shared_scratchpad)
 					shared_scratchpad.encore_peghook_failed = true
                 end,
-                testfn = function(user, data, scratchpad, shared_scratchpad) 
+                testfn = function(user, data, scratchpad, shared_scratchpad)
 					return shared_scratchpad.encore_peghook_failed ~= true
 				end,
             },
             {
                 achievementid = "encore_nodeath_easy",
                 wxp = XWP_LEVEL2_5,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					-- end of round 3 - turtillus wave
 					return data.round == 3 and TheWorld.components.lavaarenamvpstatstracker:GetStatTotal("deaths") == 0
 				end,
@@ -90,14 +90,14 @@ local Lavaarena_Achievements =
             {
                 achievementid = "encore_nodeath_medium",
                 wxp = XWP_LEVEL3,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					return TheWorld.components.lavaarenaevent:GetCurrentRound() == 4 and TheWorld.components.lavaarenamvpstatstracker:GetStatTotal("deaths") == 0
 				end,
             },
             {
                 achievementid = "encore_nodeath_hard",
                 wxp = XWP_LEVEL4,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					return TheWorld.components.lavaarenamvpstatstracker:GetStatTotal("deaths") == 0
 				end,
             },
@@ -111,7 +111,7 @@ local Lavaarena_Achievements =
     {
         category = "nodeaths",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "nodeaths_self",
@@ -121,14 +121,14 @@ local Lavaarena_Achievements =
             {
                 achievementid = "nodeaths_team",
                 wxp = 30000,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 						return data.outcome.won and data.outcome.total_deaths == 0
 					end,
             },
             {
                 achievementid = "nodeaths_uniqueteam",
                 wxp = 30000,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 						return data.outcome.won and data.outcome.total_deaths == 0 and data.outcome.unique_team
 					end,
             },
@@ -137,7 +137,7 @@ local Lavaarena_Achievements =
     {
         category = "wintime",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "wintime_30",
@@ -158,7 +158,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "wilson",
-        data = 
+        data =
         {
             {
                 achievementid = "wilson_battlestandards",
@@ -179,13 +179,13 @@ local Lavaarena_Achievements =
     },
     {
         category = "willow",
-        data = 
+        data =
         {
             {
                 achievementid = "willow_meteor",
                 wxp = XWP_LEVEL1,
-                testfn = function(user, data, scratchpad) 
-					scratchpad.willow_meteor = (scratchpad.willow_meteor or 0) + data.count 
+                testfn = function(user, data, scratchpad)
+					scratchpad.willow_meteor = (scratchpad.willow_meteor or 0) + data.count
 					return scratchpad.willow_meteor >= 40
 				end,
             },
@@ -203,13 +203,13 @@ local Lavaarena_Achievements =
     },
     {
         category = "wolfgang",
-        data = 
+        data =
         {
             {
                 achievementid = "wolfgang_guardsbroken",
                 wxp = XWP_LEVEL1,
-                testfn = function(user, data, scratchpad) 
-					scratchpad.wolfgang_guardsbroken = (scratchpad.wolfgang_guardsbroken or 0) + data.count 
+                testfn = function(user, data, scratchpad)
+					scratchpad.wolfgang_guardsbroken = (scratchpad.wolfgang_guardsbroken or 0) + data.count
 					return scratchpad.wolfgang_guardsbroken >= 5
 				end,
             },
@@ -227,7 +227,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "wendy",
-        data = 
+        data =
         {
             {
                 achievementid = "wendy_guardsbroken",
@@ -237,7 +237,7 @@ local Lavaarena_Achievements =
             {
                 achievementid = "wendy_outofharmsway",
                 wxp = XWP_LEVEL2,
-                testfn = function(user, data) 
+                testfn = function(user, data)
 					if data.round == 4 then -- peghook round
 						local statstracker = TheWorld.components.lavaarenamvpstatstracker
 						if statstracker:GetStatTotal("blowdarts", user.userid) >= 150 and statstracker:GetStatTotal("player_damagetaken", user.userid) < 100 then
@@ -256,13 +256,13 @@ local Lavaarena_Achievements =
     },
     {
         category = "wx78",
-        data = 
+        data =
         {
             {
                 achievementid = "wx78_anvil",
                 wxp = XWP_LEVEL1,
-                testfn = function(user, data, scratchpad) 
-					scratchpad.wx78_anvil = (scratchpad.wx78_anvil or 0) + data.count 
+                testfn = function(user, data, scratchpad)
+					scratchpad.wx78_anvil = (scratchpad.wx78_anvil or 0) + data.count
 					return scratchpad.wx78_anvil >= 50
 				end,
             },
@@ -280,7 +280,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "wickerbottom",
-        data = 
+        data =
         {
             {
                 achievementid = "wickerbottom_meteor",
@@ -291,7 +291,7 @@ local Lavaarena_Achievements =
                 achievementid = "wickerbottom_healing",
                 wxp = XWP_LEVEL2,
                 nosave = true,
-                testfn = function(user, data, scratchpad) 
+                testfn = function(user, data, scratchpad)
 					if scratchpad.wickerbottom_healing == nil then
 						scratchpad.wickerbottom_healing = {}
 					end
@@ -301,7 +301,7 @@ local Lavaarena_Achievements =
 						table.remove(scratchpad.wickerbottom_healing, 1)
 					end
 
-					return #scratchpad.wickerbottom_healing >= 3 
+					return #scratchpad.wickerbottom_healing >= 3
                 end,
             },
             {
@@ -313,13 +313,13 @@ local Lavaarena_Achievements =
     },
     {
         category = "woodie",
-        data = 
+        data =
         {
             {
                 achievementid = "woodie_lucychuck",
                 wxp = XWP_LEVEL1,
-                testfn = function(user, data, scratchpad) 
-					scratchpad.woodie_lucychuck = (scratchpad.woodie_lucychuck or 0) + 1 
+                testfn = function(user, data, scratchpad)
+					scratchpad.woodie_lucychuck = (scratchpad.woodie_lucychuck or 0) + 1
 					return scratchpad.woodie_lucychuck >= 20
 				end,
             },
@@ -337,7 +337,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "wes",
-        data = 
+        data =
         {
             {
                 achievementid = "wes_battlestandards",
@@ -347,7 +347,7 @@ local Lavaarena_Achievements =
             {
                 achievementid = "wes_decoy",
                 wxp = XWP_LEVEL2,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					local cards = data.statstracker:GetMvpCards()
 					if cards ~= nil then
 						for _, v in ipairs(cards) do
@@ -368,14 +368,14 @@ local Lavaarena_Achievements =
     },
     {
         category = "waxwell",
-        data = 
+        data =
         {
             {
                 achievementid = "waxwell_petrify",
                 wxp = XWP_LEVEL1,
                 testfn = function(user, data, scratchpad)
 					if TheWorld.components.lavaarenaevent:GetCurrentRound() <= 3 then -- before the fireball staff drops
-						scratchpad.waxwell_petrify = (scratchpad.waxwell_petrify or 0) + data.count 
+						scratchpad.waxwell_petrify = (scratchpad.waxwell_petrify or 0) + data.count
 						return scratchpad.waxwell_petrify >= 25
 					end
 					return false
@@ -395,7 +395,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "wathgrithr",
-        data = 
+        data =
         {
             {
                 achievementid = "wathgrithr_flip",
@@ -407,7 +407,7 @@ local Lavaarena_Achievements =
                 wxp = XWP_LEVEL2,
                 testfn = function(user, data, scratchpad)
 					if data.count >= 3 then
-						scratchpad.wathgrithr_battlecry = (scratchpad.wathgrithr_battlecry or 0) + 1 
+						scratchpad.wathgrithr_battlecry = (scratchpad.wathgrithr_battlecry or 0) + 1
 						return scratchpad.wathgrithr_battlecry >= 5
 					end
 					return false
@@ -423,7 +423,7 @@ local Lavaarena_Achievements =
     },
     {
         category = "webber",
-        data = 
+        data =
         {
             {
                 achievementid = "webber_darts",
@@ -435,17 +435,17 @@ local Lavaarena_Achievements =
 					end
 					local cur_time = GetTime()
 					scratchpad.webber_darts[#scratchpad.webber_darts + 1] = cur_time
-					if (cur_time - scratchpad.webber_darts[1]) > 20 then 
+					if (cur_time - scratchpad.webber_darts[1]) > 20 then
 						table.remove(scratchpad.webber_darts, 1)
 					end
 
-					return #scratchpad.webber_darts >= 3 
+					return #scratchpad.webber_darts >= 3
                 end,
             },
             {
                 achievementid = "webber_merciless",
                 wxp = XWP_LEVEL2,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					local cards = data.statstracker:GetMvpCards()
 					if cards ~= nil then
 						for _, v in ipairs(cards) do
@@ -466,12 +466,12 @@ local Lavaarena_Achievements =
     },
     {
         category = "winona",
-        data = 
+        data =
         {
             {
                 achievementid = "winona_allweapons",
                 wxp = XWP_LEVEL1,
-                testfn = function(user, data, scratchpad) 
+                testfn = function(user, data, scratchpad)
 					if data.weapontype ~= nil then
 						if scratchpad.winona_allweapons == nil then
 							scratchpad.winona_allweapons = {}
@@ -503,7 +503,7 @@ for _, cat in ipairs(Lavaarena_Achievements) do
 	end
 end
 
-return 
+return
 {
     seasons = { 1 },
 	eventid = "lavaarena",

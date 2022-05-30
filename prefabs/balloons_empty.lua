@@ -43,7 +43,7 @@ local function onsave(inst, data)
             data.decaytime = time
         end
     end
-end    
+end
 
 local function onload(inst, data)
     if inst._decaytask ~= nil and data ~= nil and data.decaytime ~= nil then
@@ -104,7 +104,7 @@ local function fn()
 
     inst:AddComponent("inspectable")
 
-    inst:AddComponent("balloonmaker")
+    inst:AddComponent("balloonmaker") -- deprecated, but left here for mods
 
     inst:AddComponent("hauntable")
     inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)

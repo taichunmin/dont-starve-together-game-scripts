@@ -1,11 +1,13 @@
 local easing = require("easing")
 
-local function PlayWarningSound(proxy, sound)
-    local player = ThePlayer
-    if not (player ~= nil and
-            player.components.areaaware ~= nil and
-            player.components.areaaware:CurrentlyInTag("Nightmare")) then
-        return
+local function PlayWarningSound(proxy, sound, playanywhere)
+    if not playanywhere then
+        local player = ThePlayer
+        if not (player ~= nil and
+                player.components.areaaware ~= nil and
+                player.components.areaaware:CurrentlyInTag("Nightmare")) then
+            return
+        end
     end
 
     local inst = CreateEntity()
@@ -28,7 +30,7 @@ local function PlayWarningSound(proxy, sound)
     inst:Remove()
 end
 
-local function makesfx(sound)
+local function makesfx(sound, playanywhere)
     return function()
         local inst = CreateEntity()
 
@@ -39,7 +41,7 @@ local function makesfx(sound)
 
         --Dedicated server does not need to spawn the local fx
         if not TheNet:IsDedicated() then
-            inst:DoTaskInTime(0, PlayWarningSound, sound)
+            inst:DoTaskInTime(0, PlayWarningSound, sound, playanywhere)
         end
 
         inst.entity:SetPristine()
@@ -58,4 +60,5 @@ local function makesfx(sound)
 end
 
 return Prefab("atrium_gate_pulsesfx", makesfx("dontstarve/common/together/atrium_gate/shadow_pulse")),
-    Prefab("atrium_gate_explodesfx", makesfx("dontstarve/common/together/atrium_gate/explode"))
+    Prefab("atrium_gate_explodesfx", makesfx("dontstarve/common/together/atrium_gate/explode")),
+    Prefab("grotto_war_sfx", makesfx("grotto/common/archive_switch/shadow_war", true))

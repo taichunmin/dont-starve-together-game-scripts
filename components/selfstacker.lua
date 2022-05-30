@@ -11,14 +11,15 @@ end)
 
 function SelfStacker:CanSelfStack()
 	--Not in inventory, can be stacked
-	return (self.inst.components.stackable and not self.inst.components.stackable:IsFull()) and 
+	return (self.inst.components.stackable and not self.inst.components.stackable:IsFull()) and
 	(self.inst.components.inventoryitem and not self.inst.components.inventoryitem:IsHeld()) and
 	Vector3(self.inst.Physics:GetVelocity()):LengthSq() < 1 and not
 	self.stackpartner
 end
 
+local SELFSTACKER_MUST_TAGS = {"selfstacker"}
 function SelfStacker:FindItemToStackWith()
-	self.stackpartner = FindEntity(self.inst, self.searchradius, function(item) return item.prefab == self.inst.prefab and item.skinname == self.inst.skinname and item.components.selfstacker:CanSelfStack() end, {"selfstacker"})
+	self.stackpartner = FindEntity(self.inst, self.searchradius, function(item) return item.prefab == self.inst.prefab and item.skinname == self.inst.skinname and item.components.selfstacker:CanSelfStack() end, SELFSTACKER_MUST_TAGS)
 	if self.stackpartner then
 		self.stackpartner.components.selfstacker.stackpartner = self.inst
 	end

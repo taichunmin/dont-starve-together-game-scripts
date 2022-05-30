@@ -58,7 +58,7 @@ local PopupDialogScreen = Class(Screen, function(self, title, text, buttons, sca
 
     self.bg = STYLES[self.style].bgconstructor(self.proot)
 
-	--title	
+	--title
     self.title = self.proot:AddChild(Text(STYLES[self.style].title.font, STYLES[self.style].title.size))
     self.title:SetPosition(5, 88, 0)
     self.title:SetString(title)
@@ -72,11 +72,11 @@ local PopupDialogScreen = Class(Screen, function(self, title, text, buttons, sca
     self.text:EnableWordWrap(true)
     self.text:SetRegionSize(500, 160)
     self.text:SetVAlign(ANCHOR_MIDDLE)
-  
+
     local spacing = spacing_override or 200
 
 	self.menu = self.proot:AddChild(Menu(buttons, spacing, true))
-	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -127, 0) 
+	self.menu:SetPosition(-(spacing*(#buttons-1))/2, -127, 0)
     for i,v in pairs(self.menu.items) do
         v:SetScale(.7)
     end
@@ -95,8 +95,8 @@ end
 
 function PopupDialogScreen:OnControl(control, down)
     if PopupDialogScreen._base.OnControl(self,control, down) then return true end
-    
-    if control == CONTROL_CANCEL and not down then    
+
+    if control == CONTROL_CANCEL and not down then
         if #self.buttons > 1 and self.buttons[#self.buttons] then
             self.buttons[#self.buttons].cb()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -114,7 +114,7 @@ function PopupDialogScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
 	if #self.buttons > 1 and self.buttons[#self.buttons] then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)	
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
     end
 	return table.concat(t, "  ")
 end

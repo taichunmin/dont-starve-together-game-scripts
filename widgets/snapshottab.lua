@@ -76,7 +76,7 @@ function SnapshotTab:MakeSnapshotsMenu()
         widget.OnGainFocus = function(self)
             if not widget:IsEnabled() then return end
             Widget.OnGainFocus(self)
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover")
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_mouseover", nil, ClickMouseoverSoundReduction())
             widget.state_bg:Show()
         end
 
@@ -201,7 +201,7 @@ function SnapshotTab:OnClickSnapshot(snapshot_num)
                 if truncate_to_id ~= nil and truncate_to_id > 0 then
                     if self.multi_level or self.use_cluster_path then
                         TheNet:TruncateSnapshotsInClusterSlot(self.save_slot, "Master", self.session_id, truncate_to_id)
-                        --slaves will auto-truncate to synchornize at startup
+                        --secondary shards will auto-truncate to synchornize at startup
                     else
                         TheNet:TruncateSnapshots(self.session_id, truncate_to_id)
                     end

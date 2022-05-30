@@ -40,12 +40,13 @@ local function GoHome(inst)
     return BufferedAction(inst, nil, ACTIONS.GOHOME)
 end
 
+local LAVA_TAGS = { "lava" }
 local function ShouldSpawnFn(self)
     if self.inst.components.rampingspawner:GetCurrentWave() <= 0 then
         self._spawnpos = nil
     elseif self._spawnpos == nil then
         local pos = self.inst.components.knownlocations:GetLocation("spawnpoint")
-        local lavae_ponds = TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.DRAGONFLY_RESET_DIST, { "lava" })
+        local lavae_ponds = TheSim:FindEntities(pos.x, pos.y, pos.z, TUNING.DRAGONFLY_RESET_DIST, LAVA_TAGS)
         local target = #lavae_ponds > 0 and lavae_ponds[math.random(#lavae_ponds)] or self.inst
         self._spawnpos = target:GetPosition()
     end

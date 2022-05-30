@@ -43,7 +43,7 @@ local function CreateTail(bank, build, lightoverride, addcolour, multcolour)
     if lightoverride > 0 then
         inst.AnimState:SetLightOverride(lightoverride)
     end
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:ListenForEvent("animover", inst.Remove)
 
@@ -104,7 +104,7 @@ local function MakeProjectile(name, bank, build, speed, lightoverride, addcolour
         if lightoverride > 0 then
             inst.AnimState:SetLightOverride(lightoverride)
         end
-        inst.AnimState:SetFinalOffset(-1)
+        inst.AnimState:SetFinalOffset(3)
 
         --projectile (from projectile component) added to pristine state for optimization
         inst:AddTag("projectile")
@@ -142,7 +142,7 @@ local function fireballhit_fn()
     inst.AnimState:PlayAnimation("blast")
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
     inst.AnimState:SetLightOverride(1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")
@@ -172,7 +172,7 @@ local function blossomhit_fn()
     inst.AnimState:SetBuild("lavaarena_heal_projectile")
     inst.AnimState:PlayAnimation("hit")
     inst.AnimState:SetAddColour(0, .1, .05, 0)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")
@@ -202,7 +202,7 @@ local function gooballhit_fn()
     inst.AnimState:SetBuild("gooball_fx")
     inst.AnimState:PlayAnimation("blast")
     inst.AnimState:SetMultColour(.2, 1, 0, 1)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
 
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")

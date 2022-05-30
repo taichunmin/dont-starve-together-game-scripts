@@ -34,9 +34,24 @@ local function ShouldActivateWildfires()
     return _issummer and _isday and _ishot and not _iswet and _chance > 0
 end
 
+local YES_TAGS_SHADECANOPY = {"shadecanopy"}
+local YES_TAGS_SHADECANOPY_SMALL = {"shadecanopysmall"}
+local function checkforcanopyshade(obj)
+    local x,y,z = obj.Transform:GetWorldPosition()
+    local ents = TheSim:FindEntities(x,y,z, TUNING.SHADE_CANOPY_RANGE, YES_TAGS_SHADECANOPY)
+    if #ents > 0 then
+        return true
+    end
+    ents = TheSim:FindEntities(x,y,z, TUNING.SHADE_CANOPY_RANGE_SMALL, YES_TAGS_SHADECANOPY_SMALL)
+    if #ents > 0 then
+        return true
+    end    
+end
+
 local function CheckValidWildfireStarter(obj)
     if not obj:IsValid() or
         obj:HasTag("fireimmune") or
+        checkforcanopyshade(obj) or
         (obj.components.witherable ~= nil and obj.components.witherable:IsProtected()) then
         return false --Invalid, immune, or temporarily protected
     elseif obj.components.pickable ~= nil then
@@ -138,11 +153,6 @@ local function OnPhaseChanged(inst, phase)
     ToggleUpdate()
 end
 
-local function OnSetWildfireChance(inst, chance)
-    _chance = chance
-    ToggleUpdate()
-end
-
 local function ForceWildfireForPlayer(inst, player)
     if ShouldActivateWildfires() then
         CancelSpawn(player)
@@ -186,25 +196,9 @@ inst:ListenForEvent("weathertick", OnWeatherTick)
 inst:ListenForEvent("seasontick", OnSeasonTick)
 inst:ListenForEvent("temperaturetick", OnTemperatureTick)
 inst:ListenForEvent("phasechanged", OnPhaseChanged)
-inst:ListenForEvent("ms_setwildfirechance", OnSetWildfireChance)
 inst:ListenForEvent("ms_lightwildfireforplayer", ForceWildfireForPlayer)
 inst:ListenForEvent("ms_playerjoined", OnPlayerJoined)
 inst:ListenForEvent("ms_playerleft", OnPlayerLeft)
-
---------------------------------------------------------------------------
---[[ Save/Load ]]
---------------------------------------------------------------------------
-
-function self:OnSave()
-    return
-    {
-        chance = _chance,
-    }
-end
-
-function self:OnLoad(data)
-    _chance = data.chance or _chance
-end
 
 --------------------------------------------------------------------------
 --[[ Debug ]]

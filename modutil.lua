@@ -42,9 +42,16 @@ function GetModConfigData(optionname, modname, get_local_config)
 		else
 			for i,v in pairs(config) do
 				if v.name == optionname then
-					if v.saved ~= nil then
-						return v.saved 
-					else 
+					if v.saved_server ~= nil and not get_local_config then
+						return v.saved_server
+
+					elseif v.saved_client ~= nil and get_local_config then
+						return v.saved_client
+
+					elseif v.saved ~= nil then
+						return v.saved
+
+					else
 						return v.default
 					end
 				end
@@ -149,15 +156,6 @@ local function DoAddClassPostConstruct(classdef, postfn)
 		constructor(self, ...)
 		postfn(self, ...)
 	end
-	local mt = getmetatable(classdef)
-	mt.__call = function(class_tbl, ...)
-        local obj = {}
-        setmetatable(obj, classdef)
-        if classdef._ctor then
-            classdef._ctor(obj, ...)
-        end
-        return obj
-    end
 end
 
 local function AddClassPostConstruct(package, postfn)
@@ -177,13 +175,64 @@ local function AddGlobalClassPostConstruct(package, classname, postfn)
 	DoAddClassPostConstruct(classdef, postfn)
 end
 
-local function InsertPostInitFunctions(env, isworldgen)
+local function InsertPostInitFunctions(env, isworldgen, isfrontend)
 
     env.modassert = modassert
     env.moderror = moderror
 
 	env.postinitfns = {}
 	env.postinitdata = {}
+
+	if isfrontend then
+		env.ReloadFrontEndAssets = function()
+			initprint("ReloadFrontEndAssets")
+			if env.FrontEndAssets then
+				ModReloadFrontEndAssets(env.FrontEndAssets, env.modname)
+			end
+		end
+	end
+
+	-- Used to preload assets before they get loaded regularly; use mainly for modifying loading screen tip icons
+	-- Assets is a table list defined the same as in any prefab file and uses .tex and .xml file data
+	--[[ e.g.
+		Assets = {
+			Asset( "IMAGE", "<path to .tex file relative to the mod's folder>" ),
+			Asset( "ATLAS", "<path to .xml file relative to the mod's folder>" ),
+		}]]
+	if not isworldgen then
+		env.ReloadPreloadAssets = function()
+			initprint("ReloadPreloadAssets")
+			if env.PreloadAssets then
+				ModPreloadAssets(env.PreloadAssets, env.modname)
+			end
+		end
+	end
+
+	local Customize = require("map/customize")
+	env.AddCustomizeGroup = function(category, name, text, desc, atlas, order)
+		initprint("AddCustomizeGroup", category, name)
+		Customize.AddCustomizeGroup(env.modname, category, name, text, desc, atlas, order)
+	end
+
+	env.RemoveCustomizeGroup = function(category, name)
+		initprint("RemoveCustomizeGroup", category, name)
+		Customize.RemoveCustomizeGroup(env.modname, category, name)
+	end
+
+	env.AddCustomizeItem = function(category, group, name, itemsettings)
+		initprint("AddCustomizeItem", category, group, name)
+		Customize.AddCustomizeItem(env.modname, category, group, name, itemsettings)
+	end
+
+	env.RemoveCustomizeItem = function(category, name)
+		initprint("RemoveCustomizeItem", category, name)
+		Customize.RemoveCustomizeItem(env.modname, category, name)
+	end
+
+	env.GetCustomizeDescription = function(description)
+		initprint("GetCustomizeDescription", description)
+		return Customize.GetDescription(description)
+	end
 
 	env.postinitfns.LevelPreInit = {}
 	env.AddLevelPreInit = function(levelid, fn)
@@ -233,14 +282,14 @@ local function InsertPostInitFunctions(env, isworldgen)
 
 	env.AddLocation = function(arg1, ...)
 		initprint("AddLocation", arg1.location)
-		AddModLocation(env.modname, arg1, ...)
+		AddModLocation(env.modname, arg1)
 	end
 	env.AddLevel = function(arg1, arg2, ...)
 		initprint("AddLevel", arg1, arg2.id)
 
 		arg2 = modcompatability.UpgradeModLevelFromV1toV2(env.modname, arg2)
 
-		AddModLevel(env.modname, arg1, arg2, ...)
+		AddModLevel(env.modname, arg1, arg2)
 	end
 	env.AddTaskSet = function(arg1, ...)
 		initprint("AddTaskSet", arg1)
@@ -307,7 +356,7 @@ local function InsertPostInitFunctions(env, isworldgen)
 	--env.AddTile = function( tile_name, texture_name, noise_texture, runsound, walksound, snowsound, mudsound, flashpoint_modifier )
 	--	AddTile( env.modname, tile_name, texture_name, noise_texture, runsound, walksound, snowsound, mudsound, flashpoint_modifier )
 	--end
-	
+
 	env.ReleaseID = ReleaseID.IDs
 	env.CurrentRelease = CurrentRelease
 
@@ -338,7 +387,7 @@ local function InsertPostInitFunctions(env, isworldgen)
 		end
 		action.mod_name = env.modname
 
-		assert( action.id ~= nil and type(action.id) == "string", "Must specify an ID for your custom action! Example: \"MYACTION\"")			
+		assert( action.id ~= nil and type(action.id) == "string", "Must specify an ID for your custom action! Example: \"MYACTION\"")
 
 		initprint("AddAction", action.id)
 		ACTIONS[action.id] = action
@@ -348,16 +397,48 @@ local function InsertPostInitFunctions(env, isworldgen)
 			ACTION_MOD_IDS[action.mod_name] = {}
 		end
 		table.insert(ACTION_MOD_IDS[action.mod_name], action.id)
-		ACTIONS[action.id].code = #ACTION_MOD_IDS[action.mod_name]
+		action.code = #ACTION_MOD_IDS[action.mod_name]
+		if MOD_ACTIONS_BY_ACTION_CODE[action.mod_name] == nil then
+			MOD_ACTIONS_BY_ACTION_CODE[action.mod_name] = {}
+		end
+		MOD_ACTIONS_BY_ACTION_CODE[action.mod_name][action.code] = action
 
 		STRINGS.ACTIONS[action.id] = action.str
-		
+
 		return ACTIONS[action.id]
 	end
 
 	env.AddComponentAction = function(actiontype, component, fn)
 		-- just past this along to the global function
 		AddComponentAction(actiontype, component, fn, env.modname)
+	end
+
+	env.AddPopup = function(id)
+		local popup
+		if type(id) == "table" and id.is_a and id:is_a(PopupManagerWidget) then
+			popup = id
+		else
+			popup = PopupManagerWidget()
+			popup.id = id
+		end
+		popup.mod_name = env.modname
+
+		initprint("AddPopup", popup.id)
+		POPUPS[popup.id] = popup
+
+		--put it's mapping into a different IDS table, one for each mod
+		if MOD_POPUP_IDS[popup.mod_name] == nil then
+			MOD_POPUP_IDS[popup.mod_name] = {}
+		end
+		table.insert(MOD_POPUP_IDS[popup.mod_name], popup.id)
+		popup.code = #MOD_POPUP_IDS[popup.mod_name]
+
+		if MOD_POPUPS_BY_POPUP_CODE[popup.mod_name] == nil then
+			MOD_POPUPS_BY_POPUP_CODE[popup.mod_name] = {}
+		end
+		MOD_POPUPS_BY_POPUP_CODE[popup.mod_name][popup.code] = popup
+
+		return POPUPS[popup.id]
 	end
 
 	env.postinitdata.MinimapAtlases = {}
@@ -391,6 +472,18 @@ local function InsertPostInitFunctions(env, isworldgen)
 			env.postinitdata.StategraphEvent[stategraph] = {}
 		end
 		table.insert(env.postinitdata.StategraphEvent[stategraph], event)
+	end
+
+	env.postinitfns.ModShadersInit = {}
+	env.AddModShadersInit = function( fn )
+		initprint("AddModShadersInit")
+		table.insert(env.postinitfns.ModShadersInit, fn)
+	end
+
+	env.postinitfns.ModShadersSortAndEnable = {}
+	env.AddModShadersSortAndEnable = function( fn )
+		initprint("AddModShadersSortAndEnable")
+		table.insert(env.postinitfns.ModShadersSortAndEnable, fn)
 	end
 
 	env.postinitfns.StategraphPostInit = {}
@@ -438,6 +531,30 @@ local function InsertPostInitFunctions(env, isworldgen)
 		table.insert(env.postinitfns.PrefabPostInit[prefab], fn)
 	end
 
+	env.postinitfns.RecipePostInitAny = {}
+	env.AddRecipePostInitAny = function(fn)
+		initprint("AddRecipePostInitAny")
+		require("recipe")
+		table.insert(env.postinitfns.RecipePostInitAny, fn)
+		--run for all existing recipes
+		for k, v in pairs(AllRecipes) do
+			fn(v)
+		end
+	end
+
+	env.postinitfns.RecipePostInit = {}
+	env.AddRecipePostInit = function(recipename, fn)
+		initprint("AddRecipePostInit")
+		require("recipe")
+		if env.postinitfns.RecipePostInit[recipename] == nil then
+			env.postinitfns.RecipePostInit[recipename] = {}
+		end
+		table.insert(env.postinitfns.RecipePostInit[recipename], fn)
+		if AllRecipes[recipename] then
+			fn(AllRecipes[recipename])
+		end
+	end
+
 	-- the non-standard ones
 
 	env.AddBrainPostInit = function(brain, fn)
@@ -459,7 +576,7 @@ local function InsertPostInitFunctions(env, isworldgen)
 	env.AddCookerRecipe = function(cooker, recipe)
 		require("cooking")
 		initprint("AddCookerRecipe", cooker, recipe.name)
-		AddCookerRecipe(cooker, recipe)
+		AddCookerRecipe(cooker, recipe, true) -- please do not try to bypass the true value. It will not work and result in server log spam and cause a worse cookbook experience for the mod users.
 		if env.cookerrecipes[cooker] == nil then
 	        env.cookerrecipes[cooker] = {}
 	    end
@@ -478,22 +595,166 @@ local function InsertPostInitFunctions(env, isworldgen)
 		RemoveDefaultCharacter(name)
 	end
 
-	env.AddRecipe = function(arg1, ...)
-		initprint("AddRecipe", arg1)
+	-- data: see PROTOTYPER_DEFS in recipes.lua for examples
+	env.AddPrototyperDef = function(prototyper_prefab, data)
+		initprint("AddPrototyperDef", prototyper_prefab)
+		require("recipe")
+		if prototyper_prefab ~= nil then
+			PROTOTYPER_DEFS[prototyper_prefab] = data
+		end
+	end
+
+	env.AddRecipeFilter = function(filter_def, index)
+		-- filter_def.name: This is the filter's id and will need the string added to STRINGS.UI.CRAFTING_FILTERS[name]
+		-- filter_def.atlas: atlas for the icon,  can be a string or function
+		-- filter_def.image: icon to show in the crafting menu, can be a string or function
+		-- filter_def.image_size: (optional) custom image sizing 
+		-- filter_def.custom_pos: (optional) This will not be added to the grid of filters
+		-- filter_def.recipes: !This is not supported! Create the filter and then pass in the filter to AddRecipe2() or AddRecipeToFilter()
+
+		if filter_def == nil or filter_def.name == nil then
+			initprint("Error: AddRecipeFilter called with bad data.")
+			return
+		end
+
+		filter_def.name = string.upper(filter_def.name)
+
+		local name = filter_def.name
+
+		if filter_def.atlas == nil then
+			initprint("Error: AddRecipeFilter "..name.." requires 'atlas'.")
+			return
+		end
+		if filter_def.image == nil then
+			initprint("Error: AddRecipeFilter "..name.." requires 'image'.")
+			return
+		end
+
+		initprint("AddRecipeFilter", name)
+
+		filter_def.recipes = {}
+		filter_def.default_sort_values = {}
+
+		if index ~= nil then
+			table.insert(CRAFTING_FILTER_DEFS, index, filter_def)
+		else
+			table.insert(CRAFTING_FILTER_DEFS, filter_def)
+		end
+		CRAFTING_FILTERS[name] = filter_def
+	end
+
+	env.AddRecipeToFilter = function(recipe_name, filter_name)
+		initprint("AddRecipeToFilter", recipe_name, filter_name)
+		local filter = CRAFTING_FILTERS[filter_name]
+		if filter ~= nil and filter.default_sort_values[recipe_name] == nil then
+			table.insert(filter.recipes, recipe_name)
+			filter.default_sort_values[recipe_name] = #filter.recipes
+		end
+	end
+
+	env.RemoveRecipeFromFilter = function(recipe_name, filter_name)
+		initprint("RemoveRecipeFromFilter", recipe_name, filter_name)
+		local filter = CRAFTING_FILTERS[filter_name]
+		if filter ~= nil and filter.default_sort_values[recipe_name] ~= nil then
+			table.removearrayvalue(filter.recipes, recipe_name)
+			filter.default_sort_values = table.invert(filter.recipes)
+		end
+	end
+
+	-- filters = {"TOOLS", "LIGHT"}
+	env.AddRecipe2 = function(name, ingredients, tech, config, filters)
+		initprint("AddRecipe2", name)
 		require("recipe")
 		mod_protect_Recipe = false
-		local rec = Recipe(arg1, ...)
+		local rec = Recipe2(name, ingredients, tech, config)
+
+		if not rec.is_deconstruction_recipe then
+			if config ~= nil and config.nounlock then
+				env.AddRecipeToFilter(name, CRAFTING_FILTERS.CRAFTING_STATION.name)
+			else
+				env.AddRecipeToFilter(name, CRAFTING_FILTERS.MODS.name)
+			end
+
+			if filters ~= nil then
+				for _, filter_name in ipairs(filters) do
+					env.AddRecipeToFilter(name, filter_name)
+				end
+			end
+		end
+
+
 		mod_protect_Recipe = true
 		rec:SetModRPCID()
 		return rec
 	end
-	
+
+	env.AddCharacterRecipe = function(name, ingredients, tech, config, extra_filters)
+		initprint("AddCharacterRecipe", name)
+		require("recipe")
+		mod_protect_Recipe = false
+
+		local rec = Recipe2(name, ingredients, tech, config)
+
+		if config ~= nil and config.builder_tag ~= nil then
+			env.AddRecipeToFilter(name, CRAFTING_FILTERS.CHARACTER.name)
+		else
+			initprint("Warning: AddCharacterRecipe called for recipe "..name.." without a builder_tag. This recipe will be added to the mods filter instead of the character filter.")
+			env.AddRecipeToFilter(name, CRAFTING_FILTERS.MODS.name)
+		end
+
+		if extra_filters ~= nil then
+			for _, filter_name in ipairs(extra_filters) do
+				env.AddRecipeToFilter(name, filter_name)
+			end
+		end
+
+
+		mod_protect_Recipe = true
+		rec:SetModRPCID()
+		return rec
+	end
+
+	env.AddDeconstructRecipe = function(name, return_ingredients)
+		initprint("AddDeconstructRecipe", name)
+		require("recipe")
+		mod_protect_Recipe = false
+		local rec = DeconstructRecipe(name, return_ingredients)
+		mod_protect_Recipe = true
+		rec:SetModRPCID()
+		return rec
+	end
+
+	env.AddRecipe = function(arg1, ...)
+		print("Warning: function AddRecipe in modmain is deprecated, please use AddRecipe2. Recipe name:", arg1)
+		initprint("AddRecipe", arg1)
+		require("recipe")
+		mod_protect_Recipe = false
+		local rec = Recipe(arg1, ...)
+
+		-- unfortunately recipes added using the old system will not support the crafting_station filter as the prototyper is not able to retrofit into a crafting station
+		--if rec.nounlock and rec.tab ~= nil and rec.tab.crafting_station then
+		--	env.AddRecipeToFilter(name, CRAFTING_FILTERS.CRAFTING_STATION.name)
+		--end
+
+
+		if rec.builder_tag ~= nil then
+			env.AddRecipeToFilter(arg1, CRAFTING_FILTERS.CHARACTER.name)
+		elseif not rec.is_deconstruction_recipe then
+			env.AddRecipeToFilter(arg1, CRAFTING_FILTERS.MODS.name)
+		end
+
+		mod_protect_Recipe = true
+		rec:SetModRPCID()
+		return rec
+	end
+
 	env.Recipe = function(...)
 		print("Warning: function Recipe in modmain is deprecated, please use AddRecipe")
 		return env.AddRecipe(...)
 	end
-	
+
     env.AddRecipeTab = function( rec_str, rec_sort, rec_atlas, rec_icon, rec_owner_tag, rec_crafting_station )
+		print("Warning: function AddRecipeTab in modmain is deprecated.")
 		CUSTOM_RECIPETABS[rec_str] = { str = rec_str, sort = rec_sort, icon_atlas = rec_atlas, icon = rec_icon, owner_tag = rec_owner_tag, crafting_station = rec_crafting_station }
 		STRINGS.TABS[rec_str] = rec_str
 		return CUSTOM_RECIPETABS[rec_str]
@@ -516,6 +777,11 @@ local function InsertPostInitFunctions(env, isworldgen)
 		TheSim:RemapSoundEvent(name, new_name)
 	end
 
+	env.RemoveRemapSoundEvent = function(name) -- Convenience wrapper.
+		initprint("RemoveRemapSoundEvent", name)
+		TheSim:RemapSoundEvent(name) -- Other second parameter values may be nil / "" / the first parameter.
+	end
+
 	env.AddReplicableComponent = function(name)
 		initprint("AddReplicableComponent", name)
 		AddReplicableComponent(name)
@@ -526,21 +792,61 @@ local function InsertPostInitFunctions(env, isworldgen)
 		AddModRPCHandler( namespace, name, fn )
 	end
 
+	env.AddClientModRPCHandler = function( namespace, name, fn )
+		initprint( "AddClientModRPCHandler", namespace, name )
+		AddClientModRPCHandler( namespace, name, fn )
+	end
+
+	env.AddShardModRPCHandler = function( namespace, name, fn )
+		initprint( "AddShardModRPCHandler", namespace, name )
+		AddShardModRPCHandler( namespace, name, fn )
+	end
+
 	env.GetModRPCHandler = function( namespace, name )
 		initprint( "GetModRPCHandler", namespace, name )
 		return GetModRPCHandler( namespace, name )
 	end
-	
+
+	env.GetClientModRPCHandler = function( namespace, name )
+		initprint( "GetClientModRPCHandler", namespace, name )
+		return GetClientModRPCHandler( namespace, name )
+	end
+
+	env.GetShardModRPCHandler = function( namespace, name )
+		initprint( "GetShardModRPCHandler", namespace, name )
+		return GetShardModRPCHandler( namespace, name )
+	end
+
 	env.SendModRPCToServer = function( id_table, ... )
 		initprint( "SendModRPCToServer", id_table.namespace, id_table.id )
 		SendModRPCToServer( id_table, ... )
 	end
 
+	env.SendModRPCToClient = function( id_table, ... )
+		initprint( "SendModRPCToClient", id_table.namespace, id_table.id )
+		SendModRPCToClient( id_table, ... )
+	end
+
+	env.SendModRPCToShard = function( id_table, ... )
+		initprint( "SendModRPCToShard", id_table.namespace, id_table.id )
+		SendModRPCToShard( id_table, ... )
+	end
+
 	env.MOD_RPC = MOD_RPC --legacy, mods should use GetModRPC below
+	env.CLIENT_MOD_RPC = CLIENT_MOD_RPC --legacy, mods should use GetClientModRPC below
+	env.SHARD_MOD_RPC = SHARD_MOD_RPC --legacy, mods should use GetShardModRPC below
 
 	env.GetModRPC = function( namespace, name )
 		initprint( "GetModRPC", namespace, name )
 		return GetModRPC( namespace, name )
+	end
+	env.GetClientModRPC = function( namespace, name )
+		initprint( "GetClientModRPC", namespace, name )
+		return GetClientModRPC( namespace, name )
+	end
+	env.GetShardModRPC = function( namespace, name )
+		initprint( "GetModRPC", namespace, name )
+		return GetShardModRPC( namespace, name )
 	end
 
     env.SetModHUDFocus = function(focusid, hasfocus)
@@ -559,13 +865,13 @@ local function InsertPostInitFunctions(env, isworldgen)
 
 	env.AddVoteCommand = function(command_name, init_options_fn, process_result_fn, vote_timeout )
 		initprint("AddVoteCommand", command_name, init_options_fn, process_result_fn, vote_timeout )
-		
+
 		if env.vote_commands == nil then
 	        env.vote_commands = {}
 	    end
 		env.vote_commands[command_name] = { InitOptionsFn = init_options_fn, ProcessResultFn = process_result_fn, Timeout = vote_timeout or 15 }
 	end
-	
+
 	env.ExcludeClothingSymbolForModCharacter = function(name, symbol)
         initprint("ExcludeClothingSymbolForModCharacter", name, symbol)
 
@@ -577,9 +883,51 @@ local function InsertPostInitFunctions(env, isworldgen)
 	    end
 	    table.insert( env.clothing_exclude[name], symbol )
     end
-    
+
+	env.RegisterInventoryItemAtlas = function(atlas, prefabname) -- for this to work properly (without having to spawn an item), you should be using the prefab name for the inventory image name
+		initprint("RegisterInventoryItemAtlas", atlas, prefabname)
+		RegisterInventoryItemAtlas(atlas, prefabname)
+	end
+
+	-- For modding loading tips
+	env.AddLoadingTip = function(stringtable, id, tipstring, controltipdata)
+		if stringtable == nil or id == nil or tipstring == nil then
+			return
+		end
+
+		-- Note: Tip needs a unique identifier string to load properly
+		stringtable[id] = tipstring
+
+		if controltipdata == nil then
+			return
+		end
+
+		LOADING_SCREEN_CONTROL_TIP_KEYS[id] = controltipdata
+	end
+
+	env.RemoveLoadingTip = function(stringtable, id)
+		if stringtable == nil or id == nil then
+			return
+		end
+
+		stringtable[id] = nil
+		LOADING_SCREEN_CONTROL_TIP_KEYS[id] = nil
+	end
+
+	-- Loading tip weights when playing the game for the first time (LOADING_SCREEN_TIP_CATEGORY_WEIGHTS_START),
+	-- or after a certain amount of time (LOADING_SCREEN_TIP_CATEGORY_WEIGHTS_END), based on the weights table to be modified.
+	-- For play time in between, weights are interpolated from the difference between start and end category weights.
+	env.SetLoadingTipCategoryWeights = function(weighttable, weightdata)
+		for key, weight in pairs(weightdata) do
+			weighttable[key] = weight
+		end
+	end
+
+	env.SetLoadingTipCategoryIcon = function(category, categoryatlas, categoryicon)
+		LOADING_SCREEN_TIP_ICONS[category] = { atlas = categoryatlas, icon = categoryicon }
+	end
 end
 
 return {
-			InsertPostInitFunctions = InsertPostInitFunctions,
-		}
+	InsertPostInitFunctions = InsertPostInitFunctions,
+}

@@ -4,8 +4,16 @@ local function oncanbeopened(self, canbeopened)
     self.inst.replica.container:SetCanBeOpened(canbeopened)
 end
 
-local function onopener(self, opener)
-    self.inst.replica.container:SetOpener(opener)
+local function OnOwnerDespawned(inst)
+    local container = inst.components.container
+    if container ~= nil then
+        for i = 1, container.numslots do
+            local item = container.slots[i]
+            if item ~= nil then
+                item:PushEvent("player_despawn")
+            end
+        end
+    end
 end
 
 local Container = Class(function(self, inst)
@@ -19,7 +27,18 @@ local Container = Class(function(self, inst)
     self.type = nil
     self.widget = nil
     self.itemtestfn = nil
-    self.opener = nil
+    self.priorityfn = nil
+
+    self.openlist = {}
+    self.opencount = 0
+
+	--self.droponopen = false
+
+    inst:ListenForEvent("player_despawn", OnOwnerDespawned)
+
+    --the current opener that has performed an action, can be nil or incorrect, verify before using this!!!
+    --self.currentuser = nil
+
 
     --Hacky flags for altering behaviour when moving items between containers
     self.ignoresound = false
@@ -27,7 +46,6 @@ end,
 nil,
 {
     canbeopened = oncanbeopened,
-    opener = onopener,
 })
 
 local widgetprops =
@@ -39,6 +57,8 @@ local widgetprops =
     "type",
     "widget",
     "itemtestfn",
+    "priorityfn",
+    "openlimit"
 }
 
 function Container:WidgetSetup(prefab, data)
@@ -85,10 +105,12 @@ function Container:SetNumSlots(numslots)
     self.numslots = numslots
 end
 
-function Container:DropItemBySlot(slot)
+function Container:DropItemBySlot(slot, drop_pos)
     local item = self:RemoveItemBySlot(slot)
     if item ~= nil then
-        item.Transform:SetPosition(self.inst.Transform:GetWorldPosition())
+        drop_pos = drop_pos or self.inst:GetPosition()
+
+        item.Transform:SetPosition(drop_pos:Get())
         if item.components.inventoryitem ~= nil then
             item.components.inventoryitem:OnDropped(true)
         end
@@ -98,14 +120,14 @@ function Container:DropItemBySlot(slot)
     end
 end
 
-function Container:DropEverythingWithTag(tag)
+function Container:DropEverythingWithTag(tag, drop_pos)
     local containers = {}
 
     for i = 1, self.numslots do
         local item = self.slots[i]
         if item ~= nil then
             if item:HasTag(tag) then
-                self:DropItemBySlot(i)
+                self:DropItemBySlot(i, drop_pos)
             elseif item.components.container ~= nil then
                 table.insert(containers, item)
             end
@@ -113,19 +135,19 @@ function Container:DropEverythingWithTag(tag)
     end
 
     for i, v in ipairs(containers) do
-        v.components.container:DropEverythingWithTag(tag)
+        v.components.container:DropEverythingWithTag(tag, drop_pos)
     end
 end
 
-function Container:DropEverything()
+function Container:DropEverything(drop_pos)
     for i = 1, self.numslots do
-        self:DropItemBySlot(i)
+        self:DropItemBySlot(i, drop_pos)
     end
 end
 
 function Container:DropItem(itemtodrop)
     local item = self:RemoveItem(itemtodrop)
-    if item then 
+    if item then
         local pos = Vector3(self.inst.Transform:GetWorldPosition())
         item.Transform:SetPosition(pos:Get())
         if item.components.inventoryitem then
@@ -155,6 +177,18 @@ function Container:GetSpecificSlotForItem(item)
             end
         end
     end
+end
+
+function Container:ShouldPrioritizeContainer(item)
+    if not self.priorityfn then
+        return false
+    end
+    return item ~= nil
+        and item.components.inventoryitem ~= nil
+        and item.components.inventoryitem.cangoincontainer
+        and not item.components.inventoryitem.canonlygoinpocket
+        and not (GetGameModeProperty("non_item_equips") and item.components.equippable ~= nil)
+        and (self:priorityfn(item))
 end
 
 function Container:AcceptsStacks()
@@ -233,12 +267,12 @@ function Container:GiveItem(item, slot, src_pos, drop_on_fail)
         end
 
         if in_slot then
-            --weird case where we are trying to force a stack into a non-stacking container. this should probably have been handled earlier, but this is a failsafe        
+            --weird case where we are trying to force a stack into a non-stacking container. this should probably have been handled earlier, but this is a failsafe
             if not self.acceptsstacks and item.components.stackable and item.components.stackable:StackSize() > 1 then
                 item = item.components.stackable:Get()
                 self.slots[in_slot] = item
                 item.components.inventoryitem:OnPutInInventory(self.inst)
-                self.inst:PushEvent("itemget", { slot = in_slot, item = item, src_pos = src_pos })
+                self.inst:PushEvent("itemget", { slot = in_slot, item = item, src_pos = src_pos, })
                 return false
             end
 
@@ -273,12 +307,22 @@ function Container:RemoveItemBySlot(slot)
                 item.components.inventoryitem:OnRemoved()
             end
 
-            self.inst:PushEvent("itemlose", {slot = slot})
+            self.inst:PushEvent("itemlose", {slot = slot, prev_item = item})
         end
         item.prevcontainer = self
         item.prevslot = slot
         return item
     end
+end
+
+function Container:RemoveAllItems()
+    local collected_items = {}
+    for i = 1, self.numslots do
+        local item = self:RemoveItemBySlot(i)
+        table.insert(collected_items, item)
+    end
+
+    return collected_items
 end
 
 function Container:GetNumSlots()
@@ -299,27 +343,44 @@ function Container:GetItemSlot(item)
     end
 end
 
+function Container:GetAllItems()
+    local collected_items = {}
+    for k,v in pairs(self.slots) do
+        if v ~= nil then
+            table.insert(collected_items, v)
+        end
+    end
+
+    return collected_items
+end
+
 function Container:Open(doer)
-    if self.opener == nil and doer ~= nil then
+    if doer ~= nil and self.openlist[doer] == nil then
         self.inst:StartUpdatingComponent(self)
 
         local inventory = doer.components.inventory
         if inventory ~= nil then
             for k, v in pairs(inventory.opencontainers) do
                 if k.prefab == self.inst.prefab or k.components.container.type == self.type then
-                    k.components.container:Close()
+                    k.components.container:Close(doer)
                 end
             end
 
             inventory.opencontainers[self.inst] = true
         end
 
-        self.opener = doer
+        self.openlist[doer] = true
+        self.opencount = self.opencount + 1
+        self.inst.replica.container:AddOpener(doer)
 
         if doer.HUD ~= nil then
             doer.HUD:OpenContainer(self.inst, self:IsSideWidget())
             if self:IsSideWidget() then
-                TheFocalPoint.SoundEmitter:PlaySound("dontstarve/wilson/backpack_open")
+                TheFocalPoint.SoundEmitter:PlaySound(self.inst.open_skin_sound or "dontstarve/wilson/backpack_open")
+            else
+                if not self.skipopensnd then
+                    TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/Together_HUD/container_open")
+                end
             end
         elseif self.widget ~= nil
             and self.widget.buttoninfo ~= nil
@@ -327,25 +388,42 @@ function Container:Open(doer)
             doer.components.playeractionpicker:RegisterContainer(self.inst)
         end
 
-        self.inst:PushEvent("onopen", { doer = doer })
+        self.inst:PushEvent("onopen", {doer = doer})
 
-        if self.onopenfn ~= nil then
-            self.onopenfn(self.inst, { doer = doer })
+        if self.onopenfn ~= nil and self.opencount == 1 then
+            self.onopenfn(self.inst, {doer = doer})
+        end
+
+        if self.onanyopenfn ~= nil then
+            self.onanyopenfn(self.inst, {doer = doer})
         end
     end
 end
 
-function Container:Close()
-    if self.opener ~= nil then
-        self.inst:StopUpdatingComponent(self)
+function Container:Close(doer)
+    if doer == nil then
+        for opener, _ in pairs(self.openlist) do
+            self:Close(opener)
+        end
+        return
+    end
+    if doer ~= nil and self.openlist[doer] ~= nil then
+        self.openlist[doer] = nil
+        self.opencount = self.opencount - 1
+        self.inst.replica.container:RemoveOpener(doer)
 
-        local doer = self.opener
-        self.opener = nil
+        if self.opencount == 0 then
+            self.inst:StopUpdatingComponent(self)
+        end
 
         if doer.HUD ~= nil then
             doer.HUD:CloseContainer(self.inst, self:IsSideWidget())
             if self:IsSideWidget() then
                 TheFocalPoint.SoundEmitter:PlaySound("dontstarve/wilson/backpack_close")
+            else
+                if not self.skipclosesnd then
+                    TheFocalPoint.SoundEmitter:PlaySound("dontstarve/HUD/Together_HUD/container_close")
+                end
             end
         elseif doer.components.playeractionpicker ~= nil then
             doer.components.playeractionpicker:UnregisterContainer(self.inst)
@@ -355,20 +433,40 @@ function Container:Close()
             doer.components.inventory.opencontainers[self.inst] = nil
         end
 
-        if self.onclosefn ~= nil then
+        if self.onclosefn ~= nil and self.opencount == 0 then
             self.onclosefn(self.inst, doer)
         end
 
-        self.inst:PushEvent("onclose", { doer = doer })
+        if self.onanyclosefn ~= nil then
+            self.onanyclosefn(self.inst, {doer = doer})
+        end
+
+        self.inst:PushEvent("onclose", {doer = doer})
     end
 end
 
 function Container:IsOpen()
-    return self.opener ~= nil
+    return self.opencount > 0
 end
 
 function Container:IsOpenedBy(guy)
-    return self.opener == guy
+    return self.openlist[guy]
+end
+
+function Container:IsOpenedByOthers(guy)
+    return (self.opencount - (self.openlist[guy] and 1 or 0)) > 0
+end
+
+function Container:CanOpen()
+    return self.openlimit == nil or self.opencount < self.openlimit
+end
+
+function Container:GetOpeners()
+    local openers = {}
+    for opener in pairs(self.openlist) do
+        table.insert(openers, opener)
+    end
+    return openers
 end
 
 local function CheckItem(item, target, checkcontainer)
@@ -407,10 +505,31 @@ function Container:FindItems(fn)
     return items
 end
 
+function Container:ForEachItem(fn, ...)
+    for k,v in pairs(self.slots) do
+        fn(v, ...)
+    end
+end
+
 function Container:Has(item, amount)
     local num_found = 0
     for k,v in pairs(self.slots) do
         if v and v.prefab == item then
+            if v.components.stackable ~= nil then
+                num_found = num_found + v.components.stackable:StackSize()
+            else
+                num_found = num_found + 1
+            end
+        end
+    end
+
+    return num_found >= amount, num_found
+end
+
+function Container:HasItemWithTag(tag, amount)
+    local num_found = 0
+    for k,v in pairs(self.slots) do
+        if v and v:HasTag(tag) then
             if v.components.stackable ~= nil then
                 num_found = num_found + v.components.stackable:StackSize()
             else
@@ -446,15 +565,51 @@ function Container:GetItemByName(item, amount)
         return num_found
     end
 
-    for k,v in pairs(self.slots) do
+    for k = 1,self.numslots do
+        local v = self.slots[k]
         total_num_found = total_num_found + tryfind(v)
-        
+
         if total_num_found >= amount then
             break
         end
     end
 
     return items
+end
+
+local function crafting_priority_fn(a, b)
+    if a.stacksize == b.stacksize then
+        return a.slot < b.slot
+    end
+    return a.stacksize < b.stacksize --smaller stacks first
+end
+
+function Container:GetCraftingIngredient(item, amount, reverse_search_order)
+    local items = {}
+    for i = 1, self.numslots do
+        local v = self.slots[i]
+        if v and v.prefab == item then
+            table.insert(items, {
+                item = v,
+                stacksize = GetStackSize(v),
+                slot = reverse_search_order and (self.numslots - (i - 1)) or i,
+            })
+        end
+    end
+    table.sort(items, crafting_priority_fn)
+
+    local crafting_items = {}
+    local total_num_found = 0
+    for i, v in ipairs(items) do
+        local stacksize = math.min(v.stacksize, amount - total_num_found)
+        crafting_items[v.item] = stacksize
+        total_num_found = total_num_found + stacksize
+        if total_num_found >= amount then
+            break
+        end
+    end
+
+    return crafting_items
 end
 
 local function tryconsume(self, v, amount)
@@ -525,6 +680,7 @@ function Container:RemoveItem(item, wholestack)
 
     if not wholestack and item.components.stackable ~= nil and item.components.stackable:IsStack() then
         local dec = item.components.stackable:Get()
+        dec.components.inventoryitem:OnRemoved()
         dec.prevslot = prevslot
         dec.prevcontainer = self
         return dec
@@ -533,7 +689,7 @@ function Container:RemoveItem(item, wholestack)
     for k, v in pairs(self.slots) do
         if v == item then
             self.slots[k] = nil
-            self.inst:PushEvent("itemlose", { slot = k })
+            self.inst:PushEvent("itemlose", { slot = k, prev_item = item })
             item.components.inventoryitem:OnRemoved()
             item.prevslot = prevslot
             item.prevcontainer = self
@@ -549,14 +705,19 @@ end
 --------------------------------------------------------------------------
 
 function Container:OnUpdate(dt)
-    if self.opener == nil then
+    if self.opencount == 0 then
         self.inst:StopUpdatingComponent(self)
-    elseif not (self.inst.components.inventoryitem ~= nil and
-                self.inst.components.inventoryitem:IsHeldBy(self.opener))
-        and ((self.opener.components.rider ~= nil and self.opener.components.rider:IsRiding())
-            or not (self.opener:IsNear(self.inst, 3) and
-                    CanEntitySeeTarget(self.opener, self.inst))) then
-        self:Close()
+    else
+        --attempt to close the chest for all players who have the chest opened who meet the requirements for closing it.
+        for opener, _ in pairs(self.openlist) do
+            if not (self.inst.components.inventoryitem ~= nil and
+                    self.inst.components.inventoryitem:IsHeldBy(opener)) and
+                    ((opener.components.rider ~= nil and opener.components.rider:IsRiding()) or
+                    not (opener:IsNear(self.inst, 3) and
+                    CanEntitySeeTarget(opener, self.inst))) then
+                self:Close(opener)
+            end
+        end
     end
 end
 
@@ -568,43 +729,54 @@ Container.OnRemoveFromEntity = Container.Close
 --InvSlot click action handlers
 --------------------------------------------------------------------------
 
-local function QueryActiveItem(self)
-    local inventory = self.opener ~= nil and self.opener.components.inventory or nil
+local function QueryActiveItem(self, opener)
+    local inventory = opener ~= nil and opener.components.inventory or nil
     return inventory, inventory ~= nil and inventory:GetActiveItem() or nil
 end
 
-function Container:PutOneOfActiveItemInSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:PutOneOfActiveItemInSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     if active_item ~= nil and
         self:GetItemInSlot(slot) == nil and
         self:CanTakeItemInSlot(active_item, slot) and
         active_item.components.stackable ~= nil and
         active_item.components.stackable:IsStack() then
 
+        self.currentuser = opener
+
         self.ignoresound = true
         self:GiveItem(active_item.components.stackable:Get(1), slot)
         self.ignoresound = false
+
+        self.currentuser = nil
     end
 end
 
-function Container:PutAllOfActiveItemInSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
-    if active_item ~= nil and
-        self:GetItemInSlot(slot) == nil and
-        self:CanTakeItemInSlot(active_item, slot) and
-        (self:AcceptsStacks() or
-        active_item.components.stackable == nil or
-        not active_item.components.stackable:IsStack()) then
+function Container:PutAllOfActiveItemInSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
+    local item = self:GetItemInSlot(slot)
+    if active_item ~= nil then
+        if item ~= nil then
+            self:SwapActiveItemWithSlot(slot, opener)
+        elseif self:CanTakeItemInSlot(active_item, slot) and
+            (self:AcceptsStacks() or
+            active_item.components.stackable == nil or
+            not active_item.components.stackable:IsStack()) then
 
-        inventory:RemoveItem(active_item, true)
-        self.ignoresound = true
-        self:GiveItem(active_item, slot)
-        self.ignoresound = false
+            self.currentuser = opener
+
+            inventory:RemoveItem(active_item, true)
+            self.ignoresound = true
+            self:GiveItem(active_item, slot)
+            self.ignoresound = false
+
+            self.currentuser = nil
+        end
     end
 end
 
-function Container:TakeActiveItemFromHalfOfSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:TakeActiveItemFromHalfOfSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     local item = self:GetItemInSlot(slot)
     if item ~= nil and
         active_item == nil and
@@ -612,44 +784,56 @@ function Container:TakeActiveItemFromHalfOfSlot(slot)
         item.components.stackable ~= nil and
         item.components.stackable:IsStack() then
 
+        self.currentuser = opener
+
         local halfstack = item.components.stackable:Get(math.floor(item.components.stackable:StackSize() / 2))
         halfstack.prevslot = slot
         halfstack.prevcontainer = self
         inventory:GiveActiveItem(halfstack)
+
+        self.currentuser = nil
     end
 end
 
-function Container:TakeActiveItemFromAllOfSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:TakeActiveItemFromAllOfSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     local item = self:GetItemInSlot(slot)
     if item ~= nil and
         active_item == nil and
         inventory ~= nil then
 
+        self.currentuser = opener
+
         self:RemoveItemBySlot(slot)
         inventory:GiveActiveItem(item)
+
+        self.currentuser = nil
     end
 end
 
-function Container:AddOneOfActiveItemToSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:AddOneOfActiveItemToSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     local item = self:GetItemInSlot(slot)
     if active_item ~= nil and
         item ~= nil and
         self:CanTakeItemInSlot(active_item, slot) and
-        item.prefab == active_item.prefab and item.skinname == active_item.skinname and 
+        item.prefab == active_item.prefab and item.skinname == active_item.skinname and
         item.components.stackable ~= nil and
         self:AcceptsStacks() and
         active_item.components.stackable ~= nil and
         active_item.components.stackable:IsStack() and
         not item.components.stackable:IsFull() then
 
+        self.currentuser = opener
+
         item.components.stackable:Put(active_item.components.stackable:Get(1))
+
+        self.currentuser = nil
     end
 end
 
-function Container:AddAllOfActiveItemToSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:AddAllOfActiveItemToSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     local item = self:GetItemInSlot(slot)
     if active_item ~= nil and
         item ~= nil and
@@ -658,40 +842,75 @@ function Container:AddAllOfActiveItemToSlot(slot)
         item.components.stackable ~= nil and
         self:AcceptsStacks() then
 
+        self.currentuser = opener
+
         local leftovers = item.components.stackable:Put(active_item)
         inventory:SetActiveItem(leftovers)
+
+        self.currentuser = nil
     end
 end
 
-function Container:SwapActiveItemWithSlot(slot)
-    local inventory, active_item = QueryActiveItem(self)
+function Container:SwapActiveItemWithSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
     local item = self:GetItemInSlot(slot)
-    if active_item ~= nil and
-        item ~= nil and
-        self:CanTakeItemInSlot(active_item, slot) and
-        not (item.prefab == active_item.prefab and item.skinname == active_item.skinname and
+    if active_item ~= nil then
+        if item == nil then
+            self:PutAllOfActiveItemInSlot(slot, opener)
+        elseif self:CanTakeItemInSlot(active_item, slot) and
+            not (item.prefab == active_item.prefab and item.skinname == active_item.skinname and
             item.components.stackable ~= nil and
             self:AcceptsStacks()) and
-        not (active_item.components.stackable ~= nil and
+            not (active_item.components.stackable ~= nil and
             active_item.components.stackable:IsStack() and
             not self:AcceptsStacks()) then
 
-        inventory:RemoveItem(active_item, true)
-        self:RemoveItemBySlot(slot)
-        inventory:GiveActiveItem(item)
-        self:GiveItem(active_item, slot)
+            self.currentuser = opener
+
+            inventory:RemoveItem(active_item, true)
+            self:RemoveItemBySlot(slot)
+            self:GiveItem(active_item, slot)
+            inventory:GiveActiveItem(item)
+
+            self.currentuser = nil
+        end
     end
 end
 
-function Container:MoveItemFromAllOfSlot(slot, container)
+function Container:SwapOneOfActiveItemWithSlot(slot, opener)
+    local inventory, active_item = QueryActiveItem(self, opener)
+    local item = self:GetItemInSlot(slot)
+
+    if active_item ~= nil and
+        item ~= nil and
+        self:CanTakeItemInSlot(active_item, slot) and
+        not (item.prefab == active_item.prefab and item.skinname == active_item.skinname and item.components.stackable ~= nil) and
+        (active_item.components.stackable ~= nil and active_item.components.stackable:IsStack()) then
+
+        self.currentuser = opener
+
+        active_item = inventory:RemoveItem(active_item, false)
+        self:RemoveItemBySlot(slot)
+        self:GiveItem(active_item, slot)
+        inventory:GiveItem(item, nil, self.inst:GetPosition())
+
+        self.currentuser = nil
+    end
+end
+
+function Container:MoveItemFromAllOfSlot(slot, container, opener)
     local item = self:GetItemInSlot(slot)
     if item ~= nil and container ~= nil then
         container = container.components.container or container.components.inventory
-        if container ~= nil and container:IsOpenedBy(self.opener) then
+        if container ~= nil and container:IsOpenedBy(opener) then
+
+            self.currentuser = opener
+            container.currentuser = opener
+
             local targetslot =
-                self.opener.components.constructionbuilderuidata ~= nil and
-                self.opener.components.constructionbuilderuidata:GetContainer() == container.inst and
-                self.opener.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
+                opener.components.constructionbuilderuidata ~= nil and
+                opener.components.constructionbuilderuidata:GetContainer() == container.inst and
+                opener.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
                 nil
 
             if container:CanTakeItemInSlot(item, targetslot) then
@@ -707,7 +926,7 @@ function Container:MoveItemFromAllOfSlot(slot, container)
                     container.ignorefull = true
                 end
 
-                if not container:GiveItem(item, targetslot) then
+                if not container:GiveItem(item, targetslot, nil, false) then
                     self:GiveItem(item, slot, nil, true)
                 end
 
@@ -719,23 +938,29 @@ function Container:MoveItemFromAllOfSlot(slot, container)
                     container.ignorefull = false
                 end
             end
+
+            self.currentuser = nil
+            container.currentuser = nil
         end
     end
 end
 
-function Container:MoveItemFromHalfOfSlot(slot, container)
+function Container:MoveItemFromHalfOfSlot(slot, container, opener)
     local item = self:GetItemInSlot(slot)
     if item ~= nil and container ~= nil then
         container = container.components.container or container.components.inventory
         if container ~= nil and
-            container:IsOpenedBy(self.opener) and
+            container:IsOpenedBy(opener) and
             item.components.stackable ~= nil and
             item.components.stackable:IsStack() then
 
+            self.currentuser = opener
+            container.currentuser = opener
+
             local targetslot =
-                self.opener.components.constructionbuilderuidata ~= nil and
-                self.opener.components.constructionbuilderuidata:GetContainer() == container.inst and
-                self.opener.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
+                opener.components.constructionbuilderuidata ~= nil and
+                opener.components.constructionbuilderuidata:GetContainer() == container.inst and
+                opener.components.constructionbuilderuidata:GetSlotForIngredient(item.prefab) or
                 nil
 
             if container:CanTakeItemInSlot(item, targetslot) then
@@ -765,6 +990,9 @@ function Container:MoveItemFromHalfOfSlot(slot, container)
                     container.ignorefull = false
                 end
             end
+
+            self.currentuser = nil
+            container.currentuser = nil
         end
     end
 end

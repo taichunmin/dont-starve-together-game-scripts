@@ -13,8 +13,10 @@ local events =
     CommonHandlers.OnSleep(),
     CommonHandlers.OnFreeze(),
     CommonHandlers.OnAttack(),
-    CommonHandlers.OnAttacked(),
+    CommonHandlers.OnAttacked(nil, TUNING.PIG_MAX_STUN_LOCKS),
     CommonHandlers.OnDeath(),
+    CommonHandlers.OnHop(),
+	CommonHandlers.OnSink(),
     EventHandler("transformwere", function(inst)
         if not inst.components.health:IsDead() then
             inst.sg:GoToState("transformWere")
@@ -212,7 +214,7 @@ local states =
         end,
 
         events =
-        {   
+        {
             EventHandler("animover", function(inst)
                 inst.sg:GoToState("walk")
             end),
@@ -246,7 +248,7 @@ local states =
         name = "walk_stop",
         tags = { "canrotate" },
 
-        onenter = function(inst) 
+        onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation("were_walk_pst")
         end,
@@ -312,5 +314,7 @@ CommonStates.AddSleepStates(states,
 
 CommonStates.AddFrozenStates(states)
 CommonStates.AddSimpleActionState(states, "eat", "eat", 20 * FRAMES, { "busy" })
+CommonStates.AddHopStates(states, true, { pre = "boat_jump_pre", loop = "boat_jump_loop", pst = "boat_jump_pst"})
+CommonStates.AddSinkAndWashAsoreStates(states)
 
 return StateGraph("werepig", states, events, "idle", actionhandlers)

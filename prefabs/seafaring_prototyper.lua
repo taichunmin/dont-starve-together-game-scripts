@@ -29,7 +29,7 @@ local function onhit(inst)
             inst.AnimState:PushAnimation("proximity_loop", true)
             if not inst.SoundEmitter:PlayingSound("loop_sound") then
                 inst.SoundEmitter:PlaySound("turnoftides/common/together/seafaring_prototyper/LP", "loop_sound")
-            end            
+            end
         else
             inst.AnimState:PushAnimation("idle", false)
             inst.SoundEmitter:KillSound("loop_sound")
@@ -65,12 +65,12 @@ local function onturnon(inst)
             inst.AnimState:PushAnimation("proximity_loop", true)
             if not inst.SoundEmitter:PlayingSound("loop_sound") then
                 inst.SoundEmitter:PlaySound("turnoftides/common/together/seafaring_prototyper/LP", "loop_sound")
-            end    
+            end
         else
             inst.AnimState:PlayAnimation("proximity_loop", true)
             if not inst.SoundEmitter:PlayingSound("loop_sound") then
                 inst.SoundEmitter:PlaySound("turnoftides/common/together/seafaring_prototyper/LP", "loop_sound")
-            end            
+            end
         end
     end
 end

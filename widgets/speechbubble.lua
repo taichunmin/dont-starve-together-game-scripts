@@ -48,15 +48,15 @@ end
 function SpeechBubble:SetText(text)
 	self.text:SetMultilineTruncatedString(text, 20, self.max_width, nil, false)
 	local w, h = self.text:GetRegionSize()
-	
+
 	self.text:SetPosition(0, math.max(self.tailsize - h, 0)/2)
-	
+
 	h = math.max(h, self.tailsize)
 	self.dialog_bg:SetSize(w, h)
-	
+
 	self:SetTint(1,1,1,0)
 	self:TintTo({r=1,g=1,b=1,a=0}, {r=1,g=1,b=1,a=1}, .3)
-	
+
 	self:OnUpdate()
 end
 
@@ -105,7 +105,7 @@ function SpeechBubble:OnUpdate()
 				end
 			else
 				raw_x, raw_y = TheSim:GetScreenPos(self.target.AnimState:GetSymbolPosition(self.target_symbol and self.target_symbol or "", self.world_offset.x, self.world_offset.y, self.world_offset.z))
-			end							
+			end
 		else
 			raw_x, raw_y = root_x, root_y
 		end
@@ -114,17 +114,17 @@ function SpeechBubble:OnUpdate()
 		local screen_scale_y = (screenHeight / RESOLUTION_Y) * TheFrontEnd:GetHUDScale()
 
         local x = raw_x
-        local y = raw_y 
+        local y = raw_y
 
         local raw_size_x, raw_size_y = self.dialog_bg:GetSize()
         local size_x = (BOARDER_SIZE + raw_size_x*0.5) * screen_scale_x
         local size_y = (BOARDER_SIZE + raw_size_y*0.5) * screen_scale_y
-        
+
         local min_x = size_x + (SCREEN_BOARDER_SIDE * screen_scale_x)
         local max_x = screenWidth - min_x
         local min_y = size_y + (SCREEN_BOARDER_BOTTOM * screen_scale_y)
         local max_y = screenHeight - (size_y + (SCREEN_BOARDER_TOP * screen_scale_y))
-        
+
 		local tail_hAnchor = ANCHOR_LEFT
 		local tail_xOffset = 0
 		local tail_xScale = 1
@@ -133,7 +133,7 @@ function SpeechBubble:OnUpdate()
 
 		if raw_x < root_x or ((raw_x == root_x) and (raw_x > screenWidth*0.5)) then
 			x = raw_x - size_x - self.tailsize * screen_scale_x * 0.5
-			
+
 			tail_hAnchor = ANCHOR_RIGHT
 			tail_xOffset = 64
 			tail_xScale = -1
@@ -145,10 +145,10 @@ function SpeechBubble:OnUpdate()
 
 		if raw_x > screenWidth or raw_x < 0 or raw_y > screenHeight or raw_y < 0 then
 			self.face:Show()
-			
+
 			local face_y = (self.face_size.y*0.5)- (raw_size_y*0.5)
 			self.face:SetPosition((self.face_offset.x - (raw_size_x*0.5 + BOARDER_SIZE)) * tail_xScale, -face_y)
-			
+
 			if tail_hAnchor == ANCHOR_LEFT then
 				min_x = min_x + (self.face_size.x + BOARDER_SIZE) * screen_scale_x
 				self.face:SetScale(-1, 1)
@@ -156,7 +156,7 @@ function SpeechBubble:OnUpdate()
 				max_x = max_x - (self.face_size.x + BOARDER_SIZE) * screen_scale_x
 				self.face:SetScale(1, 1)
 			end
-			
+
 		else
 			self.face:Hide()
 
@@ -168,10 +168,10 @@ function SpeechBubble:OnUpdate()
 
 		self.dialog_bg:UpdateTail(tail_hAnchor, ANCHOR_TOP, tail_xOffset, tail_yOffset)
 		self.tail:SetScale(tail_xScale, tail_yScale)
-		
+
         x = math.clamp(x, min_x, max_x)
         y = math.clamp(y, min_y, max_y)
-				
+
         self.root:SetPosition(x, y, 0)
 		self.root:SetScale(screen_scale_x, screen_scale_y)
     end

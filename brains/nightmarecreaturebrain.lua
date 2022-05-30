@@ -27,7 +27,7 @@ end
 
 local function ShouldChaseAndHarass(self)
     return self.inst.components.locomotor.walkspeed < 5
-        or not self.inst:IsNear(self._harasstarget, HARASS_MED)
+        or (self._harasstarget ~= nil and self._harasstarget:IsValid() and not self.inst:IsNear(self._harasstarget, HARASS_MED))
 end
 
 local function GetHarassWanderDir(self)
@@ -55,7 +55,7 @@ function NightmareCreatureBrain:OnStart()
             }, .25)),
         WhileNode(function() return self._harasstarget ~= nil end, "LoiterAndHarass",
             Wander(self.inst, function() return self._harasstarget:GetPosition() end, 20, { minwaittime = 0, randwaittime = .3 }, function() return GetHarassWanderDir(self) end)),
-        Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("home") end, 20),
+        Wander(self.inst, function() return self.inst.components.knownlocations:GetLocation("war_home") or self.inst.components.knownlocations:GetLocation("home") end, 20),
     }, .25)
 
     self.bt = BT(self.inst, root)

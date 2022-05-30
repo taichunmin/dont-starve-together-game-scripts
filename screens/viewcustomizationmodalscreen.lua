@@ -6,7 +6,7 @@ local Widget = require "widgets/widget"
 local CustomizationList = require "widgets/customizationlist"
 local TEMPLATES = require "widgets/templates"
 
-local Customise = require "map/customise"
+local Customize = require "map/customize"
 local Levels = require "map/levels"
 
 local function OnClickTab(self, level)
@@ -42,7 +42,7 @@ local ViewCustomizationModalScreen = Class(Screen, function(self, leveldata)
     self.clickroot:SetHAnchor(ANCHOR_MIDDLE)
     self.clickroot:SetPosition(0,0,0)
     self.clickroot:SetScaleMode(SCALEMODE_PROPORTIONAL)
-    
+
     --menu buttons
     self.optionspanel = self.clickroot:AddChild(Widget("optionspanel"))
     self.optionspanel:SetPosition(0,20,0)
@@ -127,7 +127,7 @@ end
 
 function ViewCustomizationModalScreen:Refresh()
     local location = self.leveldata[self.currentmultilevel].location
-    local options = Customise.GetOptionsWithLocationDefaults(location, self.currentmultilevel == 1)
+    local options = Customize.GetOptionsWithLocationDefaults(location, self.currentmultilevel == 1)
 
     if self.customizationlist ~= nil then
         self.customizationlist:Kill()
@@ -167,7 +167,7 @@ end
 
 function ViewCustomizationModalScreen:GetValueForOption(level, option)
     return self.leveldata[level].overrides[option]
-        or Customise.GetLocationDefaultForOption(self.leveldata[level].location, option)
+        or Customize.GetLocationDefaultForOption(self.leveldata[level].location, option)
 end
 
 function ViewCustomizationModalScreen:Cancel()

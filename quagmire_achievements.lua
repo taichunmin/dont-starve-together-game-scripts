@@ -15,7 +15,7 @@ local WXP_LEVEL3 = 10000
 local WXP_LEVEL4 = 20000
 local WXP_LEVEL5 = 30000
 
-local meat_ingredients = 
+local meat_ingredients =
 {
 	"quagmire_salmon", "quagmire_salmon_cooked",
 	"quagmire_crabmeat", "quagmire_crabmeat_cooked",
@@ -24,13 +24,13 @@ local meat_ingredients =
 }
 
 
-local Quagmire_Achievements = 
+local Quagmire_Achievements =
 {
 --[[
     {
         category = "example",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "example",
@@ -42,7 +42,7 @@ local Quagmire_Achievements =
 					--return data.round == 3 and (shared_scratchpad.encore_turtillus == nil or shared_scratchpad.encore_turtillus <= 3)
 				end,
                 endofmatchfn = function(user, data, scratchpad, shared_scratchpad)
-					--return data.statstracker:GetStatTotal("deaths", user.userid) == 0 
+					--return data.statstracker:GetStatTotal("deaths", user.userid) == 0
 				end,
 
             },
@@ -52,19 +52,19 @@ local Quagmire_Achievements =
     {
         category = "encore",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "quag_encore_nomatches",
                 wxp = WXP_LEVEL5,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_success") == 0
 				end,
             },
             {
                 achievementid = "quag_encore_notrees",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.statstracker:GetStatTotal("logs") == 0
 				end,
 			},
@@ -105,7 +105,7 @@ local Quagmire_Achievements =
 			{
 				achievementid = "quag_encore_allcooks",
 				wxp = WXP_LEVEL2_5,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					if GetTableSize(data.statstracker._seenplayers) >= 3 then
 						for userid, player in pairs(data.statstracker._seenplayers) do
 							if data.statstracker:GetStatTotal("meals_made", userid) < 2 then
@@ -133,14 +133,14 @@ local Quagmire_Achievements =
 			{
 				achievementid = "quag_encore_tribute_coin3",
 				wxp = WXP_LEVEL2_5,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("coins")[3] >= 3
 				end,
 			},
 			{
 				achievementid = "quag_encore_tribute_coin2",
 				wxp = WXP_LEVEL2,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("coins")[2] >= 3
 				end,
 			},
@@ -151,75 +151,75 @@ local Quagmire_Achievements =
     {
         category = "victory",
         anycharacter = true,
-        data = 
+        data =
         {
             {
                 achievementid = "quag_win_first",
                 wxp = WXP_LEVEL3,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won
 				end,
             },
             {
                 achievementid = "quag_win_nosilver",
                 wxp = WXP_LEVEL5,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_silvered") == 0
 				end,
             },
             {
                 achievementid = "quag_win_nosalt",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_salted") == 0
 				end,
             },
             {
                 achievementid = "quag_win_perfect",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_failed") == 0
 				end,
             },
             {
                 achievementid = "quag_win_nodups",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and not data.analytics:GetGaveDuplicateTributed()
 				end,
             },
             {
                 achievementid = "quag_win_noburnt",
                 wxp = WXP_LEVEL3,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.statstracker:GetStatTotal("meals_burnt") == 0
 				end,
             },
             {
                 achievementid = "quag_win_veryfast",
                 wxp = WXP_LEVEL5,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and (data.analytics:GetMatchStat("tributes_success") + data.analytics:GetMatchStat("tributes_failed")) <= 7
 				end,
             },
             {
                 achievementid = "quag_win_fast",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and (data.analytics:GetMatchStat("tributes_success") + data.analytics:GetMatchStat("tributes_failed")) <= 10
 				end,
             },
             {
                 achievementid = "quag_win_verylong",
                 wxp = WXP_LEVEL5,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_success") >= 18
 				end,
             },
             {
                 achievementid = "quag_win_long",
                 wxp = WXP_LEVEL4,
-                endofmatchfn = function(user, data) 
+                endofmatchfn = function(user, data)
 					return data.outcome.won and data.analytics:GetMatchStat("tributes_success") >= 15
 				end,
             },
@@ -228,13 +228,13 @@ local Quagmire_Achievements =
 	{
 		category = "tributes",
 		anycharacter = true,
-		data = 
+		data =
 		{
 			{
 				achievementid = "tribute_fast",
 				wxp = WXP_LEVEL3,
                 nosave = true,
-                testfn = function(user, data, scratchpad) 
+                testfn = function(user, data, scratchpad)
 					if scratchpad.tribute_fast == nil then
 						scratchpad.tribute_fast = {}
 					end
@@ -245,48 +245,48 @@ local Quagmire_Achievements =
 							table.remove(scratchpad.tribute_fast, 1)
 						end
 					end
-					return #scratchpad.tribute_fast >= 3 
+					return #scratchpad.tribute_fast >= 3
                 end,
 			},
 			{
 				achievementid = "tribute_coin4",
 				wxp = WXP_LEVEL2_5,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("coins")[4] > 0
 				end,
 			},
 			{
 				achievementid = "tribute_coin3",
 				wxp = WXP_LEVEL2,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("coins")[3] > 0
 				end,
 			},
 			{
 				achievementid = "tribute_coin2",
 				wxp = WXP_LEVEL1,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("coins")[2] > 0
 				end,
 			},
 			{
 				achievementid = "tribute_num_high",
 				wxp = WXP_LEVEL2_5,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("tributes_success") >= 9
 				end,
 			},
 			{
 				achievementid = "tribute_num_med",
 				wxp = WXP_LEVEL2,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("tributes_success") >= 6
 				end,
 			},
 			{
 				achievementid = "tribute_num_low",
 				wxp = WXP_LEVEL1,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.analytics:GetMatchStat("tributes_success") >= 3
 				end,
 			},
@@ -295,26 +295,26 @@ local Quagmire_Achievements =
 	{
 		category = "chef",
 		anycharacter = true,
-		data = 
+		data =
 		{
 			{
 				achievementid = "cook_full_book",
 				wxp = WXP_LEVEL5,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return false
 				end,
 			},
 			{
 				achievementid = "cook_noburnt",
 				wxp = WXP_LEVEL2,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.statstracker:GetStatTotal("meals_made", user.userid) >= 6 and data.statstracker:GetStatTotal("meals_burnt", user.userid) == 0
 				end,
 			},
 			{
 				achievementid = "cook_first",
 				wxp = WXP_LEVEL1,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.statstracker:GetStatTotal("meals_made", user.userid) > 0
 				end,
 			},
@@ -348,19 +348,19 @@ local Quagmire_Achievements =
 	{
 		category = "farmer",
 		anycharacter = true,
-		data = 
+		data =
 		{
 			{
 				achievementid = "farm_sow",
 				wxp = WXP_LEVEL2,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.statstracker:GetStatTotal("crops_planted", user.userid) >= 30
 				end,
 			},
 			{
 				achievementid = "farm_fertilize",
 				wxp = WXP_LEVEL1,
-				testfn = function(user, data, scratchpad) 
+				testfn = function(user, data, scratchpad)
 					scratchpad.farm_fertilize = (scratchpad.farm_fertilize or 0) + 1
 					return scratchpad.farm_fertilize >= 20
 				end,
@@ -368,7 +368,7 @@ local Quagmire_Achievements =
 			{
 				achievementid = "farm_till",
 				wxp = WXP_LEVEL1,
-				testfn = function(user, data, scratchpad) 
+				testfn = function(user, data, scratchpad)
 					scratchpad.farm_till = (scratchpad.farm_till or 0) + 1
 					return scratchpad.farm_till >= 50
 				end,
@@ -376,7 +376,7 @@ local Quagmire_Achievements =
 			{
 				achievementid = "farm_sow_all",
 				wxp = WXP_LEVEL1,
-				testfn = function(user, seed_prefab, scratchpad) 
+				testfn = function(user, seed_prefab, scratchpad)
 					if scratchpad.farm_sow_all == nil then
 						scratchpad.farm_sow_all = {}
 					end
@@ -389,19 +389,19 @@ local Quagmire_Achievements =
 	{
 		category = "gatherer",
 		anycharacter = true,
-		data = 
+		data =
 		{
 			{
 				achievementid = "gather_crab",
 				wxp = WXP_LEVEL2,
-				testfn = function(user, completed) 
+				testfn = function(user, completed)
 					return completed == true
 				end,
 			},
 			{
 				achievementid = "gather_logs",
 				wxp = WXP_LEVEL1,
-				endofmatchfn = function(user, data) 
+				endofmatchfn = function(user, data)
 					return data.statstracker:GetStatTotal("logs", user.userid) >= 80
 				end,
 			},
@@ -415,7 +415,7 @@ local Quagmire_Achievements =
 			{
 				achievementid = "gather_sap",
 				wxp = WXP_LEVEL1,
-				testfn = function(user, sap_prefab, scratchpad) 
+				testfn = function(user, sap_prefab, scratchpad)
 					if sap_prefab == "quagmire_sap" then
 						scratchpad.gather_sap = (scratchpad.gather_sap or 0) + 1
 						return scratchpad.gather_sap >= 9
@@ -426,7 +426,7 @@ local Quagmire_Achievements =
 			{
 				achievementid = "gather_spice",
 				wxp = WXP_LEVEL1,
-				testfn = function(user, data, scratchpad) 
+				testfn = function(user, data, scratchpad)
 					if data.recipe.product == "quagmire_spotspice_ground" then
 						scratchpad.gather_spice = (scratchpad.gather_spice or 0) + 1
 						return scratchpad.gather_spice >= 5
@@ -446,7 +446,7 @@ for _, cat in ipairs(Quagmire_Achievements) do
 	end
 end
 
-return 
+return
 {
     seasons = { 1 },
 	eventid = "quagmire",

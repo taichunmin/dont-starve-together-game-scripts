@@ -76,7 +76,7 @@ end
 local function dropgems(inst)
     for k, v in pairs(inst.components.objectspawner.objects) do
         if v.components.pickable ~= nil and v.components.pickable.caninteractwith then
-            inst.components.lootdropper:SpawnLootPrefab("purplegem")   
+            inst.components.lootdropper:SpawnLootPrefab("purplegem")
         end
     end
 end
@@ -137,7 +137,7 @@ local function OnBuilt(inst)
     local sin_rot = math.sin(rot)
     local cos_rot = math.cos(rot)
     for i, v in ipairs(telebase_parts) do
-        local part = inst.components.objectspawner:SpawnObject(v.part)
+        local part = inst.components.objectspawner:SpawnObject(v.part, inst.linked_skinname, inst.skin_id)
         part.Transform:SetPosition(x + v.x * cos_rot - v.z * sin_rot, 0, z + v.z * cos_rot + v.x * sin_rot)
     end
 

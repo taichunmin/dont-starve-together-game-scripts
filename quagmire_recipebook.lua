@@ -37,8 +37,8 @@ local function CleanupDupRecipes(recipe_book)
 		local dupes = {}
 		for i = #food.recipes, 1, -1 do
 			local id = ""
-			for _, v in ipairs(food.recipes[i]) do 
-				id = id .. tostring(v) 
+			for _, v in ipairs(food.recipes[i]) do
+				id = id .. tostring(v)
 			end
 			if dupes[id] then
 				table.remove(food.recipes, i)
@@ -51,13 +51,13 @@ end
 
 function QuagmireRecipeBook:Load()
 	self.recipes = {}
-	TheSim:GetPersistentString("recipebook", function(load_success, data) 
+	TheSim:GetPersistentString("recipebook", function(load_success, data)
 		if load_success and data ~= nil then
 			local status, recipe_book = pcall( function() return json.decode(data) end )
 		    if status and recipe_book then
 				self.recipes = recipe_book
 			else
-				print("Faild to load the recipe book!")
+				print("Failed to load the Gorge recipe book")
 			end
 
 			CleanupDupRecipes(self.recipes)
@@ -77,8 +77,8 @@ function QuagmireRecipeBook:Save()
 	end
 
 	local str = json.encode(self.recipes)
-	TheSim:SetPersistentString("recipebook", str, false, function() 
-		self.dirty = false 
+	TheSim:SetPersistentString("recipebook", str, false, function()
+		self.dirty = false
 		--print("Done writing recipe book.")
 	end)
 end
@@ -124,7 +124,7 @@ local function OnRecipeDiscovered(self, data)
 		local station_size = data.dish ~= nil and (#ingredients == 3 and "small" or "large") or "syrup"
 
 		if self.recipes[data.product] == nil then
-			self.recipes[data.product] = 
+			self.recipes[data.product] =
 			{
 				dish = data.dish,
 				station = {data.station},
@@ -189,7 +189,7 @@ local function OnRecipeAppraised(self, data)
 		coins.coin2 = (not(data.coins[2] == 0 and data.coins[3] == 0 and data.coins[4] == 0)) and data.coins[2] or nil
 		coins.coin3 = (not(data.coins[3] == 0 and data.coins[4] == 0)) and data.coins[3] or nil
 		coins.coin4 = data.coins[4] ~= 0 and data.coins[4] or nil
-		
+
 		local value_type = data.silverdish and "silver_value" or "base_value"
 		local cur_num_coins = recipe[value_type] ~= nil and GetTableSize(recipe[value_type]) or 0
 		local new_num_coins = GetTableSize(coins)

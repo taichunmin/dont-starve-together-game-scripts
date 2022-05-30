@@ -2,7 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/razor.zip"),
     Asset("ANIM", "anim/swap_razor.zip"),
-    Asset("ANIM", "anim/floating_items.zip"),
 }
 
 local function fn()
@@ -15,7 +14,7 @@ local function fn()
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank("razor")
-    inst.AnimState:SetBuild("razor")
+    inst.AnimState:SetBuild("swap_razor")
     inst.AnimState:PlayAnimation("idle")
 
     MakeInventoryFloatable(inst, "small", 0.08, {0.9, 0.7, 0.9}, true, -2, {sym_build = "swap_razor"})

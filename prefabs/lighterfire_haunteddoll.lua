@@ -79,7 +79,7 @@ end
 local MAX_LIFETIME = .5
 local SMOKE_MAX_LIFETIME = 1.3
 
-local function emit_fn(effect, sphere_emitter)            
+local function emit_fn(effect, sphere_emitter)
     local vx, vy, vz = .005 * UnitRand(), 0, .0005 * UnitRand()
     local lifetime = MAX_LIFETIME * (.9 + UnitRand() * .1)
     local px, py, pz = sphere_emitter()

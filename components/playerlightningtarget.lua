@@ -9,7 +9,9 @@ local DefaultOnStrike = function(inst)
             -- end
 
             inst.components.health:DoDelta(-damage, false, "lightning")
-            inst.sg:GoToState("electrocute")
+            if not inst.sg:HasStateTag("dead") then
+                inst.sg:GoToState("electrocute")
+            end
         else
             inst:PushEvent("lightningdamageavoided")
         end
@@ -18,7 +20,7 @@ end
 
 local PlayerLightningTarget = Class(function(self, inst)
     self.inst = inst
-    self.hitchance = 0.3
+    self.hitchance = TUNING.PLAYER_LIGHTNING_TARGET_CHANCE
     self.onstrikefn = DefaultOnStrike
 end)
 

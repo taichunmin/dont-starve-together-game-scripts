@@ -98,10 +98,19 @@ function InventoryItem:SetImage(imagename)
     self.classified.image:set(imagename ~= nil and (imagename..".tex") or 0)
 end
 
+local function GetClientSideInventoryImageOverride(self)
+    if self.inst:HasClientSideInventoryImageOverrides() then
+        local imagehash = self.classified ~= nil and
+            self.classified.image:value() ~= 0 and
+            self.classified.image:value() or hash(self.inst.prefab..".tex")
+        return self.inst:GetClientSideInventoryImageOverride(imagehash)
+    end
+end
+
 function InventoryItem:GetImage()
-    return self.classified ~= nil and
-        self.classified.image:value() ~= 0 and
-        self.classified.image:value() or
+    local override = GetClientSideInventoryImageOverride(self)
+    return (override and override.image) or
+        (self.classified ~= nil and self.classified.image:value() ~= 0 and self.classified.image:value()) or
         self.inst.prefab..".tex"
 end
 
@@ -110,19 +119,32 @@ function InventoryItem:SetAtlas(atlasname)
 end
 
 function InventoryItem:GetAtlas()
-    return self.classified ~= nil and
-        self.classified.atlas:value() ~= 0 and
-        self.classified.atlas:value() or
+    local override = GetClientSideInventoryImageOverride(self)
+
+    return (override and override.atlas) or
+        (self.classified ~= nil and self.classified.atlas:value() ~= 0 and self.classified.atlas:value()) or
         GetInventoryItemAtlas(self:GetImage())
 end
 
 function InventoryItem:SetOwner(owner)
-    owner = owner ~= nil and owner.components.container ~= nil and owner.components.container.opener or owner
-    if self.inst.Network ~= nil then
-        self.inst.Network:SetClassifiedTarget(owner)
-    end
-    if self.classified ~= nil then
-        self.classified.Network:SetClassifiedTarget(owner or self.inst)
+    local opencount = owner ~= nil and owner.components.container ~= nil and owner.components.container.opencount or 0
+    if opencount > 1 then
+        self.inst:ForceOutOfLimbo(true)
+        if self.inst.Network ~= nil then
+            self.inst.Network:SetClassifiedTarget(nil)
+        end
+        if self.classified ~= nil then
+            self.classified.Network:SetClassifiedTarget(nil)
+        end
+    else
+        owner = (opencount == 0 and owner) or (opencount == 1 and table.getkeys(owner.components.container.openlist)[1]) or nil
+        self.inst:ForceOutOfLimbo(false)
+        if self.inst.Network ~= nil then
+            self.inst.Network:SetClassifiedTarget(owner)
+        end
+        if self.classified ~= nil then
+            self.classified.Network:SetClassifiedTarget(owner or self.inst)
+        end
     end
 end
 
@@ -233,9 +255,9 @@ function InventoryItem:SetDeployRestrictedTag(restrictedtag)
     self.classified.deployrestrictedtag:set(restrictedtag or 0)
 end
 
-function InventoryItem:CanDeploy(pt, mouseover, deployer)
+function InventoryItem:CanDeploy(pt, mouseover, deployer, rot)
     if self.inst.components.deployable ~= nil then
-        return self.inst.components.deployable:CanDeploy(pt, mouseover, deployer)
+        return self.inst.components.deployable:CanDeploy(pt, mouseover, deployer, rot)
     elseif not self:IsDeployable(deployer) then
         return false
     elseif self.classified.deploymode:value() == DEPLOYMODE.ANYWHERE then
@@ -253,8 +275,12 @@ function InventoryItem:CanDeploy(pt, mouseover, deployer)
         {
             land = 0.2, boat = 0.2, radius = self:DeploySpacingRadius(),
         })
-    elseif self.classified.deploymode:value() == DEPLOYMODE.MAST then
-        return TheWorld.Map:CanDeployMastAtPoint(pt, self.inst, mouseover)
+    elseif self.classified.deploymode:value() == DEPLOYMODE.CUSTOM then
+        if self.inst._custom_candeploy_fn ~= nil then
+            return self.inst._custom_candeploy_fn(self.inst, pt, mouseover, deployer, rot)
+        else -- use old DEPLOYMODE.MAST logic
+            return TheWorld.Map:CanDeployMastAtPoint(pt, self.inst, mouseover)
+        end
     end
 end
 

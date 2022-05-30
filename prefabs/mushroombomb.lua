@@ -58,13 +58,16 @@ local function CreateGroundFX(bomb)
     inst.AnimState:SetOrientation(ANIM_ORIENTATION.OnGround)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
     inst.AnimState:SetSortOrder(3)
-    inst.AnimState:SetFinalOffset(-1)
+    inst.AnimState:SetFinalOffset(3)
     inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 
     inst:ListenForEvent("animover", inst.Remove)
 
     inst.Transform:SetPosition(bomb.Transform:GetWorldPosition())
 end
+
+local EXPLODETARGET_MUST_TAGS = { "_health", "_combat" }
+local EXPLODETARGET_CANT_TAGS = { "INLIMBO", "toadstool" }
 
 local function Explode(inst)
     inst._growtask = nil
@@ -83,7 +86,7 @@ local function Explode(inst)
     end
 
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, TUNING.TOADSTOOL_MUSHROOMBOMB_RADIUS, { "_health", "_combat" }, { "INLIMBO", "toadstool" })
+    local ents = TheSim:FindEntities(x, y, z, TUNING.TOADSTOOL_MUSHROOMBOMB_RADIUS, EXPLODETARGET_MUST_TAGS, EXPLODETARGET_CANT_TAGS)
     if #ents > 0 then
         local toadstool = inst.components.entitytracker:GetEntity("toadstool")
         local damage =

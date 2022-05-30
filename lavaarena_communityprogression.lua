@@ -63,12 +63,12 @@ local function ParseProgressionData(data)
 		progression_data.level = 1
 		progression_data.percent = 0
 		progression_data.unlock_order = {}
-		
+
 		item_unlock_level = {}
 		progression_key_id = "trails"
 	else
 		progression_data = deepcopy(data)
-		progression_data.level = math.min(progression_data.level, #unordered_unlocks) 
+		progression_data.level = math.min(progression_data.level, #unordered_unlocks)
 		progression_data.percent = math.min(progression_data.percent, 1)
 		progression_data.unlock_order = progression_data.unlock_order or {}
 
@@ -259,7 +259,7 @@ function CommunityProgression:OnProgressionQueryComplete(override_mode)
 end
 
 local function OnHandleProgressionQueryResponce(self, result, isSuccessful, resultCode)
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
+ 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then
 		----------
 		--result = GenerateFakeWebProgression()
 		--dumptable(result)
@@ -304,7 +304,7 @@ local function OnHandleProgressionQueryResponce(self, result, isSuccessful, resu
 end
 
 function CommunityProgression:RequestProgressionData(force, time)
-	
+
 	if not IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
 		self:OnProgressionQueryComplete(self.mode)
 		return
@@ -335,14 +335,14 @@ function CommunityProgression:RequestProgressionData(force, time)
 		self.progression_retries_remaining = NUM_RETRIES
 	end
 
-	TheSim:QueryServer( "https://theforge.kleientertainment.com/wins", 
-		function(result, isSuccessful, resultCode) 
-			if not LAG_TEST then 
+	TheSim:QueryServer( "https://theforge.kleientertainment.com/wins",
+		function(result, isSuccessful, resultCode)
+			if not LAG_TEST then
 				OnHandleProgressionQueryResponce(self, result, isSuccessful, resultCode)
 			else
 				TheGlobalInstance:DoTaskInTime(3, function() OnHandleProgressionQueryResponce(self, result, isSuccessful, resultCode) end)
-			end 
-		end, 
+			end
+		end,
 		"GET")
 end
 
@@ -359,7 +359,7 @@ end
 local function OnHandleQuestQueryResponce(self, userid, result, isSuccessful, resultCode)
 	local user_quests = GetQuestDataTable(self, userid)
 
- 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then 
+ 	if isSuccessful and string.len(result) > 1 and resultCode == 200 then
 		----------
 		--result = GenerateFakeWebQuests(userid, os.time())
 		--print("FAKE QUESTS")
@@ -438,14 +438,14 @@ function CommunityProgression:RequestQuestData(force, userid, time)
 	end
 
 	print("https://theforge.kleientertainment.com/quest?userid="..userid.."&date="..tostring(time))
-	TheSim:QueryServer( "https://theforge.kleientertainment.com/quest?userid="..userid.."&date="..tostring(time), 
-		function(result, isSuccessful, resultCode) 
-			if not LAG_TEST then 
+	TheSim:QueryServer( "https://theforge.kleientertainment.com/quest?userid="..userid.."&date="..tostring(time),
+		function(result, isSuccessful, resultCode)
+			if not LAG_TEST then
 				OnHandleQuestQueryResponce(self, userid, result, isSuccessful, resultCode)
 			else
 				TheGlobalInstance:DoTaskInTime(3, function() OnHandleQuestQueryResponce(self, userid, result, isSuccessful, resultCode) end)
-			end 
-		end, 
+			end
+		end,
 		"GET")
 end
 
@@ -521,7 +521,7 @@ function CommunityProgression:RegisterForWorld()
 	self.mode = TheWorld == nil and IS_FRONTEND
 				or TheNet:IsDedicated() and IS_DEDICATED_SERVER
 				or TheWorld.ismastersim and IS_CLIENT_HOSTED
-				or IS_CLIENT_ONLY 
+				or IS_CLIENT_ONLY
 
 	if IsFestivalEventActive(FESTIVAL_EVENTS.LAVAARENA) then
 		if self.mode == IS_CLIENT_ONLY then
@@ -534,7 +534,7 @@ function CommunityProgression:RegisterForWorld()
 
 		if self.mode ~= IS_DEDICATED_SERVER then
 			TheWorld.net:ListenForEvent("progressionjsondirty", function() OnNewProgressionFromServer(self) end)
-	
+
 			for i = 1, TheNet:GetServerMaxPlayers() do
 				TheWorld.net:ListenForEvent("playerquestjsondirty_"..i, function(net, data) OnNewQuestFromServer(self, i) end)
 			end
@@ -550,7 +550,7 @@ function CommunityProgression:Load()
 		return
 	end
 
-	TheSim:GetPersistentString(BRANCH == "dev" and "community_progression_dev" or "community_progression", function(load_success, json_data) 
+	TheSim:GetPersistentString(BRANCH == "dev" and "community_progression_dev" or "community_progression", function(load_success, json_data)
 		if load_success and json_data ~= nil then
 			local status, data = pcall( function() return json.decode(json_data) end )
 		    if status and data and data.progression_data and self.quest_data then
@@ -583,7 +583,7 @@ function CommunityProgression:Save()
 		local encode = BRANCH ~= "dev"
 
 		TheSim:SetPersistentString(file_name, json.encode(save_data), encode)
-		self.dirty = false 
+		self.dirty = false
 		self.prev_progression_data = deepcopy(save_data.progression_data)
 	end
 end

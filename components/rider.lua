@@ -20,6 +20,7 @@ end
 
 local Rider = Class(function(self, inst)
     self.inst = inst
+    self.target_mount = nil
     self.mount = nil
     self.saddle = nil
 
@@ -68,14 +69,20 @@ function Rider:Mount(target, instant)
         return
     end
 
-    if not target.components.rideable:TestObedience() then
+    if not target.components.rideable:TestObedience()
+            or not target.components.rideable:TestRider(self.inst) then
         self.inst:PushEvent("refusedmount", {rider=self.inst,rideable=target})
         target:PushEvent("refusedrider", {rider=self.inst,rideable=target})
         return
     end
 
+    self.target_mount = target
+
     local rideable = target.components.rideable
-    local saddler = rideable.saddle.components.saddler
+    local saddler = nil
+    if rideable.saddle then
+        saddler = rideable.saddle.components.saddler
+    end
 
     local x, y, z = self.inst.Transform:GetWorldPosition()
     local tx, ty, tz = target.Transform:GetWorldPosition()
@@ -85,8 +92,20 @@ function Rider:Mount(target, instant)
     self.inst.AnimState:SetBank("wilsonbeefalo")
     if target.ApplyBuildOverrides ~= nil then
         target:ApplyBuildOverrides(self.inst.AnimState)
+        if target.components.skinner_beefalo then
+            local clothing_names = target.components.skinner_beefalo:GetClothing()
+            SetBeefaloSkinsOnAnim( self.inst.AnimState, clothing_names, target.GUID )
+        end
     end
-    self.inst.AnimState:OverrideSymbol("swap_saddle", saddler.swapbuild, saddler.swapsymbol)
+
+    if saddler then
+        if saddler.skin_guid then --indicates a skinned saddle
+            self.inst.AnimState:OverrideItemSkinSymbol("swap_saddle", saddler.swapbuild, saddler.swapsymbol, saddler.skin_guid, "saddle_basic" )
+        else
+            self.inst.AnimState:OverrideSymbol("swap_saddle", saddler.swapbuild, saddler.swapsymbol)
+        end
+    end
+
     self.inst.Transform:SetSixFaced()
 
     self.inst.sg:GoToState(instant and "idle" or "mount")
@@ -94,7 +113,7 @@ function Rider:Mount(target, instant)
     self.inst.DynamicShadow:SetSize(6, 2)
 
     if self.inst.components.sheltered ~= nil then
-        self.inst.components.sheltered:Stop()
+        self.inst.components.sheltered.mounted = true
     end
 
     if target.components.combat ~= nil then
@@ -102,7 +121,11 @@ function Rider:Mount(target, instant)
             function(inst, attacker, damage, weapon, stimuli)
                 return target:IsValid()
                     and not (target.components.health ~= nil and target.components.health:IsDead())
-                    and not (weapon ~= nil and (weapon.components.projectile ~= nil or weapon.components.weapon:CanRangedAttack()))
+                    and not (weapon ~= nil and (
+                        weapon.components.projectile ~= nil or
+                        weapon.components.complexprojectile ~= nil or
+                        weapon.components.weapon:CanRangedAttack()
+                    ))
                     and stimuli ~= "electric"
                     and stimuli ~= "darkness"
                     and target
@@ -125,6 +148,7 @@ function Rider:Mount(target, instant)
 
     self:StartTracking(target)
     self.mount = target
+    self.target_mount = nil
     target.components.rideable:SetRider(self.inst)
 
     self.inst.Physics:Teleport(tx, ty, tz)
@@ -163,7 +187,7 @@ function Rider:ActualDismount()
     self.inst.DynamicShadow:SetSize(1.3, .6)
 
     if self.inst.components.sheltered ~= nil then
-        self.inst.components.sheltered:Start()
+        self.inst.components.sheltered.mounted = false
     end
 
     if self.mount.components.combat ~= nil then
@@ -187,7 +211,7 @@ function Rider:ActualDismount()
     if self.mount.components.brain ~= nil then
         BrainManager:Wake(self.mount)
     end
-    if not self.mount.components.health:IsDead() then
+    if not (self.mount.components.health ~= nil and self.mount.components.health:IsDead()) then
         self.mount.sg:GoToState("idle")
     end
 
@@ -211,7 +235,7 @@ end
 -- This needs to save because of autosave, but in the standard quit/load flow, players will be removed from their beefalo. ~gjans
 function Rider:OnSave()
     local data = {}
-    if self.mount ~= nil then
+    if self.mount ~= nil and self.mount.components.rideable:ShouldSave() then
         data.mount = self.mount:GetSaveRecord()
     end
     return data

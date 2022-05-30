@@ -20,7 +20,7 @@ end)
 
 function AchievementsPopup:DoInit()
     self.root = self:AddChild(TEMPLATES.ScreenRoot())
-    self.bg = self.root:AddChild(TEMPLATES.BackgroundTint())	
+    self.bg = self.root:AddChild(TEMPLATES.BackgroundTint())
 
     if not TheInput:ControllerAttached() then
         self.back_button = self.root:AddChild(TEMPLATES.BackButton(
@@ -56,7 +56,7 @@ function AchievementsPopup:DoInit()
 		else
 			self.achievements = self.root:AddChild(AchievementsPanel(self.festival_key, self.season))
 			self.achievements:SetPosition(0, -30)
-        
+
 			self.level_text:SetPosition(-15, 270)
 			self.badge:SetPosition(w/2 + 15, 270)
 		end

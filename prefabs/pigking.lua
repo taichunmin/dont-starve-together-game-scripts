@@ -2,12 +2,7 @@ local assets =
 {
     Asset("ANIM", "anim/pig_king.zip"),
     Asset("SOUND", "sound/pig.fsb"),
-}
-
-local assets_minigame =
-{
-    Asset("ANIM", "anim/pig_guard_build.zip"),
-    Asset("ANIM", "anim/pig_elite_build.zip"),
+    Asset("ANIM", "anim/pig_king_elite_build.zip"),
 }
 
 local prefabs =
@@ -21,6 +16,7 @@ local prefabs =
     "pig_token",
     "lucky_goldnugget",
     "redpouch_yotp",
+	"pig_coin",
 }
 
 for i = 1, NUM_HALLOWEENCANDY do
@@ -28,6 +24,8 @@ for i = 1, NUM_HALLOWEENCANDY do
 end
 
 --------------------------------------------------------------------------
+
+local MINIGAME_ITEM = "goldnugget"
 
 local function OnCameraFocusDirty(inst)
     if inst._camerafocus:value() then
@@ -93,7 +91,7 @@ local function ontradeforgold(inst, item, giver)
         -- only people in costumes get a good amount of candy!
         if giver ~= nil and giver.components.skinner ~= nil then
             for _, item in pairs(giver.components.skinner:GetClothing()) do
-                if DoesItemHaveTag(item, "COSTUME") then
+                if DoesItemHaveTag(item, "COSTUME") or DoesItemHaveTag(item, "HALLOWED") then
                     numcandies = numcandies + math.random(4) + 2
                     break
                 end
@@ -236,12 +234,13 @@ local function OnDeactivateMinigame(inst)
     OnBlockBuildingDirty(inst)
 end
 
+local SANITYROCKS_TAGS = {"sanityrock", "insanityrock"}
 local function OnActivateMinigame(inst)
     inst.components.trader:Disable()
 	TheWorld:PushEvent("pausehounded", { source = inst })
 
 	local x, y, z = inst.Transform:GetWorldPosition()
-	inst.locked_obelisks = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS, nil, nil, {"sanityrock", "insanityrock"}) -- musttags, canttags, mustoneoftags
+	inst.locked_obelisks = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS, nil, nil, SANITYROCKS_TAGS) -- musttags, canttags, mustoneoftags
 	for _, obelisk in ipairs(inst.locked_obelisks) do
 		obelisk:ConcealForMinigame(true)
 	end
@@ -250,10 +249,11 @@ local function OnActivateMinigame(inst)
     OnBlockBuildingDirty(inst)
 end
 
-local blocking_objects = {"fire", "structure", "minigameitem", "CHOP_workable", "HAMMER_workable", "MINE_workable"}
+local BLOCKING_ONEOF_OBJECTS = {"fire", "structure", "minigameitem", "CHOP_workable", "HAMMER_workable", "MINE_workable"}
+local BLOCKING_CANT_OBJECTS = {"INLIMBO"}
 local function IsAreaClearForMinigame(inst)
 	local x, y, z = inst.Transform:GetWorldPosition()
-	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS, nil, {"INLIMBO"}, blocking_objects) -- musttags, canttags, mustoneoftags
+	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS, nil, BLOCKING_CANT_OBJECTS, BLOCKING_ONEOF_OBJECTS) -- musttags, canttags, mustoneoftags
 	for _, ent in ipairs(ents) do
 		if ent.prefab ~= "pigking" and ent.prefab ~= "insanityrock" and ent.prefab ~= "sanityrock" then
 			return false
@@ -262,6 +262,9 @@ local function IsAreaClearForMinigame(inst)
 	return true
 end
 
+local AREACLEAR_IGNORE_PLAYERS = {"player"}
+local AREACLEAR_CHECK_FOR_HOSTILES = {"hostile", "monster"}
+local AREACLEAR_COMBAT = {"_combat"}
 local function IsAreaSafeForMinigame(inst, giver)
     local hounded = TheWorld.components.hounded
     if hounded ~= nil and (hounded:GetWarning() or hounded:GetAttacking()) then
@@ -273,12 +276,12 @@ local function IsAreaSafeForMinigame(inst, giver)
     end
 
 	local x, y, z = inst.Transform:GetWorldPosition()
-	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS * 2, nil, {"player"}, {"hostile", "monster"}) -- musttags, canttags, mustoneoftags
+	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS * 2, nil, AREACLEAR_IGNORE_PLAYERS, AREACLEAR_CHECK_FOR_HOSTILES) -- musttags, canttags, mustoneoftags
 	if #ents > 0 then
 		return false
 	end
 
-	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS * 2, nil, nil, {"_combat"}) -- musttags, canttags, mustoneoftags
+	local ents = TheSim:FindEntities(x, y, z, TUNING.PIG_MINIGAME_ARENA_RADIUS * 2, nil, nil, AREACLEAR_COMBAT) -- musttags, canttags, mustoneoftags
 	for _, ent in ipairs(ents) do
 		if ent.components.combat:HasTarget() then
 			return false
@@ -313,6 +316,8 @@ local function LaunchGameItem(inst, item, angle, minorspeedvariance)
     end
 end
 
+local PROP_MUST_TAGS = { "minigameitem", "propweapon" }
+local PROP_CANT_TAGS = { "INLIMBO", "fire", "burnt" }
 local function OnTossGameItems(inst)
     local items = {}
     local x, y, z = inst.Transform:GetWorldPosition()
@@ -320,7 +325,7 @@ local function OnTossGameItems(inst)
     local mingold = math.min(6, 2 + math.floor(numplayers / 2))
     local numgold = math.random(mingold, mingold + 2)
     local numprops = 0
-    if #TheSim:FindEntities(x, y, z, 12, { "minigameitem", "propweapon" }, { "INLIMBO", "fire", "burnt" }) < numplayers + 4 then
+    if #TheSim:FindEntities(x, y, z, 12, PROP_MUST_TAGS, PROP_CANT_TAGS) < numplayers + 4 then
         local maxprops = 2 + math.floor(numplayers / 2)
         numprops = math.max(numgold > 2 and 1 or 2, math.random(maxprops - (maxprops > 2 and numgold > mingold and 2 or 1), maxprops))
         for i = 1, numprops do
@@ -330,7 +335,7 @@ local function OnTossGameItems(inst)
         numgold = 3
     end
     for i = 1, numgold do
-        table.insert(items, "lucky_goldnugget")
+        table.insert(items, MINIGAME_ITEM)
     end
 	inst._minigame_gold_tossed = inst._minigame_gold_tossed + numgold
     local angle = math.random() * 2 * PI
@@ -354,7 +359,7 @@ local function GetMinigameScore(inst)
 	if inst._minigame_score == nil then
 		local num_pig_gold = 0
 		for pig, _ in pairs(inst._minigame_elites) do
-			local has, count = pig.components.inventory:Has("lucky_goldnugget", 1)
+			local has, count = pig.components.inventory:Has(MINIGAME_ITEM, 1)
 			num_pig_gold = num_pig_gold + count
 		end
 
@@ -376,24 +381,37 @@ local function LaunchRewards(inst, level, minigame_players)
 
 	local num_players = math.max(1, #minigame_players)
 
-	local num_player_pouch_items = level >= 3 and 4 or 1
-	local num_player_pounches = num_players * ((level == 4 or level == 2) and 2 or 1)
-
 	local pouches = {}
-    for ip = 1, num_player_pounches do
-		local items = {}
-		for i = 1, num_player_pouch_items do
-	        table.insert(items, SpawnPrefab("lucky_goldnugget"))
+	if IsSpecialEventActive(SPECIAL_EVENTS.YOTP) then
+		local num_player_pouch_items = level >= 3 and 4 or 1
+		local num_player_pounches = num_players * ((level == 4 or level == 2) and 2 or 1)
+
+		for ip = 1, num_player_pounches do
+			local items = {}
+			for i = 1, num_player_pouch_items do
+				table.insert(items, SpawnPrefab(MINIGAME_ITEM))
+			end
+
+			local pouch = SpawnPrefab("redpouch_yotp")
+			pouch.Transform:SetPosition(x, 4.5, z)
+			pouch.components.unwrappable:WrapItems(items)
+			for i, v in ipairs(items) do
+				v:Remove()
+			end
+			table.insert(pouches, pouch)
+		end
+	else
+		local gold_per_player = 2 + (level * 2)
+		for i = 1, gold_per_player do
+			table.insert(pouches, SpawnPrefab(MINIGAME_ITEM))
 		end
 
-		local pouch = SpawnPrefab("redpouch_yotp")
-	    pouch.Transform:SetPosition(x, 4.5, z)
-		pouch.components.unwrappable:WrapItems(items)
-		for i, v in ipairs(items) do
-			v:Remove()
+		local pig_coins_per_player = math.max(0, (level - 1) * 2)
+		for i = 1, pig_coins_per_player do
+			table.insert(pouches, SpawnPrefab("pig_coin"))
 		end
-		table.insert(pouches, pouch)
 	end
+
 	-- Now Lunach it
 	for i, pouch in ipairs(pouches) do
 	    local angle
@@ -404,7 +422,7 @@ local function LaunchRewards(inst, level, minigame_players)
 			local down = TheCamera:GetDownVec()
 			angle = math.atan2(down.z, down.x) / DEGREES
 		end
-        LaunchGameItem(inst, pouch, GetRandomWithVariance(angle, 25 * DEGREES), true)
+        LaunchGameItem(inst, pouch, GetRandomWithVariance(angle, 25) * DEGREES, true)
 	end
 end
 
@@ -471,6 +489,8 @@ local function GameCompleteFocus(inst)
 end
 
 local function FlagGameComplete(inst)
+	inst.components.minigame:SetIsOutro()
+
     inst.sg:GoToState("unimpressed")
     for k, v in pairs(inst._minigame_elites) do
         k.flagmatchover = true
@@ -488,13 +508,19 @@ local function DoGameRound(inst, roundsleft)
         roundsleft > 1 and
         inst:DoTaskInTime(ROUND_TIME, DoGameRound, roundsleft - 1) or
         inst:DoTaskInTime(ROUND_TIME, FlagGameComplete)
+
+	inst.components.minigame:SetIsPlaying()
+	inst.components.minigame:RecordExcitement()
 end
 
 local function StartMinigame(inst)
     if inst._minigametask == nil then
+		MINIGAME_ITEM = IsSpecialEventActive(SPECIAL_EVENTS.YOTP) and "lucky_goldnugget" or "goldnugget"
+
         inst._minigame_score = nil
         inst._minigame_gold_tossed = 0
         inst.components.minigame:Activate()
+		inst.components.minigame:RecordExcitement()
         inst.sg:GoToState("intro")
         inst._minigametask = inst:DoTaskInTime(5, DoGameRound, NUM_ROUNDS)
         inst:ListenForEvent("pickupcheat", OnPickupCheat)
@@ -537,10 +563,6 @@ local function OnRefuseItem(inst, giver, item)
 end
 
 local function AbleToAcceptTest(inst, item, giver)
-	if not IsSpecialEventActive(SPECIAL_EVENTS.YOTP) and item.prefab == "pig_token" then
-		return true -- todo: remove this once post-yotp gameplay is done
-	end
-
 	if item.prefab == "pig_token" then
 		local success, reason = CanStartMinigame(inst, giver)
 		if not success then
@@ -552,9 +574,10 @@ local function AbleToAcceptTest(inst, item, giver)
 end
 
 local function AcceptTest(inst, item, giver)
-	if not IsSpecialEventActive(SPECIAL_EVENTS.YOTP) and item.prefab == "pig_token" then
-		return -- todo: remove this once post-yotp gameplay is done
-	end
+    -- Wurt can still play the mini-game though
+    if giver:HasTag("merm") and item.prefab ~= "pig_token" then
+        return
+    end
 
     local is_event_item = IsSpecialEventActive(SPECIAL_EVENTS.HALLOWED_NIGHTS) and item.components.tradable.halloweencandyvalue and item.components.tradable.halloweencandyvalue > 0
     return item.components.tradable.goldvalue > 0 or is_event_item or item.prefab == "pig_token"
@@ -665,6 +688,7 @@ local function fn()
     inst.components.hauntable:SetOnHauntFn(OnHaunt)
 
 	inst:AddComponent("minigame")
+	inst.components.minigame.gametype = "pigking_wrestling"
 	inst.components.minigame:SetOnActivatedFn(OnActivateMinigame)
 	inst.components.minigame:SetOnDeactivatedFn(OnDeactivateMinigame)
 	inst.components.minigame.spectator_dist = TUNING.PIG_MINIGAME_ARENA_RADIUS + 20

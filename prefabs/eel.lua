@@ -7,7 +7,7 @@ local assets =
 local prefabs =
 {
     "eel_cooked",
-    "spoiled_food",
+    "spoiled_fish",
 }
 
 local function stopkicking(inst)
@@ -29,6 +29,7 @@ local function commonfn(build, anim, loop, dryable, cookable)
 
     inst:AddTag("meat")
     inst:AddTag("catfood")
+    inst:AddTag("fishmeat")
 
     if dryable then
         --dryable (from dryable component) added to pristine state for optimization
@@ -59,7 +60,7 @@ local function commonfn(build, anim, loop, dryable, cookable)
     inst:AddComponent("perishable")
     inst.components.perishable:SetPerishTime(TUNING.PERISH_FAST)
     inst.components.perishable:StartPerishing()
-    inst.components.perishable.onperishreplacement = "spoiled_food"
+    inst.components.perishable.onperishreplacement = "spoiled_fish"
 
     if dryable then
         inst:AddComponent("dryable")
@@ -89,7 +90,6 @@ end
 
 local function rawfn(build)
     local inst = commonfn(build, "idle", true, true, true)
-
     MakeInventoryFloatable(inst, "med", 0.05, {1.25, 0.6, 1.25})
 
     if not TheWorld.ismastersim then

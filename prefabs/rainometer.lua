@@ -1,7 +1,7 @@
 require "prefabutil"
 
 local function onhammered(inst, worker)
-    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then 
+    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
         inst.components.burnable:Extinguish()
     end
     inst.components.lootdropper:DropLoot()
@@ -103,7 +103,7 @@ local function fn()
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(4)
     inst.components.workable:SetOnFinishCallback(onhammered)
-    inst.components.workable:SetOnWorkCallback(onhit)       
+    inst.components.workable:SetOnWorkCallback(onhit)
     MakeSnowCovered(inst)
 
     inst:ListenForEvent("onbuilt", onbuilt)

@@ -73,10 +73,11 @@ ShadowChess.Functions.DeathSoundTimelineEvent = DeathSoundTimelineEvent
 --------------------------------------------------------------------------
 local LEVELUP_RADIUS = 25
 local AWAKEN_NEARBY_STATUES_RADIUS = 15
+local NEARBYSTATUES_TAGS = { "chess_moonevent" }
 
 local function AwakenNearbyStatues(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local ents = TheSim:FindEntities(x, y, z, AWAKEN_NEARBY_STATUES_RADIUS, { "chess_moonevent" })
+    local ents = TheSim:FindEntities(x, y, z, AWAKEN_NEARBY_STATUES_RADIUS, NEARBYSTATUES_TAGS)
     for i, v in ipairs(ents) do
         v:PushEvent("shadowchessroar", true)
     end
@@ -123,7 +124,9 @@ end
 local function onattacked(inst)--, data)
     if not (inst.sg:HasStateTag("busy") or
             inst.components.health:IsDead() or
-            inst:WantsToLevelUp()) then
+            inst:WantsToLevelUp()) 
+		and not CommonHandlers.HitRecoveryDelay(inst) then
+
         inst.sg:GoToState("hit")
     end
 end
@@ -135,7 +138,7 @@ end
 --------------------------------------------------------------------------
 local function ondeath(inst, data)
     inst.sg:GoToState(inst.level == 1 and "death" or "evolved_death", data)
-end    
+end
 
 ShadowChess.Events.OnDeath = function()
     return EventHandler("death", ondeath)
@@ -146,7 +149,7 @@ local function ondespawn(inst, data)
     if not inst.components.health:IsDead() then
         inst.sg:GoToState("despawn", data)
     end
-end    
+end
 
 ShadowChess.Events.OnDespawn = function()
     return EventHandler("despawn", ondespawn)
@@ -154,8 +157,7 @@ end
 
 --------------------------------------------------------------------------
 ShadowChess.States.AddIdle = function(states, idle_anim)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "idle",
         tags = { "idle", "canrotate" },
 
@@ -177,8 +179,7 @@ end
 
 --------------------------------------------------------------------------
 ShadowChess.States.AddLevelUp = function(states, anim, sound_frame, transition_frame, busyover_frame)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "levelup",
         tags = { "busy", "levelup" },
 
@@ -211,8 +212,7 @@ end
 
 --------------------------------------------------------------------------
 ShadowChess.States.AddTaunt = function(states, anim, sound_frame, action_frame, busyover_frame)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "taunt",
         tags = { "taunt", "busy" },
 
@@ -242,14 +242,14 @@ end
 
 --------------------------------------------------------------------------
 ShadowChess.States.AddHit = function(states, anim, sound_frame, busyover_frame)
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "hit",
         tags = { "busy", "hit" },
 
         onenter = function(inst)
             inst.Physics:Stop()
             inst.AnimState:PlayAnimation(anim)
+			CommonHandlers.UpdateHitRecoveryDelay(inst)
         end,
 
         timeline =
@@ -298,11 +298,12 @@ ShadowChess.States.AddHit = function(states, anim, sound_frame, busyover_frame)
 end
 
 --------------------------------------------------------------------------
+local SHADOWCHESSPIECE_TARGET_TAGS = { "shadowchesspiece" }
 local function LevelUpAlliesTimelineEvent(frame)
     return TimeEvent(frame * FRAMES, function(inst)
         -- trigger all near by shadow chess pieces to level up
         local pos = inst:GetPosition()
-        local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, LEVELUP_RADIUS, { "shadowchesspiece" })
+        local ents = TheSim:FindEntities(pos.x, pos.y, pos.z, LEVELUP_RADIUS, SHADOWCHESSPIECE_TARGET_TAGS)
         for i, v in ipairs(ents) do
             if v ~= inst and not v.components.health:IsDead() then
                 v:PushEvent("levelup", { source = inst })
@@ -322,8 +323,7 @@ ShadowChess.States.AddDeath = function(states, anim, action_frame, timeline)
     table.insert(timeline, ExtendedSoundTimelineEvent(0, "disappear"))
     table.insert(timeline, LevelUpAlliesTimelineEvent(action_frame))
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "death",
         tags = { "busy" },
 
@@ -353,8 +353,7 @@ ShadowChess.States.AddEvolvedDeath = function(states, anim, action_frame, timeli
     table.insert(timeline, ExtendedSoundTimelineEvent(0, "die"))
     table.insert(timeline, LevelUpAlliesTimelineEvent(action_frame))
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "evolved_death",
         tags = { "busy" },
 
@@ -383,8 +382,7 @@ ShadowChess.States.AddDespawn = function(states, anim, timeline)
     timeline = timeline or {}
     table.insert(timeline, ExtendedSoundTimelineEvent(0, "disappear"))
 
-    table.insert(states, State
-    {
+    table.insert(states, State{
         name = "despawn",
         tags = { "busy", "noattack" },
 
@@ -413,9 +411,8 @@ end
 ShadowChess.States.AddAppear = function(states, anim, timeline)
     timeline = timeline or {}
     table.insert(timeline, ExtendedSoundTimelineEvent(0, "disappear"))
-	
-    table.insert(states, State
-    {
+
+    table.insert(states, State{
         name = "appear",
         tags = { "busy" },
 

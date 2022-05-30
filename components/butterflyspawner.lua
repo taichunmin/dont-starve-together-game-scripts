@@ -19,17 +19,20 @@ local _scheduledtasks = {}
 local _worldstate = TheWorld.state
 local _updating = false
 local _butterflies = {}
-local _maxbutterflies = 4
+local _maxbutterflies = TUNING.MAX_BUTTERFLIES
 
 --------------------------------------------------------------------------
 --[[ Private member functions ]]
 --------------------------------------------------------------------------
 
+local FLOWER_TAGS = { "flower" }
+local BUTTERFLY_TAGS = { "butterfly" }
+
 local function GetSpawnPoint(player)
     local rad = 25
     local mindistance = 36
     local x, y, z = player.Transform:GetWorldPosition()
-    local flowers = TheSim:FindEntities(x, y, z, rad, { "flower" })
+    local flowers = TheSim:FindEntities(x, y, z, rad, FLOWER_TAGS)
 
     for i, v in ipairs(flowers) do
         while v ~= nil and player:GetDistanceSqToInst(v) <= mindistance do
@@ -43,7 +46,7 @@ end
 
 local function SpawnButterflyForPlayer(player, reschedule)
     local pt = player:GetPosition()
-    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 64, { "butterfly" })
+    local ents = TheSim:FindEntities(pt.x, pt.y, pt.z, 64, BUTTERFLY_TAGS)
     if #ents < _maxbutterflies then
         local spawnflower = GetSpawnPoint(player)
         if spawnflower ~= nil then
@@ -93,11 +96,6 @@ local function ToggleUpdate(force)
             CancelSpawn(v)
         end
     end
-end
-
-local function SetMaxButterflies(max)
-    _maxbutterflies = max
-    ToggleUpdate(true)
 end
 
 local function AutoRemoveTarget(inst, target)
@@ -164,19 +162,19 @@ end
 --------------------------------------------------------------------------
 
 function self:SpawnModeNever()
-    SetMaxButterflies(0)
-end
-
-function self:SpawnModeHeavy()
-    SetMaxButterflies(10)
-end
-
-function self:SpawnModeMed()
-    SetMaxButterflies(7)
+    --depreciated
 end
 
 function self:SpawnModeLight()
-    SetMaxButterflies(2)
+    --depreciated
+end
+
+function self:SpawnModeMed()
+    --depreciated
+end
+
+function self:SpawnModeHeavy()
+    --depreciated
 end
 
 function self.StartTrackingFn(target)
@@ -211,23 +209,6 @@ end
 
 function self:StopTracking(target)
     self.StopTrackingFn(target)
-end
-
---------------------------------------------------------------------------
---[[ Save/Load ]]
---------------------------------------------------------------------------
-
-function self:OnSave()
-    return 
-    {
-        maxbutterflies = _maxbutterflies,
-    }
-end
-
-function self:OnLoad(data)
-    _maxbutterflies = data.maxbutterflies or 4
-
-    ToggleUpdate(true)
 end
 
 --------------------------------------------------------------------------

@@ -252,11 +252,36 @@ local function CheckBattery(inst)
     end
 end
 
---------------------------------------------------------------------------------
+local function SetBuild(inst)
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        local state = ""
+        if inst.current_def_build == "hutch_pufferfish_build" then
+            state = "_puffer"
+        elseif inst.current_def_build == "hutch_musicbox_build" then
+            state = "_music"
+        end
 
+        inst.AnimState:OverrideItemSkinSymbol("base", skin_build, "base" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_body", skin_build, "hutch_body" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_face", skin_build, "hutch_face" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_foot", skin_build, "hutch_foot" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_lid", skin_build, "hutch_lid" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_lure", skin_build, "hutch_lure" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_tail", skin_build, "hutch_tail" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+        inst.AnimState:OverrideItemSkinSymbol("hutch_tongue", skin_build, "hutch_tongue" .. state, inst.GUID, inst.current_def_build or "hutch_build")
+    else
+        inst.AnimState:ClearAllOverrideSymbols()
+        inst.AnimState:SetBuild(inst.current_def_build or "hutch_build")
+    end
+end
+
+--------------------------------------------------------------------------------
 local function CreateForm(name, itemtags, build, icon, onenter, onexit)
     local function enterfn(inst)
+        inst.current_def_build = build
         inst.AnimState:SetBuild(build)
+        SetBuild(inst)
         inst.MiniMapEntity:SetIcon(icon)
         inst.components.maprevealable:SetIcon(icon)
         if onenter ~= nil then
@@ -312,15 +337,15 @@ local function OnLoadPostPass(inst)
     end
 end
 
+
 local function create_hutch()
     local inst = CreateEntity()
-    
+
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddDynamicShadow()
     inst.entity:AddMiniMapEntity()
-    inst.entity:AddLightWatcher()
     inst.entity:AddLight()
     inst.entity:AddNetwork()
 
@@ -392,8 +417,12 @@ local function create_hutch()
     inst.components.container:WidgetSetup("hutch")
     inst.components.container.onopenfn = OnOpen
     inst.components.container.onclosefn = OnClose
+    inst.components.container.skipclosesnd = true
+    inst.components.container.skipopensnd = true
+
 
     inst:AddComponent("sleeper")
+    inst.components.sleeper.watchlight = true
     inst.components.sleeper:SetResistance(3)
     inst.components.sleeper.testperiod = GetRandomWithVariance(6, 2)
     inst.components.sleeper:SetSleepTest(ShouldSleep)
@@ -421,6 +450,8 @@ local function create_hutch()
         OnLoadPostPass(inst)
     end
 
+    inst.SetBuild = SetBuild
+    
     return inst
 end
 

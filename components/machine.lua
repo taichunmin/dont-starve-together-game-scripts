@@ -34,7 +34,7 @@ function Machine:OnRemoveFromEntity()
 end
 
 function Machine:OnSave()
-	local data = {}	
+	local data = {}
 	data.ison = self.ison
 	return data
 end
@@ -48,7 +48,7 @@ end
 
 function Machine:TurnOn()
 
-	if self.cooldowntime > 0 then 
+	if self.cooldowntime > 0 then
 		self.oncooldown = true
 		self.inst:DoTaskInTime(self.cooldowntime, function() self.oncooldown = false end)
 	end
@@ -70,7 +70,7 @@ end
 
 function Machine:TurnOff()
 
-	if self.cooldowntime > 0 then 
+	if self.cooldowntime > 0 then
 		self.oncooldown = true
 		self.inst:DoTaskInTime(self.cooldowntime, function() self.oncooldown = false end)
 	end
@@ -86,7 +86,7 @@ function Machine:IsOn()
 end
 
 function Machine:GetDebugString()
-   
+
     return string.format("on=%s, cooldowntime=%2.2f, oncooldown=%s", tostring(self.ison), self.cooldowntime, tostring(self.oncooldown) )
 end
 

@@ -1,3 +1,5 @@
+require("worldsettingsutil")
+
 local assets =
 {
     Asset("ANIM", "anim/hound_base.zip"),
@@ -82,6 +84,9 @@ local function OnIsSummer(inst, issummer)
     inst.components.childspawner:SetRareChild("firehound", issummer and 0.2 or 0)
 end
 
+local HAUNTTARGET_MUST_TAGS = { "_combat" }
+local HAUNTTARGET_CANT_TAGS = { "wall", "playerghost", "houndmound", "hound", "houndfriend", "INLIMBO" }
+
 local function OnHaunt(inst, haunter)
     if inst.components.childspawner == nil or
         not inst.components.childspawner:CanSpawn() or
@@ -95,8 +100,8 @@ local function OnHaunt(inst, haunter)
         function(guy)
             return inst.components.combat:CanTarget(guy)
         end,
-        { "_combat" }, --See entityreplica.lua (re: "_combat" tag)
-        { "wall", "playerghost", "houndmound", "hound", "houndfriend", "INLIMBO" }
+        HAUNTTARGET_MUST_TAGS, --See entityreplica.lua (re: "_combat" tag)
+        HAUNTTARGET_CANT_TAGS
     )
 
     if target ~= nil then
@@ -113,6 +118,10 @@ end
 
 local function OnEntitySleep(inst)
     inst.SoundEmitter:KillSound("loop")
+end
+
+local function OnPreLoad(inst, data)
+    WorldSettings_ChildSpawner_PreLoad(inst, data, TUNING.HOUNDMOUND_RELEASE_TIME, TUNING.HOUNDMOUND_REGEN_TIME)
 end
 
 local function fn()
@@ -133,7 +142,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("structure")
-    inst:AddTag("chewable") -- by werebeaver
+    inst:AddTag("beaverchewable") -- by werebeaver
     inst:AddTag("houndmound")
 
     MakeSnowCoveredPristine(inst)
@@ -156,6 +165,12 @@ local function fn()
     inst.components.childspawner:SetSpawnPeriod(TUNING.HOUNDMOUND_RELEASE_TIME)
     inst.components.childspawner:SetMaxChildren(math.random(TUNING.HOUNDMOUND_HOUNDS_MIN, TUNING.HOUNDMOUND_HOUNDS_MAX))
 
+    WorldSettings_ChildSpawner_SpawnPeriod(inst, TUNING.HOUNDMOUND_REGEN_TIME, TUNING.HOUNDMOUND_ENABLED)
+    WorldSettings_ChildSpawner_RegenPeriod(inst, TUNING.HOUNDMOUND_RELEASE_TIME, TUNING.HOUNDMOUND_ENABLED)
+    if not TUNING.HOUNDMOUND_ENABLED then
+        inst.components.childspawner.childreninside = 0
+    end
+
     inst:WatchWorldState("issummer", OnIsSummer)
     OnIsSummer(inst, TheWorld.state.issummer)
 
@@ -175,6 +190,8 @@ local function fn()
     inst.OnEntitySleep = OnEntitySleep
     inst.OnEntityWake = OnEntityWake
     MakeSnowCovered(inst)
+
+    inst.OnPreLoad = OnPreLoad
 
     return inst
 end

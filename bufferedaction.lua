@@ -7,7 +7,7 @@ BufferedAction = Class(function(self, doer, target, action, invobject, pos, reci
     self.invobject = invobject
     self.doerownsobject = doer ~= nil and invobject ~= nil and invobject.replica.inventoryitem ~= nil and invobject.replica.inventoryitem:IsHeldBy(doer)
     self.pos = pos ~= nil and DynamicPosition(pos) or nil
-    self.rotation = rotation
+    self.rotation = rotation or 0
     self.onsuccess = {}
     self.onfail = {}
     self.recipe = recipe
@@ -25,7 +25,7 @@ function BufferedAction:Do()
     local success, reason = self.action.fn(self)
     if success then
         if self.invobject ~= nil and self.invobject:IsValid() then
-            self.invobject:OnUsedAsItem(self.action)
+            self.invobject:OnUsedAsItem(self.action, self.doer, self.target)
         end
         self:Succeed()
     else
@@ -40,7 +40,8 @@ function BufferedAction:IsValid()
            (self.target == nil or (self.target:IsValid() and self.initialtargetowner == (self.target.components.inventoryitem ~= nil and self.target.components.inventoryitem.owner or nil))) and
            (self.pos == nil or self.pos.walkable_platform == nil or self.pos.walkable_platform:IsValid()) and
            (not self.doerownsobject or (self.doer ~= nil and self.invobject ~= nil and self.invobject.replica.inventoryitem ~= nil and self.invobject.replica.inventoryitem:IsHeldBy(self.doer))) and
-           (self.validfn == nil or self.validfn())
+           (self.validfn == nil or self.validfn(self)) and
+           (not TheWorld.ismastersim or (self.action.validfn == nil or self.action.validfn(self)))
 end
 
 --V2C: TestForStart can return "reason" as a second return value (but we don't in DST)

@@ -237,6 +237,7 @@ function MinionSpawner:CheckTileCompatibility(tile)
     return self.validtiletypes[tile]
 end
 
+local EYEPLANT_TAGS = { "eyeplant" }
 function MinionSpawner:MakeSpawnLocations()
     local x, y, z = self.inst.Transform:GetWorldPosition()
     local ground = TheWorld
@@ -250,12 +251,12 @@ function MinionSpawner:MakeSpawnLocations()
         if ground.Map:IsAboveGroundAtPoint(pos:Get()) and
             self:CheckTileCompatibility(ground.Map:GetTileAtPoint(pos:Get())) and
             ground.Pathfinder:IsClear(x, 0, z, pos.x, 0, pos.z, { ignorewalls = true }) and
-            #TheSim:FindEntities(pos.x, pos.y, pos.z, 2.5, { "eyeplant" }) <= 0 and
+            #TheSim:FindEntities(pos.x, pos.y, pos.z, 2.5, EYEPLANT_TAGS) <= 0 and
             #TheSim:FindEntities(pos.x, pos.y, pos.z, 1) <= 0 and
             not ground.Map:IsPointNearHole(pos) then
             table.insert(useablepositions, pos)
             if #useablepositions >= maxpositions then
-                return useablepositions 
+                return useablepositions
             end
         end
     end

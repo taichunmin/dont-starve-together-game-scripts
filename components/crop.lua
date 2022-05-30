@@ -1,4 +1,4 @@
-DAYLIGHT_SEARCH_RANGE = 30
+DAYLIGHT_SEARCH_RANGE = 30 -- depreacted, please use TUNING.DAYLIGHT_SEARCH_RANGE
 
 local function onmatured(self, matured)
     if matured then
@@ -105,21 +105,18 @@ function Crop:Fertilize(fertilizer, doer)
                 self.task = nil
             end
         end
-        if fertilizer.components.finiteuses ~= nil then
-            fertilizer.components.finiteuses:Use()
-        else
-            fertilizer.components.stackable:Get():Remove()
-        end
         return true
     end
 end
 
+local DAYLIGHT_SEARCH_RANGE = 30
+local CANGROW_TAGS = { "daylight", "lightsource" }
 function Crop:DoGrow(dt, nowither)
-    if not self.inst:HasTag("withered") then 
+    if not self.inst:HasTag("withered") and self.growthpercent < 1 then
         local shouldgrow = nowither or not TheWorld.state.isnight
         if not shouldgrow then
             local x, y, z = self.inst.Transform:GetWorldPosition()
-            for i, v in ipairs(TheSim:FindEntities(x, 0, z, DAYLIGHT_SEARCH_RANGE, { "daylight", "lightsource" })) do
+            for i, v in ipairs(TheSim:FindEntities(x, 0, z, TUNING.DAYLIGHT_SEARCH_RANGE, CANGROW_TAGS)) do
                 local lightrad = v.Light:GetCalculatedRadius() * .7
                 if v:GetDistanceSqToPoint(x, y, z) < lightrad * lightrad then
                     shouldgrow = true
@@ -140,7 +137,7 @@ function Crop:DoGrow(dt, nowither)
             if self.cantgrowtime > TUNING.CROP_DARK_WITHER_TIME and self.inst.components.witherable ~= nil then
                 self.inst.components.witherable:ForceWither()
                 if self.inst:HasTag("withered") then
-                    return
+                    return false
                 end
             end
         end
@@ -155,7 +152,11 @@ function Crop:DoGrow(dt, nowither)
                 self.task = nil
             end
         end
+
+		return true
     end
+
+	return false
 end
 
 function Crop:GetDebugString()
@@ -262,6 +263,9 @@ function Crop:MakeWithered()
         MakeMediumBurnable(self.inst)
         MakeSmallPropagator(self.inst)
     end
+	if self.inst.components.halloweenmoonmutable ~= nil then
+		self.inst:RemoveComponent("halloweenmoonmutable")
+	end
     if self.onwithered ~= nil then
         self.onwithered(self.inst)
     end

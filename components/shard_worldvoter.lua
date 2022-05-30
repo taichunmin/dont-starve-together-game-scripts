@@ -53,7 +53,7 @@ local OnVoterEnabled = _ismastershard and function(src, data)
 end
 
 local OnVoterEnabledDirty = not _ismastershard and function()
-    _world:PushEvent("slave_worldvoterenabled", _enabled:value())
+    _world:PushEvent("secondary_worldvoterenabled", _enabled:value())
 end
 
 local OnVoterUpdate = _ismastershard and function(src, data)
@@ -89,7 +89,7 @@ local OnVoterDirty = not _ismastershard and function()
         end
         voters[v.userid:value()] = v.selection:value()
     end
-    _world:PushEvent("slave_worldvoterupdate", {
+    _world:PushEvent("secondary_worldvoterupdate", {
         countdown = _countdown:value(),
         commandid = _commandid:value(),
         targetuserid = _targetuserid:value(),
@@ -126,7 +126,7 @@ local OnSquelchedDirty = not _ismastershard and function()
             squelched[v:value()] = true
         end
     end
-    _world:PushEvent("slave_worldvotersquelchedupdate", {
+    _world:PushEvent("secondary_worldvotersquelchedupdate", {
         squelched = next(squelched) ~= nil and squelched or nil,
     })
 end or nil
