@@ -49,7 +49,8 @@ function LeashAndAvoid:Visit()
                 end
             end
 
-            self.inst.components.locomotor:GoToPoint(hp, nil, self.running)
+			local run = FunctionOrValue(self.running, self.inst)
+			self.inst.components.locomotor:GoToPoint(hp, nil, run)
         else
             self.status = SUCCESS
         end

@@ -8,6 +8,8 @@ local function UpdatePosition(inst, target)
 end
 
 local function TrackEntity(inst, target, restriction, icon)
+    -- TODO(JBK): This function is not able to be ran twice without causing issues.
+    inst._target = target
     if restriction ~= nil then
         inst.MiniMapEntity:SetRestriction(restriction)
     end
@@ -30,6 +32,7 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
+    inst:AddTag("globalmapicon")
     inst:AddTag("CLASSIFIED")
 
     inst.MiniMapEntity:SetCanUseCache(false)
@@ -59,5 +62,14 @@ local function overfog_fn()
     return inst
 end
 
+local function overfog_seeable_fn()
+    local inst = fn()
+
+    inst.MiniMapEntity:SetDrawOverFogOfWar(true, true)
+
+    return inst
+end
+
 return Prefab("globalmapicon", overfog_fn),
-    Prefab("globalmapiconunderfog", fn)
+    Prefab("globalmapiconunderfog", fn),
+    Prefab("globalmapiconseeable", overfog_seeable_fn)

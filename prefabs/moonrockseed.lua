@@ -94,9 +94,9 @@ local function canceldropsounds(inst)
 end
 
 local function scheduledropsounds(inst)
-    inst._tasks[1] = inst:DoTaskInTime(6.5 * FRAMES, dodropsound, 1)
-    inst._tasks[2] = inst:DoTaskInTime(13.5 * FRAMES, dodropsound, 2, .5)
-    inst._tasks[3] = inst:DoTaskInTime(18.5 * FRAMES, dodropsound, 2, .15)
+    inst._tasks[1] = inst:DoTaskInTime(6 * FRAMES, dodropsound, 1)
+    inst._tasks[2] = inst:DoTaskInTime(13 * FRAMES, dodropsound, 2, .5)
+    inst._tasks[3] = inst:DoTaskInTime(18 * FRAMES, dodropsound, 2, .15)
 end
 
 local function onturnon(inst)

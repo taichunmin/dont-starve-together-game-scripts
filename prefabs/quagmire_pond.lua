@@ -33,7 +33,7 @@ local function fn()
 
     inst.no_wet_prefix = true
 
-    inst:SetDeployExtraSpacing(2)
+	inst:SetDeploySmartRadius(2)
 
     inst.entity:SetPristine()
 

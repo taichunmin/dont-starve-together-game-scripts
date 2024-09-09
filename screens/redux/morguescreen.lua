@@ -302,7 +302,7 @@ local function ecounter_widget_constructor(context, i)
 			local t = {}
 			if TheInput:ControllerAttached() then
 				if context.screen.can_view_profile and w.widgets.playerinfo_btn._netid ~= nil then
-					table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE)
+					table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK) .. " " .. STRINGS.UI.PLAYERSTATUSSCREEN.VIEWPROFILE)
 				end
 
                 if w.widgets.delete_btn._userid ~= nil then
@@ -318,7 +318,7 @@ local function ecounter_widget_constructor(context, i)
 			if context.screen._base.OnControl(self, control, down) then return true end
 
 			if TheInput:ControllerAttached() and not down then
-				if control == CONTROL_MAP and context.screen.can_view_profile and w.widgets.playerinfo_btn._netid ~= nil then
+				if control == CONTROL_MENU_BACK and context.screen.can_view_profile and w.widgets.playerinfo_btn._netid ~= nil then
 					TheNet:ViewNetProfile(w.widgets.playerinfo_btn._netid)
 					return true
 				end

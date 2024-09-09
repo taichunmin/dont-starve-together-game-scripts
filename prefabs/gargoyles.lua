@@ -112,7 +112,7 @@ local function makegargoyle(data)
             creature.components.entitytracker:TrackEntity("moonbase", moonbase)
         end
         local dead = data.petrify_anim == "death"
-        creature.sg:GoToState("reanimate", { anim = data.reanimate_anim, time = data.reanimate_time, dead = dead })
+		creature.sg:GoToState("reanimate", { anim = data.reanimate_anim, time = data.reanimate_time, frame = data.reanimate_frame, dead = dead })
         if dead then
             creature.components.health:Kill()
         end
@@ -154,7 +154,7 @@ local function makegargoyle(data)
         inst.entity:AddSoundEmitter()
         inst.entity:AddNetwork()
 
-        inst.entity:AddTag("gargoyle")
+        inst:AddTag("gargoyle")
 
         if data.named then
             --Sneak these into pristine state for optimization
@@ -172,11 +172,15 @@ local function makegargoyle(data)
 
         inst:SetPrefabNameOverride("gargoyle_"..data.name)
 
+        inst.scrapbook_proxy = "gargoyle_"..data.name.."death"
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
             return inst
         end
+
+        inst.scrapbook_adddeps = { "moonbase" }
 
         if data.named then
             --Remove these tags so that they can be added properly when replicating components below
@@ -295,7 +299,8 @@ local data =
         petrify_anim = "death",
         petrify_time = 14 * FRAMES,
         reanimate_anim = "death",
-        reanimate_time = 14 * FRAMES,
+		--reanimate_time = 14 * FRAMES,
+		reanimate_frame = 14,
     },
     {
         name = "werepig",
@@ -317,7 +322,8 @@ local data =
         petrify_anim = "death",
         petrify_time = 13 * FRAMES,
         reanimate_anim = "death",
-        reanimate_time = 13 * FRAMES,
+		--reanimate_time = 13 * FRAMES,
+		reanimate_frame = 13,
         named = true,
     },
     {
@@ -329,7 +335,8 @@ local data =
         petrify_anim = "howl",
         petrify_time = 29 * FRAMES,
         reanimate_anim = "howl",
-        reanimate_time = 29 * FRAMES,
+		--reanimate_time = 29 * FRAMES,
+		reanimate_frame = 29,
         named = true,
     },
 }

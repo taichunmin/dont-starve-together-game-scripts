@@ -139,6 +139,7 @@ local events =
     CommonHandlers.OnFreeze(),
     CommonHandlers.OnSleepEx(),
     CommonHandlers.OnWakeEx(),
+    CommonHandlers.OnSink(),
     EventHandler("doattack", function(inst)
         if not (inst.sg:HasStateTag("busy") or inst.components.health:IsDead()) then
             ChooseAttack(inst)
@@ -562,7 +563,7 @@ local states =
         onenter = function(inst)
             inst.components.locomotor:StopMoving()
             inst.AnimState:PlayAnimation("attack_doubleclaw")
-            inst.AnimState:SetTime(15 * FRAMES)
+			inst.AnimState:SetFrame(15)
             inst.components.combat:StartAttack()
             inst.sg.statemem.target = inst.components.combat.target
             DoFoleySounds(inst)
@@ -1103,5 +1104,6 @@ CommonStates.AddSleepExStates(states,
 })
 
 CommonStates.AddFrozenStates(states, nil, StopLaughing)
+CommonStates.AddSinkAndWashAshoreStates(states)
 
 return StateGraph("SGklaus", states, events, "idle")

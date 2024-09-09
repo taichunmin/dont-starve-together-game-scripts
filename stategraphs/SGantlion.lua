@@ -24,7 +24,7 @@ local function SproutLaunch(inst, launcher, basespeed)
         local dist = math.sqrt(dsq)
         angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
     else
-        angle = 2 * PI * math.random()
+        angle = TWOPI * math.random()
     end
     local speed = basespeed + math.random()
     inst.Physics:Teleport(x1, .1, z1)

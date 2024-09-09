@@ -98,8 +98,22 @@ local assets =
 }
 
 local function common_preinit(inst)
-    GroundTiles.underground[1][2].name = "lavaarena_falloff"
+    for i, v in ipairs(GroundTiles.falloff) do
+        if v[1] == FALLOFF_IDS.FALLOFF then
+            v[2].name = "lavaarena_falloff"
+            break
+        end
+    end
     MapLayerManager:SetSampleStyle(MAP_SAMPLE_STYLE.MARCHING_SQUARES)
+end
+
+local function tile_physics_init(inst)
+    inst.Map:AddTileCollisionSet(
+        COLLISION.LAND_OCEAN_LIMITS,
+        TileGroups.ImpassableTiles, true,
+        TileGroups.ImpassableTiles, false,
+        0.25, 64
+    )
 end
 
 local function common_postinit(inst)
@@ -125,7 +139,7 @@ local function common_postinit(inst)
         inst:AddComponent("ambientsound")
         inst.components.ambientsound:SetReverbPreset("lava_arena")
         inst.components.ambientsound:SetWavesEnabled(false)
-        inst:PushEvent("overrideambientsound", { tile = GROUND.IMPASSABLE, override = GROUND.LAVAARENA_FLOOR })
+        inst:PushEvent("overrideambientsound", { tile = WORLD_TILES.IMPASSABLE, override = WORLD_TILES.LAVAARENA_FLOOR })
         inst:AddComponent("colourcube")
         inst:PushEvent("overridecolourcube", "images/colour_cubes/lavaarena2_cc.tex")
 
@@ -141,4 +155,4 @@ local function master_postinit(inst)
     event_server_data("lavaarena", "prefabs/lavaarena").master_postinit(inst)
 end
 
-return MakeWorld("lavaarena", prefabs, assets, common_postinit, master_postinit, { "lavaarena" }, {common_preinit = common_preinit})
+return MakeWorld("lavaarena", prefabs, assets, common_postinit, master_postinit, { "lavaarena" }, {common_preinit = common_preinit, tile_physics_init = tile_physics_init})

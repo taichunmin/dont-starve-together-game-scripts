@@ -28,6 +28,7 @@ local prefabs_cave =
     "fossil_piece",
     "fossilspike",
     "nightmarefuel",
+    "blinkfocus_marker",
 }
 
 local prefabs_forest =
@@ -43,6 +44,7 @@ local prefabs_forest =
 
 local prefabs_atrium =
 {
+    "shadowheart",
     "fossil_piece",
     "fossilspike",
     "fossilspike2",
@@ -388,13 +390,26 @@ end
 
 --------------------------------------------------------------------------
 
+local function GetRepairedAtriumChatterLines(inst, strtbl)
+    local stargate = inst.components.entitytracker:GetEntity("stargate")
+
+    if stargate ~= nil and
+        stargate.components.charliecutscene ~= nil and
+        stargate.components.charliecutscene:IsGateRepaired() and
+        STRINGS[strtbl.."_ATRIUM_REPAIRED"] ~= nil
+    then
+        return strtbl.."_ATRIUM_REPAIRED"
+    end
+end
+
 local function BattleCry(combat, target)
     local strtbl =
         target ~= nil and
         target:HasTag("player") and
         "STALKER_PLAYER_BATTLECRY" or
         "STALKER_BATTLECRY"
-    return strtbl, math.random(#STRINGS[strtbl])
+
+    return strtbl, math.random(#STRINGS[strtbl]), CHATPRIORITIES.LOW
 end
 
 local function AtriumBattleCry(combat, target)
@@ -403,7 +418,10 @@ local function AtriumBattleCry(combat, target)
         target:HasTag("player") and
         "STALKER_ATRIUM_PLAYER_BATTLECRY" or
         "STALKER_ATRIUM_BATTLECRY"
-    return strtbl, math.random(#STRINGS[strtbl])
+
+    strtbl = GetRepairedAtriumChatterLines(combat.inst, strtbl) or strtbl
+
+    return strtbl, math.random(#STRINGS[strtbl]), CHATPRIORITIES.LOW
 end
 
 --For searching:
@@ -414,7 +432,10 @@ end
 -- STRINGS.STALKER_ATRIUM_DEATHCRY
 local function AtriumBattleChatter(inst, id, forcetext)
     local strtbl = "STALKER_ATRIUM_"..string.upper(id)
-    inst.components.talker:Chatter(strtbl, math.random(#STRINGS[strtbl]), 2, forcetext)
+
+    strtbl = GetRepairedAtriumChatterLines(inst, strtbl) or strtbl
+
+    inst.components.talker:Chatter(strtbl, math.random(#STRINGS[strtbl]), 2, forcetext, CHATPRIORITIES.LOW)
 end
 
 local function StartAbility(inst, ability)
@@ -507,11 +528,10 @@ local function SpawnSnare(inst, x, z, r, num, target)
     local used = {}
     local queued = {}
     local count = 0
-    local dtheta = PI * 2 / num
-    local thetaoffset = math.random() * PI * 2
+    local dtheta = TWOPI / num
     local delaytoggle = 0
     local map = TheWorld.Map
-    for theta = math.random() * dtheta, PI * 2, dtheta do
+    for theta = math.random() * dtheta, TWOPI, dtheta do
         local x1 = x + r * math.cos(theta)
         local z1 = z + r * math.sin(theta)
         if map:IsPassableAtPoint(x1, 0, z1) and not map:IsPointNearHole(Vector3(x1, 0, z1)) then
@@ -540,8 +560,17 @@ local function SpawnSnare(inst, x, z, r, num, target)
     end
     if count <= 0 then
         return false
-    elseif target:IsValid() then
-        target:PushEvent("snared", { attacker = inst })
+    else
+        -- NOTES(JBK): This is for controllers to escape out of the prison without teleporting across the entire arena.
+        local duration = TUNING.STALKER_SNARE_TIME + TUNING.STALKER_SNARE_TIME_VARIANCE + 1
+        local blinkfocus = SpawnPrefab("blinkfocus_marker")
+        blinkfocus.Transform:SetPosition(x, 0, z)
+        blinkfocus:MakeTemporary(duration)
+        blinkfocus:SetMaxRange(r + 4)
+
+        if target:IsValid() then
+            target:PushEvent("snared", { attacker = inst })
+        end
     end
     return true
 end
@@ -644,8 +673,8 @@ local function SpawnChannelers(inst)
     {
         x = x,
         z = z,
-        angle = math.random() * 2 * PI,
-        delta = -2 * PI / count,
+        angle = math.random() * TWOPI,
+        delta = -TWOPI / count,
         count = count,
     }
     DoSpawnChanneler(inst)
@@ -671,6 +700,7 @@ end
 local function OnSoldiersChanged(inst)
     if inst.hasshield ~= (inst.components.commander:GetNumSoldiers() > 0) then
         inst.hasshield = not inst.hasshield
+		inst._hasshield:set(inst.hasshield)
         if not inst.hasshield then
             inst.components.timer:StopTimer("channelers_cd")
             inst.components.timer:StartTimer("channelers_cd", TUNING.STALKER_CHANNELERS_CD)
@@ -723,7 +753,7 @@ local function SpawnMinions(inst, count)
         local ringweight = ring * ring / RING_TOTAL
         local ringcount = math.floor(count * ringweight + .5)
         if ringcount > 0 then
-            local delta = 2 * PI / ringcount
+            local delta = TWOPI / ringcount
             local radius = ring * RING_SIZE
             for i = 1, ringcount do
                 local angle = delta * i
@@ -796,7 +826,7 @@ local function GenerateSpiralSpikes(inst)
     local spacing = 1.7
     local radius = 2
     local deltaradius = .2
-    local angle = 2 * PI * math.random()
+    local angle = TWOPI * math.random()
     local deltaanglemult = (inst.reversespikes and -2 or 2) * PI * spacing
     inst.reversespikes = not inst.reversespikes
     local delay = 0
@@ -995,10 +1025,28 @@ local function CheckAtriumDecay(inst)
     return inst.atriumdecay
 end
 
-local function AtriumOnDeath(inst)
-    if not CheckAtriumDecay(inst) then
+local function trackattackers(inst,data)
+    if data.attacker and data.attacker:HasTag("player") then
+        inst.attackerUSERIDs[data.attacker.userid] = true
+    end
+end
+
+local function AtriumOnDeath(inst,data)
+    if not inst:IsAtriumDecay() then
+        trackattackers(inst, data)
+
+        for ID, data in pairs(inst.attackerUSERIDs) do
+            for i, player in ipairs(AllPlayers) do
+                if player.userid == ID then 
+                    SendRPCToClient(CLIENT_RPC.UpdateAccomplishment, player.userid, "fuelweaver_killed")
+                    break
+                end
+            end
+        end
+
         SetMusicLevel(inst, 3)
     end
+
     if inst.miniontask ~= nil then
         inst.miniontask:Cancel()
         inst.miniontask = nil
@@ -1015,6 +1063,7 @@ local function AtriumOnSave(inst, data)
     data.level = inst._music:value() == 2 and 2 or nil
     data.channelers = inst.channelerparams
     data.minions = inst.minionpoints ~= nil and #inst.minionpoints or nil
+    data.attackerUSERIDs = inst.attackerUSERIDs or nil
 end
 
 local function AtriumOnLoad(inst, data)
@@ -1048,6 +1097,7 @@ local function AtriumOnLoad(inst, data)
                 inst.channelertask = inst:DoTaskInTime(0, DoSpawnChanneler)
             end
         end
+        inst.attackerUSERIDs = data.attackerUSERIDs or {}
     end
 end
 
@@ -1114,7 +1164,7 @@ local function DoPlantBloom(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
     local map = TheWorld.Map
     local offset = FindValidPositionByFan(
-        math.random() * 2 * PI,
+        math.random() * TWOPI,
         math.random() * 3,
         8,
         function(offset)
@@ -1178,10 +1228,16 @@ end
 local function OnDecay(inst)
     inst._decaytask = nil
     if not inst.components.health:IsDead() then
-        --No chance fuel drops if decayed due to daylight
-        inst.components.lootdropper:SetLoot(nil)
-        inst.components.lootdropper:AddChanceLoot("shadowheart", 1)
-        inst.components.health:Kill()
+        -- If we tried to decay while we're dunked in the ocean, we can't die to
+        -- health:Kill(), so queue up the task until we finish washing ashore.
+        if inst.sg:HasStateTag("drowning") then
+            inst._decaytask = inst:DoTaskInTime(2 + math.random(), OnDecay)
+        else
+            --No chance fuel drops if decayed due to daylight
+            inst.components.lootdropper:SetLoot(nil)
+            inst.components.lootdropper:AddChanceLoot("shadowheart", 1)
+            inst.components.health:Kill()
+        end
     end
 end
 
@@ -1251,6 +1307,7 @@ local function common_fn(bank, build, shadowsize, canfight, atriumstalker)
     inst.AnimState:SetBuild("stalker_shadow_build")
     inst.AnimState:AddOverrideBuild(build)
     inst.AnimState:PlayAnimation("idle", true)
+    inst.scrapbook_overridebuild = build
 
     inst:AddTag("epic")
     inst:AddTag("monster")
@@ -1259,6 +1316,7 @@ local function common_fn(bank, build, shadowsize, canfight, atriumstalker)
     inst:AddTag("largecreature")
     inst:AddTag("stalker")
     inst:AddTag("fossil")
+    inst:AddTag("shadow_aligned")
 
     if atriumstalker then
         inst:AddTag("noepicmusic")
@@ -1269,16 +1327,24 @@ local function common_fn(bank, build, shadowsize, canfight, atriumstalker)
         inst._playingmusic = false
         inst._musictask = nil
         SetMusicLevel(inst, 1)
+
+		--Lower priority to regular monster when it is shielded
+		inst._hasshield = net_bool(inst.GUID, "stalker._hasshield")
+		inst.controller_priority_override_is_epic = function()
+			return not inst._hasshield:value()
+		end
     end
 
     if canfight then
-        inst:AddComponent("talker")
-        inst.components.talker.fontsize = 40
-        inst.components.talker.font = TALKINGFONT
-        inst.components.talker.colour = Vector3(238 / 255, 69 / 255, 105 / 255)
-        inst.components.talker.offset = Vector3(0, -700, 0)
-        inst.components.talker.symbol = "fossil_chest"
-        inst.components.talker:MakeChatter()
+        local talker = inst:AddComponent("talker")
+        talker.fontsize = 40
+        talker.font = TALKINGFONT
+        talker.colour = Vector3(238 / 255, 69 / 255, 105 / 255)
+        talker.offset = Vector3(0, -700, 0)
+        talker.symbol = "fossil_chest"
+        talker.name_colour = Vector3(233/256, 85/256, 107/256)
+        talker.chaticon = "npcchatflair_stalker"
+        talker:MakeChatter()
     end
 
     inst.entity:SetPristine()
@@ -1311,6 +1377,8 @@ local function common_fn(bank, build, shadowsize, canfight, atriumstalker)
 
     inst:AddComponent("sanityaura")
     inst.components.sanityaura.aura = -TUNING.SANITYAURA_HUGE
+
+    inst:AddComponent("drownable")
 
     inst:AddComponent("combat")
     inst.components.combat.hiteffectsymbol = "torso"
@@ -1449,10 +1517,13 @@ local function atrium_fn()
     inst.OnLoad = AtriumOnLoad
     inst.OnLoadPostPass = AtriumOnLoadPostPass
 
+    inst.attackerUSERIDs = {}
+
     inst.hasshield = false
     inst:ListenForEvent("soldierschanged", OnSoldiersChanged)
     inst:ListenForEvent("miniondeath", OnMinionDeath)
     inst:ListenForEvent("death", AtriumOnDeath)
+    inst:ListenForEvent("attacked", trackattackers)
 
     return inst
 end

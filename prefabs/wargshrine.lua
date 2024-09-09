@@ -59,7 +59,7 @@ local function OnErodeTorch(inst)
     fx.AnimState:SetBuild("ash")
     fx.AnimState:PlayAnimation("disappear")
     fx.AnimState:SetMultColour(.4, .4, .4, 1)
-    fx.AnimState:SetTime(13 * FRAMES)
+	fx.AnimState:SetFrame(13)
 
     fx:ListenForEvent("animover", fx.Remove)
 end
@@ -274,6 +274,7 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(0.9) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .4)
 
     inst.MiniMapEntity:SetPriority(5)

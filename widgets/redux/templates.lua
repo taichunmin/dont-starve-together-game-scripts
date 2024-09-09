@@ -1275,7 +1275,7 @@ end
 
 function TEMPLATES.CharacterSpinner(onchanged_fn, puppet, user_profile)
     local hero_data = {}
-    for i,hero in ipairs(GetActiveCharacterList()) do
+    for i,hero in ipairs(GetFEVisibleCharacterList()) do
         table.insert(hero_data, {
                 text = STRINGS.CHARACTER_NAMES[hero] or "",
                 colour = nil,
@@ -1346,6 +1346,67 @@ function TEMPLATES.ChatFlairBadge()
 
     flair.GetFlair = function(self)
         return self.profileflair
+    end
+
+    flair.SetAlpha = function(self, a)
+        if a > 0.01 and self.profileflair then
+            self:Show()
+            self.bg:SetTint(1,1,1, a)
+            self.flair_img:SetTint(1,1,1, a)
+        else
+            self:Hide()
+        end
+    end
+
+    flair:SetScale(0.5)
+
+    flair.GetSize = function(self)
+        return self.flair_img:GetScaledSize()
+    end
+
+    return flair
+end
+
+function TEMPLATES.ChatterMessageBadge()
+    local flair = Widget("ChatterMessage Badge")
+
+    flair.bg = flair:AddChild(Image())
+    flair.bg:SetScale(0.8)
+
+    flair.flair_img = flair:AddChild(Image("images/npcchatflairs.xml", "npcchatflair_none.tex"))
+    flair.flair_img:SetScale(.55)
+    flair.flair_img:SetPosition(0, 31)
+
+    flair:Hide()
+    flair:SetClickable(false)
+
+    --Setup custom widget functions
+    flair.SetFlair = function(self, chatflair)
+        self.profileflair = chatflair
+
+        if self.profileflair then
+            local attempt_texture = ((not chatflair or chatflair == "default") and "npcchatflair_none.tex")
+                or chatflair..".tex"
+            self.flair_img:SetTexture("images/npcchatflairs.xml", attempt_texture, "npcchatflair_none.tex")
+        end
+    end
+
+    flair.GetFlair = function(self)
+        return self.profileflair
+    end
+
+    flair.SetBGIcon = function(self, bg_icon)
+        self.bg_icon = bg_icon
+        if self.bg_icon then
+            if bg_icon == "default" then
+                bg_icon = "playericon_bg_none"
+            end
+            self.bg:SetTexture("images/profileflair.xml", bg_icon .. ".tex", "playericon_bg_none.tex")
+        end
+    end
+
+    flair.GetBGIcon = function(self)
+        return self.bg_icon
     end
 
     flair.SetAlpha = function(self, a)
@@ -1870,7 +1931,7 @@ function TEMPLATES.ControllerFunctionsFromButtons(buttons)
             return false
         -- Hitting Esc fires both Pause and Cancel, so we can only handle pause
         -- when coming from gamepads.
-        elseif control ~= CONTROL_PAUSE or TheInput:ControllerAttached() then
+        elseif control ~= CONTROL_MENU_START or TheInput:ControllerAttached() then
             for i,v in ipairs(buttons) do
                 if control == v.controller_control then
                     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -2051,23 +2112,14 @@ function TEMPLATES.MakeStartingInventoryWidget(c, left_align)
 		character = string.upper(character)
 		self._invitems:KillAllChildren()
 
-		local inv_item_list = (TUNING.GAMEMODE_STARTING_ITEMS[TheNet:GetServerGameMode()] or TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT)[character]
-		if inv_item_list ~= nil and #inv_item_list > 0 then
-			local inv_items, item_count = {}, {}
-			for _, v in ipairs(inv_item_list) do
-				if item_count[v] == nil then
-					item_count[v] = 1
-					table.insert(inv_items, v)
-				else
-					item_count[v] = item_count[v] + 1
-				end
-			end
+		local inv_item_list = GetUniquePotentialCharacterStartingInventoryItems(character, false)
+		if inv_item_list[1] ~= nil then
 
 			local scale = 0.85
 			local spacing = 5
 			local slot_width, total_width, x
 
-			for i, item in ipairs(inv_items) do
+			for i, item in ipairs(inv_item_list) do
 				local slot = root._invitems:AddChild(Image("images/hud.xml", "inv_slot.tex"))
 
 				local override_item_image = TUNING.STARTING_ITEM_IMAGE_OVERRIDE[item]
@@ -2079,15 +2131,10 @@ function TEMPLATES.MakeStartingInventoryWidget(c, left_align)
 				slot:SetScale(scale)
 				if slot_width == nil then
 					slot_width = 68 * scale
-					total_width = (slot_width * #inv_items + spacing * (#inv_items - 1))
+					total_width = (slot_width * #inv_item_list + spacing * (#inv_item_list - 1))
 					x = left_align and (slot_width/2) or (-total_width/2 + slot_width/2)
 				end
 				slot:SetPosition(x, -(title_h + spacing + slot_width/2))
-
-				if item_count[item] > 1 then
-					--local label = slot:AddChild(Text(NUMBERFONT, 32, tostring(item_count[item])))
-					--label:SetPosition(1, 15)
-				end
 
 				x = x + slot_width + spacing
 			end

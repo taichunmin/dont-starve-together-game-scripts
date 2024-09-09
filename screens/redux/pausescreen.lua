@@ -5,6 +5,7 @@ local Widget = require "widgets/widget"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TEMPLATES = require "widgets/redux/templates"
 local OptionsScreen = require "screens/redux/optionsscreen"
+local ScrapbookScreen = require "screens/redux/scrapbookscreen"
 local UserCommandPickerScreen = require "screens/redux/usercommandpickerscreen"
 
 local UserCommands = require "usercommands"
@@ -108,6 +109,19 @@ function PauseScreen:BuildMenu()
 			table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.ISSUE, cb = function() VisitURL("http://forums.kleientertainment.com/klei-bug-tracker/dont-starve-together/") end })
 		end
 	end
+
+    table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.SCRAPBOOK, cb=function()
+        TheFrontEnd:Fade(FADE_OUT, SCREEN_FADE_TIME, function()
+            TheFrontEnd:PushScreen(ScrapbookScreen())
+            TheFrontEnd:Fade(FADE_IN, SCREEN_FADE_TIME)
+            --Ensure last_focus is the options button since mouse can
+            --unfocus this button during the screen change, resulting
+            --in controllers having no focus when toggled on from the
+            --options screen
+            self.last_focus = self.menu.items[self.scrapbook_button_index]
+        end)
+    end })
+    self.scrapbook_button_index = #buttons
 
     table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.DISCONNECT, cb=function() self:doconfirmquit()	end})
     table.insert(buttons, {text=STRINGS.UI.PAUSEMENU.CLOSE, cb=function() self:unpause() end })

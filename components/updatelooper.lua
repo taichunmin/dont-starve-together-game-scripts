@@ -1,16 +1,24 @@
 --V2C: component for adding generic onupdate loops to entities
 --     since we found out that DoPeriodicTask(0) doesn't trigger precisely every frame
 
+local _PostUpdates = {}
+
 local UpdateLooper = Class(function(self, inst)
     self.inst = inst
     self.onupdatefns = {}
     self.longupdatefns = {}
 	self.onwallupdatefns = {}
+	self.postupdatefns = {}
 end)
 
 function UpdateLooper:OnRemoveFromEntity()
     self.inst:StopUpdatingComponent(self)
     self.inst:StopWallUpdatingComponent(self)
+	_PostUpdates[self.inst] = nil
+end
+
+function UpdateLooper:OnRemoveEntity()
+	_PostUpdates[self.inst] = nil
 end
 
 function UpdateLooper:AddOnUpdateFn(fn)
@@ -21,10 +29,12 @@ function UpdateLooper:AddOnUpdateFn(fn)
 end
 
 function UpdateLooper:RemoveOnUpdateFn(fn)
-    if not self.OnUpdatesToRemove then
-        self.OnUpdatesToRemove = {}
-    end
-    table.insert(self.OnUpdatesToRemove,fn)
+	if #self.onupdatefns > 0 then
+		if not self.OnUpdatesToRemove then
+			self.OnUpdatesToRemove = {}
+		end
+		table.insert(self.OnUpdatesToRemove,fn)
+	end
 end
 
 function UpdateLooper:AddLongUpdateFn(fn)
@@ -32,10 +42,12 @@ function UpdateLooper:AddLongUpdateFn(fn)
 end
 
 function UpdateLooper:RemoveLongUpdateFn(fn)
-    if not self.OnLongUpdatesToRemove then
-        self.OnLongUpdatesToRemove = {}
-    end
-    table.insert(self.OnLongUpdatesToRemove,fn)
+	if #self.longupdatefns > 0 then
+		if not self.OnLongUpdatesToRemove then
+			self.OnLongUpdatesToRemove = {}
+		end
+		table.insert(self.OnLongUpdatesToRemove,fn)
+	end
 end
 
 function UpdateLooper:OnUpdate(dt)
@@ -46,9 +58,9 @@ function UpdateLooper:OnUpdate(dt)
         end
         if #self.onupdatefns <= 0 then
             self.inst:StopUpdatingComponent(self)
-        end         
+        end
         self.OnUpdatesToRemove = nil
-    end   
+    end
 
 	for i = #self.onupdatefns, 1, -1 do
         self.onupdatefns[i](self.inst, dt)
@@ -62,7 +74,7 @@ function UpdateLooper:LongUpdate(dt)
             table.removearrayvalue(self.longupdatefns, fn)
         end
         self.OnLongUpdatesToRemove = nil
-    end   
+    end
 
 	for i = #self.longupdatefns, 1, -1 do
         self.longupdatefns[i](self.inst, dt)
@@ -77,10 +89,12 @@ function UpdateLooper:AddOnWallUpdateFn(fn)
 end
 
 function UpdateLooper:RemoveOnWallUpdateFn(fn)
-    if not self.OnWallUpdatesToRemove then
-        self.OnWallUpdatesToRemove = {}
-    end
-    table.insert(self.OnWallUpdatesToRemove,fn)
+	if #self.onwallupdatefns > 0 then
+		if not self.OnWallUpdatesToRemove then
+			self.OnWallUpdatesToRemove = {}
+		end
+		table.insert(self.OnWallUpdatesToRemove, fn)
+	end
 end
 
 function UpdateLooper:OnWallUpdate(dt)
@@ -93,13 +107,41 @@ function UpdateLooper:OnWallUpdate(dt)
         end
         if #self.onwallupdatefns <= 0 then
             self.inst:StopWallUpdatingComponent(self)
-        end        
+        end
         self.OnWallUpdatesToRemove = nil
-    end 
+    end
 
 	for i = 1, #self.onwallupdatefns do
         self.onwallupdatefns[i](self.inst, dt)
     end
 end
+
+--------------------------------------------------------------------------
+--#V2C: quick and dirty post update implementation for now.
+--      not safe to add remove fns during UpdateLooper_PostUpdate.
+
+function UpdateLooper:AddPostUpdateFn(fn)
+	if #self.postupdatefns <= 0 then
+		_PostUpdates[self.inst] = self.postupdatefns
+	end
+	table.insert(self.postupdatefns, fn)
+end
+
+function UpdateLooper:RemovePostUpdateFn(fn)
+	table.removearrayvalue(self.postupdatefns, fn)
+	if #self.postupdatefns <= 0 then
+		_PostUpdates[self.inst] = nil
+	end
+end
+
+function UpdateLooper_PostUpdate()
+	for inst, fns in pairs(_PostUpdates) do
+		for _, fn in ipairs(fns) do
+			fn(inst)
+		end
+	end
+end
+
+--------------------------------------------------------------------------
 
 return UpdateLooper

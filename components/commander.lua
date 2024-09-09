@@ -19,14 +19,19 @@ function Commander:OnRemoveFromEntity()
     end
 end
 
-function Commander:GetNumSoldiers()
+function Commander:GetNumSoldiers(prefab)
+    if prefab then
+        return #self:GetAllSoldiers(prefab)
+    end
     return self.numsoldiers
 end
 
-function Commander:GetAllSoldiers()
+function Commander:GetAllSoldiers(prefab)
     local soldiers = {}
-    for k, v in pairs(self.soldiers) do
-        table.insert(soldiers, k)
+    for k, _ in pairs(self.soldiers) do
+        if prefab == nil or k.prefab == prefab then
+            table.insert(soldiers, k)
+        end
     end
     return soldiers
 end

@@ -3,6 +3,7 @@ require "behaviours/chaseandattack"
 require "behaviours/runaway"
 require "behaviours/leash"
 require "behaviours/wander"
+local BrainCommon = require("brains/braincommon")
 
 local BeeGuardBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)
@@ -10,7 +11,7 @@ local BeeGuardBrain = Class(Brain, function(self, inst)
 end)
 
 local function GetQueen(inst)
-    return inst.components.entitytracker:GetEntity("queen")
+    return inst:GetQueen() -- Beeguard's function.
 end
 
 local function GetQueenPos(inst)
@@ -31,7 +32,7 @@ local function GetGuardPos(inst)
 end
 
 local function ShouldPanic(self)
-    if self.inst.components.health.takingfiredamage or self.inst.components.hauntable.panic then
+    if BrainCommon.ShouldTriggerPanic(self.inst) then
         self._shouldchase = false
         return true
     end

@@ -188,7 +188,7 @@ local function OnLoad(inst, data)
         inst._fade:set(FADE_FRAMES)
         OnFadeDirty(inst)
         Sway(inst)
-        inst.AnimState:SetTime(inst.AnimState:GetCurrentAnimationLength() * math.random())
+		inst.AnimState:SetFrame(math.random(inst.AnimState:GetCurrentAnimationNumFrames()) - 1)
     end
 end
 
@@ -303,6 +303,9 @@ local function MakeSprout(name)
 
             return inst
         end
+
+        inst.scrapbook_specialinfo = "MUSHROOMSPROUT"
+        inst.scrapbook_anim = "sway2_loop"
 
         inst._level = 0
         inst._targetlevel = 0

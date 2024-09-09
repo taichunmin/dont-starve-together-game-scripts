@@ -44,6 +44,8 @@ local function MakeAntler(antlertype, trueklaussackkey)
             return inst
         end
 
+        inst.scrapbook_anim = "idle"..tostring(antlertype or 1)
+
         inst:AddComponent("inspectable")
         inst:AddComponent("inventoryitem")
 

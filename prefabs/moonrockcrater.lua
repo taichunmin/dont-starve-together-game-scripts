@@ -53,12 +53,15 @@ local function fn()
     inst.AnimState:SetBank("mooneyes")
     inst.AnimState:SetBuild("mooneyes")
     inst.AnimState:PlayAnimation("crater")
+    inst.scrapbook_anim = "crater"
 
     inst:AddTag("gemsocket")
 
     --trader (from trader component) added to pristine state for optimization
     inst:AddTag("trader")
 	inst:AddTag("give_dolongaction")
+
+    inst.scrapbook_specialinfo = "CRATEREDMOONROCK"
 
     inst.entity:SetPristine()
 

@@ -88,6 +88,8 @@ local function MakeFood(num)
         return inst
     end
 
+    -- NOTES(JBK): Use this to help export the bottom table to make this file findable.
+    --print(string.format("%s %s", data.food or FOODTYPE.GENERIC, "yotp_food"..num))
     return Prefab("yotp_food"..num, fn, assets)
 end
 
@@ -97,3 +99,10 @@ for k = 1, #foodinfo do
 end
 
 return unpack(ret)
+
+-- NOTES(JBK): These are here to make this file findable.
+--[[
+FOODTYPE.HORRIBLE yotp_food2
+FOODTYPE.MEAT yotp_food1
+FOODTYPE.MEAT yotp_food3
+]]

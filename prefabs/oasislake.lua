@@ -12,7 +12,6 @@ local prefabs =
 }
 
 local WATER_RADIUS = 3.8
-local NO_DEPLOY_RADIUS = WATER_RADIUS + 0.1
 
 local NUM_BUGS = 3
 local BUG_OFFSET = 1.4
@@ -34,8 +33,8 @@ local function SpawnOasisBugs(inst)
             offset = Vector3(BUG_OFFSET, 0, 0)
         elseif i == 2 then
             local dir = bug_pts[1] - pos
-            local ca = math.cos(0.33*2*PI);
-            local sa = math.sin(0.33*2*PI);
+            local theta = 0.33 * TWOPI
+            local ca, sa = math.cos(theta), math.sin(theta)
             offset = Vector3(ca*dir.x - sa*dir.y, 0, sa*dir.x + ca*dir.y):Normalize() * BUG_OFFSET
         elseif i == 3 then
             offset = Vector3(0,0,0)
@@ -68,7 +67,7 @@ local function SpawnSucculents(inst)
 
     local succulents_to_spawn = MAX_SUCCULENTS - #TheSim:FindEntities(pt.x, pt.y, pt.z, SUCCULENT_RANGE, SUCCULENT_TAGS)
     for i = 1, succulents_to_spawn do
-        local offset = FindWalkableOffset(pt, math.random() * 2 * PI, GetRandomMinMax(SUCCULENT_RANGE_MIN, SUCCULENT_RANGE), 10, false, true, noentcheckfn)
+        local offset = FindWalkableOffset(pt, math.random() * TWOPI, GetRandomMinMax(SUCCULENT_RANGE_MIN, SUCCULENT_RANGE), 10, false, true, noentcheckfn)
         if offset ~= nil then
             local plant = SpawnPrefab("succulent_plant")
             plant.Transform:SetPosition((pt + offset):Get())
@@ -222,9 +221,17 @@ local function fn()
     inst:AddTag("watersource")
     inst:AddTag("birdblocker")
     inst:AddTag("antlion_sinkhole_blocker")
+	inst:AddTag("allow_casting")
 
     inst.no_wet_prefix = true
-    inst:SetDeployExtraSpacing(NO_DEPLOY_RADIUS)
+	inst:SetDeploySmartRadius(WATER_RADIUS)
+
+    if not TheNet:IsDedicated() then
+        inst:AddComponent("pointofinterest")
+        inst.components.pointofinterest:SetHeight(320)
+    end
+
+    inst.scrapbook_inspectonseen = true
 
     inst.entity:SetPristine()
 
@@ -246,6 +253,8 @@ local function fn()
     inst.components.oasis.radius = TUNING.SANDSTORM_OASIS_RADIUS
 
     inst:AddComponent("watersource")
+
+
 
     inst.isdamp = false
     inst.driedup = false

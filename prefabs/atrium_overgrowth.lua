@@ -35,6 +35,7 @@ local function fn(bank)
     inst.components.sanityaura.aura = -TUNING.SANITYAURA_SUPERHUGE
 
     inst:AddComponent("inspectable")
+    MakeRoseTarget_CreateFuel_IncreasedHorror(inst)
 
     return inst
 end

@@ -59,7 +59,7 @@ local function get_killed_by(data)
     end
 
     local killed_by =
-        (data.killed_by == "nil" and (data.character == "waxwell" and "charlie" or "darkness")) or
+        (data.killed_by == "nil" and ((data.character == "waxwell" or data.character == "winona") and "charlie" or "darkness")) or
         (data.killed_by == "unknown" and "shenanigans") or
         (data.killed_by == "moose" and (math.random() < .5 and "moose1" or "moose2")) or
         data.killed_by

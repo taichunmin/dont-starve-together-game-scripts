@@ -123,6 +123,7 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddLight()
 
+	inst:SetDeploySmartRadius(1) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .45)
 
     inst:AddTag("structure")
@@ -130,6 +131,8 @@ local function fn()
     inst.AnimState:SetBank("moondial")
     inst.AnimState:SetBuild("moondial_build")
     inst.AnimState:PlayAnimation("idle_new")
+
+    inst.scrapbook_anim = "idle_new"
 
     inst.Light:Enable(false)
     inst.Light:SetFalloff(.7)

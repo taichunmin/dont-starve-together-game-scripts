@@ -164,5 +164,6 @@ ShadowChess.States.AddDespawn(states, "disappear")
 ShadowChess.States.AddAppear(states, "appear")
 
 CommonStates.AddWalkStates(states)
+CommonStates.AddSinkAndWashAshoreStates(states, {washashore = "appear"})
 
 return StateGraph("shadow_knight", states, ShadowChess.CommonEventList, "appear")

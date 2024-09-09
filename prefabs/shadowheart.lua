@@ -40,6 +40,8 @@ local function fn()
 
     MakeInventoryFloatable(inst, "small", 0.05, 0.8)
 
+    inst:AddTag("shadowheart")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then

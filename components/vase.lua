@@ -35,8 +35,8 @@ function Vase:Decorate(giver, item)
 		return false
 	end
 
-    if item.components.stackable ~= nil and item.components.stackable.stacksize > 0 then
-        item = item.components.stackable:Get(1)
+	if item.components.stackable and item.components.stackable:IsStack() then
+		item = item.components.stackable:Get()
     else
         item.components.inventoryitem:RemoveFromOwner(true)
     end

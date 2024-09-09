@@ -188,8 +188,8 @@ local SandOver = Class(Widget, function(self, owner, dustlayer)
             owner.components.playervision:HasGoggleVision() then
             self:BlindTo(0, true)
         end
-        if owner.GetSandstormLevel ~= nil then
-            self:FadeTo(owner:GetStormLevel(), true)
+		if owner.GetStormLevel ~= nil then
+			self:FadeTo(owner:GetStormLevel(STORM_TYPES.SANDSTORM), true)
         end
     end
 end)
@@ -211,7 +211,7 @@ function SandOver:BlindTo(blindto, instant)
 end
 
 function SandOver:FadeTo(fadeto, instant)
-    if self.owner and self.owner:GetStormLevel() == 0 then
+	if self.owner and self.owner:GetStormLevel(STORM_TYPES.SANDSTORM) == 0 then
         fadeto = 0
     end
 

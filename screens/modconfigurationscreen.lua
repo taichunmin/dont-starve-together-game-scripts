@@ -270,9 +270,9 @@ function ModConfigurationScreen:OnControl(control, down)
     if not down then
 	    if control == CONTROL_CANCEL then
 			self:Cancel()
-	    elseif control == CONTROL_PAUSE and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
+	    elseif control == CONTROL_MENU_START and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
 	    	self:Apply() --apply changes and go back, or stay
-    	elseif control == CONTROL_MAP and TheInput:ControllerAttached() then
+    	elseif control == CONTROL_MENU_BACK and TheInput:ControllerAttached() then
 			self:ResetToDefaultValues()
 			return true
 		else
@@ -292,9 +292,9 @@ function ModConfigurationScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 
 	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
-	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.MODSSCREEN.RESETDEFAULT)
+	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK) .. " " .. STRINGS.UI.MODSSCREEN.RESETDEFAULT)
 	if self:IsDirty() then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.HELP.APPLY)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.HELP.APPLY)
 	end
 
 	return table.concat(t, "  ")

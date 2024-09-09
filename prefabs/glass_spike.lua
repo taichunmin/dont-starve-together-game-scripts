@@ -106,11 +106,15 @@ local function MakeSpikeFn(shape, size)
 
         MakeHeavyObstaclePhysics(inst, inst.spikeradius)
 
+        inst.scrapbook_proxy = "glass"..shape
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
             return inst
         end
+
+        inst.scrapbook_anim = shape == "spike" and "tall_glass_idle" or "block_glass_idle"
 
         inst:AddComponent("heavyobstaclephysics")
         inst.components.heavyobstaclephysics:SetRadius(inst.spikeradius)

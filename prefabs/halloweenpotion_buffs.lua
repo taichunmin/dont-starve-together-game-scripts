@@ -84,6 +84,7 @@ local function potion_fn(anim, potion_tunings, buff_id, buff_prefab, nameoverrid
     inst.AnimState:SetBank("halloween_potions")
     inst.AnimState:SetBuild("halloween_potions")
     inst.AnimState:PlayAnimation(anim)
+    inst.scrapbook_anim = anim
 
     inst:AddTag("potion")
     inst:AddTag("pre-preparedfood")

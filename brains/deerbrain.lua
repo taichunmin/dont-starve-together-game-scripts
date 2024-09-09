@@ -87,13 +87,14 @@ end)
 function DeerBrain:OnStart()
     local solomentality = PriorityNode(
     {
+		--NOTE: haunt is the only panic trigger higher priority than fleeing
         WhileNode(function() return self.inst.components.hauntable and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
         WhileNode(function() return self.inst.components.combat:HasTarget() end, "Flee",
             PriorityNode{
                 AttackWall(self.inst),
                 RunAway(self.inst, {fn=function(guy) return self.inst.components.combat:TargetIs(guy) end, tags={"player"}}, TUNING.DEER_ATTACKER_REMEMBER_DIST, TUNING.DEER_ATTACKER_REMEMBER_DIST),
             }),
-        WhileNode(function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
+		BrainCommon.PanicTrigger(self.inst),
 
         FaceEntity(self.inst, GetNonHerdingFaceTargetFn, KeepNonHerdingFaceTargetFn),
         BrainCommon.AnchorToSaltlick(self.inst),

@@ -20,7 +20,14 @@ local statedata =
         workleft    = 1,
         workaction  = "HAMMER",
         growsound   = "dontstarve/wilson/plant_tree",
-        loot        = function(inst) return {inst.seedprefab, "boards", "poop"} end,
+        loot        = function(inst)
+            local seeds = math.min(inst.maxseeds or 1, 1)
+            local items = {"boards", "poop"}
+            for i = 1, seeds do
+                table.insert(items, inst.seedprefab)
+            end
+            return items
+        end,
         burntloot   = function(inst) return {"ash", "boards", "poop"} end,
         burnfxlevel = 3,
     },
@@ -58,7 +65,14 @@ local statedata =
         growsound   = "dontstarve/forest/treeGrow",
         workleft    = TUNING.WINTER_TREE_CHOP_NORMAL,
         workaction  = "CHOP",
-        loot        = function(inst) return {"log", "log", inst.seedprefab, "boards", "poop"} end,
+        loot        = function(inst)
+            local seeds = math.min(inst.maxseeds or 1, 1)
+            local items = {"log", "log", "boards", "poop"}
+            for i = 1, seeds do
+                table.insert(items, inst.seedprefab)
+            end
+            return items
+        end,
         burntloot   = function(inst) return {"charcoal", "boards", "poop"} end,
         burnfxlevel = 4,
         burntree    = true,
@@ -78,8 +92,22 @@ local statedata =
         growsound   = "dontstarve/forest/treeGrow",
         workleft    = TUNING.WINTER_TREE_CHOP_TALL,
         workaction  = "CHOP",
-        loot        = function(inst) return {"log", "log", "log", inst.seedprefab, inst.seedprefab, "boards", "poop"} end,
-        burntloot   = function(inst) return {"charcoal", "charcoal", inst.seedprefab, "boards", "poop"} end,
+        loot        = function(inst)
+            local seeds = math.min(inst.maxseeds or 2, 2)
+            local items = {"log", "log", "log", "boards", "poop"}
+            for i = 1, seeds do
+                table.insert(items, inst.seedprefab)
+            end
+            return items
+        end,
+        burntloot   = function(inst)
+            local seeds = math.min(inst.maxseeds or 1, 1)
+            local items = {"charcoal", "charcoal", "boards", "poop"}
+            for i = 1, seeds do
+                table.insert(items, inst.seedprefab)
+            end
+            return items
+        end,
         burnfxlevel = 4,
         burntree    = true,
         shelter     = true,
@@ -292,7 +320,7 @@ local function dogifting(inst)
                     local item = SpawnPrefab(v.prefab)
                     if item ~= nil then
                         if item.components.stackable ~= nil then
-                            item.components.stackable.stacksize = math.max(1, v.stack or 1)
+							item.components.stackable:SetStackSize(math.max(1, v.stack or 1))
                         end
                         table.insert(items, item)
                     end
@@ -401,6 +429,10 @@ end
 
 -------------------------------------------------------------------------------
 local function SetGrowth(inst)
+    if inst.components.burnable == nil then
+        -- NOTES(JBK): This thing got burnt in the time between the thing growing and now so do nothing.
+        return
+    end
     local new_size = inst.components.growable.stage
     inst.statedata = statedata[new_size]
     PlaySway(inst)
@@ -515,6 +547,7 @@ local function onworked(inst, worker, workleft)
         if inst.components.container ~= nil then
             inst.components.container:DropEverything()
             inst.components.container:Close()
+            inst.components.container.canbeopened = false
         end
 
         if inst.statedata.breakrightanim ~= nil then
@@ -566,7 +599,7 @@ local function onloadpostpass(inst, ents, data)
         inst.components.burnable.onburnt(inst)
     else
         PlaySway(inst)
-        inst.AnimState:SetTime(math.random() * inst.AnimState:GetCurrentAnimationLength())
+		inst.AnimState:SetFrame(math.random(inst.AnimState:GetCurrentAnimationNumFrames()) - 1)
 
         queuegifting(inst)
     end
@@ -743,6 +776,16 @@ end
 
 -------------------------------------------------------------------------------
 
+local palmcone_has_leaf_fx = {["short"] = true, ["normal"] = true, ["tall"] = true,}
+local function palmcone_onchop(inst)
+    if palmcone_has_leaf_fx[inst.statedata.name] then
+        local x, y, z = inst.Transform:GetWorldPosition()
+        SpawnPrefab("palmcone_leaf_fx_" .. inst.statedata.name).Transform:SetPosition(x, y + math.random() * 2, z)
+    end
+end
+
+-------------------------------------------------------------------------------
+
 local trees = {}
 
 local function AddWinterTree(treetype)
@@ -855,9 +898,14 @@ local function AddWinterTree(treetype)
         inst.statedata = statedata[1]
         inst.seedprefab = treetype.seedprefab
         inst.canshelter = treetype.shelter
+        inst.maxseeds = treetype.maxseeds
 
         inst:AddComponent("growable")
         inst.components.growable.stages = GROWTH_STAGES
+        inst.components.growable.magicgrowable = true
+
+        inst:AddComponent("simplemagicgrower")
+        inst.components.simplemagicgrower:SetLastStage(#inst.components.growable.stages)
 
         inst:AddComponent("lootdropper")
         inst.components.lootdropper:SetLootSetupFn(lootsetfn)
@@ -958,6 +1006,21 @@ for i, v in ipairs({
         onload = deciduous_onload,
         onplayanim = deciduous_onplayanim,
         onchop = deciduous_onchop,
+    },
+    {
+        name = "winter_palmconetree",
+        bank = "wintertree_palmcone",
+        build = "wintertree_palmcone",
+        seedprefab = "palmcone_seed",
+        maxseeds = 1,
+        extraprefabs =
+        {
+            "palmcone_leaf_fx_tall",
+            "palmcone_leaf_fx_normal",
+            "palmcone_leaf_fx_short",
+        },
+        onchop = palmcone_onchop,
+        shelter = true,
     },
 }) do
     AddWinterTree(v)

@@ -58,7 +58,7 @@ local function SpikeLaunch(inst, launcher, basespeed, startheight, startradius)
         local dist = math.sqrt(dsq)
         angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
     else
-        angle = 2 * PI * math.random()
+        angle = TWOPI * math.random()
     end
     local sina, cosa = math.sin(angle), math.cos(angle)
     local speed = basespeed + math.random()
@@ -126,15 +126,7 @@ local function DoDamage(inst, OnIgnite)
             elseif v.components.pickable ~= nil
                 and v.components.pickable:CanBePicked()
                 and not v:HasTag("intense") then
-                local num = v.components.pickable.numtoharvest or 1
-                local product = v.components.pickable.product
-                local x1, y1, z1 = v.Transform:GetWorldPosition()
-                v.components.pickable:Pick(inst) -- only calling this to trigger callbacks on the object
-                if product ~= nil and num > 0 then
-                    for i = 1, num do
-                        SpawnPrefab(product).Transform:SetPosition(x1, 0, z1)
-                    end
-                end
+				v.components.pickable:Pick(inst)
             elseif v.components.combat ~= nil
                 and v.components.health ~= nil
                 and not v.components.health:IsDead() then
@@ -282,11 +274,18 @@ local function MakeSpikeFn(shape, size)
         inst:AddTag("object")
         inst:AddTag("stone")
 
+        inst.scrapbook_proxy = shape == "spike" and "sandspike" or nil
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
             return inst
         end
+
+        inst.scrapbook_anim = shape == "spike" and "tall_pst" or "block_pst"
+        inst.scrapbook_animpercent = 1
+        inst.scrapbook_maxhealth = { TUNING.SANDSPIKE.HEALTH.SHORT, TUNING.SANDSPIKE.HEALTH.TALL }
+        inst.scrapbook_damage    = { TUNING.SANDSPIKE.DAMAGE.SHORT, TUNING.SANDSPIKE.DAMAGE.TALL }
 
         inst:AddComponent("health")
         inst.components.health:SetMaxHealth(TUNING.SANDSPIKE.HEALTH[string.upper(inst.animname)])
@@ -314,7 +313,7 @@ local function MakeSpikeFn(shape, size)
 end
 
 --For searching: sandspike_short, sandspike_med, sandspike_tall
-local prefabs = {}
+local prefabs = { "glassspike" }
 local ret = {}
 for i, v in ipairs(SPIKE_SIZES) do
     local name = "sandspike_"..v

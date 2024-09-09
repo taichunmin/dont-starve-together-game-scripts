@@ -1,0 +1,241 @@
+return {
+  version = "1.1",
+  luaversion = "5.1",
+  orientation = "orthogonal",
+  width = 25,
+  height = 25,
+  tilewidth = 64,
+  tileheight = 64,
+  properties = {},
+  tilesets = {
+    {
+      name = "ground",
+      firstgid = 1,
+      filename = "../../../../tools/tiled/dont_starve/ground.tsx",
+      tilewidth = 64,
+      tileheight = 64,
+      spacing = 0,
+      margin = 0,
+      image = "../../../../tools/tiled/dont_starve/tiles.png",
+      imagewidth = 512,
+      imageheight = 512,
+      properties = {},
+      tiles = {}
+    }
+  },
+  layers = {
+    {
+      type = "tilelayer",
+      name = "BG_TILES",
+      x = 0,
+      y = 0,
+      width = 25,
+      height = 25,
+      visible = true,
+      opacity = 1,
+      properties = {},
+      encoding = "lua",
+      data = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 18, 18, 18, 18, 18, 18, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0, 0,
+        0, 0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0,
+        0, 0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 0, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0,
+        0, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0, 0,
+        0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0, 0, 0,
+        0, 0, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0, 0, 0, 0,
+        0, 0, 0, 18, 18, 18, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 18, 18, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 18, 18, 18, 18, 44, 44, 44, 44, 44, 44, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      }
+    },
+    {
+      type = "objectgroup",
+      name = "FG_OBJECTS",
+      visible = true,
+      opacity = 1,
+      properties = {},
+      objects = {
+        {
+          name = "",
+          type = "watertree_pillar",
+          shape = "rectangle",
+          x = 545,
+          y = 988,
+          width = 0,
+          height = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "watertree_pillar",
+          shape = "rectangle",
+          x = 860,
+          y = 478,
+          width = 0,
+          height = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "watertree_pillar",
+          shape = "rectangle",
+          x = 1120,
+          y = 858,
+          width = 0,
+          height = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 1019,
+          y = 197,
+          width = 320,
+          height = 300,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 596,
+          y = 303,
+          width = 215,
+          height = 312,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 803,
+          y = 143,
+          width = 224,
+          height = 285,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 847,
+          y = 529,
+          width = 292,
+          height = 217,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 1165,
+          y = 548,
+          width = 229,
+          height = 329,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 1092,
+          y = 896,
+          width = 244,
+          height = 247,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 267,
+          y = 585,
+          width = 305,
+          height = 296,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 600,
+          y = 667,
+          width = 217,
+          height = 343,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 845,
+          y = 792,
+          width = 228,
+          height = 336,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 140,
+          y = 911,
+          width = 353,
+          height = 221,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 528,
+          y = 1041,
+          width = 292,
+          height = 283,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "treearea",
+          shape = "rectangle",
+          x = 844,
+          y = 1165,
+          width = 235,
+          height = 224,
+          visible = true,
+          properties = {}
+        }
+      }
+    }
+  }
+}

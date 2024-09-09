@@ -1,6 +1,6 @@
 require "behaviours/findclosest"
-require "behaviours/panic"
 require "behaviours/standstill"
+local BrainCommon = require("brains/braincommon")
 
 local SEE_LIGHT_DIST = 50
 
@@ -21,7 +21,7 @@ end
 function StagehandBrain:OnStart()
     local root =
         PriorityNode({
-            WhileNode(function() return self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
+			BrainCommon.PanicTrigger(self.inst),
             WhileNode(function() return self.inst:CanStandUp() and TheWorld.state.isnight end, "IsNight",
                 FindClosest(self.inst, SEE_LIGHT_DIST, SafeLightDist, { "fire" }, nil, { "campfire", "lighter" })),
             StandStill(self.inst),

@@ -21,7 +21,6 @@ local function AttachToTarget(inst, target, build, cold_build)
 			inst.Follower:FollowSymbol(target.GUID, fx_data.follow, fx_data.x or 0, fx_data.y or 0, fx_data.z or 0)
 		end
 	end
-
 end
 
 local function SpawnPuffFx(inst, target)

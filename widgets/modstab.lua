@@ -265,7 +265,7 @@ function ModsTab:StartWorkshopUpdate()
     end
 
 	self:UpdateForWorkshop()
-	self.updatetask = staticScheduler:ExecutePeriodic( 1, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
+	self.updatetask = staticScheduler:ExecutePeriodic( TUNING.MODS_QUERY_TIME, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
 
 end
 
@@ -431,7 +431,7 @@ function ModsTab:UpdateForWorkshop( force_refresh )
 				function(_, control, down)
 					if Widget.OnControl(opt, control, down) then return true end
 					if down then
-						if control == CONTROL_ACCEPT or (control == CONTROL_INSPECT and TheInput:ControllerAttached()) then
+						if control == CONTROL_ACCEPT or (control == CONTROL_MENU_MISC_2 and TheInput:ControllerAttached()) then
                             if opt.o_pos == nil then
                                 opt.o_pos = opt:GetLocalPosition()
                                 opt:SetPosition(opt.o_pos + opt.clickoffset)
@@ -470,7 +470,7 @@ function ModsTab:UpdateForWorkshop( force_refresh )
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true
-						elseif control == CONTROL_CONTROLLER_ATTACK then
+						elseif control == CONTROL_MENU_MISC_1 then
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true
@@ -560,7 +560,7 @@ function ModsTab:UpdateForWorkshop( force_refresh )
 				function(_, control, down)
 					if Widget.OnControl(opt, control, down) then return true end
 					if down then
-						if control == CONTROL_ACCEPT or (control == CONTROL_INSPECT and TheInput:ControllerAttached()) then
+						if control == CONTROL_ACCEPT or (control == CONTROL_MENU_MISC_2 and TheInput:ControllerAttached()) then
                             if opt.o_pos == nil then
                                 opt.o_pos = opt:GetLocalPosition()
                                 opt:SetPosition(opt.o_pos + opt.clickoffset)
@@ -599,7 +599,7 @@ function ModsTab:UpdateForWorkshop( force_refresh )
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true
-						elseif control == CONTROL_CONTROLLER_ATTACK then
+						elseif control == CONTROL_MENU_MISC_1 then
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true

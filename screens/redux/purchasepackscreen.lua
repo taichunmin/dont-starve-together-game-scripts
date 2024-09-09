@@ -961,7 +961,9 @@ end
 local function build_type_options(initial_item_key)
     local type_options = { { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ALL, data = "ALL" }, { text = STRINGS.UI.PURCHASEPACKSCREEN.FILTER_ITEMS, data = "ITEMS" }  }
     for _,character in pairs(DST_CHARACTERLIST) do
-        table.insert( type_options, { text = STRINGS.NAMES[string.upper(character)], data = character } )
+        if character ~= "wonkey" then --no wonkey skins in packs... yet??? maybe one day???
+            table.insert( type_options, { text = STRINGS.NAMES[string.upper(character)], data = character } )
+        end
     end
 
     if initial_item_key ~= nil then
@@ -985,7 +987,7 @@ function PurchasePackScreen:_BuildPurchasePanel()
         local iap_defs = self:GetIAPDefs(true)
 
         if #iap_defs == 0 then
-            local msg = STRINGS.UI.PURCHASEPACKSCREEN.FAILED_TO_LOAD
+            local msg = TheInventory:HasSupportForOfflineSkins() and (TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode()) and STRINGS.UI.MAINSCREEN.STORE_DISABLE or STRINGS.UI.PURCHASEPACKSCREEN.FAILED_TO_LOAD
             local dialog = purchase_ss:AddChild(TEMPLATES.CurlyWindow(400, 200, "", nil, nil, msg))
             purchase_ss.focus_forward = dialog
         else
@@ -1127,7 +1129,7 @@ function PurchasePackScreen:_BuildPurchasePanel()
                 self.sales_btn:SetText(STRINGS.UI.PURCHASEPACKSCREEN.GO_TO_SALES)
                 self.sales_btn:SetScale(0.80)
                 self.sales_btn:SetPosition(0, -170)
-                self.sales_btn:SetOnClick(function() print("sales") self.filters[FILTER_DISCOUNT_INDEX].spinner:SetSelected("SALE") end)
+                self.sales_btn:SetOnClick(function() self.filters[FILTER_DISCOUNT_INDEX].spinner:SetSelected("SALE") end)
 
                 self.filters[FILTER_DISCOUNT_INDEX]:SetFocusChangeDir(MOVE_DOWN, self.sales_btn)
                 self.sales_btn:SetFocusChangeDir(MOVE_UP, self.filters[FILTER_DISCOUNT_INDEX])

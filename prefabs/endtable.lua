@@ -12,35 +12,6 @@ local assets =
     Asset("SOUND", "sound/sfx.fsb"),
 }
 
-local FLOWER_SWAPS =
-{
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = true, sanityboost = 0 },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = true, sanityboost = 0 },
-    { lightsource = true, sanityboost = 0 },
-    { lightsource = true, sanityboost = 0 },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-    { lightsource = false, sanityboost = TUNING.SANITY_TINY },
-}
-
-local FLOWER_MAP =
-{
-    petals              = { flowerids = { 1, 2, 3, 4, 6, 10, 11, 12 } },
-    lightbulb           = { flowerids = { 5, 7, 8 } },
-    wormlight           = { flowerids = { 9 } },
-    wormlight_lesser    = { flowerids = { 9 } },
-    forgetmelots        = { flowerids = { 13, 14 } },
-    moon_tree_blossom   = { flowerids = { 15 } },
-}
-
 local function HasFreshFlowers(inst)
     return inst.flowerid ~= nil and inst.task ~= nil
 end
@@ -63,6 +34,15 @@ local function RemoveFlower(inst)
 end
 
 local function WiltFlower(inst)
+    if inst._hack_do_not_wilt then
+        if inst.task ~= nil then
+            inst.task:Cancel()
+            inst.task = nil
+        end
+        inst.task = inst:DoTaskInTime(inst._hack_do_not_wilt, WiltFlower)
+        return
+    end
+
     inst.AnimState:ShowSymbol("swap_flower")
     inst.AnimState:OverrideSymbol("swap_flower", "swap_flower", "f"..tostring(inst.flowerid).."_wilt")
     inst.AnimState:SetLightOverride(0)
@@ -87,12 +67,12 @@ local function updatelight(inst)
 end
 
 local function GiveFlower(inst, flowerid, lifespan, giver)
-    if FLOWER_SWAPS[flowerid].sanityboost ~= 0 and
+    if TUNING.VASE_FLOWER_SWAPS[flowerid].sanityboost ~= 0 and
         giver ~= nil and
         giver.components.sanity ~= nil and
         not HasFreshFlowers(inst) then
         -- Placing fresh flowers gives a sanity boost
-        giver.components.sanity:DoDelta(FLOWER_SWAPS[flowerid].sanityboost)
+        giver.components.sanity:DoDelta(TUNING.VASE_FLOWER_SWAPS[flowerid].sanityboost)
     end
 
     inst.flowerid = flowerid
@@ -105,17 +85,20 @@ local function GiveFlower(inst, flowerid, lifespan, giver)
         inst.lighttask = nil
     end
 
-    if FLOWER_SWAPS[inst.flowerid].lightsource then
+    if TUNING.VASE_FLOWER_SWAPS[inst.flowerid].lightsource then
         inst.AnimState:SetLightOverride(0.3)
         inst.Light:Enable(true)
         inst.lighttask = inst:DoPeriodicTask(TUNING.ENDTABLE_LIGHT_UPDATE + math.random(), updatelight, 0)
+        inst._hack_do_not_wilt = nil
     else
         inst.AnimState:SetLightOverride(0)
         inst.Light:Enable(false)
+        inst._hack_do_not_wilt = lifespan
     end
 
     if inst.task ~= nil then
         inst.task:Cancel()
+        inst.task = nil
     end
     inst.task = inst:DoTaskInTime(lifespan, WiltFlower)
 end
@@ -150,7 +133,7 @@ end
 
 local function ongetitem(inst, giver, item)
     local wilttime = item.components.perishable ~= nil and item.components.perishable:GetPercent() * TUNING.ENDTABLE_FLOWER_WILTTIME or TUNING.ENDTABLE_FLOWER_WILTTIME
-    GiveFlower(inst, GetRandomItem(FLOWER_MAP[item.prefab].flowerids), wilttime, giver)
+    GiveFlower(inst, GetRandomItem(TUNING.VASE_FLOWER_MAP[item.prefab]), wilttime, giver)
 
     inst.SoundEmitter:PlaySound("dontstarve/creatures/together/stagehand/hit")
     inst.AnimState:PlayAnimation("hit")
@@ -163,6 +146,7 @@ local function onignite(inst)
     end
 
     if inst.flowerid ~= nil then
+        inst._hack_do_not_wilt = nil
         WiltFlower(inst)
     end
 
@@ -199,8 +183,22 @@ local function getstatus(inst)
     return (inst:HasTag("burnt") and "BURNT")
         or (inst.flowerid == nil and "EMPTY")
         or (inst.task == nil and "WILTED")
-        or (FLOWER_SWAPS[inst.flowerid].lightsource and (GetTaskRemaining(inst.task) / TUNING.ENDTABLE_FLOWER_WILTTIME < .1 and "OLDLIGHT" or "FRESHLIGHT"))
+        or (TUNING.VASE_FLOWER_SWAPS[inst.flowerid].lightsource and (GetTaskRemaining(inst.task) / TUNING.ENDTABLE_FLOWER_WILTTIME < .1 and "OLDLIGHT" or "FRESHLIGHT"))
         or nil
+end
+
+--
+local function OnLongUpdate(inst, dt)
+    if inst.task then
+        local time_remaining = GetTaskRemaining(inst.task) - dt
+        inst.task:Cancel()
+
+        if time_remaining > 0 then
+            inst.task = inst:DoTaskInTime(time_remaining, WiltFlower)
+        else
+            WiltFlower(inst)
+        end
+    end
 end
 
 local function onsave(inst, data)
@@ -245,6 +243,8 @@ local function fn()
     inst.Light:SetRadius(1.5)
     inst.Light:SetColour(169/255, 231/255, 245/255)
     inst.Light:Enable(false)
+
+	inst:SetDeploySmartRadius(0.75) --recipe min_spacing/2
 
     MakeObstaclePhysics(inst, .6)
 
@@ -291,6 +291,7 @@ local function fn()
     inst:ListenForEvent("onbuilt", onbuilt)
 	inst:ListenForEvent("ondeconstructstructure", ondeconstructstructure)
 
+    inst.OnLongUpdate = OnLongUpdate
     inst.OnSave = onsave
     inst.OnLoad = onload
 

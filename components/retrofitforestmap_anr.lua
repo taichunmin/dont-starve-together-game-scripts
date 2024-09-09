@@ -199,7 +199,7 @@ local function TurnOfTidesRetrofitting_PopulateOcean()
 
 	local width, height = TheWorld.Map:GetSize()
 	for k, v in pairs(pop) do
-		populate_ocean(GROUND[k], v, width, height)
+		populate_ocean(WORLD_TILES[k], v, width, height)
 	end
 
 	print("Retrofitting for Return Of Them: Turn of Tides - Populated Ocean.")
@@ -209,7 +209,7 @@ local function TurnOfTidesRetrofitting_CleanupOceanPoution(inst)
 	require "map/bunch_spawner"
 
 	local items_to_remove = { "seastack", "antchovies_group", "driftwood_log" }
-	local biomes_to_cleanup = { GROUND.OCEAN_SWELL, GROUND.OCEAN_ROUGH, GROUND.OCEAN_BRINEPOOL }
+	local biomes_to_cleanup = { WORLD_TILES.OCEAN_SWELL, WORLD_TILES.OCEAN_ROUGH, WORLD_TILES.OCEAN_BRINEPOOL }
 
 	local count = RemovePrefabs(items_to_remove, biomes_to_cleanup)
 	count = count + RemovePrefabs(items_to_remove, biomes_to_cleanup)
@@ -266,15 +266,13 @@ local function TurnOfTidesRetrofitting_CleanupOceanPoution(inst)
 	}
 
 	for k, v in pairs(pop) do
-		populate(GROUND[k], v)
+		populate(WORLD_TILES[k], v)
 	end
 
 	print("Retrofitting for Return Of Them : Turn of Tides Beta - Repopulated Ocean.")
 end
 
 local function SaltyRetrofitting_PopulateShoalSpawner()
-	local width, height = TheWorld.Map:GetSize()
-
 	local pop = {
 		OCEAN_SWELL = {
 			distributepercent = 0.0003,
@@ -287,7 +285,7 @@ local function SaltyRetrofitting_PopulateShoalSpawner()
 
 	local width, height = TheWorld.Map:GetSize()
 	for k, v in pairs(pop) do
-		populate_ocean(GROUND[k], v, width, height)
+		populate_ocean(WORLD_TILES[k], v, width, height)
 	end
 end
 
@@ -304,7 +302,7 @@ local function SaltyRetrofitting_PopulateBrinePools()
 		max = 6,
 		min_spacing = 3,
 		valid_tile_types = {
-			GROUND.OCEAN_BRINEPOOL,
+			WORLD_TILES.OCEAN_BRINEPOOL,
 		},
 	}
 
@@ -340,7 +338,7 @@ local function SaltyRetrofitting_PopulateBrinePools()
 
 	local width, height = TheWorld.Map:GetSize()
 	for k, v in pairs(pop) do
-		populate_ocean(GROUND[k], v, width, height, onspawn)
+		populate_ocean(WORLD_TILES[k], v, width, height, onspawn)
 	end
 
 	print("Retrofitting for Return Of Them: Salty Dog - Added " .. tostring(num_spawners) .. " 'cookiecutter_spawner' and " .. tostring(num_stacks) .. " 'saltstack' prefabs.")
@@ -392,7 +390,7 @@ local function SheSellsSeashellsRetrofitting_PopulateWobsterDens()
 	}
 
 	for k, v in pairs(pop) do
-		populate(GROUND[k], v)
+		populate(WORLD_TILES[k], v)
 	end
 
 	print("Retrofitting for Return Of Them : She Sells Seashells - Added " .. tostring(count) .. " Wobster Dens.")
@@ -502,7 +500,7 @@ local function Barnacles_ReplaceSeastacks()
         -- is 0.01 * (0.04 / (1.00 + 0.09 + 0.04)) ~= 0.000354.
         for y = OCEAN_POPULATION_EDGE_DIST, height - OCEAN_POPULATION_EDGE_DIST - 1, 1 do
             for x = OCEAN_POPULATION_EDGE_DIST, width - OCEAN_POPULATION_EDGE_DIST - 1, 1 do
-                if TheWorld.Map:GetTile(x, y) == GROUND.OCEAN_ROUGH and
+                if TheWorld.Map:GetTile(x, y) == WORLD_TILES.OCEAN_ROUGH and
                         math.random() < 0.000354 then
                     local spawn_x = (x - width/2.0)*TILE_SCALE + math.random()*2-1
                     local spawn_z = (y - height/2.0)*TILE_SCALE + math.random()*2-1
@@ -607,7 +605,7 @@ local function TerrariumChest_Retrofitting()
 	end
 
 	local forest_turf_fn = function(x, y, z, prefab)
-		return TheWorld.Map:GetTileAtPoint(x, y, z) == GROUND.FOREST
+		return TheWorld.Map:GetTileAtPoint(x, y, z) == WORLD_TILES.FOREST
 	end
 
 	if not RetrofitNewContentPrefab(inst, "terrariumchest", 2, 8, forest_turf_fn, candidtate_nodes, on_add_prefab) then -- first try a BGForest with a forest ground tile
@@ -654,7 +652,7 @@ local function CatcoonDen_Retrofitting()
 	end
 
 	local deciduous_turf_fn = function(x, y, z, prefab)
-		return TheWorld.Map:GetTileAtPoint(x, y, z) == GROUND.DECIDUOUS
+		return TheWorld.Map:GetTileAtPoint(x, y, z) == WORLD_TILES.DECIDUOUS
 	end
 
 	print("Retrofitting for Catcoon Den De-extinction: Found " .. tostring(count) .. " Catcoon Dens in the world. Adding "..tostring(min_dens - count) .. " more.")
@@ -685,7 +683,7 @@ local function MoonFissures()
 	if #options > 0 then
 		for i, ent in ipairs(options) do
 			local pos = Vector3(ent.Transform:GetWorldPosition())
-			local startangle = math.random()*PI*2
+			local startangle = math.random()*PI2
 			local offset_a = FindWalkableOffset(pos, startangle, 12, 36, true, true) or FindWalkableOffset(pos, startangle, 15, 36, true, true) or FindWalkableOffset(pos, startangle, 9, 36, true, true)
 			local offset_b = nil
 			if offset_a then
@@ -920,6 +918,312 @@ local function RetrofitAgainstTheGrain(area)
 	return true
 end
 
+--------------------------------------------------------------------------
+
+local function ALittleDrama_NewContent_Retrofitting()
+	if TheWorld.topology.overrides ~= nil and TheWorld.topology.overrides.stageplays == "never" then
+		print("Retrofitting for A Little Drama stageplays: Skipping due to overrides.stageplays == never")
+		return
+	end
+
+	-- Find appropriate biomes
+	local VALID_STAGE_BACKGROUNDS = {
+		"BGBadlands",
+		"BGCrappyForest",
+		"BGDeciduous",
+		"BGDeepForest",
+		"BGForest",
+		"BGGrass",
+		"BGGrassBurnt",
+		"BGMarsh",
+		"BGRocky",
+		"BGSavanna",
+	}
+	local VALID_STATUE_BACKGROUNDS = {
+		"BGCrappyForest",
+		"BGDeciduous",
+		"BGDeepForest",
+		"BGForest",
+		"BGGrass",
+	}
+	local node_indices, stage_candidate_nodes, statue_candidate_nodes = {}, {}, {}
+	for node_index, id_string in ipairs(TheWorld.topology.ids) do
+		for _, bg_string in ipairs(VALID_STAGE_BACKGROUNDS) do
+			if id_string:find(bg_string) then
+				table.insert(stage_candidate_nodes, TheWorld.topology.nodes[node_index])
+			end
+		end
+
+		for _, bg_string in ipairs(VALID_STATUE_BACKGROUNDS) do
+			if id_string:find(bg_string) then
+				table.insert(statue_candidate_nodes, TheWorld.topology.nodes[node_index])
+			end
+		end
+	end
+
+	if #stage_candidate_nodes == 0 or #statue_candidate_nodes == 0 then
+		print("Retrofitting for A Little Drama: Failed to find any appropriate nodes to spawn in.")
+		return
+	end
+
+	print("Retrofitting for A Little Drama: Adding missing stageplay objects.")
+
+	local VALID_ALITTLEDRAMA_WORLDTILES = {
+		WORLD_TILES.DIRT_NOISE,
+		WORLD_TILES.DECIDUOUS,
+		WORLD_TILES.FOREST,
+		WORLD_TILES.GRASS,
+		WORLD_TILES.MARSH,
+		WORLD_TILES.ROCKY,
+		WORLD_TILES.SAVANNA,
+	}
+	local is_valid_alittledrama_turf = function(x, y, z, prefab)
+		local tile = TheWorld.Map:GetTileAtPoint(x, y, z)
+		for _, tile_type in ipairs(VALID_ALITTLEDRAMA_WORLDTILES) do
+			if tile_type == tile then
+				return true
+			end
+		end
+		return false
+	end
+	if not RetrofitNewContentPrefab(inst, "charlie_stage_post", 10.5, 11, is_valid_alittledrama_turf, stage_candidate_nodes)
+			and not RetrofitNewContentPrefab(inst, "charlie_stage_post", 10.5, 11, nil, stage_candidate_nodes) then
+		print("Retrofitting for A Little Drama: Failed to place a Stage in the world.")
+	end
+
+	local VALID_STATUE_WORLDTILES = {
+		WORLD_TILES.DECIDUOUS,
+		WORLD_TILES.FOREST,
+		WORLD_TILES.GRASS,
+	}
+	local is_valid_statue_turf = function(x, y, z, prefab)
+		local tile = TheWorld.Map:GetTileAtPoint(x, y, z)
+		for _, tile_type in ipairs(VALID_STATUE_WORLDTILES) do
+			if tile_type == tile then
+				return true
+			end
+		end
+		return false
+	end
+	if not RetrofitNewContentPrefab(inst, "statueharp_hedgespawner", 4, 6, is_valid_statue_turf, statue_candidate_nodes)
+			and not RetrofitNewContentPrefab(inst, "statueharp_hedgespawner", 4, 6, nil, statue_candidate_nodes) then
+		print("Retrofitting for A Little Drama: Failed to place an Overgrown Statue in the world.")
+	end
+end
+
+
+--------------------------------------------------------------------------
+
+local function Junkyard_NewContent_Retrofitting()
+
+	if TheWorld.topology.overrides ~= nil and TheWorld.topology.overrides.junkyard == "never" then
+		print("Retrofitting for Junkyard: Skipping due to overrides.junkyard == never")
+		return
+	end
+
+	-- Find appropriate biomes
+	local VALID_JUNKYARD_BACKGROUNDS = {
+		"BGBadlands",
+		"BGCrappyForest",
+		"BGDeciduous",
+		"BGDeepForest",
+		"BGForest",
+		"BGGrass",
+		"BGGrassBurnt",
+		"BGRocky",
+		"BGSavanna",
+	}
+
+	local node_indices, jy_candidate_nodes = {}, {}
+	for node_index, id_string in ipairs(TheWorld.topology.ids) do
+		for _, bg_string in ipairs(VALID_JUNKYARD_BACKGROUNDS) do
+			if id_string:find(bg_string) then
+				table.insert(jy_candidate_nodes, TheWorld.topology.nodes[node_index])
+			end
+		end
+	end
+
+	if #jy_candidate_nodes == 0 then
+		print("Retrofitting for the Junk Yard: Failed to find any appropriate nodes to spawn in.")
+		return
+	end
+
+    local needs_robot = true
+    local needs_marker = true
+    local bigjunkpile = nil
+    for k, v in pairs(Ents) do
+        if v.prefab == "storage_robot" then
+            needs_robot = false
+        elseif v.prefab == "wagstaff_machinery_marker" then
+            needs_marker = false
+        elseif v.prefab == "junk_pile_big" then
+            bigjunkpile = v
+        end
+    end
+
+    if bigjunkpile ~= nil and not needs_robot and not needs_marker then
+		print("Retrofitting for the Junk Yard: Nothing needed.")
+        return
+    end
+
+	print("Retrofitting for Junk Yard: Adding missing junkyard objects.")
+    if bigjunkpile == nil then
+        print("Going to try to add junk_pile_big.")
+    end
+    if needs_robot then
+        print("Going to try to add storage_robot.")
+    end
+    if needs_marker then
+        print("Going to try to add wagstaff_machinery_marker.")
+    end
+
+	local VALID_JUNKYARD_WORLDTILES = {
+		WORLD_TILES.DIRT_NOISE,
+		WORLD_TILES.DECIDUOUS,
+		WORLD_TILES.FOREST,
+		WORLD_TILES.GRASS,
+		WORLD_TILES.ROCKY,
+		WORLD_TILES.SAVANNA,
+	}
+	local is_valid_jy_turf = function(x, y, z, prefab)
+		local tile = TheWorld.Map:GetTileAtPoint(x, y, z)
+		for _, tile_type in ipairs(VALID_JUNKYARD_WORLDTILES) do
+			if tile_type == tile then
+				return true
+			end
+		end
+		return false
+	end
+    local is_valid_NO_DOCKS = function(x, y, z, prefab)
+        return TheWorld.Map:IsLandTileAtPoint(x, y, z) and not TheWorld.Map:IsDockAtPoint(x, y, z)
+    end
+
+    local NO_JUNK_FLAG = {} -- NOTES(JBK): Using a table here in case RetrofitNewContentPrefab changes and no one updates this callback for a unique variable.
+	local on_add_prefab = function(inst, nojunk)
+		local MAX = 8
+		local pos = Vector3(inst.Transform:GetWorldPosition())
+        local offset = nil
+        if needs_robot then
+            for radius = math.random() * 5 + 3, 3, -0.5 do
+                offset = FindWalkableOffset(pos, math.random() * PI / (MAX / 4), radius, 10, true, false)
+                if offset then
+                    break
+                end
+            end
+            if offset then
+                pos = pos + offset
+            else
+                local r = inst:GetPhysicsRadius()
+                local theta = math.random() * PI2
+                pos.x = pos.x + r * math.cos(theta)
+                pos.z = pos.z + r * math.sin(theta)
+            end
+            local robot = SpawnPrefab("storage_robot") -- Required for retrofitting.
+            robot.Transform:SetPosition(pos:Get())
+            robot.components.fueled:SetPercent(0)
+            robot.sg:GoToState("idle_broken")
+        end
+
+        pos = Vector3(inst.Transform:GetWorldPosition())
+        offset = nil
+        if needs_marker then
+            for radius = math.random() * 5 + 3, 3, -0.5 do
+                offset = FindWalkableOffset(pos, math.random() * PI / (MAX / 4), radius, 10, true, false)
+                if offset then
+                    break
+                end
+            end
+            if offset then
+                pos = pos + offset
+            else
+                local r = inst:GetPhysicsRadius()
+                local theta = math.random() * PI2
+                pos.x = pos.x + r * math.cos(theta)
+                pos.z = pos.z + r * math.sin(theta)
+            end
+            local marker = SpawnPrefab("wagstaff_machinery_marker") -- Required for retrofitting.
+            marker.Transform:SetPosition(pos:Get())
+        end
+
+        if nojunk == NO_JUNK_FLAG then
+            for i = 1, MAX do
+                local radius = math.random() * 5 + 3
+                local offset = FindWalkableOffset(pos, i * (TWOPI / MAX) + (math.random() * PI / (MAX / 4) ), radius, 10, true, false)
+                if offset then 
+                    local junk = SpawnPrefab("junk_pile") -- Not needed for retrofitting.
+                    junk.Transform:SetPosition(pos.x + offset.x, pos.y + offset.y, pos.z + offset.z)
+                end
+            end
+        end
+	end
+
+	--RetrofitNewContentPrefab(inst, prefab, min_space, dist_from_structures, canplacefn, candidtate_nodes, on_add_prefab)
+    local function TryReallyHardForThis()
+        if RetrofitNewContentPrefab(inst, "junk_pile_big", 10.5, 8, is_valid_jy_turf, jy_candidate_nodes, on_add_prefab) then
+            return
+        end
+        print("Retrofitting for Junk Yard: Failed to place a junk pile in the world for best spots retrying with any turf.")
+        if RetrofitNewContentPrefab(inst, "junk_pile_big", 10.5, 8, is_valid_NO_DOCKS, jy_candidate_nodes, on_add_prefab) then
+            print("Was a success.")
+            return
+        end
+        print("Retrofitting for Junk Yard: Failed to place a junk pile in the world for non turf spots retrying with less space.")
+        if RetrofitNewContentPrefab(inst, "junk_pile_big", 8, nil, is_valid_NO_DOCKS, jy_candidate_nodes, on_add_prefab) then
+            print("Was a success.")
+            return
+        end
+        print("Retrofitting for Junk Yard: Failed to place a junk pile in the world for less space retrying with even less space.")
+        for i = 1, 10 do
+            if RetrofitNewContentPrefab(inst, "junk_pile_big", 4, nil, is_valid_NO_DOCKS, jy_candidate_nodes, on_add_prefab) then
+                print("Was a success.")
+                return
+            end
+        end
+        print("Retrofitting for Junk Yard: Failed to place a junk pile in the world for even less space.")
+    end
+
+    if bigjunkpile == nil then
+        TryReallyHardForThis() -- NOTES(JBK): Retrofitting in the junk pile is mandatory somewhere in the world for the daywalker fight we can not let this slip by.
+    else
+        on_add_prefab(bigjunkpile, NO_JUNK_FLAG)
+    end
+end
+
+local function SkilltreeSpotlightWinonaWurtRetrofitting_PopulateOtterDens()
+	local width, height = TheWorld.Map:GetSize()
+
+	local count = 0
+
+	local function SpawnBoatingSafePrefab(prefab, x, z)
+		if #TheSim:FindEntities(x, 0, z, TUNING.MAX_WALKABLE_PLATFORM_RADIUS + 4, WALKABLEPLATFORM_TAGS) == 0 then
+			local obj = SpawnPrefab(prefab)
+			obj.Transform:SetPosition(x, 0, z)
+			count = count + 1
+		end
+	end
+
+	local function populate_ocean(tile_type, contents)
+		for y = OCEAN_POPULATION_EDGE_DIST, height - OCEAN_POPULATION_EDGE_DIST - 1, 1 do
+			for x = OCEAN_POPULATION_EDGE_DIST, width - OCEAN_POPULATION_EDGE_DIST - 1, 1 do
+				if math.random() < contents.distributepercent and TheWorld.Map:GetTile(x, y) == tile_type then
+					SpawnBoatingSafePrefab(
+						contents.distributeprefab,
+						(x - width/2.0)*TILE_SCALE + math.random()*2-1,
+						(y - height/2.0)*TILE_SCALE + math.random()*2-1
+					)
+				end
+			end
+		end
+	end
+
+	populate_ocean(WORLD_TILES.OCEAN_COASTAL, {
+		distributepercent = 0.0009765625, -- 0.01 * 1/(3+6+1+0.24)
+		distributeprefab = "boat_otterden",
+	})
+
+	print("Retrofitting for Skilltree Spotlight: Winona & Wurt - Added " .. tostring(count) .. " Otter Dens.")
+end
+
 
 --------------------------------------------------------------------------
 --[[ Post initialization ]]
@@ -1037,7 +1341,7 @@ function self:OnPostInit()
 
 		if requires_retrofitting then
 			local deciduousfn = function(x, y, z, prefab)
-					return TheWorld.Map:GetTileAtPoint(x, y, z) == GROUND.DECIDUOUS
+					return TheWorld.Map:GetTileAtPoint(x, y, z) == WORLD_TILES.DECIDUOUS
 				end
 
 			print ("Retrofitting for A New Reign: Herd Mentality.")
@@ -1130,7 +1434,7 @@ function self:OnPostInit()
 									or body.prefab == "sculpture_rookbody" and 1.7
 									or nil
 						if radius ~= nil then
-							local offset = FindWalkableOffset(body:GetPosition(), math.random() * 2 * PI, radius, 60, false, false, NoHoles) or Vector3(2, 0, 0)
+							local offset = FindWalkableOffset(body:GetPosition(), math.random() * TWOPI, radius, 60, false, false, NoHoles) or Vector3(2, 0, 0)
 							obj.Transform:SetPosition((body:GetPosition() + offset):Get())
 
 							count = count + 1
@@ -1215,19 +1519,111 @@ function self:OnPostInit()
     end
 
 	if self.retrofit_terraria_terrarium then
-		-- add shoals for malbatross spawning, salt statcks and cookie citter spawners
 		print ("Retrofitting for Terraria: Adding Terrarium chest.")
 		TerrariumChest_Retrofitting()
 	end
 
 	if self.retrofit_catcoonden_deextinction then
-		-- add shoals for malbatross spawning, salt statcks and cookie citter spawners
 		print ("Retrofitting for Catcoon Den De-extinction: Checking if catcoon dens need to restored in the world.")
 		CatcoonDen_Retrofitting()
 	end
 
+	if self.retrofit_alittledrama_content then
+		print ("Retrofitting for A Little Drama: Adding important prefabs normally found in new setpieces.")
+		ALittleDrama_NewContent_Retrofitting()
+	end
 
 	---------------------------------------------------------------------------
+
+    if self.retrofit_daywalker_content then
+		self.retrofit_daywalker_content = nil
+
+        -- NOTES(JBK): This is here to clean up old daywalker content from forest after it moved to caves.
+        local should_delete = {
+            daywalker = true,
+            daywalker_pillar = true,
+            daywalkerspawningground = true,
+            shadow_leech = true,
+        }
+        for k,v in pairs(Ents) do
+            if v ~= inst and should_delete[v.prefab] then
+                print("Retrofitting BETA Daywalker entity, removing from forest:", v)
+                v:Remove()
+            end
+        end
+	end
+
+    ---------------------------------------------------------------------------
+
+    if self.console_beard_turf_fix then
+        self.console_beard_turf_fix = nil
+        -- NOTES(JBK): This fixup works only because the old beard turfs that got changed into rift moon turfs do not place under tile data.
+        -- Do not use for other fixes in other cases without checking.
+        local undertile = TheWorld.components.undertile
+        if undertile then
+            local map = TheWorld.Map
+            local width, height = map:GetSize()
+            local find_tile = WORLD_TILES.RIFT_MOON
+            local replace_tile = WORLD_TILES.BEARD_RUG
+            for x = 0, width - 1 do
+                for y = 0, height - 1 do
+                    if map:GetTile(x, y) == find_tile and undertile:GetTileUnderneath(x, y) == nil then
+                        map:SetTile(x, y, replace_tile)
+                    end
+                end
+            end
+        end
+    end
+
+
+	---------------------------------------------------------------------------
+
+    if self.retrofit_junkyard_content then
+		print ("Retrofitting for Junk Yard: Adding important prefabs normally found in new setpieces.")
+		Junkyard_NewContent_Retrofitting()
+	end
+
+    if self.retrofit_junkyardv3_content then
+        print("Retrofitting for Junk Yard: Adding important prefabs normally found in new setpieces SECOND PASS.")
+        Junkyard_NewContent_Retrofitting()
+    end
+
+	---------------------------------------------------------------------------
+
+    if self.remove_rift_terraformers_fix then
+        print("Removing stale rift_terraformer entities.")
+        self.remove_rift_terraformers_fix = nil
+        -- NOTES(JBK): This fixup exists from an issue with rift_terraformer not removing itself when the portal is finished with it.
+        -- This fix needs to check for the portal to rift_terraformer link to not remove them.
+        local tokeep = {}
+        local terraformers = {}
+        for _, v in pairs(Ents) do
+            if v.prefab == "rift_terraformer" then
+                terraformers[v] = true
+                if v.components.timer and v.components.timer:TimerExists("remove") then
+                    tokeep[v] = true -- This is self cleaning.
+                end
+            elseif v.prefab == "lunarrift_portal" then
+                if v._terraformer then
+                    tokeep[v._terraformer] = true
+                end
+            end
+        end
+        for v, _ in pairs(terraformers) do
+            if not tokeep[v] then
+                print(v, "removed.")
+                v:Remove()
+            end
+        end
+    end
+
+	if self.retrofit_otterdens then
+        print("Retrofitting for Skilltree Spotlight: Winona & Wurt: Adding Otter Dens.")
+		SkilltreeSpotlightWinonaWurtRetrofitting_PopulateOtterDens()
+	end
+
+	---------------------------------------------------------------------------
+
 	if self.requiresreset then
 		print ("Retrofitting: Worldgen retrofitting requires the server to save and restart to fully take effect.")
 		print ("Restarting server in 30 seconds...")
@@ -1276,8 +1672,14 @@ function self:OnLoad(data)
 		self.retrofit_nodeidtilemap_thirdpass = data.retrofit_nodeidtilemap_thirdpass or false
         self.retrofit_removeextraaltarpieces = data.retrofit_removeextraaltarpieces or false
         self.retrofit_terraria_terrarium = data.retrofit_terraria_terrarium or false
-		self.retrofit_catcoonden_deextinction = data.retrofit_catcoonden_deextinction or false
-		
+		self.retrofit_alittledrama_content = data.retrofit_alittledrama_content or false
+        self.retrofit_daywalker_content = data.retrofit_daywalker_content or false
+        self.console_beard_turf_fix = data.console_beard_turf_fix or false
+        self.retrofit_junkyard_content = data.retrofit_junkyard_content or false
+        self.retrofit_junkyardv2_content = data.retrofit_junkyardv2_content or false
+        self.retrofit_junkyardv3_content = data.retrofit_junkyardv3_content or false
+        self.remove_rift_terraformers_fix = data.remove_rift_terraformers_fix or false
+		self.retrofit_otterdens = data.retrofit_otterdens or false
     end
 end
 

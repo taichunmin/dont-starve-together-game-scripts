@@ -141,10 +141,11 @@ function MainMenuStatsPanel:BuildItemsSummary(width)
 
     local no_items = new_root:AddChild(Text(UIFONT, 25, STRINGS.UI.PLAYERSUMMARYSCREEN.NO_ITEMS))
     no_items:SetPosition(0, -35)
-    no_items:SetRegionSize(width,30)
+    no_items:SetRegionSize(width,60)
+	no_items:EnableWordWrap(true)
     no_items:Hide()
 
-	if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
+	if not TheInventory:HasSupportForOfflineSkins() and (TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode()) then
 		no_items:SetString(STRINGS.UI.PLAYERSUMMARYSCREEN.OFFLINE_NO_ITEMS)
 	    no_items:Show()
 
@@ -167,6 +168,19 @@ function MainMenuStatsPanel:BuildItemsSummary(width)
 		unopened_msg:Hide()
 
 		new_root.UpdateItems = function()
+			-- This first case checks if the Inventory download process has finished but the inventory hasn't actually been downloaded. 
+			-- If this is true then replace the "Loading Discoveries..." message with an error rather than leaving it stuck on the panel.
+			local isDownloadingInventory, progress = TheInventory:IsDownloadingInventory()
+			if not isDownloadingInventory and not TheInventory:HasDownloadedInventory() then
+				for i, item in ipairs(items) do
+					item:Hide()
+				end
+				no_items:Show()
+				no_items:SetString(STRINGS.UI.PLAYERSUMMARYSCREEN.FAILED_INVENTORY_TITLE)
+				unopened_msg:Hide()
+				return
+			end
+
 		    if self.hide_items or not TheInventory:HasDownloadedInventory() then
 				for i, item in ipairs(items) do
 					item:Hide()

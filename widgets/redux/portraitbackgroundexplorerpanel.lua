@@ -107,6 +107,7 @@ function PortraitBackgroundExplorerPanel:_BuildItemExplorer()
             input_receivers = { self },
             user_profile = self.user_profile,
             selection_type = "single",
+            selection_allow_nil = true,
         },
         widget_width = WIDGET_WIDTH,
         widget_height = WIDGET_HEIGHT,

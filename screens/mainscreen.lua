@@ -180,13 +180,13 @@ function MainScreen:OnControl(control, down)
     if MainScreen._base.OnControl(self,control, down) then return true end
 
     if DEBUG_MODE then
-        if control == CONTROL_PAUSE then
+        if control == CONTROL_MENU_START then
             -- Use gamepad start button to host game so you can keep mashing
             -- start to get into game.
             self:OnHostButton()
             return true
 
-        elseif control == CONTROL_MAP then
+        elseif control == CONTROL_MENU_BACK then
             -- Make gamepad back a compliment to start: join instead of host.
             self:OnJoinButton()
             return true

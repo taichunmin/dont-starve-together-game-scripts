@@ -1,5 +1,3 @@
-
-
 local MinigameParticipator = Class(function(self, inst)
     self.inst = inst
 
@@ -10,7 +8,10 @@ local MinigameParticipator = Class(function(self, inst)
 
 	self.inst:AddTag("minigame_participator")
 
-	self.onminigameover = function() self.inst:RemoveComponent("minigame_participator") end
+	self.onminigameover = function()
+        self.inst:RemoveComponent("minigame_participator")
+        self.minigame = nil
+    end
 end)
 
 function MinigameParticipator:OnRemoveFromEntity()
@@ -49,7 +50,11 @@ function MinigameParticipator:SetMinigame(minigame)
 		self.inst:ListenForEvent("ms_minigamedeactivated", self.onminigameover, minigame)
 
 		if not self.notimeout then
-			self.updatecheck = self.inst:DoPeriodicTask(0.9, function() if self.expireytime - GetTime() < 0 then self:onminigameover() end end)
+			self.updatecheck = self.inst:DoPeriodicTask(0.9, function()
+                if self.expireytime - GetTime() < 0 then
+                    self:onminigameover()
+                end
+            end)
 		end
 
 		if self.inst.components.leader ~= nil then
@@ -60,6 +65,11 @@ function MinigameParticipator:SetMinigame(minigame)
 			end
 		end
 	end
+end
+
+function MinigameParticipator:CurrentMinigameType()
+    return (self.minigame and self.minigame.components.minigame and self.minigame.components.minigame.gametype)
+        or nil
 end
 
 function MinigameParticipator:GetDebugString()

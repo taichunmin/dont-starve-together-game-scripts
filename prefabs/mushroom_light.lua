@@ -255,6 +255,8 @@ local function MakeMushroomLight(name, onlywhite, physics_rad)
         inst.entity:AddLight()
         inst.entity:AddNetwork()
 
+		inst:SetDeploySmartRadius(0.5) --recipe min_spacing/2
+
         MakeObstaclePhysics(inst, physics_rad)
 
         inst.AnimState:SetBank(name)
@@ -269,6 +271,8 @@ local function MakeMushroomLight(name, onlywhite, physics_rad)
         inst:AddTag("lamp")
 
         MakeSnowCoveredPristine(inst)
+
+        inst.scrapbook_specialinfo = "MUSHROOMLIGHT"
 
         inst.entity:SetPristine()
 

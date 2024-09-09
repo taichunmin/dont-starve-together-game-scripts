@@ -1,6 +1,8 @@
 local ConstructionSite = Class(function(self, inst)
     self.inst = inst
 
+	self._enabled = net_bool(inst.GUID, "constructionsite._enabled")
+
     if TheWorld.ismastersim then
         self.classified = SpawnPrefab("constructionsite_classified")
         self.classified.entity:SetParent(inst.entity)
@@ -14,7 +16,8 @@ end)
 
 --------------------------------------------------------------------------
 
-function ConstructionSite:OnRemoveFromEntity()
+--V2C: OnRemoveFromEntity not supported
+--[[function ConstructionSite:OnRemoveFromEntity()
     if self.classified ~= nil then
         if TheWorld.ismastersim then
             self.classified:Remove()
@@ -25,9 +28,14 @@ function ConstructionSite:OnRemoveFromEntity()
             self:DetachClassified()
         end
     end
-end
+end]]
 
-ConstructionSite.OnRemoveEntity = ConstructionSite.OnRemoveFromEntity
+function ConstructionSite:OnRemoveEntity()
+	if self.classified and TheWorld.ismastersim then
+		self.classified:Remove()
+		self.classified = nil
+	end
+end
 
 --------------------------------------------------------------------------
 
@@ -47,6 +55,10 @@ end
 --Server interface
 --------------------------------------------------------------------------
 
+function ConstructionSite:SetEnabled(enabled)
+	self._enabled:set(enabled)
+end
+
 function ConstructionSite:SetBuilder(builder)
     self.classified.Network:SetClassifiedTarget(builder or self.inst)
     if self.inst.components.constructionsite == nil then
@@ -62,6 +74,10 @@ end
 --------------------------------------------------------------------------
 --Common interface
 --------------------------------------------------------------------------
+
+function ConstructionSite:IsEnabled()
+	return self._enabled:value()
+end
 
 function ConstructionSite:IsBuilder(guy)
     if self.inst.components.constructionsite ~= nil then

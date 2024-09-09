@@ -28,6 +28,8 @@ local PlayerSummaryScreen = Class(Screen, function(self, prev_screen, user_profi
     self.prev_screen = prev_screen
     self.user_profile = user_profile
 	self.can_shop = IsNotConsole()
+    
+    self.character_list = GetFEVisibleCharacterList()
 
     TheSim:PauseFileExistsAsync(true)
 
@@ -109,7 +111,7 @@ function PlayerSummaryScreen:_BuildItemsSummary()
     no_items:SetRegionSize(width,30)
     no_items:Hide()
 
-	if TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode() then
+    if not TheInventory:HasSupportForOfflineSkins() and (TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode()) then
 		no_items:SetString(STRINGS.UI.PLAYERSUMMARYSCREEN.OFFLINE_NO_ITEMS)
 	    no_items:Show()
 
@@ -213,7 +215,7 @@ function PlayerSummaryScreen:_BuildPosse()
     local y = 0
     local offset = 0
 
-    for k,v in pairs( DST_CHARACTERLIST ) do
+    for k,v in pairs( self.character_list ) do
         local puppet = self.posse_root:AddChild(Puppet( 15, 40 ))
         puppet.add_change_emote_for_idle = true
         puppet:SetScale(1.8)
@@ -250,9 +252,9 @@ function PlayerSummaryScreen:_RefreshPuppets()
     end
     self.puppet:UpdatePlayerListing(nil, nil, herocharacter, clothing.base, clothing, playerportrait, profileflair)
 
-    local keys = shuffledKeys(DST_CHARACTERLIST)
+    local keys = shuffledKeys(self.character_list)
     for k,rand_key in pairs(keys) do
-        local prefab = DST_CHARACTERLIST[rand_key]
+        local prefab = self.character_list[rand_key]
         local clothing = self.user_profile:GetSkinsForCharacter(prefab)
         self.posse[k]:SetSkins(prefab, clothing.base, clothing, true)
 
@@ -467,7 +469,17 @@ function PlayerSummaryScreen:OnSkinsButton()
 end
 
 function PlayerSummaryScreen:OnMysteryBoxButton()
-    self:_FadeToScreen(MysteryBoxScreen, {})
+    if (TheFrontEnd:GetIsOfflineMode() or not TheNet:IsOnlineMode()) then
+        TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MAINSCREEN.OFFLINE, STRINGS.UI.PLAYERSUMMARYSCREEN.MYSTERYBOX_DISABLE, 
+            {
+                {text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_LOGIN, cb = function()
+                        SimReset()
+                    end},
+                {text=STRINGS.UI.FESTIVALEVENTSCREEN.OFFLINE_POPUP_BACK, cb=function() TheFrontEnd:PopScreen() end },
+            }))
+    else
+        self:_FadeToScreen(MysteryBoxScreen, {})
+    end
 end
 
 function PlayerSummaryScreen:StopMusic()

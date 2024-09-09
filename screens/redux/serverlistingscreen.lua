@@ -4,7 +4,7 @@ local HeaderTabs = require "widgets/redux/headertabs"
 local InputDialogScreen = require "screens/inputdialog"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TextListPopup = require "screens/redux/textlistpopup"
-local IntentionPicker = require "widgets/redux/intentionpicker"
+local PlaystylePicker = require "widgets/redux/playstylepicker"
 local TEMPLATES = require "widgets/redux/templates"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
@@ -14,18 +14,25 @@ local ViewCustomizationModalScreen = require "screens/redux/viewcustomizationmod
 local ViewPlayersModalScreen = require "screens/viewplayersmodalscreen"
 local OnlineStatus = require "widgets/onlinestatus"
 
+local Levels = require("map/levels")
+
 require("constants")
 require("util")
+
+local SHOW_PINGS = not IsRail()
 
 local column_offsets_x_pos = -100
 local column_offsets_y_pos = 303
 local column_offsets ={
-    INTENTION = -65,
+	PLAYSTYLE = -65,
     NAME = -45,
     DETAILS = 450, --435 is the minimum
     PLAYERS = 615,
     PING = 669,
 }
+if not SHOW_PINGS then
+    column_offsets.PLAYERS = 667
+end
 local server_list_width = 800
 
 local dev_color = WEBCOLOURS.PLUM
@@ -43,12 +50,19 @@ end
 
 local STRING_MAX_LENGTH = 254 -- http://tools.ietf.org/html/rfc5321#section-4.5.3.1
 
-local intention_images = {
-    [INTENTIONS.SOCIAL] = { big="social.tex", small="playstyle_social.tex" },
-    [INTENTIONS.COOPERATIVE] = { big="coop.tex", small="playstyle_coop.tex" },
-    [INTENTIONS.COMPETITIVE] = { big="competitive.tex", small="playstyle_competitive.tex" },
-    [INTENTIONS.MADNESS] = { big="madness.tex", small="playstyle_madness.tex" },
-}
+local function BuildPlaystyleDefs()
+	local playstyles = {}
+
+	playstyles[PLAYSTYLE_ANY] = {
+		name = STRINGS.UI.PLAYSTYLE_ANY,
+	}
+
+	for i, playstyle_id in ipairs(Levels.GetPlaystyles()) do
+		playstyles[playstyle_id] = Levels.GetPlaystyleDef(playstyle_id)
+	end
+
+	return playstyles
+end
 
 local function GetBetaInfoId(tags)
 	tags = string.lower(tags)
@@ -82,10 +96,12 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
 
 	self.event_id = event_id or ""
 
+	self.playstyle_defs = BuildPlaystyleDefs()
+
     self.should_save = ShouldAllowSave(filters, forced_settings)
     self.forced_settings = forced_settings or {}
 
-    self.server_intention = {}
+    self.server_playstyle = {}
 
     -- Query all data related to user sessions
     self.session_mapping = session_mapping
@@ -137,12 +153,11 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
     self.server_list_footer = self.server_list:AddChild(Widget("server_list_footer"))
     self.server_list_footer:SetPosition(column_offsets_x_pos, -column_offsets_y_pos)
 
-
-    self.intentions_overlay = self.server_list:AddChild(IntentionPicker( STRINGS.UI.SERVERLISTINGSCREEN.INTENTION_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.INTENTION_DESC, true))
-    self.intentions_overlay:SetCallback(function(intention)
-        self:SetServerIntention(intention)
+    self.playstyle_overlay = self.server_list:AddChild(PlaystylePicker(STRINGS.UI.SERVERLISTINGSCREEN.PLAYSTYLE_TITLE, STRINGS.UI.SERVERLISTINGSCREEN.PLAYSTYLE_ANY_DESC))
+    self.playstyle_overlay:SetCallback(function(playstyle)
+        self:SetServerPlaystyle(playstyle)
     end)
-    self.intentions_overlay:SetPosition(column_offsets_x_pos, 180)
+    self.playstyle_overlay:SetPosition(column_offsets_x_pos, 180)
 
     self.grid_root = self.server_list_frame:InsertWidget(Widget("grid root"))
     self.grid_root:SetPosition(-server_list_width/2 + 55,0)
@@ -180,7 +195,7 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
 
     self:UpdateServerInformation(false)
     self:ToggleShowFilters()
-    self:SetServerIntention(self:_GetServerIntention())
+    self:SetServerPlaystyle(self:_GetServerPlaystyle())
 
     if self.offlinemode then
         assert(not self.forced_settings.online)
@@ -205,7 +220,7 @@ local ServerListingScreen = Class(Screen, function(self, prev_screen, filters, c
 
     self.server_details_additional:SetFocusChangeDir(MOVE_LEFT, GetCentreFocus)
 
-    self.intentions_overlay:SetFocusChangeDir(MOVE_RIGHT, GetRightFocus)
+    self.playstyle_overlay:SetFocusChangeDir(MOVE_RIGHT, GetRightFocus)
 
     self.default_focus = GetBottomFocus()
 end)
@@ -214,65 +229,65 @@ function ServerListingScreen:_SetTab(tab)
     if tab == "LAN" then
         self.view_online = false
         self:SearchForServers()
-        self.server_intention.button:Select()
-        self.server_intention.button:SetText(STRINGS.UI.INTENTION.ANY)
+        self.server_playstyle.button:Select()
+        self.server_playstyle.button:SetText(STRINGS.UI.PLAYSTYLE_ANY)
     elseif tab == "online" then
         self.view_online = true
         self:SearchForServers()
-        self.server_intention.button:Unselect()
-        if self.server_intention.data ~= nil then
-            self.server_intention.button:SetText(STRINGS.UI.INTENTION[string.upper(self.server_intention.data)])
+        self.server_playstyle.button:Unselect()
+        if self.server_playstyle.id ~= nil then
+            self.server_playstyle.button:SetText(self.playstyle_defs[self.server_playstyle.id].name)
         end
     end
-    self:ShowServerIntention()
+    self:ShowPlaystylePicker()
 end
 
-function ServerListingScreen:_GetServerIntention()
-    if self.forced_settings.intention then
-        return self.forced_settings.intention
+function ServerListingScreen:_GetServerPlaystyle()
+    if self.forced_settings.playstyle then
+        return self.forced_settings.playstyle
     end
-    return Profile:GetValue("playerintention")
+    return Profile:GetValue("browser_playstyle")
 end
 
-function ServerListingScreen:SetServerIntention(intention)
-    self.server_intention.data = intention
+function ServerListingScreen:SetServerPlaystyle(playstyle_id)
+    self.server_playstyle.id = playstyle_id
 
-    if intention ~= nil then
-        self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_INTENT, STRINGS.UI.INTENTION[string.upper(intention)]))
-        self.server_intention.button:SetText(STRINGS.UI.INTENTION[string.upper(intention)])
-        self.intentions_overlay:SetSelected(intention)
+    if playstyle_id ~= nil then
+        self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_PLAYSTYLE, self.playstyle_defs[playstyle_id].name))
+        self.server_playstyle.button:SetText(self.playstyle_defs[playstyle_id].name)
+        self.playstyle_overlay:SetSelected(playstyle_id)
     end
 
     if self.should_save then
-        Profile:SetValue("playerintention", self.server_intention.data)
+        Profile:SetValue("browser_playstyle", playstyle_id)
     end
 
-    self:ShowServerIntention()
+    self:ShowPlaystylePicker()
 
     self:DoFiltering()
 end
 
-function ServerListingScreen:ShowServerIntention()
+function ServerListingScreen:ShowPlaystylePicker()
     if self.view_online then
-        if self.server_intention.data == nil then
-            self.intentions_overlay:Show()
+        if self.server_playstyle.id == nil then
+            self.playstyle_overlay:Show()
             self.grid_root:Hide()
             self.server_list_titles:Hide()
             self.title:SetString(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE)
-            self.server_intention.button:Select()
+            self.server_playstyle.button:Select()
         else
-            self.intentions_overlay:Hide()
+            self.playstyle_overlay:Hide()
             self.grid_root:Show()
             self.server_list_titles:Show()
-            --self.server_intention:Show()
-            self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_INTENT, STRINGS.UI.INTENTION[string.upper(self.server_intention.data)]))
-            self.server_intention.button:Unselect()
+            --server_playstyle:Show()
+            self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_PLAYSTYLE, self.playstyle_defs[self.server_playstyle.id].name))
+            self.server_playstyle.button:Unselect()
         end
     else
-        self.intentions_overlay:Hide()
+        self.playstyle_overlay:Hide()
         self.grid_root:Show()
         self.server_list_titles:Show()
-        --self.server_intention:Hide()
+        --self.server_playstyle:Hide()
         self.title:SetString(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE)
     end
 
@@ -580,6 +595,22 @@ function ServerListingScreen:ProcessServerWorldGenData()
         and #self.selected_server.world_gen_data > 0 then
         local success, data = RunInSandboxSafeCatchInfiniteLoops(self.selected_server.world_gen_data)
         if success and data ~= nil then
+            if type(data) == "table" and type(data.str) == "string" then
+                local count = 0
+                for _ in pairs(data) do
+                    count = count + 1
+                    if count > 1 then break end
+                end
+                --make sure data.str is the only entry in the table
+                if count == 1 then
+                    local decoded_success, decoded_data = RunInSandboxSafeCatchInfiniteLoops(TheSim:DecodeAndUnzipString(data.str))
+                    if decoded_success and decoded_data ~= nil then
+                        data = decoded_data
+                    else
+                        data = false
+                    end
+                end
+            end
             self.selected_server._processed_world_gen_data = data
         else
             self.selected_server._processed_world_gen_data = false
@@ -678,16 +709,9 @@ function ServerListingScreen:UpdateServerData(selected_index_actual)
         local w,h = self.details_serverdesc:GetRegionSize()
         self.details_serverdesc_bg:SetSize(self.details_serverdesc._align.maxwidth + 50, math.max(150, h + 25))
 
-        --if self.selected_server.intention ~= "" then
-            --self.details_background:SetTexture("images/server_intentions.xml", intention_images[self.selected_server.intention].big)
-            --self.details_background:Show()
-        --else
-            --self.details_background:Hide()
-        --end
-
         self.game_mode_description.text:SetString( GetGameModeString( self.selected_server.mode ) )
         w,h = self.game_mode_description.text:GetRegionSize()
-        self.game_mode_description.info_button:SetPosition(w/2 + 7, 1)
+        self.game_mode_description.info_button:SetPosition(w/2 + 20, 1)
         if self.selected_server.mode ~= "" then
             self.game_mode_description.info_button:Unselect()
         else
@@ -889,7 +913,7 @@ function ServerListingScreen:RefreshView(skipPoll, keepScrollFocusPos)
     -- If we're fading, don't mess with stuff
     if TheFrontEnd:GetFadeLevel() > 0 then return end
 
-    if TheNet:IsSearchingServers( PLATFORM ~= "WIN32_RAIL" ) then
+    if TheNet:IsSearchingServers() then
         self.refresh_button:Disable()
         self.refresh_button:SetText(STRINGS.UI.SERVERLISTINGSCREEN.REFRESHING)
         --if self.lan_spinner then self.lan_spinner.spinner:Disable() end
@@ -921,7 +945,9 @@ end
 function ServerListingScreen:SetRowColour(row_widget, colour)
     row_widget.NAME:SetColour(colour)
     row_widget.PLAYERS:SetColour(colour)
-    row_widget.PING:SetColour(colour)
+    if SHOW_PINGS then
+        row_widget.PING:SetColour(colour)
+    end
 end
 
 function ServerListingScreen:MakeServerListWidgets()
@@ -959,12 +985,12 @@ function ServerListingScreen:MakeServerListWidgets()
         row.cursor:Hide()
 		row.cursor.AllowOnControlWhenSelected = true
 
-        local intent = row:AddChild(Widget("intention_image"))
-        intent:SetPosition(column_offsets.INTENTION, y_offset)
-        intent.img = intent:AddChild(Image("images/servericons.xml", "playstyle_social.tex"))
-        intent.img:ScaleToSize(row_height-5,row_height-5)
-        intent:SetHoverText("INTENTION", {font = NEWFONT_OUTLINE, offset_x = 2, offset_y = -28, colour = {1,1,1,1}})
-        row.INTENTION = intent
+        local playstyle = row:AddChild(Widget("playstyle_image"))
+        playstyle:SetPosition(column_offsets.PLAYSTYLE, y_offset)
+        playstyle.img = playstyle:AddChild(Image("images/servericons.xml", "playstyle_social.tex"))
+        playstyle.img:ScaleToSize(row_height-10,row_height-10)
+        playstyle:SetHoverText(".", {font = NEWFONT_OUTLINE, offset_x = 2, offset_y = -28, colour = {1,1,1,1}})
+        row.PLAYSTYLE = playstyle
 
         row.NAME = row:AddChild(Text(CHATFONT, font_size))
         row.NAME:SetHAlign(ANCHOR_MIDDLE)
@@ -1068,8 +1094,10 @@ function ServerListingScreen:MakeServerListWidgets()
         row.PLAYERS = row:AddChild(CreateTextWithIcon("players.tex", 30, STRINGS.UI.SERVERLISTINGSCREEN.PLAYERS))
         row.PLAYERS:SetPosition(column_offsets.PLAYERS + 20, y_offset, 0)
 
-        row.PING = row:AddChild(CreateTextWithIcon("ping.tex", 25, STRINGS.UI.SERVERLISTINGSCREEN.PING))
-        row.PING:SetPosition(column_offsets.PING + 20, y_offset, 0)
+        if SHOW_PINGS then
+            row.PING = row:AddChild(CreateTextWithIcon("ping.tex", 25, STRINGS.UI.SERVERLISTINGSCREEN.PING))
+            row.PING:SetPosition(column_offsets.PING + 20, y_offset, 0)
+        end
 
         row.focus_forward = row.cursor
 
@@ -1083,11 +1111,13 @@ function ServerListingScreen:MakeServerListWidgets()
 
         if not serverdata then
             widget.display_index = -1
-            widget.INTENTION:Hide()
+            widget.PLAYSTYLE:Hide()
             widget.NAME:SetString("")
             widget.NAME:SetPosition(widget.NAME._align.x, widget.NAME._align.y, 0)
             widget.PLAYERS:SetText()
-            widget.PING:SetText()
+            if SHOW_PINGS then
+                widget.PING:SetText()
+            end
             widget.CHAR:Hide()
             widget.FRIEND_ICON:Hide()
             widget.CLAN_OTHER_ICON:Hide()
@@ -1123,14 +1153,13 @@ function ServerListingScreen:MakeServerListWidgets()
             end
             widget.cursor:Show()
 
-            -- TODO: right now checking for bad intention data here, but should probably write fallback data into serverdata earlier in the process. ~gjans
-            if serverdata.intention ~= nil and serverdata.intention ~= "" and intention_images[serverdata.intention] ~= nil then
-                widget.INTENTION:Show()
-                widget.INTENTION.img:SetTexture("images/servericons.xml", intention_images[serverdata.intention].small)
-                widget.INTENTION:SetHoverText(STRINGS.UI.INTENTION[string.upper(serverdata.intention)])
-
+			local playstyle_def = serverdata.playstyle ~= nil and serverdata.playstyle ~= "" and self.playstyle_defs[serverdata.playstyle] or nil
+            if playstyle_def then
+                widget.PLAYSTYLE:Show()
+                widget.PLAYSTYLE.img:SetTexture(playstyle_def.smallimage.atlas, playstyle_def.smallimage.icon)
+                widget.PLAYSTYLE:SetHoverText(playstyle_def.name)
             else
-                widget.INTENTION:Hide()
+                widget.PLAYSTYLE:Hide()
             end
 
 			local hide_name = ServerPreferences:IsNameAndDescriptionHidden(serverdata)
@@ -1220,9 +1249,11 @@ function ServerListingScreen:MakeServerListWidgets()
 
             widget.PLAYERS:SetText(serverdata.current_players .. "/" .. serverdata.max_players)
 
-            widget.PING:SetText(serverdata.ping)
-            if serverdata.ping < 0 then
-                widget.PING:SetText("???")
+            if SHOW_PINGS then
+                widget.PING:SetText(serverdata.ping)
+                if serverdata.ping < 0 then
+                    widget.PING:SetText("???")
+                end
             end
 
             if dev_server then
@@ -1269,13 +1300,24 @@ function ServerListingScreen:_GuaranteeSelectedServerHighlighted()
 end
 
 function ServerListingScreen:CycleColumnSort()
-    local next_sort = {
-        RELEVANCE = "PLAYERCOUNT",
-        PLAYERCOUNT = "PING",
-        PING = "SERVER_NAME_AZ",
-        SERVER_NAME_AZ = "SERVER_NAME_ZA",
-        SERVER_NAME_ZA = "RELEVANCE",
-    }
+    local next_sort = nil
+    if SHOW_PINGS then
+        next_sort = {
+            RELEVANCE = "PLAYERCOUNT",
+            PLAYERCOUNT = "PING",
+            PING = "SERVER_NAME_AZ",
+            SERVER_NAME_AZ = "SERVER_NAME_ZA",
+            SERVER_NAME_ZA = "RELEVANCE",
+        }
+    else
+        next_sort = {
+            RELEVANCE = "PLAYERCOUNT",
+            PLAYERCOUNT = "SERVER_NAME_AZ",
+            SERVER_NAME_AZ = "SERVER_NAME_ZA",
+            SERVER_NAME_ZA = "RELEVANCE",
+        }
+    end
+
     self:SetSort(next_sort[self.sort_column] or "RELEVANCE")
     self.sorting_spinner:SetFocus()
 end
@@ -1452,6 +1494,12 @@ function ServerListingScreen:IsValidWithFilters(server)
         return false
     end
 
+    -- Filter servers that set an old deprecated intention type as a playstyle which results in invisible graphics.
+    -- Mods sometimes use this field to extend onto the playstyles so this list should be very limited.
+    if server.playstyle == "cooperative" then
+        return false
+    end
+
     -- Now do checks for servers you can potentially join, but are currently
     -- being filtered due to your settings.
 
@@ -1471,12 +1519,12 @@ function ServerListingScreen:IsValidWithFilters(server)
         return false
     end
 
-    -- Only show servers that match your intention
+    -- Only show servers that match your playstyle
     -- But, don't filter this way if we've explicitly put in search terms
     -- Also, this only applies to the online tab
-    local intention = self:_GetServerIntention()
-    if intention ~= INTENTIONS.ANY and self.view_online and #self.queryTokens == 0 then
-        if intention == nil or intention ~= server.intention then
+    local playstyle = self:_GetServerPlaystyle()
+    if playstyle ~= PLAYSTYLE_ANY and self.view_online and #self.queryTokens == 0 then
+        if playstyle == nil or playstyle ~= server.playstyle then
             return false
         end
     end
@@ -1587,16 +1635,16 @@ function ServerListingScreen:DoFiltering(doneSearching, keepScrollFocusPos)
         end
     end
 
-    -- Disable server intention button and change the title when we have query tokens
-    if self.view_online and self.server_intention.data ~= nil then
+    -- Disable server playstyle button and change the title when we have query tokens
+    if self.view_online and self.server_playstyle.id ~= nil then
         if #self.queryTokens > 0 then
-            self.server_intention.button:Select()
-            self.server_intention.button:SetText(STRINGS.UI.INTENTION.ANY)
+            self.server_playstyle.button:Select()
+            self.server_playstyle.button:SetText(STRINGS.UI.PLAYSTYLE_ANY)
             self.title:SetTruncatedString(STRINGS.UI.SERVERLISTINGSCREEN.SEARCH..": "..self.searchbox.textbox:GetString(), 350, 25, true)
         else
-            self.server_intention.button:Unselect()
-            self.server_intention.button:SetText(STRINGS.UI.INTENTION[string.upper(self.server_intention.data)])
-            self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_INTENT, STRINGS.UI.INTENTION[string.upper(self.server_intention.data)]))
+            self.server_playstyle.button:Unselect()
+            self.server_playstyle.button:SetText(self.playstyle_defs[self.server_playstyle.id].name)
+            self.title:SetString(string.format(STRINGS.UI.SERVERLISTINGSCREEN.SERVER_LIST_TITLE_PLAYSTYLE, self.playstyle_defs[self.server_playstyle.id].name))
         end
     end
 
@@ -1634,7 +1682,7 @@ function ServerListingScreen:DoFiltering(doneSearching, keepScrollFocusPos)
                         tags = v.tags,
                         session = v.session,
                         has_details = v.has_details,
-                        intention = v.intention,
+                        playstyle = v.playstyle,
                         allow_new_players = v.allow_new_players,
 						kleiofficial = v.kleiofficial,
                         serverpaused = v.serverpaused,
@@ -1819,15 +1867,15 @@ function ServerListingScreen:MakeFiltersPanel(filter_data, details_height)
         table.insert(self.filters, self.connection_spinner)
     end
 
-    self.server_intention = CreateButtonFilter(self, nil, STRINGS.UI.SERVERLISTINGSCREEN.INTENTION_FILTER, nil, function(data)
-        self:SetServerIntention(nil)
-        self.intentions_overlay:SetFocus()
+    self.server_playstyle = CreateButtonFilter(self, nil, STRINGS.UI.SERVERLISTINGSCREEN.PLAYSTYLE_FILTER, nil, function(data)
+        self:SetServerPlaystyle(nil)
+        self.playstyle_overlay:SetFocus()
     end)
 
-    if self.forced_settings.intention then
-        self.server_intention:Hide()
+    if self.forced_settings.playstyle then
+        self.server_playstyle:Hide()
     else
-        table.insert(self.filters, self.server_intention)
+        table.insert(self.filters, self.server_playstyle)
     end
     table.insert(self.filters, CreateSpinnerFilter( self, "GAMEMODE", STRINGS.UI.SERVERLISTINGSCREEN.GAMEMODE, game_modes, false ))
     table.insert(self.filters, CreateSpinnerFilter( self, "SEASON", STRINGS.UI.SERVERLISTINGSCREEN.SEASONFILTER, seasons, false ))
@@ -1928,13 +1976,24 @@ function ServerListingScreen:_MakeConnectionSpinner()
 end
 
 function ServerListingScreen:MakeMenuButtons(left_col, right_col, nav_col)
-    local sorting_types = {
-        "RELEVANCE",
-        "PLAYERCOUNT",
-        "PING",
-        "SERVER_NAME_AZ",
-        "SERVER_NAME_ZA",
-    }
+    local sorting_types = nil
+    if SHOW_PINGS then
+        sorting_types = {
+            "RELEVANCE",
+            "PLAYERCOUNT",
+            "PING",
+            "SERVER_NAME_AZ",
+            "SERVER_NAME_ZA",
+        }
+    else
+        sorting_types = {
+            "RELEVANCE",
+            "PLAYERCOUNT",
+            "SERVER_NAME_AZ",
+            "SERVER_NAME_ZA",
+        }
+    end
+    
     local sorting_data = {}
     for i,sort_key in ipairs(sorting_types) do
         table.insert(sorting_data, {
@@ -2230,13 +2289,13 @@ function ServerListingScreen:OnControl(control, down)
                 self:Cancel()
                 TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             end
-        elseif control == CONTROL_PAUSE and self.selected_server and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
+        elseif control == CONTROL_MENU_START and self.selected_server and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
             self:Join(false)
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        elseif control == CONTROL_OPEN_CRAFTING or control == CONTROL_OPEN_INVENTORY then
+        elseif control == CONTROL_MENU_L2 or control == CONTROL_MENU_R2 then
             self:ToggleShowFilters()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        elseif control == CONTROL_MENU_MISC_2 and not TheNet:IsSearchingServers(PLATFORM ~= "WIN32_RAIL") then
+        elseif control == CONTROL_MENU_MISC_2 and not TheNet:IsSearchingServers() then
             self:SearchForServers()
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         elseif control == CONTROL_MENU_MISC_1 then
@@ -2251,8 +2310,8 @@ function ServerListingScreen:OnControl(control, down)
 end
 
 function ServerListingScreen:CurrentCenterFocus()
-    if self.view_online and self.server_intention.data == nil then
-        return self.intentions_overlay
+    if self.view_online and self.server_playstyle.id == nil then
+        return self.playstyle_overlay
     else
         if #self.servers_scroll_list.items > 0 then
             return self.servers_scroll_list
@@ -2276,16 +2335,16 @@ function ServerListingScreen:GetHelpText()
 
     table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_OPEN_CRAFTING).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_OPEN_INVENTORY).. " " .. STRINGS.UI.HELP.CHANGE_TAB)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_L2).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_R2).. " " .. STRINGS.UI.HELP.CHANGE_TAB)
 
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SERVERLISTINGSCREEN.CHANGE_SORT)
 
-    if not TheNet:IsSearchingServers(PLATFORM ~= "WIN32_RAIL") then
+    if not TheNet:IsSearchingServers() then
         table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.SERVERLISTINGSCREEN.REFRESH)
     end
 
     if self.selected_server then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.SERVERLISTINGSCREEN.JOIN)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.SERVERLISTINGSCREEN.JOIN)
     end
 
     return table.concat(t, "  ")

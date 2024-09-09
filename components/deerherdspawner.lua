@@ -104,9 +104,9 @@ local function FindExistingHerd()
         -- if there are no players near the existing herd, then spawn among them
         -- otherwise, look for a location around the heard that is offscreen. They should spawn close enough to run up to the herd and join it.
         if not notnearplayers(spawnpt) then
-            local result_offset = FindWalkableOffset(spawnpt, math.random() * 2 * PI, HERD_SPAWN_DIST, 8, true, false, notnearplayers) -- try avoiding walls
+            local result_offset = FindWalkableOffset(spawnpt, math.random() * TWOPI, HERD_SPAWN_DIST, 8, true, false, notnearplayers) -- try avoiding walls
             if result_offset == nil then
-                result_offset = FindWalkableOffset(spawnpt, math.random() * 2 * PI, HERD_SPAWN_DIST, 8, true, true, notnearplayers) -- ok don't try to avoid walls, but at least avoid water
+                result_offset = FindWalkableOffset(spawnpt, math.random() * TWOPI, HERD_SPAWN_DIST, 8, true, true, notnearplayers) -- ok don't try to avoid walls, but at least avoid water
             end
             if result_offset ~= nil then
                 spawnpt = spawnpt + result_offset
@@ -144,7 +144,7 @@ local function SummonHerd()
         local i = 0
         while num_spawned < herd_target_size and i < herd_target_size + 7 do
             i = i + 1
-            local offset = FindWalkableOffset(spawnpt, math.random() * 2 * PI, HERD_SPAWN_RADIUS, 10, true, true)
+            local offset = FindWalkableOffset(spawnpt, math.random() * TWOPI, HERD_SPAWN_RADIUS, 10, true, true)
             if offset ~= nil then
                 local deerpos = spawnpt + offset
                 self:SpawnDeer(deerpos, spawnpt)

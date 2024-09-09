@@ -268,7 +268,7 @@ end
 
 -------------------------------------------------------------------------------
 local function builder_onbuilt(inst, builder)
-    local theta = math.random() * 2 * PI
+    local theta = math.random() * TWOPI
     local pt = builder:GetPosition()
     local radius = 1
     local offset = FindWalkableOffset(pt, theta, radius, 6, true)

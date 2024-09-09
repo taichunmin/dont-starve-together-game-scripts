@@ -2,6 +2,8 @@ local ShadowChess = require("stategraphs/SGshadow_chesspieces")
 
 --See SGshadow_chesspieces.lua for CommonEventList
 
+local AREAATTACK_EXCLUDETAGS = { "INLIMBO", "notarget", "invisible", "noattack", "flight", "playerghost", "shadow", "shadowchesspiece", "shadowcreature" }
+
 local states =
 {
     State{
@@ -63,7 +65,7 @@ local states =
             TimeEvent(17 * FRAMES, function(inst)
                 inst.sg:RemoveStateTag("noattack")
                 inst.components.health:SetInvincible(false)
-                inst.components.combat:DoAreaAttack(inst, inst.components.combat.hitrange, nil, nil, nil, { "INLIMBO", "notarget", "invisible", "noattack", "flight", "playerghost", "shadow", "shadowchesspiece", "shadowcreature" })
+                inst.components.combat:DoAreaAttack(inst, inst.components.combat.hitrange, nil, nil, nil, AREAATTACK_EXCLUDETAGS)
             end),
             TimeEvent(34 * FRAMES, function(inst)
                 inst.sg:RemoveStateTag("busy")
@@ -99,5 +101,6 @@ ShadowChess.States.AddDespawn(states, "disappear")
 ShadowChess.States.AddAppear(states, "appear")
 
 CommonStates.AddWalkStates(states)
+CommonStates.AddSinkAndWashAshoreStates(states, {washashore = {"teleport_pre", "teleport_pst"}})
 
 return StateGraph("shadow_rook", states, ShadowChess.CommonEventList, "appear")

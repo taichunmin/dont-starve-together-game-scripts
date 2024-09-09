@@ -120,7 +120,7 @@ local function OnUpdateProjectileTail(inst, tails)
         local rot = inst.Transform:GetRotation()
         tail.Transform:SetRotation(rot)
         rot = rot * DEGREES
-        local offsangle = math.random() * 2 * PI
+        local offsangle = math.random() * TWOPI
         local offsradius = math.random() * .2 + .2
         local hoffset = math.cos(offsangle) * offsradius
         local voffset = math.sin(offsangle) * offsradius

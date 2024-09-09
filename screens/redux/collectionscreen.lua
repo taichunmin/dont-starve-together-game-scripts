@@ -160,7 +160,7 @@ function CollectionScreen:OnBecomeActive()
             TheFrontEnd:PushScreen(sorry_popup)
             return sorry_popup
         end
-        if not TheNet:IsOnlineMode() or TheFrontEnd:GetIsOfflineMode() then
+        if not TheInventory:HasSupportForOfflineSkins() and (not TheNet:IsOnlineMode() or TheFrontEnd:GetIsOfflineMode()) then
             self.sorry_popup = ShowApology(STRINGS.UI.SKINSSCREEN.OFFLINE)
             return
         elseif not TheInventory:HasDownloadedInventory() then

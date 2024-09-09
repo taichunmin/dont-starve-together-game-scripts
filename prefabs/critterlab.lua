@@ -47,6 +47,7 @@ local function fn()
     inst:AddTag("prototyper")
 
     MakeSnowCoveredPristine(inst)
+    inst.scrapbook_specialinfo = "CRITTERDEN"
 
     inst.entity:SetPristine()
 

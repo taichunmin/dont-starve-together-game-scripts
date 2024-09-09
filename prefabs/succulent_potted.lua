@@ -53,6 +53,8 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(0.45) --recipe min_spacing/2
+
     inst.AnimState:SetBank("succulent_potted")
     inst.AnimState:SetBuild("succulent_potted")
     inst.AnimState:PlayAnimation("idle")

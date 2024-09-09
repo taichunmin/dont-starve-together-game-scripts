@@ -192,7 +192,6 @@ local function RecipeListSortFn(a, b)
 end
 
 local function SetupRecipeIngredientDetails(recipe, parent, y)
-	y = y
 	local ingredient_size = 30
 	local x_spacing = 2
 

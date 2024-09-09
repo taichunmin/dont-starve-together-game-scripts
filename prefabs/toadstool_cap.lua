@@ -303,6 +303,9 @@ local function fn()
     inst._dark = net_bool(inst.GUID, "toadstool_cap._dark")
 
     inst.displaynamefn = displaynamefn
+    inst.scrapbook_anim = "mushroom_toad_idle_loop"
+    inst.scrapbook_specialinfo = "TOADSTOOLCAP"
+    inst.scrapbook_workable = ACTIONS.CHOP
 
     inst.entity:SetPristine()
 

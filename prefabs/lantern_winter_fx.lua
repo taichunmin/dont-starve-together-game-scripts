@@ -141,7 +141,7 @@ local function groundfn()
 
     if POPULATING then
         inst.AnimState:PlayAnimation("snow_loop")
-        inst.AnimState:SetTime(math.random() * (inst.AnimState:GetCurrentAnimationLength() - FRAMES))
+		inst.AnimState:SetFrame(math.random(inst.AnimState:GetCurrentAnimationNumFrames()) - 1)
     end
 
     inst:ListenForEvent("animover", OnGroundAnimOver)

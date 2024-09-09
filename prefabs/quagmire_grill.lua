@@ -12,8 +12,7 @@ local function KillFX(fx)
     if not fx.killed then
         fx.killed = true
 
-        local len = fx.AnimState:GetCurrentAnimationLength()
-        local remaining = len - (fx.AnimState:GetCurrentAnimationTime() % len)
+		local remaining = fx.AnimState:GetCurrentAnimationLength() - fx.AnimState:GetCurrentAnimationTime()
         if remaining > 0 then
             local parent = fx.entity:GetParent()
             if parent ~= nil then

@@ -17,6 +17,8 @@ local function fn()
     inst.AnimState:SetBuild("pig_token")
     inst.AnimState:PlayAnimation("idle")
 
+    inst.scrapbook_specialinfo = "PIGTOKEN"
+
 	MakeInventoryFloatable(inst, "med", nil, 0.71)
 
     inst.entity:SetPristine()

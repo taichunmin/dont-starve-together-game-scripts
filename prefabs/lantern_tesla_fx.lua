@@ -31,7 +31,7 @@ local function MakeFX(suffix)
         inst.persists = false
 
         if POPULATING then
-            inst.AnimState:SetTime(BLANK_FRAMES[math.random(#BLANK_FRAMES)] * FRAMES)
+			inst.AnimState:SetFrame(BLANK_FRAMES[math.random(#BLANK_FRAMES)])
         end
 
         return inst

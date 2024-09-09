@@ -4,6 +4,7 @@ require "behaviours/chaseandattack"
 require "behaviours/leash"
 require "behaviours/faceentity"
 require "behaviours/standstill"
+local BrainCommon = require("brains/braincommon")
 
 local FAR_DIST_SQ = 7 * 7
 local RESET_COMBAT_DELAY = 10
@@ -61,7 +62,7 @@ local function ShouldPanic(self)
         self.inst.shouldavoidmagic = nil
         return true
     end
-    return self.inst.components.health.takingfiredamage or self.inst.components.hauntable.panic
+    return BrainCommon.ShouldTriggerPanic(self.inst)
 end
 
 local function ShouldChase(self)

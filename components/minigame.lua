@@ -20,6 +20,9 @@ local Minigame = Class(function(self, inst)
 	self.state = "intro" -- playing, outro
 
 	self.active_pulse = nil
+	self._do_periodic_active_pulse = function()
+		self:DoActivePulse()
+	end
 end)
 
 function Minigame:OnRemoveFromEntity()
@@ -43,7 +46,7 @@ function Minigame:Activate()
 
 	self.active = true
 	self:DoActivePulse()
-	self.active_pulse = self.inst:DoPeriodicTask(.75, function() self:DoActivePulse() end)
+	self.active_pulse = self.inst:DoPeriodicTask(.75, self._do_periodic_active_pulse)
 
 	if self.activate_fn ~= nil then
 		self.activate_fn(self.inst)
@@ -68,28 +71,41 @@ function Minigame:Deactivate()
 	end
 end
 
+function Minigame:AddSpectator(spectator)
+	if spectator.components.minigame_spectator == nil then
+		spectator:AddComponent("minigame_spectator")
+	end
+	spectator.components.minigame_spectator:SetWatchingMinigame(self.inst)
+end
+
+function Minigame:AddParticipator(participator, notimeout)
+    if participator.components.minigame_participator == nil then
+        participator:AddComponent("minigame_participator")
+        participator.components.minigame_participator.notimeout = notimeout
+    end
+    participator.components.minigame_participator:SetMinigame(self.inst)
+end
+
 local SPECTATOR_CANT_TAGS = {"monster", "player"}
 local SPECTATOR_ONEOF_TAGS = {"character"}
 local PARTICIPATOR_MUST_TAG = {"player"}
 function Minigame:DoActivePulse()
 	local x, y, z = self.inst.Transform:GetWorldPosition()
 
-	local spectators = TheSim:FindEntities(x, y, z, self.spectator_dist, nil, SPECTATOR_CANT_TAGS, SPECTATOR_ONEOF_TAGS)
-	for _, spectator in ipairs(spectators) do
-		if spectator.components.follower == nil or spectator.components.follower.leader == nil then
-			if spectator.components.minigame_spectator == nil then
-				spectator:AddComponent("minigame_spectator")
+	if self.spectator_dist and self.spectator_dist > 0 then
+		local spectators = TheSim:FindEntities(x, y, z, self.spectator_dist, nil, SPECTATOR_CANT_TAGS, SPECTATOR_ONEOF_TAGS)
+		for _, spectator in ipairs(spectators) do
+			if spectator.components.follower == nil or spectator.components.follower.leader == nil then
+				self:AddSpectator(spectator)
 			end
-			spectator.components.minigame_spectator:SetWatchingMinigame(self.inst)
 		end
 	end
 
-	local participators = TheSim:FindEntities(x, y, z, self.participator_dist, PARTICIPATOR_MUST_TAG)
-	for _, participator in ipairs(participators) do
-		if participator.components.minigame_participator == nil then
-			participator:AddComponent("minigame_participator")
+	if self.participator_dist and self.participator_dist > 0 then
+		local participators = TheSim:FindEntities(x, y, z, self.participator_dist, PARTICIPATOR_MUST_TAG)
+		for _, participator in ipairs(participators) do
+			self:AddParticipator(participator)
 		end
-		participator.components.minigame_participator:SetMinigame(self.inst)
 	end
 end
 

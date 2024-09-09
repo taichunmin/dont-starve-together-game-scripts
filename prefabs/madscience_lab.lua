@@ -235,6 +235,7 @@ local function fn()
     inst.entity:AddLight()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(1.25) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .5)
 
     inst.MiniMapEntity:SetIcon("madscience_lab.png")
@@ -258,6 +259,8 @@ local function fn()
     inst.AnimState:SetLightOverride(.05)
 
     MakeSnowCoveredPristine(inst)
+
+    inst.scrapbook_specialinfo = "MADSCIENCELAB"
 
     inst.entity:SetPristine()
 

@@ -179,6 +179,7 @@ local function fn()
     inst.MiniMapEntity:SetCanUseCache(false)
     inst.MiniMapEntity:SetDrawOverFogOfWar(true)
 
+	inst:SetDeploySmartRadius(1) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .1)
 
     inst.AnimState:SetBank("townportal")
@@ -263,6 +264,7 @@ local function fx_fn()
     inst.AnimState:SetBuild("teleport_sand_fx")
     inst.AnimState:OverrideSymbol("sand_splash", "sand_splash_fx", "sand_splash")
     inst.AnimState:PlayAnimation("portal_in")
+	inst.AnimState:SetFinalOffset(7)
 
     inst:AddTag("NOCLICK")
     inst:AddTag("FX")

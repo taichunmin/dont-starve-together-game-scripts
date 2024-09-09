@@ -57,6 +57,7 @@ local function fxfn()
     inst:AddTag("FX")
     inst:AddTag("NOCLICK")
 
+    inst.entity:SetPristine()
     if not TheWorld.ismastersim then
         return inst
     end

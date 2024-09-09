@@ -34,11 +34,20 @@ function Unwrappable:WrapItems(items, doer)
     if #items > 0 then
         self.origin = TheWorld.meta.session_identifier
         self.itemdata = {}
-        for i, v in ipairs(items) do
-            local data = v:GetSaveRecord()
+        local item, is_string
+        for _, v in ipairs(items) do
+            is_string = (type(v) == "string")
+            item = (is_string and SpawnPrefab(v)) or v
+
+            local data = item:GetSaveRecord()
             table.insert(self.itemdata, data)
+
+            if is_string then
+                item:Remove()
+            end
         end
-        if self.onwrappedfn ~= nil then
+
+        if self.onwrappedfn then
             self.onwrappedfn(self.inst, #self.itemdata, doer)
         end
     end
@@ -52,17 +61,29 @@ function Unwrappable:Unwrap(doer)
     local pos = self.inst:GetPosition()
     pos.y = 0
     if self.itemdata ~= nil then
-        if doer ~= nil and
-            self.inst.components.inventoryitem ~= nil and
-            self.inst.components.inventoryitem:GetGrandOwner() == doer then
-            local doerpos = doer:GetPosition()
-            local offset = FindWalkableOffset(doerpos, doer.Transform:GetRotation() * DEGREES, 1, 8, false, true, NoHoles)
-            if offset ~= nil then
-                pos.x = doerpos.x + offset.x
-                pos.z = doerpos.z + offset.z
-            else
-                pos.x, pos.z = doerpos.x, doerpos.z
-            end
+		if doer ~= nil and self.inst.components.inventoryitem ~= nil then
+			local owner = self.inst.components.inventoryitem:GetGrandOwner()
+			if owner ~= nil then
+				if owner ~= doer and owner:HasTag("pocketdimension_container") then
+					owner = doer.components.inventory ~= nil and doer.components.inventory:GetOpenContainerProxyFor(owner) or nil
+					if owner ~= nil then
+						pos.x, pos.y, pos.z = owner.Transform:GetWorldPosition()
+						pos.y = 0
+					else
+						owner = doer
+					end
+				end
+				if owner == doer then
+					local doerpos = doer:GetPosition()
+					local offset = FindWalkableOffset(doerpos, doer.Transform:GetRotation() * DEGREES, 1, 8, false, true, NoHoles)
+					if offset ~= nil then
+						pos.x = doerpos.x + offset.x
+						pos.z = doerpos.z + offset.z
+					else
+						pos.x, pos.z = doerpos.x, doerpos.z
+					end
+				end
+			end
         end
         local creator = self.origin ~= nil and TheWorld.meta.session_identifier ~= self.origin and { sessionid = self.origin } or nil
         for i, v in ipairs(self.itemdata) do

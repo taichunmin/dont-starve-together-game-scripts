@@ -77,6 +77,7 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(1) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .4)
 
     inst.MiniMapEntity:SetPriority(5)
@@ -88,8 +89,9 @@ local function fn()
 
     inst:AddTag("structure")
 
-    --prototyper (from prototyper component) added to pristine state for optimization
+    -- added to pristine state for optimization
     inst:AddTag("prototyper")
+	inst:AddTag("papereraser")
 
     MakeSnowCoveredPristine(inst)
 
@@ -100,14 +102,14 @@ local function fn()
     end
 
     inst:AddComponent("inspectable")
+    inst:AddComponent("lootdropper")
+	inst:AddComponent("papereraser")
+
     inst:AddComponent("prototyper")
     inst.components.prototyper.onturnon = onturnon
     inst.components.prototyper.onturnoff = onturnoff
     inst.components.prototyper.trees = TUNING.PROTOTYPER_TREES.CARTOGRAPHYDESK
 
-    inst:ListenForEvent("onbuilt", onbuilt)
-
-    inst:AddComponent("lootdropper")
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(4)
@@ -115,14 +117,16 @@ local function fn()
     inst.components.workable:SetOnWorkCallback(onhit)
     MakeSnowCovered(inst)
 
+    inst:AddComponent("hauntable")
+    inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
+
+    inst:ListenForEvent("onbuilt", onbuilt)
+
     MakeLargeBurnable(inst, nil, nil, true)
     MakeLargePropagator(inst)
 
     inst.OnSave = onsave
     inst.OnLoad = onload
-
-    inst:AddComponent("hauntable")
-    inst.components.hauntable:SetHauntValue(TUNING.HAUNT_TINY)
 
     return inst
 end

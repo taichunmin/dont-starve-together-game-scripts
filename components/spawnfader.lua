@@ -52,7 +52,7 @@ end
 function SpawnFader:OnUpdate(dt)
     self.fadeval = math.max(0, self.fadeval - dt)
     local k = 1 - self.fadeval * self.fadeval
-    self.inst.AnimState:OverrideMultColour(k, k, k, k)
+    self.inst.AnimState:OverrideMultColour(1, 1, 1, k)
     if self.fadeval <= 0 then
         self.updating = false
         self.inst:StopUpdatingComponent(self)

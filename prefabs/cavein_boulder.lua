@@ -414,7 +414,7 @@ local function CreateFormation(boulders)
     z = z / #boulders
 
     local formation = MakeQuadFormation()
-    local angle = math.random() * PI * 2
+    local angle = math.random() * TWOPI
     local cosa = math.cos(angle)
     local sina = math.sin(angle)
     local raisedboulder = nil
@@ -642,7 +642,7 @@ end
 --------------------------------------------------------------------------
 
 local function SkipToFull(inst)
-    inst.AnimState:SetTime((5 + math.random() * 7) * FRAMES)
+	inst.AnimState:SetFrame(4 + math.random(7))
 end
 
 local function PlaySoundFX(inst)

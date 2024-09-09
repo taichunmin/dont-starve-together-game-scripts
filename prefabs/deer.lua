@@ -190,7 +190,7 @@ end
 --Hard limit target list size since casting does multiple passes it
 local SPELL_MAX_TARGETS = 20
 local SPELLTARGET_MUST_TAGS = { "_combat", "_health" }
-local SPELLTARGET_CANT_TAGS = { "INLIMBO", "playerghost", "deergemresistance" }
+local SPELLTARGET_CANT_TAGS = { "INLIMBO", "playerghost", "deergemresistance", "notarget" }
 local function FindCastTargets(inst, target)
     if target ~= nil then
         --Single target for deer without keeper
@@ -463,6 +463,12 @@ local function common_fn(gem)
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst.scrapbook_overridedata = {{"swap_neck_collar", "deer_build", "swap_neck" }, {"swap_antler_red", "deer_build", "swap_antler1"}}
+    inst.scrapbook_hide = { "CHAIN" }
+    inst.scrapbook_deps = { "meat", "deer_antler1", "deer_antler2", "deer_antler3"}
+    inst.scrapbook_anim = "idle"
+
 
     inst.gem = gem
 

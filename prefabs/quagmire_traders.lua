@@ -40,6 +40,8 @@ local function commonfn(common_init)
     inst.AnimState:SetBank("pigman")
     inst.AnimState:SetBuild("merm_trader1_build")
 
+    inst.AnimState:Hide("ARM_carry_up")
+
     inst.DynamicShadow:SetSize(1.5, .75)
     inst.Transform:SetFourFaced()
 

@@ -42,8 +42,11 @@ local function potion_fn(anim, buff_prefab)
     inst.AnimState:SetBank("halloween_potions")
     inst.AnimState:SetBuild("halloween_potions")
     inst.AnimState:PlayAnimation(anim)
+    inst.scrapbook_anim = anim
 
     MakeInventoryFloatable(inst, "small", 0.15, 0.65)
+
+    inst.scrapbook_specialinfo = "HALLOWEENPOTIONFIRE"
 
     inst.entity:SetPristine()
 
@@ -159,6 +162,7 @@ local function anim_buff_fn(potion_tunings)
 	inst.AnimState:Hide("burst")
 	inst.AnimState:SetFinalOffset(3)
 
+    inst.entity:SetPristine()
     if not TheWorld.ismastersim then
         return inst
     end

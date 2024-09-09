@@ -40,10 +40,28 @@ local function PushWaitingPopup()
     return commerce_popup
 end
 
+local function ShowGenericError(...)
+    print(...)
+    local server_error = PopupDialogScreen(
+        STRINGS.UI.TRADESCREEN.SERVER_ERROR_TITLE,
+        STRINGS.UI.TRADESCREEN.SERVER_ERROR_BODY,
+        {
+            {
+                text = STRINGS.UI.TRADESCREEN.OK,
+                cb = function()
+                    SimReset()
+                end
+            }
+        }
+    )
+    TheFrontEnd:PushScreen(server_error)
+end
+
 function BarterScreen:_BuildDialog()
     local current_doodads = TheInventory:GetCurrencyAmount()
     local doodad_sign = nil
     local go_btn = nil
+    local go_btn_STOP = nil -- NOTES(JBK): There is an unknown race condition here that this is working around to help prevent players accidentally doing an action more than once in a single dialogue.
     local go_dupe_btn = nil
     local barter_text = nil
     if self.is_buying then
@@ -58,6 +76,11 @@ function BarterScreen:_BuildDialog()
         go_btn = {
             text = STRINGS.UI.BARTERSCREEN.COMMERCE_BUY,
             cb = function()
+                if go_btn_STOP then
+                    ShowGenericError("ERR: Tried to weave an item twice with one dialogue?", self.item_key)
+                    return
+                end
+                go_btn_STOP = true
                 local commerce_popup = PushWaitingPopup()
                 TheItems:BarterGainItem(self.item_key, self.doodad_value, function(success, status, item_type)
                     self.inst:DoTaskInTime(0, function() --we need to delay a frame so that the popping of the screens happens at the right time in the frame.
@@ -79,6 +102,11 @@ function BarterScreen:_BuildDialog()
         go_btn = {
             text = STRINGS.UI.BARTERSCREEN.COMMERCE_GRIND,
             cb = function()
+                if go_btn_STOP then
+                    ShowGenericError("ERR: Tried to unravel an item twice with one dialogue?", self.item_key)
+                    return
+                end
+                go_btn_STOP = true
                 local item_id = GetFirstOwnedItemId(self.item_key)
                 if item_id then
                     local commerce_popup = PushWaitingPopup()
@@ -89,20 +117,8 @@ function BarterScreen:_BuildDialog()
                         end, self)
                     end)
                 else
-                    local server_error = PopupDialogScreen(
-                        STRINGS.UI.TRADESCREEN.SERVER_ERROR_TITLE,
-                        STRINGS.UI.TRADESCREEN.SERVER_ERROR_BODY,
-                        {
-                            {
-                                text = STRINGS.UI.TRADESCREEN.OK,
-                                cb = function()
-                                    print("ERROR: Bartering away unowned item.")
-                                    SimReset()
-                                end
-                            }
-                        }
-                    )
-                    TheFrontEnd:PushScreen(server_error)
+                    ShowGenericError("ERR: Bartering away unowned item.")
+                    return
                 end
             end
         }
@@ -211,10 +227,12 @@ function BarterScreen:_BuildDialog()
 end
 
 function BarterScreen:_OnCancel()
+    self.prev_screen.launched_commerce = nil
     TheFrontEnd:PopScreen()
 end
 
 function BarterScreen:_BarterComplete(success, status, sounds)
+    self.prev_screen.launched_commerce = nil
     if success then
         TheFrontEnd:PopScreen()
 

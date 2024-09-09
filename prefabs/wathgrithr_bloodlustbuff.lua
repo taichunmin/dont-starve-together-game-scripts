@@ -14,7 +14,7 @@ local function MakeBuff(name, build, scale, offset)
         inst.AnimState:SetBank(build)
         inst.AnimState:SetBuild(build)
         inst.AnimState:PlayAnimation("in")
-        inst.AnimState:SetMultColour(.5, .5, .5, .5)
+        inst.AnimState:SetMultColour(1, 1, 1, .5)
 
         inst.Transform:SetScale(scale, scale, scale)
 

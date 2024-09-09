@@ -82,6 +82,31 @@ function DressupAvatarPopup:Layout(data)--, show_net_profile)
     end
 end
 
+function DressupAvatarPopup:Start()
+    if not self.started then
+        self.started = true
+        self:StartUpdating()
+
+        local w, h = self.frame_bg:GetSize()
+
+        self.out_pos = Vector3(.5 * w, 0, 0)
+        self.in_pos = Vector3(-.95 * w, 0, 0)
+
+        self:MoveTo(self.out_pos, self.in_pos, .33, function() self.settled = true end)
+        
+    end
+end
+
+function DressupAvatarPopup:Close()
+    if self.started then
+        self.started = false
+        self.current_speed = 0
+
+        self:StopUpdating()
+        self:MoveTo(self.in_pos, self.out_pos, .33, function() ThePlayer.HUD:RemoveDressupWidget() end)
+    end
+end
+
 function DressupAvatarPopup:UpdateData(data)
     self._base.UpdateData(self, data)
 

@@ -5,8 +5,9 @@ local ShadowChess = require("stategraphs/SGshadow_chesspieces")
 local SWARM_PERIOD = .5
 local SWARM_START_DELAY = .25
 
+local AREAATTACK_EXCLUDETAGS = { "INLIMBO", "notarget", "invisible", "noattack", "flight", "playerghost", "shadow", "shadowchesspiece", "shadowcreature" }
 local function DoSwarmAttack(inst)
-    inst.components.combat:DoAreaAttack(inst, inst.components.combat.hitrange, nil, nil, nil, { "INLIMBO", "notarget", "invisible", "noattack", "flight", "playerghost", "shadow", "shadowchesspiece", "shadowcreature", "shadowminion" })
+    inst.components.combat:DoAreaAttack(inst, inst.components.combat.hitrange, nil, nil, nil, AREAATTACK_EXCLUDETAGS)
 end
 
 local function DoSwarmFX(inst)
@@ -155,7 +156,7 @@ local states =
                     local bestoffset = nil
                     local minplayerdistsq = math.huge
                     for i = 1, 4 do
-                        local offset = FindWalkableOffset(pos, math.random() * 2 * PI, 8 + math.random() * 2, 4, false, true)
+                        local offset = FindWalkableOffset(pos, math.random() * TWOPI, 8 + math.random() * 2, 4, false, true)
                         if offset ~= nil then
                             local player, distsq = FindClosestPlayerInRange(pos.x + offset.x, 0, pos.z + offset.z, 6, true)
                             if player == nil then
@@ -239,5 +240,6 @@ ShadowChess.States.AddAppear(states, "appear")
 
 
 CommonStates.AddWalkStates(states)
+CommonStates.AddSinkAndWashAshoreStates(states, {washashore = "appear"})
 
 return StateGraph("shadow_bishop", states, ShadowChess.CommonEventList, "appear")
