@@ -64,15 +64,15 @@ function ModsScreen:OnControl(control, down)
         elseif TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
             -- Hitting Esc fires both Pause and Cancel, so we can only handle
             -- pause when coming from gamepads.
-            if control == CONTROL_PAUSE and TheInput:ControllerAttached() then
+            if control == CONTROL_MENU_START and TheInput:ControllerAttached() then
                 self:Apply()
                 TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                 return true
-            elseif control == CONTROL_MAP then
+            elseif control == CONTROL_MENU_BACK then
                 self.mods_page:CleanAllButton()
                 TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                 return true
-            elseif control == CONTROL_INSPECT then
+            elseif control == CONTROL_MENU_MISC_2 then
                 self.mods_page:UpdateAllButton()
                 TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                 return true
@@ -208,13 +208,13 @@ function ModsScreen:GetHelpText()
 
     table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.MODSSCREEN.CLEANALL)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK) .. " " .. STRINGS.UI.MODSSCREEN.CLEANALL)
 
     if self.mods_page.updateallenabled then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_INSPECT) .. " " .. STRINGS.UI.MODSSCREEN.UPDATEALL)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.MODSSCREEN.UPDATEALL)
     end
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.MODSSCREEN.APPLY)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.MODSSCREEN.APPLY)
 
     return table.concat(t, "  ")
 end

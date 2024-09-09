@@ -27,7 +27,7 @@ end
 local function HearHoundWhistle(inst, musician, instrument)
     if musician.components.leader ~= nil and
         (inst:HasTag("hound") or inst:HasTag("warg")) and
-		not inst:HasTag("hound_mutated") and
+		not inst:HasTag("lunar_aligned") and
         not (inst.sg ~= nil and inst.sg:HasStateTag("statue")) then
         if inst.components.combat ~= nil and inst.components.combat:HasTarget() then
             inst.components.combat:GiveUp()

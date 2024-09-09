@@ -52,8 +52,6 @@ local function ChangePhysics(inst, is_standing)
         inst.Physics:SetCollisionGroup(COLLISION.OBSTACLES)
         inst.Physics:ClearCollisionMask()
         inst.Physics:CollidesWith(COLLISION.ITEMS)
-        inst.Physics:CollidesWith(COLLISION.OBSTACLES)
-        inst.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
         inst.Physics:CollidesWith(COLLISION.CHARACTERS)
         inst.Physics:CollidesWith(COLLISION.GIANTS)
     end

@@ -437,7 +437,7 @@ function WardrobeScreen:GetHelpText()
 	local controller_id = TheInput:GetControllerID()
 	local t = {}
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.WARDROBESCREEN.ACCEPT)
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE ) .. " " .. STRINGS.UI.WARDROBESCREEN.RESET)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START ) .. " " .. STRINGS.UI.WARDROBESCREEN.RESET)
 	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_1) .. " " .. STRINGS.UI.SKIN_PRESETS.TITLE)
 
 	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_3, false, false) .. " " .. STRINGS.UI.WARDROBESCREEN.CYCLE_VIEW)
@@ -453,7 +453,7 @@ function WardrobeScreen:OnControl(control, down)
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true
 
-    elseif not down and control == CONTROL_PAUSE then
+    elseif not down and control == CONTROL_MENU_START then
         self:_LoadSavedSkins()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         return true

@@ -19,7 +19,7 @@ local function UpdatePing(inst, s0, s1, t0, duration, multcolour, addcolour)
     k = 1 - k * k
     local c = Lerp(1, 0, k)
     inst.AnimState:SetScale(SCALE * Lerp(s0[1], s1[1], k), SCALE * Lerp(s0[2], s1[2], k))
-    inst.AnimState:SetMultColour(c * multcolour[1], c * multcolour[2], c * multcolour[3], c * multcolour[4])
+    inst.AnimState:SetMultColour(multcolour[1], multcolour[2], multcolour[3], c * multcolour[4])
 
     k = math.min(FLASH_TIME, t) / FLASH_TIME
     c = math.max(0, 1 - k * k)

@@ -30,6 +30,7 @@ local controls_ui = {
 }
 local show_graphics = PLATFORM ~= "NACL" and IsNotConsole() and not IsSteamDeck() 
 
+--Note(Peter) if you want to change dev_test_platform to another platform, you will need to uncomment the matching images in frontend.lua, look for dev_test_platform
 local dev_test_platform = PLATFORM --"XBONE"
 local PLATFORM_LAYOUT = (BRANCH == "dev" and PLATFORM == "WIN32_STEAM") and dev_test_platform or PLATFORM
 local IsConsoleLayout = (BRANCH == "dev" and PLATFORM == "WIN32_STEAM") 
@@ -46,6 +47,13 @@ local craftingHintOptions = { { text = STRINGS.UI.OPTIONS.DEFAULT, data = false 
 local steamCloudLocalOptions = { { text = STRINGS.UI.OPTIONS.LOCAL_SAVES, data = false }, { text = STRINGS.UI.OPTIONS.STEAM_CLOUD_SAVES, data = true } }
 local integratedbackpackOptions = { { text = STRINGS.UI.OPTIONS.INTEGRATEDBACKPACK_DISABLED, data = false }, { text = STRINGS.UI.OPTIONS.INTEGRATEDBACKPACK_ENABLED, data = true } }
 local enableScreenFlashOptions = { { text = STRINGS.UI.OPTIONS.DEFAULT, data = 1 }, { text = STRINGS.UI.OPTIONS.DIM, data = 2 } , { text = STRINGS.UI.OPTIONS.DIMMEST, data = 3 } }
+local distortionLevelOptions = { 
+	{ text = STRINGS.UI.OPTIONS.DISABLED, data = 0 },
+	{ text = STRINGS.UI.OPTIONS.FAINT, data = 0.25 },
+	{ text = STRINGS.UI.OPTIONS.WEAK, data = 0.5 },
+	{ text = STRINGS.UI.OPTIONS.STRONG, data = 0.75 },
+	{ text = STRINGS.UI.OPTIONS.MAX, data = 1 }
+}
 
 local loadingtipsOptions =
 {
@@ -55,9 +63,34 @@ local loadingtipsOptions =
 	{ text = STRINGS.UI.OPTIONS.LOADING_TIPS_SHOW_NONE, data = LOADING_SCREEN_TIP_OPTIONS.NONE },
 }
 
+local npcChatOptions = -- NPC Chat messages with priorities >= these values will be shown in the chat history.
+{
+	{ text = STRINGS.UI.OPTIONS.NPCCHAT_ALL,	data = CHATPRIORITIES.LOW },
+	{ text = STRINGS.UI.OPTIONS.NPCCHAT_SOME,	data = CHATPRIORITIES.HIGH },
+	{ text = STRINGS.UI.OPTIONS.NPCCHAT_NONE,	data = CHATPRIORITIES.MAX },
+}
+
 local function FindEnableScreenFlashOptionsIndex(value)
     for i = 1, #enableScreenFlashOptions do
 		if enableScreenFlashOptions[i].data == value then
+			return i
+		end
+	end
+	return 1
+end
+
+local function FindDistortionLevelOptionsIndex(value)
+    for i = 1, #distortionLevelOptions do
+		if distortionLevelOptions[i].data == value then
+			return i
+		end
+	end
+	return 4
+end
+
+local function FindNPCChatOptionsIndex(value)
+    for i = 1, #npcChatOptions do
+		if npcChatOptions[i].data == value then
 			return i
 		end
 	end
@@ -153,6 +186,12 @@ local all_controls =
     {name=CONTROL_MENU_MISC_2, keyboard=nil, controller=CONTROL_MENU_MISC_2},
     {name=CONTROL_MENU_MISC_3, keyboard=nil, controller=CONTROL_MENU_MISC_3},
     {name=CONTROL_MENU_MISC_4, keyboard=nil, controller=CONTROL_MENU_MISC_4},
+
+    -- Chat based commands.
+    {name=CONTROL_TOGGLE_SLASH_COMMAND, keyboard=CONTROL_TOGGLE_SLASH_COMMAND, controller=nil},
+    {name=CONTROL_START_EMOJI, keyboard=CONTROL_START_EMOJI, controller=nil},
+
+    -- Available debug commands.
     {name=CONTROL_OPEN_DEBUG_CONSOLE, keyboard=CONTROL_OPEN_DEBUG_CONSOLE, controller=nil},
     {name=CONTROL_TOGGLE_LOG, keyboard=CONTROL_TOGGLE_LOG, controller=nil},
     {name=CONTROL_TOGGLE_DEBUGRENDER, keyboard=CONTROL_TOGGLE_DEBUGRENDER, controller=nil},
@@ -261,13 +300,15 @@ local OptionsScreen = Class(Screen, function( self, prev_screen, default_section
 		bloom = PostProcessor:IsBloomEnabled(),
 		smalltextures = graphicsOptions:GetSmallTexturesModeSettingValue(),
 		screenflash = Profile:GetScreenFlash(),
-		distortion = PostProcessor:IsDistortionEnabled(),
+		distortion_modifier = Profile:GetDistortionModifier(),
 		screenshake = Profile:IsScreenShakeEnabled(),
 		hudSize = Profile:GetHUDSize(),
 		craftingmenusize = Profile:GetCraftingMenuSize(),
 		craftingmenunumpinpages = Profile:GetCraftingNumPinnedPages(),
 		craftingmenusensitivity = Profile:GetCraftingMenuSensitivity(),
 		inventorysensitivity = Profile:GetInventorySensitivity(),
+		minimapzoomsensitivity = Profile:GetMiniMapZoomSensitivity(),
+		boathopdelay = Profile:GetBoatHopDelay(),
 		netbookmode = TheSim:IsNetbookMode(),
 		vibration = Profile:GetVibrationEnabled(),
 		showpassword = Profile:GetShowPasswordEnabled(),
@@ -276,6 +317,7 @@ local OptionsScreen = Class(Screen, function( self, prev_screen, default_section
         movementprediction = Profile:GetMovementPredictionEnabled(),
 		automods = Profile:GetAutoSubscribeModsEnabled(),
 		autologin = Profile:GetAutoLoginEnabled(),
+        npcchat = Profile:GetNPCChatLevel(),
 		animatedheads = Profile:GetAnimatedHeadsEnabled(),
 		wathgrithrfont = Profile:IsWathgrithrFontEnabled(),
 		boatcamera = Profile:IsBoatCameraEnabled(),
@@ -290,8 +332,11 @@ local OptionsScreen = Class(Screen, function( self, prev_screen, default_section
 		craftingmenubufferedbuildautoclose = Profile:GetCraftingMenuBufferedBuildAutoClose(),
 		craftinghintallrecipes = Profile:GetCraftingHintAllRecipesEnabled(),
 		waltercamera = Profile:IsCampfireStoryCameraEnabled(),
+		minimapzoomcursor = Profile:IsMinimapZoomCursorFollowing(),
 		loadingtips = Profile:GetLoadingTipsOption(),
 		defaultcloudsaves = Profile:GetDefaultCloudSaves(),
+		scrapbookhuddisplay = Profile:GetScrapbookHudDisplay(),
+		poidisplay = Profile:GetPOIDisplay(),
 	}
 
 	if IsWin32() then
@@ -463,7 +508,7 @@ function OptionsScreen:OnControl(control, down)
 			end
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 			return true
-		elseif control == CONTROL_MAP and TheInput:ControllerAttached() then
+		elseif control == CONTROL_MENU_BACK and TheInput:ControllerAttached() then
             TheFrontEnd:PushScreen(PopupDialogScreen( STRINGS.UI.CONTROLSSCREEN.RESETTITLE, STRINGS.UI.CONTROLSSCREEN.RESETBODY,
             {
                 {
@@ -482,7 +527,7 @@ function OptionsScreen:OnControl(control, down)
             }))
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
-	    elseif control == CONTROL_PAUSE and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
+	    elseif control == CONTROL_MENU_START and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
 	    	if self:IsDirty() then
 	    		self:ApplyChanges() --apply changes and go back, or stay
 	    		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -561,11 +606,11 @@ function OptionsScreen:GetHelpText()
 	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
 	if self.selected_tab == "controls" then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP, false, false) .. " " .. STRINGS.UI.CONTROLSSCREEN.RESET)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK, false, false) .. " " .. STRINGS.UI.CONTROLSSCREEN.RESET)
 	end
 
 	if self:IsDirty() then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.HELP.APPLY)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.HELP.APPLY)
 	end
 
 	return table.concat(t, "  ")
@@ -581,7 +626,8 @@ function OptionsScreen:Save(cb)
 
 	Profile:SetVolume( self.options.ambientvolume, self.options.fxvolume, self.options.musicvolume )
 	Profile:SetBloomEnabled( self.options.bloom )
-	Profile:SetDistortionEnabled( self.options.distortion )
+	Profile:SetDistortionEnabled( self.options.distortion_modifier > 0 )
+	Profile:SetDistortionModifier( self.options.distortion_modifier )
 	Profile:SetScreenShakeEnabled( self.options.screenshake )
 	Profile:SetWathgrithrFontEnabled( self.options.wathgrithrfont )
 	Profile:SetBoatCameraEnabled( self.options.boatcamera )
@@ -591,6 +637,8 @@ function OptionsScreen:Save(cb)
 	Profile:SetCraftingMenuNumPinPages( self.options.craftingmenunumpinpages )
 	Profile:SetCraftingMenuSensitivity( self.options.craftingmenusensitivity )
 	Profile:SetInventorySensitivity( self.options.inventorysensitivity )
+	Profile:SetMiniMapZoomSensitivity( self.options.minimapzoomsensitivity )
+    Profile:SetBoatHopDelay( self.options.boathopdelay )
 	Profile:SetScreenFlash( self.options.screenflash )
 	Profile:SetVibrationEnabled( self.options.vibration )
 	Profile:SetShowPasswordEnabled( self.options.showpassword )
@@ -599,6 +647,7 @@ function OptionsScreen:Save(cb)
     Profile:SetMovementPredictionEnabled(self.options.movementprediction)
 	Profile:SetAutoSubscribeModsEnabled( self.options.automods )
 	Profile:SetAutoLoginEnabled( self.options.autologin )
+    Profile:SetNPCChatLevel(self.options.npcchat)
 	Profile:SetAnimatedHeadsEnabled( self.options.animatedheads )
 	Profile:SetTextureStreamingEnabled( self.options.texturestreaming )
 	if IsWin32() then
@@ -612,7 +661,10 @@ function OptionsScreen:Save(cb)
 	Profile:SetCraftingAutopauseEnabled( self.options.craftingautopause )
 	Profile:SetLoadingTipsOption( self.options.loadingtips )
 	Profile:SetCampfireStoryCameraEnabled( self.options.waltercamera )
+	Profile:SetMinimapZoomCursorEnabled( self.options.minimapzoomcursor )
 	Profile:SetDefaultCloudSaves( self.options.defaultcloudsaves )
+	Profile:SetScrapbookHudDisplay( self.options.scrapbookhuddisplay )
+	Profile:SetPOIDisplay( self.options.poidisplay )	
 
 	if self.integratedbackpackSpinner:IsEnabled() then
 		Profile:SetIntegratedBackpack( self.options.integratedbackpack )
@@ -716,11 +768,15 @@ function OptionsScreen:Apply()
 
 	local gopts = TheFrontEnd:GetGraphicsOptions()
 	PostProcessor:SetBloomEnabled( self.working.bloom )
-	PostProcessor:SetDistortionEnabled( self.working.distortion )
+	PostProcessor:SetDistortionEnabled( self.working.distortion_modifier > 0 )
+	if TheWorld and TheWorld.components.colourcube then
+		TheWorld.components.colourcube:SetDistortionModifier( self.working.distortion_modifier )
+	end
 	gopts:SetSmallTexturesMode( self.working.smalltextures )
 	Profile:SetScreenShakeEnabled( self.working.screenshake )
 	Profile:SetWathgrithrFontEnabled( self.working.wathgrithrfont )
 	Profile:SetCampfireStoryCameraEnabled( self.working.waltercamera )
+	Profile:SetMinimapZoomCursorEnabled( self.working.minimapzoomcursor )
 	Profile:SetBoatCameraEnabled( self.working.boatcamera )
 	Profile:SetInvertCameraRotation( self.working.InvertCameraRotation )
 	TheSim:SetNetbookMode(self.working.netbookmode)
@@ -734,6 +790,8 @@ function OptionsScreen:Apply()
 	Profile:SetCraftingHintAllRecipesEnabled( self.working.craftinghintallrecipes )
 	Profile:SetLoadingTipsOption( self.working.loadingtips )
 	Profile:SetDefaultCloudSaves( self.options.defaultcloudsaves )
+	Profile:SetScrapbookHudDisplay( self.options.scrapbookhuddisplay )
+	Profile:SetPOIDisplay( self.options.poidisplay )
 	
 	DoAutopause()
 	local pausescreen = TheFrontEnd:GetOpenScreenOfType("PauseScreen")
@@ -1213,7 +1271,7 @@ local function AddSpinnerTooltip(widget, tooltip, tooltipdivider)
 	if widget.spinner then
 		widget.spinner.onlosefocusfn = onlosefocus
 	elseif widget.button then -- Handles the data collection checkbox option
-		widget.button.ongainfocus = ongainfocus
+		widget.button.onlosefocus = onlosefocus
 	end
 
 end
@@ -1312,10 +1370,10 @@ function OptionsScreen:_BuildGraphics()
 			self:UpdateMenu()
 		end
 
-	self.distortionSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.DISTORTION, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.DISTORTION)
+	self.distortionSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.DISTORTION, distortionLevelOptions, STRINGS.UI.OPTIONS.TOOLTIPS.DISTORTION)
 	self.distortionSpinner.OnChanged =
 		function( _, data )
-			self.working.distortion = data
+			self.working.distortion_modifier = data
 			--self:Apply()
 			self:UpdateMenu()
 		end
@@ -1533,13 +1591,21 @@ function OptionsScreen:_BuildSettings()
 			self:UpdateMenu()
 		end
 
+	self.scrapbookhuddisplaySpinner =  CreateTextSpinner(STRINGS.UI.OPTIONS.SCAPBOOKHUDDISPLAY, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.SCAPBOOKHUDDISPLAY)
+	self.scrapbookhuddisplaySpinner.OnChanged =
+		function( _, data )
+			self.working.scrapbookhuddisplay = data
+			--self:Apply()
+			self:UpdateMenu()
+		end
+
 	self.craftingmenunumpinpagesSpinner = CreateNumericSpinner(STRINGS.UI.OPTIONS.CRAFTINGMENUNUMPINPAGES, 2, 9, STRINGS.UI.OPTIONS.TOOLTIPS.CRAFTINGMENUNUMPINPAGES)
 	self.craftingmenunumpinpagesSpinner.OnChanged =
 		function( _, data )
 			self.working.craftingmenunumpinpages = data
 			--self:Apply()
 			self:UpdateMenu()
-		end
+		end		
 
 	self.craftingautopauseSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.CRAFTINGAUTOPAUSE, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.CRAFTINGAUTOPAUSE)
 	self.craftingautopauseSpinner.OnChanged =
@@ -1573,13 +1639,15 @@ function OptionsScreen:_BuildSettings()
 			self:UpdateMenu()
 		end
 
-	self.profanityfilterchatSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.SERVER_NAME_PROFANITY_CHAT_FILTER, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.SERVER_NAME_PROFANITY_CHAT_FILTER)
-	self.profanityfilterchatSpinner.OnChanged =
-		function( _, data )
-			self.working.profanityfilterchat = data
-			--self:Apply()
-			self:UpdateMenu()
-		end
+	if not TheSim:IsSteamChinaClient() then
+		self.profanityfilterchatSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.SERVER_NAME_PROFANITY_CHAT_FILTER, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.SERVER_NAME_PROFANITY_CHAT_FILTER)
+		self.profanityfilterchatSpinner.OnChanged =
+			function( _, data )
+				self.working.profanityfilterchat = data
+				--self:Apply()
+				self:UpdateMenu()
+			end
+	end
 
 	self.boatcameraSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.BOATCAMERA, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.BOATCAMERA)
 	self.boatcameraSpinner.OnChanged =
@@ -1699,13 +1767,14 @@ function OptionsScreen:_BuildSettings()
     table.insert( self.right_spinners, self.passwordSpinner )
     table.insert( self.right_spinners, self.boatcameraSpinner )
     table.insert( self.right_spinners, self.integratedbackpackSpinner )
-	if IsSteam() then
+	if IsSteam() and not TheSim:IsSteamChinaClient() then
 	    table.insert( self.right_spinners, self.profanityfilterchatSpinner )
 	end
     table.insert( self.right_spinners, self.profanityfilterSpinner )
     table.insert( self.right_spinners, self.autopauseSpinner )
 	table.insert( self.right_spinners, self.craftingautopauseSpinner )
 	table.insert( self.right_spinners, self.craftingmenunumpinpagesSpinner )
+	table.insert( self.right_spinners, self.scrapbookhuddisplaySpinner )
 	
 	if self.show_datacollection then
 		table.insert( self.right_spinners, self.datacollectionCheckbox)
@@ -1762,6 +1831,28 @@ function OptionsScreen:_BuildAdvancedSettings()
 	self.waltercameraSpinner.OnChanged =
 		function( _, data )
 			self.working.waltercamera = data
+			--self:Apply()
+			self:UpdateMenu()
+		end
+
+	self.poidisplaySpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.POIDISPLAY, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.POIDISPLAY)
+	self.poidisplaySpinner.OnChanged =
+		function( _, data )
+			self.working.poidisplay = data
+			--self:Apply()
+			self:UpdateMenu()
+		end
+
+    self.npcchatSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.NPCCHAT, npcChatOptions, STRINGS.UI.OPTIONS.TOOLTIPS.NPCCHAT)
+    self.npcchatSpinner.OnChanged = function(_, data)
+        self.working.npcchat = data
+        self:UpdateMenu()
+    end
+
+	self.minimapzoomcursorSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.MINIMAPZOOMCURSOR, enableDisableOptions, STRINGS.UI.OPTIONS.TOOLTIPS.MINIMAPZOOMCURSOR)
+	self.minimapzoomcursorSpinner.OnChanged =
+		function( _, data )
+			self.working.minimapzoomcursor = data
 			--self:Apply()
 			self:UpdateMenu()
 		end
@@ -1829,7 +1920,22 @@ function OptionsScreen:_BuildAdvancedSettings()
 			--self:Apply()
 			self:UpdateMenu()
 		end
-		
+
+	self.minimapzoomsensitivitySpinner = CreateNumericSpinner(STRINGS.UI.OPTIONS.MINIMAPZOOMSENSITIVITY, 5, 30, STRINGS.UI.OPTIONS.TOOLTIPS.MINIMAPZOOMSENSITIVITY)
+	self.minimapzoomsensitivitySpinner.OnChanged =
+		function( _, data )
+			self.working.minimapzoomsensitivity = data
+			--self:Apply()
+			self:UpdateMenu()
+		end
+    self.boathopdelaySpinner = CreateNumericSpinner(STRINGS.UI.OPTIONS.BOATHOPDELAY, 0, 16, STRINGS.UI.OPTIONS.TOOLTIPS.BOATHOPDELAY)
+    self.boathopdelaySpinner.OnChanged =
+        function( _, data )
+            self.working.boathopdelay = data
+            --self:Apply()
+            self:UpdateMenu()
+        end
+
 	if IsSteam() then
 		self.defaultcloudsavesSpinner = CreateTextSpinner(STRINGS.UI.OPTIONS.DEFAULTCLOUDSAVES, steamCloudLocalOptions, STRINGS.UI.OPTIONS.TOOLTIPS.DEFAULTCLOUDSAVES)
 		self.defaultcloudsavesSpinner.OnChanged =
@@ -1851,12 +1957,17 @@ function OptionsScreen:_BuildAdvancedSettings()
 	table.insert( self.left_spinners, self.animatedHeadsSpinner )
     table.insert( self.left_spinners, self.wathgrithrfontSpinner)
 	table.insert( self.left_spinners, self.waltercameraSpinner)
+	table.insert( self.left_spinners, self.poidisplaySpinner)
+    table.insert( self.left_spinners, self.npcchatSpinner)
 
 	table.insert( self.right_spinners, self.consoleautopauseSpinner )
 	table.insert( self.right_spinners, self.craftingmenubufferedbuildautocloseSpinner )
 	table.insert( self.right_spinners, self.craftinghintallrecipesSpinner )
 	table.insert( self.right_spinners, self.craftingmenusensitivitySpinner )
 	table.insert( self.right_spinners, self.inventorysensitivitySpinner )
+	table.insert( self.right_spinners, self.minimapzoomcursorSpinner )
+	table.insert( self.right_spinners, self.minimapzoomsensitivitySpinner )
+	table.insert( self.right_spinners, self.boathopdelaySpinner )
 	
 	self.grid_advanced:UseNaturalLayout()
 	self.grid_advanced:InitSize(2, math.max(#self.left_spinners, #self.right_spinners), 440, 40)
@@ -2331,7 +2442,7 @@ function OptionsScreen:InitializeSpinners(first)
 	--]]
 
 	self.bloomSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.bloom ) )
-	self.distortionSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.distortion ) )
+	self.distortionSpinner:SetSelectedIndex( FindDistortionLevelOptionsIndex( self.working.distortion_modifier ) )
 	self.screenshakeSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.screenshake ) )
 
 	for i,v in ipairs(self.devices) do
@@ -2351,14 +2462,22 @@ function OptionsScreen:InitializeSpinners(first)
 	self.craftingmenunumpinpagesSpinner:SetSelectedIndex( self.working.craftingmenunumpinpages or 3)
 	self.craftingmenusensitivitySpinner:SetSelectedIndex( self.working.craftingmenusensitivity or 12)
 	self.inventorysensitivitySpinner:SetSelectedIndex( self.working.inventorysensitivity or 16)
+	self.minimapzoomsensitivitySpinner:SetSelectedIndex( self.working.minimapzoomsensitivity or 15)
+	self.boathopdelaySpinner:SetSelectedIndex( self.working.boathopdelay or 8)
 	self.screenFlashSpinner:SetSelectedIndex( FindEnableScreenFlashOptionsIndex( self.working.screenflash ) )
 	self.vibrationSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.vibration ) )
 	self.passwordSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.showpassword ) )
 	self.profanityfilterSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.profanityfilterservernames ) )
-	self.profanityfilterchatSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.profanityfilterchat ) )
+	if not TheSim:IsSteamChinaClient() then
+		self.profanityfilterchatSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.profanityfilterchat ) )
+	end
+	self.scrapbookhuddisplaySpinner:SetSelectedIndex( EnabledOptionsIndex(self.working.scrapbookhuddisplay))
     self.movementpredictionSpinner:SetSelectedIndex(EnabledOptionsIndex(self.working.movementprediction))
 	self.wathgrithrfontSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.wathgrithrfont ) )
 	self.waltercameraSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.waltercamera ) )
+	self.poidisplaySpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.poidisplay ) )
+    self.npcchatSpinner:SetSelectedIndex( FindNPCChatOptionsIndex(self.working.npcchat) )
+	self.minimapzoomcursorSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.minimapzoomcursor ) )
 	self.boatcameraSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.boatcamera ) )
 	self.integratedbackpackSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.integratedbackpack ) )
 	self.texturestreamingSpinner:SetSelectedIndex( EnabledOptionsIndex( self.working.texturestreaming ) )

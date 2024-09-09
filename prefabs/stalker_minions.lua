@@ -191,11 +191,17 @@ local function MakeMinion(name, data, prefabs)
 
         inst:SetPrefabNameOverride("stalker_minion")
 
+        inst.scrapbook_proxy = "stalker_minion"
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
             return inst
         end
+
+        inst.scrapbook_bank = "stalker_minion_2"
+        inst.scrapbook_build = "stalker_minion_2"
+        inst.scrapbook_overridedata = {{"fx_flames", "stalker_shadow_build", "fx_flames"}, {"shield_minion", "stalker_shadow_build", "shield_minion"}, {"fx_dark_minion", "stalker_shadow_build", "fx_dark_minion"}}
 
         inst.recentlycharged = {}
         inst.Physics:SetCollisionCallback(OnCollide)
@@ -221,6 +227,8 @@ local function MakeMinion(name, data, prefabs)
         inst:AddComponent("timer")
         inst.components.timer:StartTimer("selfdestruct", GetRandomWithVariance(TUNING.STALKER_MINIONS_LIFESPAN, TUNING.STALKER_MINIONS_LIFESPAN_VARIANCE))
         inst:ListenForEvent("timerdone", OnTimerDone)
+
+		MakeHauntablePanic(inst)
 
         inst.emergeimmunetime = params.emergeimmunetime
         inst.emergeshadowtime = params.emergeshadowtime

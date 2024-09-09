@@ -212,7 +212,7 @@ end
 
 local function CreateItem(inst, item)
     local base_ingredient = inst.components.pickable.caninteractwith and inst.components.pickable.product or nil
-    if base_ingredient ~= nil then
+    if base_ingredient ~= nil and sculptable_materials[base_ingredient] ~= nil then
         giveitem(inst, item.."_"..sculptable_materials[base_ingredient].material)
 
         local fx = SpawnPrefab("collapse_small")
@@ -271,6 +271,7 @@ local function fn()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(1) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .4)
 
     inst.MiniMapEntity:SetPriority(5)

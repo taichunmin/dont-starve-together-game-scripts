@@ -3,8 +3,11 @@ require("worldsettingsutil")
 local assets =
 {
     Asset("ANIM", "anim/atrium_gate.zip"),
+    Asset("ANIM", "anim/atrium_gate_build.zip"),
     Asset("ANIM", "anim/atrium_floor.zip"),
     Asset("MINIMAP_IMAGE", "atrium_gate_active"),
+    Asset("MINIMAP_IMAGE", "atrium_gate_fixed"),
+    Asset("MINIMAP_IMAGE", "atrium_gate_fixed_active"),
 }
 
 local prefabs =
@@ -13,6 +16,7 @@ local prefabs =
     "atrium_gate_activatedfx",
     "atrium_gate_pulsesfx",
     "atrium_gate_explodesfx",
+    "charlie_hand",
 }
 
 local EXPLOSION_ANIM_LEN = 86 * FRAMES
@@ -151,7 +155,9 @@ local function OnKeyGiven(inst, giver)
     inst.components.pickable.caninteractwith = true
 
     inst.AnimState:PlayAnimation("idle_active")
-    inst.MiniMapEntity:SetIcon("atrium_gate_active.png")
+
+    local repaired = inst.components.charliecutscene:IsGateRepaired()
+    inst.MiniMapEntity:SetIcon(repaired and "atrium_gate_fixed_active.png" or "atrium_gate_active.png")
 
     TheWorld:PushEvent("atriumpowered", true)
     TheWorld:PushEvent("ms_locknightmarephase", "wild")
@@ -176,7 +182,10 @@ local function OnKeyTaken(inst)
     inst.SoundEmitter:KillSound("loop")
 
     inst.AnimState:PlayAnimation("idle")
-    inst.MiniMapEntity:SetIcon("atrium_gate.png")
+
+    local repaired = inst.components.charliecutscene:IsGateRepaired()
+    inst.MiniMapEntity:SetIcon(repaired and "atrium_gate_fixed.png" or "atrium_gate.png")
+
     HideFx(inst)
 
     TheWorld:PushEvent("atriumpowered", false)
@@ -194,7 +203,7 @@ end
 local function OnDestabilizingPulse(inst)
     inst.talkertick = inst.talkertick ~= nil and inst.talkertick + 1 or 0
 
-    if not IsDestabilizing(inst) then
+    if not inst:IsDestabilizing() then
         inst.destabilizingnotificationtask:Cancel()
         inst.destabilizingnotificationtask = nil
         return
@@ -310,6 +319,21 @@ local function OnDestabilizeExplode(inst)
     end
 end
 
+local function ForceDestabilizeExplode(inst)
+    -- returns true if a destabilization was actually forced
+    if inst:IsDestabilizing() then
+        -- Force the atrium gate to finish its destabilization process.
+        OnDestabilizeExplode(inst)
+        if inst.components.worldsettingstimer:ActiveTimerExists("destabilizing") then
+            inst.components.worldsettingstimer:StopTimer("destabilizing")
+        end
+
+        return true
+    end
+
+    return false
+end
+
 local function OnCooldown(inst)
     if inst.components.worldsettingstimer:ActiveTimerExists("cooldown") then
         inst.AnimState:PlayAnimation("cooldown", true)
@@ -394,7 +418,7 @@ local function ontimer(inst, data)
 end
 
 local function getstatus(inst)
-    return (IsDestabilizing(inst) and "DESTABILIZING")
+    return (inst:IsDestabilizing() and "DESTABILIZING")
         or (inst.components.worldsettingstimer:ActiveTimerExists("cooldown") and "COOLDOWN")
         or ((inst:HasTag("intense") or inst.components.worldsettingstimer:ActiveTimerExists("destabilizedelay")) and "CHARGING")
         or (inst.components.pickable.caninteractwith and "ON")
@@ -420,7 +444,7 @@ local function OnEntityWake(inst)
 end
 
 local function OnLoadPostPass(inst, ents, data)
-    if IsDestabilizing(inst) then
+    if inst:IsDestabilizing() then
         StartDestabilizing(inst, true)
     elseif inst.components.worldsettingstimer:ActiveTimerExists("cooldown") then
         StartCooldown(inst, true)
@@ -468,7 +492,7 @@ local function CreateTerraformBlocker(parent)
 
     inst.entity:AddTransform()
 
-    inst:SetTerraformExtraSpacing(TERRAFORM_BLOCKER_RADIUS)
+    inst:SetTerraformExtraSpacing(TERRAFORM_BLOCKER_RADIUS + 0.01)
 
     return inst
 end
@@ -544,6 +568,7 @@ local function fn()
     inst.AnimState:SetBank("atrium_gate")
     inst.AnimState:SetBuild("atrium_gate")
     inst.AnimState:PlayAnimation("idle")
+    inst.AnimState:SetSymbolLightOverride("dreadstone_patch_red", 1)
 
     inst.MiniMapEntity:SetIcon("atrium_gate.png")
 
@@ -552,6 +577,8 @@ local function fn()
 
     inst._camerafocus = net_tinybyte(inst.GUID, "atrium_gate._camerafocus", "camerafocusdirty")
     inst._camerafocustask = nil
+
+    inst.scrapbook_specialinfo = "atriumgate"
 
     --Dedicated server does not need to spawn the flooring
     if not TheNet:IsDedicated() then
@@ -565,6 +592,14 @@ local function fn()
     inst.OnRemoveEntity = OnRemove
 
     inst.highlightchildren = {}
+
+    -- Server and Client component.
+    inst:AddComponent("charliecutscene")
+
+    if not TheNet:IsDedicated() then
+        inst:AddComponent("pointofinterest")
+        inst.components.pointofinterest:SetHeight(20)
+    end
 
     inst.entity:SetPristine()
 
@@ -593,8 +628,10 @@ local function fn()
     inst:ListenForEvent("timerdone", ontimer)
 
     inst:AddComponent("entitytracker")
+    inst:AddComponent("colourtweener")
 
     MakeHauntableWork(inst)
+    MakeRoseTarget_CreateFuel_IncreasedHorror(inst)
 
     inst.OnLoadPostPass = OnLoadPostPass
     inst.OnPreLoad = OnPreLoad
@@ -605,8 +642,10 @@ local function fn()
     inst.TrackStalker = TrackStalker
     inst.IsWaitingForStalker = IsWaitingForStalker
 
+    inst.IsDestabilizing = IsDestabilizing
     inst.Destabilize = Destabilize
     inst.StartCooldown = StartCooldown
+    inst.ForceDestabilizeExplode = ForceDestabilizeExplode
 
     inst.IsObjectInAtriumArena = IsObjectInAtriumArena
 
@@ -625,10 +664,17 @@ local function fn()
             inst.components.entitytracker:ForgetEntity("stalker")
             --IsAtriumDecay means "killed" to reset the fight (off-screen, or moved too far away from gate)
             Destabilize(inst, stalker:IsAtriumDecay())
+
+            if not stalker:IsAtriumDecay() and
+                TUNING.SPAWN_RIFTS == 1 and 
+                not inst.components.entitytracker:GetEntity("charlie_hand") and
+                TheWorld.components.riftspawner ~= nil and
+                not TheWorld.components.riftspawner:GetShadowRiftsEnabled()
+            then
+                inst.components.charliecutscene:SpawnCharlieHand()
+            end
         end
     end
-
-    inst.StartCooldown = StartCooldown
 
     return inst
 end

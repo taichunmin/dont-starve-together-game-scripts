@@ -79,11 +79,11 @@ local function CreateBase(isnew)
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
     inst.AnimState:SetSortOrder(3)
     inst.AnimState:SetFinalOffset(3)
-    inst.AnimState:SetMultColour(.5, .45, .45, .6)
+    inst.AnimState:SetMultColour(.5/.6, .45/.6, .45/.6, .6)
 
     if isnew then
         inst.AnimState:PlayAnimation("sporecloud_base_pre")
-        inst.AnimState:SetTime(12 * FRAMES)
+		inst.AnimState:SetFrame(12)
         inst.AnimState:PushAnimation("sporecloud_base_idle", false)
     else
         inst.AnimState:PlayAnimation("sporecloud_base_idle")
@@ -91,6 +91,17 @@ local function CreateBase(isnew)
 
     return inst
 end
+
+local LUNAR_R, LUNAR_G, LUNAR_B, LUNAR_A = 0.2/0.6, 0.25/0.6, 1.0, 0.6
+local function CreateBaseLunar(isnew)
+    local inst = CreateBase(isnew)
+
+    inst.AnimState:SetMultColour(LUNAR_R, LUNAR_G, LUNAR_B, LUNAR_A)
+
+    return inst
+end
+
+----
 
 local function OnStateDirty(inst)
     if inst._state:value() > 0 then
@@ -100,7 +111,7 @@ local function OnStateDirty(inst)
         end
         if inst._state:value() == 1 then
             if inst._basefx == nil then
-                inst._basefx = CreateBase(false)
+                inst._basefx = inst._create_base_fn(false)
                 inst._basefx.entity:SetParent(inst.entity)
             end
         elseif inst._basefx ~= nil then
@@ -204,7 +215,7 @@ local function OnLoad(inst, data)
 
         --Dedicated server does not need to spawn the local fx
         if not TheNet:IsDedicated() then
-            inst._basefx = CreateBase(false)
+            inst._basefx = inst._create_base_fn(false)
             inst._basefx.entity:SetParent(inst.entity)
         end
 
@@ -219,7 +230,7 @@ local function InitFX(inst)
 
     --Dedicated server does not need to spawn the local fx
     if not TheNet:IsDedicated() then
-        inst._basefx = CreateBase(true)
+        inst._basefx = inst._create_base_fn(true)
         inst._basefx.entity:SetParent(inst.entity)
     end
 end
@@ -237,60 +248,66 @@ local function DoAreaDrowsy(inst, sleeptimecache, sleepdelaycache)
         TheSim:FindEntities(x, y, z, range, nil, TARGET_PVP_CANT_TAGS, TARGET_PVP_ONEOF_TAGS) or
         TheSim:FindEntities(x, y, z, range, TARGET_MUST_TAGS, TARGET_CANT_TAGS)
     for i, v in ipairs(ents) do
-        local delayed = false
-        if (sleepdelaycache[v] or 0) > TICK_PERIOD then
-            if v.components.sleeper ~= nil then
-                if not v.components.sleeper:IsAsleep() then
-                    sleepdelaycache[v] = sleepdelaycache[v] - TICK_PERIOD
-                    delayed = true
-                end
-            elseif v.components.grogginess ~= nil
-                and not v.components.grogginess:IsKnockedOut() then
-                sleepdelaycache[v] = sleepdelaycache[v] - TICK_PERIOD
-                delayed = true
-            end
-        end
-        if not delayed and
-            not (v.components.combat ~= nil and v.components.combat:GetLastAttackedTime() + ATTACK_SLEEP_DELAY > t) and
-            not (v.components.burnable ~= nil and v.components.burnable:IsBurning()) and
-            not (v.components.freezable ~= nil and v.components.freezable:IsFrozen()) and
-            not (v.components.pinnable ~= nil and v.components.pinnable:IsStuck()) and
-            not (v.components.fossilizable ~= nil and v.components.fossilizable:IsFossilized()) then
-            local mount = v.components.rider ~= nil and v.components.rider:GetMount() or nil
-            if mount ~= nil then
-                mount:PushEvent("ridersleep", { sleepiness = TICK_VALUE, sleeptime = MAX_SLEEP_TIME })
-            end
-            if v.components.sleeper ~= nil then
-                local sleeptime = sleeptimecache[v] or MAX_SLEEP_TIME
-                v.components.sleeper:AddSleepiness(TICK_VALUE, sleeptime / v.components.sleeper:GetSleepTimeMultiplier())
-                if v.components.sleeper:IsAsleep() then
-                    sleeptimecache[v] = math.max(MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
-                    sleepdelaycache[v] = CHAIN_SLEEP_DELAY
-                else
-                    sleeptimecache[v] = nil
-                end
-            elseif v.components.grogginess ~= nil then
-                local sleeptime = sleeptimecache[v] or PLAYER_MAX_SLEEP_TIME
-                if v.components.grogginess:IsKnockedOut() then
-                    v.components.grogginess:ExtendKnockout(sleeptime)
-                    sleeptimecache[v] = math.max(PLAYER_MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
-                    sleepdelaycache[v] = CHAIN_SLEEP_DELAY
-                else
-                    v.components.grogginess:AddGrogginess(PLAYER_TICK_VALUE, sleeptime)
-                    if v.components.grogginess:IsKnockedOut() then
-                        sleeptimecache[v] = math.max(PLAYER_MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
-                        sleepdelaycache[v] = CHAIN_SLEEP_DELAY
-                    else
-                        sleeptimecache[v] = nil
-                    end
-                end
-            else
-                v:PushEvent("knockedout")
-            end
-        else
-            sleeptimecache[v] = nil
-        end
+		if v ~= inst.owner then
+			local delayed = false
+			if (sleepdelaycache[v] or 0) > TICK_PERIOD then
+				if v.components.sleeper ~= nil then
+					if not v.components.sleeper:IsAsleep() then
+						sleepdelaycache[v] = sleepdelaycache[v] - TICK_PERIOD
+						delayed = true
+					end
+				elseif v.components.grogginess ~= nil
+					and not v.components.grogginess:IsKnockedOut() then
+					sleepdelaycache[v] = sleepdelaycache[v] - TICK_PERIOD
+					delayed = true
+				end
+			end
+			if not delayed and
+				not (v.components.combat ~= nil and v.components.combat:GetLastAttackedTime() + ATTACK_SLEEP_DELAY > t) and
+				not (v.components.burnable ~= nil and v.components.burnable:IsBurning()) and
+				not (v.components.freezable ~= nil and v.components.freezable:IsFrozen()) and
+				not (v.components.pinnable ~= nil and v.components.pinnable:IsStuck()) and
+				not (v.components.fossilizable ~= nil and v.components.fossilizable:IsFossilized()) then
+				local mount = v.components.rider ~= nil and v.components.rider:GetMount() or nil
+				if mount ~= nil then
+					mount:PushEvent("ridersleep", { sleepiness = TICK_VALUE, sleeptime = MAX_SLEEP_TIME })
+				end
+				if v.components.sleeper ~= nil then
+					local sleeptime = sleeptimecache[v] or MAX_SLEEP_TIME
+					v.components.sleeper:AddSleepiness(TICK_VALUE, sleeptime / v.components.sleeper:GetSleepTimeMultiplier())
+					if v.components.sleeper:IsAsleep() then
+						sleeptimecache[v] = math.max(MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
+						sleepdelaycache[v] = CHAIN_SLEEP_DELAY
+					else
+						sleeptimecache[v] = nil
+					end
+				elseif v.components.grogginess ~= nil then
+					local sleeptime = sleeptimecache[v] or PLAYER_MAX_SLEEP_TIME
+					if v.components.grogginess:IsKnockedOut() then
+						v.components.grogginess:ExtendKnockout(sleeptime)
+						sleeptimecache[v] = math.max(PLAYER_MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
+						sleepdelaycache[v] = CHAIN_SLEEP_DELAY
+					else
+						v.components.grogginess:AddGrogginess(PLAYER_TICK_VALUE, sleeptime)
+						if v.components.grogginess:IsKnockedOut() then
+							sleeptimecache[v] = math.max(PLAYER_MIN_SLEEP_TIME, sleeptime - TICK_PERIOD)
+							sleepdelaycache[v] = CHAIN_SLEEP_DELAY
+						else
+							sleeptimecache[v] = nil
+						end
+					end
+				else
+					v:PushEvent("knockedout")
+				end
+			else
+				sleeptimecache[v] = nil
+			end
+		end
     end
+end
+
+local function SetOwner(inst, owner)
+	inst.owner = owner
 end
 
 local function fn()
@@ -315,8 +332,9 @@ local function fn()
 
     inst._inittask = inst:DoTaskInTime(0, InitFX)
 
-    inst.entity:SetPristine()
+    inst._create_base_fn = CreateBase
 
+    inst.entity:SetPristine()
     if not TheWorld.ismastersim then
         inst:ListenForEvent("statedirty", OnStateDirty)
 
@@ -333,6 +351,7 @@ local function fn()
 
     inst:ListenForEvent("timerdone", OnTimerDone)
 
+	inst.SetOwner = SetOwner
     inst.OnLoad = OnLoad
 
     inst._overlaytasks = {}
@@ -342,6 +361,17 @@ local function fn()
 
     return inst
 end
+
+----
+local function lunar_fn()
+    local inst = fn()
+
+    inst._create_base_fn = CreateBaseLunar
+
+    return inst
+end
+
+----
 
 local function overlayfn()
     local inst = CreateEntity()
@@ -373,4 +403,5 @@ local function overlayfn()
 end
 
 return Prefab("sleepcloud", fn, assets, prefabs),
-    Prefab("sleepcloud_overlay", overlayfn, assets)
+    Prefab("sleepcloud_overlay", overlayfn, assets),
+    Prefab("sleepcloud_lunar", lunar_fn, assets, prefabs)

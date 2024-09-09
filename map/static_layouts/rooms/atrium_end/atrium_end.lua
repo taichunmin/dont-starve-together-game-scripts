@@ -17,7 +17,7 @@ return {
       margin = 0,
       image = "../../../../../../tools/tiled/dont_starve/tiles.png",
       imagewidth = 512,
-      imageheight = 384,
+      imageheight = 512,
       properties = {},
       tiles = {}
     }
@@ -402,6 +402,28 @@ return {
           shape = "rectangle",
           x = 291,
           y = 36,
+          width = 0,
+          height = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "atrium_fence",
+          shape = "rectangle",
+          x = 256,
+          y = 87,
+          width = 0,
+          height = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          name = "",
+          type = "atrium_fence",
+          shape = "rectangle",
+          x = 320,
+          y = 90,
           width = 0,
           height = 0,
           visible = true,

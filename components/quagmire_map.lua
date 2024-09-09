@@ -2,7 +2,7 @@
 -- these functions have moved into map.lua
 
 function Map:IsFarmableSoilAtPoint(x, y, z)
-    return self:GetTileAtPoint(x, y, z) == GROUND.QUAGMIRE_SOIL
+    return self:GetTileAtPoint(x, y, z) == WORLD_TILES.QUAGMIRE_SOIL
 end
 
 local TILLSOILBLOCKED_MUST_TAGS = { "plantedsoil" }

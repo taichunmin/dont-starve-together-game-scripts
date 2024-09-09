@@ -334,7 +334,7 @@ local states =
         onenter = function(inst)
             if not inst.AnimState:IsCurrentAnimation("struggle_recovery") then
                 inst.AnimState:PlayAnimation("struggle_recovery")
-                inst.AnimState:SetTime(17 * FRAMES)
+				inst.AnimState:SetFrame(17)
             end
 
             inst.components.inventoryitem.canbepickedup = false

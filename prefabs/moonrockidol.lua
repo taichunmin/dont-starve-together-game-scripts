@@ -7,7 +7,7 @@ local assets =
 local function turnon(inst, instant)
     if instant then
         inst.AnimState:PlayAnimation("idol_loop", true)
-        inst.AnimState:SetTime(inst.AnimState:GetCurrentAnimationLength() * math.random())
+		inst.AnimState:SetFrame(math.random(inst.AnimState:GetCurrentAnimationNumFrames()) - 1)
     else
         inst.AnimState:PlayAnimation("idol_pre")
         inst.AnimState:PushAnimation("idol_loop")
@@ -74,6 +74,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("moonportalkey")
+    inst:AddTag("donotautopick")
 
     inst.entity:SetPristine()
 

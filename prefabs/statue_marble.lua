@@ -1,9 +1,9 @@
 local assets =
 {
-    Asset("ANIM", "anim/statue_small_type1_build.zip"), -- muse 1
-    Asset("ANIM", "anim/statue_small_type2_build.zip"), -- muse 2
-    Asset("ANIM", "anim/statue_small_type3_build.zip"), -- urn
-    Asset("ANIM", "anim/statue_small_type4_build.zip"), -- pawn
+    Asset("ANIM", "anim/statue_small_type1_build.zip"), -- Muse 1.
+    Asset("ANIM", "anim/statue_small_type2_build.zip"), -- Muse 2.
+    Asset("ANIM", "anim/statue_small_type3_build.zip"), -- Urn.
+    Asset("ANIM", "anim/statue_small_type4_build.zip"), -- Pawn.
     Asset("ANIM", "anim/statue_small.zip"),
     Asset("MINIMAP_IMAGE", "statue_small"),
 }
@@ -13,6 +13,8 @@ local prefabs =
     "marble",
     "rock_break_fx",
 }
+
+------------------------------------------------------------------------------------------------------------------------------------
 
 --V2C: switched to SKETCH_UNLOCKS table, but keeping this here for searching
 --[[local sketchloot =
@@ -37,12 +39,21 @@ for i, v in ipairs(SKETCH_UNLOCKS) do
     end
 end
 
-SetSharedLootTable('statue_marble',
+SetSharedLootTable("statue_marble",
 {
-    {'marble',  1.0},
-    {'marble',  1.0},
-    {'marble',  0.3},
+    {"marble",  1.0},
+    {"marble",  1.0},
+    {"marble",  0.3},
 })
+
+local SPECIFIC_STATUES =
+{
+ --[id] = "prefab",
+    [1] = "statue_marble_muse",
+    [4] = "statue_marble_pawn",
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
 
 local function OnWorked(inst, worker, workleft)
     if workleft <= 0 then
@@ -69,8 +80,9 @@ local function OnWorkLoad(inst)
     OnWorked(inst, nil, inst.components.workable.workleft)
 end
 
-local function setstatuetype(inst, typeid)
+local function SetStatueType(inst, typeid)
     typeid = typeid or math.random(4)
+
     if typeid ~= inst.typeid then
         inst.typeid = typeid
         inst.AnimState:OverrideSymbol("swap_statue", "statue_small_type"..tostring(typeid).."_build", "swap_statue")
@@ -81,24 +93,34 @@ local function GetStatus(inst)
     return "TYPE"..tostring(inst.typeid)
 end
 
-local function lootsetfn(lootdropper)
+local function LootSetFn(lootdropper)
     local chesspiecename = SKETCH_UNLOCKS[lootdropper.inst.typeid]
+
     if chesspiecename ~= "" then
         lootdropper:SetLoot({ chesspiecename ~= nil and ("chesspiece_"..chesspiecename.."_sketch") or nil })
     end
 end
 
-local function onsave(inst, data)
+------------------------------------------------------------------------------------------------------------------------------------
+
+local function OnSave(inst, data)
     data.typeid = inst.typeid
 end
 
-local function onload(inst, data)
+local function OnLoad(inst, data)
     if data ~= nil and data.typeid ~= nil then
-        setstatuetype(inst, data.typeid)
+        inst:SetStatueType(data.typeid)
+
+        -- NOTES(DiogoW): Specific statues should keep their unique prefab name now.
+        if SPECIFIC_STATUES[inst.typeid] then
+            inst:SetPrefabName(SPECIFIC_STATUES[inst.typeid])
+        end
     end
 end
 
-local function fn()
+------------------------------------------------------------------------------------------------------------------------------------
+
+local function GenericFn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
@@ -109,7 +131,7 @@ local function fn()
 
     MakeObstaclePhysics(inst, 0.66)
 
-    inst.entity:AddTag("statue")
+    inst:AddTag("statue")
 
     inst.AnimState:SetBank("statue_small")
     inst.AnimState:SetBuild("statue_small")
@@ -118,15 +140,19 @@ local function fn()
 
     inst.MiniMapEntity:SetIcon("statue_small.png")
 
+    inst:SetPrefabNameOverride("statue_marble")
+
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
 
+    inst.SetStatueType = SetStatueType
+
     inst:AddComponent("lootdropper")
-    inst.components.lootdropper:SetChanceLootTable('statue_marble')
-    inst.components.lootdropper:SetLootSetupFn(lootsetfn)
+    inst.components.lootdropper:SetChanceLootTable("statue_marble")
+    inst.components.lootdropper:SetLootSetupFn(LootSetFn)
 
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus
@@ -138,33 +164,38 @@ local function fn()
     inst.components.workable:SetOnLoadFn(OnWorkLoad)
     inst.components.workable.savestate = true
 
-    MakeHauntableWork(inst)
-
     inst.typeid = 1
-    setstatuetype(inst)
+    inst:SetStatueType()
 
-    --------SaveLoad
-    inst.OnSave = onsave
-    inst.OnLoad = onload
+    inst.OnSave = OnSave
+    inst.OnLoad = OnLoad
+
+    MakeHauntableWork(inst)
 
     return inst
 end
 
-function specificfn(id)
+------------------------------------------------------------------------------------------------------------------------------------
+
+function SpecificFn(id)
     return function()
-        local inst = fn()
+        local inst = GenericFn()
 
         if not TheWorld.ismastersim then
             return inst
         end
 
-        inst:SetPrefabName("statue_marble")
-        setstatuetype(inst, id)
+        inst.scrapbook_anim = "full"
+        inst.scrapbook_speechname = "statue_marble"
+        inst.scrapbook_build = "statue_small_type"..tostring(id).."_build"
+
+        inst:SetStatueType(id)
 
         return inst
     end
 end
 
-return Prefab("statue_marble", fn, assets, prefabs),
-       Prefab("statue_marble_muse", specificfn(1), assets, prefabs),
-       Prefab("statue_marble_pawn", specificfn(4), assets, prefabs)
+return
+    Prefab("statue_marble",      GenericFn,     assets, prefabs),
+    Prefab("statue_marble_muse", SpecificFn(1), assets, prefabs),
+    Prefab("statue_marble_pawn", SpecificFn(4), assets, prefabs)

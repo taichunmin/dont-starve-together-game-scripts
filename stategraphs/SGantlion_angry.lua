@@ -71,8 +71,8 @@ local function SpawnSpikes(inst, pos, count)
         end
     end
     if count > 0 then
-        local dtheta = PI * 2 / count
-        for theta = math.random() * dtheta, PI * 2, dtheta do
+        local dtheta = TWOPI / count
+        for theta = math.random() * dtheta, TWOPI, dtheta do
             local size = SPIKE_SIZES[math.random(#SPIKE_SIZES)]
             local offset = FindWalkableOffset(pos, theta, 2 + math.random() * 2, 3, false, true,
                 function(pt)
@@ -92,9 +92,9 @@ end
 
 local function SpawnBlocks(inst, pos, count)
     if count > 0 then
-        local dtheta = PI * 2 / count
-        local thetaoffset = math.random() * PI * 2
-        for theta = math.random() * dtheta, PI * 2, dtheta do
+        local dtheta = TWOPI / count
+        local thetaoffset = math.random() * TWOPI
+        for theta = math.random() * dtheta, TWOPI, dtheta do
             local offset = FindWalkableOffset(pos, theta + thetaoffset, 8 + math.random(), 3, false, true,
                 function(pt)
                     return CanSpawnSpikeAt(pt, "block")

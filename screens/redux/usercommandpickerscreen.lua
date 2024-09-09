@@ -133,7 +133,6 @@ local UserCommandPickerScreen = Class(Screen, function(self, owner, targetuserid
         self.cancelbutton:SetScale(0.5)
         self.cancelbutton:SetOnClick(function() TheFrontEnd:PopScreen() end)
         height = height + BUTTON_HEIGHT + CANCEL_OFFSET
-        max_height = max_height
     end
 
     local top = (height/2 + max_height/2)/2

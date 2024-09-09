@@ -113,6 +113,9 @@ function MainScreen:DoInit()
     local playgainfocusfn = self.play_button.OnGainFocus
     local playlosefocusfn = self.play_button.OnLoseFocus
     self.play_button.OnGainFocus = function()
+        if IsIntegrityChecking then
+            return
+        end
         playgainfocusfn(self.play_button)
 		if PLATFORM == "WIN32_RAIL" then
 			self.play_button:SetTextSize(48)
@@ -123,6 +126,9 @@ function MainScreen:DoInit()
         self.play_button.bg:Show()
     end
     self.play_button.OnLoseFocus = function()
+        if IsIntegrityChecking then
+            return
+        end
         playlosefocusfn(self.play_button)
         if PLATFORM == "WIN32_RAIL" then
 			self.play_button:SetTextSize(45)
@@ -133,9 +139,22 @@ function MainScreen:DoInit()
         self.play_button.bg:Hide()
     end
     self.play_button:SetOnClick(function()
-    	self.play_button:Disable()
-        self:OnLoginButton(true)
+        if not IsIntegrityChecking then
+            self.play_button:Disable()
+            self:OnLoginButton(true)
+        end
     end)
+    self.play_button._TurnOff = function()
+        self.play_button:Disable()
+        self.play_button.image:SetTint(0.5,0.5,0.5,0.6)
+        self.play_button:SetText(STRINGS.UI.NOTIFICATION.LOADING, true, {2,-3})
+    end
+    self.play_button._TurnOn = function()
+        self.play_button:Enable()
+        self.play_button.image:SetTint(1,1,1,0.6)
+        self.play_button:SetText(STRINGS.UI.MAINSCREEN.PLAY, true, {2,-3})
+    end
+    HookLoginButtonForDataBundleFileHashes(self.play_button)
 
     self.exit_button = self.fixed_root:AddChild(TEMPLATES.BackButton(
         function()
@@ -167,13 +186,13 @@ function MainScreen:OnControl(control, down)
     if MainScreen._base.OnControl(self,control, down) then return true end
 
     if DEBUG_MODE then
-        if control == CONTROL_PAUSE then
+        if control == CONTROL_MENU_START then
             -- Use gamepad start button to host game so you can keep mashing
             -- start to get into game.
             self:OnHostButton()
             return true
 
-        elseif control == CONTROL_MAP then
+        elseif control == CONTROL_MENU_BACK then
             -- Make gamepad back a compliment to start: join instead of host.
             self:OnJoinButton()
             return true
@@ -224,7 +243,7 @@ function MainScreen:OnLoginButton(push_mp_main_screen)
         if is_banned then -- We are banned
         	TheFrontEnd:PopScreen()
 	        TheNet:NotifyAuthenticationFailure()
-            OnNetworkDisconnect( banned_reason, true)
+            OnNetworkDisconnect( banned_reason, true, nil, nil, function() TheFrontEnd:PopScreen() GoToMultiplayerMainMenu(true) end)
         -- We are on a deprecated version of the game
         elseif must_upgrade then
         	TheFrontEnd:PopScreen()
@@ -392,14 +411,24 @@ function MainScreen:OnBecomeActive()
 
     if not self.auto_login_started then
         if Profile:GetAutoLoginEnabled() then
-            self.inst:DoTaskInTime(0, function() --wait a frame, so that this happens after construction
-                if TheFrontEnd:GetActiveScreen() == self and self.play_button:IsEnabled() and not global_error_widget then
+            local function TryAutoLogin()
+                if TheFrontEnd:GetActiveScreen() == self and self.play_button:IsEnabled() and not global_error_widget and not IsIntegrityChecking then
+                    if self.inst._AutoLoginTask ~= nil then -- Just in case.
+                        self.inst._AutoLoginTask:Cancel()
+                        self.inst._AutoLoginTask = nil
+                    end
                     self.auto_login_started = true
                     print("Do AutoLogin")
                     self.play_button:Disable()
                     self:OnLoginButton(true)
                 end
-            end)
+            end
+            if self.inst._AutoLoginTask ~= nil then
+                -- NOTES(JBK): This is to stop a duplicate entry for OnBecomeActive when other popups arrive.
+                self.inst._AutoLoginTask:Cancel()
+                self.inst._AutoLoginTask = nil
+            end
+            self.inst._AutoLoginTask = self.inst:DoPeriodicTask(0, TryAutoLogin)
         end
     end
 end

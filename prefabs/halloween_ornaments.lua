@@ -26,6 +26,7 @@ local function MakeOrnament(ornamentid)
         inst.AnimState:SetBank("halloween_ornaments")
         inst.AnimState:SetBuild("halloween_ornaments")
         inst.AnimState:PlayAnimation("decor_"..ornamentid)
+        inst.scrapbook_anim = "decor_"..ornamentid
 
 		inst:AddTag("halloween_ornament")
         inst:AddTag("molebait")
@@ -33,6 +34,8 @@ local function MakeOrnament(ornamentid)
 
         local fp = FLOATER_PROPERTIES[ornamentid]
         MakeInventoryFloatable(inst, fp[1], fp[2], fp[3])
+
+        inst.scrapbook_specialinfo = "HALLOWEEN_ORNAMENT"
 
         inst.entity:SetPristine()
 

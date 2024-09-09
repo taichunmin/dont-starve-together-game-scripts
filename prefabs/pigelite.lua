@@ -178,6 +178,7 @@ local function MakePigElite(variation)
         inst.AnimState:PlayAnimation("idle_loop", true)
         inst.AnimState:Hide("hat")
         inst.AnimState:Hide("ARM_carry")
+        inst.AnimState:Hide("ARM_carry_up")
 
         for i, v in ipairs(BUILD_VARIATIONS[variation]) do
             inst.AnimState:OverrideSymbol(v, "pig_elite_build", v.."_"..variation)
@@ -258,6 +259,7 @@ local function MakePigElite(variation)
         inst:ListenForEvent("unequip", OnUnequip)
         inst:ListenForEvent("onignite", SetCheatFlag)
         inst:ListenForEvent("teleported", SetCheatFlag)
+        inst:ListenForEvent("rooted", SetCheatFlag)
 
         return inst
     end

@@ -8,7 +8,7 @@ function WinonaCatapultBrain:OnStart()
     local root = PriorityNode(
     {
         StandAndAttack(self.inst),
-    }, .5)
+	}, 0.1)
 
     self.bt = BT(self.inst, root)
 end

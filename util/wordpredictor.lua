@@ -15,9 +15,20 @@ function WordPredictor:AddDictionary(dictionary)
 	table.insert(self.dictionaries, dictionary)
 end
 
+local function FindEndCursorPos(text, cursor_pos)
+	-- Find the first instance of a <"> or the end of the text in order to have more expected word replacement
+	local endquote = text:find("\"", cursor_pos)
+	if endquote ~= nil then
+		return endquote - 1
+	end
+
+	return #text
+end
+
 local function _find_prediction_start(dictionaries, text, cursor_pos)
 	local prediction = nil
 
+	cursor_pos = FindEndCursorPos(text, cursor_pos)
 	local pos = cursor_pos
 	while (pos > 0) do
 		for _, dic in ipairs(dictionaries) do
@@ -56,7 +67,9 @@ local function _find_prediction_start(dictionaries, text, cursor_pos)
 						end
 					end
 				end
-				break
+				if prediction ~= nil then
+					break
+				end
 			end
 		end
 		if prediction ~= nil then
@@ -96,7 +109,8 @@ function WordPredictor:Apply(prediction_index)
 		new_text = self.text:sub(1, self.prediction.start_pos) .. new_word .. self.prediction.dictionary.postfix
 		new_cursor_pos = #new_text
 
-		local remainder_text = self.text:sub(self.cursor_pos + 1, #self.text) or ""
+		local endpos = FindEndCursorPos(self.text, self.cursor_pos)
+		local remainder_text = self.text:sub(endpos + 1, #self.text) or ""
 		local remainder_strip_pos = remainder_text:find("[^a-zA-Z0-9]") or (#remainder_text + 1)
 		if self.prediction.dictionary.postfix ~= "" and remainder_text:sub(remainder_strip_pos, remainder_strip_pos + (#self.prediction.dictionary.postfix-1)) == self.prediction.dictionary.postfix then
 			remainder_strip_pos = remainder_strip_pos + #self.prediction.dictionary.postfix

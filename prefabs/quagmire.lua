@@ -1,5 +1,4 @@
 require("prefabs/world")
-local GroundTiles = require "worldtiledefs"
 
 local prefabs =
 {
@@ -137,6 +136,15 @@ local function common_preinit(inst)
     require("components/quagmire_map") --extends Map component
 end
 
+local function tile_physics_init(inst)
+    inst.Map:AddTileCollisionSet(
+        COLLISION.LAND_OCEAN_LIMITS,
+        TileGroups.ImpassableTiles, true,
+        TileGroups.ImpassableTiles, false,
+        0.25, 64
+    )
+end
+
 local function common_postinit(inst)
     --Initialize lua components
     inst:AddComponent("ambientlighting")
@@ -155,7 +163,7 @@ local function common_postinit(inst)
 
         inst:AddComponent("ambientsound")
         inst.components.ambientsound:SetReverbPreset("default")
-        --inst:PushEvent("overrideambientsound", { tile = GROUND.IMPASSABLE, override = GROUND.LAVAARENA_FLOOR })
+        --inst:PushEvent("overrideambientsound", { tile = WORLD_TILES.IMPASSABLE, override = WORLD_TILES.LAVAARENA_FLOOR })
 
         inst:AddComponent("colourcube")
         inst:PushEvent("overridecolourcube", "images/colour_cubes/quagmire_cc.tex")
@@ -253,4 +261,4 @@ local function master_postinit(inst)
     event_server_data("quagmire", "prefabs/quagmire").master_postinit(inst)
 end
 
-return MakeWorld("quagmire", prefabs, assets, common_postinit, master_postinit, { "quagmire" }, {common_preinit = common_preinit})
+return MakeWorld("quagmire", prefabs, assets, common_postinit, master_postinit, { "quagmire" }, {common_preinit = common_preinit, tile_physics_init = tile_physics_init})

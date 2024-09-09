@@ -2,24 +2,30 @@ local function CreateLight()
     local inst = CreateEntity()
 
     inst:AddTag("FX")
-    inst:AddTag("playerlight")
+	--inst:AddTag("playerlight") --see AttachLightTo instead!
     --[[Non-networked entity]]
-    inst.entity:SetCanSleep(false)
+	--V2C: should be sleepable on host, and should follow parent's sleep anyway
+	--inst.entity:SetCanSleep(false)
     inst.persists = false
 
     inst.entity:AddTransform()
     inst.entity:AddLight()
 
-    inst.Light:SetIntensity(.75)
-    inst.Light:SetColour(197 / 255, 197 / 255, 50 / 255)
-    inst.Light:SetFalloff(.5)
-    inst.Light:SetRadius(2)
+    inst.Light:SetIntensity(0.75)
+    inst.Light:SetColour(180 / 255, 195 / 255, 150 / 255)
+    inst.Light:SetFalloff(TUNING.TORCH_FALLOFF[1])
+    inst.Light:SetRadius(TUNING.TORCH_RADIUS[1])
 
     return inst
 end
 
 local function AttachLightTo(inst, target)
     inst._light.entity:SetParent(target.entity)
+	if target:HasTag("player") then
+		inst._light:AddTag("playerlight")
+	else
+		inst._light:RemoveTag("playerlight")
+	end
 end
 
 local function OnEntityReplicated(inst)
@@ -31,6 +37,18 @@ end
 
 local function OnRemoveEntity(inst)
     inst._light:Remove()
+end
+
+local function OnLightRangeDirty(inst)
+    inst._light.Light:SetRadius(TUNING.TORCH_RADIUS[inst._lightrange:value()])
+    inst._light.Light:SetFalloff(TUNING.TORCH_FALLOFF[inst._lightrange:value()])
+end
+
+local function SetLightRange(inst,value)
+    if value ~= inst._lightrange:value() then
+        inst._lightrange:set(value)
+        OnLightRangeDirty(inst)
+    end
 end
 
 local function MakeTorchFire(name, customassets, customprefabs, common_postinit, master_postinit)
@@ -61,6 +79,14 @@ local function MakeTorchFire(name, customassets, customprefabs, common_postinit,
         inst._light.entity:SetParent(inst.entity)
 
         inst.OnRemoveEntity = OnRemoveEntity
+
+        inst._lightrange = net_tinybyte(inst.GUID, "torch._lightrange", "lightrangedirty")
+        if not TheWorld.ismastersim then
+            inst:ListenForEvent("lightrangedirty", OnLightRangeDirty)
+        else
+            inst.SetLightRange = SetLightRange
+        end
+        inst._lightrange:set(1)
 
         if common_postinit ~= nil then
             common_postinit(inst)

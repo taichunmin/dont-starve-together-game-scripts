@@ -9,7 +9,7 @@ local HONEYTRAILSLOWDOWN_CANT_TAGS = { "flying", "playerghost", "INLIMBO" }
 local function OnUpdate(inst, x, y, z, rad)
     for i, v in ipairs(TheSim:FindEntities(x, y, z, rad, HONEYTRAILSLOWDOWN_MUST_TAGS, HONEYTRAILSLOWDOWN_CANT_TAGS)) do
         if v.components.locomotor ~= nil then
-            v.components.locomotor:PushTempGroundSpeedMultiplier(TUNING.BEEQUEEN_HONEYTRAIL_SPEED_PENALTY, GROUND.MUD)
+            v.components.locomotor:PushTempGroundSpeedMultiplier(TUNING.BEEQUEEN_HONEYTRAIL_SPEED_PENALTY, WORLD_TILES.MUD)
         end
     end
 end
@@ -20,7 +20,7 @@ local function OnUpdateClient(inst, x, y, z, rad)
         player.components.locomotor ~= nil and
         not player:HasTag("playerghost") and
         player:GetDistanceSqToPoint(x, 0, z) < rad * rad then
-        player.components.locomotor:PushTempGroundSpeedMultiplier(TUNING.BEEQUEEN_HONEYTRAIL_SPEED_PENALTY, GROUND.MUD)
+        player.components.locomotor:PushTempGroundSpeedMultiplier(TUNING.BEEQUEEN_HONEYTRAIL_SPEED_PENALTY, WORLD_TILES.MUD)
     end
 end
 

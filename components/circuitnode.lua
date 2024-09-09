@@ -1,11 +1,13 @@
 local CircuitNode = Class(function(self, inst)
     self.inst = inst
     self.range = 5
+	self.footprint = 0
     --self.onconnectfn = nil
     --self.ondisconnectfn = nil
     --self.nodes = nil
     self.numnodes = 0
     self.connectsacrossplatforms = true
+	self.rangeincludesfootprint = false
 end)
 
 function CircuitNode:OnRemoveEntity()
@@ -41,12 +43,13 @@ function CircuitNode:ConnectTo(tag)
 
         for i, v in ipairs(TheSim:FindEntities(x, y, z, self.range, { tag })) do
             if v ~= self.inst and v.entity:IsVisible() and v.components.circuitnode and v.components.circuitnode:IsEnabled() then
-                if self.connectsacrossplatforms then
-                    self:AddNode(v)
-                else
-                    if v:GetCurrentPlatform() == my_platform then
-                        self:AddNode(v)
-                    end
+				local skip
+				if self.rangeincludesfootprint then
+					local range = self.range - v.components.circuitnode.footprint
+					skip = v:GetDistanceSqToPoint(x, 0, z) > range * range
+				end
+				if not skip and (self.connectsacrossplatforms or v:GetCurrentPlatform() == my_platform) then
+					self:AddNode(v)
                 end
             end
         end
@@ -62,6 +65,10 @@ end
 
 function CircuitNode:SetRange(range)
     self.range = range
+end
+
+function CircuitNode:SetFootprint(footprint)
+	self.footprint = footprint
 end
 
 function CircuitNode:SetOnConnectFn(fn)

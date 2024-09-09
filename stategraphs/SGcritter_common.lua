@@ -73,7 +73,7 @@ SGCritterStates.AddIdle = function(states, num_emotes, timeline, idle_anim_fn)
 					else
 						local choice = math.random(inst.components.crittertraits:IsDominantTrait("playful") and (num_emotes + 1) or num_emotes) -- if playful, then add a chance to play the cute emote instead of normal emotes
 						inst.sg:GoToState("emote_"..((choice <= num_emotes) and tostring(choice) or "cute"))
-        			end
+					end
 
 				else
 					if idle_anim_fn ~= nil then

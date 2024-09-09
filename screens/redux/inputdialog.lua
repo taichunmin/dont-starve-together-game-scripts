@@ -125,7 +125,7 @@ function InputDialogScreen:OnControl(control, down)
 		if control == CONTROL_CANCEL then
 			self.buttons[2].cb()
 			return true
-		elseif control == CONTROL_PAUSE then
+		elseif control == CONTROL_MENU_START then
 			self.buttons[1].cb()
 			return true
 		end
@@ -145,7 +145,7 @@ function InputDialogScreen:GetHelpText()
         table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
 		if self.edit_text.focus then
-	        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. self.buttons[1].text)
+	        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. self.buttons[1].text)
 		end
     end
 	return table.concat(t, "  ")

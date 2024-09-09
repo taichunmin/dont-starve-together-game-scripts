@@ -1,35 +1,47 @@
 --------------------------------------------------------------------------
 --[[ worldmeteorshower class definition ]]
 --------------------------------------------------------------------------
+local SourceModifierList = require("util/sourcemodifierlist")
 
 return Class(function(self, inst)
+self.inst = inst
 
 assert(TheWorld.ismastersim, "worldmeteorshower should not exist on client")
 
---------------------------------------------------------------------------
---[[ Member variables ]]
---------------------------------------------------------------------------
+self.moonrockshell_chance = 0
+self.moonrockshell_chance_additionalodds = SourceModifierList(self.inst, 0, SourceModifierList.additive)
 
---Public
-self.inst = inst
+function self:GetRockMoonShellWaveOdds()
+    if self.moonrockshell_chance < 1 then
+        return self.moonrockshell_chance_additionalodds:Get()
+    end
 
---Private
-local _moonrockshell_chance = 0
+    return 0
+end
 
---------------------------------------------------------------------------
---[[ Public member functions ]]
---------------------------------------------------------------------------
+function self:GetMeteorLootPrefab(prefab)
+    if self.moonrockshell_chance < 1 then
+        if prefab == "rock_moon" then
+            self.moonrockshell_chance = self.moonrockshell_chance + TUNING.MOONROCKSHELL_CHANCE
 
-function self:SpawnMeteorLoot(prefab)
-	if prefab == "rock_moon" and _moonrockshell_chance < 1 then
-		_moonrockshell_chance = _moonrockshell_chance + TUNING.MOONROCKSHELL_CHANCE
+            local odds = self.moonrockshell_chance + self.moonrockshell_chance_additionalodds:Get()
 
-		if _moonrockshell_chance >= 1 or TheWorld.state.cycles >= 60 or math.random() <= _moonrockshell_chance then
-			_moonrockshell_chance = 1
-			return SpawnPrefab("rock_moon_shell")
-		end
-	end
-	return SpawnPrefab(prefab)
+            if odds >= 1 or TheWorld.state.cycles >= 60 or math.random() <= odds then
+                self.moonrockshell_chance = 1
+                return "rock_moon_shell"
+            end
+        elseif prefab == "rock_moon_shell" then
+            self.moonrockshell_chance = 1
+            return prefab, true
+        end
+    elseif prefab == "rock_moon_shell" then -- In case two meteors spawned with the same drop we want to only have one in the world.
+        prefab = "rock_moon"
+    end
+	return prefab
+end
+
+function self:SpawnMeteorLoot(prefab) -- NOTES(JBK): Deprecated kept for mods.
+	return SpawnPrefab(self:GetMeteorLootPrefab(prefab))
 end
 
 --------------------------------------------------------------------------
@@ -39,12 +51,12 @@ end
 function self:OnSave()
     return
     {
-        moonrockshell_chance = _moonrockshell_chance,
+        moonrockshell_chance = self.moonrockshell_chance,
     }
 end
 
 function self:OnLoad(data)
-    _moonrockshell_chance = data.moonrockshell_chance or 0
+    self.moonrockshell_chance = data.moonrockshell_chance or 0
 end
 
 --------------------------------------------------------------------------

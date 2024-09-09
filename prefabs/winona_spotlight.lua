@@ -12,12 +12,92 @@ local assets_head =
     Asset("ANIM", "anim/winona_spotlight.zip"),
 }
 
+local assets_item = assets_head
+
 local prefabs =
 {
     "winona_spotlight_head",
     "winona_battery_sparks",
     "collapse_small",
+	"winona_spotlight_item",
 }
+
+local prefabs_item =
+{
+	"winona_spotlight",
+}
+
+--------------------------------------------------------------------------
+
+--CLIENT safe!
+local function OnIsSummer(inst, issummer)
+	if issummer then
+		inst._lightinst:RemoveHeat()
+		local head = inst._headinst or inst._clientheadinst
+		if head then
+			head:SetHeated(false)
+		end
+	else
+		inst._lightinst:AddHeat()
+		local head = inst._headinst or inst._clientheadinst
+		if head then
+			head:SetHeated(true)
+		end
+	end
+end
+
+--CLIENT safe!
+local function StartHeatWatcher(inst)
+	if not inst._heatwatcher then
+		inst._heatwatcher = true
+		inst:WatchWorldState("issummer", OnIsSummer)
+		OnIsSummer(inst, TheWorld.state.issummer)
+	end
+end
+
+--CLIENT safe!
+local function StopHeatWatcher(inst)
+	if inst._heatwatcher then
+		inst._heatwatcher = nil
+		inst:StopWatchingWorldState("issummer", OnIsSummer)
+		OnIsSummer(inst, true) --force disable heat
+	end
+end
+
+--CLIENT safe!
+local function ApplySkillBonuses(inst)
+	if inst._heated:value() then
+		StartHeatWatcher(inst)
+	else
+		StopHeatWatcher(inst)
+	end
+
+	if inst._ranged:value() then
+		inst.RADIUS = TUNING.SKILLS.WINONA.SPOTLIGHT_RADIUS2
+		inst.MIN_RANGE = TUNING.SKILLS.WINONA.SPOTLIGHT_MIN_RANGE2
+		inst.MAX_RANGE = TUNING.SKILLS.WINONA.SPOTLIGHT_MAX_RANGE2
+	else
+		inst.RADIUS = TUNING.WINONA_SPOTLIGHT_RADIUS
+		inst.MIN_RANGE = TUNING.WINONA_SPOTLIGHT_MIN_RANGE
+		inst.MAX_RANGE = TUNING.WINONA_SPOTLIGHT_MAX_RANGE
+	end
+	inst._lightinst:SetRadius(inst.RADIUS)
+end
+
+local function ConfigureSkillTreeUpgrades(inst, builder)
+	local skilltreeupdater = builder and builder.components.skilltreeupdater or nil
+
+	local heated = skilltreeupdater ~= nil and skilltreeupdater:IsActivated("winona_spotlight_heated")
+	local ranged = skilltreeupdater ~= nil and skilltreeupdater:IsActivated("winona_spotlight_range")
+
+	local dirty = inst._heated:value() ~= heated or inst._ranged:value() ~= ranged
+
+	inst._heated:set(heated)
+	inst._ranged:set(ranged)
+	inst._engineerid = builder and builder:HasTag("handyperson") and builder.userid or nil
+
+	return dirty
+end
 
 --------------------------------------------------------------------------
 
@@ -27,20 +107,16 @@ local function OnUpdatePlacerHelper(helperinst)
     if not helperinst.placerinst:IsValid() then
         helperinst.components.updatelooper:RemoveOnUpdateFn(OnUpdatePlacerHelper)
         helperinst.AnimState:SetAddColour(0, 0, 0, 0)
-    elseif helperinst:IsNear(helperinst.placerinst, TUNING.WINONA_BATTERY_RANGE) then
-        local hp = helperinst:GetPosition()
-        local p1 = TheWorld.Map:GetPlatformAtPoint(hp.x, hp.z)
-
-        local pp = helperinst.placerinst:GetPosition()
-        local p2 = TheWorld.Map:GetPlatformAtPoint(pp.x, pp.z)
-
-        if p1 == p2 then
+	else
+		local range = TUNING.WINONA_BATTERY_RANGE - TUNING.WINONA_ENGINEERING_FOOTPRINT
+		local hx, hy, hz = helperinst.Transform:GetWorldPosition()
+		local px, py, pz = helperinst.placerinst.Transform:GetWorldPosition()
+		--<= match circuitnode FindEntities range tests
+		if distsq(hx, hz, px, pz) <= range * range and TheWorld.Map:GetPlatformAtPoint(hx, hz) == TheWorld.Map:GetPlatformAtPoint(px, pz) then
             helperinst.AnimState:SetAddColour(helperinst.placerinst.AnimState:GetAddColour())
         else
             helperinst.AnimState:SetAddColour(0, 0, 0, 0)
         end
-    else
-        helperinst.AnimState:SetAddColour(0, 0, 0, 0)
     end
 end
 
@@ -102,13 +178,18 @@ end
 local function OnEnableHelper(inst, enabled, recipename, placerinst)
     if enabled then
         if inst.helper == nil and inst:HasTag("HAMMER_workable") and not inst:HasTag("burnt") then
-            if recipename == "winona_spotlight" then
+			if recipename == "winona_spotlight" or (placerinst and placerinst.prefab == "winona_spotlight_item_placer") then
                 inst.helper = CreatePlacerRing()
                 inst.helper.entity:SetParent(inst.entity)
             else
                 inst.helper = CreatePlacerBatteryRing()
                 inst.helper.entity:SetParent(inst.entity)
-                if placerinst ~= nil and (recipename == "winona_battery_low" or recipename == "winona_battery_high") then
+				if placerinst and (
+					placerinst.prefab == "winona_battery_low_item_placer" or
+					placerinst.prefab == "winona_battery_high_item_placer" or
+					recipename == "winona_battery_low" or
+					recipename == "winona_battery_high"
+				) then
                     inst.helper:AddComponent("updatelooper")
                     inst.helper.components.updatelooper:AddOnUpdateFn(OnUpdatePlacerHelper)
                     inst.helper.placerinst = placerinst
@@ -120,6 +201,12 @@ local function OnEnableHelper(inst, enabled, recipename, placerinst)
         inst.helper:Remove()
         inst.helper = nil
     end
+end
+
+local function OnStartHelper(inst)--, recipename, placerinst)
+	if inst.AnimState:IsCurrentAnimation("place") then
+		inst.components.deployhelper:StopHelper()
+	end
 end
 
 --------------------------------------------------------------------------
@@ -143,13 +230,103 @@ local function SetHeadTilt(headinst, tilt, lightenabled)
     end
 end
 
+local LED_BLINK_DELAY = 1.5
+local LED_BLINK_TIME = 0.75
+
+local function SetLedEnabled(inst, enabled)
+	if enabled then
+		inst._headinst.AnimState:OverrideSymbol("led_off", "winona_spotlight", "led_on")
+		inst._headinst.AnimState:SetSymbolBloom("led_off")
+		inst._headinst.AnimState:SetSymbolLightOverride("led_off", 0.5)
+		inst._headinst.AnimState:SetSymbolLightOverride("led_parts", 0.24)
+		inst._headinst.AnimState:SetSymbolLightOverride("light_base", 0.08)
+		inst._headinst.AnimState:SetSymbolLightOverride("bracket1", 0.04)
+		inst._headinst.AnimState:SetSymbolLightOverride("bracket2", 0.04)
+	else
+		inst._headinst.AnimState:ClearOverrideSymbol("led_off")
+		inst._headinst.AnimState:ClearSymbolBloom("led_off")
+		inst._headinst.AnimState:SetSymbolLightOverride("led_off", 0)
+		inst._headinst.AnimState:SetSymbolLightOverride("led_parts", 0)
+		inst._headinst.AnimState:SetSymbolLightOverride("light_base", 0)
+		inst._headinst.AnimState:SetSymbolLightOverride("bracket1", 0)
+		inst._headinst.AnimState:SetSymbolLightOverride("bracket2", 0)
+	end
+end
+
+local function SetLedStatusOn(inst)
+	inst._ledblinkdelay = nil
+	SetLedEnabled(inst, true)
+end
+
+local function SetLedStatusOff(inst)
+	inst._ledblinkdelay = nil
+	SetLedEnabled(inst, false)
+end
+
+local function SetLedStatusBlink(inst, initialon)
+	if inst._ledblinkdelay == nil then
+		inst._ledblinkdelay = initialon and -LED_BLINK_TIME or LED_BLINK_DELAY
+		SetLedEnabled(inst, initialon)
+	end
+end
+
 --------------------------------------------------------------------------
+
+local function _DoEnableHeat_Server(inst, enable)
+	if enable then
+        local heater = inst.components.heater
+		if heater == nil then
+			heater = inst:AddComponent("heater")
+            heater.heat = TUNING.SKILLS.WINONA.SPOTLIGHT_HEAT_VALUE
+            heater:SetShouldFalloff(false)
+            heater:SetHeatRadiusCutoff(inst.RADIUS)
+		end
+	else
+		inst:RemoveComponent("heater")
+	end
+end
+
+local function _DoEnableHeat_Client(inst, enable)
+	if enable then
+		inst:AddTag("HASHEATER")
+	else
+		inst:RemoveTag("HASHEATER")
+	end
+end
+
+local function Light_TurnOn(inst)
+	inst.Light:Enable(true)
+	inst:DoEnableHeat(inst._heated)
+end
+
+local function Light_TurnOff(inst)
+	inst.Light:Enable(false)
+	inst:DoEnableHeat(false)
+end
+
+local function Light_AddHeat(inst)
+	inst._heated = true
+	inst:DoEnableHeat(inst.Light:IsEnabled())
+end
+
+local function Light_RemoveHeat(inst)
+	inst._heated = false
+	inst:DoEnableHeat(false)
+end
+
+local function Light_SetRadius(inst, radius)
+	inst.Light:SetRadius(radius)
+	if inst.components.heater then
+		inst.components.heater:SetHeatRadiusCutoff(radius)
+	end
+end
 
 local LIGHT_EASING = .2
 local UPDATE_TARGET_PERIOD = .5
 local LIGHT_INTENSITY_MAX = .94
 local LIGHT_INTENSITY_DELTA = -.1
-local LIGHT_OVERRIDE_HEAD = .7
+local LIGHT_OVERRIDE_LIGHTSHAFT = 0.7
+local LIGHT_OVERRIDE_HEAD = 0.3
 local LIGHT_OVERRIDE_BASE = .25
 
 local function CreateLight()
@@ -169,6 +346,15 @@ local function CreateLight()
     inst.Light:SetColour(255 / 255, 248 / 255, 198 / 255)
     inst.Light:Enable(false)
 
+	inst._heated = false
+
+	inst.SetRadius = Light_SetRadius
+	inst.TurnOn = Light_TurnOn
+	inst.TurnOff = Light_TurnOff
+	inst.AddHeat = Light_AddHeat
+	inst.RemoveHeat = Light_RemoveHeat
+	inst.DoEnableHeat = TheWorld.ismastersim and _DoEnableHeat_Server or _DoEnableHeat_Client
+
     return inst
 end
 
@@ -178,9 +364,9 @@ local function SetTarget(inst, target)
     if inst._target ~= target then
         if inst._target ~= nil then
             local t = GLOBAL_TARGETS[inst._target]
-            t.lights[inst] = nil
             if t.count > 1 then
                 t.count = t.count - 1
+				t.lights[inst] = nil
             else
                 GLOBAL_TARGETS[inst._target] = nil
             end
@@ -205,8 +391,8 @@ end
 
 local function UpdateTarget(inst)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local maxrangesq = TUNING.WINONA_SPOTLIGHT_MAX_RANGE * TUNING.WINONA_SPOTLIGHT_MAX_RANGE
-    local startrange = TUNING.WINONA_SPOTLIGHT_MAX_RANGE + TUNING.WINONA_SPOTLIGHT_RADIUS + 2
+	local maxrangesq = inst.MAX_RANGE * inst.MAX_RANGE
+	local startrange = inst.MAX_RANGE + inst.RADIUS + 4
     local rangesq = startrange * startrange
     local targetIsAlive = nil
     local targetHasOtherLight = nil
@@ -215,7 +401,7 @@ local function UpdateTarget(inst)
             SetTarget(inst, nil)
         else
             rangesq = inst._target:GetDistanceSqToPoint(x, y, z)
-            local limit = TUNING.WINONA_SPOTLIGHT_MAX_RANGE + 8
+			local limit = inst.MAX_RANGE + inst.RADIUS + 16
             if rangesq >= limit * limit then
                 SetTarget(inst, nil)
                 rangesq = startrange * startrange
@@ -269,7 +455,7 @@ local function UpdateLightValues(inst, dir, dist)
     dist = dist + offs
     local theta = (dir + 90) * DEGREES
     inst._lightinst.Transform:SetPosition(math.sin(theta) * dist, 0, math.cos(theta) * dist)
-    local k = math.clamp((dist - TUNING.WINONA_SPOTLIGHT_MIN_RANGE) / (TUNING.WINONA_SPOTLIGHT_MAX_RANGE - TUNING.WINONA_SPOTLIGHT_MIN_RANGE), 0, 1)
+	local k = math.clamp((dist - inst.MIN_RANGE) / (inst.MAX_RANGE - inst.MIN_RANGE), 0, 1)
     inst._lightinst.Light:SetIntensity(LIGHT_INTENSITY_MAX + k * k * LIGHT_INTENSITY_DELTA)
 end
 
@@ -314,49 +500,13 @@ local function OnUpdateLightCommon(inst)
     end
 
     if inst._curlightdist == nil then
-        inst._curlightdist = math.max(TUNING.WINONA_SPOTLIGHT_MIN_RANGE, inst._lightdist:value())
+		inst._curlightdist = math.max(inst.MIN_RANGE, inst._lightdist:value())
     else
-        inst._curlightdist = inst._curlightdist * (1 - LIGHT_EASING) + math.max(TUNING.WINONA_SPOTLIGHT_MIN_RANGE, inst._lightdist:value()) * LIGHT_EASING
+		inst._curlightdist = inst._curlightdist * (1 - LIGHT_EASING) + math.max(inst.MIN_RANGE, inst._lightdist:value()) * LIGHT_EASING
     end
 
     if lightenabled then
         UpdateLightValues(inst, inst._curlightdir, inst._curlightdist)
-    end
-end
-
-local function OnUpdateLightServer(inst, dt)
-    if inst:IsAsleep() then
-        return
-    end
-
-    local lightenabled = inst._lightdist:value() > 0
-    if lightenabled then
-        if inst._updatedelay > 0 then
-            inst._updatedelay = inst._updatedelay - dt
-        else
-            UpdateTarget(inst)
-            inst._updatedelay = UPDATE_TARGET_PERIOD
-        end
-        if inst._target ~= nil then
-            if inst._target:IsValid() then
-                inst._lightdir:set(inst:GetAngleToPoint(inst._target.Transform:GetWorldPosition()))
-                inst._lightdist:set(math.clamp(math.sqrt(inst:GetDistanceSqToInst(inst._target)), TUNING.WINONA_SPOTLIGHT_MIN_RANGE, TUNING.WINONA_SPOTLIGHT_MAX_RANGE))
-            else
-                SetTarget(inst, nil)
-            end
-        end
-    else
-        SetTarget(inst, nil)
-    end
-    OnUpdateLightCommon(inst)
-    if inst._curlightdir ~= nil then
-        inst._headinst.Transform:SetEightFaced()
-        inst._headinst.Transform:SetRotation(inst._curlightdir)
-        local range = TUNING.WINONA_SPOTLIGHT_MAX_RANGE - TUNING.WINONA_SPOTLIGHT_MIN_RANGE
-        local tilt = (inst._curlightdist - TUNING.WINONA_SPOTLIGHT_MIN_RANGE) / range
-        local t1 = inst._headinst._tilt > 1 and .3 + 3 / range or .3
-        local t2 = inst._headinst._tilt > 2 and .003 + 1.5 / range or .003
-        SetHeadTilt(inst._headinst, (tilt > t1 and 1) or (tilt > t2 and 2) or 3, lightenabled)
     end
 end
 
@@ -371,11 +521,14 @@ local function OnUpdateLightClient(inst)--, dt)
 end
 
 local function OnLightDistDirty(inst)
-    local lightenabled = inst._lightdist:value() > 0
-    inst._lightinst.Light:Enable(lightenabled)
-    if lightenabled and inst._curlightdir == nil then
-        OnUpdateLightClient(inst)
-    end
+	if inst._lightdist:value() > 0 then --light is enabled
+		inst._lightinst:TurnOn()
+		if inst._curlightdir == nil then
+			OnUpdateLightClient(inst)
+		end
+	else
+		inst._lightinst:TurnOff()
+	end
 end
 
 local function OnStartHum(inst)
@@ -396,23 +549,31 @@ local function EnableHum(inst, enable)
     end
 end
 
+local function NotifyCircuitChanged(inst, node)
+	node:PushEvent("engineeringcircuitchanged")
+end
+
+local function OnCircuitChanged(inst)
+	--Notify other connected batteries
+	inst.components.circuitnode:ForEachNode(NotifyCircuitChanged)
+end
+
 local function EnableLight(inst, enable)
     if not enable then
-        if inst._powertask ~= nil then
-            inst._powertask:Cancel()
-            inst._powertask = nil
-        end
         if inst._lightdist:value() > 0 then
             SetHeadTilt(inst._headinst, inst._headinst._tilt, false)
             inst._headinst.AnimState:ClearBloomEffectHandle()
             inst._headinst.AnimState:SetLightOverride(0)
             inst.AnimState:SetLightOverride(0)
-            inst._lightinst.Light:Enable(false)
+			inst._lightinst:TurnOff()
             inst._lightdist:set(0)
-            if not (inst:HasTag("NOCLICK") or inst:IsAsleep()) then
+			if not inst:HasTag("NOCLICK") then
                 inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/electricity")
             end
             EnableHum(inst, false)
+			SetLedStatusBlink(inst, false)
+			inst.components.powerload:SetLoad(TUNING.WINONA_SPOTLIGHT_POWER_LOAD_OFF, true)
+			OnCircuitChanged(inst)
         end
     elseif inst._lightdist:value() <= 0 then
         if inst.AnimState:IsCurrentAnimation("place") then
@@ -423,36 +584,149 @@ local function EnableLight(inst, enable)
         inst._headinst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
         inst._headinst.AnimState:SetLightOverride(LIGHT_OVERRIDE_HEAD)
         inst.AnimState:SetLightOverride(LIGHT_OVERRIDE_BASE)
-        inst._lightinst.Light:Enable(true)
-        inst._lightdist:set(TUNING.WINONA_SPOTLIGHT_MIN_RANGE)
-        inst._updatedelay = 0
-        if not inst:IsAsleep() then
-            if inst._curlightdir == nil then
-                OnUpdateLightServer(inst, 0)
-            end
-            inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/on")
-            EnableHum(inst, true)
-        end
+		inst._lightinst:TurnOn()
+		inst._lightdist:set(inst.MIN_RANGE)
+		inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/on")
+		EnableHum(inst, true)
+		SetLedStatusOn(inst)
+		inst.components.powerload:SetLoad(TUNING.WINONA_SPOTLIGHT_POWER_LOAD_ON)
+		OnCircuitChanged(inst)
     end
+end
+
+local function OnUpdateLightServer(inst, dt)
+	if inst._ledblinkdelay then
+		if inst._ledblinkdelay >= 0 then
+			if inst._ledblinkdelay > dt then
+				inst._ledblinkdelay = inst._ledblinkdelay - dt
+			else
+				inst._ledblinkdelay = -LED_BLINK_TIME
+				SetLedEnabled(inst, true)
+			end
+		elseif inst._ledblinkdelay < -dt then
+			inst._ledblinkdelay = inst._ledblinkdelay + dt
+		else
+			inst._ledblinkdelay = LED_BLINK_DELAY
+			SetLedEnabled(inst, false)
+		end
+	end
+
+	if inst._updatedelay then
+		if inst._updatedelay > 0 then
+			inst._updatedelay = inst._updatedelay - dt
+		else
+			UpdateTarget(inst)
+			inst._updatedelay = UPDATE_TARGET_PERIOD
+			EnableLight(inst, inst._target ~= nil)
+		end
+	end
+
+	local lightenabled = inst._lightdist:value() > 0
+	if lightenabled and inst._target then
+		if inst._target:IsValid() then
+			inst._lightdir:set(inst:GetAngleToPoint(inst._target.Transform:GetWorldPosition()))
+			inst._lightdist:set(math.clamp(math.sqrt(inst:GetDistanceSqToInst(inst._target)), inst.MIN_RANGE, inst.MAX_RANGE))
+		else
+			SetTarget(inst, nil)
+			EnableLight(inst, false)
+		end
+	end
+	OnUpdateLightCommon(inst)
+	if inst._curlightdir then
+		inst._headinst.Transform:SetEightFaced()
+		inst._headinst.Transform:SetRotation(inst._curlightdir)
+		local range = inst.MAX_RANGE - inst.MIN_RANGE
+		local tilt = (inst._curlightdist - inst.MIN_RANGE) / range
+		local t1 = inst._headinst._tilt > 1 and 0.3 + 3 / range or 0.3
+		local t2 = inst._headinst._tilt > 2 and 0.003 + 1.5 / range or 0.003
+		SetHeadTilt(inst._headinst, (tilt > t1 and 1) or (tilt > t2 and 2) or 3, lightenabled)
+	end
+end
+
+local function EnableTargetSearch(inst, enable)
+	if inst._turnofftask then
+		inst._turnofftask:Cancel()
+		inst._turnofftask = nil
+	end
+	if not enable then
+		inst._updatedelay = nil
+		SetTarget(inst, nil)
+		EnableLight(inst, false)
+	elseif inst._updatedelay == nil then
+		if not inst:IsAsleep() then
+			inst._updatedelay = 0
+			OnUpdateLightServer(inst, 0)
+		end
+		inst._updatedelay = math.random() * UPDATE_TARGET_PERIOD
+	end
+end
+
+local function OnIsDarkOrCold(inst)
+	if (TheWorld.state.isnight and not TheWorld.state.isfullmoon) or
+		(inst._heated:value() and TheWorld.state.iswinter)
+	then
+		EnableTargetSearch(inst, true)
+	elseif inst._turnofftask == nil then
+		inst._turnofftask = inst:DoTaskInTime(2 + math.random() * 0.5, EnableTargetSearch, false)
+	end
+end
+
+local function SetPowered(inst, powered, duration)
+	if not powered then
+		if inst._powertask then
+			inst._powertask:Cancel()
+			inst._powertask = nil
+			inst:StopWatchingWorldState("isnight", OnIsDarkOrCold)
+			inst:StopWatchingWorldState("isfullmoon", OnIsDarkOrCold)
+			inst:StopWatchingWorldState("iswinter", OnIsDarkOrCold)
+		end
+		EnableTargetSearch(inst, false)
+		SetLedStatusOff(inst)
+	else
+		local waspowered = inst._powertask ~= nil
+		local remaining = waspowered and GetTaskRemaining(inst._powertask) or 0
+		if duration > remaining then
+			if inst._powertask then
+				inst._powertask:Cancel()
+			end
+			inst._powertask = inst:DoTaskInTime(duration, SetPowered, false)
+			if not waspowered then
+				inst:WatchWorldState("isnight", OnIsDarkOrCold)
+				inst:WatchWorldState("isfullmoon", OnIsDarkOrCold)
+				inst:WatchWorldState("iswinter", OnIsDarkOrCold)
+				SetLedStatusBlink(inst, true)
+				OnIsDarkOrCold(inst)
+			end
+		end
+	end
 end
 
 local function OnEntitySleep(inst)
-    EnableHum(inst, false)
+	inst.components.updatelooper:RemoveOnUpdateFn(OnUpdateLightServer)
+	SetTarget(inst, nil)
+	EnableLight(inst, false)
 end
 
 local function OnEntityWake(inst)
-    if inst._lightdist:value() > 0 then
-        EnableHum(inst, true)
-    end
+	inst.components.updatelooper:AddOnUpdateFn(OnUpdateLightServer)
+end
+
+local function OnRemoveEntity(inst)
+	SetTarget(inst, nil)
 end
 
 --------------------------------------------------------------------------
 
-local function OnBuilt2(inst)
+local function OnBuilt2(inst, doer)
     if inst.components.workable:CanBeWorked() then
         inst:RemoveTag("NOCLICK")
         if not inst:HasTag("burnt") then
             inst.components.circuitnode:ConnectTo("engineeringbattery")
+			if doer and doer:IsValid() then
+				inst.components.circuitnode:ForEachNode(function(inst, node)
+					node:OnUsedIndirectly(doer)
+				end)
+			end
         end
     end
 end
@@ -465,23 +739,46 @@ local function OnBuilt3(inst)
     end
 end
 
-local function OnBuilt(inst)--, data)
+local function DoBuiltOrDeployed(inst, doer, fastforward, sound)
+	ConfigureSkillTreeUpgrades(inst, doer)
+	ApplySkillBonuses(inst)
+
     if inst._inittask ~= nil then
         inst._inittask:Cancel()
         inst._inittask = nil
     end
     inst.components.circuitnode:Disconnect()
     inst:AddTag("NOCLICK")
-    EnableLight(inst, false)
+	SetPowered(inst, false)
     inst._headinst.Transform:SetTwoFaced()
     inst.AnimState:PlayAnimation("place")
     inst._headinst.AnimState:PlayAnimation("place")
-    inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/place")
-    inst:DoTaskInTime(37 * FRAMES, OnBuilt2)
+	if fastforward > 0 then
+		inst.AnimState:SetFrame(fastforward)
+		inst._headinst.AnimState:SetFrame(fastforward)
+	end
+	inst.SoundEmitter:PlaySound(sound)
+	inst:DoTaskInTime((37 - fastforward) * FRAMES, OnBuilt2, doer)
     inst:ListenForEvent("animover", OnBuilt3)
 end
 
+local function OnBuilt(inst, data)
+	DoBuiltOrDeployed(inst, data and data.builder or nil, 0, "dontstarve/common/together/spot_light/place")
+end
+
 --------------------------------------------------------------------------
+
+local function ChangeToItem(inst)
+	local item = SpawnPrefab("winona_spotlight_item")
+	item.Transform:SetPosition(inst.Transform:GetWorldPosition())
+	item.AnimState:PlayAnimation("collapse")
+	item.AnimState:PushAnimation("idle_ground", false)
+	item.SoundEmitter:PlaySound("meta4/winona_spotlight/collapse")
+	if inst._wired then
+		item.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/electricity", nil, .5)
+		SpawnPrefab("winona_battery_sparks").Transform:SetPosition(inst.Transform:GetWorldPosition())
+	end
+end
 
 local function OnWorked(inst)
     inst.AnimState:PlayAnimation("hit")
@@ -492,15 +789,31 @@ local function OnWorked(inst)
     inst._lightoffset:set(7)
 end
 
+local function OnDeath2(inst)
+	inst:RemoveEventCallback("animover", OnDeath2)
+	inst.persists = false
+	inst.Physics:SetActive(false)
+	inst.components.lootdropper:DropLoot()
+	inst.AnimState:SetSymbolLightOverride("sparks2", 0.3)
+	inst.AnimState:PlayAnimation("death_pst")
+	inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/destroy")
+
+	local fx = SpawnPrefab("collapse_small")
+	fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+	fx:SetMaterial("none")
+
+	inst:DoTaskInTime(1, ErodeAway)
+end
+
 local function OnWorkFinished(inst)
     if inst._inittask ~= nil then
         inst._inittask:Cancel()
         inst._inittask = nil
     end
     inst.components.circuitnode:Disconnect()
+	inst.components.powerload:SetLoad(0)
     inst.components.workable:SetWorkable(false)
     inst:AddTag("NOCLICK")
-    inst.persists = false
     if inst.components.burnable ~= nil then
         if inst.components.burnable:IsBurning() then
             inst.components.burnable:Extinguish()
@@ -508,36 +821,44 @@ local function OnWorkFinished(inst)
         inst.components.burnable.canlight = false
     end
 
-    inst.Physics:SetActive(false)
-    inst.components.lootdropper:DropLoot()
-    inst.AnimState:Show("light")
-    EnableLight(inst, false)
+	inst.destroyed = true
+	SetPowered(inst, false)
     inst._headinst:Hide()
-    inst.AnimState:PlayAnimation("death_pst")
-    inst.SoundEmitter:PlaySound("dontstarve/common/together/spot_light/destroy")
+    inst.AnimState:Show("light")
 
-    local fx = SpawnPrefab("collapse_small")
-    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-    fx:SetMaterial("none")
-
-    inst:DoTaskInTime(2, ErodeAway)
+	if not POPULATING then
+		inst.AnimState:SetSymbolLightOverride("sprk_1", 0.3)
+		inst.AnimState:SetSymbolLightOverride("sprk_2", 0.3)
+		inst:ListenForEvent("animover", OnDeath2)
+		inst.AnimState:PlayAnimation("death")
+	else
+		OnDeath2(inst)
+	end
 end
 
 local function OnWorkedBurnt(inst)
-    inst.components.lootdropper:DropLoot()
-    local fx = SpawnPrefab("collapse_small")
-    fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-    fx:SetMaterial("wood")
-    inst:Remove()
+	inst.components.workable:SetWorkable(false)
+	inst:AddTag("NOCLICK")
+	inst.persists = false
+	inst.Physics:SetActive(false)
+	inst.components.lootdropper:DropLoot()
+	inst.AnimState:PlayAnimation("burntbreak")
+
+	local fx = SpawnPrefab("collapse_small")
+	fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+	fx:SetMaterial("wood")
+
+	inst:DoTaskInTime(1, ErodeAway)
 end
 
 local function OnBurnt(inst)
     DefaultBurntStructureFn(inst)
 
-    EnableLight(inst, false)
+	SetPowered(inst, false)
     inst._headinst:Hide()
 
     inst:RemoveComponent("updatelooper")
+	inst:RemoveComponent("portablestructure")
 
     inst.Transform:SetRotation(inst._headinst.Transform:GetRotation())
     inst.OnEntityWake = nil
@@ -551,6 +872,12 @@ local function OnBurnt(inst)
         inst._inittask = nil
     end
     inst.components.circuitnode:Disconnect()
+	inst.components.powerload:SetLoad(0)
+end
+
+local function OnDismantle(inst)--, doer)
+	ChangeToItem(inst)
+	inst:Remove()
 end
 
 --------------------------------------------------------------------------
@@ -563,22 +890,13 @@ local function GetStatus(inst)
 end
 
 local function AddBatteryPower(inst, power)
-    local remaining = inst._powertask ~= nil and GetTaskRemaining(inst._powertask) or 0
-    if power > remaining then
-        if inst._powertask ~= nil then
-            inst._powertask:Cancel()
-        else
-            EnableLight(inst, true)
-        end
-        inst._powertask = inst:DoTaskInTime(power, EnableLight, false)
-    end
+	SetPowered(inst, true, power)
 end
 
 local function OnUpdateSparks(inst)
     if inst._flash > 0 then
         local k = inst._flash * inst._flash
         inst.components.colouradder:PushColour("wiresparks", .3 * k, .3 * k, 0, 0)
-        inst._headinst.components.colouradder:PushColour("wiresparks", .3 * k, .3 * k, 0, 0)
         inst._flash = inst._flash - .15
     else
         inst.components.colouradder:PopColour("wiresparks")
@@ -597,15 +915,6 @@ local function DoWireSparks(inst)
         inst._flash = 1
         OnUpdateSparks(inst)
     end
-end
-
-local function NotifyCircuitChanged(inst, node)
-    node:PushEvent("engineeringcircuitchanged")
-end
-
-local function OnCircuitChanged(inst)
-    --Notify other connected batteries
-    inst.components.circuitnode:ForEachNode(NotifyCircuitChanged)
 end
 
 local function OnConnectCircuit(inst)--, node)
@@ -627,34 +936,49 @@ local function OnDisconnectCircuit(inst)--, node)
         --This will remove mouseover as well (rather than just :Hide("wire"))
         inst.AnimState:OverrideSymbol("wire", "winona_spotlight", "dummy")
         DoWireSparks(inst)
-        EnableLight(inst, false)
+		SetPowered(inst, false)
     end
 end
 
 --------------------------------------------------------------------------
 
 local function OnSave(inst, data)
-    if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() or inst:HasTag("burnt") then
+	if inst.destroyed then
+		data.destroyed = true
+	elseif inst.components.burnable and inst.components.burnable:IsBurning() or inst:HasTag("burnt") then
         data.burnt = true
         data.lightdir = inst.Transform:GetRotation()
         if data.lightdir == 0 then
             data.lightdir = nil
         end
     else
-        data.lightdist = inst._lightdist:value() > TUNING.WINONA_SPOTLIGHT_MIN_RANGE and inst._lightdist:value() or nil
+		data.lightdist = inst._lightdist:value() > inst.MIN_RANGE and inst._lightdist:value() or nil
         data.lightdir = inst._lightdir:value() ~= 0 and inst._lightdir:value() or nil
         data.power = inst._powertask ~= nil and math.ceil(GetTaskRemaining(inst._powertask) * 1000) or nil
+
+		--skilltree
+		data.heated = inst._heated:value() or nil
+		data.ranged = inst._ranged:value() or nil
+		data.engineerid = inst._engineerid
     end
 end
 
 local function OnLoad(inst, data)
     if data ~= nil then
-        if data.burnt then
+		if data.destroyed then
+			OnWorkFinished(inst)
+		elseif data.burnt then
             inst.components.burnable.onburnt(inst)
             if data.lightdir ~= nil then
                 inst.Transform:SetRotation(data.lightdir)
             end
         else
+			--skilltree
+			inst._heated:set(data.heated or false)
+			inst._ranged:set(data.ranged or false)
+			inst._engineerid = data.engineerid
+			ApplySkillBonuses(inst)
+
             local dirty = false
             if data.lightdir ~= nil and data.lightdir ~= inst._lightdir:value() then
                 inst._lightdir:set(data.lightdir)
@@ -664,7 +988,7 @@ local function OnLoad(inst, data)
             if data.power ~= nil then
                 AddBatteryPower(inst, math.max(2 * FRAMES, data.power / 1000))
             end
-            if data.lightdist ~= nil and data.lightdist ~= inst._lightdist:value() and data.lightdist > TUNING.WINONA_SPOTLIGHT_MIN_RANGE and inst._lightdist:value() > 0 then
+			if data.lightdist ~= nil and data.lightdist ~= inst._lightdist:value() and data.lightdist > inst.MIN_RANGE and inst._lightdist:value() > 0 then
                 inst._lightdist:set(data.lightdist)
                 inst._curlightdist = inst._curlightdist ~= nil and data.lightdist or nil
                 dirty = true
@@ -710,17 +1034,21 @@ local function fn()
     inst.entity:AddMiniMapEntity()
     inst.entity:AddNetwork()
 
-    MakeObstaclePhysics(inst, .5)
+	inst:SetPhysicsRadiusOverride(0.5)
+	MakeObstaclePhysics(inst, inst.physicsradiusoverride)
+
+	inst:SetDeploySmartRadius(DEPLOYSPACING_RADIUS[DEPLOYSPACING.PLACER_DEFAULT] / 2)
 
     inst.Transform:SetEightFaced()
 
     inst:AddTag("engineering")
+	inst:AddTag("engineeringbatterypowered")
     inst:AddTag("spotlight")
     inst:AddTag("structure")
 
     inst.AnimState:SetBank("winona_spotlight")
     inst.AnimState:SetBuild("winona_spotlight")
-    inst.AnimState:PlayAnimation("idle", true)
+    inst.AnimState:PlayAnimation("idle")
     inst.AnimState:Hide("light")
     inst.AnimState:Hide("light_tilt1")
     inst.AnimState:Hide("light_tilt2")
@@ -743,6 +1071,14 @@ local function fn()
     inst._curlightdir = nil
     inst._curlightdist = nil
 
+	inst.RADIUS = TUNING.WINONA_SPOTLIGHT_RADIUS
+	inst.MIN_RANGE = TUNING.WINONA_SPOTLIGHT_MIN_RANGE
+	inst.MAX_RANGE = TUNING.WINONA_SPOTLIGHT_MAX_RANGE
+
+	--skilltree
+	inst._heated = net_bool(inst.GUID, "winona_spotlight._heated", "skillsdirty")
+	inst._ranged = net_bool(inst.GUID, "winona_spotlight._ranged", "skillsdirty")
+
     --Dedicated server does not need deployhelper
     if not TheNet:IsDedicated() then
         inst:AddComponent("deployhelper")
@@ -750,19 +1086,25 @@ local function fn()
         inst.components.deployhelper:AddRecipeFilter("winona_catapult")
         inst.components.deployhelper:AddRecipeFilter("winona_battery_low")
         inst.components.deployhelper:AddRecipeFilter("winona_battery_high")
+		inst.components.deployhelper:AddKeyFilter("winona_battery_engineering")
         inst.components.deployhelper.onenablehelper = OnEnableHelper
+		inst.components.deployhelper.onstarthelper = OnStartHelper
     end
 
     inst:AddComponent("updatelooper")
-    inst.components.updatelooper:AddOnUpdateFn(TheWorld.ismastersim and OnUpdateLightServer or OnUpdateLightClient)
 
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
+		inst.components.updatelooper:AddOnUpdateFn(OnUpdateLightClient)
         inst:ListenForEvent("lightdistdirty", OnLightDistDirty)
+		inst:ListenForEvent("skillsdirty", ApplySkillBonuses)
 
         return inst
     end
+
+    inst.scrapbook_specialinfo = "WINONASPOTLIGHT"
+    inst.scrapbook_anim = "idle_placer"
 
     inst._headinst = SpawnPrefab("winona_spotlight_head")
     inst._headinst.entity:SetParent(inst.entity)
@@ -771,10 +1113,14 @@ local function fn()
 
     inst._state = 1
 
+	inst:AddComponent("portablestructure")
+	inst.components.portablestructure:SetOnDismantleFn(OnDismantle)
+
     inst:AddComponent("inspectable")
     inst.components.inspectable.getstatus = GetStatus
 
     inst:AddComponent("colouradder")
+	inst.components.colouradder:AttachChild(inst._headinst)
 
     inst:AddComponent("lootdropper")
     inst:AddComponent("workable")
@@ -785,12 +1131,24 @@ local function fn()
 
     inst:AddComponent("circuitnode")
     inst.components.circuitnode:SetRange(TUNING.WINONA_BATTERY_RANGE)
+	inst.components.circuitnode:SetFootprint(TUNING.WINONA_ENGINEERING_FOOTPRINT)
     inst.components.circuitnode:SetOnConnectFn(OnConnectCircuit)
     inst.components.circuitnode:SetOnDisconnectFn(OnDisconnectCircuit)
     inst.components.circuitnode.connectsacrossplatforms = false
+	inst.components.circuitnode.rangeincludesfootprint = true
+
+	inst:AddComponent("powerload")
+	inst.components.powerload:SetLoad(TUNING.WINONA_SPOTLIGHT_POWER_LOAD_OFF, true)
 
     inst:ListenForEvent("onbuilt", OnBuilt)
     inst:ListenForEvent("engineeringcircuitchanged", OnCircuitChanged)
+	inst:ListenForEvent("winona_spotlightskillchanged", function(world, user)
+		if user.userid == inst._engineerid and not inst:HasTag("burnt") then
+			if ConfigureSkillTreeUpgrades(inst, user) then
+				ApplySkillBonuses(inst)
+			end
+		end
+	end, TheWorld)
 
     MakeHauntableWork(inst)
     MakeMediumBurnable(inst, nil, nil, true)
@@ -801,12 +1159,17 @@ local function fn()
     inst.OnSave = OnSave
     inst.OnEntitySleep = OnEntitySleep
     inst.OnEntityWake = OnEntityWake
+	inst.OnRemoveEntity = OnRemoveEntity
     inst.AddBatteryPower = AddBatteryPower
+
+	--skilltree
+	inst._engineerid = nil
 
     inst._wired = nil
     inst._flash = nil
     inst._target = nil
-    inst._updatedelay = 0
+	inst._updatedelay = nil
+	inst._ledblinkdelay = nil
     inst._inittask = inst:DoTaskInTime(0, OnInit)
 
     return inst
@@ -814,11 +1177,47 @@ end
 
 --------------------------------------------------------------------------
 
+local function CreateLightShaft()
+	local inst = CreateEntity()
+
+	inst:AddTag("decor") --no mouse over
+	inst:AddTag("NOCLICK")
+	--[[Non-networked entity]]
+	--inst.entity:SetCanSleep(false)
+	inst.persists = false
+
+	inst.entity:AddTransform()
+	inst.entity:AddAnimState()
+	inst.entity:AddFollower()
+
+	inst.AnimState:SetBank("winona_spotlight")
+	inst.AnimState:SetBuild("winona_spotlight")
+	inst.AnimState:PlayAnimation("light_shimmer", true)
+	inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+	inst.AnimState:SetLightOverride(LIGHT_OVERRIDE_LIGHTSHAFT)
+
+	return inst
+end
+
+--------------------------------------------------------------------------
+
+local function Head_SetHeated(inst, heated)
+	if inst.lightshaft then --dedi server does not have this
+		local anim = heated and "light_shimmer_heat" or "light_shimmer"
+		if not inst.lightshaft.AnimState:IsCurrentAnimation(anim) then
+			inst.lightshaft.AnimState:PlayAnimation(anim, true)
+		end
+	end
+end
+
 local function OnHeadEntityReplicated(inst)
     local parent = inst.entity:GetParent()
     if parent ~= nil and parent.prefab == "winona_spotlight" then
         parent.highlightchildren = { inst }
         parent._clientheadinst = inst
+		if parent._heated:value() and not TheWorld.state.issummer then
+			inst:SetHeated(true)
+		end
     end
 end
 
@@ -829,14 +1228,14 @@ local function headfn()
     inst.entity:AddAnimState()
     inst.entity:AddNetwork()
 
-    inst:AddTag("decor") --no mouse over, let the base prefab handle that
+	inst:AddTag("FX")
     inst:AddTag("NOCLICK")
 
     inst.Transform:SetEightFaced()
 
     inst.AnimState:SetBank("winona_spotlight")
     inst.AnimState:SetBuild("winona_spotlight")
-    inst.AnimState:PlayAnimation("idle", true)
+	inst.AnimState:PlayAnimation("idle")
     inst.AnimState:Hide("leg")
     inst.AnimState:Hide("ground_shadow")
     inst.AnimState:Hide("wire")
@@ -844,6 +1243,15 @@ local function headfn()
     SetHeadTilt(inst, 1, false)
 
     inst.entity:SetPristine()
+
+	--Dedicated server does not need to spawn the local fx
+	if not TheNet:IsDedicated() then
+		inst.lightshaft = CreateLightShaft()
+		inst.lightshaft.entity:SetParent(inst.entity)
+		inst.lightshaft.Follower:FollowSymbol(inst.GUID, "light_shaft_follow", 0, 0, 0, true)
+	end
+
+	inst.SetHeated = Head_SetHeated
 
     if not TheWorld.ismastersim then
         inst.OnEntityReplicated = OnHeadEntityReplicated
@@ -895,10 +1303,71 @@ local function placer_postinit_fn(inst)
     inst.components.placer:LinkEntity(placer2)
 
     inst.AnimState:SetScale(PLACER_SCALE, PLACER_SCALE)
+
+	inst.deployhelper_key = "winona_battery_engineering"
+end
+
+--------------------------------------------------------------------------
+
+local function OnDeploy(inst, pt, deployer)
+	local obj = SpawnPrefab("winona_spotlight")
+	if obj then
+		obj.Physics:SetCollides(false)
+		obj.Physics:Teleport(pt.x, 0, pt.z)
+		obj.Physics:SetCollides(true)
+		DoBuiltOrDeployed(obj, deployer, 22, "meta4/winona_spotlight/deploy")
+		PreventCharacterCollisionsWithPlacedObjects(obj)
+	end
+	inst:Remove()
+end
+
+local function itemfn()
+	local inst = CreateEntity()
+
+	inst.entity:AddTransform()
+	inst.entity:AddAnimState()
+	inst.entity:AddSoundEmitter()
+	inst.entity:AddNetwork()
+
+	MakeInventoryPhysics(inst)
+
+	inst.AnimState:SetBank("winona_spotlight")
+	inst.AnimState:SetBuild("winona_spotlight")
+	inst.AnimState:PlayAnimation("idle_ground")
+	inst.scrapbook_anim = "idle_ground"
+
+	inst:AddTag("portableitem")
+
+	MakeInventoryFloatable(inst, "large", 0.5, { 0.65, 1.05, 1 })
+
+	inst:SetPrefabNameOverride("winona_spotlight")
+
+	inst.entity:SetPristine()
+
+	if not TheWorld.ismastersim then
+		return inst
+	end
+
+	inst:AddComponent("inspectable")
+	inst:AddComponent("inventoryitem")
+
+	inst:AddComponent("deployable")
+	inst.components.deployable.restrictedtag = "handyperson"
+	inst.components.deployable.ondeploy = OnDeploy
+	inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.PLACER_DEFAULT)
+
+	inst:AddComponent("hauntable")
+	inst.components.hauntable:SetHauntValue(TUNING.HUANT_TINY)
+
+	MakeMediumBurnable(inst)
+	MakeMediumPropagator(inst)
+
+	return inst
 end
 
 --------------------------------------------------------------------------
 
 return Prefab("winona_spotlight", fn, assets, prefabs),
     Prefab("winona_spotlight_head", headfn, assets_head),
-    MakePlacer("winona_spotlight_placer", "winona_spotlight_placement", "winona_spotlight_placement", "idle", true, nil, nil, nil, nil, nil, placer_postinit_fn)
+	MakePlacer("winona_spotlight_item_placer", "winona_spotlight_placement", "winona_spotlight_placement", "idle", true, nil, nil, nil, nil, nil, placer_postinit_fn),
+	Prefab("winona_spotlight_item", itemfn, assets_item, prefabs_item)

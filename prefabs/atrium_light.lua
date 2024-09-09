@@ -58,6 +58,7 @@ local function fn()
     inst.components.inspectable.getstatus = getstatus
 
     MakeHauntableWork(inst)
+    MakeRoseTarget_CreateFuel_IncreasedHorror(inst)
 
     local function OnTurnedOff(_light)
         inst:RemoveEventCallback("animover", OnTurnedOff, _light)

@@ -140,13 +140,13 @@ local function DoSpawn(inst, self)
             local numattempts = 3
             local minrange = 3
             for attempt = 1, numattempts do
-                offset = FindWalkableOffset(pos, math.random() * 2 * PI, GetRandomMinMax(minrange, math.max(minrange, minrange + .9 * (self.range - minrange) * attempt / numattempts)), 16, false, true)
+                offset = FindWalkableOffset(pos, math.random() * TWOPI, GetRandomMinMax(minrange, math.max(minrange, minrange + .9 * (self.range - minrange) * attempt / numattempts)), 16, false, true)
                 local x1 = pos.x + offset.x
                 local z1 = pos.z + offset.z
                 local collisions = TheSim:FindEntities(x1, 0, z1, 4, nil, SPAWN_CANT_TAGS)
-                for i, v in ipairs(collisions) do
-                    local r = v:GetPhysicsRadius(0) + 1
-                    if v:GetDistanceSqToPoint(x1, 0, z1) < r * r then
+                for _, collision in ipairs(collisions) do
+                    local r = collision:GetPhysicsRadius(0) + 1
+                    if collision:GetDistanceSqToPoint(x1, 0, z1) < r * r then
                         offset = nil
                         break
                     end
@@ -156,7 +156,7 @@ local function DoSpawn(inst, self)
                 end
             end
         else
-            offset = FindWalkableOffset(pos, math.random() * 2 * PI, self.range, 16, false, true)
+            offset = FindWalkableOffset(pos, math.random() * TWOPI, self.range, 16, false, true)
         end
         if offset ~= nil then
             local creature = SpawnPrefab(MOONBEASTS[math.random(#MOONBEASTS)])

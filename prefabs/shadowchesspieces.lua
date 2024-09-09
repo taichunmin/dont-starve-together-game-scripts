@@ -355,12 +355,14 @@ local function commonfn(name, sixfaced)
     inst:AddTag("hostile")
     inst:AddTag("notraptrigger")
     inst:AddTag("shadowchesspiece")
+    inst:AddTag("shadow_aligned")
 
     inst.AnimState:SetBank(name)
     inst.AnimState:SetBuild(name)
     inst.AnimState:PlayAnimation("idle_loop")
     inst.AnimState:SetMultColour(1, 1, 1, .5)
     inst.AnimState:SetFinalOffset(1)
+	inst.AnimState:UsePointFiltering(true)
 
     inst._music = net_bool(inst.GUID, "shadowchesspiece._music", "musicdirty")
 
@@ -394,6 +396,8 @@ local function commonfn(name, sixfaced)
 
     inst:AddComponent("epicscare")
     inst.components.epicscare:SetRange(TUNING.SHADOW_CHESSPIECE_EPICSCARE_RANGE)
+
+    inst:AddComponent("drownable")
 
     inst:ListenForEvent("attacked", OnAttacked)
     inst:ListenForEvent("death", StopMusic)
@@ -429,6 +433,9 @@ local function rookfn()
         return inst
     end
 
+    inst.scrapbook_damage = {TUNING.SHADOW_ROOK.DAMAGE[1], TUNING.SHADOW_ROOK.DAMAGE[3]}
+    inst.scrapbook_maxhealth = {TUNING.SHADOW_ROOK.HEALTH[1], TUNING.SHADOW_ROOK.HEALTH[3]}
+
     inst.components.locomotor.walkspeed = TUNING.SHADOW_ROOK.SPEED
     inst.components.health:SetMaxHealth(TUNING.SHADOW_ROOK.HEALTH[1])
     inst.components.combat:SetDefaultDamage(TUNING.SHADOW_ROOK.DAMAGE[1])
@@ -456,6 +463,9 @@ local function knightfn()
         return inst
     end
 
+    inst.scrapbook_damage = {TUNING.SHADOW_KNIGHT.DAMAGE[1], TUNING.SHADOW_KNIGHT.DAMAGE[3]}
+    inst.scrapbook_maxhealth = {TUNING.SHADOW_KNIGHT.HEALTH[1], TUNING.SHADOW_KNIGHT.HEALTH[3]}
+
     inst.components.locomotor.walkspeed = TUNING.SHADOW_KNIGHT.SPEED[1]
     inst.components.health:SetMaxHealth(TUNING.SHADOW_KNIGHT.HEALTH[1])
     inst.components.combat:SetDefaultDamage(TUNING.SHADOW_KNIGHT.DAMAGE[1])
@@ -481,6 +491,9 @@ local function bishopfn()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst.scrapbook_damage = {TUNING.SHADOW_BISHOP.DAMAGE[1], TUNING.SHADOW_BISHOP.DAMAGE[3]}
+    inst.scrapbook_maxhealth = {TUNING.SHADOW_BISHOP.HEALTH[1], TUNING.SHADOW_BISHOP.HEALTH[3]}
 
     inst.components.locomotor.walkspeed = TUNING.SHADOW_BISHOP.SPEED
     inst.components.health:SetMaxHealth(TUNING.SHADOW_BISHOP.HEALTH[1])

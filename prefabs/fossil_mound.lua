@@ -23,6 +23,7 @@ end
 
 local STARGET_TAGS = { "stargate" }
 local STALKER_TAGS = { "stalker" }
+local SHADOWHEART_TAGS = {"shadowheart"}
 local function ItemTradeTest(inst, item, giver)
     if item == nil or item.prefab ~= "shadowheart" or
         giver == nil or giver.components.areaaware == nil then
@@ -72,13 +73,30 @@ local function OnAccept(inst, giver, item)
     end
 end
 
+local function CountAllEntities(inst, range, tags)
+    -- NOTES(JBK): Workaround for FindEntity's visibility check and not wanting to edit a core util function.
+    -- Players may have this item in their inventory.
+    -- We only care about the count.
+    -- If this function is moved to a core util make it much more generic than this.
+    local x, y, z = inst.Transform:GetWorldPosition()
+    return TheSim:CountEntities(x, y, z, range, tags)
+end
+
 local function UpdateFossileMound(inst, size, checkforwrong)
     if size < MOUND_WRONG_START_SIZE then
         --reset case, not really used tho
         inst.form = 1
     elseif checkforwrong and inst.moundsize < MOUND_WRONG_START_SIZE then
-        --3/5 chance of form 1 (correct form)
-        inst.form = math.max(1, math.random(-1, NUM_FORMS))
+        -- NOTES(JBK): If the mound is in the atrium, the key is in the gate, and there is a shadow heart nearby make the odds 100%.
+        -- The first check is wrapped in ActiveStargate because this can only happen in the Atrium with the key in it.
+        if FindEntity(inst, ATRIUM_RANGE, ActiveStargate, STARGET_TAGS) ~= nil and CountAllEntities(inst, ATRIUM_RANGE, SHADOWHEART_TAGS) > 0 then
+            inst.form = 1
+        else
+            -- 3/5 = 60% chance of form 1 (correct form)
+            -- [-1, 0, 1, 2, 3] random()
+            -- [ 1, 1, 1, 2, 3] max()
+            inst.form = math.max(1, math.random(-1, NUM_FORMS))
+        end
     end
 
     inst.moundsize = size
@@ -143,17 +161,22 @@ local function makemound(name)
         inst.entity:AddSoundEmitter()
         inst.entity:AddNetwork()
 
-        MakeObstaclePhysics(inst, .45)
+		inst:SetDeploySmartRadius(DEPLOYSPACING_RADIUS[DEPLOYSPACING.PLACER_DEFAULT] / 2) --fossil_piece deployspacing/2
+		inst:SetPhysicsRadiusOverride(0.45)
+		MakeObstaclePhysics(inst, inst.physicsradiusoverride)
 
         inst.AnimState:SetBank(name)
         inst.AnimState:SetBuild(name)
         inst.AnimState:PlayAnimation("1_1")
+        inst.scrapbook_anim ="1_8"
 
         inst:AddTag("structure")
 
         --trader (from trader component) added to pristine state for optimization
         --inst:AddTag("trader")
         --Trader will be disabled by default constructor
+
+        inst.scrapbook_specialinfo = "FOSSILSTALKER"
 
         inst.entity:SetPristine()
 

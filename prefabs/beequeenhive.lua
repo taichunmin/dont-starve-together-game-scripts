@@ -224,7 +224,7 @@ local function OnHiveRegenTimer(inst, data)
         if oldhoneylevel ~= newhoneylevel and not inst:IsAsleep() then
             inst.AnimState:PlayAnimation("transition")
             inst.AnimState:PushAnimation("large", false)
-            SetHoneyLevel(inst, newhoneylevel, 10.5 * FRAMES)
+            SetHoneyLevel(inst, newhoneylevel, 10 * FRAMES)
         else
             SetHoneyLevel(inst, newhoneylevel)
         end
@@ -457,9 +457,17 @@ local function fn()
 
     inst.Transform:SetScale(1.4, 1.4, 1.4)
 
+    inst.scrapbook_anim ="large"
+    inst.scrapbook_specialinfo ="BEEQUEENHIVE"
+
     inst.MiniMapEntity:SetIcon("beequeenhivegrown.png")
 
     inst.physrad = net_tinybyte(inst.GUID, "beequeenhivegrown.physrad", "physraddirty")
+
+    if not TheNet:IsDedicated() then
+        inst:AddComponent("pointofinterest")
+        inst.components.pointofinterest:SetHeight(200)
+    end
 
     inst.entity:SetPristine()
 
@@ -518,6 +526,8 @@ local function base_fn()
     inst.AnimState:Hide("honey3")
     inst.AnimState:SetLayer(LAYER_BACKGROUND)
     inst.AnimState:SetSortOrder(3)
+
+    inst.scrapbook_proxy ="beequeenhivegrown"
 
     inst.Transform:SetScale(1.4, 1.4, 1.4)
 

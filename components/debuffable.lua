@@ -149,6 +149,18 @@ function Debuffable:OnLoad(data)
     end
 end
 
+function Debuffable:TransferComponent(newinst)
+    local data = self:OnSave()
+    if data then
+        local newcomponent = newinst.components.debuffable
+        if not newcomponent then
+            newinst:AddComponent("debuffable")
+            newcomponent = newinst.components.debuffable
+        end
+        newcomponent:OnLoad(data)
+    end
+end
+
 function Debuffable:GetDebugString()
 	local str = "Num Buffs: " .. tostring(GetTableSize(self.debuffs))
 

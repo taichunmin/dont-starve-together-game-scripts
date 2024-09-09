@@ -3,7 +3,7 @@ local assets =
     Asset("ANIM", "anim/construction_plans.zip"),
 }
 
-local function MakePlans(name, targets)
+local function MakePlans(name, targets, postinitfn)
     local constr_name = name.."_constr"
     local prefabs =
     {
@@ -22,6 +22,7 @@ local function MakePlans(name, targets)
         inst.AnimState:SetBank("construction_plans")
         inst.AnimState:SetBuild("construction_plans")
         inst.AnimState:PlayAnimation(constr_name)
+        inst.scrapbook_anim = constr_name
 
         MakeInventoryFloatable(inst)
 
@@ -29,8 +30,13 @@ local function MakePlans(name, targets)
             --"XXXXX_plans" (from constructionplans component) added to pristine state for optimization
             inst:AddTag(v.."_plans")
         end
+        inst:AddTag("donotautopick")
 
         inst.constructionname = name
+
+        if postinitfn then
+            postinitfn(inst)
+        end
 
         inst.entity:SetPristine()
 
@@ -58,4 +64,10 @@ local function MakePlans(name, targets)
     return Prefab(constr_name.."_plans", fn, assets, prefabs)
 end
 
-return MakePlans("multiplayer_portal_moonrock", { "multiplayer_portal" })
+
+local function moonrockpostinitfn(inst)
+    inst.scrapbook_specialinfo = "MULTIPLAYERPOTALMOONROCKPLANS"
+end
+
+
+return MakePlans("multiplayer_portal_moonrock", { "multiplayer_portal" }, moonrockpostinitfn)

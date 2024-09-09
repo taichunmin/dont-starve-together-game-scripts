@@ -15,6 +15,7 @@ local prefabs =
     "townportaltalisman",
     "sandspike",
     "sandblock",
+    "antlionhat",
 
     --loot
     "meat",
@@ -25,12 +26,17 @@ local prefabs =
     "trinket_9",
     "antliontrinket",
 	"chesspiece_antlion_sketch",
+
+	"turf_cotl_gold",
+	"turf_cotl_brick",
+	"cotl_tabernacle_level1",
 }
 
 SetSharedLootTable('antlion',
 {
     {'townportal_blueprint',    1.00},
 	{'chesspiece_antlion_sketch', 1.00},
+    {"antlionhat_blueprint", 1.00},
 
     {'townportaltalisman',  1.00},
     {'townportaltalisman',  1.00},
@@ -111,7 +117,8 @@ local function AcceptTest(inst, item)
 end
 
 local function OnGivenItem(inst, giver, item)
-    if item.prefab == "heatrock" and item.currentTempRange ~= nil then
+    if item.currentTempRange ~= nil then
+        -- NOTES(JBK): currentTempRange is only on heatrock and now dumbbell_heat no need to check prefab here.
         local trigger =
             (item.currentTempRange <= 1 and "freeze") or
             (item.currentTempRange >= 4 and "burn") or
@@ -124,7 +131,8 @@ local function OnGivenItem(inst, giver, item)
 
     inst.tributer = giver
     inst.pendingrewarditem =
-        (item.prefab == "antliontrinket" and "townportal_blueprint") or
+        (item.prefab == "antliontrinket" and {"townportal_blueprint", "antlionhat_blueprint"}) or
+		(item.prefab == "cotl_trinket" and {"turf_cotl_brick_blueprint", "turf_cotl_gold_blueprint", "cotl_tabernacle_level1_blueprint"}) or
         (item.components.tradable.goldvalue > 0 and "townportaltalisman") or
         nil
 
@@ -167,7 +175,15 @@ local function HasRewardToGive(inst)
 end
 
 local function GiveReward(inst)
-    LaunchAt(SpawnPrefab(inst.pendingrewarditem), inst, (inst.tributer ~= nil and inst.tributer:IsValid()) and inst.tributer or nil, 1, 2, 1)
+	if inst.pendingrewarditem ~= nil then
+		if type(inst.pendingrewarditem) == "table" then
+			for _, item in ipairs(inst.pendingrewarditem) do
+			    LaunchAt(SpawnPrefab(item), inst, (inst.tributer ~= nil and inst.tributer:IsValid()) and inst.tributer or nil, 1, 2, 1)
+			end
+		else
+		    LaunchAt(SpawnPrefab(inst.pendingrewarditem), inst, (inst.tributer ~= nil and inst.tributer:IsValid()) and inst.tributer or nil, 1, 2, 1)
+		end
+	end
     inst.pendingrewarditem = nil
     inst.tributer = nil
 end
@@ -427,6 +443,9 @@ local function fn()
 
         return inst
     end
+
+    inst.scrapbook_maxhealth  = TUNING.ANTLION_HEALTH
+    inst.scrapbook_sanityaura = -TUNING.SANITYAURA_MED
 
     --Remove these tags so that they can be added properly when replicating components below
     inst:RemoveTag("__health")

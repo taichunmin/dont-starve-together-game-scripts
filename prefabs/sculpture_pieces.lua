@@ -43,11 +43,15 @@ local function makepiece(name)
         inst:AddTag("nonpotatable")
         inst:AddTag("heavy")
 
+        inst.scrapbook_specialinfo = "SUSPICIOUSMARBLE"
+
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then
             return inst
         end
+
+        inst.scrapbook_scale = 0.85
 
         inst:AddComponent("heavyobstaclephysics")
         inst.components.heavyobstaclephysics:SetRadius(PHYSICS_RADIUS)

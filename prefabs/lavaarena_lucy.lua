@@ -124,7 +124,7 @@ local function CreateSpinFX()
     inst.AnimState:SetBank("lavaarena_lucy")
     inst.AnimState:SetBuild("lavaarena_lucy")
     inst.AnimState:PlayAnimation("return")
-    inst.AnimState:SetMultColour(.2, .2, .2, .2)
+    inst.AnimState:SetMultColour(1, 1, 1, .2)
 
     inst.Transform:SetSixFaced()
 
@@ -155,7 +155,7 @@ local function OnUpdateSpin(fx, inst)
         elseif fx.alpha <= 0 then
             fx:Remove()
         end
-        fx.AnimState:SetMultColour(fx.alpha, fx.alpha, fx.alpha, fx.alpha)
+        fx.AnimState:SetMultColour(1, 1, 1, fx.alpha)
     end
 end
 

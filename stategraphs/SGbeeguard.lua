@@ -88,6 +88,12 @@ local states =
 
         timeline =
         {
+			TimeEvent(3 * FRAMES, function(inst)
+				local x, y, z = inst.Transform:GetWorldPosition()
+				if TheWorld.Map:IsOceanAtPoint(x, 0, z) then
+					SpawnPrefab("ocean_splash_med"..tostring(math.random(2))).Transform:SetPosition(x, 0, z)
+				end
+			end),
             TimeEvent(6 * FRAMES, StartBuzz),
         },
 

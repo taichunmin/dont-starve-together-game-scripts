@@ -95,7 +95,7 @@ local function emit_smoke_fn(effect, sphere_emitter)
         lifetime,           -- lifetime
         px, py + .35, pz,   -- position
         vx, vy, vz,         -- velocity
-        math.random() * 360,--* 2 * PI, -- angle
+        math.random() * 360,--* TWOPI, -- angle
         UnitRand() * 2,     -- angle velocity
         0, 0                -- uv offset
     )
@@ -111,8 +111,8 @@ local function emit_hand_fn(effect, sphere_emitter)
         HAND_MAX_LIFETIME,  -- lifetime
         px, py + .65, pz,   -- position
         vx, vy, vz,         -- velocity
-        0,                  --* 2 * PI, -- angle
-        UnitRand() * 1,     -- angle velocity
+        0,                  --* TWOPI, -- angle
+        UnitRand(),         -- angle velocity
         uv_offset, 0        -- uv offset
     )
 end
@@ -139,7 +139,7 @@ local function InitParticles(inst)
     effect:EnableBloomPass(0, true)
     effect:SetUVFrameSize(0, 1, 1)
     effect:SetSortOrder(0, 0)
-    --effect:SetSortOffset(0, 1)
+	effect:SetSortOffset(0, -1)
 
     --HAND
     effect:SetRenderResources(1, ANIM_HAND_TEXTURE, REVEAL_SHADER) --REVEAL_SHADER --particle_add
@@ -152,7 +152,7 @@ local function InitParticles(inst)
     effect:EnableBloomPass(1, true)
     effect:SetUVFrameSize(1, 0.25, 1)
     effect:SetSortOrder(1, 0)
-    --effect:SetSortOffset(1, 1)
+	effect:SetSortOffset(1, 1)
     --effect:SetDragCoefficient(1, 50)
 
     -----------------------------------------------------

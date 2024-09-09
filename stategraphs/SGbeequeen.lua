@@ -2,7 +2,7 @@ require("stategraphs/commonstates")
 
 --------------------------------------------------------------------------
 local FOCUSTARGET_MUST_TAGS = { "_combat", "_health" }
-local FOCUSTARGET_CANT_TAGS = { "INLIMBO", "player", "bee" }
+local FOCUSTARGET_CANT_TAGS = { "INLIMBO", "player", "bee", "notarget", "invisible", "flight" }
 
 local function ShakeIfClose(inst)
     ShakeAllCameras(CAMERASHAKE.FULL, .5, .02, .15, inst, 30)

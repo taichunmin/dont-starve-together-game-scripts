@@ -37,6 +37,7 @@ local function MakeCandy(num)
         inst.AnimState:SetBank("halloweencandy")
         inst.AnimState:SetBuild("halloweencandy")
         inst.AnimState:PlayAnimation(tostring(num))
+        inst.scrapbook_anim = tostring(num)
 
         inst:AddTag("cattoy")
         inst:AddTag("halloweencandy")
@@ -71,6 +72,8 @@ local function MakeCandy(num)
         return inst
     end
 
+    -- NOTES(JBK): Use this to help export the bottom table to make this file findable.
+    --print(string.format("%s %s", candyinfo[num].food or FOODTYPE.GENERIC, "halloweencandy_"..tostring(num)))
     return Prefab("halloweencandy_"..tostring(num), fn, assets, prefabs)
 end
 
@@ -80,3 +83,21 @@ for k = 1, NUM_HALLOWEENCANDY do
 end
 
 return unpack(ret)
+
+-- NOTES(JBK): These are here to make this file findable.
+--[[
+FOODTYPE.GOODIES halloweencandy_1
+FOODTYPE.GOODIES halloweencandy_10
+FOODTYPE.GOODIES halloweencandy_11
+FOODTYPE.GOODIES halloweencandy_12
+FOODTYPE.GOODIES halloweencandy_13
+FOODTYPE.GOODIES halloweencandy_2
+FOODTYPE.GOODIES halloweencandy_4
+FOODTYPE.GOODIES halloweencandy_5
+FOODTYPE.GOODIES halloweencandy_8
+FOODTYPE.GOODIES halloweencandy_9
+FOODTYPE.VEGGIE halloweencandy_14
+FOODTYPE.VEGGIE halloweencandy_3
+FOODTYPE.VEGGIE halloweencandy_6
+FOODTYPE.VEGGIE halloweencandy_7
+]]

@@ -9,12 +9,15 @@ end)
 
 function ColourAdder:OnRemoveFromEntity()
     for k, v in pairs(self.colourstack) do
-        if type(k) == "table" then
+		if EntityScript.is_instance(k) then
             self.inst:RemoveEventCallback("onremove", self._onremovesource, k)
         end
     end
     for k, v in pairs(self.children) do
         self.inst:RemoveEventCallback("onremove", v, k)
+		if k.components.colouradder ~= nil then
+			k.components.colouradder:PopColour(self.inst)
+		end
     end
 end
 
@@ -24,7 +27,14 @@ function ColourAdder:AttachChild(child)
             self.children[child] = nil
         end
         self.inst:ListenForEvent("onremove", self.children[child], child)
-        child.AnimState:SetAddColour(self:GetCurrentColour())
+		local r, g, b, a = self:GetCurrentColour()
+		if child.components.colouradder ~= nil then
+			child.components.colouradder:PushColour(self.inst, r, g, b, a)
+		elseif child.components.colouraddersync ~= nil then
+			child.components.colouraddersync:SyncColour(r, g, b, a)
+		else
+			child.AnimState:SetAddColour(r, g, b, a)
+		end
     end
 end
 
@@ -32,6 +42,9 @@ function ColourAdder:DetachChild(child)
     if self.children[child] ~= nil then
         self.inst:RemoveEventCallback("onremove", self.children[child], child)
         self.children[child] = nil
+		if child.components.colouradder ~= nil then
+			child.components.colouradder:PopColour(self.inst)
+		end
     end
 end
 
@@ -52,18 +65,32 @@ end
 
 function ColourAdder:OnSetColour(r, g, b, a)
     self.colour[1], self.colour[2], self.colour[3], self.colour[4] = r, g, b, a
-    self.inst.AnimState:SetAddColour(r, g, b, a)
+	if self.inst.components.colouraddersync ~= nil then
+		self.inst.components.colouraddersync:SyncColour(r, g, b, a)
+	else
+		self.inst.AnimState:SetAddColour(r, g, b, a)
+	end
     for k, v in pairs(self.children) do
-        k.AnimState:SetAddColour(r, g, b, a)
+		if k.components.colouradder ~= nil then
+			k.components.colouradder:PushColour(self.inst, r, g, b, a)
+		elseif k.components.colouraddersync ~= nil then
+			k.components.colouraddersync:SyncColour(r, g, b, a)
+		else
+			k.AnimState:SetAddColour(r, g, b, a)
+		end
     end
 end
 
 function ColourAdder:PushColour(source, r, g, b, a)
     if source ~= nil and r ~= nil and g ~= nil and b ~= nil and a ~= nil then
+		if r == 0 and g == 0 and b == 0 and a == 0 then
+			self:PopColour(source)
+			return
+		end
         local colour = self.colourstack[source]
         if colour == nil then
             self.colourstack[source] = { r, g, b, a }
-            if type(source) == "table" then
+			if EntityScript.is_instance(source) then
                 self.inst:ListenForEvent("onremove", self._onremovesource, source)
             end
         elseif r ~= colour[1] or g ~= colour[2] or b ~= colour[3] or a ~= colour[4] then
@@ -81,7 +108,7 @@ end
 
 function ColourAdder:PopColour(source)
     if source ~= nil and self.colourstack[source] ~= nil then
-        if type(source) == "table" then
+		if EntityScript.is_instance(source) then
             self.inst:RemoveEventCallback("onremove", self._onremovesource, source)
         end
         self.colourstack[source] = nil

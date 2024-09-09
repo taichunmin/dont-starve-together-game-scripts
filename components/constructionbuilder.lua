@@ -42,7 +42,8 @@ end
 function ConstructionBuilder:StartConstruction(target)
     if target ~= nil and
         target.components.constructionsite ~= nil and
-        target.components.constructionsite.constructionprefab ~= nil then
+		target.components.constructionsite.constructionprefab ~= nil and
+		target.components.constructionsite:IsEnabled() then
         self:StopConstruction()
 
         if target.components.constructionsite:HasBuilder() then
@@ -107,16 +108,19 @@ function ConstructionBuilder:StopConstruction()
 end
 
 function ConstructionBuilder:FinishConstruction()
-    if self.constructioninst ~= nil and
+    if
+        self.constructioninst ~= nil and
         self.constructioninst.components.container ~= nil and
         not self.constructioninst.components.container:IsEmpty() and
         self.constructionsite ~= nil and
         self.constructionsite.components.constructionsite ~= nil and
-        self.inst.sg.currentstate.name == "constructing" then
-        self.constructioninst.components.container:Close()
-        self.inst.sg.statemem.constructing = true
-        self.inst.sg:GoToState("construct_pst")
-        return true
+		self.constructionsite.components.constructionsite:IsEnabled() and
+        self.inst.sg.currentstate.name == "constructing"
+    then
+		self.constructioninst.components.container:Close()
+		self.inst.sg.statemem.constructing = true
+		self.inst.sg:GoToState("construct_pst")
+		return true
     end
 end
 
@@ -125,7 +129,8 @@ function ConstructionBuilder:OnFinishConstruction()
         self.constructioninst.components.container ~= nil and
         not self.constructioninst.components.container:IsEmpty() and
         self.constructionsite ~= nil and
-        self.constructionsite.components.constructionsite ~= nil then
+		self.constructionsite.components.constructionsite ~= nil and
+		self.constructionsite.components.constructionsite:IsEnabled() then
         local items = {}
         for i = 1, self.constructioninst.components.container:GetNumSlots() do
             local item = self.constructioninst.components.container:GetItemInSlot(i)

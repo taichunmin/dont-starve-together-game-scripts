@@ -40,15 +40,15 @@ function ChaseAndAttackAndAvoid:Visit()
         combat:ValidateTarget()
 
         if combat.target == nil and self.findnewtargetfn ~= nil then
-            combat.target = self.findnewtargetfn(self.inst)
+			combat:SetTarget(self.findnewtargetfn(self.inst))
         end
 
         if self.findavoidanceobjectfn ~= nil then
             self.avoidtarget = self.findavoidanceobjectfn(self.inst)
         end
 
-        if combat.target ~= nil then
-            self.inst.components.combat:BattleCry()
+		if combat:HasTarget() then
+			combat:BattleCry()
             self.startruntime = GetTime()
             self.numattacks = 0
             self.status = RUNNING

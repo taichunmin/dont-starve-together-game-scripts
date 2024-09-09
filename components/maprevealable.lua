@@ -106,7 +106,7 @@ end
 local MAPREVEALER_TAGS = {"maprevealer"}
 function MapRevealable:Refresh()
     if self.task ~= nil then
-        if GetClosestInstWithTag(MAPREVEALER_TAGS, self.inst, 30) ~= nil then
+        if GetClosestInstWithTag(MAPREVEALER_TAGS, self.inst, PLAYER_REVEAL_RADIUS) ~= nil then
             self:AddRevealSource("maprevealer")
         else
             self:RemoveRevealSource("maprevealer")

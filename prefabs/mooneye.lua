@@ -55,10 +55,15 @@ local function buildeye(colour)
         inst.AnimState:SetBank("mooneyes")
         inst.AnimState:SetBuild("mooneyes")
         inst.AnimState:PlayAnimation(colour.."gem_idle")
+        inst.scrapbook_anim = colour.."gem_idle"
         inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
 
         MakeInventoryFloatable(inst, "small", 0.05, {0.8, 0.75, 0.8})
 
+        inst:AddTag("donotautopick")
+
+        inst.scrapbook_specialinfo = "MOONEYE"
+        
         inst.entity:SetPristine()
 
         if not TheWorld.ismastersim then

@@ -1,8 +1,8 @@
 require "behaviours/chaseandattack"
-require "behaviours/panic"
 require "behaviours/attackwall"
 require "behaviours/leash"
 require "behaviours/standstill"
+local BrainCommon = require("brains/braincommon")
 
 local WORK_DIST = 3 --must be greater than physics radii
 local LOST_DIST = 60
@@ -84,8 +84,8 @@ end
 function MoonBeastBrain:OnStart()
     local root = PriorityNode(
     {
-        WhileNode(function() return self.inst.components.hauntable ~= nil and self.inst.components.hauntable.panic end, "PanicHaunted", Panic(self.inst)),
-        WhileNode(function() return self.inst.components.health.takingfiredamage end, "OnFire", Panic(self.inst)),
+		BrainCommon.PanicTrigger(self.inst),
+        BrainCommon.IpecacsyrupPanicTrigger(self.inst),
 
         --Teleported away, or moonbase got removed
         WhileNode(function() return LostMoonBase(self) end, "Lost Moonbase",

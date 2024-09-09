@@ -146,6 +146,10 @@ function SinkholeSpawner:SpawnSinkhole(spawnpt)
 
     local function IsValidSinkholePosition(offset)
         local x1, z1 = x + offset.x, z + offset.z
+        local tile = TheWorld.Map:GetTileAtPoint(x1, 0, z1)
+        if TileGroupManager:IsTemporaryTile(tile) and tile ~= WORLD_TILES.FARMING_SOIL then
+            return false
+        end
         if #TheSim:FindEntities(x1, 0, z1, TUNING.ANTLION_SINKHOLE.RADIUS * 1.9, SINKHOLD_BLOCKER_TAGS) > 0 then
             return false
         end
@@ -162,9 +166,9 @@ function SinkholeSpawner:SpawnSinkhole(spawnpt)
     local offset = Vector3(0, 0, 0)
     offset =
         IsValidSinkholePosition(offset) and offset or
-        FindValidPositionByFan(math.random() * 2 * PI, TUNING.ANTLION_SINKHOLE.RADIUS * 1.8 + math.random(), 9, IsValidSinkholePosition) or
-        FindValidPositionByFan(math.random() * 2 * PI, TUNING.ANTLION_SINKHOLE.RADIUS * 2.9 + math.random(), 17, IsValidSinkholePosition) or
-        FindValidPositionByFan(math.random() * 2 * PI, TUNING.ANTLION_SINKHOLE.RADIUS * 3.9 + math.random(), 17, IsValidSinkholePosition) or
+        FindValidPositionByFan(math.random() * TWOPI, TUNING.ANTLION_SINKHOLE.RADIUS * 1.8 + math.random(), 9, IsValidSinkholePosition) or
+        FindValidPositionByFan(math.random() * TWOPI, TUNING.ANTLION_SINKHOLE.RADIUS * 2.9 + math.random(), 17, IsValidSinkholePosition) or
+        FindValidPositionByFan(math.random() * TWOPI, TUNING.ANTLION_SINKHOLE.RADIUS * 3.9 + math.random(), 17, IsValidSinkholePosition) or
         nil
 
     if offset ~= nil then

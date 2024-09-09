@@ -160,6 +160,7 @@ end
 
 local function OnLocalOffering(inst)
 	inst.AnimState:PlayAnimation("open")
+	inst.SoundEmitter:KillSound("loop")
     inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
     inst.components.timer:StartTimer("localoffering_pst", 0.2)
 end
@@ -222,6 +223,8 @@ local function fn()
     inst.AnimState:SetBank("sacred_chest")
     inst.AnimState:SetBuild("sacred_chest")
     inst.AnimState:PlayAnimation("closed")
+    inst.scrapbook_anim = "closed"
+    inst.scrapbook_specialinfo = "SACREDCHEST"
 
     inst.entity:SetPristine()
 

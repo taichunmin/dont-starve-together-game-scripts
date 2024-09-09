@@ -1,6 +1,7 @@
 require "behaviours/leash"
 require "behaviours/standstill"
 require "behaviours/wander"
+local BrainCommon = require("brains/braincommon")
 
 local STALKER_RADIUS = .75
 local MINION_RADIUS = .3
@@ -31,6 +32,7 @@ end
 
 function StalkerMinionBrain:OnStart()
     local root = PriorityNode({
+		BrainCommon.PanicTrigger(self.inst),
         Leash(self.inst, GetTargetPos, LEASH_DIST, LEASH_DIST),
         WhileNode(function() return GetTarget(self.inst) ~= nil end, "ReachedStalker",
             StandStill(self.inst)),

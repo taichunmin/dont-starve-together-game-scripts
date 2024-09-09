@@ -529,6 +529,12 @@ local function fn()
         return inst
     end
 
+    local scale = TUNING.KLAUS_ENRAGE_SCALE
+    scale = scale * scale * scale
+
+    inst.scrapbook_maxhealth = {TUNING.KLAUS_HEALTH, TUNING.KLAUS_HEALTH * scale}
+    inst.scrapbook_damage    = {TUNING.KLAUS_DAMAGE, TUNING.KLAUS_DAMAGE * scale}
+
     inst.recentlycharged = {}
     inst.Physics:SetCollisionCallback(OnCollide)
 
@@ -582,6 +588,8 @@ local function fn()
     inst.components.epicscare:SetRange(TUNING.KLAUS_EPICSCARE_RANGE)
 
     inst:AddComponent("knownlocations")
+
+    inst:AddComponent("drownable")
 
     MakeLargeBurnableCharacter(inst, "swap_fire")
     inst.components.burnable.nocharring = true

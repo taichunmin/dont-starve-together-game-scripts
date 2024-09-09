@@ -8,6 +8,7 @@ local prefabs =
 local assets =
 {
     Asset("ANIM", "anim/dragonfly_furnace.zip"),
+    Asset("ANIM", "anim/ui_dragonflyfurnace_2x2.zip"),
     Asset("MINIMAP_IMAGE", "dragonfly_furnace"),
 }
 
@@ -37,6 +38,11 @@ local function onworked(inst)
     end
     inst.AnimState:PlayAnimation("hi_hit")
     inst.AnimState:PushAnimation("hi")
+
+    if inst.components.container ~= nil then
+        inst.components.container:DropEverything()
+        inst.components.container:Close()
+    end
 end
 
 local function BuiltTimeLine1(inst)
@@ -85,6 +91,39 @@ local function onload(inst, data)
     end
 end
 
+local function _CanBeOpened(inst)
+    inst.components.container.canbeopened = true
+end
+
+local function OnIncinerateItems(inst)
+    inst.AnimState:PlayAnimation("incinerate")
+    inst.AnimState:PushAnimation("hi", true)
+
+    inst.SoundEmitter:PlaySound("qol1/dragonfly_furnace/incinerate")
+
+    inst.components.container:Close()
+    inst.components.container.canbeopened = false
+
+    local time = inst.AnimState:GetCurrentAnimationLength() - inst.AnimState:GetCurrentAnimationTime() + FRAMES
+
+    inst:DoTaskInTime(time, _CanBeOpened)
+end
+
+local function ShouldIncinerateItem(inst, item)
+    local incinerate = true
+
+    -- NOTES(JBK): Fruitcake hack. You think you can escape this so easily?
+    if item.prefab == "winter_food4" then
+        incinerate = false
+    elseif item:HasTag("irreplaceable") then
+        incinerate = false
+    elseif item.components.container ~= nil and not item.components.container:IsEmpty() then
+        incinerate = false
+    end
+
+    return incinerate
+end
+
 local function fn()
     local inst = CreateEntity()
 
@@ -95,6 +134,7 @@ local function fn()
     inst.entity:AddLight()
     inst.entity:AddNetwork()
 
+	inst:SetDeploySmartRadius(1.25) --recipe min_spacing/2
     MakeObstaclePhysics(inst, .5)
 
     inst.MiniMapEntity:SetIcon("dragonfly_furnace.png")
@@ -128,12 +168,23 @@ local function fn()
         return inst
     end
 
+    inst.scrapbook_anim = "hi" -- NOTES(JBK): Hey. NOTES(DiogoW): Hello :)
+
     -----------------------
     inst:AddComponent("workable")
     inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
     inst.components.workable:SetWorkLeft(6)
     inst.components.workable:SetOnFinishCallback(onworkfinished)
     inst.components.workable:SetOnWorkCallback(onworked)
+
+    -----------------------
+    inst:AddComponent("container")
+    inst.components.container:WidgetSetup("dragonflyfurnace")
+
+    -----------------------
+    inst:AddComponent("incinerator")
+    inst.components.incinerator:SetOnIncinerateFn(OnIncinerateItems)
+    inst.components.incinerator:SetShouldIncinerateItemFn(ShouldIncinerateItem)
 
     -----------------------
     inst:AddComponent("cooker")

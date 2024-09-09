@@ -83,6 +83,7 @@ local function fn()
 
     inst._show = net_bool(inst.GUID, "quagmire_cooking_buff._show", "showdirty")
 
+    inst.entity:SetPristine()
     if not TheWorld.ismastersim then
         inst:ListenForEvent("showdirty", OnShowDirty)
 

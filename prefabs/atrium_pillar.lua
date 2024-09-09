@@ -22,6 +22,7 @@ local function fn()
     inst.AnimState:PlayAnimation("idle", true)
 
     inst:AddTag("groundhole")
+    inst:AddTag("pillar_atrium")
 
     inst.entity:SetPristine()
 

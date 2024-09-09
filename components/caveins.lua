@@ -45,7 +45,7 @@ local function DoTargetDebris(inst, x, z, player, spread, remaining)
             spread = math.max(0, spread - .4)
         end
     end
-    local theta = math.random() * 2 * PI
+    local theta = math.random() * TWOPI
     SpawnPrefab("cavein_debris").Transform:SetPosition(x + spread * math.cos(theta), 0, z + spread * math.sin(theta))
     if remaining > 1 then
         inst:DoTaskInTime(.4 + math.random() * .2, DoTargetDebris, x, z, player, math.min(1, spread + .5), remaining - 1)

@@ -21,6 +21,10 @@ local function onunequip(inst, owner)
     inst.components.container:Close(owner)
 end
 
+local function onequiptomodel(inst, owner)
+    inst.components.container:Close(owner)
+end
+
 local function onburnt(inst)
     if inst.components.container ~= nil then
         inst.components.container:DropEverything()
@@ -80,11 +84,10 @@ local function fn()
 
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
+    inst.components.equippable:SetOnEquipToModel(onequiptomodel)
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("candybag")
-    inst.components.container.skipclosesnd = true
-    inst.components.container.skipopensnd = true
 
     MakeSmallBurnable(inst)
     MakeSmallPropagator(inst)

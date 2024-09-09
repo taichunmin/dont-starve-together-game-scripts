@@ -36,7 +36,7 @@ local ScarecrowClothingPopupScreen = Class(Screen, function(self, owner_scarecro
     local spacing = 225
     local buttons = {}
 
-    local offline = not TheNet:IsOnlineMode()
+    local offline = not TheInventory:HasSupportForOfflineSkins() and not TheNet:IsOnlineMode()
 
     if offline then
     	buttons = {{text = STRINGS.UI.POPUPDIALOG.OK, cb = function() self:Close(false) end}}
@@ -123,7 +123,7 @@ function ScarecrowClothingPopupScreen:Close(apply_skins)
 	local skins = self.dressup:GetSkinsForGameStart()
 
     local data = {}
-    if TheNet:IsOnlineMode() and apply_skins then
+    if apply_skins and (TheInventory:HasSupportForOfflineSkins() or TheNet:IsOnlineMode()) then
 		data = skins
     end
 

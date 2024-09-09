@@ -31,6 +31,7 @@ local function fn()
     inst.AnimState:SetBuild("quagmire_swampig_build")
     inst.AnimState:PlayAnimation("idle_loop", true)
     inst.AnimState:Hide("hat")
+    inst.AnimState:Hide("ARM_carry_up")
 
     inst:AddTag("character")
     inst:AddTag("pig")

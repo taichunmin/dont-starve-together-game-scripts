@@ -36,9 +36,7 @@ local function OnEntityReplicated(inst)
     inst._parent = inst.entity:GetParent()
     if inst._parent == nil then
         print("Unable to initialize classified data for constructionsite")
-    elseif inst._parent.replica.constructionsite ~= nil then
-        inst._parent.replica.constructionsite:AttachClassified(inst)
-    else
+	elseif not inst._parent:TryAttachClassifiedToReplicaComponent(inst, "constructionsite") then
         inst._parent.constructionsite_classified = inst
         inst.OnRemoveEntity = OnRemoveEntity
     end

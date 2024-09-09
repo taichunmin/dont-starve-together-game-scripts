@@ -83,6 +83,18 @@ BrainCommon.AnchorToSaltlick = AnchorToSaltlick
 
 --------------------------------------------------------------------------
 
+local function ShouldTriggerPanic(inst)
+	return (inst.components.health ~= nil and inst.components.health.takingfiredamage)
+		or (inst.components.hauntable ~= nil and inst.components.hauntable.panic)
+end
+
+BrainCommon.ShouldTriggerPanic = ShouldTriggerPanic
+BrainCommon.PanicTrigger = function(inst)
+	return WhileNode(function() return ShouldTriggerPanic(inst) end, "PanicTrigger", Panic(inst))
+end
+
+--------------------------------------------------------------------------
+
 local function PanicWhenScared(inst, loseloyaltychance, chatty)
     local scareendtime = 0
     local function onepicscarefn(inst, data)
@@ -142,10 +154,23 @@ end
 BrainCommon.PanicWhenScared = PanicWhenScared
 
 --------------------------------------------------------------------------
+
+local function IsUnderIpecacsyrupEffect(inst)
+    return inst:HasDebuff("ipecacsyrup_buff")
+end
+
+BrainCommon.IsUnderIpecacsyrupEffect = IsUnderIpecacsyrupEffect
+BrainCommon.IpecacsyrupPanicTrigger = function(inst)
+    return WhileNode(function() return BrainCommon.IsUnderIpecacsyrupEffect(inst) end, "IpecacsyrupPanicTrigger", Panic(inst))
+end
+
+--------------------------------------------------------------------------
 -- Actions: MINE, CHOP
 
 local MINE_TAGS = { "MINE_workable" }
+local MINE_CANT_TAGS = { "carnivalgame_part", "event_trigger", "waxedplant" }
 local CHOP_TAGS = { "CHOP_workable" }
+local CHOP_CANT_TAGS = { "carnivalgame_part", "event_trigger", "waxedplant" }
 
 local function IsDeciduousTreeMonster(guy)
     return guy.monster and guy.prefab == "deciduoustree"
@@ -168,10 +193,10 @@ local AssistLeaderDefaults = {
                     inst:IsNear(inst.components.follower.leader, leaderdist)
         end,
         FindNew = function(inst, leaderdist, finddist)
-            local target = FindEntity(inst, finddist, nil, MINE_TAGS)
+            local target = FindEntity(inst, finddist, nil, MINE_TAGS, MINE_CANT_TAGS)
 
             if target == nil and inst.components.follower.leader ~= nil then
-                target = FindEntity(inst.components.follower.leader, finddist, nil, MINE_TAGS)
+                target = FindEntity(inst.components.follower.leader, finddist, nil, MINE_TAGS, MINE_CANT_TAGS)
             end
 
             if target ~= nil then
@@ -194,10 +219,10 @@ local AssistLeaderDefaults = {
                 or FindDeciduousTreeMonster(inst, finddist) ~= nil
         end,
         FindNew = function(inst, leaderdist, finddist)
-            local target = FindEntity(inst, finddist, nil, CHOP_TAGS)
+            local target = FindEntity(inst, finddist, nil, CHOP_TAGS, CHOP_CANT_TAGS)
 
             if target == nil and inst.components.follower.leader ~= nil then
-                target = FindEntity(inst.components.follower.leader, finddist, nil, CHOP_TAGS)
+                target = FindEntity(inst.components.follower.leader, finddist, nil, CHOP_TAGS, CHOP_CANT_TAGS)
             end
 
             if target ~= nil then
@@ -216,7 +241,7 @@ local AssistLeaderDefaults = {
 -- Mod support access.
 BrainCommon.AssistLeaderDefaults = AssistLeaderDefaults
 
---NOTES(JBK): This helps followers do a task once they see the leader is doing an act.
+-- NOTES(JBK): This helps followers do a task once they see the leader is doing an act.
 --            Since actions are very context sensitive, there are defaults above to help clarify context.
 local function NodeAssistLeaderDoAction(self, parameters)
     local action = parameters.action
@@ -240,9 +265,9 @@ local function NodeAssistLeaderDoAction(self, parameters)
     end
     local looper
     if parameters.chatterstring then
-        looper = LoopNode{ConditionNode(whilenode), ChattyNode(self.inst, parameters.chatterstring, DoAction(self.inst, findnode))}
+        looper = LoopNode{ConditionNode(whilenode), ChattyNode(self.inst, parameters.chatterstring, DoAction(self.inst, findnode, "DoAction_Chatty", nil, 3))}
     else
-        looper = LoopNode{ConditionNode(whilenode), DoAction(self.inst, findnode)}
+        looper = LoopNode{ConditionNode(whilenode), DoAction(self.inst, findnode, "DoAction_NoChatty", nil, 3)}
     end
 
     return IfThenDoWhileNode(ifnode, whilenode, action, looper)
@@ -251,4 +276,136 @@ end
 BrainCommon.NodeAssistLeaderDoAction = NodeAssistLeaderDoAction
 
 --------------------------------------------------------------------------
+-- NOTES(JBK): This helps followers pickup items for a PLAYER leader.
+--            They pickup if they are able to, then give them to their leader, or drop them onto the ground if unable to.
+
+local function Unignore(inst, sometarget, ignorethese)
+    ignorethese[sometarget] = nil
+end
+local function IgnoreThis(sometarget, ignorethese, leader, worker)
+    if ignorethese[sometarget] and ignorethese[sometarget].task ~= nil then
+        ignorethese[sometarget].task:Cancel()
+        ignorethese[sometarget].task = nil
+    else
+        ignorethese[sometarget] = {worker = worker,}
+    end
+    ignorethese[sometarget].task = leader:DoTaskInTime(5, Unignore, sometarget, ignorethese)
+end
+
+local function PickUpAction(inst, pickup_range, pickup_range_local, furthestfirst, positionoverride, ignorethese, wholestacks, allowpickables, custom_pickup_filter)
+    local activeitem = inst.components.inventory:GetActiveItem()
+    if activeitem ~= nil then
+        inst.components.inventory:DropItem(activeitem, true, true)
+        if ignorethese ~= nil then
+            if ignorethese[activeitem] and ignorethese[activeitem].task ~= nil then
+                ignorethese[activeitem].task:Cancel()
+                ignorethese[activeitem].task = nil
+            end
+            ignorethese[activeitem] = nil
+        end
+    end
+    local onlytheseprefabs
+    if wholestacks then
+        local item = inst.components.inventory:GetFirstItemInAnySlot()
+        if item ~= nil then
+            if (item.components.stackable == nil or item.components.stackable:IsFull()) then
+                return nil
+            end
+            onlytheseprefabs = {[item.prefab] = true}
+        end
+    elseif inst.components.inventory:IsFull() then
+        return nil
+    end
+
+    local leader = inst.components.follower and inst.components.follower.leader or nil
+    if leader == nil or leader.components.trader == nil then -- Trader component is needed for ACTIONS.GIVEALLTOPLAYER
+        return nil
+    end
+
+    if not leader:HasTag("player") then -- Stop things from trying to help non-players due to trader mechanics.
+        return nil
+    end
+
+    local item, pickable
+    if pickup_range_local ~= nil then
+        item, pickable = FindPickupableItem(leader, pickup_range_local, furthestfirst, inst:GetPosition(), ignorethese, onlytheseprefabs, allowpickables, inst, custom_pickup_filter)
+    end
+    if item == nil then
+        item, pickable = FindPickupableItem(leader, pickup_range, furthestfirst, positionoverride, ignorethese, onlytheseprefabs, allowpickables, inst, custom_pickup_filter)
+    end
+    if item == nil then
+        return nil
+    end
+
+    if ignorethese ~= nil then
+        IgnoreThis(item, ignorethese, leader, inst)
+    end
+
+    return BufferedAction(inst, item, item.components.trap ~= nil and ACTIONS.CHECKTRAP or pickable and ACTIONS.PICK or ACTIONS.PICKUP)
+end
+
+local function GiveAction(inst)
+    local leader = inst.components.follower and inst.components.follower.leader or nil
+    local leaderinv = leader and leader.components.inventory or nil
+    local item = inst.components.inventory:GetFirstItemInAnySlot() or inst.components.inventory:GetActiveItem() -- This is intentionally backwards to give the bigger stacks first.
+    if leader == nil or leaderinv == nil or item == nil then
+        return nil
+    end
+
+    return leaderinv:CanAcceptCount(item, 1) > 0 and BufferedAction(inst, leader, ACTIONS.GIVEALLTOPLAYER, item) or nil
+end
+
+local function DropAction(inst)
+    local leader = inst.components.follower and inst.components.follower.leader or nil
+    local item = inst.components.inventory:GetFirstItemInAnySlot()
+    if leader == nil or item == nil then
+        return nil
+    end
+
+    local ba = BufferedAction(inst, leader, ACTIONS.DROP, item)
+    ba.options.wholestack = true
+    return ba
+end
+
+local function AlwaysTrue() return true end
+local function NodeAssistLeaderPickUps(self, parameters)
+    local cond = parameters.cond or AlwaysTrue
+    local pickup_range = parameters.range
+    local pickup_range_local = parameters.range_local
+	local give_cond = parameters.give_cond
+	local give_range_sq = parameters.give_range ~= nil and parameters.give_range * parameters.give_range or nil
+    local furthestfirst = parameters.furthestfirst
+	local positionoverridefn = type(parameters.positionoverride) == "function" and parameters.positionoverride or nil
+	local positionoverride = positionoverridefn == nil and parameters.positionoverride or nil
+    local ignorethese = parameters.ignorethese
+    local wholestacks = parameters.wholestacks
+    local allowpickables = parameters.allowpickables
+    local custom_pickup_filter = parameters.custom_pickup_filter
+
+    local function CustomPickUpAction(inst)
+        return PickUpAction(inst, pickup_range, pickup_range_local, furthestfirst, positionoverridefn ~= nil and positionoverridefn(inst) or positionoverride, ignorethese, wholestacks, allowpickables, custom_pickup_filter)
+    end
+
+	local give_cond_fn = give_range_sq ~= nil and
+		function()
+			return (give_cond == nil or give_cond())
+				and self.inst.components.follower ~= nil
+				and self.inst.components.follower.leader ~= nil
+				and self.inst.components.follower.leader:GetDistanceSqToPoint(positionoverridefn ~= nil and positionoverridefn(self.inst) or positionoverride or self.inst:GetPosition()) < give_range_sq
+		end
+		or give_cond
+		or AlwaysTrue
+
+    return PriorityNode({
+        WhileNode(cond, "BC KeepPickup",
+            DoAction(self.inst, CustomPickUpAction, "BC CustomPickUpAction", true)),
+        WhileNode(give_cond_fn, "BC Should Bring To Leader",
+			PriorityNode({
+				DoAction(self.inst, GiveAction, "BC GiveAction", true),
+				DoAction(self.inst, DropAction, "BC DropAction", true),
+			}, .25)),
+    },.25)
+end
+BrainCommon.NodeAssistLeaderPickUps = NodeAssistLeaderPickUps
+
 return BrainCommon

@@ -18,6 +18,7 @@ local function fn()
     inst.AnimState:SetBuild("sparks")
     inst.AnimState:PlayAnimation("sparks_1")
     inst.AnimState:SetAddColour(1, 1, 0, 0)
+	inst.AnimState:SetLightOverride(0.3)
 
     inst.entity:SetPristine()
 

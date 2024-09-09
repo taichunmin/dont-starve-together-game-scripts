@@ -36,6 +36,7 @@ local function ondeploy(inst, pt)
     local mound = SpawnPrefab("fossil_stalker")
     mound.Transform:SetPosition(pt:Get())
     mound.SoundEmitter:PlaySound("dontstarve/creatures/together/fossil/repair")
+	PreventCharacterCollisionsWithPlacedObjects(mound)
 
     inst.components.stackable:Get():Remove()
 end
@@ -47,6 +48,8 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
+
+    inst.pickupsound = "rock"
 
     MakeInventoryPhysics(inst)
 
@@ -61,6 +64,8 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst.scrapbook_anim = "f1"
 
     SetFossilType(inst, math.random(NUM_FOSSIL_TYPES))
 
@@ -77,7 +82,7 @@ local function fn()
     inst:AddComponent("deployable")
     inst.components.deployable.ondeploy = ondeploy
     --inst.components.deployable:SetDeployMode(DEPLOYMODE.ANYWHERE)
-    inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.LESS)
+    inst.components.deployable:SetDeploySpacing(DEPLOYSPACING.PLACER_DEFAULT)
 
     inst:AddComponent("repairer")
     inst.components.repairer.repairmaterial = MATERIALS.FOSSIL

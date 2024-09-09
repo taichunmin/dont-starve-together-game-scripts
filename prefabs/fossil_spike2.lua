@@ -28,7 +28,7 @@ local function SpikeLaunch(inst, launcher, basespeed, startheight, startradius)
         local dist = math.sqrt(dsq)
         angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
     else
-        angle = 2 * PI * math.random()
+        angle = TWOPI * math.random()
     end
     local sina, cosa = math.sin(angle), math.cos(angle)
     local speed = basespeed + math.random()
@@ -74,15 +74,7 @@ local function DoDamage(inst)
             elseif v.components.pickable ~= nil
                 and v.components.pickable:CanBePicked()
                 and not v:HasTag("intense") then
-                local num = v.components.pickable.numtoharvest or 1
-                local product = v.components.pickable.product
-                local x1, y1, z1 = v.Transform:GetWorldPosition()
-                v.components.pickable:Pick(inst) -- only calling this to trigger callbacks on the object
-                if product ~= nil and num > 0 then
-                    for i = 1, num do
-                        SpawnPrefab(product).Transform:SetPosition(x1, 0, z1)
-                    end
-                end
+				v.components.pickable:Pick(inst)
             elseif v.components.combat ~= nil
                 and v.components.health ~= nil
                 and not v.components.health:IsDead() then
@@ -222,7 +214,7 @@ local function StartSpike(inst, variation)
 
     inst.shadowsize = 0
     inst.shadowtask = inst:DoPeriodicTask(0, UpdateShadow)
-    inst.shadowtask2 = inst:DoPeriodicTask(0, UpdateShadow2, 43.5 * FRAMES)
+    inst.shadowtask2 = inst:DoPeriodicTask(0, UpdateShadow2, 43 * FRAMES)
     inst.lightvalue = 0
     inst.lighttask = inst:DoPeriodicTask(0, UpdateLight)
 end

@@ -12,8 +12,7 @@ end
 
 local function Kill(inst)
     if inst._killtask == nil then
-        local len = inst.AnimState:GetCurrentAnimationLength()
-        inst._killtask = inst:DoTaskInTime(len - (inst.AnimState:GetCurrentAnimationTime() % len), OnKillTask)
+		inst._killtask = inst:DoTaskInTime(inst.AnimState:GetCurrentAnimationLength() - inst.AnimState:GetCurrentAnimationTime(), OnKillTask)
     end
 end
 

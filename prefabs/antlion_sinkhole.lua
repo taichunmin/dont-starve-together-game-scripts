@@ -1,3 +1,5 @@
+require("stategraphs/commonstates")
+
 local assets =
 {
     Asset("ANIM", "anim/antlion_sinkhole.zip"),
@@ -32,10 +34,10 @@ local function UpdateOverrideSymbols(inst, state)
 end
 
 local function SpawnFx(inst, stage, scale)
-    local theta = math.random() * PI * 2
+    local theta = math.random() * TWOPI
     local num = 7
     local radius = 1.6
-    local dtheta = 2 * PI / num
+    local dtheta = TWOPI / num
     local x, y, z = inst.Transform:GetWorldPosition()
     SpawnPrefab("sinkhole_spawn_fx_"..math.random(3)).Transform:SetPosition(x, y, z)
     for i = 1, num do
@@ -143,23 +145,14 @@ local function donextcollapse(inst)
                     end
                 else
                     if v.components.workable:GetWorkAction() == ACTIONS.MINE then
-                        local mine_fx = (v:HasTag("frozen") and "mining_ice_fx") or (v:HasTag("moonglass") and "mining_moonglass_fx") or "mining_fx"
-                        SpawnPrefab(mine_fx).Transform:SetPosition(v.Transform:GetWorldPosition())
+                        PlayMiningFX(inst, v, true)
                     end
                     v.components.workable:WorkedBy(inst, 1)
                 end
             elseif v.components.pickable ~= nil
                 and v.components.pickable:CanBePicked()
                 and not v:HasTag("intense") then
-                local num = v.components.pickable.numtoharvest or 1
-                local product = v.components.pickable.product
-                local x1, y1, z1 = v.Transform:GetWorldPosition()
-                v.components.pickable:Pick(inst) -- only calling this to trigger callbacks on the object
-                if product ~= nil and num > 0 then
-                    for i = 1, num do
-                        SpawnPrefab(product).Transform:SetPosition(x1, 0, z1)
-                    end
-                end
+				v.components.pickable:Pick(inst)
             elseif v.components.combat ~= nil
                 and v.components.health ~= nil
                 and not v.components.health:IsDead() then
@@ -240,7 +233,11 @@ local function fn()
     inst:AddTag("antlion_sinkhole_blocker")
     inst:AddTag("NOCLICK")
 
-    inst:SetDeployExtraSpacing(4)
+	inst:SetDeploySmartRadius(3)
+
+    inst.scrapbook_anim = "scrapbook"
+    inst.scrapbook_specialinfo = "ANTLIONSINKHOLE"
+    inst.scrapbook_inspectonseen = true
 
     inst.entity:SetPristine()
 

@@ -361,7 +361,7 @@ function OptionsScreen:OnControl(control, down)
 			end
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 			return true
-		elseif control == CONTROL_MAP and TheInput:ControllerAttached() then
+		elseif control == CONTROL_MENU_BACK and TheInput:ControllerAttached() then
             TheFrontEnd:PushScreen(PopupDialogScreen( STRINGS.UI.CONTROLSSCREEN.RESETTITLE, STRINGS.UI.CONTROLSSCREEN.RESETBODY,
             {
                 {
@@ -380,7 +380,7 @@ function OptionsScreen:OnControl(control, down)
             }))
             TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
             return true
-	    elseif control == CONTROL_PAUSE and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
+	    elseif control == CONTROL_MENU_START and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
 	    	if self:IsDirty() then
 	    		self:ApplyChanges() --apply changes and go back, or stay
 	    		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -495,11 +495,11 @@ function OptionsScreen:GetHelpText()
 	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
 	if self.selected_tab == "controls" then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP, false, false) .. " " .. STRINGS.UI.CONTROLSSCREEN.RESET)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK, false, false) .. " " .. STRINGS.UI.CONTROLSSCREEN.RESET)
 	end
 
 	if self:IsDirty() then
-		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.HELP.APPLY)
+		table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.HELP.APPLY)
 	end
 
 	return table.concat(t, "  ")

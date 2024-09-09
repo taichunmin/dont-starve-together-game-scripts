@@ -86,16 +86,23 @@ local function fn()
     inst:AddTag("shadow")
     inst:AddTag("notraptrigger")
     inst:AddTag("notarget")
+    inst:AddTag("shadow_aligned")
 
     inst.AnimState:SetBank("shadow_channeler")
     inst.AnimState:SetBuild("shadow_channeler")
     inst.AnimState:PlayAnimation("appear")
     inst.AnimState:SetMultColour(1, 1, 1, .5)
 
-    -- this is purely view related
-    inst:AddComponent("transparentonsanity")
-    inst.components.transparentonsanity.most_alpha = .8
-    inst.components.transparentonsanity.osc_amp = .1
+    if not TheNet:IsDedicated() then
+        -- this is purely view related
+        inst:AddComponent("transparentonsanity")
+        inst.components.transparentonsanity.most_alpha = .8
+        inst.components.transparentonsanity.osc_amp = .1
+        inst.components.transparentonsanity:ForceUpdate()
+    end
+
+	--Higher priority as if it is always targeting player
+	inst.controller_priority_override_is_targeting_player = true
 
     inst.entity:SetPristine()
 

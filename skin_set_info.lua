@@ -158,6 +158,62 @@ return
 			"legs_wickerbottom_yule",
 			"feet_wickerbottom_yule",
 		},
+		{
+			"woodie_ice",
+			"body_woodie_ice",
+			"hand_woodie_ice",
+			"feet_woodie_ice",
+		},
+		{
+			"wes_ice",
+			"body_wes_ice",
+		},
+		{
+			"waxwell_ice",
+			"body_waxwell_ice",
+			"hand_waxwell_ice",
+			"legs_waxwell_ice",
+		},
+		{
+			"wathgrithr_ice",
+			"body_wathgrithr_ice",
+			"hand_wathgrithr_ice",
+			"feet_wathgrithr_ice",
+		},
+		{
+			"wormwood_ice",
+			"body_wormwood_ice",
+			"hand_wormwood_ice",
+			"legs_wormwood_ice",
+		},
+		{
+			"wurt_ice",
+			"body_wurt_ice",
+			"legs_wurt_ice",
+		},
+		{
+			"wanda_ice",
+			"body_wanda_ice",
+			"hand_wanda_ice",
+			"feet_wanda_ice",
+		},
+		{
+			"walter_yule",
+			"body_walter_yule",
+			"legs_walter_yule",
+			"feet_walter_yule",
+			"walterhat_yule",
+		},
+		{
+			"wendy_yule",
+			"body_wendy_yule",
+			"hand_wendy_yule",
+			"feet_wendy_yule",
+		},
+		{
+			"webber_yule",
+			"body_webber_yule",
+		},
 	},
 	emote_fistshake =
 	{

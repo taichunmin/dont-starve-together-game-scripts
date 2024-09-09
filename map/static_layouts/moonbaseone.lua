@@ -17,7 +17,7 @@ return {
       margin = 0,
       image = "../../../../tools/tiled/dont_starve/tiles.png",
       imagewidth = 512,
-      imageheight = 384,
+      imageheight = 512,
       properties = {},
       tiles = {}
     }
@@ -76,8 +76,8 @@ return {
           name = "",
           type = "moonbase",
           shape = "rectangle",
-          x = 206,
-          y = 204,
+          x = 224,
+          y = 224,
           width = 0,
           height = 0,
           visible = true,

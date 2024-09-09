@@ -68,7 +68,7 @@ end
 function QuagmireRecipeBookScreen:OnControl(control, down)
     if QuagmireRecipeBookScreen._base.OnControl(self, control, down) then return true end
 
-    if not down and (control == CONTROL_MAP or control == CONTROL_CANCEL) then
+    if not down and (control == CONTROL_MENU_BACK or control == CONTROL_CANCEL) then
 		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
         TheFrontEnd:PopScreen()
         return true

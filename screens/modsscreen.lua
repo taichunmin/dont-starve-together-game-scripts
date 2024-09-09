@@ -431,7 +431,7 @@ function ModsScreen:StartWorkshopUpdate()
 		function(result, isSuccessful, resultCode) self:OnStatsQueried(result, isSuccessful, resultCode) end)
 
 	self:UpdateForWorkshop()
-	self.updatetask = staticScheduler:ExecutePeriodic( 1, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
+	self.updatetask = staticScheduler:ExecutePeriodic( TUNING.MODS_QUERY_TIME, self.UpdateForWorkshop, nil, 0, "updateforworkshop", self )
 
 end
 
@@ -610,7 +610,7 @@ function ModsScreen:UpdateForWorkshop()
 				function(_, control, down)
 					if Widget.OnControl(opt, control, down) then return true end
 					if down then
-						if control == CONTROL_ACCEPT or (control == CONTROL_INSPECT and TheInput:ControllerAttached()) then
+						if control == CONTROL_ACCEPT or (control == CONTROL_MENU_MISC_2 and TheInput:ControllerAttached()) then
                             if opt.o_pos == nil then
                                 opt.o_pos = opt:GetLocalPosition()
                                 opt:SetPosition(opt.o_pos + opt.clickoffset)
@@ -649,7 +649,7 @@ function ModsScreen:UpdateForWorkshop()
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true
-						elseif control == CONTROL_CONTROLLER_ATTACK then
+						elseif control == CONTROL_MENU_MISC_1 then
 							self:EnableCurrent(idx)
 							TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 							return true
@@ -718,7 +718,7 @@ function ModsScreen:UpdateForWorkshop()
 				function(_, control, down)
 					if Widget.OnControl(opt, control, down) then return true end
 					if down then
-						if control == CONTROL_ACCEPT or (control == CONTROL_INSPECT and TheInput:ControllerAttached()) then
+						if control == CONTROL_ACCEPT or (control == CONTROL_MENU_MISC_2 and TheInput:ControllerAttached()) then
                             if opt.o_pos == nil then
                                 opt.o_pos = opt:GetLocalPosition()
                                 opt:SetPosition(opt.o_pos + opt.clickoffset)
@@ -971,15 +971,15 @@ function ModsScreen:OnControl(control, down)
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 			return true
 		elseif TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
-			if control == CONTROL_PAUSE then
+			if control == CONTROL_MENU_START then
 				self:Apply()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
-			elseif control == CONTROL_MAP then
+			elseif control == CONTROL_MENU_BACK then
 				self:CleanAllButton()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
-			elseif control == CONTROL_INSPECT then
+			elseif control == CONTROL_MENU_MISC_2 then
 				self:UpdateAllButton()
 				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 				return true
@@ -1358,13 +1358,13 @@ function ModsScreen:GetHelpText()
 
     table.insert(t,  TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MAP) .. " " .. STRINGS.UI.MODSSCREEN.CLEANALL)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_BACK) .. " " .. STRINGS.UI.MODSSCREEN.CLEANALL)
 
     if self.updateallenabled then
-    	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_INSPECT) .. " " .. STRINGS.UI.MODSSCREEN.UPDATEALL)
+    	table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_MISC_2) .. " " .. STRINGS.UI.MODSSCREEN.UPDATEALL)
     end
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_PAUSE) .. " " .. STRINGS.UI.MODSSCREEN.APPLY)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_START) .. " " .. STRINGS.UI.MODSSCREEN.APPLY)
 
     return table.concat(t, "  ")
 end

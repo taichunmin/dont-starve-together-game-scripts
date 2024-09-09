@@ -252,13 +252,13 @@ local function HideDecor(inst, data)
 end
 
 local function ShowDecor(inst, data)
-    if inst:HasTag("burnt") or data == nil or data.slot == nil or data.item == nil or data.item.halloween_ornamentid == nil then
+    if inst:HasTag("burnt") or data == nil or data.slot == nil or data.item == nil or (data.item.halloween_ornamentid == nil and data.item.halloween_ornamentbuildoverride == nil and data.item.halloween_ornamentsymboloverride == nil) then
         return
     end
 
     inst.AnimState:Show("decor"..data.slot)
     inst.AnimState:Show("rope"..data.slot)
-    inst.AnimState:OverrideSymbol("decor"..data.slot, "halloween_ornaments", "decor_" .. tostring(data.item.halloween_ornamentid))
+    inst.AnimState:OverrideSymbol("decor"..data.slot, data.item.halloween_ornamentbuildoverride or "halloween_ornaments", data.item.halloween_ornamentsymboloverride or ("decor_" .. tostring(data.item.halloween_ornamentid)))
 end
 
 local function onsave(inst, data)
@@ -306,7 +306,7 @@ local function fn()
     inst.AnimState:SetBuild("evergreen_living_wood_growable")
     inst.AnimState:PlayAnimation("idle_old", true)
 
-    inst:SetDeployExtraSpacing(TUNING.LIVINGTREE_EXTRA_SPACING)
+	inst:SetDeploySmartRadius(DEPLOYSPACING_RADIUS[DEPLOYSPACING.DEFAULT] / 2) --livingtree_root deployspacing/2
 
     MakeSnowCoveredPristine(inst)
 

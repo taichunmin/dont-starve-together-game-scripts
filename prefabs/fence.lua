@@ -5,6 +5,15 @@ local wall_prefabs =
     "collapse_small",
 }
 
+local DOOR_LOOT = { "boards", "boards", "rope" }
+local FENCE_LOOT = { "twigs" }
+
+SetSharedLootTable("fence_junk",
+{
+	{ "wagpunk_bits",	0.25	},
+	{ "twigs",			1.0		},
+})
+
 local FINDDOOR_MUST_TAGS = {"door"}
 local FINDWALL_MUST_TAGS = {"wall"}
 local FINDWALL_CANT_TAGS = {"alignwall"}
@@ -20,6 +29,10 @@ end
 
 local function IsNarrow(inst)
     return CalcRotationEnum(inst.Transform:GetRotation()) % 2 == 0
+end
+
+local function IsEnumNarrow(enum)
+    return enum % 2 == 0
 end
 
 local function IsSwingRight(inst)
@@ -95,12 +108,11 @@ local function SetIsSwingRight(inst, is_swing_right)
     OnDoorStateDirty(inst)
 end
 
-local function FindPairedDoor(inst)
+local function GetPairedDoor(inst, rot)
     local x, y, z = inst.Transform:GetWorldPosition()
-    local rot = inst.Transform:GetRotation()
 
     local swingright = IsSwingRight(inst)
-    local search_dist = IsNarrow(inst) and 1 or 1.4
+    local search_dist = IsNarrow(inst) and 1.2 or 1.6
 
     local search_x = -math.sin(rot / RADIANS) * search_dist
     local search_y = math.cos(rot / RADIANS) * search_dist
@@ -108,10 +120,30 @@ local function FindPairedDoor(inst)
     search_x = x + (swingright and search_x or -search_x)
     search_y = z + (swingright and -search_y or search_y)
 
-    local other_door = TheSim:FindEntities(search_x,0,search_y, 0.25, FINDDOOR_MUST_TAGS)[1]
+    local paired_door = TheSim:FindEntities(search_x,0,search_y, 0.75, FINDDOOR_MUST_TAGS)[1]
+    return paired_door
+end
+
+local function FindPairedDoor(inst)
+
+    local rot = inst.Transform:GetRotation()
+    local other_door = GetPairedDoor(inst, rot)
+
+    -- On a boat and didn't find anything? Try again, but taking boat rotation into account
+    local boat = inst:GetCurrentPlatform()
+    if other_door == nil and boat and boat:HasTag("boat") then
+        local boat_rotation = boat.Transform:GetRotation()
+        other_door = GetPairedDoor(inst, rot - boat_rotation)
+    end
+
     if other_door then
+        local swingright = IsSwingRight(inst)
         local opposite_swing = swingright ~= IsSwingRight(other_door)
-        local opposite_rotation = inst.Transform:GetRotation() ~= other_door.Transform:GetRotation()
+
+        -- Round rotating angles to three decimal places to avoid imprecision when comparing the door rotations
+        local door_rotation = math.floor(inst.Transform:GetRotation() * 1000) / 1000
+        local other_rotation = math.floor(other_door.Transform:GetRotation() * 1000) / 1000
+        local opposite_rotation = door_rotation ~= other_rotation
         return (opposite_swing ~= opposite_rotation) and other_door or nil
     end
 
@@ -129,14 +161,20 @@ local function ApplyDoorOffset(inst)
     SetOffset(inst, inst.offsetdoor and 0.45 or 0)
 end
 
-local function SetOrientation(inst, rotation)
-    rotation = CalcFacingAngle(rotation)
+local function SetOrientation(inst, rotation, rotation_enum)
+    --rotation = CalcFacingAngle(rotation)
 
     inst.Transform:SetRotation(rotation)
 
     if inst.anims.narrow then
+        local is_narrow = false
+        if rotation_enum ~= nil then
+            is_narrow = IsEnumNarrow(rotation_enum)
+        else
+            is_narrow = IsNarrow(inst)
+        end
 
-        if IsNarrow(inst) then
+        if is_narrow then
             if not inst.bank_narrow_set then
                 inst.bank_narrow_set = true
                 inst.bank_wide_set = nil
@@ -197,9 +235,6 @@ local function RefreshDoorOffset(inst)
         ApplyDoorOffset(inst)
     end
 end
-
-
-
 
 local function FixUpFenceOrientation(inst, deployedrotation)
     local x, y, z = inst.Transform:GetWorldPosition()
@@ -276,7 +311,7 @@ end
 
 local function OnIsPathFindingDirty(inst)
     if inst._ispathfinding:value() then
-        if inst._pfpos == nil then
+        if inst._pfpos == nil and inst:GetCurrentPlatform() == nil then
             inst._pfpos = inst:GetPosition()
             TheWorld.Pathfinder:AddWall(inst._pfpos:Get())
         end
@@ -327,6 +362,40 @@ end
 
 local function onhit(inst, attacker, damage)
     inst.components.workable:WorkedBy(attacker)
+end
+
+local function junk_spawnhitfx(inst)
+	local fx = SpawnPrefab("junk_break_fx")
+	local x, y, z = inst.Transform:GetWorldPosition()
+	local scale = 0.7 + math.random() * 0.2
+	fx.Transform:SetPosition(x, y + math.random(), z)
+	fx.Transform:SetScale(scale, scale, scale)
+	return fx
+end
+
+local function junk_onworkfinishedfn(inst, worker)
+	if not worker:HasTag("junkmob") then
+		inst.components.lootdropper:DropLoot()
+	end
+	junk_spawnhitfx(inst)
+	inst:Remove()
+end
+
+local function junk_onworkfn(inst, worker, workleft, numworks)
+	if numworks == 0 then
+		if worker:HasTag("junkmob") then
+			junk_spawnhitfx(inst)
+		elseif worker:HasTag("junk") then
+			--junk repairs junk XD
+			inst.components.workable:SetWorkLeft(3)
+			inst.components.health:SetPercent(1)
+		end
+	end
+	onworked(inst)
+end
+
+local function junk_workmultiplierfn(inst, worker, numworks)
+	return worker:HasTag("junk") and 0 or nil
 end
 
 -------------------------------------------------------------------------------
@@ -416,12 +485,21 @@ end
 -------------------------------------------------------------------------------
 
 local function onsave(inst, data)
-    local rot = CalcRotationEnum(inst.Transform:GetRotation())
-    data.rot = rot > 0 and rot or nil
+
+    -- If we're on a boat, save boat rotation value in its own value separate from the standard rotation data
+    local boat = inst:GetCurrentPlatform()
+    if boat and boat:HasTag("boat") then
+        data.boatrotation = inst.Transform:GetRotation()
+    else
+        local rot = CalcRotationEnum(inst.Transform:GetRotation())
+        data.rot = rot > 0 and rot or nil
+    end
+
     data.offsetdoor = inst.offsetdoor
     data.swingright = inst._isswingright ~= nil and inst._isswingright:value() or nil
     data.isopen = inst._isopen ~= nil and inst._isopen:value() or nil
     data.isunlocked = inst._isunlocked ~= nil and inst._isunlocked:value() or nil
+    data.variant_num = inst.variant_num or nil
 end
 
 local function onload(inst, data)
@@ -437,11 +515,14 @@ local function onload(inst, data)
         end
 
         local rotation = 0
+        inst.loaded_rotation_enum = 0
         if data.rotation ~= nil then
             -- very old style of save data. updates save data to v2 format, safe to remove this when we go out of the beta branch
             rotation = data.rotation - 90
+            inst.loaded_rotation_enum = CalcRotationEnum(rotation)
         elseif data.rot ~= nil then
             rotation = data.rot*45
+            inst.loaded_rotation_enum = data.rot
         end
         SetOrientation(inst, rotation)
 
@@ -450,10 +531,50 @@ local function onload(inst, data)
         elseif inst._isswingright ~= nil and inst._isswingright:value() then
             GetAnimState(inst):PlayAnimation(GetAnimName(inst, "idle"))
         end
+
+        if data.variant_num then
+            inst.variant_num = data.variant_num
+            inst.AnimState:SetBuild(inst.basebuild .. inst.variant_num)
+        end
     end
 end
 
-local function MakeWall(name, anims, isdoor, klaussackkeyid)
+local function onloadpostpass(inst, newents, data)
+    if data == nil then
+        --Don't crash on mods placing fences in worldgen
+    	return
+    end
+
+    inst:DoTaskInTime(0, function(inst)
+        -- If fences are placed on rotated boats, we need to account for the boat's rotation
+        if data.boatrotation ~= nil then
+            -- New method for loading rotation on boats; set the orientation directly
+            local rot_enum = CalcRotationEnum(inst.Transform:GetRotation())
+            SetOrientation(inst, data.boatrotation, rot_enum)
+        else
+            -- Old method for loading rotation on boats
+            local boat = inst:GetCurrentPlatform()
+            if boat and boat:HasTag("boat") then
+                local fence_rotation = inst.Transform:GetRotation()
+                local boat_rotation = boat.Transform:GetRotation()
+
+                if fence_rotation < 0 then
+                    fence_rotation = 360 + fence_rotation
+                end
+
+                local fence_rotation_enum = inst.loaded_rotation_enum
+                local boat_rot_enum = CalcRotationEnum(boat_rotation)
+
+                local base_rotation_enum = fence_rotation_enum - boat_rot_enum
+                SetOrientation(inst, base_rotation_enum * 45 + boat_rotation)
+
+                inst.loaded_rotation_enum = nil
+            end
+        end
+    end)
+end
+
+local function MakeWall(name, anims, isdoor, klaussackkeyid, data)
     local assets, custom_wall_prefabs
 
     if isdoor then
@@ -469,6 +590,13 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
         if anims.narrow then
             table.insert(assets, Asset("ANIM", "anim/"..anims.narrow..".zip"))
         end
+
+		if data and data.num_builds then
+			for i = 1, data.num_builds do
+                local build = (anims.build or anims.wide) .. i
+                table.insert(assets, Asset("ANIM", "anim/"..build..".zip"))
+            end
+		end
     end
 
     local function fn()
@@ -481,12 +609,26 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
 
         inst.Transform:SetEightFaced()
 
+		inst:SetDeploySmartRadius(0.5) --DEPLOYMODE.WALL assumes spacing of 1
+
         MakeObstaclePhysics(inst, .5)
         inst.Physics:SetDontRemoveOnSleep(true)
 
         inst:AddTag("wall")
+        inst:AddTag("fence")
         inst:AddTag("alignwall")
         inst:AddTag("noauradamage")
+		inst:AddTag("rotatableobject")
+
+		if data then
+			if data.tag then
+				inst:AddTag(data.tag)
+			end
+			if data.num_builds then
+				inst.variant_num = math.random(data.num_builds)
+				inst.basebuild = anims.build or anims.wide
+			end
+		end
 
         if isdoor then
             inst.isdoor = true
@@ -500,7 +642,7 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
             inst.GetActivateVerb = getdooractionstring
         else
             inst.AnimState:SetBank(anims.wide)
-            inst.AnimState:SetBuild(anims.wide)
+            inst.AnimState:SetBuild((anims.build or anims.wide) .. (inst.variant_num or ""))
             inst.AnimState:PlayAnimation("idle")
 
             MakeSnowCoveredPristine(inst)
@@ -525,6 +667,11 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
             return inst
         end
 
+        inst.scrapbook_anim    = "idle"
+        inst.scrapbook_build   = (anims.build or anims.wide) .. (inst.variant_num and 1 or "")
+        inst.scrapbook_bank    = anims.wide
+        inst.scrapbook_facing  = FACING_DOWN
+
         inst:AddComponent("inspectable")
 
         if isdoor then
@@ -539,11 +686,11 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
         inst.anims = anims
 
         inst:AddComponent("lootdropper")
-        inst.components.lootdropper:SetLoot(
-            isdoor and
-            { "boards", "boards", "rope" } or
-            { "twigs" }
-        )
+		if data and data.loot_table then
+			inst.components.lootdropper:SetChanceLootTable(data.loot_table)
+        else
+			inst.components.lootdropper:SetLoot(isdoor and DOOR_LOOT or FENCE_LOOT)
+        end
 
         if TheNet:GetServerGameMode() ~= "quagmire" then
             inst:AddComponent("workable")
@@ -551,6 +698,17 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
             inst.components.workable:SetWorkLeft(3)
             inst.components.workable:SetOnFinishCallback(onhammered)
             inst.components.workable:SetOnWorkCallback(onworked)
+			if data then
+				if data.onworkfinishedfn then
+					inst.components.workable:SetOnFinishCallback(data.onworkfinishedfn)
+				end
+				if data.onworkfn then
+					inst.components.workable:SetOnWorkCallback(data.onworkfn)
+				end
+				if data.workmultiplierfn then
+					inst.components.workable:SetWorkMultiplierFn(data.workmultiplierfn)
+				end
+			end
 
             inst:AddComponent("combat")
             inst.components.combat:SetKeepTargetFunction(keeptargetfn)
@@ -588,11 +746,20 @@ local function MakeWall(name, anims, isdoor, klaussackkeyid)
 
         inst.OnSave = onsave
         inst.OnLoad = onload
+        inst.OnLoadPostPass = onloadpostpass
+        inst.SetOrientation = SetOrientation
 
         return inst
     end
 
-    return Prefab(name, fn, assets, custom_wall_prefabs or wall_prefabs)
+    local prefabs = custom_wall_prefabs or wall_prefabs
+    if data and data.prefabs then
+        for _, prefab in ipairs(data.prefabs) do
+            table.insert(prefabs, prefab)
+        end
+    end
+
+    return Prefab(name, fn, assets, prefabs)
 end
 
 -------------------------------------------------------------------------------
@@ -774,6 +941,7 @@ local function MakeWallPlacer(placer, placement, anims, isdoor)
         end)
 end
 
+
 return MakeWall("fence", {wide="fence", narrow="fence_thin"}, false),
     MakeInvItem("fence_item", "fence", "fence", false),
     MakeWallPlacer("fence_item_placer", "fence", {wide="fence", narrow="fence_thin"}, false),
@@ -784,4 +952,15 @@ return MakeWall("fence", {wide="fence", narrow="fence_thin"}, false),
     MakeWallPlacer("fence_gate_item_placer", "fence_gate", {wide="fence_gate", narrow="fence_gate_thin"}, true),
 
     MakeWall("quagmire_park_gate", {wide="quagmire_park_gate"}, true, "gate_key"),
-    MakeWallAnim("quagmire_park_gate_anim", {wide="quagmire_park_gate"}, true)
+    MakeWallAnim("quagmire_park_gate_anim", {wide="quagmire_park_gate"}, true),
+
+	MakeWall("fence_junk", {wide="fence_junk", narrow="fence_thin_junk", build="fence_junk_build"}, false, nil,
+		{
+			num_builds = 3,
+			loot_table = "fence_junk",
+			tag = "junk_fence",
+			onworkfinishedfn = junk_onworkfinishedfn,
+			onworkfn = junk_onworkfn,
+			workmultiplierfn = junk_workmultiplierfn,
+            prefabs = {"junk_break_fx"},
+		})

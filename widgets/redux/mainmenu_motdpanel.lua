@@ -485,12 +485,12 @@ function MotdPanel:OnControl(control, down)
 	if MotdPanel._base.OnControl(self, control, down) then return true end
 
 	if #self.bullets > 1 and not down then
-		if control == CONTROL_OPEN_CRAFTING then
+		if control == CONTROL_MENU_L2 then
 			self.selected_bullet_num = self.selected_bullet_num == 1 and #self.bullets or (self.selected_bullet_num - 1)
 			self.bullets[self.selected_bullet_num].onclick()
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 			return true
-		elseif control == CONTROL_OPEN_INVENTORY then
+		elseif control == CONTROL_MENU_R2 then
 			self.selected_bullet_num = self.selected_bullet_num == #self.bullets and 1 or (self.selected_bullet_num + 1)
 			self.bullets[self.selected_bullet_num].onclick()
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -503,7 +503,7 @@ function MotdPanel:GetHelpText()
     local controller_id = TheInput:GetControllerID()
     local t = {}
 
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_OPEN_CRAFTING).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_OPEN_INVENTORY).. " " .. STRINGS.UI.HELP.CHANGE_MESSAGE)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_L2).."/"..TheInput:GetLocalizedControl(controller_id, CONTROL_MENU_R2).. " " .. STRINGS.UI.HELP.CHANGE_MESSAGE)
 
     return table.concat(t, "  ")
 end
